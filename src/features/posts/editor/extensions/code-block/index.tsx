@@ -19,4 +19,11 @@ export const CodeBlockExtension = CodeBlock.extend({
   addProseMirrorPlugins() {
     return [...(this.parent?.() || []), createShikiPlugin({ name: this.name })];
   },
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => {
+        return this.editor.commands.insertContent("  ");
+      },
+    };
+  },
 });

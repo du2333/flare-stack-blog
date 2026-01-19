@@ -56,13 +56,26 @@ export async function getHighlighter() {
   return highlighterPromise;
 }
 
+const aliases: Record<string, string> = {
+  ts: "typescript",
+  js: "javascript",
+  py: "python",
+  sh: "shell",
+  bash: "shell",
+  zsh: "shell",
+  yml: "yaml",
+  md: "markdown",
+};
+
 export async function loadLanguage(lang: string) {
+  const normalizedLang = aliases[lang] || lang;
+
   const highlighter = await getHighlighter();
-  if (highlighter.getLoadedLanguages().includes(lang)) {
+  if (highlighter.getLoadedLanguages().includes(normalizedLang)) {
     return;
   }
 
-  const loader = languageLoaders[lang];
+  const loader = languageLoaders[normalizedLang];
   if (loader) {
     const langModule = await loader();
     await highlighter.loadLanguage(...langModule.default);
@@ -71,9 +84,19 @@ export async function loadLanguage(lang: string) {
 
 export async function highlight(code: string, lang: string) {
   await loadLanguage(lang);
+  const normalizedLang = aliases[lang] || lang;
+
   const highlighter = await getHighlighter();
   const supportedLangs = highlighter.getLoadedLanguages();
-  const safeLang = supportedLangs.includes(lang) ? lang : "text";
+  // Optimize for plain text or unknown languages to avoid unnecessary highlighter calls/errors
+  if (
+    ["text", "plaintext", "txt"].includes(normalizedLang) ||
+    !supportedLangs.includes(normalizedLang)
+  ) {
+    return `<pre class="shiki text-muted-foreground bg-transparent p-0"><code>${code}</code></pre>`;
+  }
+
+  const safeLang = normalizedLang;
 
   try {
     return highlighter.codeToHtml(code, {

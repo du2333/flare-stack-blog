@@ -55,7 +55,6 @@ function createDecorationsSync(
       // Add node decoration for background
       if (tokens.bg || tokens.fg) {
         const nodeStyle: Record<string, string> = {};
-        if (tokens.bg) nodeStyle["background-color"] = tokens.bg;
         if (tokens.fg) nodeStyle["color"] = tokens.fg;
         decorations.push(
           Decoration.node(pos, pos + node.nodeSize, {
