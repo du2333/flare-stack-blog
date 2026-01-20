@@ -95,23 +95,10 @@ export function createShikiPlugin({ name }: ShikiPluginOptions): Plugin {
       initHighlighter();
 
       return {
-        update(_updatedView: EditorView, prevState: EditorState) {
-          // Re-apply decorations when document changes in a code block
-          const sel = view.state.selection;
-          const prevSel = prevState.selection;
-          const inCodeBlock = sel.$head.parent.type.name === name;
-          const wasInCodeBlock = prevSel.$head.parent.type.name === name;
-
-          if (
-            highlighterInstance &&
-            view.state.doc !== prevState.doc &&
-            (inCodeBlock || wasInCodeBlock)
-          ) {
-            // Trigger re-decoration
-            const tr = view.state.tr.setMeta("shikiUpdate", true);
-            view.dispatch(tr);
-          }
-        },
+        // No update callback needed - tr.docChanged in apply() handles document changes
+        // shikiUpdate is only dispatched by:
+        // 1. code-block-view.tsx after loading a new language grammar
+        // 2. initHighlighter() when highlighter first loads (shikiReady)
         destroy() {},
       };
     },
