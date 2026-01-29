@@ -8,16 +8,14 @@ import {
 import { useEffect } from "react";
 
 import { ErrorPage } from "@/components/common/error-page";
-import { authClient } from "@/lib/auth/auth.client";
 import { CACHE_CONTROL } from "@/lib/constants";
+import { sessionQuery } from "@/features/auth/queries";
 
 export const Route = createFileRoute("/_user")({
-  beforeLoad: async () => {
-    const { data } = await authClient.getSession();
-    if (!data?.user) {
-      throw redirect({
-        to: "/login",
-      });
+  beforeLoad: async ({ context }) => {
+    const session = await context.queryClient.ensureQueryData(sessionQuery);
+    if (!session?.user) {
+      throw redirect({ to: "/login" });
     }
   },
   component: UserLayout,
