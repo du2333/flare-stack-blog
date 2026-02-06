@@ -112,11 +112,7 @@ export function createTestContext(
     >,
   );
 
-  vi.spyOn(context.env.SEND_EMAIL_WORKFLOW, "create").mockResolvedValue(
-    mockWorkflowInstance as unknown as Awaited<
-      ReturnType<Env["SEND_EMAIL_WORKFLOW"]["create"]>
-    >,
-  );
+  vi.spyOn(context.env.QUEUE, "send").mockResolvedValue();
 
   vi.spyOn(context.env.SCHEDULED_PUBLISH_WORKFLOW, "get").mockResolvedValue({
     ...mockWorkflowInstance,

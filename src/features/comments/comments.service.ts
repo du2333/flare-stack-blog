@@ -185,8 +185,9 @@ export async function createComment(
         }),
       );
 
-      await context.env.SEND_EMAIL_WORKFLOW.create({
-        params: {
+      await context.env.QUEUE.send({
+        type: "EMAIL",
+        data: {
           to: ADMIN_EMAIL,
           subject: `[新评论] ${post.title}`,
           html: emailHtml,

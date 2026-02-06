@@ -93,9 +93,9 @@ export async function sendReplyNotification(
   );
 
   try {
-    await env.SEND_EMAIL_WORKFLOW.create({
-      id: `notification-reply-${comment.id}`,
-      params: {
+    await env.QUEUE.send({
+      type: "EMAIL",
+      data: {
         to: replyToAuthor.email,
         subject: `[评论回复] ${replierName} 回复了您在《${post.title}》的评论`,
         html: emailHtml,
@@ -107,12 +107,12 @@ export async function sendReplyNotification(
     });
 
     console.log(
-      `[sendReplyNotification] Reply notification sent to ${replyToAuthor.email}`,
+      `[sendReplyNotification] Reply notification queued for ${replyToAuthor.email}`,
     );
   } catch (error) {
-    // Workflow ID already exists = notification was already sent for this comment, safe to ignore
-    console.log(
-      `[sendReplyNotification] Notification workflow for comment ${comment.id} already exists, skipping`,
+    console.error(
+      `[sendReplyNotification] Failed to queue reply notification for comment ${comment.id}:`,
+      error,
     );
   }
 }

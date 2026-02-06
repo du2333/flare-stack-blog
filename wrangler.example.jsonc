@@ -47,11 +47,6 @@
       "class_name": "CommentModerationWorkflow",
     },
     {
-      "name": "send-email-workflow",
-      "binding": "SEND_EMAIL_WORKFLOW",
-      "class_name": "SendEmailWorkflow",
-    },
-    {
       "name": "scheduled-publish-workflow",
       "binding": "SCHEDULED_PUBLISH_WORKFLOW",
       "class_name": "ScheduledPublishWorkflow",
@@ -68,6 +63,17 @@
   "ai": {
     "binding": "AI",
     "remote": true,
+  },
+  "queues": {
+    "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
+    "consumers": [
+      {
+        "queue": "blog-queue",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+      },
+    ],
   },
   "migrations": [
     {
@@ -112,16 +118,14 @@
           "class_name": "CommentModerationWorkflow",
         },
         {
-          "name": "send-email-workflow",
-          "binding": "SEND_EMAIL_WORKFLOW",
-          "class_name": "SendEmailWorkflow",
-        },
-        {
           "name": "scheduled-publish-workflow",
           "binding": "SCHEDULED_PUBLISH_WORKFLOW",
           "class_name": "ScheduledPublishWorkflow",
         },
       ],
+      "queues": {
+        "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
+      },
     },
   },
 }

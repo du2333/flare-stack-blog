@@ -45,8 +45,9 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
           AuthEmail({ type: "reset-password", url }),
         );
 
-        await env.SEND_EMAIL_WORKFLOW.create({
-          params: {
+        await env.QUEUE.send({
+          type: "EMAIL",
+          data: {
             to: user.email,
             subject: "重置密码",
             html: emailHtml,
@@ -60,8 +61,9 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
           AuthEmail({ type: "verification", url }),
         );
 
-        await env.SEND_EMAIL_WORKFLOW.create({
-          params: {
+        await env.QUEUE.send({
+          type: "EMAIL",
+          data: {
             to: user.email,
             subject: "验证您的邮箱",
             html: emailHtml,

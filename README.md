@@ -1,5 +1,7 @@
 # Flare Stack Blog
 
+> 更新后部署失败？请查看 [CHANGELOG](./CHANGELOG.md) 了解 Breaking Changes。
+
 > **注意**：本项目专为 Cloudflare Workers 生态设计，深度集成 D1、R2、KV、Workflows 等服务，**仅支持部署在 Cloudflare Workers**。
 
 [部署指南](#部署指南) | [本地开发](#本地开发)
@@ -129,6 +131,7 @@ src/
    - R2 存储桶（记录名称）
    - D1 数据库（记录 Database ID）
    - KV 命名空间（记录 Namespace ID）
+   - Queue 队列：`blog-queue`
 3. **域名托管** — 将域名 DNS 托管到 Cloudflare 以使用免费 CDN
 4. **获取 Cloudflare 凭证**：
    - Dashboard 中获取 Zone ID 和 Account ID

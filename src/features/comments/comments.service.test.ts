@@ -459,16 +459,16 @@ describe("CommentService", () => {
       ).not.toHaveBeenCalled();
     });
 
-    it("should trigger SEND_EMAIL_WORKFLOW for admin notification on new root comment", async () => {
+    it("should enqueue admin notification email on new root comment", async () => {
       await CommentService.createComment(userContext, {
         postId,
         content: createCommentContent("New root comment for notification"),
       });
 
-      // Email workflow should be triggered for admin notification
-      expect(userContext.env.SEND_EMAIL_WORKFLOW.create).toHaveBeenCalledWith(
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: expect.objectContaining({
+          type: "EMAIL",
+          data: expect.objectContaining({
             to: "admin@example.com",
             subject: expect.stringContaining("Test Post"),
           }),
@@ -476,7 +476,7 @@ describe("CommentService", () => {
       );
     });
 
-    it("should trigger SEND_EMAIL_WORKFLOW when admin replies to a user comment", async () => {
+    it("should enqueue reply notification email when admin replies to a user comment", async () => {
       const rootComment = unwrap(
         await CommentService.createComment(userContext, {
           postId,
@@ -489,7 +489,7 @@ describe("CommentService", () => {
       });
 
       // Clear mocks to isolate the admin reply notification
-      vi.mocked(adminContext.env.SEND_EMAIL_WORKFLOW.create).mockClear();
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
 
       // Admin replies to the user's comment
       await CommentService.createComment(adminContext, {
@@ -499,10 +499,10 @@ describe("CommentService", () => {
         replyToCommentId: rootComment.id,
       });
 
-      // SEND_EMAIL_WORKFLOW should be called for the reply notification
-      expect(adminContext.env.SEND_EMAIL_WORKFLOW.create).toHaveBeenCalledWith(
+      expect(adminContext.env.QUEUE.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: expect.objectContaining({
+          type: "EMAIL",
+          data: expect.objectContaining({
             to: "user@example.com",
             subject: expect.stringContaining("回复"),
           }),
@@ -519,7 +519,7 @@ describe("CommentService", () => {
       );
 
       // Clear mocks
-      vi.mocked(adminContext.env.SEND_EMAIL_WORKFLOW.create).mockClear();
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
 
       // Admin replies to own comment
       await CommentService.createComment(adminContext, {
@@ -530,9 +530,7 @@ describe("CommentService", () => {
       });
 
       // No notification should be sent (self-reply)
-      expect(
-        adminContext.env.SEND_EMAIL_WORKFLOW.create,
-      ).not.toHaveBeenCalled();
+      expect(adminContext.env.QUEUE.send).not.toHaveBeenCalled();
     });
 
     it("should trigger reply notification when manually approving a reply comment", async () => {
@@ -554,7 +552,7 @@ describe("CommentService", () => {
       );
 
       // Clear mocks to isolate the moderation notification
-      vi.mocked(adminContext.env.SEND_EMAIL_WORKFLOW.create).mockClear();
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
 
       // Admin manually approves the reply
       await CommentService.moderateComment(adminContext, {
@@ -563,9 +561,10 @@ describe("CommentService", () => {
       });
 
       // Reply notification should have been sent to the admin (reply-to author)
-      expect(adminContext.env.SEND_EMAIL_WORKFLOW.create).toHaveBeenCalledWith(
+      expect(adminContext.env.QUEUE.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: expect.objectContaining({
+          type: "EMAIL",
+          data: expect.objectContaining({
             to: "admin@example.com",
             subject: expect.stringContaining("回复"),
           }),

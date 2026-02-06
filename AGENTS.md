@@ -197,16 +197,16 @@ const buttonVariants = cva("base-classes", {
 
 Available in `context.env`:
 
-| Binding                       | Type           | Purpose                |
-| ----------------------------- | -------------- | ---------------------- |
-| `DB`                          | D1             | SQLite database        |
-| `KV`                          | KV             | Cache layer            |
-| `R2`                          | R2             | Object storage (media) |
-| `AI`                          | Workers AI     | AI integration         |
-| `RATE_LIMITER`                | Durable Object | Rate limiting          |
-| `POST_PROCESS_WORKFLOW`       | Workflow       | Post processing        |
-| `COMMENT_MODERATION_WORKFLOW` | Workflow       | Comment moderation     |
-| `SEND_EMAIL_WORKFLOW`         | Workflow       | Email sending          |
+| Binding                       | Type           | Purpose                  |
+| ----------------------------- | -------------- | ------------------------ |
+| `DB`                          | D1             | SQLite database          |
+| `KV`                          | KV             | Cache layer              |
+| `R2`                          | R2             | Object storage (media)   |
+| `AI`                          | Workers AI     | AI integration           |
+| `RATE_LIMITER`                | Durable Object | Rate limiting            |
+| `POST_PROCESS_WORKFLOW`       | Workflow       | Post processing          |
+| `COMMENT_MODERATION_WORKFLOW` | Workflow       | Comment moderation       |
+| `QUEUE`                       | Queue          | Task queue (email, etc.) |
 
 ## Additional Resources
 

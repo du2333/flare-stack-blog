@@ -3,6 +3,7 @@ import type {
   Auth as AuthType,
   Session as SessionType,
 } from "@/lib/auth/auth.server";
+import type { QueueMessage } from "@/lib/queue/queue.schema";
 
 declare global {
   interface PostProcessWorkflowParams {
@@ -20,18 +21,11 @@ declare global {
     commentId: number;
   }
 
-  interface SendEmailWorkflowParams {
-    to: string;
-    subject: string;
-    html: string;
-    headers?: Record<string, string>;
-  }
-
   interface Env extends Cloudflare.Env {
     POST_PROCESS_WORKFLOW: Workflow<PostProcessWorkflowParams>;
     COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
-    SEND_EMAIL_WORKFLOW: Workflow<SendEmailWorkflowParams>;
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
+    QUEUE: Queue<QueueMessage>;
   }
 
   type DB = DBType;
