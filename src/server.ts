@@ -5,7 +5,7 @@ import { queueMessageSchema } from "@/lib/queue/queue.schema";
 export { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
 export { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 export { ScheduledPublishWorkflow } from "@/features/posts/workflows/scheduled-publish";
-export { RateLimiter } from "@/lib/rate-limiter";
+export { RateLimiter } from "@/lib/do/rate-limiter";
 
 declare module "@tanstack/react-start" {
   interface Register {

@@ -4,7 +4,7 @@ import {
   getRequestHeaders,
   setResponseHeader,
 } from "@tanstack/react-start/server";
-import type { RateLimitOptions } from "@/lib/rate-limiter";
+import type { RateLimitOptions } from "@/lib/do/rate-limiter";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { getDb } from "@/lib/db";
 import { getAuth } from "@/lib/auth/auth.server";

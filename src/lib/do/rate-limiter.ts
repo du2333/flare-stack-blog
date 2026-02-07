@@ -15,6 +15,7 @@ export type RateLimitOptions = {
 
 export class RateLimiter extends DurableObject {
   private state: BucketState;
+  private CLEANUP_INTERVAL = ms("7d");
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -71,12 +72,28 @@ export class RateLimiter extends DurableObject {
     // 允许请求，更新状态
     this.state.tokens = currentTokens - cost;
     this.state.lastRefill = now;
-    this.ctx.waitUntil(this.ctx.storage.put("bucket", this.state));
+    this.ctx.waitUntil(
+      Promise.all([
+        this.ctx.storage.put("bucket", this.state),
+        this.ctx.storage.setAlarm(now + this.CLEANUP_INTERVAL),
+      ]),
+    );
 
     return {
       allowed: true,
       remaining: Math.floor(this.state.tokens),
       retryAfterMs: 0,
     };
+  }
+
+  // 清理不活跃的数据
+  async alarm() {
+    const now = Date.now();
+    if (now - this.state.lastRefill > this.CLEANUP_INTERVAL) {
+      await this.ctx.storage.deleteAlarm();
+      await this.ctx.storage.deleteAll();
+    } else {
+      await this.ctx.storage.setAlarm(now + this.CLEANUP_INTERVAL);
+    }
   }
 }

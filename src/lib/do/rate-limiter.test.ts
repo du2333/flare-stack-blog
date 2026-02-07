@@ -1,4 +1,4 @@
-import { env } from "cloudflare:test";
+import { env, runDurableObjectAlarm } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("RateLimiter", () => {
@@ -118,5 +118,64 @@ describe("RateLimiter", () => {
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(3);
     expect(result.retryAfterMs).toBe(0);
+  });
+
+  describe("alarm cleanup", () => {
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    it("should clean up inactive DO after 7 days", async () => {
+      const id = env.RATE_LIMITER.idFromName("cleanup-1");
+      const rateLimiter = env.RATE_LIMITER.get(id);
+
+      // 初始化 DO
+      await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
+
+      // 推进 7 天 + 1 秒
+      await vi.advanceTimersByTimeAsync(SEVEN_DAYS_MS + 1000);
+
+      // 触发 alarm
+      const alarmRan = await runDurableObjectAlarm(rateLimiter);
+      expect(alarmRan).toBe(true);
+
+      // 再次请求应该得到满容量（因为 storage 被清空，状态重新初始化）
+      const result = await rateLimiter.checkLimit({
+        capacity: 5,
+        interval: "1m",
+      });
+
+      expect(result.allowed).toBe(true);
+      expect(result.remaining).toBe(4); // 满容量 5 - 1 = 4
+    });
+
+    it("should renew alarm if DO is still active", async () => {
+      const id = env.RATE_LIMITER.idFromName("cleanup-2");
+      const rateLimiter = env.RATE_LIMITER.get(id);
+
+      // 初始化 DO
+      await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
+
+      // 推进 3 天
+      await vi.advanceTimersByTimeAsync(3 * 24 * 60 * 60 * 1000);
+
+      // 再次使用（刷新 lastRefill 和 alarm）
+      await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
+
+      // 再推进 5 天（从上次使用算起未满 7 天）
+      await vi.advanceTimersByTimeAsync(5 * 24 * 60 * 60 * 1000);
+
+      // 触发 alarm - 因为 lastRefill 是 5 天前，不满 7 天，不应清理
+      const alarmRan = await runDurableObjectAlarm(rateLimiter);
+      expect(alarmRan).toBe(true);
+
+      // 状态应该保留，remaining 应该是 3（之前用了 2 次）
+      const result = await rateLimiter.checkLimit({
+        capacity: 5,
+        interval: "1m",
+      });
+
+      expect(result.allowed).toBe(true);
+      // 经过足够时间，令牌已经完全恢复
+      expect(result.remaining).toBe(4);
+    });
   });
 });
