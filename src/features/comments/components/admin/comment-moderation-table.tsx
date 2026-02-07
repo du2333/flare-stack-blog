@@ -170,17 +170,17 @@ export const CommentModerationTable = ({
           />
         </div>
         <div className="col-span-2 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          AUTHOR
+          作者
         </div>
         <div className="col-span-1"></div>
         <div className="col-span-5 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          CONTENT / CONTEXT
+          内容 / 上下文
         </div>
         <div className="col-span-1 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          STATUS
+          状态
         </div>
         <div className="col-span-2 text-right text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          ACTIONS
+          操作
         </div>
       </div>
 

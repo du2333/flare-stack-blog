@@ -18,10 +18,12 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
 import { Route as UserProfileRouteImport } from './routes/_user/profile'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicPostsRouteImport } from './routes/_public/posts'
+import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
@@ -32,6 +34,7 @@ import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
+import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
 import { Route as AdminCommentsIndexRouteImport } from './routes/admin/comments/index'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
 import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
@@ -78,6 +81,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const UserSubmitFriendLinkRoute = UserSubmitFriendLinkRouteImport.update({
+  id: '/submit-friend-link',
+  path: '/submit-friend-link',
+  getParentRoute: () => UserRouteRoute,
+} as any)
 const UserProfileRoute = UserProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -96,6 +104,11 @@ const PublicSearchRoute = PublicSearchRouteImport.update({
 const PublicPostsRoute = PublicPostsRouteImport.update({
   id: '/posts',
   path: '/posts',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
+  id: '/friend-links',
+  path: '/friend-links',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
@@ -148,6 +161,11 @@ const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
   path: '/media/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminFriendLinksIndexRoute = AdminFriendLinksIndexRouteImport.update({
+  id: '/friend-links/',
+  path: '/friend-links/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCommentsIndexRoute = AdminCommentsIndexRouteImport.update({
   id: '/comments/',
   path: '/comments/',
@@ -175,14 +193,17 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
+  '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
+  '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
+  '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
@@ -198,14 +219,17 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
+  '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
+  '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
+  '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
@@ -227,14 +251,17 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/_auth/reset-link': typeof AuthResetLinkRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
+  '/_public/friend-links': typeof PublicFriendLinksRoute
   '/_public/posts': typeof PublicPostsRoute
   '/_public/search': typeof PublicSearchRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/_user/profile': typeof UserProfileRoute
+  '/_user/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/_public/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments/': typeof AdminCommentsIndexRoute
+  '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
@@ -254,14 +281,17 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-link'
     | '/verify-email'
+    | '/friend-links'
     | '/posts'
     | '/search'
     | '/unsubscribe'
     | '/profile'
+    | '/submit-friend-link'
     | '/'
     | '/admin/'
     | '/post/$slug'
     | '/admin/comments'
+    | '/admin/friend-links'
     | '/admin/media'
     | '/admin/posts/'
     | '/admin/settings'
@@ -277,14 +307,17 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-link'
     | '/verify-email'
+    | '/friend-links'
     | '/posts'
     | '/search'
     | '/unsubscribe'
     | '/profile'
+    | '/submit-friend-link'
     | '/'
     | '/admin'
     | '/post/$slug'
     | '/admin/comments'
+    | '/admin/friend-links'
     | '/admin/media'
     | '/admin/posts'
     | '/admin/settings'
@@ -305,14 +338,17 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/_auth/reset-link'
     | '/_auth/verify-email'
+    | '/_public/friend-links'
     | '/_public/posts'
     | '/_public/search'
     | '/_public/unsubscribe'
     | '/_user/profile'
+    | '/_user/submit-friend-link'
     | '/_public/'
     | '/admin/'
     | '/_public/post/$slug'
     | '/admin/comments/'
+    | '/admin/friend-links/'
     | '/admin/media/'
     | '/admin/posts/'
     | '/admin/settings/'
@@ -395,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_user/submit-friend-link': {
+      id: '/_user/submit-friend-link'
+      path: '/submit-friend-link'
+      fullPath: '/submit-friend-link'
+      preLoaderRoute: typeof UserSubmitFriendLinkRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
     '/_user/profile': {
       id: '/_user/profile'
       path: '/profile'
@@ -421,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/posts'
       fullPath: '/posts'
       preLoaderRoute: typeof PublicPostsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/friend-links': {
+      id: '/_public/friend-links'
+      path: '/friend-links'
+      fullPath: '/friend-links'
+      preLoaderRoute: typeof PublicFriendLinksRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_auth/verify-email': {
@@ -493,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMediaIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/friend-links/': {
+      id: '/admin/friend-links/'
+      path: '/friend-links'
+      fullPath: '/admin/friend-links'
+      preLoaderRoute: typeof AdminFriendLinksIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/comments/': {
       id: '/admin/comments/'
       path: '/comments'
@@ -538,6 +595,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface PublicRouteRouteChildren {
+  PublicFriendLinksRoute: typeof PublicFriendLinksRoute
   PublicPostsRoute: typeof PublicPostsRoute
   PublicSearchRoute: typeof PublicSearchRoute
   PublicUnsubscribeRoute: typeof PublicUnsubscribeRoute
@@ -546,6 +604,7 @@ interface PublicRouteRouteChildren {
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicFriendLinksRoute: PublicFriendLinksRoute,
   PublicPostsRoute: PublicPostsRoute,
   PublicSearchRoute: PublicSearchRoute,
   PublicUnsubscribeRoute: PublicUnsubscribeRoute,
@@ -559,10 +618,12 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 
 interface UserRouteRouteChildren {
   UserProfileRoute: typeof UserProfileRoute
+  UserSubmitFriendLinkRoute: typeof UserSubmitFriendLinkRoute
 }
 
 const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserProfileRoute: UserProfileRoute,
+  UserSubmitFriendLinkRoute: UserSubmitFriendLinkRoute,
 }
 
 const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
@@ -587,6 +648,7 @@ interface AdminRouteRouteChildren {
   AdminPostsRouteRoute: typeof AdminPostsRouteRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCommentsIndexRoute: typeof AdminCommentsIndexRoute
+  AdminFriendLinksIndexRoute: typeof AdminFriendLinksIndexRoute
   AdminMediaIndexRoute: typeof AdminMediaIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminTagsIndexRoute: typeof AdminTagsIndexRoute
@@ -596,6 +658,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminPostsRouteRoute: AdminPostsRouteRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminCommentsIndexRoute: AdminCommentsIndexRoute,
+  AdminFriendLinksIndexRoute: AdminFriendLinksIndexRoute,
   AdminMediaIndexRoute: AdminMediaIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminTagsIndexRoute: AdminTagsIndexRoute,

@@ -4,6 +4,7 @@ import {
   FileText,
   Image as ImageIcon,
   LayoutDashboard,
+  Link2,
   LogOut,
   MessageSquare,
   Tag,
@@ -94,6 +95,12 @@ export function SideBar({
       path: "/admin/comments",
       icon: MessageSquare,
       label: "评论管理",
+      exact: false,
+    },
+    {
+      path: "/admin/friend-links",
+      icon: Link2,
+      label: "友链管理",
       exact: false,
     },
   ] satisfies Array<NavItem>;

@@ -23,6 +23,7 @@ function PublicLayout() {
   const navOptions = [
     { label: "主页", to: "/" as const, id: "home" },
     { label: "文章", to: "/posts" as const, id: "posts" },
+    { label: "友链", to: "/friend-links" as const, id: "friend-links" },
   ];
 
   const { data: session, isPending: isSessionPending } =

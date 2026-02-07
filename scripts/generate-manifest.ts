@@ -65,7 +65,7 @@ function generate() {
 
 // Pre-compiled Regexes for maximum performance on Cloudflare Workers
 export const ROUTE_REGEXPS: Array<RegExp> = [
-  ${regexDefinitions.join(",\n  ")}
+  ${regexDefinitions.join(",\n  ")},
 ];
 
 /**

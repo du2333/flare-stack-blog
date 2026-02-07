@@ -22,6 +22,13 @@
       "when": 1768130358240,
       "tag": "0002_flimsy_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1770449895500,
+      "tag": "0003_zippy_luminals",
+      "breakpoints": true
     }
   ]
 }

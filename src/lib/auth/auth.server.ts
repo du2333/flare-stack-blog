@@ -4,7 +4,7 @@ import { betterAuth } from "better-auth/minimal";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
 import { hashPassword, verifyPassword } from "@/lib/auth/auth.helpers";
 import { authConfig } from "@/lib/auth/auth.config";
-import * as authSchema from "@/lib/db/schema/auth.schema";
+import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
 
 let auth: Auth | null = null;
