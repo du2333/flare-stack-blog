@@ -7,6 +7,21 @@ import { authConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
 
+async function checkEmailRateLimit(
+  env: Env,
+  scope: string,
+  email: string,
+): Promise<boolean> {
+  const identifier = `${scope}:${email.toLowerCase().trim()}`;
+  const id = env.RATE_LIMITER.idFromName(identifier);
+  const rateLimiter = env.RATE_LIMITER.get(id);
+  const result = await rateLimiter.checkLimit({
+    capacity: 3,
+    interval: "1h",
+  });
+  return result.allowed;
+}
+
 let auth: Auth | null = null;
 
 export function getAuth({ db, env }: { db: DB; env: Env }) {
@@ -41,6 +56,14 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
         verify: verifyPassword,
       },
       sendResetPassword: async ({ user, url }) => {
+        // Per-email rate limit: 3 per hour — silently skip if exceeded
+        const allowed = await checkEmailRateLimit(
+          env,
+          "email-reset",
+          user.email,
+        );
+        if (!allowed) return;
+
         const emailHtml = renderToStaticMarkup(
           AuthEmail({ type: "reset-password", url }),
         );
@@ -57,6 +80,14 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
+        // Per-email rate limit: 3 per hour — silently skip if exceeded
+        const allowed = await checkEmailRateLimit(
+          env,
+          "email-verify",
+          user.email,
+        );
+        if (!allowed) return;
+
         const emailHtml = renderToStaticMarkup(
           AuthEmail({ type: "verification", url }),
         );

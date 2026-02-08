@@ -21,7 +21,7 @@ describe("Hono Integration Test", () => {
 
     const url = "/api/auth/sign-in/email";
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       const res = await testRequest(app, url, reqInit);
       expect(res.status).not.toBe(429);
     }

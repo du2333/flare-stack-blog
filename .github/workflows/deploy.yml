@@ -110,6 +110,7 @@ jobs:
           echo "UMAMI_USERNAME=${{ secrets.UMAMI_USERNAME }}" >> $GITHUB_ENV
           echo "UMAMI_PASSWORD=${{ secrets.UMAMI_PASSWORD }}" >> $GITHUB_ENV
           echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}" >> $GITHUB_ENV
+          echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
           echo "VITE_BLOG_TITLE=${{ vars.VITE_BLOG_TITLE }}" >> $GITHUB_ENV
           echo "VITE_BLOG_NAME=${{ vars.VITE_BLOG_NAME }}" >> $GITHUB_ENV
           echo "VITE_BLOG_AUTHOR=${{ vars.VITE_BLOG_AUTHOR }}" >> $GITHUB_ENV

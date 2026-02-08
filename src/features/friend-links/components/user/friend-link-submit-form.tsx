@@ -6,6 +6,7 @@ import { useFriendLinks } from "../../hooks/use-friend-links";
 import type { SubmitFriendLinkInput } from "../../friend-links.schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 
 interface FriendLinkSubmitFormProps {
   defaultEmail?: string;
@@ -15,6 +16,8 @@ export function FriendLinkSubmitForm({
   defaultEmail,
 }: FriendLinkSubmitFormProps) {
   const { submit, isSubmitting } = useFriendLinks();
+  const { isPending: turnstilePending, turnstileProps } =
+    useTurnstile("friend-link");
 
   const {
     register,
@@ -40,6 +43,7 @@ export function FriendLinkSubmitForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <Turnstile {...turnstileProps} />
       <div className="space-y-6">
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
@@ -125,7 +129,7 @@ export function FriendLinkSubmitForm({
       <div className="flex justify-start">
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || turnstilePending}
           variant="ghost"
           className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-transparent p-0 h-auto transition-colors"
         >

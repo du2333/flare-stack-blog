@@ -15,6 +15,7 @@ interface CommentEditorProps {
   autoFocus?: boolean;
   onCancel?: () => void;
   submitLabel?: string;
+  disabled?: boolean;
 }
 
 export const CommentEditor = ({
@@ -23,6 +24,7 @@ export const CommentEditor = ({
   autoFocus,
   onCancel,
   submitLabel = "发表评论",
+  disabled,
 }: CommentEditorProps) => {
   const [modalType, setModalType] = useState<ModalType>(null);
   const [modalInitialUrl, setModalInitialUrl] = useState("");
@@ -96,7 +98,7 @@ export const CommentEditor = ({
           )}
           <Button
             size="sm"
-            disabled={isEmpty || isSubmitting}
+            disabled={isEmpty || isSubmitting || disabled}
             onClick={handleSubmit}
             variant="ghost"
             className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest hover:bg-transparent hover:text-foreground p-0 flex items-center gap-2 group/btn"

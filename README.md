@@ -212,15 +212,16 @@ VITE_UMAMI_WEBSITE_ID=your-website-id
 
 #### GitHub Variables（可选，客户端配置）
 
-| 变量名                  | 类型   | 说明                       |
-| :---------------------- | :----- | :------------------------- |
-| `VITE_UMAMI_WEBSITE_ID` | 构建时 | Umami Website ID           |
-| `VITE_BLOG_TITLE`       | 构建时 | 博客标题                   |
-| `VITE_BLOG_NAME`        | 构建时 | 博客短名称，显示在导航栏上 |
-| `VITE_BLOG_AUTHOR`      | 构建时 | 作者名称                   |
-| `VITE_BLOG_DESCRIPTION` | 构建时 | 博客描述，显示在主页上     |
-| `VITE_BLOG_GITHUB`      | 构建时 | GitHub 主页链接            |
-| `VITE_BLOG_EMAIL`       | 构建时 | 联系邮箱                   |
+| 变量名                    | 类型   | 说明                          |
+| :------------------------ | :----- | :---------------------------- |
+| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile 人机验证 |
+| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID              |
+| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                      |
+| `VITE_BLOG_NAME`          | 构建时 | 博客短名称，显示在导航栏上    |
+| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                      |
+| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述，显示在主页上        |
+| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接               |
+| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                      |
 
 > **构建时变量**：在 Vite 构建时注入到客户端代码，方式二用户在 Build Variables 中配置
 

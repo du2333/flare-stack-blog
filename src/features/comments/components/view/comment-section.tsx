@@ -11,6 +11,7 @@ import type { JSONContent } from "@tiptap/react";
 import { authClient } from "@/lib/auth/auth.client";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 
@@ -39,6 +40,8 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
   } | null>(null);
 
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const { isPending: turnstilePending, turnstileProps } =
+    useTurnstile("comment");
 
   const handleCreateComment = async (content: JSONContent) => {
     await createComment({
@@ -119,12 +122,15 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
         </div>
       </header>
 
+      <Turnstile {...turnstileProps} />
+
       {/* Main Editor */}
       {session ? (
         <div className="space-y-6">
           <CommentEditor
             onSubmit={handleCreateComment}
             isSubmitting={isCreating && !replyTarget}
+            disabled={turnstilePending}
           />
         </div>
       ) : (
@@ -158,6 +164,7 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
         isSubmittingReply={isCreating}
         initialExpandedRootId={rootId}
         highlightCommentId={highlightCommentId}
+        disableSubmit={turnstilePending}
       />
 
       {/* Load More Root Comments */}

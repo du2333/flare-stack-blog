@@ -93,7 +93,7 @@ app.post(
   "/api/auth/*",
   baseMiddleware,
   rateLimitMiddleware({
-    capacity: 10,
+    capacity: 5,
     interval: "1m",
     identifier: createRateLimiterIdentifier,
   }),

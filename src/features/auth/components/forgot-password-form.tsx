@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { authClient } from "@/lib/auth/auth.client";
 
 const forgotPasswordSchema = z.object({
@@ -18,6 +19,8 @@ export function ForgotPasswordForm() {
   const navigate = useNavigate();
   const [isSent, setIsSent] = useState(false);
   const [sentEmail, setSentEmail] = useState("");
+
+  const { turnstileProps } = useTurnstile("forgot-password");
 
   const {
     register,
@@ -72,6 +75,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <Turnstile {...turnstileProps} />
       <p className="text-sm text-muted-foreground/60 font-light leading-relaxed">
         请输入您的注册邮箱，我们将向您发送重置密码的链接。
       </p>
