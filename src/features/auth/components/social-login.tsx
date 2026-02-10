@@ -2,6 +2,7 @@ import { Github, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { authClient } from "@/lib/auth/auth.client";
 
 export function SocialLogin({
@@ -13,6 +14,11 @@ export function SocialLogin({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const previousLocation = usePreviousLocation();
+  const {
+    isPending: turnstilePending,
+    token: turnstileToken,
+    turnstileProps,
+  } = useTurnstile("social-login");
 
   const handleGithubLogin = async () => {
     if (isLoading) return;
@@ -23,6 +29,9 @@ export function SocialLogin({
       provider: "github",
       errorCallbackURL: `${window.location.origin}/login`,
       callbackURL: `${window.location.origin}${redirectTo ?? previousLocation}`,
+      fetchOptions: {
+        headers: { "X-Turnstile-Token": turnstileToken || "" },
+      },
     });
 
     if (error) {
@@ -38,6 +47,7 @@ export function SocialLogin({
 
   return (
     <div className="space-y-6">
+      <Turnstile {...turnstileProps} />
       {showDivider && (
         <div className="relative flex items-center">
           <div className="grow h-px bg-border/30"></div>
@@ -51,14 +61,14 @@ export function SocialLogin({
       <button
         type="button"
         onClick={handleGithubLogin}
-        disabled={isLoading}
-        className={`group w-full py-4 border border-border/30 flex items-center justify-center gap-3 transition-all hover:border-foreground disabled:opacity-50 disabled:cursor-not-allowed ${
+        disabled={isLoading || turnstilePending}
+        className={`group w-full py-4 border border-border/40 flex items-center justify-center gap-3 transition-all hover:border-foreground disabled:opacity-50 disabled:cursor-not-allowed ${
           !showDivider
             ? "bg-foreground text-background border-transparent hover:opacity-80"
             : ""
         }`}
       >
-        {isLoading ? (
+        {isLoading || turnstilePending ? (
           <Loader2
             size={14}
             className={`${showDivider ? "text-muted-foreground" : "text-background"} animate-spin`}
@@ -68,7 +78,11 @@ export function SocialLogin({
         )}
 
         <span className="text-[10px] font-mono uppercase tracking-widest">
-          {isLoading ? "正在连接..." : "GitHub 登录"}
+          {isLoading
+            ? "正在连接..."
+            : turnstilePending
+              ? "验证中..."
+              : "GitHub 登录"}
         </span>
       </button>
       {!showDivider && (

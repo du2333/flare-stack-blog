@@ -81,19 +81,45 @@ app.get("/api/auth/*", baseMiddleware, (c) => {
   return auth.handler(c.req.raw);
 });
 
+// 1. Protected auth endpoints (requires Turnstile)
+const protectedPaths = [
+  "/api/auth/sign-in/email",
+  "/api/auth/sign-up/email",
+  "/api/auth/sign-in/social",
+  "/api/auth/request-password-reset",
+  "/api/auth/send-verification-email",
+] as const;
+
+protectedPaths.forEach((path) => {
+  app.post(
+    path,
+    baseMiddleware,
+    turnstileMiddleware,
+    rateLimitMiddleware({
+      capacity: 5,
+      interval: "1m",
+      identifier: createRateLimiterIdentifier,
+    }),
+    rateLimitMiddleware({
+      capacity: 10,
+      interval: "1h",
+      identifier: (c) => `hourly:${createRateLimiterIdentifier(c)}`,
+    }),
+    (c) => {
+      const auth = c.get("auth");
+      return auth.handler(c.req.raw);
+    },
+  );
+});
+
+// 2. Other auth POST endpoints (e.g. sign-out, change-password, reset-password etc.)
 app.post(
   "/api/auth/*",
   baseMiddleware,
-  turnstileMiddleware,
   rateLimitMiddleware({
     capacity: 5,
     interval: "1m",
     identifier: createRateLimiterIdentifier,
-  }),
-  rateLimitMiddleware({
-    capacity: 10,
-    interval: "1h",
-    identifier: (c) => `hourly:${createRateLimiterIdentifier(c)}`,
   }),
   (c) => {
     const auth = c.get("auth");

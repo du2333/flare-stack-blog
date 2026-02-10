@@ -13,7 +13,7 @@ import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
 
 const loginSchema = z.object({
-  email: z.string().email("无效的邮箱格式"),
+  email: z.email("无效的邮箱格式"),
   password: z.string().min(1, "请输入密码"),
 });
 
@@ -99,6 +99,9 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       authClient.sendVerificationEmail({
         email: emailValue,
         callbackURL: `${window.location.origin}/verify-email`,
+        fetchOptions: {
+          headers: { "X-Turnstile-Token": turnstileToken || "" },
+        },
       }),
       {
         loading: "正在发送验证邮件...",

@@ -10,7 +10,7 @@ import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { authClient } from "@/lib/auth/auth.client";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("无效的邮箱格式"),
+  email: z.email("无效的邮箱格式"),
 });
 
 type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;

@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testRequest } from "tests/test-utils";
+
 import { app } from "@/lib/hono";
+
+vi.mock("@/lib/turnstile", () => ({
+  verifyTurnstileToken: vi.fn(() => Promise.resolve({ success: true })),
+}));
 
 describe("Hono Integration Test", () => {
   beforeEach(() => {
@@ -16,6 +21,7 @@ describe("Hono Integration Test", () => {
       method: "POST",
       headers: {
         "cf-connecting-ip": "bad-ip",
+        "X-Turnstile-Token": "test-token",
       },
     };
 
