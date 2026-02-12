@@ -35,6 +35,7 @@ export function RegisterForm() {
   const {
     isPending: turnstilePending,
     token: turnstileToken,
+    reset: resetTurnstile,
     turnstileProps,
   } = useTurnstile("register");
 
@@ -57,10 +58,16 @@ export function RegisterForm() {
       },
     });
 
+    resetTurnstile();
+
     if (error) {
-      toast.error("注册失败", {
-        description: error.message || "服务器连接异常，请稍后重试。",
-      });
+      if (error.message?.includes("Turnstile")) {
+        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+      } else {
+        toast.error("注册失败", {
+          description: error.message || "服务器连接异常，请稍后重试。",
+        });
+      }
       return;
     }
 
@@ -105,7 +112,6 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <Turnstile {...turnstileProps} />
       <div className="space-y-6">
         {/* Name */}
         <div className="space-y-2 group">
@@ -191,6 +197,10 @@ export function RegisterForm() {
           <span>创建账户</span>
         )}
       </button>
+
+      <div className="flex justify-center">
+        <Turnstile {...turnstileProps} />
+      </div>
     </form>
   );
 }

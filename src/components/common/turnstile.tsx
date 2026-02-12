@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 import { clientEnv } from "@/lib/env/client.env";
 
 const TURNSTILE_SCRIPT_URL =
@@ -41,6 +42,8 @@ interface TurnstileProps {
   onError?: () => void;
   onExpire?: () => void;
   action?: string;
+  /** Shared ref so useTurnstile can access the widget ID for reset */
+  widgetIdRef?: RefObject<string | null>;
 }
 
 let scriptLoadPromise: Promise<void> | null = null;
@@ -69,9 +72,10 @@ export function Turnstile({
   onError,
   onExpire,
   action,
+  widgetIdRef: externalWidgetIdRef,
 }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<string | null>(null);
+  const internalWidgetIdRef = useRef<string | null>(null);
 
   const siteKey = clientEnv().VITE_TURNSTILE_SITE_KEY;
 
@@ -84,7 +88,7 @@ export function Turnstile({
       .then(() => {
         if (!mounted || !containerRef.current || !window.turnstile) return;
 
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+        const id = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           callback: onVerify,
           "error-callback": onError,
@@ -92,6 +96,10 @@ export function Turnstile({
           action,
           appearance: "interaction-only",
         });
+        internalWidgetIdRef.current = id;
+        if (externalWidgetIdRef) {
+          externalWidgetIdRef.current = id;
+        }
       })
       .catch(() => {
         // Turnstile script failed to load — skip silently
@@ -99,12 +107,15 @@ export function Turnstile({
 
     return () => {
       mounted = false;
-      if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
-        widgetIdRef.current = null;
+      if (internalWidgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(internalWidgetIdRef.current);
+        internalWidgetIdRef.current = null;
+        if (externalWidgetIdRef) {
+          externalWidgetIdRef.current = null;
+        }
       }
     };
-  }, [siteKey, onVerify, onError, onExpire, action]);
+  }, [siteKey, onVerify, onError, onExpire, action, externalWidgetIdRef]);
 
   if (!siteKey) return null;
 
@@ -119,6 +130,7 @@ export function Turnstile({
  */
 export function useTurnstile(action?: string) {
   const [token, setToken] = useState<string | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const siteKey = clientEnv().VITE_TURNSTILE_SITE_KEY;
 
   const onVerify = useCallback((t: string) => {
@@ -131,11 +143,27 @@ export function useTurnstile(action?: string) {
     setTurnstileToken(null);
   }, []);
 
+  /** Reset the Turnstile widget to obtain a fresh token (tokens are single-use). */
+  const reset = useCallback(() => {
+    setToken(null);
+    setTurnstileToken(null);
+    if (widgetIdRef.current && window.turnstile) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  }, []);
+
   return {
     /** Turnstile is configured but challenge not yet completed */
     isPending: !!siteKey && !token,
     /** The Turnstile token to send in X-Turnstile-Token header */
     token,
-    turnstileProps: { onVerify, onExpire, action } satisfies TurnstileProps,
+    /** Reset the widget to get a fresh token after each API call */
+    reset,
+    turnstileProps: {
+      onVerify,
+      onExpire,
+      action,
+      widgetIdRef,
+    } satisfies TurnstileProps,
   };
 }

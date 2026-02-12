@@ -8,7 +8,6 @@ interface CommentReplyFormProps {
   isSubmitting: boolean;
   onCancel: () => void;
   className?: string;
-  disabled?: boolean;
 }
 
 export const CommentReplyForm = ({
@@ -17,7 +16,6 @@ export const CommentReplyForm = ({
   isSubmitting,
   onCancel,
   className,
-  disabled,
 }: CommentReplyFormProps) => {
   return (
     <div
@@ -40,7 +38,6 @@ export const CommentReplyForm = ({
         autoFocus
         onCancel={onCancel}
         submitLabel="发表回复"
-        disabled={disabled}
       />
     </div>
   );

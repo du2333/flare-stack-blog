@@ -1,4 +1,5 @@
 import { Link, createFileRoute, useRouteContext } from "@tanstack/react-router";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { SocialLogin } from "@/features/auth/components/social-login";
 
@@ -15,6 +16,12 @@ export const Route = createFileRoute("/_auth/login")({
 
 function RouteComponent() {
   const { isEmailConfigured } = useRouteContext({ from: "/_auth" });
+  const {
+    isPending: turnstilePending,
+    token: turnstileToken,
+    reset: resetTurnstile,
+    turnstileProps,
+  } = useTurnstile("login");
 
   return (
     <div className="space-y-12">
@@ -33,9 +40,23 @@ function RouteComponent() {
       </header>
 
       <div className={isEmailConfigured ? "space-y-10" : "space-y-0"}>
-        {isEmailConfigured && <LoginForm />}
+        {isEmailConfigured && (
+          <LoginForm
+            turnstileToken={turnstileToken}
+            turnstilePending={turnstilePending}
+            resetTurnstile={resetTurnstile}
+          />
+        )}
 
-        <SocialLogin showDivider={isEmailConfigured} />
+        <SocialLogin
+          showDivider={isEmailConfigured}
+          turnstileToken={turnstileToken}
+          turnstilePending={turnstilePending}
+          resetTurnstile={resetTurnstile}
+        />
+        <div className="flex justify-center">
+          <Turnstile {...turnstileProps} />
+        </div>
 
         {isEmailConfigured && (
           <div className="text-center pt-8">

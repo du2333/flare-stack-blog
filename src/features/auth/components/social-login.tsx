@@ -2,23 +2,25 @@ import { Github, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { authClient } from "@/lib/auth/auth.client";
+
+interface SocialLoginProps {
+  redirectTo?: string;
+  showDivider?: boolean;
+  turnstileToken?: string | null;
+  turnstilePending?: boolean;
+  resetTurnstile?: () => void;
+}
 
 export function SocialLogin({
   redirectTo,
   showDivider = true,
-}: {
-  redirectTo?: string;
-  showDivider?: boolean;
-}) {
+  turnstileToken = null,
+  turnstilePending = false,
+  resetTurnstile,
+}: SocialLoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const previousLocation = usePreviousLocation();
-  const {
-    isPending: turnstilePending,
-    token: turnstileToken,
-    turnstileProps,
-  } = useTurnstile("social-login");
 
   const handleGithubLogin = async () => {
     if (isLoading) return;
@@ -34,10 +36,14 @@ export function SocialLogin({
       },
     });
 
+    resetTurnstile?.();
+
     if (error) {
-      toast.error("第三方登录失败", {
-        description: error.message,
-      });
+      if (error.message?.includes("Turnstile")) {
+        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+      } else {
+        toast.error("第三方登录失败", { description: error.message });
+      }
       setIsLoading(false);
       return;
     }
@@ -47,7 +53,6 @@ export function SocialLogin({
 
   return (
     <div className="space-y-6">
-      <Turnstile {...turnstileProps} />
       {showDivider && (
         <div className="relative flex items-center">
           <div className="grow h-px bg-border/30"></div>

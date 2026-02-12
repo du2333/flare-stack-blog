@@ -23,6 +23,7 @@ export function ForgotPasswordForm() {
   const {
     isPending: turnstilePending,
     token: turnstileToken,
+    reset: resetTurnstile,
     turnstileProps,
   } = useTurnstile("forgot-password");
 
@@ -43,8 +44,14 @@ export function ForgotPasswordForm() {
       },
     });
 
+    resetTurnstile();
+
     if (error) {
-      toast.error("重置邮件发送失败");
+      if (error.message?.includes("Turnstile")) {
+        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+      } else {
+        toast.error("重置邮件发送失败", { description: error.message });
+      }
       return;
     }
 
@@ -82,7 +89,6 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <Turnstile {...turnstileProps} />
       <p className="text-sm text-muted-foreground/60 font-light leading-relaxed">
         请输入您的注册邮箱，我们将向您发送重置密码的链接。
       </p>
@@ -126,6 +132,10 @@ export function ForgotPasswordForm() {
         >
           [ ← 返回登录 ]
         </button>
+
+        <div className="flex justify-center">
+          <Turnstile {...turnstileProps} />
+        </div>
       </div>
     </form>
   );

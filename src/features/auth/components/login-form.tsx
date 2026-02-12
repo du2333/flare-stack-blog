@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
@@ -19,7 +18,19 @@ const loginSchema = z.object({
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
-export function LoginForm({ redirectTo }: { redirectTo?: string }) {
+interface LoginFormProps {
+  redirectTo?: string;
+  turnstileToken?: string | null;
+  turnstilePending?: boolean;
+  resetTurnstile?: () => void;
+}
+
+export function LoginForm({
+  redirectTo,
+  turnstileToken = null,
+  turnstilePending = false,
+  resetTurnstile,
+}: LoginFormProps) {
   const [loginStep, setLoginStep] = useState<"IDLE" | "VERIFYING" | "SUCCESS">(
     "IDLE",
   );
@@ -29,11 +40,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const navigate = useNavigate();
   const previousLocation = usePreviousLocation();
   const queryClient = useQueryClient();
-  const {
-    isPending: turnstilePending,
-    token: turnstileToken,
-    turnstileProps,
-  } = useTurnstile("login");
 
   const {
     register,
@@ -59,6 +65,9 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       },
     });
 
+    // Reset Turnstile immediately — tokens are single-use
+    resetTurnstile?.();
+
     if (error) {
       setLoginStep("IDLE");
 
@@ -74,7 +83,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         default:
           // Fallback: check message for Turnstile errors or use generic message
           if (error.message?.includes("Turnstile")) {
-            setError("root", { message: "人机验证失败，请刷新页面重试" });
+            setError("root", { message: "人机验证失败，请等待验证完成后重试" });
           } else {
             setError("root", { message: error.message || "登录失败" });
           }
@@ -93,27 +102,40 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     }, 800);
   };
 
-  const handleResendVerification = () => {
+  const handleResendVerification = async () => {
     if (!emailValue) return;
-    toast.promise(
-      authClient.sendVerificationEmail({
-        email: emailValue,
-        callbackURL: `${window.location.origin}/verify-email`,
-        fetchOptions: {
-          headers: { "X-Turnstile-Token": turnstileToken || "" },
-        },
-      }),
-      {
-        loading: "正在发送验证邮件...",
-        success: "验证邮件已发送",
-        error: "发送失败，请稍后重试",
+    if (turnstilePending) {
+      toast.error("请等待人机验证完成");
+      return;
+    }
+
+    const loadingToast = toast.loading("正在发送验证邮件...");
+
+    const { error } = await authClient.sendVerificationEmail({
+      email: emailValue,
+      callbackURL: `${window.location.origin}/verify-email`,
+      fetchOptions: {
+        headers: { "X-Turnstile-Token": turnstileToken || "" },
       },
-    );
+    });
+
+    resetTurnstile?.();
+    toast.dismiss(loadingToast);
+
+    if (error) {
+      if (error.message?.includes("Turnstile")) {
+        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+      } else {
+        toast.error("发送失败，请稍后重试", { description: error.message });
+      }
+      return;
+    }
+
+    toast.success("验证邮件已发送", { description: "请检查您的收件箱" });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <Turnstile {...turnstileProps} />
       {errors.root && (
         <div className="border-l-2 border-destructive p-4 space-y-2 animate-in fade-in duration-300">
           <p className="text-[10px] font-mono text-destructive uppercase tracking-widest">

@@ -1,7 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { LogIn } from "lucide-react";
+import { toast } from "sonner";
 import { rootCommentsByPostIdInfiniteQuery } from "../../queries";
 import { useComments } from "../../hooks/use-comments";
 import { CommentList } from "./comment-list";
@@ -40,29 +41,54 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
   } | null>(null);
 
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
-  const { isPending: turnstilePending, turnstileProps } =
-    useTurnstile("comment");
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const {
+    isPending: turnstilePending,
+    reset: resetTurnstile,
+    turnstileProps,
+  } = useTurnstile("comment");
+
+  const requireTurnstile = () => {
+    if (!turnstilePending) return false;
+    toast.error("请先完成人机验证");
+    turnstileRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    // Throw so CommentEditor's catch block fires and content is preserved
+    throw new Error("TURNSTILE_PENDING");
+  };
 
   const handleCreateComment = async (content: JSONContent) => {
-    await createComment({
-      data: {
-        postId,
-        content,
-      },
-    });
+    requireTurnstile();
+    try {
+      await createComment({
+        data: {
+          postId,
+          content,
+        },
+      });
+    } finally {
+      resetTurnstile();
+    }
   };
 
   const handleCreateReply = async (content: JSONContent) => {
     if (!replyTarget) return;
-    await createComment({
-      data: {
-        postId,
-        content,
-        rootId: replyTarget.rootId,
-        replyToCommentId: replyTarget.commentId,
-      },
-    });
-    setReplyTarget(null);
+    requireTurnstile();
+    try {
+      await createComment({
+        data: {
+          postId,
+          content,
+          rootId: replyTarget.rootId,
+          replyToCommentId: replyTarget.commentId,
+        },
+      });
+      setReplyTarget(null);
+    } finally {
+      resetTurnstile();
+    }
   };
 
   const handleDelete = async () => {
@@ -122,15 +148,12 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
         </div>
       </header>
 
-      <Turnstile {...turnstileProps} />
-
       {/* Main Editor */}
       {session ? (
         <div className="space-y-6">
           <CommentEditor
             onSubmit={handleCreateComment}
             isSubmitting={isCreating && !replyTarget}
-            disabled={turnstilePending}
           />
         </div>
       ) : (
@@ -150,6 +173,10 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
         </div>
       )}
 
+      <div ref={turnstileRef}>
+        <Turnstile {...turnstileProps} />
+      </div>
+
       {/* Comments List */}
       <CommentList
         rootComments={rootComments}
@@ -164,7 +191,6 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
         isSubmittingReply={isCreating}
         initialExpandedRootId={rootId}
         highlightCommentId={highlightCommentId}
-        disableSubmit={turnstilePending}
       />
 
       {/* Load More Root Comments */}

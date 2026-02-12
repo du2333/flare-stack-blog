@@ -23,7 +23,6 @@ interface CommentListProps {
   isSubmittingReply?: boolean;
   initialExpandedRootId?: number;
   highlightCommentId?: number;
-  disableSubmit?: boolean;
 }
 
 export const CommentList = ({
@@ -37,7 +36,6 @@ export const CommentList = ({
   isSubmittingReply,
   initialExpandedRootId,
   highlightCommentId,
-  disableSubmit,
 }: CommentListProps) => {
   const { data: session } = authClient.useSession();
   const [expandedRoots, setExpandedRoots] = useState<Set<number>>(new Set());
@@ -87,7 +85,6 @@ export const CommentList = ({
           isSubmittingReply={isSubmittingReply}
           session={session}
           highlightCommentId={highlightCommentId}
-          disableSubmit={disableSubmit}
         />
       ))}
     </div>
@@ -107,7 +104,6 @@ interface RootCommentWithRepliesProps {
   isSubmittingReply?: boolean;
   session: AuthContext["session"] | null;
   highlightCommentId?: number;
-  disableSubmit?: boolean;
 }
 
 function RootCommentWithReplies({
@@ -123,7 +119,6 @@ function RootCommentWithReplies({
   isSubmittingReply,
   session,
   highlightCommentId,
-  disableSubmit,
 }: RootCommentWithRepliesProps) {
   const {
     data: repliesData,
@@ -163,7 +158,6 @@ function RootCommentWithReplies({
               isSubmitting={isSubmittingReply!}
               onCancel={onCancelReply!}
               className="mt-0"
-              disabled={disableSubmit}
             />
           ) : (
             <div className="flex items-center gap-4 py-4 bg-muted/5 rounded-sm px-4">
