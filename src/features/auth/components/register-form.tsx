@@ -14,7 +14,7 @@ import { AUTH_KEYS } from "@/features/auth/queries";
 
 const registerSchema = z
   .object({
-    name: z.string().min(2, "昵称至少 2 位"),
+    name: z.string().min(2, "昵称至少 2 位").max(20, "昵称最多 20 位"),
     email: z.email("无效的邮箱格式"),
     password: z.string().min(8, "密码至少 8 位"),
     confirmPassword: z.string(),

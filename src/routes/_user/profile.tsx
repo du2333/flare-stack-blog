@@ -46,7 +46,7 @@ const passwordSchema = z
   });
 
 const profileSchema = z.object({
-  name: z.string().min(2, "昵称至少 2 位").max(30, "昵称最多 30 位"),
+  name: z.string().min(2, "昵称至少 2 位").max(20, "昵称最多 20 位"),
   image: z.union([z.literal(""), z.url("无效的 URL 地址").trim()]).optional(),
 });
 
