@@ -58,6 +58,10 @@
         "name": "RATE_LIMITER",
         "class_name": "RateLimiter",
       },
+      {
+        "name": "PASSWORD_HASHER",
+        "class_name": "PasswordHasher",
+      },
     ],
   },
   "ai": {
@@ -80,6 +84,10 @@
       "tag": "rate-limiter-v1",
       "new_sqlite_classes": ["RateLimiter"],
     },
+    {
+      "tag": "password-hasher-v1",
+      "new_classes": ["PasswordHasher"],
+    },
   ],
   "env": {
     "test": {
@@ -88,6 +96,10 @@
           {
             "name": "RATE_LIMITER",
             "class_name": "RateLimiter",
+          },
+          {
+            "name": "PASSWORD_HASHER",
+            "class_name": "PasswordHasher",
           },
         ],
       },

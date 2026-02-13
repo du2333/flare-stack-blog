@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
-import { hashPassword, verifyPassword } from "@/lib/auth/auth.helpers";
 import { authConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
@@ -40,6 +39,12 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
     GITHUB_CLIENT_SECRET,
   } = serverEnv(env);
 
+  // 每次请求随机 DO 实例，避免 CPU 密集型哈希操作串行
+  function getPasswordHasher() {
+    const id = env.PASSWORD_HASHER.idFromName(crypto.randomUUID());
+    return env.PASSWORD_HASHER.get(id);
+  }
+
   return betterAuth({
     ...authConfig,
     socialProviders: {
@@ -52,8 +57,9 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
       enabled: true,
       requireEmailVerification: true,
       password: {
-        hash: hashPassword,
-        verify: verifyPassword,
+        hash: (password: string) => getPasswordHasher().hash(password),
+        verify: (params: { hash: string; password: string }) =>
+          getPasswordHasher().verify(params),
       },
       sendResetPassword: async ({ user, url }) => {
         // Per-email rate limit: 3 per hour — silently skip if exceeded

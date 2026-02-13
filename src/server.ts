@@ -6,6 +6,7 @@ export { CommentModerationWorkflow } from "@/features/comments/workflows/comment
 export { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 export { ScheduledPublishWorkflow } from "@/features/posts/workflows/scheduled-publish";
 export { RateLimiter } from "@/lib/do/rate-limiter";
+export { PasswordHasher } from "@/lib/do/password-hasher";
 
 declare module "@tanstack/react-start" {
   interface Register {

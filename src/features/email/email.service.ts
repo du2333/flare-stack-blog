@@ -42,7 +42,7 @@ export async function sendEmail(
 ) {
   if (isNotInProduction(context.env)) {
     console.log(
-      `[EMAIL_SERVICE] 开发环境跳过发送至 ${options.to} 的邮件：${options.subject}`,
+      `[EMAIL_SERVICE] 开发环境跳过发送至 ${options.to} 的邮件：${options.subject}:\n${options.html}`,
     );
     return { status: "SUCCESS" as const };
   }
