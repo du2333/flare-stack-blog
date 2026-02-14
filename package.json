@@ -65,7 +65,7 @@
     "drizzle-zod": "^0.8.3",
     "feed": "^5.2.0",
     "hono": "^4.10.8",
-    "lucide-react": "^0.544.0",
+    "lucide-react": "^0.564.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.68.0",
