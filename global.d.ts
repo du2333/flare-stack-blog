@@ -48,4 +48,6 @@ declare global {
   type AuthContext = Omit<SessionContext, "session"> & {
     session: Session;
   };
+
+  const __APP_VERSION__: string;
 }
