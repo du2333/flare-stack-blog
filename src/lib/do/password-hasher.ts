@@ -48,9 +48,7 @@ async function generateKey(password: string, salt: string) {
 export class PasswordHasher extends DurableObject {
   /** 计算完成后设置 10 秒延迟自毁，清理 SQLite 空载存储 */
   private scheduleCleanup() {
-    this.ctx.waitUntil(
-      this.ctx.storage.setAlarm(Date.now() + 10_000),
-    );
+    this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 10_000));
   }
 
   async hash(password: string): Promise<string> {
