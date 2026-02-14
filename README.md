@@ -1,7 +1,5 @@
 # Flare Stack Blog
 
-> 更新后部署失败？请查看 [CHANGELOG](./CHANGELOG.md) 了解 Breaking Changes。
-
 > **注意**：本项目专为 Cloudflare Workers 生态设计，深度集成 D1、R2、KV、Workflows 等服务，**仅支持部署在 Cloudflare Workers**。
 
 [部署指南](#部署指南) | [本地开发](#本地开发)
