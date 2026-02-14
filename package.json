@@ -1,6 +1,13 @@
 {
-  "name": "blog",
+  "name": "flare-stack-blog",
+  "version": "0.5.0",
   "type": "module",
+  "author": {
+    "email": "kuangdadu@gmail.com",
+    "name": "akuang",
+    "url": "https://github.com/du2333"
+  },
+  "license": "GPL-3.0-only",
   "private": true,
   "scripts": {
     "dev": "vite dev --port 3000",
