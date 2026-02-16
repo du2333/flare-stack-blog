@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const BackgroundConfigSchema = z.object({
   imageUrl: z.string().optional(),
+  homeImageUrl: z.string().optional(),
   opacity: z.number().min(0).max(100).optional(),
   darkOpacity: z.number().min(0).max(100).optional(),
   blur: z.number().min(0).max(20).optional(),
@@ -13,6 +14,7 @@ export type BackgroundConfig = z.infer<typeof BackgroundConfigSchema>;
 
 export const DEFAULT_BACKGROUND_CONFIG: BackgroundConfig = {
   imageUrl: "",
+  homeImageUrl: "",
   opacity: 20,
   darkOpacity: 10,
   blur: 1,
