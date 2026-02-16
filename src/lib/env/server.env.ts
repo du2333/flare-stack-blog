@@ -22,6 +22,7 @@ const serverEnvSchema = z.object({
   UMAMI_PASSWORD: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
+  ADMIN_TOKEN: z.string().optional(),
 });
 
 export function serverEnv(env: Env) {
