@@ -1,8 +1,101 @@
-import { Image, Layers, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Image, Layers, Moon, Sparkles, Sun } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { DEFAULT_BACKGROUND_CONFIG } from "@/features/config/config.schema";
 import { Input } from "@/components/ui/input";
+
+// Dark mode CSS variable values (from styles.css .dark)
+const DARK_THEME_VARS = {
+  "--background": "240 10% 3.9%",
+  "--foreground": "0 0% 98%",
+} as const;
+
+const LIGHT_THEME_VARS = {
+  "--background": "0 0% 100%",
+  "--foreground": "240 10% 3.9%",
+} as const;
+
+function PreviewBox({
+  src,
+  alt,
+  opacity,
+  darkOpacity,
+  overlayOpacity,
+  blur,
+}: {
+  src: string;
+  alt: string;
+  opacity: number;
+  darkOpacity: number;
+  overlayOpacity: number;
+  blur: number;
+}) {
+  const [previewDark, setPreviewDark] = useState(false);
+
+  const effectiveOpacity = previewDark ? darkOpacity : opacity;
+  const themeVars = previewDark ? DARK_THEME_VARS : LIGHT_THEME_VARS;
+
+  return (
+    <div className="max-w-xs">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          预览
+        </p>
+        <button
+          type="button"
+          onClick={() => setPreviewDark((d) => !d)}
+          className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors duration-200"
+          title={previewDark ? "切换到亮色预览" : "切换到暗色预览"}
+        >
+          {previewDark ? (
+            <>
+              <Moon size={10} />
+              <span>暗色</span>
+            </>
+          ) : (
+            <>
+              <Sun size={10} />
+              <span>亮色</span>
+            </>
+          )}
+        </button>
+      </div>
+      <div
+        className="relative aspect-video overflow-hidden border border-border/30 transition-colors duration-300"
+        style={{
+          // Override CSS variables locally for the preview container
+          "--background": themeVars["--background"],
+          "--foreground": themeVars["--foreground"],
+          backgroundColor: `hsl(${themeVars["--background"]})`,
+        } as React.CSSProperties}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          style={{ opacity: effectiveOpacity / 100 }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top, hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.5) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}))`,
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: `hsl(var(--background) / ${overlayOpacity / 100})`,
+            backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function BackgroundSection() {
   const { register, watch, setValue } = useFormContext<SystemConfig>();
@@ -90,35 +183,14 @@ export function BackgroundSection() {
 
           {/* Preview */}
           {imageUrl && (
-            <div className="max-w-xs">
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-                预览
-              </p>
-              <div className="relative aspect-video overflow-hidden border border-border/30 bg-muted/10">
-                <img
-                  src={imageUrl}
-                  alt="全局背景预览"
-                  className="w-full h-full object-cover"
-                  style={{ opacity: opacity / 100 }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(to top, hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.5) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}))`,
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: `hsl(var(--background) / ${overlayOpacity / 100})`,
-                    backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
-                  }}
-                />
-              </div>
-            </div>
+            <PreviewBox
+              src={imageUrl}
+              alt="全局背景预览"
+              opacity={opacity}
+              darkOpacity={darkOpacity}
+              overlayOpacity={overlayOpacity}
+              blur={blur}
+            />
           )}
         </div>
       </section>
@@ -149,35 +221,14 @@ export function BackgroundSection() {
 
           {/* Preview */}
           {homeImageUrl && (
-            <div className="max-w-xs">
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-                预览
-              </p>
-              <div className="relative aspect-video overflow-hidden border border-border/30 bg-muted/10">
-                <img
-                  src={homeImageUrl}
-                  alt="主页背景预览"
-                  className="w-full h-full object-cover"
-                  style={{ opacity: opacity / 100 }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(to top, hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.5) / 100}), hsl(var(--background) / ${(overlayOpacity * 0.9) / 100}))`,
-                  }}
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: `hsl(var(--background) / ${overlayOpacity / 100})`,
-                    backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,
-                  }}
-                />
-              </div>
-            </div>
+            <PreviewBox
+              src={homeImageUrl}
+              alt="主页背景预览"
+              opacity={opacity}
+              darkOpacity={darkOpacity}
+              overlayOpacity={overlayOpacity}
+              blur={blur}
+            />
           )}
         </div>
       </section>
