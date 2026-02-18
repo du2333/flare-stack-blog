@@ -1,6 +1,12 @@
+import { Link } from "@tanstack/react-router";
+import type { NavOption } from "@/features/theme/contract/layouts";
 import { blogConfig } from "@/blog.config";
 
-export function Footer() {
+interface FooterProps {
+  navOptions: Array<NavOption>;
+}
+
+export function Footer({ navOptions }: FooterProps) {
   return (
     <footer className="border-t border-border/40 bg-background/50 py-16 mt-32">
       <div className="max-w-3xl mx-auto px-6 md:px-0 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -16,12 +22,15 @@ export function Footer() {
 
         {/* Minimalist Links */}
         <nav className="flex items-center gap-8 text-[11px] font-medium uppercase tracking-widest text-muted-foreground/60">
-          <a href="/" className="hover:text-foreground transition-colors">
-            Home
-          </a>
-          <a href="/posts" className="hover:text-foreground transition-colors">
-            Posts
-          </a>
+          {navOptions.map((option) => (
+            <Link
+              key={option.id}
+              to={option.to}
+              className="hover:text-foreground transition-colors"
+            >
+              {option.label}
+            </Link>
+          ))}
           <a
             href={blogConfig.social.github}
             target="_blank"

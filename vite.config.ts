@@ -9,6 +9,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { z } from "zod";
 import packageJson from "./package.json";
 
+// 添加新主题，这里需要同步更新
 const buildEnvSchema = z.object({
   THEME: z.enum(["default"]).default("default"),
 });

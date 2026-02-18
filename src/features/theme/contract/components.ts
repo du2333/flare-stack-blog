@@ -1,4 +1,5 @@
 import type { HomePageProps } from "./pages";
+import type { PublicLayoutProps } from "./layouts";
 
 /**
  * 主题契约 — 组件接口
@@ -7,6 +8,8 @@ import type { HomePageProps } from "./pages";
  * TypeScript 在编译时验证主题实现了所有必须的组件。
  */
 export interface ThemeComponents {
+  /** 公共布局（Navbar + MobileMenu + Footer 的组合） */
+  PublicLayout: React.ComponentType<PublicLayoutProps>;
   /** 主页渲染组件 */
   HomePage: React.ComponentType<HomePageProps>;
   /** 主页加载中骨架屏（用于 TanStack Router pendingComponent） */

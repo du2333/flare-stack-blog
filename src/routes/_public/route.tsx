@@ -1,10 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
-import { Footer } from "@/components/layout/footer";
-import { MobileMenu } from "@/components/layout/mobile-menu";
-import { Navbar } from "@/components/layout/navbar";
+import theme from "@theme";
 import { authClient } from "@/lib/auth/auth.client";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { AUTH_KEYS } from "@/features/auth/queries";
@@ -16,19 +14,18 @@ export const Route = createFileRoute("/_public")({
   },
 });
 
+const navOptions = [
+  { label: "主页", to: "/" as const, id: "home" },
+  { label: "文章", to: "/posts" as const, id: "posts" },
+  { label: "友链", to: "/friend-links" as const, id: "friend-links" },
+];
+
 function PublicLayout() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-  const navOptions = [
-    { label: "主页", to: "/" as const, id: "home" },
-    { label: "文章", to: "/posts" as const, id: "posts" },
-    { label: "友链", to: "/friend-links" as const, id: "friend-links" },
-  ];
-
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
   const queryClient = useQueryClient();
+
   const logout = async () => {
     const { error } = await authClient.signOut();
     if (error) {
@@ -44,6 +41,7 @@ function PublicLayout() {
       description: "你已安全退出当前会话。",
     });
   };
+
   // Global shortcut: Cmd/Ctrl + K to navigate to search
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -51,7 +49,6 @@ function PublicLayout() {
       if (isToggle) {
         e.preventDefault();
         navigate({ to: "/search" });
-        setIsMenuOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -65,23 +62,14 @@ function PublicLayout() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03)_0%,transparent_70%)] in-[.dark]:bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.02)_0%,transparent_70%)]"></div>
       </button>
 
-      <Navbar
-        onMenuClick={() => setIsMenuOpen(true)}
-        user={session?.user}
-        isLoading={isSessionPending}
+      <theme.PublicLayout
         navOptions={navOptions}
-      />
-      <MobileMenu
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
         user={session?.user}
+        isSessionLoading={isSessionPending}
         logout={logout}
-        navOptions={navOptions}
-      />
-      <main className="flex flex-col min-h-screen relative z-10">
+      >
         <Outlet />
-      </main>
-      <Footer />
+      </theme.PublicLayout>
     </div>
   );
 }

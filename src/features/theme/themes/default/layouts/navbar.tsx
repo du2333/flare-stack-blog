@@ -1,24 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { FileRoutesByTo } from "@/routeTree.gen";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
 
 interface NavbarProps {
-  navOptions: Array<{
-    label: string;
-    to: keyof FileRoutesByTo;
-    id: string;
-  }>;
+  navOptions: Array<NavOption>;
   onMenuClick: () => void;
   isLoading?: boolean;
-  user?: {
-    name: string;
-    image?: string | null;
-    role?: string | null;
-  };
+  user?: UserInfo;
 }
 
 export function Navbar({
@@ -95,28 +87,26 @@ export function Navbar({
                   <div className="flex items-center gap-3 animate-in fade-in">
                     {user ? (
                       <>
-                        <>
-                          <Link
-                            to="/profile"
-                            className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-border hover:ring-foreground transition-all relative z-10"
-                            style={{ viewTransitionName: "user-avatar" }}
-                          >
-                            {user.image ? (
-                              <img
-                                src={user.image}
-                                alt={user.name}
-                                className="w-full h-full object-cover"
+                        <Link
+                          to="/profile"
+                          className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-border hover:ring-foreground transition-all relative z-10"
+                          style={{ viewTransitionName: "user-avatar" }}
+                        >
+                          {user.image ? (
+                            <img
+                              src={user.image}
+                              alt={user.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <UserIcon
+                                size={12}
+                                className="text-muted-foreground"
                               />
-                            ) : (
-                              <div className="w-full h-full bg-muted flex items-center justify-center">
-                                <UserIcon
-                                  size={12}
-                                  className="text-muted-foreground"
-                                />
-                              </div>
-                            )}
-                          </Link>
-                        </>
+                            </div>
+                          )}
+                        </Link>
                       </>
                     ) : (
                       <Link

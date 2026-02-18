@@ -1,5 +1,6 @@
 import { HomePage } from "./pages/home-page";
 import { HomePageSkeleton } from "./pages/home-skeleton";
+import { PublicLayout } from "./layouts/public-layout";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -7,6 +8,7 @@ import type { ThemeComponents } from "@/features/theme/contract/components";
  * TypeScript will error at compile time if any required component is missing.
  */
 const theme: ThemeComponents = {
+  PublicLayout,
   HomePage,
   HomePageSkeleton,
 };

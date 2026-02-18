@@ -1,22 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, UserIcon, X } from "lucide-react";
-import type { FileRoutesByTo } from "@/routeTree.gen";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { Button } from "@/components/ui/button";
 import { blogConfig } from "@/blog.config";
 
 interface MobileMenuProps {
-  navOptions: Array<{
-    label: string;
-    to: keyof FileRoutesByTo;
-    id: string;
-  }>;
+  navOptions: Array<NavOption>;
   isOpen: boolean;
   onClose: () => void;
-  user?: {
-    name: string;
-    image?: string | null;
-    role?: string | null;
-  };
+  user?: UserInfo;
   logout: () => Promise<void>;
 }
 
@@ -170,8 +162,8 @@ export function MobileMenu({
               </div>
 
               <button
-                onClick={() => {
-                  logout();
+                onClick={async () => {
+                  await logout();
                   onClose();
                 }}
                 className="text-muted-foreground hover:text-destructive transition-colors"
