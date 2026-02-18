@@ -1,7 +1,5 @@
-import { HomePage } from "./pages/home-page";
-import { HomePageSkeleton } from "./pages/home-skeleton";
-import { PostsPage } from "./pages/posts-page";
-import { PostsPageSkeleton } from "./pages/posts-skeleton";
+import { HomePage, HomePageSkeleton } from "./pages/home";
+import { PostsPage, PostsPageSkeleton } from "./pages/posts";
 import { PublicLayout } from "./layouts/public-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
 import type { ThemeComponents } from "@/features/theme/contract/components";

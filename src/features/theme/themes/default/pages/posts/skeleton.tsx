@@ -1,3 +1,4 @@
+import { INITIAL_TAG_COUNT } from "./page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
 
@@ -21,7 +22,7 @@ export function PostsPageSkeleton() {
         </div>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: INITIAL_TAG_COUNT }).map((_, i) => (
             <div key={i} className="flex items-baseline gap-1.5">
               <Skeleton className="h-4 w-12 bg-muted/60 rounded-none" />
               <Skeleton className="h-3 w-4 bg-muted/40 rounded-none" />

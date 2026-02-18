@@ -4,7 +4,7 @@ import { blogConfig } from "@/blog.config";
 import { PostItem } from "@/features/posts/components/view/post-item";
 import { cn } from "@/lib/utils";
 
-const INITIAL_TAG_COUNT = 8;
+export const INITIAL_TAG_COUNT = 8;
 
 export function PostsPage({
   posts,
