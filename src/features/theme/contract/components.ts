@@ -3,6 +3,7 @@ import type {
   HomePageProps,
   PostPageProps,
   PostsPageProps,
+  SearchPageProps,
 } from "./pages";
 import type { PublicLayoutProps } from "./layouts";
 
@@ -34,4 +35,9 @@ export interface ThemeComponents {
   FriendLinksPage: React.ComponentType<FriendLinksPageProps>;
   /** 友链列表页骨架屏 */
   FriendLinksPageSkeleton: React.ComponentType;
+
+  /** 搜索页组件 */
+  SearchPage: React.ComponentType<SearchPageProps>;
+  /** 搜索页骨架屏 */
+  SearchPageSkeleton: React.ComponentType;
 }

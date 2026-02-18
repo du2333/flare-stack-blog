@@ -3,6 +3,7 @@ import { PostsPage, PostsPageSkeleton } from "./pages/posts";
 import { PostPage, PostPageSkeleton } from "./pages/post";
 import { PublicLayout } from "./layouts/public-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
+import { SearchPage, SearchPageSkeleton } from "./pages/search";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -19,4 +20,6 @@ export default {
   PublicLayout,
   FriendLinksPage,
   FriendLinksPageSkeleton,
+  SearchPage,
+  SearchPageSkeleton,
 } satisfies ThemeComponents;
