@@ -87,6 +87,11 @@ jobs:
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
             secrets/data/blog *
+      - name: "[Vault] Inject ICP variables"
+        if: github.repository == 'du2333/flare-stack-blog'
+        run: |
+          echo "VITE_ICP_NUMBER=${{ vars.VITE_ICP_NUMBER }}" >> $GITHUB_ENV
+          echo "VITE_ICP_URL=${{ vars.VITE_ICP_URL }}" >> $GITHUB_ENV
 
       # === Fork repos: use repository secrets ===
       - name: "[Fork] Import secrets from repository"
