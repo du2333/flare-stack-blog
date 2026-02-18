@@ -21,7 +21,7 @@ export function Footer() {
             <a
               href={ICP_URL}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="font-mono text-[10px] text-muted-foreground/60 hover:text-foreground transition-colors tracking-widest"
             >
               {ICP_NUMBER}
