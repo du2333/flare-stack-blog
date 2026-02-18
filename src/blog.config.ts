@@ -13,16 +13,16 @@ export const blogConfig = {
     email: env.VITE_BLOG_EMAIL || "demo@example.com",
   },
 
-  // 背景图片配置（图片放在 /public/images/ 目录下）
+  // 背景图片配置（调试时，图片可以放在 /public/images/ 目录下）
   background: {
-    enabled: true,
-    imageUrl: "https://static.lbkano.com/background.webp", // 全局背景
-    homeImageUrl: "https://static.lbkano.com/bg2.jpg", // 主页背景（可选）
-    opacity: 100,
-    darkOpacity: 100,
-    blur: 0,
-    overlayOpacity: 80,
-    transitionDuration: 1200,
+    imageUrl: env.VITE_BLOG_BACKGROUND_IMAGE_URL || "/images/background.webp", // 全局背景
+    homeImageUrl:
+      env.VITE_BLOG_BACKGROUND_HOME_IMAGE_URL || "/images/home-bg.webp", // 主页背景
+    opacity: env.VITE_BLOG_BACKGROUND_OPACITY ?? 20,
+    darkOpacity: env.VITE_BLOG_BACKGROUND_DARK_OPACITY ?? 10,
+    blur: env.VITE_BLOG_BACKGROUND_BLUR ?? 1,
+    overlayOpacity: env.VITE_BLOG_BACKGROUND_OVERLAY_OPACITY ?? 80,
+    transitionDuration: env.VITE_BLOG_BACKGROUND_TRANSITION_DURATION ?? 1000,
   },
 };
 

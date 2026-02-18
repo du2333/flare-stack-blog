@@ -4,7 +4,6 @@ import { blogConfig } from "@/blog.config";
 
 export function Background() {
   const {
-    enabled,
     imageUrl: globalUrl,
     homeImageUrl: homeUrl,
     opacity,
@@ -59,7 +58,7 @@ export function Background() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHomepage, homeUrl, handleScroll]);
 
-  if (!enabled || (!globalUrl && !homeUrl)) return null;
+  if (!globalUrl && !homeUrl) return null;
 
   // Opacity derived directly from current state
   const homeLayerOpacity = isHomepage ? 1 - scrollRatio : 0;
