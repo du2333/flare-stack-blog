@@ -1,4 +1,8 @@
-import type { HomePageProps, PostsPageProps } from "./pages";
+import type {
+  FriendLinksPageProps,
+  HomePageProps,
+  PostsPageProps,
+} from "./pages";
 import type { PublicLayoutProps } from "./layouts";
 
 /**
@@ -19,4 +23,9 @@ export interface ThemeComponents {
   PostsPage: React.ComponentType<PostsPageProps>;
   /** 文章列表页骨架屏 */
   PostsPageSkeleton: React.ComponentType;
+
+  /** 友链列表页组件 */
+  FriendLinksPage: React.ComponentType<FriendLinksPageProps>;
+  /** 友链列表页骨架屏 */
+  FriendLinksPageSkeleton: React.ComponentType;
 }

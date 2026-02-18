@@ -1,5 +1,6 @@
 import type { PostItem } from "@/features/posts/posts.schema";
 import type { TagWithCount } from "@/features/tags/tags.schema";
+import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
 
 /**
  * 主题契约 — 页面 Props 接口
@@ -20,4 +21,8 @@ export interface PostsPageProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
+}
+
+export interface FriendLinksPageProps {
+  links: Array<Omit<FriendLinkWithUser, "createdAt" | "updatedAt">>;
 }

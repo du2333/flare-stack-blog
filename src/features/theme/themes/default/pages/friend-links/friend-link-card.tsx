@@ -1,7 +1,7 @@
-import type { FriendLinkWithUser } from "../../friend-links.schema";
+import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
 
 interface FriendLinkCardProps {
-  link: FriendLinkWithUser;
+  link: Omit<FriendLinkWithUser, "createdAt" | "updatedAt">;
 }
 
 export function FriendLinkCard({ link }: FriendLinkCardProps) {
