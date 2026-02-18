@@ -1,5 +1,7 @@
 import { HomePage } from "./pages/home-page";
 import { HomePageSkeleton } from "./pages/home-skeleton";
+import { PostsPage } from "./pages/posts-page";
+import { PostsPageSkeleton } from "./pages/posts-skeleton";
 import { PublicLayout } from "./layouts/public-layout";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
@@ -11,6 +13,8 @@ const theme: ThemeComponents = {
   PublicLayout,
   HomePage,
   HomePageSkeleton,
+  PostsPage,
+  PostsPageSkeleton,
 };
 
 export default theme;

@@ -1,4 +1,5 @@
 import type { PostItem } from "@/features/posts/posts.schema";
+import type { TagWithCount } from "@/features/tags/tags.schema";
 
 /**
  * 主题契约 — 页面 Props 接口
@@ -9,4 +10,14 @@ import type { PostItem } from "@/features/posts/posts.schema";
 
 export interface HomePageProps {
   posts: Array<PostItem>;
+}
+
+export interface PostsPageProps {
+  posts: Array<PostItem>;
+  tags: Array<Omit<TagWithCount, "createdAt">>;
+  selectedTag?: string;
+  onTagClick: (tag: string) => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
 }

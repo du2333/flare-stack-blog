@@ -1,4 +1,4 @@
-import type { HomePageProps } from "./pages";
+import type { HomePageProps, PostsPageProps } from "./pages";
 import type { PublicLayoutProps } from "./layouts";
 
 /**
@@ -14,4 +14,9 @@ export interface ThemeComponents {
   HomePage: React.ComponentType<HomePageProps>;
   /** 主页加载中骨架屏（用于 TanStack Router pendingComponent） */
   HomePageSkeleton: React.ComponentType;
+
+  /** 文章列表页组件 */
+  PostsPage: React.ComponentType<PostsPageProps>;
+  /** 文章列表页骨架屏 */
+  PostsPageSkeleton: React.ComponentType;
 }
