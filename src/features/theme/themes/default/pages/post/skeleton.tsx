@@ -1,10 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { featuredPostsQuery, postsInfiniteQueryOptions } from "../../queries";
-import type { PostListItem } from "../../posts.schema";
+import type { PostListItem } from "@/features/posts/posts.schema";
+import {
+  featuredPostsQuery,
+  postsInfiniteQueryOptions,
+} from "@/features/posts/queries";
 
-export function ArticleSkeleton() {
+export function PostPageSkeleton() {
   const navigate = useNavigate();
   const { slug } = useParams({ from: "/_public/post/$slug" });
   const queryClient = useQueryClient();

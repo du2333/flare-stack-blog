@@ -1,5 +1,6 @@
 import { HomePage, HomePageSkeleton } from "./pages/home";
 import { PostsPage, PostsPageSkeleton } from "./pages/posts";
+import { PostPage, PostPageSkeleton } from "./pages/post";
 import { PublicLayout } from "./layouts/public-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
 import type { ThemeComponents } from "@/features/theme/contract/components";
@@ -13,6 +14,8 @@ export default {
   HomePageSkeleton,
   PostsPage,
   PostsPageSkeleton,
+  PostPage,
+  PostPageSkeleton,
   PublicLayout,
   FriendLinksPage,
   FriendLinksPageSkeleton,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { blogConfig } from "@/blog.config";
-import { PostItem } from "@/features/posts/components/view/post-item";
+import { PostItem } from "@/features/theme/themes/default/components/post-item";
 import { cn } from "@/lib/utils";
 
 export const INITIAL_TAG_COUNT = 8;

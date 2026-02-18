@@ -123,6 +123,8 @@ export function Navbar({
               <button
                 className="w-8 h-8 flex flex-col items-center justify-center gap-1.5 group lg:hidden"
                 onClick={onMenuClick}
+                aria-label="打开菜单"
+                type="button"
               >
                 <div className="w-5 h-px bg-foreground transition-all group-hover:w-3"></div>
                 <div className="w-5 h-px bg-foreground transition-all group-hover:w-6"></div>

@@ -1,6 +1,6 @@
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
-import { ImageDisplay } from "@/features/posts/components/view/image-display";
+import { ImageDisplay } from "@/features/theme/themes/default/components/content/image-display";
 import { commentExtensions } from "@/features/comments/components/editor/config";
 
 export function renderCommentReact(content: JSONContent | null) {

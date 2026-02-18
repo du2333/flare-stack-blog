@@ -113,6 +113,7 @@ export type PostListItem = Omit<Post, "contentJson"> & {
 
 export type PostListResponse = z.infer<typeof PostListResponseSchema>;
 export type PostItem = z.infer<typeof PostItemSchema>;
+export type PostWithToc = z.infer<typeof PostWithTocSchema>;
 
 export const POSTS_CACHE_KEYS = {
   list: (version: string, limit: number, cursor: number, tagName: string) =>

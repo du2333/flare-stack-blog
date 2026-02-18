@@ -1,4 +1,4 @@
-import type { PostItem } from "@/features/posts/posts.schema";
+import type { PostItem, PostWithToc } from "@/features/posts/posts.schema";
 import type { TagWithCount } from "@/features/tags/tags.schema";
 import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
 
@@ -21,6 +21,10 @@ export interface PostsPageProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
+}
+
+export interface PostPageProps {
+  post: Exclude<PostWithToc, null>;
 }
 
 export interface FriendLinksPageProps {
