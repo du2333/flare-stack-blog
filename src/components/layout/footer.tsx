@@ -1,5 +1,9 @@
 import { blogConfig } from "@/blog.config";
 
+// 从环境变量读取 ICP 信息
+const ICP_NUMBER = import.meta.env.VITE_ICP_NUMBER;
+const ICP_URL = import.meta.env.VITE_ICP_URL || "https://beian.miit.gov.cn/";
+
 export function Footer() {
   return (
     <footer className="border-t border-border/40 bg-background/50 py-16 mt-32">
@@ -12,6 +16,17 @@ export function Footer() {
           <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
             © {new Date().getFullYear()} {blogConfig.author}.
           </span>
+          {/* ICP 备案 - 条件渲染，仅在配置时显示 */}
+          {ICP_NUMBER && (
+            <a
+              href={ICP_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-[10px] text-muted-foreground/60 hover:text-foreground transition-colors tracking-widest"
+            >
+              {ICP_NUMBER}
+            </a>
+          )}
         </div>
 
         {/* Minimalist Links */}
