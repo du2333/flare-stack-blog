@@ -8,7 +8,9 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@theme": ["./src/features/theme/themes/default"],
+      "@theme/*": ["./src/features/theme/themes/default/*"]
     },
     "types": ["vite/client", "@cloudflare/vitest-pool-workers"],
     "allowImportingTsExtensions": true,
