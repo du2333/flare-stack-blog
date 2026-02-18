@@ -16,6 +16,7 @@ import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
 import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
 import tagsRoute from "@/features/tags/api/hono/tags.list.route";
 import searchRoute from "@/features/search/api/hono/search.route";
+import { createAppRuntime, createRunEffect } from "@/services";
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -137,10 +138,15 @@ app.post(
 app.all("*", shieldMiddleware);
 
 app.all("*", (c) => {
+  // 为每个请求创建 Effect Runtime
+  const runtime = createAppRuntime(c.env, c.executionCtx);
+
   return handler.fetch(c.req.raw, {
     context: {
       env: c.env,
       executionCtx: c.executionCtx,
+      runtime,
+      runEffect: createRunEffect(runtime),
     },
   });
 });

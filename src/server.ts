@@ -1,3 +1,4 @@
+import type { AppRuntime, RunApiEffectWithRuntime } from "@/services";
 import { handleEmailMessage } from "@/features/email/email.queue";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
@@ -14,6 +15,8 @@ declare module "@tanstack/react-start" {
       requestContext: {
         env: Env;
         executionCtx: ExecutionContext;
+        runtime: AppRuntime;
+        runEffect: RunApiEffectWithRuntime;
       };
     };
   }

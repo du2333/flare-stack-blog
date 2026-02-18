@@ -65,6 +65,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
+    "effect": "^3.19.18",
     "feed": "^5.2.0",
     "hono": "^4.10.8",
     "lucide-react": "^0.544.0",
