@@ -1,10 +1,12 @@
 import type {
+  ForgotPasswordPageProps,
   FriendLinksPageProps,
   HomePageProps,
   LoginPageProps,
   PostPageProps,
   PostsPageProps,
   RegisterPageProps,
+  ResetPasswordPageProps,
   SearchPageProps,
   SubmitFriendLinkPageProps,
 } from "./pages";
@@ -57,4 +59,10 @@ export interface ThemeComponents {
 
   /** 注册页组件 */
   RegisterPage: React.ComponentType<RegisterPageProps>;
+
+  /** 找回密码页组件 */
+  ForgotPasswordPage: React.ComponentType<ForgotPasswordPageProps>;
+
+  /** 重置密码页组件 */
+  ResetPasswordPage: React.ComponentType<ResetPasswordPageProps>;
 }

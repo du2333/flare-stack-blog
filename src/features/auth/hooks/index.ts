@@ -13,3 +13,13 @@ export {
   type UseRegisterFormOptions,
   type UseRegisterFormReturn,
 } from "./use-register-form";
+export {
+  useForgotPasswordForm,
+  type UseForgotPasswordFormOptions,
+  type UseForgotPasswordFormReturn,
+} from "./use-forgot-password-form";
+export {
+  useResetPasswordForm,
+  type UseResetPasswordFormOptions,
+  type UseResetPasswordFormReturn,
+} from "./use-reset-password-form";

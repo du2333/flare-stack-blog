@@ -11,6 +11,8 @@ import {
 } from "./pages/submit-friend-link";
 import { LoginPage } from "./pages/auth/login";
 import { RegisterPage } from "./pages/auth/register";
+import { ForgotPasswordPage } from "./pages/auth/forgot-password";
+import { ResetPasswordPage } from "./pages/auth/reset-password";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -34,4 +36,6 @@ export default {
   SubmitFriendLinkPageSkeleton,
   LoginPage,
   RegisterPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
 } satisfies ThemeComponents;

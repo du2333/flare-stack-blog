@@ -1,5 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ForgotPasswordForm } from "@/features/auth/components/forgot-password-form";
+import theme from "@theme";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { useForgotPasswordForm } from "@/features/auth/hooks";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
   beforeLoad: ({ context }) => {
@@ -18,18 +20,33 @@ export const Route = createFileRoute("/_auth/forgot-password")({
 });
 
 function RouteComponent() {
-  return (
-    <div className="space-y-12">
-      <header className="text-center space-y-3">
-        <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground/60">
-          [ FORGOT_PASSWORD ]
-        </p>
-        <h1 className="text-2xl font-serif font-medium tracking-tight">
-          找回密码
-        </h1>
-      </header>
+  const {
+    isPending: turnstilePending,
+    token: turnstileToken,
+    reset: resetTurnstile,
+    turnstileProps,
+  } = useTurnstile("forgot-password");
 
-      <ForgotPasswordForm />
+  const forgotPasswordForm = useForgotPasswordForm({
+    turnstileToken,
+    turnstilePending,
+    resetTurnstile,
+  });
+
+  const turnstileElement = (
+    <div className="flex justify-center">
+      <Turnstile {...turnstileProps} />
     </div>
+  );
+
+  return (
+    <theme.ForgotPasswordPage
+      forgotPasswordForm={{
+        ...forgotPasswordForm,
+        turnstileProps,
+        turnstilePending,
+      }}
+      turnstileElement={turnstileElement}
+    />
   );
 }

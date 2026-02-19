@@ -136,3 +136,41 @@ export interface RegisterPageProps {
   registerForm: RegisterFormData;
   turnstileElement: React.ReactNode;
 }
+
+export interface ForgotPasswordSchema {
+  email: string;
+}
+
+export interface ForgotPasswordFormData {
+  register: UseFormRegister<ForgotPasswordSchema>;
+  errors: FieldErrors<ForgotPasswordSchema>;
+  handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  isSubmitting: boolean;
+  isSent: boolean;
+  sentEmail: string;
+  turnstileProps: TurnstileProps;
+  turnstilePending: boolean;
+}
+
+export interface ForgotPasswordPageProps {
+  forgotPasswordForm: ForgotPasswordFormData;
+  turnstileElement: React.ReactNode;
+}
+
+export interface ResetPasswordSchema {
+  password: string;
+  confirmPassword: string;
+}
+
+export interface ResetPasswordFormData {
+  register: UseFormRegister<ResetPasswordSchema>;
+  errors: FieldErrors<ResetPasswordSchema>;
+  handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  isSubmitting: boolean;
+}
+
+export interface ResetPasswordPageProps {
+  resetPasswordForm: ResetPasswordFormData;
+  token: string | undefined;
+  error: string | undefined;
+}
