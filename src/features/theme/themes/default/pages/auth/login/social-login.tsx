@@ -1,56 +1,16 @@
 import { Github, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { usePreviousLocation } from "@/hooks/use-previous-location";
-import { authClient } from "@/lib/auth/auth.client";
+import type { SocialLoginData } from "@/features/theme/contract/pages";
 
-interface SocialLoginProps {
-  redirectTo?: string;
+interface SocialLoginProps extends SocialLoginData {
   showDivider?: boolean;
-  turnstileToken?: string | null;
-  turnstilePending?: boolean;
-  resetTurnstile?: () => void;
 }
 
 export function SocialLogin({
-  redirectTo,
+  isLoading,
+  turnstilePending,
+  handleGithubLogin,
   showDivider = true,
-  turnstileToken = null,
-  turnstilePending = false,
-  resetTurnstile,
 }: SocialLoginProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const previousLocation = usePreviousLocation();
-
-  const handleGithubLogin = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-
-    const { error } = await authClient.signIn.social({
-      provider: "github",
-      errorCallbackURL: `${window.location.origin}/login`,
-      callbackURL: `${window.location.origin}${redirectTo ?? previousLocation}`,
-      fetchOptions: {
-        headers: { "X-Turnstile-Token": turnstileToken || "" },
-      },
-    });
-
-    resetTurnstile?.();
-
-    if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
-      } else {
-        toast.error("第三方登录失败", { description: error.message });
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(false);
-  };
-
   return (
     <div className="space-y-6">
       {showDivider && (

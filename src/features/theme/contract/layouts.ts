@@ -23,3 +23,8 @@ export interface PublicLayoutProps {
   isSessionLoading: boolean;
   logout: () => Promise<void>;
 }
+
+export interface AuthLayoutProps {
+  onBack: () => void;
+  children: React.ReactNode;
+}

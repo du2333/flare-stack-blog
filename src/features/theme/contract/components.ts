@@ -1,12 +1,13 @@
 import type {
   FriendLinksPageProps,
   HomePageProps,
+  LoginPageProps,
   PostPageProps,
   PostsPageProps,
   SearchPageProps,
   SubmitFriendLinkPageProps,
 } from "./pages";
-import type { PublicLayoutProps } from "./layouts";
+import type { AuthLayoutProps, PublicLayoutProps } from "./layouts";
 
 /**
  * 主题契约 — 组件接口
@@ -46,4 +47,10 @@ export interface ThemeComponents {
   SubmitFriendLinkPage: React.ComponentType<SubmitFriendLinkPageProps>;
   /** 提交友链页骨架屏 */
   SubmitFriendLinkPageSkeleton: React.ComponentType;
+
+  /** Auth 布局组件 */
+  AuthLayout: React.ComponentType<AuthLayoutProps>;
+
+  /** 登录页组件 */
+  LoginPage: React.ComponentType<LoginPageProps>;
 }
