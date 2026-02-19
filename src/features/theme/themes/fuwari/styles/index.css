@@ -1,6 +1,7 @@
 /* Theme: fuwari - Fuwari-style variables and utilities */
 @import "tailwindcss";
 @import "./markdown.css";
+@plugin "@tailwindcss/typography";
 
 @layer base {
   :root {
@@ -171,4 +172,8 @@
 .fuwari-onload-animation {
   opacity: 0;
   animation: 300ms fuwari-fade-in-up ease-out forwards;
+}
+
+::selection {
+  background-color: var(--fuwari-selection-bg);
 }

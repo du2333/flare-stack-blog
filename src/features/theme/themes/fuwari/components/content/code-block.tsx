@@ -58,7 +58,7 @@ export const CodeBlock = memo(
     };
 
     return (
-      <div className="relative group max-w-full my-6">
+      <div className="relative group max-w-full my-6 not-prose">
         <div className="expressive-code relative rounded-xl border border-black/10 dark:border-white/10 bg-(--fuwari-code-bg) overflow-hidden transition-colors shadow-sm">
           {/* Language Badge */}
           <div
@@ -109,9 +109,9 @@ export const CodeBlock = memo(
 
           {/* Code Area */}
           <div className="relative p-0 overflow-x-auto custom-scrollbar rounded-b-xl">
-            <div className="text-[13px] font-mono leading-relaxed transition-opacity duration-300">
+            <div className="text-sm font-mono leading-relaxed transition-opacity duration-300">
               <div
-                className="[&>pre]:px-5 [&>pre]:py-4 [&>pre]:m-0 [&>pre]:min-w-full [&>pre]:w-fit [&>pre]:rounded-xl [&>pre>code]:p-0"
+                className="[&>pre]:px-5 [&>pre]:py-4 [&>pre]:m-0 [&>pre]:min-w-full [&>pre]:w-fit [&_code]:block [&_code]:w-fit [&>pre]:rounded-xl [&>pre>code]:p-0"
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>

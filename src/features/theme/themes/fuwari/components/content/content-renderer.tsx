@@ -22,5 +22,5 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
     return null;
   }
 
-  return <div className={cn("ProseMirror", className)}>{renderedContent}</div>;
+  return <div className={cn(className)}>{renderedContent}</div>;
 }

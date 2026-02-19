@@ -14,7 +14,7 @@ export function PublicLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="default-theme min-h-screen flex flex-col">
       <Navbar
         navOptions={navOptions}
         onMenuClick={() => setIsMenuOpen(true)}
