@@ -134,6 +134,24 @@
   .fuwari-expand-animation:active::before {
     background-color: var(--fuwari-btn-plain-bg-active);
   }
+
+  .fuwari-timeline-dash {
+    position: relative;
+  }
+  .fuwari-timeline-dash::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+  }
+  .dark .fuwari-timeline-dash::before {
+    border-left: 2px dashed rgba(255, 255, 255, 0.1);
+  }
 }
 
 /* Fuwari onload / entrance animations */
