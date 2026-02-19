@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { Profile } from "./profile";
-import { Tags } from "./tags";
+import { Tags, TagsSkeleton } from "./tags";
 
 export function Sidebar() {
   return (
@@ -14,7 +15,9 @@ export function Sidebar() {
         className="sticky top-24 fuwari-onload-animation"
         style={{ animationDelay: "150ms" }}
       >
-        <Tags />
+        <Suspense fallback={<TagsSkeleton />}>
+          <Tags />
+        </Suspense>
       </div>
     </aside>
   );

@@ -2,13 +2,24 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { TagWithCount } from "@/features/tags/tags.schema";
 import { tagsQueryOptions } from "@/features/tags/queries";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function TagsSkeleton() {
+  return (
+    <div className="fuwari-card-base p-4">
+      <Skeleton className="h-5 w-20 mb-3" />
+      <div className="flex flex-wrap gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-8 w-16 rounded-lg" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Tags() {
-  // Cast the result to TagWithCount[] since we know public tags have count
-  const { data } = useSuspenseQuery(tagsQueryOptions);
-  const tags = data as Array<TagWithCount>;
+  const { data: tags } = useSuspenseQuery(tagsQueryOptions);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showToggle, setShowToggle] = useState(false);
