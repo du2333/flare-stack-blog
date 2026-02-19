@@ -4,7 +4,7 @@ import TableOfContents from "./components/table-of-contents";
 import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
 import { PostMeta } from "./components/post-meta";
 import type { PostPageProps } from "@/features/theme/contract/pages";
-import { ContentRenderer } from "@/features/posts/components/view/content-renderer";
+import { ContentRenderer } from "@/features/theme/themes/fuwari/components/content/content-renderer";
 import { CommentSection } from "@/features/comments/components/view/comment-section";
 
 export function PostPage({ post }: PostPageProps) {
