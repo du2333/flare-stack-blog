@@ -23,3 +23,8 @@ export {
   type UseResetPasswordFormOptions,
   type UseResetPasswordFormReturn,
 } from "./use-reset-password-form";
+export {
+  useVerifyEmail,
+  type UseVerifyEmailOptions,
+  type UseVerifyEmailReturn,
+} from "./use-verify-email";

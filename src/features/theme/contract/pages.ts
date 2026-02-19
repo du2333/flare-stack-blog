@@ -174,3 +174,8 @@ export interface ResetPasswordPageProps {
   token: string | undefined;
   error: string | undefined;
 }
+
+export interface VerifyEmailPageProps {
+  status: "ANALYZING" | "SUCCESS" | "ERROR";
+  error: string | undefined;
+}

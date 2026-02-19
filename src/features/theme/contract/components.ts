@@ -9,6 +9,7 @@ import type {
   ResetPasswordPageProps,
   SearchPageProps,
   SubmitFriendLinkPageProps,
+  VerifyEmailPageProps,
 } from "./pages";
 import type { AuthLayoutProps, PublicLayoutProps } from "./layouts";
 
@@ -65,4 +66,7 @@ export interface ThemeComponents {
 
   /** 重置密码页组件 */
   ResetPasswordPage: React.ComponentType<ResetPasswordPageProps>;
+
+  /** 邮箱验证页组件 */
+  VerifyEmailPage: React.ComponentType<VerifyEmailPageProps>;
 }
