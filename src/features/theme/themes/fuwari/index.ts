@@ -17,6 +17,7 @@ import { ForgotPasswordPage } from "./pages/auth/forgot-password";
 import { ResetPasswordPage } from "./pages/auth/reset-password";
 import { VerifyEmailPage } from "./pages/auth/verify-email";
 import { ProfilePage } from "./pages/user/profile";
+import { config } from "./config";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -24,6 +25,7 @@ import type { ThemeComponents } from "@/features/theme/contract/components";
  * TypeScript will error at compile time if any required component is missing.
  */
 export default {
+  config,
   HomePage,
   HomePageSkeleton,
   PostsPage,
