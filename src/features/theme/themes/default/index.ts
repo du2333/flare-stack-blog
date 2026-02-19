@@ -14,6 +14,7 @@ import { RegisterPage } from "./pages/auth/register";
 import { ForgotPasswordPage } from "./pages/auth/forgot-password";
 import { ResetPasswordPage } from "./pages/auth/reset-password";
 import { VerifyEmailPage } from "./pages/auth/verify-email";
+import { ProfilePage } from "./pages/user/profile";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -40,4 +41,5 @@ export default {
   ForgotPasswordPage,
   ResetPasswordPage,
   VerifyEmailPage,
+  ProfilePage,
 } satisfies ThemeComponents;

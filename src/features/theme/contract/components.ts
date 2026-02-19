@@ -5,6 +5,7 @@ import type {
   LoginPageProps,
   PostPageProps,
   PostsPageProps,
+  ProfilePageProps,
   RegisterPageProps,
   ResetPasswordPageProps,
   SearchPageProps,
@@ -69,4 +70,7 @@ export interface ThemeComponents {
 
   /** 邮箱验证页组件 */
   VerifyEmailPage: React.ComponentType<VerifyEmailPageProps>;
+
+  /** 个人资料页组件 */
+  ProfilePage: React.ComponentType<ProfilePageProps>;
 }
