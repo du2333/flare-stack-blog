@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut, UserIcon, X } from "lucide-react";
+import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
-import { Button } from "@/components/ui/button";
-import { blogConfig } from "@/blog.config";
+import { cn } from "@/lib/utils";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;
@@ -20,74 +19,63 @@ export function MobileMenu({
   logout,
 }: MobileMenuProps) {
   return (
-    <div
-      className={`fixed inset-0 z-[100] transition-all duration-500 ease-in-out ${
-        isOpen
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
-      }`}
-    >
+    <>
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[var(--fuwari-page-bg)]/95 backdrop-blur-2xl"
+        className={cn(
+          "fixed inset-0 z-[49] bg-black/20 backdrop-blur-sm transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        )}
         onClick={onClose}
       />
 
+      {/* Floating Menu Panel */}
       <div
-        className={`relative h-full w-full flex flex-col p-8 md:p-20 transition-all duration-500 delay-75 ${
-          isOpen ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-        }`}
+        className={cn(
+          "fixed top-[5rem] right-4 z-[50] w-64 origin-top-right transition-all duration-300 ease-out transform",
+          isOpen
+            ? "scale-100 opacity-100 translate-y-0"
+            : "scale-95 opacity-0 -translate-y-2 pointer-events-none",
+        )}
       >
-        <div className="flex justify-between items-center">
-          <span className="font-serif text-2xl font-bold tracking-tighter fuwari-text-90">
-            [ {blogConfig.name} ]
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="w-12 h-12 rounded-full fuwari-text-50 hover:fuwari-text-90 hover:bg-transparent"
-          >
-            <X size={24} strokeWidth={1.5} />
-          </Button>
-        </div>
-
-        <nav className="flex-1 flex flex-col justify-center space-y-6 md:space-y-8 font-mono">
-          {navOptions.map((item) => (
-            <Link
-              key={item.id}
-              to={item.to}
-              onClick={onClose}
-              className="group flex items-center gap-4 fuwari-text-50 hover:text-[var(--fuwari-primary)] transition-colors"
-              activeProps={{
-                className: "!fuwari-text-90",
-              }}
-            >
-              <span className="text-sm md:text-base">&gt;_</span>
-              <span className="text-3xl md:text-5xl font-bold tracking-tight">
+        <div className="fuwari-card-base p-2 flex flex-col gap-1 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+          {/* Navigation Items */}
+          <nav className="flex flex-col">
+            {navOptions.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                onClick={onClose}
+                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-[var(--fuwari-btn-regular-bg)] hover:text-[var(--fuwari-primary)] active:scale-[0.98]"
+                activeProps={{
+                  className:
+                    "!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]",
+                }}
+              >
                 {item.label}
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))}
 
-          {user?.role === "admin" && (
-            <Link
-              to="/admin"
-              onClick={onClose}
-              className="group flex items-center gap-4 fuwari-text-50 hover:text-[var(--fuwari-primary)] transition-colors"
-            >
-              <span className="text-sm md:text-base">&gt;_</span>
-              <span className="text-3xl md:text-5xl font-bold tracking-tight">
-                管理
-              </span>
-            </Link>
-          )}
-        </nav>
+            {user?.role === "admin" && (
+              <Link
+                to="/admin"
+                onClick={onClose}
+                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-[var(--fuwari-btn-regular-bg)] hover:text-[var(--fuwari-primary)] active:scale-[0.98]"
+              >
+                <Settings className="w-4 h-4 mr-3" />
+                管理后台
+              </Link>
+            )}
+          </nav>
 
-        <div className="border-t border-black/10 dark:border-white/10 pt-8">
+          {/* Divider */}
+          <div className="h-px bg-black/5 dark:bg-white/10 my-1 mx-2" />
+
+          {/* User Section */}
           {user ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-[var(--fuwari-btn-regular-bg)]">
+            <div className="px-2 pb-1">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--fuwari-btn-regular-bg)] flex-shrink-0">
                   {user.image ? (
                     <img
                       src={user.image}
@@ -96,45 +84,48 @@ export function MobileMenu({
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full">
-                      <UserIcon size={16} className="fuwari-text-50" />
+                      <UserIcon size={14} className="fuwari-text-50" />
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-mono text-sm fuwari-text-90">
-                    @{user.name}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-sm font-medium truncate fuwari-text-90">
+                    {user.name}
                   </span>
                   <Link
                     to="/profile"
                     onClick={onClose}
-                    className="text-[10px] uppercase tracking-widest fuwari-text-50 hover:text-[var(--fuwari-primary)]"
+                    className="text-xs fuwari-text-50 hover:text-[var(--fuwari-primary)] truncate"
                   >
-                    个人资料
+                    查看资料
                   </Link>
                 </div>
+                <button
+                  onClick={async () => {
+                    await logout();
+                    onClose();
+                  }}
+                  className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-red-500 hover:text-red-600 transition-colors"
+                  aria-label="退出登录"
+                >
+                  <LogOut size={16} strokeWidth={1.5} />
+                </button>
               </div>
-              <button
-                onClick={async () => {
-                  await logout();
-                  onClose();
-                }}
-                className="fuwari-text-50 hover:text-red-500 transition-colors"
-              >
-                <LogOut size={20} strokeWidth={1.5} />
-              </button>
             </div>
           ) : (
-            <Link
-              to="/login"
-              onClick={onClose}
-              className="group flex items-center gap-2 font-mono text-xl md:text-2xl fuwari-text-50 hover:text-[var(--fuwari-primary)] transition-colors"
-            >
-              <span>$ login</span>
-              <span className="w-2.5 h-5 bg-current opacity-0 group-hover:opacity-100 animate-pulse transition-opacity" />
-            </Link>
+            <div className="p-2">
+              <Link
+                to="/login"
+                onClick={onClose}
+                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-[var(--fuwari-btn-regular-bg)] text-[var(--fuwari-btn-content)] hover:bg-[var(--fuwari-btn-regular-bg-hover)] active:bg-[var(--fuwari-btn-regular-bg-active)]"
+              >
+                <UserIcon size={16} className="mr-2" strokeWidth={1.5} />
+                登录 / 注册
+              </Link>
+            </div>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
