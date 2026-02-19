@@ -9,6 +9,7 @@ import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
 const MAIN_OVERLAP_REM = 3.5;
+const NAVBAR_HEIGHT_REM = 4.5;
 
 export function PublicLayout({
   children,
@@ -61,7 +62,7 @@ export function PublicLayout({
       <div
         className="relative z-30 transition-[margin-top] duration-300 ease-in-out"
         style={{
-          marginTop: `calc(${bannerHeightVh}vh - ${MAIN_OVERLAP_REM}rem)`,
+          marginTop: `calc(${bannerHeightVh}vh - ${MAIN_OVERLAP_REM}rem - ${NAVBAR_HEIGHT_REM}rem)`,
         }}
       >
         <div
