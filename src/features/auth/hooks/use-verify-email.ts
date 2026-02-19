@@ -12,13 +12,19 @@ export function useVerifyEmail(options: UseVerifyEmailOptions) {
   );
 
   useEffect(() => {
+    let cancelled = false;
     const analyzeSignal = async () => {
       // Small artificial delay for smooth transition
       await new Promise((r) => setTimeout(r, 1500));
-      setStatus(error ? "ERROR" : "SUCCESS");
+      if (!cancelled) {
+        setStatus(error ? "ERROR" : "SUCCESS");
+      }
     };
 
     analyzeSignal();
+    return () => {
+      cancelled = true;
+    };
   }, [error]);
 
   return { status };
