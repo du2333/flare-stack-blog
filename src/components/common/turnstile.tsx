@@ -42,9 +42,10 @@ interface TurnstileProps {
   onError?: () => void;
   onExpire?: () => void;
   action?: string;
-  /** Shared ref so useTurnstile can access the widget ID for reset */
   widgetIdRef?: RefObject<string | null>;
 }
+
+export type { TurnstileProps };
 
 let scriptLoadPromise: Promise<void> | null = null;
 

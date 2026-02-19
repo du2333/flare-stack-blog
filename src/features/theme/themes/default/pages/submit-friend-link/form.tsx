@@ -1,40 +1,14 @@
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { SubmitFriendLinkInputSchema } from "../../friend-links.schema";
-import { useFriendLinks } from "../../hooks/use-friend-links";
-import type { SubmitFriendLinkInput } from "../../friend-links.schema";
-import { Button } from "@/components/ui/button";
+import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
+import { Turnstile } from "@/components/common/turnstile";
 import { Input } from "@/components/ui/input";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 
 interface FriendLinkSubmitFormProps {
-  defaultEmail?: string;
+  form: FriendLinkSubmitFormData;
 }
 
-export function FriendLinkSubmitForm({
-  defaultEmail,
-}: FriendLinkSubmitFormProps) {
-  const { submit, isSubmitting } = useFriendLinks();
-  const { isPending: turnstilePending, turnstileProps } =
-    useTurnstile("friend-link");
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<SubmitFriendLinkInput>({
-    resolver: standardSchemaResolver(SubmitFriendLinkInputSchema),
-    defaultValues: {
-      contactEmail: defaultEmail || "",
-    },
-  });
-
-  const onSubmit = async (data: SubmitFriendLinkInput) => {
-    await submit({ data });
-    reset({ contactEmail: defaultEmail || "" });
-  };
+export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
+  const { register, errors, handleSubmit, isSubmitting, turnstileProps } = form;
 
   const inputClassName =
     "bg-transparent border-0 border-b border-border text-foreground font-serif text-lg px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all placeholder:text-muted-foreground/30 shadow-none h-auto py-2";
@@ -42,7 +16,7 @@ export function FriendLinkSubmitForm({
     "bg-transparent border-0 border-b border-border text-foreground font-mono text-sm px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all placeholder:text-muted-foreground/30 shadow-none h-auto py-2";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <Turnstile {...turnstileProps} />
       <div className="space-y-6">
         <div className="space-y-2 group">
@@ -127,11 +101,10 @@ export function FriendLinkSubmitForm({
       </div>
 
       <div className="flex justify-start">
-        <Button
+        <button
           type="submit"
-          disabled={isSubmitting || turnstilePending}
-          variant="ghost"
-          className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-transparent p-0 h-auto transition-colors"
+          disabled={isSubmitting}
+          className="font-mono text-xs text-muted-foreground hover:text-foreground hover:bg-transparent p-0 h-auto transition-colors disabled:opacity-50"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
@@ -140,7 +113,7 @@ export function FriendLinkSubmitForm({
           ) : (
             "[ 提交申请 ]"
           )}
-        </Button>
+        </button>
       </div>
     </form>
   );

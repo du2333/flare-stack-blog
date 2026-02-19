@@ -4,6 +4,7 @@ import type {
   PostPageProps,
   PostsPageProps,
   SearchPageProps,
+  SubmitFriendLinkPageProps,
 } from "./pages";
 import type { PublicLayoutProps } from "./layouts";
 
@@ -40,4 +41,9 @@ export interface ThemeComponents {
   SearchPage: React.ComponentType<SearchPageProps>;
   /** 搜索页骨架屏 */
   SearchPageSkeleton: React.ComponentType;
+
+  /** 提交友链页组件 */
+  SubmitFriendLinkPage: React.ComponentType<SubmitFriendLinkPageProps>;
+  /** 提交友链页骨架屏 */
+  SubmitFriendLinkPageSkeleton: React.ComponentType;
 }
