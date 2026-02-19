@@ -95,7 +95,21 @@ export function Navbar({
           <div className="flex items-center gap-1">
             <Link
               to="/search"
-              className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-[var(--fuwari-primary)]"
+              className="hidden lg:flex items-center h-11 mr-2 rounded-lg bg-black/[0.04] hover:bg-black/[0.06] dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-95 group w-52"
+              aria-label="搜索"
+            >
+              <Search
+                size={20}
+                className="ml-3 transition-colors text-black/30 dark:text-white/30 group-hover:text-black/50 dark:group-hover:text-white/50"
+                strokeWidth={1.5}
+              />
+              <span className="ml-2 text-black/50 dark:text-white/50 text-sm bg-transparent outline-none truncate">
+                搜索
+              </span>
+            </Link>
+            <Link
+              to="/search"
+              className="lg:hidden fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-[var(--fuwari-primary)]"
               aria-label="搜索"
             >
               <Search size={20} strokeWidth={1.5} />
