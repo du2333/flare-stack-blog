@@ -23,6 +23,7 @@
 - **用户认证** — GitHub OAuth 登录，权限控制
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **AI 辅助** — Cloudflare Workers AI 集成
+- **主题系统** — 可扩展的主题模板，支持完整替换所有页面和布局
 
 ## 技术栈
 
@@ -95,6 +96,27 @@ src/
 └── hooks/           # 自定义 Hooks
 ```
 
+### 主题系统
+
+Flare Stack Blog 的所有面向用户的页面与布局均通过**主题契约（Theme Contract）**与业务逻辑解耦。你可以在不修改任何路由或数据逻辑的前提下，完整替换博客的视觉表现层。
+
+→ **[主题开发教程](./docs/theme-guide.md)** — 了解如何从零创建你的第一个自定义主题。
+
+#### 可用主题
+
+<table>
+  <tr>
+    <th>主题</th>
+    <th>预览</th>
+  </tr>
+  <tr>
+    <td><code>default</code>（内置）</td>
+    <td><img src="docs/assets/home.png" alt="Default theme preview" /></td>
+  </tr>
+</table>
+
+> 欢迎提交你的自定义主题！参考 [主题开发教程](./docs/theme-guide.md) 完成开发后，可以通过 PR 将你的主题添加到这里。
+
 ### 请求流程
 
 ```
@@ -147,22 +169,23 @@ src/
 
 ### 可选
 
-| 变量名                    | 用途   | 说明                                              |
-| :------------------------ | :----- | :------------------------------------------------ |
-| `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key          |
-| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                     |
-| `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）        |
-| `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`） |
-| `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）              |
-| `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                      |
-| `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                        |
-| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                  |
-| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                          |
-| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                        |
-| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                          |
-| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                          |
-| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                   |
-| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                          |
+| 变量名                    | 用途   | 说明                                                 |
+| :------------------------ | :----- | :--------------------------------------------------- |
+| `THEME`                   | 构建时 | 主题名称，默认 `default`，详见 [可用主题](#可用主题) |
+| `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key             |
+| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                        |
+| `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）           |
+| `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`）    |
+| `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）                 |
+| `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                         |
+| `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                           |
+| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                     |
+| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                             |
+| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                           |
+| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                             |
+| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                             |
+| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                      |
+| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                             |
 
 ---
 
