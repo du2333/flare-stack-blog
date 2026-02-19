@@ -8,6 +8,6 @@ export const config: ThemeConfig = {
     postsPerPage: 24,
   },
   post: {
-    relatedPostsLimit: 3,
+    relatedPostsLimit: 4,
   },
 };

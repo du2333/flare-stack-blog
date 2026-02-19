@@ -9,6 +9,11 @@ export default function TableOfContents({
   headers: Array<TableOfContentsItem>;
 }) {
   const [activeIndices, setActiveIndices] = useState<Array<number>>([]);
+  // Reset active indices when headers change (e.g., during navigation)
+  useEffect(() => {
+    setActiveIndices([]);
+  }, [headers]);
+
   const [isVisible, setIsVisible] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const tocRootRef = useRef<HTMLDivElement>(null);
@@ -124,6 +129,12 @@ export default function TableOfContents({
     if (activeIndices.length > 0 && tocRootRef.current) {
       const firstIdx = activeIndices[0];
       const lastIdx = activeIndices[activeIndices.length - 1];
+
+      // Defensive check: ensure indices are within bounds of current headers
+      if (!headers[firstIdx] || !headers[lastIdx]) {
+        setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+        return;
+      }
 
       const firstId = headers[firstIdx].id;
       const lastId = headers[lastIdx].id;
