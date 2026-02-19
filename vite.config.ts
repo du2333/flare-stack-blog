@@ -11,7 +11,7 @@ import packageJson from "./package.json";
 
 // 添加新主题，这里需要同步更新
 const buildEnvSchema = z.object({
-  THEME: z.enum(["default"]).default("default"),
+  THEME: z.enum(["default", "fuwari"]).default("default"),
 });
 
 const config = defineConfig(({ mode }) => {
