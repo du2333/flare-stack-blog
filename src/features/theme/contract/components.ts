@@ -12,7 +12,11 @@ import type {
   SubmitFriendLinkPageProps,
   VerifyEmailPageProps,
 } from "./pages";
-import type { AuthLayoutProps, PublicLayoutProps } from "./layouts";
+import type {
+  AuthLayoutProps,
+  PublicLayoutProps,
+  UserLayoutProps,
+} from "./layouts";
 
 /**
  * 主题契约 — 组件接口
@@ -55,6 +59,9 @@ export interface ThemeComponents {
 
   /** Auth 布局组件 */
   AuthLayout: React.ComponentType<AuthLayoutProps>;
+
+  /** User 布局组件 */
+  UserLayout: React.ComponentType<UserLayoutProps>;
 
   /** 登录页组件 */
   LoginPage: React.ComponentType<LoginPageProps>;

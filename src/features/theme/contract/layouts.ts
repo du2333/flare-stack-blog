@@ -28,3 +28,8 @@ export interface AuthLayoutProps {
   onBack: () => void;
   children: React.ReactNode;
 }
+
+export interface UserLayoutProps {
+  isAuthenticated: boolean;
+  children: React.ReactNode;
+}

@@ -3,6 +3,7 @@ import { PostsPage, PostsPageSkeleton } from "./pages/posts";
 import { PostPage, PostPageSkeleton } from "./pages/post";
 import { PublicLayout } from "./layouts/public-layout";
 import { AuthLayout } from "./layouts/auth-layout";
+import { UserLayout } from "./layouts/user-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
 import { SearchPage, SearchPageSkeleton } from "./pages/search";
 import {
@@ -30,6 +31,7 @@ export default {
   PostPageSkeleton,
   PublicLayout,
   AuthLayout,
+  UserLayout,
   FriendLinksPage,
   FriendLinksPageSkeleton,
   SearchPage,
