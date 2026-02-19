@@ -4,7 +4,7 @@ import type { HomePageProps } from "@/features/theme/contract/pages";
 
 export function HomePage({ posts }: HomePageProps) {
   return (
-    <div className="fuwari-onload-animation flex flex-col rounded-[var(--fuwari-radius-large)] bg-[var(--fuwari-card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4">
+    <div className="fuwari-onload-animation flex flex-col rounded-(--fuwari-radius-large) bg-(--fuwari-card-bg) py-1 md:py-0 md:bg-transparent md:gap-4">
       {posts.map((post, i) => (
         <div
           key={post.id}
@@ -14,7 +14,7 @@ export function HomePage({ posts }: HomePageProps) {
           }}
         >
           <PostCard post={post} />
-          <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden" />
+          <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/15 last:border-t-0 md:hidden" />
         </div>
       ))}
       <div
