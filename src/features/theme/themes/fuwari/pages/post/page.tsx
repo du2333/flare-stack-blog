@@ -14,7 +14,7 @@ export function PostPage({ post }: PostPageProps) {
   return (
     <div className="relative flex flex-col rounded-(--fuwari-radius-large) py-1 md:py-0 md:bg-transparent md:gap-4 mb-4 w-full">
       {/* Table Of Contents (Desktop Floating Right) */}
-      <div className="hidden xl:block absolute left-full ml-4 top-0 h-full">
+      <div className="hidden xl:block absolute left-full ml-10 top-0 h-full w-(--fuwari-toc-width,18rem)">
         <TableOfContents headers={post.toc} />
       </div>
 

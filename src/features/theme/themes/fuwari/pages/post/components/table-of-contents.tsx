@@ -1,7 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
-import { useActiveTOC } from "@/hooks/use-active-toc";
 import { cn } from "@/lib/utils";
 
 export default function TableOfContents({
@@ -9,8 +8,10 @@ export default function TableOfContents({
 }: {
   headers: Array<TableOfContentsItem>;
 }) {
-  const activeId = useActiveTOC(headers);
+  const [activeIndices, setActiveIndices] = useState<Array<number>>([]);
+  const [isVisible, setIsVisible] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  const tocRootRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // For the active indicator backdrop
@@ -22,6 +23,7 @@ export default function TableOfContents({
 
   // Calculate min depth
   const minDepth = useMemo(() => {
+    if (headers.length === 0) return 10;
     let min = 10;
     for (const heading of headers) {
       if (heading.level < min) min = heading.level;
@@ -29,11 +31,8 @@ export default function TableOfContents({
     return min;
   }, [headers]);
 
-  // Max depth visible in TOC from config (mocked as 3 for now, standard config)
+  // Max depth visible in TOC from config
   const maxLevel = 3;
-
-  // Track heading h1 count equivalent
-  let heading1Count = 1;
 
   const removeTailingHash = (text: string) => {
     const lastIndexOfHash = text.lastIndexOf("#");
@@ -43,49 +42,138 @@ export default function TableOfContents({
     return text;
   };
 
+  // Scroll visibility logic: Show TOC after scrolling past banner area
   useEffect(() => {
-    if (activeId && navRef.current) {
-      const activeLink = navRef.current.querySelector<HTMLElement>(
-        `a[href="#${activeId}"]`,
+    const handleScrollVisibility = () => {
+      const scrollY = window.scrollY;
+      // Show when scrolled > 350px (approx banner height)
+      setIsVisible(scrollY > 350);
+    };
+
+    window.addEventListener("scroll", handleScrollVisibility, {
+      passive: true,
+    });
+    handleScrollVisibility(); // Initial check
+    return () => window.removeEventListener("scroll", handleScrollVisibility);
+  }, []);
+
+  // Intersection Observer for range highlighting
+  useEffect(() => {
+    if (headers.length === 0) return;
+
+    const observerOption = {
+      root: null,
+      threshold: [0, 1],
+      rootMargin: "-10% 0px -60% 0px", // Focus on top-middle portion of screen
+    };
+
+    // Tracks which indices are currently in view
+    const intersectingStates = new Array(headers.length).fill(false);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const id = entry.target.getAttribute("id");
+        const idx = headers.findIndex((h) => h.id === id);
+        if (idx !== -1) {
+          intersectingStates[idx] = entry.isIntersecting;
+        }
+      });
+
+      // Find range of active headings
+      const newActiveIndices: Array<number> = [];
+      let first = -1;
+      let last = -1;
+
+      for (let i = 0; i < intersectingStates.length; i++) {
+        if (intersectingStates[i]) {
+          if (first === -1) first = i;
+          last = i;
+        }
+      }
+
+      // Fallback logic
+      if (first === -1) {
+        // If nothing is currently "intersecting", find the last heading currently above the focus area
+        for (let i = headers.length - 1; i >= 0; i--) {
+          const el = document.getElementById(headers[i].id);
+          if (el && el.getBoundingClientRect().top < 200) {
+            newActiveIndices.push(i);
+            break;
+          }
+        }
+      } else {
+        // Highlight everything from first visible to last visible
+        for (let i = first; i <= last; i++) {
+          newActiveIndices.push(i);
+        }
+      }
+
+      setActiveIndices(newActiveIndices);
+    }, observerOption);
+
+    headers.forEach((header) => {
+      const el = document.getElementById(header.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [headers]);
+
+  // Update indicator style based on the range of active indices
+  useEffect(() => {
+    if (activeIndices.length > 0 && tocRootRef.current) {
+      const firstIdx = activeIndices[0];
+      const lastIdx = activeIndices[activeIndices.length - 1];
+
+      const firstId = headers[firstIdx].id;
+      const lastId = headers[lastIdx].id;
+
+      const firstLink = tocRootRef.current.querySelector<HTMLElement>(
+        `a[href="#${firstId}"]`,
+      );
+      const lastLink = tocRootRef.current.querySelector<HTMLElement>(
+        `a[href="#${lastId}"]`,
       );
 
-      const tocRoot = navRef.current.querySelector<HTMLElement>(".toc-root");
-
-      if (activeLink && tocRoot) {
-        const rootRect = tocRoot.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        const scrollOffset = tocRoot.scrollTop;
+      if (firstLink && lastLink) {
+        const rootRect = tocRootRef.current.getBoundingClientRect();
+        const firstRect = firstLink.getBoundingClientRect();
+        const lastRect = lastLink.getBoundingClientRect();
+        const scrollOffset = tocRootRef.current.scrollTop;
 
         setIndicatorStyle({
-          top: linkRect.top - rootRect.top + scrollOffset,
-          height: linkRect.height,
+          top: firstRect.top - rootRect.top + scrollOffset,
+          height: lastRect.bottom - firstRect.top,
           opacity: 1,
         });
 
-        // Auto scroll to make it visible
-        const tocHeight = tocRoot.clientHeight;
-        const linkTop = activeLink.offsetTop;
-
-        if (
-          linkRect.bottom - linkRect.top < 0.9 * tocHeight &&
-          linkRect.top - rootRect.top < 32
-        ) {
-          tocRoot.scrollTop = Math.max(0, linkTop - 32);
-        } else if (linkRect.bottom - rootRect.top > tocHeight * 0.8) {
-          tocRoot.scrollTop = linkTop - tocHeight * 0.8;
+        // Auto-scroll TOC inside its own small container if active items go out of view
+        const tocHeight = tocRootRef.current.clientHeight;
+        if (lastRect.bottom - rootRect.top > tocHeight * 0.9) {
+          tocRootRef.current.scrollTop +=
+            lastRect.bottom - rootRect.top - tocHeight * 0.8;
+        } else if (firstRect.top - rootRect.top < 32) {
+          tocRootRef.current.scrollTop -= 32 - (firstRect.top - rootRect.top);
         }
       }
     } else {
       setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
     }
-  }, [activeId]);
+  }, [activeIndices, headers]);
 
   if (headers.length === 0) return null;
+
+  let h1Count = 1;
 
   return (
     <nav
       ref={navRef}
-      className="sticky top-24 self-start block w-64 fuwari-card-base p-6 max-h-[calc(100vh-6rem)] transition"
+      className={cn(
+        "sticky top-20 self-start block w-full transition-all duration-500",
+        isVisible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-4 pointer-events-none",
+      )}
     >
       <div className="font-bold text-lg fuwari-text-90 relative ml-3 mb-4">
         <span className="absolute -left-3 top-[5.5px] w-1 h-4 rounded-md bg-(--fuwari-primary)" />
@@ -93,17 +181,19 @@ export default function TableOfContents({
       </div>
 
       <div
-        className="relative toc-root overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[calc(100vh-12rem)]"
+        ref={tocRootRef}
+        className="relative toc-root overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[calc(100vh-12rem)] hide-scrollbar"
         style={{ scrollBehavior: "smooth" }}
       >
         <div className="group relative flex flex-col w-full">
           {headers
             .filter((heading) => heading.level < minDepth + maxLevel)
-            .map((heading) => {
+            .map((heading, idx) => {
               const text = removeTailingHash(heading.text);
               const isH1 = heading.level === minDepth;
               const isH2 = heading.level === minDepth + 1;
               const isH3 = heading.level === minDepth + 2;
+              const isActive = activeIndices.includes(idx);
 
               return (
                 <a
@@ -113,15 +203,21 @@ export default function TableOfContents({
                     e.preventDefault();
                     const element = document.getElementById(heading.id);
                     if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
+                      const top =
+                        element.getBoundingClientRect().top +
+                        window.scrollY -
+                        80;
+                      window.scrollTo({ top, behavior: "smooth" });
                       navigate({
                         hash: heading.id,
                         replace: true,
-                        hashScrollIntoView: false,
                       });
                     }
                   }}
-                  className="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) py-2 z-10"
+                  className={cn(
+                    "px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl py-2 z-10",
+                    "hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active)",
+                  )}
                 >
                   <div
                     className={cn(
@@ -134,7 +230,7 @@ export default function TableOfContents({
                       },
                     )}
                   >
-                    {isH1 && heading1Count++}
+                    {isH1 && h1Count++}
                     {isH2 && (
                       <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--fuwari-btn-regular-bg)"></div>
                     )}
@@ -144,10 +240,10 @@ export default function TableOfContents({
                   </div>
 
                   <div
-                    className={cn("transition text-sm", {
-                      "fuwari-text-50": isH1 || isH2,
-                      "fuwari-text-30": isH3,
-                      "fuwari-text-75 font-bold": activeId === heading.id,
+                    className={cn("transition text-sm select-none", {
+                      "fuwari-text-50": (isH1 || isH2) && !isActive,
+                      "fuwari-text-30": isH3 && !isActive,
+                      "fuwari-text-75 font-bold": isActive,
                     })}
                   >
                     {text}
@@ -156,12 +252,12 @@ export default function TableOfContents({
               );
             })}
 
-          {/* Active Indicator Backdrop */}
+          {/* Active Indicator Backdrop (Fuwari style dashed border) */}
           {headers.length > 0 && (
             <div
               className={cn(
                 "absolute left-0 right-0 rounded-xl transition-all duration-300 ease-out z-0 border-2 border-dashed pointer-events-none",
-                "bg-(--fuwari-btn-plain-bg-hover) border-(--fuwari-btn-plain-bg-hover) group-hover:bg-transparent group-hover:border-(--fuwari-btn-active)",
+                "bg-(--fuwari-btn-plain-bg-hover) border-(--fuwari-btn-plain-bg-hover) group-hover:bg-transparent group-hover:border-(--fuwari-primary)/50",
               )}
               style={{
                 top: `${indicatorStyle.top}px`,
