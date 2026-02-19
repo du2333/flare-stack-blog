@@ -1,4 +1,6 @@
 /* Theme: fuwari - Fuwari-style variables and utilities */
+@import "tailwindcss";
+@import "./markdown.css";
 
 @layer base {
   :root {
