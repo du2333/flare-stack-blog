@@ -24,7 +24,7 @@ export function PublicLayout({
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
 
   return (
-    <div className="relative min-h-screen bg-[var(--fuwari-page-bg)] transition-colors">
+    <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
       <MobileMenu
         navOptions={navOptions}
         isOpen={isMenuOpen}
@@ -35,7 +35,7 @@ export function PublicLayout({
 
       {/* Top row: Navbar - sticky */}
       <div className="sticky top-0 z-50 pointer-events-none">
-        <div className="pointer-events-auto max-w-[var(--fuwari-page-width)] mx-auto px-4 md:px-6">
+        <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-4 md:px-6">
           <Navbar
             navOptions={navOptions}
             onMenuClick={() => setIsMenuOpen(true)}
@@ -69,19 +69,23 @@ export function PublicLayout({
           className="mx-auto px-4 md:px-6 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
-          {/* Left Column: Sidebar (Sticky/Fixed handled inside Sidebar component or here) */}
-          <Sidebar />
+          {/* Sidebar Column */}
+          <div className="order-2 lg:order-1">
+            <Sidebar />
+          </div>
 
-          {/* Right Column: Main Content + Footer */}
-          <main className="flex flex-col gap-4 min-w-0">
+          {/* Main Content Column */}
+          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0">
             {children}
-            <div
-              className="fuwari-onload-animation mt-auto"
-              style={{ animationDelay: "250ms" }}
-            >
-              <Footer navOptions={navOptions} />
-            </div>
           </main>
+
+          {/* Footer Column (Desktop: below main, Mobile: below sidebar) */}
+          <div
+            className="order-3 lg:col-start-2 fuwari-onload-animation mt-auto"
+            style={{ animationDelay: "250ms" }}
+          >
+            <Footer navOptions={navOptions} />
+          </div>
         </div>
       </div>
     </div>
