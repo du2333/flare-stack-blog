@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import TableOfContents from "./components/table-of-contents";
 import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
 import type { PostPageProps } from "@/features/theme/contract/pages";
-import { ContentRenderer } from "@/features/posts/components/view/content-renderer";
+import { ContentRenderer } from "@/features/theme/themes/default/components/content/content-renderer";
 import { CommentSection } from "@/features/comments/components/view/comment-section";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";

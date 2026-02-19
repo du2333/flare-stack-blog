@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { JSONContent } from "@tiptap/react";
-import { renderReact } from "@/features/posts/components/view/render";
+import { renderReact } from "@/features/theme/themes/default/components/content/render";
 import { cn } from "@/lib/utils";
 
 interface ContentRendererProps {
