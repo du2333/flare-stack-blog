@@ -19,7 +19,7 @@ export function PostCard({ post }: PostCardProps) {
           className="transition group w-full block font-bold mb-3 text-3xl fuwari-text-90 hover:text-[var(--fuwari-primary)] active:text-[var(--fuwari-primary)] relative before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-[var(--fuwari-primary)]"
         >
           {post.title}
-          <ChevronRight className="inline text-[2rem] text-[var(--fuwari-primary)] md:hidden translate-y-0.5 absolute" />
+          <ChevronRight className="inline-block md:hidden text-[2rem] text-[var(--fuwari-primary)] align-middle -mt-1 ml-1" />
           <ChevronRight className="text-[var(--fuwari-primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
         </Link>
 
@@ -64,7 +64,7 @@ export function PostCard({ post }: PostCardProps) {
         </div>
 
         {/* Description */}
-        <div className="fuwari-text-75 mb-3.5 pr-4 line-clamp-2 md:line-clamp-1">
+        <div className="fuwari-text-75 mb-3.5 pr-4 break-words line-clamp-2 md:line-clamp-1">
           {post.summary ?? ""}
         </div>
 

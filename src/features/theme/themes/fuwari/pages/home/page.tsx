@@ -25,7 +25,7 @@ export function HomePage({ posts }: HomePageProps) {
       >
         <Link
           to="/posts"
-          className="fuwari-btn-regular mx-auto rounded-lg h-10 px-6 mt-4 flex mb-4 md:mb-0"
+          className="fuwari-btn-regular mx-6 rounded-lg h-10 px-6 mt-4 flex items-center justify-center mb-4 md:mb-0 md:mx-auto"
         >
           查看全部文章
         </Link>
