@@ -42,7 +42,10 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
 
       <div className="space-y-6">
         <div className="space-y-2 group">
-          <label htmlFor="login-email" className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor="login-email"
+            className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+          >
             邮箱地址
           </label>
           <Input
@@ -63,7 +66,10 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
 
         <div className="space-y-2 group">
           <div className="flex justify-between items-center">
-            <label htmlFor="login-password" className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+            <label
+              htmlFor="login-password"
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+            >
               登录密码
             </label>
             {isEmailConfigured && (

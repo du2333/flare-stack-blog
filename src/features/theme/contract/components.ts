@@ -4,6 +4,7 @@ import type {
   LoginPageProps,
   PostPageProps,
   PostsPageProps,
+  RegisterPageProps,
   SearchPageProps,
   SubmitFriendLinkPageProps,
 } from "./pages";
@@ -53,4 +54,7 @@ export interface ThemeComponents {
 
   /** 登录页组件 */
   LoginPage: React.ComponentType<LoginPageProps>;
+
+  /** 注册页组件 */
+  RegisterPage: React.ComponentType<RegisterPageProps>;
 }

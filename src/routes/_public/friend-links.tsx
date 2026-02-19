@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_public/friend-links")({
       },
     ],
   }),
+  pendingComponent: theme.FriendLinksPageSkeleton,
 });
 
 function FriendLinksPage() {

@@ -10,6 +10,7 @@ import {
   SubmitFriendLinkPageSkeleton,
 } from "./pages/submit-friend-link";
 import { LoginPage } from "./pages/auth/login";
+import { RegisterPage } from "./pages/auth/register";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -32,4 +33,5 @@ export default {
   SubmitFriendLinkPage,
   SubmitFriendLinkPageSkeleton,
   LoginPage,
+  RegisterPage,
 } satisfies ThemeComponents;
