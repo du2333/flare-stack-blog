@@ -18,7 +18,7 @@ export function Footer(_: FooterProps) {
             href="/rss.xml"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-[var(--fuwari-primary)] text-[var(--fuwari-primary)]"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
             RSS
           </a>{" "}
@@ -27,7 +27,7 @@ export function Footer(_: FooterProps) {
             href="/sitemap.xml"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-[var(--fuwari-primary)] text-[var(--fuwari-primary)]"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
             Sitemap
           </a>
@@ -37,7 +37,7 @@ export function Footer(_: FooterProps) {
             href="https://developers.cloudflare.com/"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-[var(--fuwari-primary)] text-[var(--fuwari-primary)]"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
             Cloudflare
           </a>{" "}
@@ -46,7 +46,7 @@ export function Footer(_: FooterProps) {
             href="https://github.com/saicaca/fuwari"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-[var(--fuwari-primary)] text-[var(--fuwari-primary)]"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
             Fuwari
           </a>

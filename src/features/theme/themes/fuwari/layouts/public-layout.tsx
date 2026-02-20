@@ -36,7 +36,7 @@ export function PublicLayout({
 
       {/* Top row: Navbar - sticky */}
       <div className="sticky top-0 z-50 pointer-events-none">
-        <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-4 md:px-6">
+        <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-0 md:px-4">
           <Navbar
             navOptions={navOptions}
             onMenuClick={() => setIsMenuOpen(true)}
@@ -67,7 +67,7 @@ export function PublicLayout({
         }}
       >
         <div
-          className="relative mx-auto px-4 md:px-6 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
+          className="relative mx-auto px-0 md:px-4 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
           {/* Sidebar Column */}

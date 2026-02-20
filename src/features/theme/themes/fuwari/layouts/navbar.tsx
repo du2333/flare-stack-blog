@@ -62,17 +62,17 @@ export function Navbar({
         className="fuwari-onload-animation"
         style={{ animationDelay: "0ms" }}
       >
-        <div className="fuwari-card-base !overflow-visible !rounded-t-none mx-auto flex items-center justify-between px-4 h-[4.5rem] max-w-[var(--fuwari-page-width)]">
+        <div className="fuwari-card-base overflow-visible! rounded-t-none! mx-auto flex items-center justify-between px-4 h-18 max-w-(--fuwari-page-width)">
           <Link
             to="/"
-            className="fuwari-expand-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95 flex items-center"
+            className="fuwari-expand-animation rounded-lg h-13 px-5 font-bold active:scale-95 flex items-center"
           >
             <Home
               size={28}
               strokeWidth={1.5}
-              className="text-[var(--fuwari-primary)] mr-2 flex-shrink-0"
+              className="text-(--fuwari-primary) mr-2 shrink-0"
             />
-            <span className="text-[var(--fuwari-primary)] text-base">
+            <span className="text-(--fuwari-primary) text-base">
               {blogConfig.title}
             </span>
           </Link>
@@ -82,7 +82,7 @@ export function Navbar({
               <Link
                 key={option.id}
                 to={option.to}
-                className="fuwari-expand-animation rounded-lg h-11 font-bold px-5 active:scale-95 flex items-center fuwari-text-75 hover:text-[var(--fuwari-primary)]"
+                className="fuwari-expand-animation rounded-lg h-11 font-bold px-5 active:scale-95 flex items-center fuwari-text-75 hover:text-(--fuwari-primary)"
                 activeProps={{
                   className: "!text-[var(--fuwari-primary)]",
                 }}
@@ -95,13 +95,13 @@ export function Navbar({
           <div className="flex items-center gap-1">
             <Link
               to="/search"
-              className="hidden lg:flex items-center h-11 mr-2 rounded-lg bg-black/[0.04] hover:bg-black/[0.06] dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-95 group w-52"
+              className="hidden lg:flex items-center h-11 mr-2 rounded-lg bg-black/4 hover:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-95 group w-52"
               aria-label="搜索"
             >
               <Search
-                size={20}
+                size={18}
                 className="ml-3 transition-colors text-black/30 dark:text-white/30 group-hover:text-black/50 dark:group-hover:text-white/50"
-                strokeWidth={1.5}
+                strokeWidth={1.25}
               />
               <span className="ml-2 text-black/50 dark:text-white/50 text-sm bg-transparent outline-none truncate">
                 搜索
@@ -109,12 +109,12 @@ export function Navbar({
             </Link>
             <Link
               to="/search"
-              className="lg:hidden fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-[var(--fuwari-primary)]"
+              className="lg:hidden fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
               aria-label="搜索"
             >
-              <Search size={20} strokeWidth={1.5} />
+              <Search size={18} strokeWidth={1.25} />
             </Link>
-            <ThemeToggle className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-[var(--fuwari-primary)] !p-0 !bg-transparent [&_svg]:!w-5 [&_svg]:!h-5 [&_div]:!w-auto [&_div]:!h-auto" />
+            <ThemeToggle className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary) p-0! bg-transparent! [&_svg]:w-4.5! [&_svg]:h-4.5! [&_div]:w-auto! [&_div]:h-auto!" />
             <div className="hidden md:flex items-center">
               {isLoading ? (
                 <Skeleton className="w-9 h-9 rounded-lg" />
@@ -130,28 +130,32 @@ export function Navbar({
                       className="w-8 h-8 rounded-md object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[var(--fuwari-btn-regular-bg)] flex items-center justify-center">
-                      <UserIcon size={18} className="fuwari-text-50" />
+                    <div className="w-full h-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center">
+                      <UserIcon
+                        size={18}
+                        strokeWidth={1.25}
+                        className="fuwari-text-50"
+                      />
                     </div>
                   )}
                 </Link>
               ) : (
                 <Link
                   to="/login"
-                  className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-[var(--fuwari-primary)]"
+                  className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
                   aria-label="登录"
                 >
-                  <UserIcon size={20} strokeWidth={1.5} />
+                  <UserIcon size={18} strokeWidth={1.25} />
                 </Link>
               )}
             </div>
             <button
-              className="fuwari-expand-animation rounded-lg w-11 h-11 flex items-center justify-center active:scale-90 md:hidden fuwari-text-75 hover:text-[var(--fuwari-primary)]"
+              className="fuwari-expand-animation rounded-lg w-11 h-11 flex items-center justify-center active:scale-90 md:hidden fuwari-text-75 hover:text-(--fuwari-primary)"
               onClick={onMenuClick}
               aria-label="打开菜单"
               type="button"
             >
-              <Menu size={24} strokeWidth={1.5} />
+              <Menu size={18} strokeWidth={1.25} />
             </button>
           </div>
         </div>
