@@ -123,6 +123,7 @@
     @apply my-4;
     ::selection {
       @apply bg-(--fuwari-codeblock-selection);
+      color: inherit;
     }
   }
 

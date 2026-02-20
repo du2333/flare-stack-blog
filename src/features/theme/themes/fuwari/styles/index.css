@@ -214,4 +214,5 @@
 
 ::selection {
   background-color: var(--fuwari-selection-bg);
+  color: inherit;
 }
