@@ -188,7 +188,7 @@ export default function TableOfContents({
     >
       <div
         ref={tocRootRef}
-        className="relative toc-root overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[calc(100vh-12rem)] hide-scrollbar"
+        className="relative toc-root overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[calc(100vh-20rem)] hide-scrollbar"
         style={{ scrollBehavior: "smooth" }}
       >
         <div className="group relative flex flex-col w-full">

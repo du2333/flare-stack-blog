@@ -1,8 +1,18 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
-export const CommentSectionSkeleton = () => {
+export const CommentSectionSkeleton = ({
+  className,
+}: {
+  className?: string;
+}) => {
   return (
-    <section className="space-y-12 mt-32 pt-16 border-t border-border/50 animate-in fade-in duration-700">
+    <section
+      className={cn(
+        "space-y-12 mt-24 pt-12 border-t border-border/20 animate-in fade-in duration-700",
+        className,
+      )}
+    >
       <header className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-3 w-20" />

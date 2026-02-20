@@ -12,14 +12,14 @@ export function PostPage({ post }: PostPageProps) {
   const wordCount = post.readTimeInMinutes * 300;
 
   return (
-    <div className="relative flex flex-col rounded-(--fuwari-radius-large) py-1 md:py-0 md:bg-transparent md:gap-4 mb-4 w-full">
+    <div className="relative flex flex-col rounded-(--fuwari-radius-large) py-1 md:py-0 md:bg-transparent gap-4 mb-4 w-full">
       {/* Table Of Contents (Desktop Floating Right) */}
       <div className="hidden xl:block absolute left-full ml-10 top-0 h-full w-(--fuwari-toc-width,18rem)">
         <TableOfContents headers={post.toc} />
       </div>
 
       {/* Main Post Container */}
-      <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full mb-4 fuwari-onload-animation">
+      <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full fuwari-onload-animation">
         {/* Word count and reading time */}
         <div className="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition">
           <div className="flex flex-row items-center">
@@ -72,7 +72,7 @@ export function PostPage({ post }: PostPageProps) {
 
       {/* Prev/Next buttons (Mock implementation for layout, actual data would come from the server in an ideal setup) */}
       <div
-        className="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full fuwari-onload-animation"
+        className="hidden flex-col md:flex-row justify-between gap-4 overflow-hidden w-full fuwari-onload-animation"
         style={{ animationDelay: "150ms" }}
       >
         {/* Note: the backend schema doesn't currently provide prev/next slugs in PostWithToc. Using placeholder layouts to match Fuwari exactly. */}
@@ -80,7 +80,7 @@ export function PostPage({ post }: PostPageProps) {
 
       {/* Related Posts */}
       <div
-        className="fuwari-card-base p-6 mb-4 fuwari-onload-animation"
+        className="fuwari-card-base p-6 fuwari-onload-animation"
         style={{ animationDelay: "300ms" }}
       >
         <h2 className="text-xl font-bold mb-4 text-black/90 dark:text-white/90">
@@ -96,7 +96,7 @@ export function PostPage({ post }: PostPageProps) {
         className="fuwari-card-base p-6 fuwari-onload-animation"
         style={{ animationDelay: "450ms" }}
       >
-        <CommentSection postId={post.id} />
+        <CommentSection postId={post.id} className="mt-0 pt-0 border-t-0" />
       </div>
     </div>
   );

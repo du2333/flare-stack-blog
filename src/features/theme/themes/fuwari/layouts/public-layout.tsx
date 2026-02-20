@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { Sidebar } from "../components/sidebar";
+import { BackToTop } from "../components/control/back-to-top";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
@@ -66,7 +67,7 @@ export function PublicLayout({
         }}
       >
         <div
-          className="mx-auto px-4 md:px-6 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
+          className="relative mx-auto px-4 md:px-6 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
           {/* Sidebar Column */}
@@ -86,6 +87,8 @@ export function PublicLayout({
           >
             <Footer navOptions={navOptions} />
           </div>
+
+          <BackToTop />
         </div>
       </div>
     </div>

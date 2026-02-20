@@ -13,14 +13,16 @@ import { authClient } from "@/lib/auth/auth.client";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { cn } from "@/lib/utils";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 
 interface CommentSectionProps {
   postId: number;
+  className?: string;
 }
 
-export const CommentSection = ({ postId }: CommentSectionProps) => {
+export const CommentSection = ({ postId, className }: CommentSectionProps) => {
   const { data: session } = authClient.useSession();
   const { rootId, highlightCommentId } = routeApi.useSearch();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -135,11 +137,16 @@ export const CommentSection = ({ postId }: CommentSectionProps) => {
   }, [isLoading, data]);
 
   if (isLoading || !data) {
-    return <CommentSectionSkeleton />;
+    return <CommentSectionSkeleton className={className} />;
   }
 
   return (
-    <section className="space-y-12 mt-24 pt-12 border-t border-border/20 animate-in fade-in duration-700">
+    <section
+      className={cn(
+        "space-y-12 mt-24 pt-12 border-t border-border/20 animate-in fade-in duration-700",
+        className,
+      )}
+    >
       <header className="flex items-center justify-between">
         <div className="space-y-2">
           <p className="text-xl font-serif font-medium text-foreground">
