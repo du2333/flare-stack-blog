@@ -42,7 +42,7 @@ vite.config.ts
 | `VerifyEmailPage`                             | 邮箱验证页                     |
 | `ProfilePage`                                 | 个人资料页                     |
 
-> **骨架屏**用于 TanStack Router 的 `pendingComponent`，在数据加载期间展示占位 UI。
+> **骨架屏（Skeleton）**：用作 TanStack Router 的 `pendingComponent`，在页面数据请求期间展示的过渡 UI。主题可以根据自身的交互设计语言自行决定是否需要实现它（例如，为了配合某些入场动画，您可以选择直接返回 `null` 而不渲染占位图）。
 
 ### `contract/layouts.ts` — 布局 Props
 
@@ -123,7 +123,17 @@ src/features/theme/themes/<your-theme>/
 │   │   └── verify-email/
 │   └── user/
 │       └── profile/
-└── components/               # 主题内部共享组件（可选）
+├── components/               # 主题内部共享组件（可选）
+│   ├── content/              # 内容渲染组件（文章正文）
+│   │   ├── render.tsx        # Tiptap AST → React 映射
+│   │   ├── content-renderer.tsx # 包装层
+│   │   ├── code-block.tsx    # 代码块渲染
+│   │   ├── image-display.tsx # 图片展示
+│   │   └── zoomable-image.tsx # 图片灯箱
+│   └── comments/             # 评论区组件（可选，可复用共享组件）
+│       ├── view/             # 评论展示
+│       └── editor/           # 评论编辑器
+└── config.ts                 # 主题静态配置
 ```
 
 ## Step-by-step：创建第一个主题
@@ -249,6 +259,64 @@ const buildEnvSchema = z.object({
 ```
 
 然后通过 `THEME` 环境变量在构建和开发时切换主题。
+
+## 内容渲染组件
+
+文章详情页需要将 Tiptap JSON AST 渲染为 React 组件。每个主题需要实现自己的一套内容渲染组件，以控制代码块、图片等元素的视觉呈现。
+
+### 必须实现的文件
+
+| 文件                                      | 说明                                                                             |
+| :---------------------------------------- | :------------------------------------------------------------------------------- |
+| `components/content/render.tsx`           | 核心映射：将 `image`、`codeBlock`、`tableCell` 等节点映射到主题自己的 React 组件 |
+| `components/content/content-renderer.tsx` | 包装层，使用 `useMemo` 调用 `renderReact`                                        |
+| `components/content/code-block.tsx`       | 代码块渲染（语法高亮、复制按钮等）                                               |
+| `components/content/image-display.tsx`    | 图片展示（点击放大、caption 等）                                                 |
+| `components/content/zoomable-image.tsx`   | 图片灯箱/放大交互                                                                |
+
+### 关键：共享 Tiptap 扩展
+
+`render.tsx` 必须从共享的编辑器配置中导入 Tiptap extensions，确保渲染器能识别所有文章内容支持的节点类型：
+
+```tsx
+// components/content/render.tsx
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
+import { extensions } from "@/features/posts/editor/config";
+import { CodeBlock } from "./code-block"; // 主题自己的实现
+import { ImageDisplay } from "./image-display"; // 主题自己的实现
+
+export function renderReact(content: JSONContent) {
+  return renderToReactElement({
+    extensions,
+    content,
+    options: {
+      nodeMapping: {
+        image: ({ node }) => <ImageDisplay /* ... */ />,
+        codeBlock: ({ node }) => <CodeBlock /* ... */ />,
+        // tableCell, tableHeader 等
+      },
+    },
+  });
+}
+```
+
+参考 `themes/default/components/content/` 和 `themes/fuwari/components/content/` 的完整实现。
+
+## 可复用的共享代码
+
+主题之间相互独立，但**可以且应该**复用框架提供的共享基础设施，避免重复造轮子：
+
+| 可以 import        | 来源                                            | 说明                                |
+| :----------------- | :---------------------------------------------- | :---------------------------------- |
+| 博客配置           | `@/blog.config`                                 | 标题、作者、社交链接等              |
+| 业务 Queries/Hooks | `@/features/*/queries/`、`@/features/*/hooks/`  | TanStack Query 查询工厂、业务 hooks |
+| Schema 类型        | `@/features/*/schema`                           | Zod schema 和 TypeScript 类型       |
+| Tiptap 编辑器配置  | `@/features/posts/editor/config`                | 文章编辑器的 extension 列表         |
+| 评论编辑器配置     | `@/features/comments/components/editor/config`  | 评论编辑器的 extension 列表         |
+| 通用 UI 组件       | `@/components/common/`（如 Turnstile 人机验证） | 与主题无关的功能组件                |
+| 工具函数/Hooks     | `@/lib/utils`、`@/hooks/*`                      | 格式化、防抖等通用工具              |
+
+> **评论系统**：每个主题需要在 `components/comments/` 下实现自己的评论区 UI 组件（编辑器、列表、评论项等）。评论的业务逻辑（`@/features/comments/queries/`、`@/features/comments/hooks/`）和编辑器配置（`@/features/comments/components/editor/config`）从共享位置导入，只有 UI 层是主题独立的。参考 `themes/default/components/comments/` 和 `themes/fuwari/components/comments/` 的实现。
 
 ## 主题专属配置
 
