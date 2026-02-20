@@ -186,11 +186,6 @@ export default function TableOfContents({
           : "opacity-0 translate-y-4 pointer-events-none",
       )}
     >
-      <div className="font-bold text-lg fuwari-text-90 relative ml-3 mb-4">
-        <span className="absolute -left-3 top-[5.5px] w-1 h-4 rounded-md bg-(--fuwari-primary)" />
-        目录
-      </div>
-
       <div
         ref={tocRootRef}
         className="relative toc-root overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[calc(100vh-12rem)] hide-scrollbar"
@@ -234,7 +229,7 @@ export default function TableOfContents({
                     className={cn(
                       "transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
                       {
-                        "bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content)":
+                        "bg-[oklch(0.89_0.050_var(--fuwari-hue))] dark:bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content)":
                           isH1,
                         "ml-4": isH2,
                         "ml-8": isH3,
@@ -243,7 +238,7 @@ export default function TableOfContents({
                   >
                     {isH1 && h1Count++}
                     {isH2 && (
-                      <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--fuwari-btn-regular-bg)"></div>
+                      <div className="transition w-2 h-2 rounded-[0.1875rem] bg-[oklch(0.89_0.050_var(--fuwari-hue))] dark:bg-(--fuwari-btn-regular-bg)"></div>
                     )}
                     {isH3 && (
                       <div className="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>
@@ -254,7 +249,7 @@ export default function TableOfContents({
                     className={cn("transition text-sm select-none", {
                       "fuwari-text-50": (isH1 || isH2) && !isActive,
                       "fuwari-text-30": isH3 && !isActive,
-                      "fuwari-text-75 font-bold": isActive,
+                      "fuwari-text-75": isActive,
                     })}
                   >
                     {text}
