@@ -16,10 +16,10 @@ const clientEnvSchema = z.object({
   // 背景图片配置
   VITE_DEFAULT_HOME_IMAGE: z.string().optional(),
   VITE_DEFAULT_GLOBAL_IMAGE: z.string().optional(),
-  VITE_DEFAULT_LIGHT_OPACITY: z.string().optional(),
-  VITE_DEFAULT_DARK_OPACITY: z.string().optional(),
-  VITE_DEFAULT_BACKDROP_BLUR: z.string().optional(),
-  VITE_DEFAULT_TRANSITION_DURATION: z.string().optional(),
+  VITE_DEFAULT_LIGHT_OPACITY: z.coerce.number().optional(),
+  VITE_DEFAULT_DARK_OPACITY: z.coerce.number().optional(),
+  VITE_DEFAULT_BACKDROP_BLUR: z.coerce.number().optional(),
+  VITE_DEFAULT_TRANSITION_DURATION: z.coerce.number().optional(),
 });
 
 export function clientEnv() {
