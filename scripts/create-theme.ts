@@ -41,7 +41,7 @@ function createTheme(name: string): void {
   // styles/index.css
   files.push({
     path: path.join(themeDir, "styles/index.css"),
-    content: `/* Theme: ${name} */\n`,
+    content: `/* Theme: ${name} */\n@import "tailwindcss";\n@import "../../../../../styles/shared.css";\n`,
   });
 
   // layouts
