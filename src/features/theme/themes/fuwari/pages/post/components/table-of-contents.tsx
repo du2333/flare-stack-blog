@@ -193,13 +193,14 @@ export default function TableOfContents({
       >
         <div className="group relative flex flex-col w-full">
           {headers
-            .filter((heading) => heading.level < minDepth + maxLevel)
-            .map((heading, idx) => {
+            .map((heading, originalIdx) => ({ heading, originalIdx }))
+            .filter(({ heading }) => heading.level < minDepth + maxLevel)
+            .map(({ heading, originalIdx }) => {
               const text = removeTailingHash(heading.text);
               const isH1 = heading.level === minDepth;
               const isH2 = heading.level === minDepth + 1;
               const isH3 = heading.level === minDepth + 2;
-              const isActive = activeIndices.includes(idx);
+              const isActive = activeIndices.includes(originalIdx);
 
               return (
                 <a
