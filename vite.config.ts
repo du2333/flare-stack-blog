@@ -23,6 +23,7 @@ const config = defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
+        "@": path.resolve(__dirname, "./src"),
         "@theme": path.resolve(
           __dirname,
           `src/features/theme/themes/${buildEnv.THEME}`,

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "../../../../../styles/shared.css";
+@import "@/styles/shared.css";
 
 @import "@fontsource-variable/noto-sans-sc";
 @import "@fontsource-variable/noto-serif-sc";
