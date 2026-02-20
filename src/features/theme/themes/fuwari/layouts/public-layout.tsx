@@ -6,6 +6,7 @@ import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
+import { blogConfig } from "@/blog.config";
 
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
@@ -53,7 +54,7 @@ export function PublicLayout({
         style={{ height: `${bannerHeightVh}vh` }}
       >
         <img
-          src="/images/home-bg.jpg"
+          src={blogConfig.theme.fuwari.homeBg}
           alt=""
           className="w-full h-full object-cover object-center"
         />

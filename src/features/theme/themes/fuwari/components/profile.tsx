@@ -12,7 +12,7 @@ export function Profile() {
       >
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/30 group-active:bg-black/50 transition-colors pointer-events-none" />
         <img
-          src="/images/avatar.png"
+          src={blogConfig.theme.fuwari.avatar}
           alt=""
           className="w-full h-auto aspect-square object-cover"
         />

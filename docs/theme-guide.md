@@ -250,6 +250,50 @@ const buildEnvSchema = z.object({
 
 然后通过 `THEME` 环境变量在构建和开发时切换主题。
 
+## 主题专属配置
+
+除了 `ThemeConfig`（数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。
+
+### 约定
+
+在 `src/blog.config.ts` 的 `theme` 命名空间下，以主题名为 key 添加配置：
+
+```ts
+// src/blog.config.ts
+export const blogConfig = {
+  // ... 公共配置 ...
+  theme: {
+    fuwari: {
+      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.jpg",
+      avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
+    },
+    // "my-theme": { ... }
+  },
+};
+```
+
+### 环境变量命名规则
+
+使用 `VITE_<THEME_NAME>_<KEY>` 格式，例如：
+
+| 环境变量              | 说明                  | 默认值                |
+| :-------------------- | :-------------------- | :-------------------- |
+| `VITE_FUWARI_HOME_BG` | Fuwari 首页背景图路径 | `/images/home-bg.jpg` |
+| `VITE_FUWARI_AVATAR`  | Fuwari 侧边栏头像路径 | `/images/avatar.png`  |
+
+新增的环境变量需要同步添加到 `src/lib/env/client.env.ts` 的 Zod schema 中。
+
+### 在组件中使用
+
+```tsx
+import { blogConfig } from "@/blog.config";
+
+// 直接访问当前主题的配置
+<img src={blogConfig.theme.fuwari.homeBg} alt="" />;
+```
+
+> **为什么不放在 `ThemeConfig` 中？** `ThemeConfig` 是编译时契约的一部分，主要用于路由 loader 的数据获取参数（如分页大小）。而图片路径等部署级别的配置更适合通过环境变量注入，放在 `blogConfig` 中可以统一管理，也方便用户在 `.env` 文件中覆盖。
+
 ## 注意事项
 
 - **不要修改 contract 文件**：契约是框架与主题之间的接口约定，业务逻辑依赖它稳定。如有新的业务需求需要暴露更多数据，请提 issue 或 PR。
