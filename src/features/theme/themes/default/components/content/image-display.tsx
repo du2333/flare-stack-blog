@@ -1,4 +1,4 @@
-import ZoomableImage from "@/components/ui/zoomable-image";
+import ZoomableImage from "@/features/theme/themes/default/components/content/zoomable-image";
 
 export function ImageDisplay({
   src,

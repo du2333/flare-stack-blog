@@ -223,7 +223,7 @@ export function TagSelector({
             className="h-5 px-1.5 gap-1 text-[10px] items-center bg-secondary hover:bg-secondary/80 transition-colors"
           >
             <Hash size={10} className="text-muted-foreground/50" />
-            <span className="truncate max-w-[150px]">{tag.name}</span>
+            <span className="truncate max-w-37.5">{tag.name}</span>
             <div
               role="button"
               className="ml-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 cursor-pointer"
@@ -265,7 +265,7 @@ export function TagSelector({
       {/* Dropdown Menu */}
       {open && !disabled && (
         <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2">
-          <div className="max-h-[200px] w-full overflow-y-auto overflow-x-hidden p-1">
+          <div className="max-h-50 w-full overflow-y-auto overflow-x-hidden p-1">
             {/* Create Option */}
             {searchTerm &&
               !tags.some(

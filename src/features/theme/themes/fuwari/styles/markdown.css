@@ -1,0 +1,174 @@
+@reference "tailwindcss";
+
+.fuwari-custom-md {
+  --tw-prose-body: rgb(0 0 0 / 0.9);
+  --tw-prose-headings: rgb(0 0 0 / 0.9);
+  --tw-prose-lead: rgb(0 0 0 / 0.75);
+  --tw-prose-links: var(--fuwari-primary);
+  --tw-prose-bold: rgb(0 0 0 / 0.9);
+  --tw-prose-counters: rgb(0 0 0 / 0.5);
+  --tw-prose-bullets: rgb(0 0 0 / 0.3);
+  --tw-prose-hr: var(--fuwari-meta-divider);
+  --tw-prose-quotes: rgb(0 0 0 / 0.75);
+  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
+  --tw-prose-captions: rgb(0 0 0 / 0.5);
+  --tw-prose-code: var(--fuwari-inline-code-color);
+  --tw-prose-pre-code: var(--fuwari-btn-content);
+  --tw-prose-pre-bg: var(--fuwari-card-bg);
+  --tw-prose-th-borders: var(--fuwari-meta-divider);
+  --tw-prose-td-borders: var(--fuwari-meta-divider);
+
+  color: var(--tw-prose-body);
+
+  h1 {
+    @apply text-3xl font-bold font-sans tracking-normal mt-10 mb-6;
+  }
+
+  h2 {
+    @apply text-2xl font-bold font-sans tracking-normal mt-10 mb-5;
+  }
+
+  h3 {
+    @apply text-xl font-bold font-sans tracking-normal mt-8 mb-4;
+  }
+
+  h4 {
+    @apply text-lg font-bold font-sans tracking-normal mt-6 mb-3;
+  }
+
+  h5,
+  h6 {
+    @apply text-base font-bold font-sans tracking-normal mt-6 mb-3;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    &:hover::after {
+      content: "#";
+      @apply text-(--fuwari-primary) opacity-50 transition-opacity font-normal no-underline ml-[0.2ch];
+    }
+    .anchor {
+      @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0! no-underline!;
+
+      .anchor-icon {
+        @apply mx-[0.45ch]!;
+      }
+    }
+
+    &:hover {
+      .anchor {
+        @apply opacity-100!;
+      }
+    }
+  }
+
+  a:not(.no-styling) {
+    @apply relative bg-none font-medium text-(--fuwari-primary)
+        underline decoration-(--fuwari-link-underline) decoration-1 decoration-dashed underline-offset-4;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    display: inline-block;
+
+    &:hover,
+    &:active {
+      @apply decoration-transparent;
+      background: var(--fuwari-btn-plain-bg-hover);
+      border-bottom: 1px dashed var(--fuwari-link-hover);
+      text-decoration: none;
+    }
+  }
+
+  :not(pre) > code {
+    @apply bg-(--fuwari-inline-code-bg) text-(--fuwari-inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
+  }
+
+  code {
+    font-family:
+      "JetBrains Mono Variable",
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      Liberation Mono,
+      Courier New,
+      monospace;
+    &:before {
+      content: none;
+    }
+    &:after {
+      content: none;
+    }
+
+    counter-reset: line;
+    span.line {
+      &:before {
+        @apply text-black/30 mr-4 w-4 inline-block;
+        content: counter(line);
+        counter-increment: line;
+        direction: rtl;
+      }
+      &:last-child:empty,
+      &:last-child:has(> span:empty:only-child) {
+        display: none;
+      }
+    }
+  }
+
+  .expressive-code {
+    @apply my-4;
+    ::selection {
+      @apply bg-(--fuwari-codeblock-selection);
+      color: inherit;
+    }
+  }
+
+  ul,
+  ol {
+    li::marker {
+      @apply text-(--fuwari-primary);
+    }
+  }
+
+  blockquote {
+    @apply not-italic border-transparent relative;
+    font-weight: inherit;
+
+    &:before {
+      @apply content-[''] absolute -left-1 block transition bg-(--fuwari-btn-regular-bg) h-full w-1 rounded-full;
+    }
+
+    /* Remove the double quotes from default styles */
+    p:before,
+    p:after {
+      @apply content-none;
+    }
+  }
+}
+
+:is(.dark .fuwari-custom-md) {
+  --tw-prose-body: rgb(255 255 255 / 0.9);
+  --tw-prose-headings: rgb(255 255 255 / 0.9);
+  --tw-prose-lead: rgb(255 255 255 / 0.75);
+  --tw-prose-links: var(--fuwari-primary);
+  --tw-prose-bold: rgb(255 255 255 / 0.9);
+  --tw-prose-counters: rgb(255 255 255 / 0.5);
+  --tw-prose-bullets: rgb(255 255 255 / 0.3);
+  --tw-prose-hr: var(--fuwari-meta-divider);
+  --tw-prose-quotes: rgb(255 255 255 / 0.75);
+  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
+  --tw-prose-captions: rgb(255 255 255 / 0.5);
+  --tw-prose-code: var(--fuwari-inline-code-color);
+  --tw-prose-pre-code: var(--fuwari-btn-content);
+  --tw-prose-pre-bg: var(--fuwari-card-bg);
+  --tw-prose-th-borders: var(--fuwari-meta-divider);
+  --tw-prose-td-borders: var(--fuwari-meta-divider);
+}
+
+:is(.dark .fuwari-custom-md) code span.line:before {
+  @apply text-white/30;
+}

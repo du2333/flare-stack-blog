@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { config } from "../../../config";
 import { relatedPostsQuery } from "@/features/posts/queries";
 import { formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +11,9 @@ interface RelatedPostsProps {
 }
 
 export function RelatedPosts({ slug }: RelatedPostsProps) {
-  const { data: posts } = useSuspenseQuery(relatedPostsQuery(slug));
+  const { data: posts } = useSuspenseQuery(
+    relatedPostsQuery(slug, config.post.relatedPostsLimit),
+  );
 
   if (posts.length === 0) {
     return null;

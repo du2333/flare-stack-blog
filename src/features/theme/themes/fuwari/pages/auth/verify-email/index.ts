@@ -1,0 +1,1 @@
+export { VerifyEmailPage } from "./page";

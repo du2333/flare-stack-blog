@@ -6,11 +6,11 @@ import { toast } from "sonner";
 import { COMMENTS_KEYS, allCommentsQuery } from "../../queries";
 import { useAdminComments } from "../../hooks/use-comments";
 
-import { ExpandableContent } from "../view/expandable-content";
 import { CommentModerationActions } from "./comment-moderation-actions";
 import { UserHoverCard } from "./user-hover-card";
 import type { JSONContent } from "@tiptap/react";
 import type { CommentStatus } from "@/lib/db/schema";
+import { ExpandableContent } from "@/features/theme/themes/default/components/comments/view/expandable-content";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminPagination } from "@/components/admin/admin-pagination";

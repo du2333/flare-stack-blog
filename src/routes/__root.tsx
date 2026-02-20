@@ -7,7 +7,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/common/theme-provider";
-import Toaster from "@/components/ui/toaster";
+
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
 import { blogConfig } from "@/blog.config";
@@ -73,6 +73,24 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           title: "RSS Feed",
           href: "/rss.xml",
         },
+        ...(blogConfig.theme.default.background.homeImage
+          ? [
+              {
+                rel: "preload",
+                as: "image",
+                href: blogConfig.theme.default.background.homeImage,
+              },
+            ]
+          : []),
+        ...(blogConfig.theme.default.background.globalImage
+          ? [
+              {
+                rel: "preload",
+                as: "image",
+                href: blogConfig.theme.default.background.globalImage,
+              },
+            ]
+          : []),
       ],
       scripts: env.VITE_UMAMI_WEBSITE_ID
         ? [
@@ -109,7 +127,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
-        <Toaster />
       </body>
     </html>
   );

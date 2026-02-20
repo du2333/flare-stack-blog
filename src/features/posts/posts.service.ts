@@ -102,7 +102,7 @@ export async function getRelatedPosts(
 
   // Cache IDs for 7 days (long-lived cache)
   // This key is NOT dependent on version, so it persists across publishes
-  const cacheKey = POSTS_CACHE_KEYS.related(data.slug);
+  const cacheKey = POSTS_CACHE_KEYS.related(data.slug, data.limit);
   const cachedIds = await CacheService.get(
     context,
     cacheKey,

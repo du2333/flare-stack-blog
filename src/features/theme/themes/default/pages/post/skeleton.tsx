@@ -1,11 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { config } from "../../config";
 import type { PostListItem } from "@/features/posts/posts.schema";
 import {
   featuredPostsQuery,
   postsInfiniteQueryOptions,
 } from "@/features/posts/queries";
+
+const { featuredPostsLimit } = config.home;
 
 export function PostPageSkeleton() {
   const navigate = useNavigate();
@@ -16,7 +19,9 @@ export function PostPageSkeleton() {
   const cachedPost =
     // Try finding in featured posts
     queryClient
-      .getQueryData<Array<PostListItem>>(featuredPostsQuery.queryKey)
+      .getQueryData<
+        Array<PostListItem>
+      >(featuredPostsQuery(featuredPostsLimit).queryKey)
       ?.find((p) => p.slug === slug) ||
     // Try finding in infinite query pages
     queryClient

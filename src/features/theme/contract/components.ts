@@ -17,6 +17,7 @@ import type {
   PublicLayoutProps,
   UserLayoutProps,
 } from "./layouts";
+import type { ThemeConfig } from "./config";
 
 /**
  * 主题契约 — 组件接口
@@ -25,6 +26,8 @@ import type {
  * TypeScript 在编译时验证主题实现了所有必须的组件。
  */
 export interface ThemeComponents {
+  /** 主题静态配置（数据获取参数等） */
+  config: ThemeConfig;
   /** 公共布局（Navbar + MobileMenu + Footer 的组合） */
   PublicLayout: React.ComponentType<PublicLayoutProps>;
   /** 主页渲染组件 */
@@ -49,13 +52,9 @@ export interface ThemeComponents {
 
   /** 搜索页组件 */
   SearchPage: React.ComponentType<SearchPageProps>;
-  /** 搜索页骨架屏 */
-  SearchPageSkeleton: React.ComponentType;
 
   /** 提交友链页组件 */
   SubmitFriendLinkPage: React.ComponentType<SubmitFriendLinkPageProps>;
-  /** 提交友链页骨架屏 */
-  SubmitFriendLinkPageSkeleton: React.ComponentType;
 
   /** Auth 布局组件 */
   AuthLayout: React.ComponentType<AuthLayoutProps>;
@@ -80,4 +79,7 @@ export interface ThemeComponents {
 
   /** 个人资料页组件 */
   ProfilePage: React.ComponentType<ProfilePageProps>;
+
+  /** Toast 通知组件（Sonner 封装） */
+  Toaster: React.ComponentType;
 }

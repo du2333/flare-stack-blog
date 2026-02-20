@@ -24,25 +24,25 @@ vite.config.ts
 
 `ThemeComponents` 接口列出了主题必须导出的所有组件。你的 `index.ts` 必须满足这个接口：
 
-| 字段                                                    | 说明                           |
-| :------------------------------------------------------ | :----------------------------- |
-| `PublicLayout`                                          | 公共布局（含 Navbar / Footer） |
-| `AuthLayout`                                            | 认证页布局                     |
-| `UserLayout`                                            | 登录用户专属布局               |
-| `HomePage` / `HomePageSkeleton`                         | 首页及其加载骨架屏             |
-| `PostsPage` / `PostsPageSkeleton`                       | 文章列表页及骨架屏             |
-| `PostPage` / `PostPageSkeleton`                         | 文章详情页及骨架屏             |
-| `FriendLinksPage` / `FriendLinksPageSkeleton`           | 友链列表页及骨架屏             |
-| `SearchPage` / `SearchPageSkeleton`                     | 搜索页及骨架屏                 |
-| `SubmitFriendLinkPage` / `SubmitFriendLinkPageSkeleton` | 友链提交页及骨架屏             |
-| `LoginPage`                                             | 登录页                         |
-| `RegisterPage`                                          | 注册页                         |
-| `ForgotPasswordPage`                                    | 找回密码页                     |
-| `ResetPasswordPage`                                     | 重置密码页                     |
-| `VerifyEmailPage`                                       | 邮箱验证页                     |
-| `ProfilePage`                                           | 个人资料页                     |
+| 字段                                          | 说明                           |
+| :-------------------------------------------- | :----------------------------- |
+| `PublicLayout`                                | 公共布局（含 Navbar / Footer） |
+| `AuthLayout`                                  | 认证页布局                     |
+| `UserLayout`                                  | 登录用户专属布局               |
+| `HomePage` / `HomePageSkeleton`               | 首页及其加载骨架屏             |
+| `PostsPage` / `PostsPageSkeleton`             | 文章列表页及骨架屏             |
+| `PostPage` / `PostPageSkeleton`               | 文章详情页及骨架屏             |
+| `FriendLinksPage` / `FriendLinksPageSkeleton` | 友链列表页及骨架屏             |
+| `SearchPage`                                  | 搜索页                         |
+| `SubmitFriendLinkPage`                        | 友链提交页                     |
+| `LoginPage`                                   | 登录页                         |
+| `RegisterPage`                                | 注册页                         |
+| `ForgotPasswordPage`                          | 找回密码页                     |
+| `ResetPasswordPage`                           | 重置密码页                     |
+| `VerifyEmailPage`                             | 邮箱验证页                     |
+| `ProfilePage`                                 | 个人资料页                     |
 
-> **骨架屏**用于 TanStack Router 的 `pendingComponent`，在数据加载期间展示占位 UI。如果不需要加载态，返回 `null` 即可。
+> **骨架屏（Skeleton）**：用作 TanStack Router 的 `pendingComponent`，在页面数据请求期间展示的过渡 UI。主题可以根据自身的交互设计语言自行决定是否需要实现它（例如，为了配合某些入场动画，您可以选择直接返回 `null` 而不渲染占位图）。
 
 ### `contract/layouts.ts` — 布局 Props
 
@@ -97,6 +97,8 @@ interface PostsPageProps {
 ```
 src/features/theme/themes/<your-theme>/
 ├── index.ts                  # 主题入口，导出满足 ThemeComponents 的对象
+├── styles/
+│   └── index.css             # 主题私有样式（颜色变量、字体、排版等）
 ├── layouts/
 │   ├── public-layout.tsx
 │   ├── auth-layout.tsx
@@ -121,12 +123,39 @@ src/features/theme/themes/<your-theme>/
 │   │   └── verify-email/
 │   └── user/
 │       └── profile/
-└── components/               # 主题内部共享组件（可选）
+├── components/               # 主题内部共享组件（可选）
+│   ├── content/              # 内容渲染组件（文章正文）
+│   │   ├── render.tsx        # Tiptap AST → React 映射
+│   │   ├── content-renderer.tsx # 包装层
+│   │   ├── code-block.tsx    # 代码块渲染
+│   │   ├── image-display.tsx # 图片展示
+│   │   └── zoomable-image.tsx # 图片灯箱
+│   └── comments/             # 评论区组件（可选，可复用共享组件）
+│       ├── view/             # 评论展示
+│       └── editor/           # 评论编辑器
+└── config.ts                 # 主题静态配置
 ```
 
 ## Step-by-step：创建第一个主题
 
-### Step 1：创建主题目录
+### 快速开始：使用脚手架脚本
+
+运行以下命令，按提示输入主题名称（如 `my-theme`），即可在 `src/features/theme/themes/` 下生成完整的主题目录和满足契约的 placeholder 组件：
+
+```bash
+bun run create-theme
+```
+
+脚本会创建所有必需的布局、页面和骨架屏文件，组件实现为占位符，方便你在此基础上逐步替换为真实 UI。完成后按提示：
+
+1. 在 `vite.config.ts` 的 `z.enum(["default"])` 中加入新主题名
+2. 在 `.env` 中设置 `THEME=<your-theme>` 并启动开发
+
+---
+
+### 手动创建：Step 1 — 创建主题目录
+
+若希望从零开始，可手动创建目录：
 
 ```bash
 mkdir -p src/features/theme/themes/my-theme/layouts
@@ -231,7 +260,112 @@ const buildEnvSchema = z.object({
 
 然后通过 `THEME` 环境变量在构建和开发时切换主题。
 
+## 内容渲染组件
+
+文章详情页需要将 Tiptap JSON AST 渲染为 React 组件。每个主题需要实现自己的一套内容渲染组件，以控制代码块、图片等元素的视觉呈现。
+
+### 必须实现的文件
+
+| 文件                                      | 说明                                                                             |
+| :---------------------------------------- | :------------------------------------------------------------------------------- |
+| `components/content/render.tsx`           | 核心映射：将 `image`、`codeBlock`、`tableCell` 等节点映射到主题自己的 React 组件 |
+| `components/content/content-renderer.tsx` | 包装层，使用 `useMemo` 调用 `renderReact`                                        |
+| `components/content/code-block.tsx`       | 代码块渲染（语法高亮、复制按钮等）                                               |
+| `components/content/image-display.tsx`    | 图片展示（点击放大、caption 等）                                                 |
+| `components/content/zoomable-image.tsx`   | 图片灯箱/放大交互                                                                |
+
+### 关键：共享 Tiptap 扩展
+
+`render.tsx` 必须从共享的编辑器配置中导入 Tiptap extensions，确保渲染器能识别所有文章内容支持的节点类型：
+
+```tsx
+// components/content/render.tsx
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
+import { extensions } from "@/features/posts/editor/config";
+import { CodeBlock } from "./code-block"; // 主题自己的实现
+import { ImageDisplay } from "./image-display"; // 主题自己的实现
+
+export function renderReact(content: JSONContent) {
+  return renderToReactElement({
+    extensions,
+    content,
+    options: {
+      nodeMapping: {
+        image: ({ node }) => <ImageDisplay /* ... */ />,
+        codeBlock: ({ node }) => <CodeBlock /* ... */ />,
+        // tableCell, tableHeader 等
+      },
+    },
+  });
+}
+```
+
+参考 `themes/default/components/content/` 和 `themes/fuwari/components/content/` 的完整实现。
+
+## 可复用的共享代码
+
+主题之间相互独立，但**可以且应该**复用框架提供的共享基础设施，避免重复造轮子：
+
+| 可以 import        | 来源                                            | 说明                                |
+| :----------------- | :---------------------------------------------- | :---------------------------------- |
+| 博客配置           | `@/blog.config`                                 | 标题、作者、社交链接等              |
+| 业务 Queries/Hooks | `@/features/*/queries/`、`@/features/*/hooks/`  | TanStack Query 查询工厂、业务 hooks |
+| Schema 类型        | `@/features/*/schema`                           | Zod schema 和 TypeScript 类型       |
+| Tiptap 编辑器配置  | `@/features/posts/editor/config`                | 文章编辑器的 extension 列表         |
+| 评论编辑器配置     | `@/features/comments/components/editor/config`  | 评论编辑器的 extension 列表         |
+| 通用 UI 组件       | `@/components/common/`（如 Turnstile 人机验证） | 与主题无关的功能组件                |
+| 工具函数/Hooks     | `@/lib/utils`、`@/hooks/*`                      | 格式化、防抖等通用工具              |
+
+> **评论系统**：每个主题需要在 `components/comments/` 下实现自己的评论区 UI 组件（编辑器、列表、评论项等）。评论的业务逻辑（`@/features/comments/queries/`、`@/features/comments/hooks/`）和编辑器配置（`@/features/comments/components/editor/config`）从共享位置导入，只有 UI 层是主题独立的。参考 `themes/default/components/comments/` 和 `themes/fuwari/components/comments/` 的实现。
+
+## 主题专属配置
+
+除了 `ThemeConfig`（数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。
+
+### 约定
+
+在 `src/blog.config.ts` 的 `theme` 命名空间下，以主题名为 key 添加配置：
+
+```ts
+// src/blog.config.ts
+export const blogConfig = {
+  // ... 公共配置 ...
+  theme: {
+    fuwari: {
+      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.jpg",
+      avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
+    },
+    // "my-theme": { ... }
+  },
+};
+```
+
+### 环境变量命名规则
+
+使用 `VITE_<THEME_NAME>_<KEY>` 格式，例如：
+
+| 环境变量              | 说明                  | 默认值                |
+| :-------------------- | :-------------------- | :-------------------- |
+| `VITE_FUWARI_HOME_BG` | Fuwari 首页背景图路径 | `/images/home-bg.jpg` |
+| `VITE_FUWARI_AVATAR`  | Fuwari 侧边栏头像路径 | `/images/avatar.png`  |
+
+新增的环境变量需要同步添加到 `src/lib/env/client.env.ts` 的 Zod schema 中。
+
+### 在组件中使用
+
+```tsx
+import { blogConfig } from "@/blog.config";
+
+// 直接访问当前主题的配置
+<img src={blogConfig.theme.fuwari.homeBg} alt="" />;
+```
+
+> **为什么不放在 `ThemeConfig` 中？** `ThemeConfig` 是编译时契约的一部分，主要用于路由 loader 的数据获取参数（如分页大小）。而图片路径等部署级别的配置更适合通过环境变量注入，放在 `blogConfig` 中可以统一管理，也方便用户在 `.env` 文件中覆盖。
+
 ## 注意事项
 
 - **不要修改 contract 文件**：契约是框架与主题之间的接口约定，业务逻辑依赖它稳定。如有新的业务需求需要暴露更多数据，请提 issue 或 PR。
 - **主题之间相互独立**：不同主题的代码不应相互引用，避免耦合。
+- **样式隔离**：项目采用分层样式架构：
+  - `src/styles.css` — 全局公共样式（TailwindCSS 入口、dark/light variant 等），所有主题共享，**主题不应修改此文件**。
+  - `themes/<your-theme>/styles/` — 主题私有样式（颜色变量、字体、排版、组件样式等），在主题 `index.ts` 中通过 `import "./styles/index.css"` 引入，确保只在该主题激活时加载。

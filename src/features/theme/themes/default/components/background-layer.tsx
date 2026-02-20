@@ -4,7 +4,7 @@ import { blogConfig } from "@/blog.config";
 import { useScrollProgress } from "../hooks/use-scroll-progress";
 
 const { homeImage, globalImage, light, dark, backdropBlur, transitionDuration } =
-  blogConfig.background;
+  blogConfig.theme.default.background;
 
 const baseStyle: React.CSSProperties = {
   position: "fixed",

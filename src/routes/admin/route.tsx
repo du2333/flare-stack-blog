@@ -10,6 +10,9 @@ import { sessionQuery } from "@/features/auth/queries";
 import { SideBar } from "@/components/admin/side-bar";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import Toaster from "@/components/ui/toaster";
+// 管理后台固定使用 default 主题样式，不随 THEME 变量切换
+import "@/features/theme/themes/default/styles/index.css";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
@@ -99,6 +102,7 @@ function AdminLayout() {
           </div>
         </div>
       </main>
+      <Toaster />
     </div>
   );
 }

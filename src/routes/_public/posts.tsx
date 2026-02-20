@@ -10,6 +10,8 @@ import { postsInfiniteQueryOptions } from "@/features/posts/queries";
 import { blogConfig } from "@/blog.config";
 import { tagsQueryOptions } from "@/features/tags/queries";
 
+const { postsPerPage } = theme.config.posts;
+
 export const Route = createFileRoute("/_public/posts")({
   validateSearch: z.object({
     tagName: z.string().optional(),
@@ -20,7 +22,10 @@ export const Route = createFileRoute("/_public/posts")({
   loader: async ({ context, deps }) => {
     await Promise.all([
       context.queryClient.prefetchInfiniteQuery(
-        postsInfiniteQueryOptions({ tagName: deps.tagName }),
+        postsInfiniteQueryOptions({
+          tagName: deps.tagName,
+          limit: postsPerPage,
+        }),
       ),
       context.queryClient.prefetchQuery(tagsQueryOptions),
     ]);
@@ -49,7 +54,9 @@ function RouteComponent() {
   const { data: tags } = useSuspenseQuery(tagsQueryOptions);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(postsInfiniteQueryOptions({ tagName }));
+    useSuspenseInfiniteQuery(
+      postsInfiniteQueryOptions({ tagName, limit: postsPerPage }),
+    );
 
   const posts = useMemo(() => {
     return data.pages.flatMap((page) => page.items);

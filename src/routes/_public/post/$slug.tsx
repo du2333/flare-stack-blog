@@ -9,6 +9,8 @@ const searchSchema = z.object({
   rootId: z.number().optional(),
 });
 
+const { relatedPostsLimit } = theme.config.post;
+
 export const Route = createFileRoute("/_public/post/$slug")({
   validateSearch: searchSchema,
   component: RouteComponent,
@@ -19,7 +21,9 @@ export const Route = createFileRoute("/_public/post/$slug")({
     );
 
     // 2. Deferred: Related posts (prefetch only, don't await)
-    void context.queryClient.prefetchQuery(relatedPostsQuery(params.slug));
+    void context.queryClient.prefetchQuery(
+      relatedPostsQuery(params.slug, relatedPostsLimit),
+    );
 
     if (!post) throw notFound();
 

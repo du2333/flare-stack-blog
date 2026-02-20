@@ -1,6 +1,6 @@
 {
   "name": "flare-stack-blog",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "author": {
     "email": "kuangdadu@gmail.com",
@@ -25,6 +25,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply DB --remote",
     "auth:generate-schema": "bunx @better-auth/cli generate --config auth-cli.ts --output src/lib/db/schema/auth.schema.ts",
+    "create-theme": "bun scripts/create-theme.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@noble/hashes": "^2.0.1",
     "@orama/orama": "^3.1.16",
+    "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.66.5",

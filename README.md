@@ -110,8 +110,12 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过**主题契约�
     <th>预览</th>
   </tr>
   <tr>
-    <td><code>default</code>（内置）</td>
+    <td><code>default</code>（默认）</td>
     <td><img src="docs/assets/home.png" alt="Default theme preview" /></td>
+  </tr>
+  <tr>
+    <td><code>fuwari</code></td>
+    <td><img src="docs/assets/fuwari.png" alt="Fuwari theme preview" /></td>
   </tr>
 </table>
 
@@ -169,23 +173,25 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过**主题契约�
 
 ### 可选
 
-| 变量名                    | 用途   | 说明                                                 |
-| :------------------------ | :----- | :--------------------------------------------------- |
-| `THEME`                   | 构建时 | 主题名称，默认 `default`，详见 [可用主题](#可用主题) |
-| `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key             |
-| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                        |
-| `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）           |
-| `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`）    |
-| `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）                 |
-| `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                         |
-| `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                           |
-| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                     |
-| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                             |
-| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                           |
-| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                             |
-| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                             |
-| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                      |
-| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                             |
+| 变量名                    | 用途   | 说明                                                  |
+| :------------------------ | :----- | :---------------------------------------------------- |
+| `THEME`                   | 构建时 | 主题名称，默认 `default`，详见 [可用主题](#可用主题)  |
+| `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key              |
+| `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                         |
+| `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）            |
+| `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`）     |
+| `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）                  |
+| `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                          |
+| `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                            |
+| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                      |
+| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                              |
+| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                            |
+| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                              |
+| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                              |
+| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                       |
+| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                              |
+| `VITE_FUWARI_HOME_BG`     | 构建时 | Fuwari 主题首页背景图路径，默认 `/images/home-bg.jpg` |
+| `VITE_FUWARI_AVATAR`      | 构建时 | Fuwari 主题头像图片路径，默认 `/images/avatar.png`    |
 
 ---
 

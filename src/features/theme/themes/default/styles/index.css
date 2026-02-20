@@ -1,0 +1,298 @@
+@import "tailwindcss";
+@import "@/styles/shared.css";
+
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-serif-sc";
+@import "@fontsource-variable/jetbrains-mono";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+
+    --primary: 240 10% 3.9%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --ring: 240 10% 3.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 0 0% 100%;
+
+    --selection: 240 10% 3.9%;
+    --selection-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 10% 3.9%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --ring: 240 4.9% 83.9%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --warning: 48 96% 89%;
+    --warning-foreground: 38 92% 50%;
+
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
+
+    --selection: 0 0% 100%;
+    --selection-foreground: 240 10% 3.9%;
+  }
+}
+
+mark {
+  @apply bg-muted text-inherit px-1 py-0.5 rounded-sm transition-colors border-b border-border;
+}
+
+/* Theme Transition: Disable default cross-fade when 'theme-transition' class is present */
+.theme-transition::view-transition-old(root),
+.theme-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@theme {
+  --tw-transition-duration: 0.3s;
+
+  /* Awwwards Style Font Families */
+  --font-serif: "Noto Serif SC Variable", serif;
+  --font-sans: "Noto Sans SC Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  /* Semantic Colors mapping to CSS variables */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-ring: hsl(var(--ring));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  --color-selection: hsl(var(--selection));
+  --color-selection-foreground: hsl(var(--selection-foreground));
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground overflow-x-hidden font-sans antialiased;
+    transition:
+      background-color 0.5s ease-in-out,
+      color 0.5s ease-in-out;
+    line-height: 1.6;
+  }
+
+  ::selection {
+    @apply bg-selection text-selection-foreground;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+
+  /* Typography Defaults */
+  .default-theme {
+    h1 {
+      @apply scroll-m-20 text-4xl font-serif font-medium tracking-tight lg:text-5xl;
+    }
+
+    h2 {
+      @apply scroll-m-20 text-3xl font-serif font-medium tracking-tight first:mt-0;
+    }
+
+    h3 {
+      @apply scroll-m-20 text-2xl font-serif font-medium tracking-tight;
+    }
+
+    h4 {
+      @apply scroll-m-20 text-xl font-serif font-medium tracking-tight;
+    }
+
+    h5 {
+      @apply scroll-m-20 text-lg font-serif font-medium tracking-tight;
+    }
+
+    h6 {
+      @apply scroll-m-20 text-base font-serif font-medium tracking-tight;
+    }
+
+    p {
+      @apply leading-7 not-first:mt-6;
+    }
+
+    blockquote {
+      @apply mt-6 border-l-2 pl-6 italic text-muted-foreground;
+    }
+
+    ul {
+      @apply my-6 ml-6 list-disc [&>li]:mt-2;
+    }
+
+    ol {
+      @apply my-6 ml-6 list-decimal [&>li]:mt-2;
+    }
+
+    code {
+      @apply relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
+    }
+  }
+
+  small {
+    @apply text-sm font-medium leading-none;
+  }
+
+  /* Minimalist Custom Scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full transition-colors;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent;
+  }
+}
+
+/* Tiptap Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground font-serif italic float-left h-0 pointer-events-none;
+  content: attr(data-placeholder);
+}
+
+/* Tiptap List Item Fix - 移除 <p> 的多余间距，改善点击体验 */
+.ProseMirror li > p {
+  @apply m-0;
+}
+
+.ProseMirror li > p:first-child:last-child {
+  @apply inline;
+}
+
+/* Table Extension Styles */
+
+.ProseMirror table {
+  @apply border-collapse my-6 overflow-hidden table-fixed w-full;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  @apply border border-border box-border min-w-[1em] px-2.5 py-2 relative align-top;
+}
+
+.ProseMirror th {
+  @apply bg-muted font-medium text-left text-muted-foreground;
+}
+
+.ProseMirror .selectedCell:after {
+  @apply absolute inset-0 content-[''] z-2 pointer-events-none bg-selection opacity-10;
+}
+
+.ProseMirror .column-resize-handle {
+  @apply absolute -bottom-0.5 -right-0.5 top-0 w-1 z-20 bg-blue-500 pointer-events-none;
+}
+
+.ProseMirror table p {
+  @apply m-0;
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-1 h-1;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full transition-colors;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent;
+  }
+}
+
+/* Comment Highlight for Anchor Navigation */
+@keyframes highlight-flash {
+  0% {
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+  15% {
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+  100% {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
+.highlight-active {
+  @apply relative scroll-mt-25;
+  animation: highlight-flash 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

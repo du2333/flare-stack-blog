@@ -56,7 +56,7 @@ function PublicLayout() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen font-sans relative antialiased">
+    <>
       <theme.PublicLayout
         navOptions={navOptions}
         user={session?.user}
@@ -65,6 +65,7 @@ function PublicLayout() {
       >
         <Outlet />
       </theme.PublicLayout>
-    </div>
+      <theme.Toaster />
+    </>
   );
 }

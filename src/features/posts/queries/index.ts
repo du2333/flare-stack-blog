@@ -30,38 +30,50 @@ export const POSTS_KEYS = {
   // Child keys (functions for specific queries)
   list: (filters?: { tagName?: string }) => ["posts", "list", filters] as const,
   detail: (idOrSlug: number | string) => ["posts", "detail", idOrSlug] as const,
-  related: (slug: string) => ["posts", "related", slug] as const,
+  related: (slug: string, limit?: number) =>
+    ["posts", "related", slug, limit] as const,
   adminList: (params: GetPostsInput) =>
     ["posts", "admin-list", params] as const,
   count: (params: GetPostsCountInput) => ["posts", "count", params] as const,
 };
 
-export const featuredPostsQuery = queryOptions({
-  queryKey: POSTS_KEYS.featured,
-  queryFn: async () => {
-    if (isSSR) {
-      const result = await getPostsCursorFn({ data: { limit: 4 } });
-      return result.items;
-    }
-    const res = await apiClient.posts.$get({ query: { limit: "4" } });
-    if (!res.ok) throw new Error("Failed to fetch posts");
-    return PostListResponseSchema.parse(await res.json()).items;
-  },
-});
+export function featuredPostsQuery(limit: number) {
+  return queryOptions({
+    queryKey: [...POSTS_KEYS.featured, limit],
+    queryFn: async () => {
+      if (isSSR) {
+        const result = await getPostsCursorFn({ data: { limit } });
+        return result.items;
+      }
+      const res = await apiClient.posts.$get({
+        query: { limit: String(limit) },
+      });
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      return PostListResponseSchema.parse(await res.json()).items;
+    },
+  });
+}
 
-export function postsInfiniteQueryOptions(filters: { tagName?: string } = {}) {
+export function postsInfiniteQueryOptions(
+  filters: { tagName?: string; limit?: number } = {},
+) {
+  const pageSize = filters.limit ?? 12;
   return infiniteQueryOptions({
     queryKey: POSTS_KEYS.list(filters),
     queryFn: async ({ pageParam }) => {
       if (isSSR) {
         return await getPostsCursorFn({
-          data: { cursor: pageParam, limit: 12, tagName: filters.tagName },
+          data: {
+            cursor: pageParam,
+            limit: pageSize,
+            tagName: filters.tagName,
+          },
         });
       }
       const res = await apiClient.posts.$get({
         query: {
           cursor: pageParam?.toString(),
-          limit: "12",
+          limit: String(pageSize),
           tagName: filters.tagName,
         },
       });
@@ -94,16 +106,16 @@ export function postByIdQuery(id: number) {
   });
 }
 
-export function relatedPostsQuery(slug: string) {
+export function relatedPostsQuery(slug: string, limit?: number) {
   return queryOptions({
-    queryKey: POSTS_KEYS.related(slug),
+    queryKey: POSTS_KEYS.related(slug, limit),
     queryFn: async () => {
       if (isSSR) {
-        return await getRelatedPostsFn({ data: { slug } });
+        return await getRelatedPostsFn({ data: { slug, limit } });
       }
       const res = await apiClient.post[":slug"].related.$get({
         param: { slug },
-        query: {},
+        query: { limit: limit != null ? String(limit) : undefined },
       });
       if (!res.ok) throw new Error("Failed to fetch related posts");
       return PostItemSchema.array().parse(await res.json());
