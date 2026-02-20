@@ -52,13 +52,9 @@ export interface ThemeComponents {
 
   /** 搜索页组件 */
   SearchPage: React.ComponentType<SearchPageProps>;
-  /** 搜索页骨架屏 */
-  SearchPageSkeleton: React.ComponentType;
 
   /** 提交友链页组件 */
   SubmitFriendLinkPage: React.ComponentType<SubmitFriendLinkPageProps>;
-  /** 提交友链页骨架屏 */
-  SubmitFriendLinkPageSkeleton: React.ComponentType;
 
   /** Auth 布局组件 */
   AuthLayout: React.ComponentType<AuthLayoutProps>;

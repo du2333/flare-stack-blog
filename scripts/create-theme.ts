@@ -85,12 +85,6 @@ export function UserLayout(_props: UserLayoutProps) {
       page: "FriendLinksPage",
       props: "FriendLinksPageProps",
     },
-    { dir: "search", page: "SearchPage", props: "SearchPageProps" },
-    {
-      dir: "submit-friend-link",
-      page: "SubmitFriendLinkPage",
-      props: "SubmitFriendLinkPageProps",
-    },
   ] as const;
 
   for (const { dir, page, props } of pageWithSkeleton) {
@@ -119,29 +113,35 @@ export { ${page}Skeleton } from "./skeleton";
     });
   }
 
-  // auth pages (page + index only)
-  const authPages = [
-    { dir: "login", page: "LoginPage", props: "LoginPageProps" },
-    { dir: "register", page: "RegisterPage", props: "RegisterPageProps" },
+  // Standard pages (page + index only)
+  const standardPages = [
+    { dir: "search", page: "SearchPage", props: "SearchPageProps" },
     {
-      dir: "forgot-password",
+      dir: "submit-friend-link",
+      page: "SubmitFriendLinkPage",
+      props: "SubmitFriendLinkPageProps",
+    },
+    { dir: "auth/login", page: "LoginPage", props: "LoginPageProps" },
+    { dir: "auth/register", page: "RegisterPage", props: "RegisterPageProps" },
+    {
+      dir: "auth/forgot-password",
       page: "ForgotPasswordPage",
       props: "ForgotPasswordPageProps",
     },
     {
-      dir: "reset-password",
+      dir: "auth/reset-password",
       page: "ResetPasswordPage",
       props: "ResetPasswordPageProps",
     },
     {
-      dir: "verify-email",
+      dir: "auth/verify-email",
       page: "VerifyEmailPage",
       props: "VerifyEmailPageProps",
     },
   ] as const;
 
-  for (const { dir, page, props } of authPages) {
-    const base = path.join(themeDir, "pages/auth", dir);
+  for (const { dir, page, props } of standardPages) {
+    const base = path.join(themeDir, "pages", dir);
     files.push({
       path: path.join(base, "page.tsx"),
       content: `import type { ${props} } from "@/features/theme/contract/pages";
@@ -186,10 +186,9 @@ import { PublicLayout } from "./layouts/public-layout";
 import { AuthLayout } from "./layouts/auth-layout";
 import { UserLayout } from "./layouts/user-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
-import { SearchPage, SearchPageSkeleton } from "./pages/search";
+import { SearchPage } from "./pages/search";
 import {
   SubmitFriendLinkPage,
-  SubmitFriendLinkPageSkeleton,
 } from "./pages/submit-friend-link";
 import { LoginPage } from "./pages/auth/login";
 import { RegisterPage } from "./pages/auth/register";
@@ -216,9 +215,7 @@ export default {
   FriendLinksPage,
   FriendLinksPageSkeleton,
   SearchPage,
-  SearchPageSkeleton,
   SubmitFriendLinkPage,
-  SubmitFriendLinkPageSkeleton,
   LoginPage,
   RegisterPage,
   ForgotPasswordPage,

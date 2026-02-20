@@ -24,23 +24,23 @@ vite.config.ts
 
 `ThemeComponents` 接口列出了主题必须导出的所有组件。你的 `index.ts` 必须满足这个接口：
 
-| 字段                                                    | 说明                           |
-| :------------------------------------------------------ | :----------------------------- |
-| `PublicLayout`                                          | 公共布局（含 Navbar / Footer） |
-| `AuthLayout`                                            | 认证页布局                     |
-| `UserLayout`                                            | 登录用户专属布局               |
-| `HomePage` / `HomePageSkeleton`                         | 首页及其加载骨架屏             |
-| `PostsPage` / `PostsPageSkeleton`                       | 文章列表页及骨架屏             |
-| `PostPage` / `PostPageSkeleton`                         | 文章详情页及骨架屏             |
-| `FriendLinksPage` / `FriendLinksPageSkeleton`           | 友链列表页及骨架屏             |
-| `SearchPage` / `SearchPageSkeleton`                     | 搜索页及骨架屏                 |
-| `SubmitFriendLinkPage` / `SubmitFriendLinkPageSkeleton` | 友链提交页及骨架屏             |
-| `LoginPage`                                             | 登录页                         |
-| `RegisterPage`                                          | 注册页                         |
-| `ForgotPasswordPage`                                    | 找回密码页                     |
-| `ResetPasswordPage`                                     | 重置密码页                     |
-| `VerifyEmailPage`                                       | 邮箱验证页                     |
-| `ProfilePage`                                           | 个人资料页                     |
+| 字段                                          | 说明                           |
+| :-------------------------------------------- | :----------------------------- |
+| `PublicLayout`                                | 公共布局（含 Navbar / Footer） |
+| `AuthLayout`                                  | 认证页布局                     |
+| `UserLayout`                                  | 登录用户专属布局               |
+| `HomePage` / `HomePageSkeleton`               | 首页及其加载骨架屏             |
+| `PostsPage` / `PostsPageSkeleton`             | 文章列表页及骨架屏             |
+| `PostPage` / `PostPageSkeleton`               | 文章详情页及骨架屏             |
+| `FriendLinksPage` / `FriendLinksPageSkeleton` | 友链列表页及骨架屏             |
+| `SearchPage`                                  | 搜索页                         |
+| `SubmitFriendLinkPage`                        | 友链提交页                     |
+| `LoginPage`                                   | 登录页                         |
+| `RegisterPage`                                | 注册页                         |
+| `ForgotPasswordPage`                          | 找回密码页                     |
+| `ResetPasswordPage`                           | 重置密码页                     |
+| `VerifyEmailPage`                             | 邮箱验证页                     |
+| `ProfilePage`                                 | 个人资料页                     |
 
 > **骨架屏**用于 TanStack Router 的 `pendingComponent`，在数据加载期间展示占位 UI。
 
