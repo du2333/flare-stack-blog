@@ -1,5 +1,4 @@
 import { useRouterState } from "@tanstack/react-router";
-import { useTheme } from "@/components/common/theme-provider";
 import { blogConfig } from "@/blog.config";
 import { useScrollProgress } from "../hooks/use-scroll-progress";
 
@@ -21,7 +20,6 @@ const imageStyle: React.CSSProperties = {
 };
 
 export function BackgroundLayer() {
-  const { appTheme } = useTheme();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
@@ -32,53 +30,53 @@ export function BackgroundLayer() {
   if (!hasAnyImage) return null;
 
   const isHomepage = pathname === "/" || pathname === "";
-  const themeOpacity = appTheme === "dark" ? dark.opacity : light.opacity;
   const transition = `opacity ${transitionDuration}ms ease`;
 
-  const homeOpacity = isHomepage ? (1 - scrollProgress) * themeOpacity : 0;
-  const globalOpacity = isHomepage
-    ? scrollProgress * themeOpacity
-    : themeOpacity;
-
-  const showOverlay = hasAnyImage && themeOpacity > 0;
-
-  const overlayGradient =
-    appTheme === "dark"
-      ? "linear-gradient(to bottom, transparent, rgba(0,0,0,0.3), rgba(0,0,0,0.8))"
-      : "linear-gradient(to bottom, transparent, rgba(255,255,255,0.3), rgba(255,255,255,0.8))";
+  // Normalized opacity (0-1) based on scroll/route only — theme opacity applied via CSS var
+  const homeOpacity = isHomepage ? 1 - scrollProgress : 0;
+  const globalOpacity = isHomepage ? scrollProgress : 1;
 
   return (
-    <div aria-hidden="true">
+    <div
+      aria-hidden="true"
+      className="[--bg-opacity:var(--bg-opacity-light)] dark:[--bg-opacity:var(--bg-opacity-dark)]"
+      style={{
+        "--bg-opacity-light": light.opacity,
+        "--bg-opacity-dark": dark.opacity,
+      } as React.CSSProperties}
+    >
       {/* Home background image */}
-      <div
-        style={{
-          ...imageStyle,
-          backgroundImage: homeImage ? `url(${homeImage})` : undefined,
-          opacity: homeOpacity,
-          transition,
-        }}
-      />
-
-      {/* Global background image */}
-      <div
-        style={{
-          ...imageStyle,
-          backgroundImage: globalImage ? `url(${globalImage})` : undefined,
-          opacity: globalOpacity,
-          transition,
-        }}
-      />
-
-      {/* Overlay for text legibility */}
-      {showOverlay && (
+      {homeImage && (
         <div
           style={{
-            ...baseStyle,
-            background: overlayGradient,
-            backdropFilter: `blur(${backdropBlur}px)`,
+            ...imageStyle,
+            backgroundImage: `url(${homeImage})`,
+            opacity: `calc(${homeOpacity} * var(--bg-opacity))`,
+            transition,
           }}
         />
       )}
+
+      {/* Global background image */}
+      {globalImage && (
+        <div
+          style={{
+            ...imageStyle,
+            backgroundImage: `url(${globalImage})`,
+            opacity: `calc(${globalOpacity} * var(--bg-opacity))`,
+            transition,
+          }}
+        />
+      )}
+
+      {/* Overlay for text legibility */}
+      <div
+        className="bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.3),rgba(255,255,255,0.8))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.3),rgba(0,0,0,0.8))]"
+        style={{
+          ...baseStyle,
+          backdropFilter: backdropBlur ? `blur(${backdropBlur}px)` : undefined,
+        }}
+      />
     </div>
   );
 }
