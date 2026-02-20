@@ -62,7 +62,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
       {/* Modal Content */}
       <div
         className={`
-            relative w-full max-w-lg bg-background border border-border/20 shadow-2xl 
+            relative w-full max-w-lg bg-background border border-border/20 shadow-2xl
             flex flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform
             ${
               isMounted

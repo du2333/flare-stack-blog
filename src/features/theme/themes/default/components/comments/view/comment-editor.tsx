@@ -1,11 +1,11 @@
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { useCallback, useState } from "react";
 import { Loader2, Send } from "lucide-react";
-import { commentExtensions } from "../editor/config";
 import CommentEditorToolbar from "../editor/comment-editor-toolbar";
 import InsertModal from "../editor/comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
 import type { ModalType } from "../editor/comment-insert-modal";
+import { commentExtensions } from "@/features/comments/components/editor/config";
 import { Button } from "@/components/ui/button";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 

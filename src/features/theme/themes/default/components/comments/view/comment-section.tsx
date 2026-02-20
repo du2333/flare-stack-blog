@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
-import { rootCommentsByPostIdInfiniteQuery } from "../../queries";
-import { useComments } from "../../hooks/use-comments";
 import { CommentList } from "./comment-list";
 import { CommentEditor } from "./comment-editor";
 import { CommentSectionSkeleton } from "./comment-section-skeleton";
 import type { JSONContent } from "@tiptap/react";
+import { useComments } from "@/features/comments/hooks/use-comments";
+import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -104,6 +104,8 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
   useEffect(() => {
     if (isLoading || !data) return;
 
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const handleAnchor = () => {
       const hash = window.location.hash;
       if (!hash || !hash.startsWith("#comment-")) return;
@@ -124,7 +126,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
 
         if (retries < maxRetries) {
           retries++;
-          setTimeout(attemptScroll, 200);
+          timeoutId = setTimeout(attemptScroll, 200);
         }
       };
 
@@ -133,7 +135,12 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
 
     handleAnchor();
     window.addEventListener("hashchange", handleAnchor);
-    return () => window.removeEventListener("hashchange", handleAnchor);
+    return () => {
+      window.removeEventListener("hashchange", handleAnchor);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [isLoading, data]);
 
   if (isLoading || !data) {

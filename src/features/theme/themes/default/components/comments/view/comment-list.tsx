@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { repliesByRootIdInfiniteQuery } from "../../queries";
 import { CommentItem } from "./comment-item";
 import { CommentReplyForm } from "./comment-reply-form";
-import type { RootCommentWithReplyCount } from "../../comments.schema";
+import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import type { JSONContent } from "@tiptap/react";
+import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { Button } from "@/components/ui/button";
 
@@ -152,13 +152,15 @@ function RootCommentWithReplies({
       {isReplyingToRoot && (
         <div className="py-6 ml-12 px-0 animate-in fade-in slide-in-from-top-2 duration-300">
           {session ? (
-            <CommentReplyForm
-              parentUserName={replyTarget.userName}
-              onSubmit={onSubmitReply!}
-              isSubmitting={isSubmittingReply!}
-              onCancel={onCancelReply!}
-              className="mt-0"
-            />
+            onSubmitReply && onCancelReply ? (
+              <CommentReplyForm
+                parentUserName={replyTarget.userName}
+                onSubmit={onSubmitReply}
+                isSubmitting={isSubmittingReply ?? false}
+                onCancel={onCancelReply}
+                className="mt-0"
+              />
+            ) : null
           ) : (
             <div className="flex items-center gap-4 py-4 bg-muted/5 rounded-sm px-4">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex-1">
