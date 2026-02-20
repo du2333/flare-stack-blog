@@ -51,10 +51,10 @@ export function SubmitFriendLinkPage({
         className="fuwari-card-base p-6 md:p-8 relative overflow-hidden flex flex-col items-center justify-center min-h-48 fuwari-onload-animation bg-linear-to-br from-(--fuwari-primary)/5 to-transparent"
         style={{ animationDelay: "150ms" }}
       >
-        <h1 className="text-3xl font-bold text-black/90 dark:text-white/90 mb-4 z-10 transition-colors">
+        <h1 className="text-3xl font-bold fuwari-text-90 mb-4 z-10 transition-colors">
           申请友链
         </h1>
-        <p className="text-black/50 dark:text-white/50 text-center max-w-xl z-10 transition-colors">
+        <p className="fuwari-text-50 text-center max-w-xl z-10 transition-colors">
           只需填写下列表单即可申请加入友情链接。请确保您的网站可以正常访问且包含有价值的内容。
         </p>
         <Link
@@ -72,19 +72,19 @@ export function SubmitFriendLinkPage({
           className="lg:col-span-3 fuwari-card-base p-6 md:p-8 fuwari-onload-animation"
           style={{ animationDelay: "300ms" }}
         >
-          <h2 className="text-xl font-bold text-black/90 dark:text-white/90 mb-6 flex items-center gap-2 transition-colors">
+          <h2 className="text-xl font-bold fuwari-text-90 mb-6 flex items-center gap-2 transition-colors">
             <PlusCircle className="w-5 h-5 text-(--fuwari-primary)" />
             提交新链接
           </h2>
 
           <form onSubmit={form.handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-black/70 dark:text-white/70 mb-1.5 transition-colors">
+              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
                 站点名称 <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("siteName")}
-                className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="例如：Fuwari Blog"
               />
               {form.errors.siteName && (
@@ -95,13 +95,13 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black/70 dark:text-white/70 mb-1.5 transition-colors">
+              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
                 站点链接 <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("siteUrl")}
                 type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="例如：https://example.com"
               />
               {form.errors.siteUrl && (
@@ -112,12 +112,12 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black/70 dark:text-white/70 mb-1.5 transition-colors">
+              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
                 站点描述
               </label>
               <input
                 {...form.register("description")}
-                className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="一句话介绍您的网站"
               />
               {form.errors.description && (
@@ -128,13 +128,13 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black/70 dark:text-white/70 mb-1.5 transition-colors">
+              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
                 Logo 链接
               </label>
               <input
                 {...form.register("logoUrl")}
                 type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="例如：https://example.com/logo.png"
               />
               {form.errors.logoUrl && (
@@ -145,13 +145,13 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black/70 dark:text-white/70 mb-1.5 transition-colors">
+              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
                 联系邮箱 <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("contactEmail")}
                 type="email"
-                className="w-full px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="用于接收审核结果"
               />
               {form.errors.contactEmail && (
@@ -186,7 +186,7 @@ export function SubmitFriendLinkPage({
           className="lg:col-span-2 fuwari-card-base p-6 md:p-8 fuwari-onload-animation self-start"
           style={{ animationDelay: "450ms" }}
         >
-          <h2 className="text-xl font-bold text-black/90 dark:text-white/90 mb-6 transition-colors">
+          <h2 className="text-xl font-bold fuwari-text-90 mb-6 transition-colors">
             我的申请记录
           </h2>
 
@@ -198,7 +198,7 @@ export function SubmitFriendLinkPage({
                   className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 transition-all hover:border-(--fuwari-primary)/30"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-black/90 dark:text-white/90 truncate transition-colors">
+                    <h3 className="font-bold fuwari-text-90 truncate transition-colors">
                       {link.siteName}
                     </h3>
                     <StatusBadge status={link.status} />
@@ -207,7 +207,7 @@ export function SubmitFriendLinkPage({
                     href={link.siteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-black/50 dark:text-white/50 hover:text-(--fuwari-primary) transition-colors truncate block mb-3"
+                    className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) transition-colors truncate block mb-3"
                   >
                     {link.siteUrl}
                   </a>
@@ -221,13 +221,13 @@ export function SubmitFriendLinkPage({
                     </div>
                   )}
 
-                  <div className="text-[10px] text-black/30 dark:text-white/30 text-right mt-2 transition-colors">
+                  <div className="text-[10px] fuwari-text-30 text-right mt-2 transition-colors">
                     提交于 {new Date(link.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="py-12 text-center text-black/40 dark:text-white/40 transition-colors">
+              <div className="py-12 text-center fuwari-text-30 transition-colors">
                 <p className="text-sm">暂无申请记录</p>
               </div>
             )}

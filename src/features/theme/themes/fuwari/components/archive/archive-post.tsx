@@ -15,7 +15,7 @@ export function ArchivePost({ post }: ArchivePostProps) {
     <Link
       to="/post/$slug"
       params={{ slug: post.slug }}
-      className="group !block h-10 w-full rounded-lg hover:bg-[var(--fuwari-btn-plain-bg-hover)] active:bg-[var(--fuwari-btn-plain-bg-active)] transition-colors"
+      className="group block! h-10 w-full rounded-lg hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-colors"
       aria-label={post.title}
     >
       <div className="flex flex-row justify-start items-center h-full">
@@ -28,18 +28,18 @@ export function ArchivePost({ post }: ArchivePostProps) {
         <div className="w-[15%] md:w-[10%] relative fuwari-timeline-dash h-full flex items-center">
           <div
             className="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-              bg-black/50 dark:bg-white/50 group-hover:bg-[var(--fuwari-primary)]
-              outline outline-4 z-50
-              outline-[var(--fuwari-card-bg)]
-              group-hover:outline-[var(--fuwari-btn-plain-bg-hover)]
-              group-active:outline-[var(--fuwari-btn-plain-bg-active)]"
+              bg-black/50 dark:bg-white/50 group-hover:bg-(--fuwari-primary)
+              outline z-50
+              outline-(--fuwari-card-bg)
+              group-hover:outline-(--fuwari-btn-plain-bg-hover)
+              group-active:outline-(--fuwari-btn-plain-bg-active)"
           />
         </div>
 
         {/* Post Title */}
         <div
           className="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
-            group-hover:translate-x-1 transition-all group-hover:text-[var(--fuwari-primary)]
+            group-hover:translate-x-1 transition-all group-hover:text-(--fuwari-primary)
             fuwari-text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
         >
           {post.title}

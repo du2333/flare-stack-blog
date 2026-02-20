@@ -7,7 +7,7 @@ export function Profile() {
     <div className="fuwari-card-base p-4">
       <Link
         to="/"
-        className="group block relative mx-auto mb-3 max-w-[12rem] lg:max-w-none overflow-hidden rounded-xl active:scale-95"
+        className="group block relative mx-auto mb-3 max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"
         aria-label="返回首页"
       >
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/30 group-active:bg-black/50 transition-colors pointer-events-none" />
@@ -34,7 +34,7 @@ export function Profile() {
             target="_blank"
             rel="me noreferrer"
             aria-label="GitHub"
-            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-[var(--fuwari-primary)] transition-colors"
+            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-(--fuwari-primary) transition-colors"
           >
             <Github size={20} strokeWidth={1.5} />
           </a>
@@ -43,14 +43,14 @@ export function Profile() {
             target="_blank"
             rel="noreferrer"
             aria-label="RSS"
-            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-[var(--fuwari-primary)] transition-colors"
+            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-(--fuwari-primary) transition-colors"
           >
             <Rss size={20} strokeWidth={1.5} />
           </a>
           <a
             href={`mailto:${blogConfig.social.email}`}
             aria-label="Email"
-            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-[var(--fuwari-primary)] transition-colors"
+            className="fuwari-btn-regular rounded-lg h-10 w-10 active:scale-90 hover:text-(--fuwari-primary) transition-colors"
           >
             <Mail size={20} strokeWidth={1.5} />
           </a>

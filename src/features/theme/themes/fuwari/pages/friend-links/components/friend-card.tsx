@@ -48,12 +48,12 @@ export function FriendCard({ link, className, style }: FriendCardProps) {
 
         {/* Content Area */}
         <div className="min-w-0 flex-1 flex flex-col justify-center">
-          <h3 className="text-lg font-bold text-black/90 dark:text-white/90 truncate transition-colors duration-300 group-hover:text-(--fuwari-primary) flex items-center gap-1.5">
+          <h3 className="text-lg font-bold fuwari-text-90 truncate transition-colors duration-300 group-hover:text-(--fuwari-primary) flex items-center gap-1.5">
             {link.siteName}
             <ExternalLink className="w-4 h-4 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-(--fuwari-primary)" />
           </h3>
           <p
-            className="text-sm text-black/50 dark:text-white/50 mt-1 line-clamp-2 leading-relaxed"
+            className="text-sm fuwari-text-50 mt-1 line-clamp-2 leading-relaxed"
             title={description}
           >
             {description}

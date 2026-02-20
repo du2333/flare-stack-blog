@@ -21,15 +21,15 @@ export function PostPage({ post }: PostPageProps) {
       {/* Main Post Container */}
       <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full fuwari-onload-animation">
         {/* Word count and reading time */}
-        <div className="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition">
+        <div className="flex flex-row fuwari-text-30 gap-5 mb-3 transition">
           <div className="flex flex-row items-center">
-            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
               <FileText strokeWidth={1.5} size={16} />
             </div>
             <div className="text-sm">约 {wordCount} 字</div>
           </div>
           <div className="flex flex-row items-center">
-            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
               <Clock strokeWidth={1.5} size={16} />
             </div>
             <div className="text-sm">{post.readTimeInMinutes} 分钟</div>
@@ -41,7 +41,7 @@ export function PostPage({ post }: PostPageProps) {
           <h1
             className="transition w-full block font-bold mb-3
               text-3xl md:text-[2.25rem]/[2.75rem]
-              text-black/90 dark:text-white/90
+              fuwari-text-90
               md:before:w-1 before:h-5 before:rounded-md before:bg-(--fuwari-primary)
               before:absolute before:top-3 before:-left-4.5"
             style={{ viewTransitionName: `post-title-${post.slug}` }}
@@ -83,9 +83,7 @@ export function PostPage({ post }: PostPageProps) {
         className="fuwari-card-base p-6 fuwari-onload-animation"
         style={{ animationDelay: "300ms" }}
       >
-        <h2 className="text-xl font-bold mb-4 text-black/90 dark:text-white/90">
-          相关文章
-        </h2>
+        <h2 className="text-xl font-bold mb-4 fuwari-text-90">相关文章</h2>
         <Suspense fallback={<RelatedPostsSkeleton />}>
           <RelatedPosts slug={post.slug} />
         </Suspense>

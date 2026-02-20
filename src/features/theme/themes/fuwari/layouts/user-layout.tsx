@@ -30,7 +30,7 @@ export function UserLayout({
               <LogIn className="w-8 h-8" strokeWidth={1.5} />
             </div>
 
-            <h1 className="text-2xl font-bold text-black/90 dark:text-white/90 mb-3 transition-colors">
+            <h1 className="text-2xl font-bold fuwari-text-90 mb-3 transition-colors">
               需要登录
             </h1>
             <p className="text-(--fuwari-btn-content) mb-8 transition-colors leading-relaxed">

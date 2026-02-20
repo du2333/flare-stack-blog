@@ -10,10 +10,10 @@ export function FriendLinksPage({ links }: FriendLinksPageProps) {
         className="fuwari-card-base p-6 md:p-8 relative overflow-hidden flex flex-col items-center justify-center min-h-56 fuwari-onload-animation bg-linear-to-br from-(--fuwari-primary)/5 to-transparent"
         style={{ animationDelay: "150ms" }}
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-black/90 dark:text-white/90 mb-4 z-10 transition-colors">
+        <h1 className="text-3xl md:text-4xl font-bold fuwari-text-90 mb-4 z-10 transition-colors">
           友情链接
         </h1>
-        <p className="text-black/50 dark:text-white/50 text-center max-w-xl z-10 transition-colors">
+        <p className="fuwari-text-50 text-center max-w-xl z-10 transition-colors">
           海内存知己，天涯若比邻。如果你也喜欢折腾，欢迎在这里留下脚印。
         </p>
         <Link
@@ -41,7 +41,7 @@ export function FriendLinksPage({ links }: FriendLinksPageProps) {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-black/30 dark:text-white/30 transition-colors">
+          <div className="flex flex-col items-center justify-center py-20 fuwari-text-30 transition-colors">
             <p className="text-lg">暂无友情链接记录 🍃</p>
           </div>
         )}

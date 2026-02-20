@@ -29,6 +29,8 @@
     --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
     --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
     --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(0, 0, 0, 0.07);
+    --fuwari-input-border: rgba(0, 0, 0, 0.1);
   }
 
   .dark {
@@ -47,6 +49,8 @@
     --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
     --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
     --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(255, 255, 255, 0.05);
+    --fuwari-input-border: rgba(255, 255, 255, 0.1);
   }
 }
 
