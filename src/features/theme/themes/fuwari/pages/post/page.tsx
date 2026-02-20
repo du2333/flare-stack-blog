@@ -6,7 +6,7 @@ import { PostMeta } from "./components/post-meta";
 import { PostSummary } from "./components/post-summary";
 import type { PostPageProps } from "@/features/theme/contract/pages";
 import { ContentRenderer } from "@/features/theme/themes/fuwari/components/content/content-renderer";
-import { CommentSection } from "@/features/comments/components/view/comment-section";
+import { FuwariCommentSection } from "@/features/theme/themes/fuwari/components/comments/view/comment-section";
 
 export function PostPage({ post }: PostPageProps) {
   // Approximate word count
@@ -92,7 +92,7 @@ export function PostPage({ post }: PostPageProps) {
         className="fuwari-card-base p-6 fuwari-onload-animation"
         style={{ animationDelay: "450ms" }}
       >
-        <CommentSection postId={post.id} className="mt-0 pt-0 border-t-0" />
+        <FuwariCommentSection postId={post.id} />
       </div>
     </div>
   );
