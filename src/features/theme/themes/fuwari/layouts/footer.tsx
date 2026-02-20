@@ -34,21 +34,21 @@ export function Footer(_: FooterProps) {
           <br />
           Powered by{" "}
           <a
-            href="https://developers.cloudflare.com/"
+            href="https://tanstack.com/start"
             target="_blank"
             rel="noreferrer"
             className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
-            Cloudflare
+            Tanstack Start
           </a>{" "}
           &{" "}
           <a
-            href="https://github.com/saicaca/fuwari"
+            href="https://github.com/du2333/flare-stack-blog"
             target="_blank"
             rel="noreferrer"
             className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
           >
-            Fuwari
+            Flare Stack Blog
           </a>
         </div>
       </div>
