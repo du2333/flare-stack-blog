@@ -83,15 +83,9 @@ export function PostPage({ post }: PostPageProps) {
       </div>
 
       {/* Related Posts */}
-      <div
-        className="fuwari-card-base p-6 fuwari-onload-animation"
-        style={{ animationDelay: "300ms" }}
-      >
-        <h2 className="text-xl font-bold mb-4 fuwari-text-90">相关文章</h2>
-        <Suspense fallback={<RelatedPostsSkeleton />}>
-          <RelatedPosts slug={post.slug} />
-        </Suspense>
-      </div>
+      <Suspense fallback={<RelatedPostsSkeleton />}>
+        <RelatedPosts slug={post.slug} />
+      </Suspense>
 
       {/* Comments Section */}
       <div
