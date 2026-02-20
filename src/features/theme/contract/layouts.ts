@@ -31,5 +31,9 @@ export interface AuthLayoutProps {
 
 export interface UserLayoutProps {
   isAuthenticated: boolean;
+  navOptions: Array<NavOption>;
+  user?: UserInfo;
+  isSessionLoading: boolean;
+  logout: () => Promise<void>;
   children: React.ReactNode;
 }
