@@ -62,14 +62,17 @@ function UserLayout() {
   }, [navigate]);
 
   return (
-    <theme.UserLayout
-      isAuthenticated={!!session?.user}
-      navOptions={navOptions}
-      user={session?.user}
-      isSessionLoading={isSessionPending}
-      logout={logout}
-    >
-      <Outlet />
-    </theme.UserLayout>
+    <>
+      <theme.UserLayout
+        isAuthenticated={!!session?.user}
+        navOptions={navOptions}
+        user={session?.user}
+        isSessionLoading={isSessionPending}
+        logout={logout}
+      >
+        <Outlet />
+      </theme.UserLayout>
+      <theme.Toaster />
+    </>
   );
 }

@@ -56,13 +56,16 @@ function PublicLayout() {
   }, [navigate]);
 
   return (
-    <theme.PublicLayout
-      navOptions={navOptions}
-      user={session?.user}
-      isSessionLoading={isSessionPending}
-      logout={logout}
-    >
-      <Outlet />
-    </theme.PublicLayout>
+    <>
+      <theme.PublicLayout
+        navOptions={navOptions}
+        user={session?.user}
+        isSessionLoading={isSessionPending}
+        logout={logout}
+      >
+        <Outlet />
+      </theme.PublicLayout>
+      <theme.Toaster />
+    </>
   );
 }

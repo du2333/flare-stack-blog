@@ -14,6 +14,7 @@ import { ForgotPasswordPage } from "./pages/auth/forgot-password";
 import { ResetPasswordPage } from "./pages/auth/reset-password";
 import { VerifyEmailPage } from "./pages/auth/verify-email";
 import { ProfilePage } from "./pages/user/profile";
+import { Toaster } from "./components/toaster";
 import { config } from "./config";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
@@ -42,4 +43,5 @@ export default {
   ResetPasswordPage,
   VerifyEmailPage,
   ProfilePage,
+  Toaster,
 } satisfies ThemeComponents;

@@ -79,4 +79,7 @@ export interface ThemeComponents {
 
   /** 个人资料页组件 */
   ProfilePage: React.ComponentType<ProfilePageProps>;
+
+  /** Toast 通知组件（Sonner 封装） */
+  Toaster: React.ComponentType;
 }

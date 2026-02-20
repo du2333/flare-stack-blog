@@ -16,6 +16,7 @@ import { VerifyEmailPage } from "./pages/auth/verify-email";
 import { ProfilePage } from "./pages/user/profile";
 import { config } from "./config";
 import type { ThemeComponents } from "@/features/theme/contract/components";
+import Toaster from "@/components/ui/toaster";
 
 /**
  * Default theme — implements the full ThemeComponents contract.
@@ -42,4 +43,5 @@ export default {
   ResetPasswordPage,
   VerifyEmailPage,
   ProfilePage,
+  Toaster,
 } satisfies ThemeComponents;

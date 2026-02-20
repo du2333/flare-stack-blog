@@ -25,8 +25,11 @@ export const Route = createFileRoute("/_auth")({
 function RouteComponent() {
   const navigateBack = useNavigateBack();
   return (
-    <theme.AuthLayout onBack={navigateBack}>
-      <Outlet />
-    </theme.AuthLayout>
+    <>
+      <theme.AuthLayout onBack={navigateBack}>
+        <Outlet />
+      </theme.AuthLayout>
+      <theme.Toaster />
+    </>
   );
 }

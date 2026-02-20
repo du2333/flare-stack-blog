@@ -7,7 +7,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/common/theme-provider";
-import Toaster from "@/components/ui/toaster";
+
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
 import { blogConfig } from "@/blog.config";
@@ -109,7 +109,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
-        <Toaster />
       </body>
     </html>
   );
