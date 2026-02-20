@@ -1,7 +1,7 @@
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
 import { CodeBlock } from "@/features/theme/themes/fuwari/components/content/code-block";
-import { ImageDisplay } from "@/features/theme/themes/default/components/content/image-display";
+import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
 import { extensions } from "@/features/posts/editor/config";
 
 export function renderReact(content: JSONContent) {
