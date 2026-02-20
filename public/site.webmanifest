@@ -1,6 +1,6 @@
 {
-  "name": "冷静的阿旷",
-  "short_name": "阿旷",
+  "name": "方便面のblog",
+  "short_name": "方便面のblog",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#eeebec",
+  "background_color": "#eeebec",
   "display": "standalone"
 }
