@@ -23,7 +23,7 @@ export function MobileMenu({
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-[49] bg-black/20 backdrop-blur-sm transition-opacity duration-300",
+          "fixed inset-0 z-49 bg-black/20 backdrop-blur-sm transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
@@ -32,7 +32,7 @@ export function MobileMenu({
       {/* Floating Menu Panel */}
       <div
         className={cn(
-          "fixed top-[5rem] right-4 z-[50] w-64 origin-top-right transition-all duration-300 ease-out transform",
+          "fixed top-20 right-4 z-50 w-64 origin-top-right transition-all duration-300 ease-out transform",
           isOpen
             ? "scale-100 opacity-100 translate-y-0"
             : "scale-95 opacity-0 -translate-y-2 pointer-events-none",
@@ -46,7 +46,7 @@ export function MobileMenu({
                 key={item.id}
                 to={item.to}
                 onClick={onClose}
-                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-[var(--fuwari-btn-regular-bg)] hover:text-[var(--fuwari-primary)] active:scale-[0.98]"
+                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
                 activeProps={{
                   className:
                     "!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]",
@@ -60,7 +60,7 @@ export function MobileMenu({
               <Link
                 to="/admin"
                 onClick={onClose}
-                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-[var(--fuwari-btn-regular-bg)] hover:text-[var(--fuwari-primary)] active:scale-[0.98]"
+                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
               >
                 <Settings className="w-4 h-4 mr-3" />
                 管理后台
@@ -75,7 +75,7 @@ export function MobileMenu({
           {user ? (
             <div className="px-2 pb-1">
               <div className="flex items-center gap-3 px-2 py-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--fuwari-btn-regular-bg)] flex-shrink-0">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-(--fuwari-btn-regular-bg) shrink-0">
                   {user.image ? (
                     <img
                       src={user.image}
@@ -95,7 +95,7 @@ export function MobileMenu({
                   <Link
                     to="/profile"
                     onClick={onClose}
-                    className="text-xs fuwari-text-50 hover:text-[var(--fuwari-primary)] truncate"
+                    className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) truncate"
                   >
                     查看资料
                   </Link>
@@ -117,7 +117,7 @@ export function MobileMenu({
               <Link
                 to="/login"
                 onClick={onClose}
-                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-[var(--fuwari-btn-regular-bg)] text-[var(--fuwari-btn-content)] hover:bg-[var(--fuwari-btn-regular-bg-hover)] active:bg-[var(--fuwari-btn-regular-bg-active)]"
+                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) active:bg-(--fuwari-btn-regular-bg-active)"
               >
                 <UserIcon size={16} className="mr-2" strokeWidth={1.5} />
                 登录 / 注册
