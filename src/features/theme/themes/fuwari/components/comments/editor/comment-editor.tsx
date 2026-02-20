@@ -1,11 +1,11 @@
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { useCallback, useState } from "react";
 import { Loader2, Send } from "lucide-react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
+import { FuwariInsertModal } from "./comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
-import type { ModalType } from "@/features/comments/components/editor/comment-insert-modal";
+import type { ModalType } from "./comment-insert-modal";
 import { commentExtensions } from "@/features/comments/components/editor/config";
-import InsertModal from "@/features/comments/components/editor/comment-insert-modal";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 
 interface CommentEditorProps {
@@ -106,7 +106,7 @@ export const FuwariCommentEditor = ({
         </div>
       </div>
 
-      <InsertModal
+      <FuwariInsertModal
         type={modalType}
         initialUrl={modalInitialUrl}
         onClose={() => setModalType(null)}

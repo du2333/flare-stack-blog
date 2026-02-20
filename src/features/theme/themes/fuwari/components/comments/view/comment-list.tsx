@@ -148,12 +148,14 @@ function RootCommentWithReplies({
       {isReplyingToRoot && (
         <div className="py-4 ml-12 animate-in fade-in slide-in-from-top-2 duration-300">
           {session ? (
-            <ReplyForm
-              userName={replyTarget.userName}
-              onSubmit={onSubmitReply!}
-              isSubmitting={isSubmittingReply!}
-              onCancel={onCancelReply!}
-            />
+            onSubmitReply && onCancelReply ? (
+              <ReplyForm
+                userName={replyTarget.userName}
+                onSubmit={onSubmitReply}
+                isSubmitting={isSubmittingReply ?? false}
+                onCancel={onCancelReply}
+              />
+            ) : null
           ) : (
             <LoginToReplyPrompt
               userName={replyTarget.userName}

@@ -79,10 +79,14 @@ export function SubmitFriendLinkPage({
 
           <form onSubmit={form.handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
+              <label
+                htmlFor="siteName"
+                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
+              >
                 站点名称 <span className="text-red-500">*</span>
               </label>
               <input
+                id="siteName"
                 {...form.register("siteName")}
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder="例如：Fuwari Blog"
