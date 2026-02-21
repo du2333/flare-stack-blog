@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "my-blog",
+  "name": "flare-stack-blog",
   "compatibility_date": "2026-02-17",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/server.ts",
