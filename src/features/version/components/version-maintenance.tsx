@@ -73,7 +73,7 @@ export function VersionMaintenance() {
               : "mr-3 group-hover:rotate-180 transition-transform duration-500"
           }
         />
-        {checkUpdateMutation.isPending ? "Checking..." : "检查更新"}
+        {checkUpdateMutation.isPending ? "检查中..." : "检查更新"}
       </Button>
     </div>
   );

@@ -194,8 +194,9 @@ export async function importSinglePost(
 
   // 6. Resolve tags
   const tagIds: Array<number> = [];
-  if (normalized.tags.length > 0) {
-    for (const tagName of normalized.tags) {
+  const uniqueTags = [...new Set(normalized.tags)];
+  if (uniqueTags.length > 0) {
+    for (const tagName of uniqueTags) {
       let tag = await TagRepo.findTagByName(db, tagName);
       if (!tag) {
         tag = await TagRepo.insertTag(db, { name: tagName });

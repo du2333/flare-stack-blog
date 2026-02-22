@@ -405,7 +405,7 @@ export function BackupRestoreSection() {
                 ) : (
                   <Upload size={14} />
                 )}
-                [ {uploadMutation.isPending ? "正在导入" : "导入数据"} ]
+                [ {isImporting ? "正在导入" : "导入数据"} ]
               </Button>
             </div>
           </div>
