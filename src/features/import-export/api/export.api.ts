@@ -12,8 +12,21 @@ export const startExportFn = createServerFn({
   .middleware([adminMiddleware])
   .inputValidator(StartExportInputSchema)
   .handler(async ({ data, context }) => {
+    console.log(
+      JSON.stringify({
+        event: "import_export.start_export.request",
+        postIds: data.postIds,
+        status: data.status,
+      }),
+    );
     const result = await ImportExportService.startExport(context, data);
     if (result.error) {
+      console.error(
+        JSON.stringify({
+          event: "import_export.start_export.error",
+          reason: result.error.reason,
+        }),
+      );
       switch (result.error.reason) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         case "WORKFLOW_CREATE_FAILED":
@@ -23,12 +36,34 @@ export const startExportFn = createServerFn({
           throw new Error("未知错误");
       }
     }
+    console.log(
+      JSON.stringify({
+        event: "import_export.start_export.success",
+        taskId: result.data.taskId,
+      }),
+    );
     return result.data;
   });
 
 export const getExportProgressFn = createServerFn()
   .middleware([adminMiddleware])
   .inputValidator(GetProgressInputSchema)
-  .handler(({ data, context }) =>
-    ImportExportService.getExportProgress(context, data.taskId),
-  );
+  .handler(async ({ data, context }) => {
+    console.log(
+      JSON.stringify({
+        event: "import_export.get_export_progress.request",
+        taskId: data.taskId,
+      }),
+    );
+    const result = await ImportExportService.getExportProgress(
+      context,
+      data.taskId,
+    );
+    console.log(
+      JSON.stringify({
+        event: "import_export.get_export_progress.success",
+        taskId: data.taskId,
+      }),
+    );
+    return result;
+  });
