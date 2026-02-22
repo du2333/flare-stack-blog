@@ -4,6 +4,7 @@ import type {
 } from "@/features/import-export/import-export.schema";
 import type { Result } from "@/lib/error";
 import {
+  ExportManifestSchema,
   IMPORT_EXPORT_CACHE_KEYS,
   IMPORT_EXPORT_R2_KEYS,
   TaskProgressSchema,
@@ -74,28 +75,55 @@ export async function startImport(
   const taskId = crypto.randomUUID();
   const r2Key = IMPORT_EXPORT_R2_KEYS.importZip(taskId);
 
-  // 1. Upload to R2 as ZIP
+  // 1. Build ZIP data + detect mode (before uploading to R2)
+  let zipData: Uint8Array;
+  let mode: "native" | "markdown";
+
   try {
+    const {
+      buildZip,
+      parseZip,
+      readValidatedJsonFile: readValidated,
+    } = await import("@/features/import-export/utils/zip");
+
     const isZip = files.length === 1 && files[0].name.endsWith(".zip");
 
     if (isZip) {
-      await context.env.R2.put(r2Key, files[0].stream(), {
-        httpMetadata: { contentType: "application/zip" },
-        customMetadata: { taskId, originalName: files[0].name },
-      });
+      zipData = new Uint8Array(await files[0].arrayBuffer());
     } else {
-      const { buildZip } = await import("@/features/import-export/utils/zip");
+      // Multiple .md files → pack into ZIP
       const zipEntries: Record<string, Uint8Array> = {};
       for (const file of files) {
         const buffer = await file.arrayBuffer();
         zipEntries[file.name] = new Uint8Array(buffer);
       }
-      const zipData = buildZip(zipEntries);
-      await context.env.R2.put(r2Key, zipData, {
-        httpMetadata: { contentType: "application/zip" },
-        customMetadata: { taskId },
-      });
+      zipData = buildZip(zipEntries);
     }
+
+    // Detect mode from ZIP contents
+    const zipFiles = parseZip(zipData);
+    const manifest = readValidated(
+      zipFiles,
+      "manifest.json",
+      ExportManifestSchema,
+    );
+    mode = manifest ? "native" : "markdown";
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "import file processing failed",
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
+    return err({ reason: "UPLOAD_FAILED" });
+  }
+
+  // 2. Upload to R2
+  try {
+    await context.env.R2.put(r2Key, zipData, {
+      httpMetadata: { contentType: "application/zip" },
+      customMetadata: { taskId },
+    });
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -105,18 +133,6 @@ export async function startImport(
     );
     return err({ reason: "UPLOAD_FAILED" });
   }
-
-  // 2. Detect mode
-  const { parseZip, readJsonFile } =
-    await import("@/features/import-export/utils/zip");
-  const r2Object = await context.env.R2.get(r2Key);
-  if (!r2Object) {
-    return err({ reason: "UPLOAD_FAILED" });
-  }
-  const arrayBuffer = await r2Object.arrayBuffer();
-  const zipFiles = parseZip(new Uint8Array(arrayBuffer));
-  const manifest = readJsonFile(zipFiles, "manifest.json");
-  const mode = manifest ? ("native" as const) : ("markdown" as const);
 
   // 3. Init progress + start workflow
   const initialProgress: TaskProgress = {

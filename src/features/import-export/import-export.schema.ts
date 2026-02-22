@@ -52,26 +52,30 @@ export type GetProgressInput = z.infer<typeof GetProgressInputSchema>;
 
 export const EXPORT_MANIFEST_VERSION = "1.0";
 
-export interface ExportManifest {
-  version: string;
-  exportedAt: string;
-  postCount: number;
-  generator: string;
-}
+export const ExportManifestSchema = z.object({
+  version: z.string(),
+  exportedAt: z.string(),
+  postCount: z.number(),
+  generator: z.string(),
+});
+
+export type ExportManifest = z.infer<typeof ExportManifestSchema>;
 
 // --- Frontmatter ---
 
-export interface PostFrontmatter {
-  title: string;
-  slug: string;
-  summary?: string;
-  status: string;
-  publishedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  readTimeInMinutes: number;
-  tags: Array<string>;
-}
+export const PostFrontmatterSchema = z.object({
+  title: z.string(),
+  slug: z.string().default(""),
+  summary: z.string().optional().nullable(),
+  status: z.enum(POST_STATUSES).default("published"),
+  publishedAt: z.string().optional().nullable(),
+  createdAt: z.string().optional().nullable(),
+  updatedAt: z.string().optional().nullable(),
+  readTimeInMinutes: z.number().default(1),
+  tags: z.array(z.string()).default([]),
+});
+
+export type PostFrontmatter = z.infer<typeof PostFrontmatterSchema>;
 
 // --- Cache Keys ---
 

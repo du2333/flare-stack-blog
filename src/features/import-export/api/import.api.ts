@@ -27,6 +27,7 @@ export const uploadForImportFn = createServerFn({
           throw new Error("启动导入任务失败");
         default:
           result.error.reason satisfies never;
+          throw new Error("未知错误");
       }
     }
 

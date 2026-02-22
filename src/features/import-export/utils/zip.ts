@@ -1,4 +1,5 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
+import type { z } from "zod";
 
 /**
  * 构建 ZIP 文件
@@ -38,7 +39,36 @@ export function readTextFile(
 }
 
 /**
- * 从 ZIP 中读取 JSON 文件
+ * 从 ZIP 中读取并校验 JSON 文件
+ */
+export function readValidatedJsonFile<TSchema extends z.ZodSchema>(
+  files: Record<string, Uint8Array>,
+  path: string,
+  schema: TSchema,
+): z.infer<TSchema> | null {
+  const text = readTextFile(files, path);
+  if (!text) return null;
+  try {
+    const json = JSON.parse(text);
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      console.error(
+        JSON.stringify({
+          message: "ZIP JSON validation failed",
+          path,
+          errors: parsed.error.issues,
+        }),
+      );
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 从 ZIP 中读取 JSON 文件（不推荐，建议使用 readValidatedJsonFile）
  */
 export function readJsonFile<T = unknown>(
   files: Record<string, Uint8Array>,

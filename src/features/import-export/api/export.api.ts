@@ -14,7 +14,14 @@ export const startExportFn = createServerFn({
   .handler(async ({ data, context }) => {
     const result = await ImportExportService.startExport(context, data);
     if (result.error) {
-      throw new Error("启动导出任务失败");
+      switch (result.error.reason) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        case "WORKFLOW_CREATE_FAILED":
+          throw new Error("启动导出任务失败");
+        default:
+          result.error.reason satisfies never;
+          throw new Error("未知错误");
+      }
     }
     return result.data;
   });

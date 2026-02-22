@@ -25,10 +25,13 @@ exportDownloadRoute.use("*", async (c, next) => {
   return next();
 });
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 exportDownloadRoute.get("/download/:taskId", async (c) => {
   const taskId = c.req.param("taskId");
-  if (!taskId) {
-    return c.text("Task ID is required", 400);
+  if (!taskId || !UUID_REGEX.test(taskId)) {
+    return c.text("Invalid task ID", 400);
   }
 
   const r2Key = IMPORT_EXPORT_R2_KEYS.exportZip(taskId);

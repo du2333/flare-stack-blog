@@ -140,7 +140,8 @@ export class ImportWorkflow extends WorkflowEntrypoint<
   }
 
   private async updateProgress(key: string, progress: TaskProgress) {
-    await CacheService.set({ env: this.env }, key, JSON.stringify(progress), {
+    const context: BaseContext = { env: this.env };
+    await CacheService.set(context, key, JSON.stringify(progress), {
       ttl: "24h",
     });
   }

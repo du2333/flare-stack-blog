@@ -15,6 +15,7 @@ import {
   useStartExport,
   useUploadForImport,
 } from "@/features/import-export/queries/import-export.queries";
+import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 
 function Progress({ value, className }: { value: number; className?: string }) {
   return (
@@ -54,11 +55,8 @@ export function BackupRestoreSection() {
   };
 
   const handleDownload = () => {
-    if (exportProgress?.downloadKey) {
-      const taskIdFromKey = exportProgress.downloadKey
-        .replace("exports/", "")
-        .replace(".zip", "");
-      window.open(`/api/admin/export/download/${taskIdFromKey}`, "_blank");
+    if (exportTaskId && exportProgress?.downloadKey) {
+      window.open(getExportDownloadUrl(exportTaskId), "_blank");
       if (exportProgress.warnings.length > 0) {
         toast.warning("导出完成（有警告）", {
           description: exportProgress.warnings.join("\n"),
@@ -92,7 +90,6 @@ export function BackupRestoreSection() {
 
     uploadMutation.mutate(formData, {
       onSuccess: (result) => {
-        if (!result) return;
         setImportTaskId(result.taskId);
         toast.success("导入任务已启动");
       },

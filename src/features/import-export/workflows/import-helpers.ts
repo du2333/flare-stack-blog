@@ -1,7 +1,10 @@
 import type { JSONContent } from "@tiptap/react";
 import type { PostEntry } from "@/features/import-export/import-export.schema";
 import { getDb } from "@/lib/db";
-import { generateKey } from "@/features/media/media.utils";
+import {
+  generateKey,
+  getContentTypeFromKey,
+} from "@/features/media/media.utils";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import * as TagRepo from "@/features/tags/data/tags.data";
 import * as MediaRepo from "@/features/media/data/media.data";
@@ -27,15 +30,22 @@ export function enumerateNativePosts(
   zipFiles: Record<string, Uint8Array>,
 ): Array<PostEntry> {
   const dirs = listDirectories(zipFiles, "posts/");
-  return dirs.map((dir) => {
-    const mdContent = readTextFile(zipFiles, `posts/${dir}/index.md`);
-    const parsed = mdContent ? parseFrontmatter(mdContent) : null;
-    return {
-      dir,
-      title: (parsed?.data.title as string) || dir,
-      prefix: `posts/${dir}`,
-    };
-  });
+  return dirs
+    .map((dir) => {
+      const mdContent = readTextFile(zipFiles, `posts/${dir}/index.md`);
+      const parsed = mdContent ? parseFrontmatter(mdContent) : null;
+      const normalized = parsed ? normalizeFrontmatter(parsed.data) : null;
+
+      if (!normalized) return null;
+
+      const entry: PostEntry = {
+        dir,
+        title: normalized.title,
+        prefix: `posts/${dir}`,
+      };
+      return entry;
+    })
+    .filter((e): e is PostEntry => e !== null);
 }
 
 export function enumerateMarkdownPosts(
@@ -44,17 +54,24 @@ export function enumerateMarkdownPosts(
   const mdFiles = Object.keys(zipFiles).filter(
     (p) => p.endsWith(".md") && !p.startsWith("__MACOSX"),
   );
-  return mdFiles.map((path) => {
-    const dir = path.replace(/\.md$/, "").split("/").pop() || path;
-    const mdContent = readTextFile(zipFiles, path);
-    const parsed = mdContent ? parseFrontmatter(mdContent) : null;
-    return {
-      dir,
-      title: (parsed?.data.title as string) || dir,
-      prefix: path.substring(0, path.lastIndexOf("/")),
-      mdPath: path,
-    };
-  });
+  return mdFiles
+    .map((path) => {
+      const dir = path.replace(/\.md$/, "").split("/").pop() || path;
+      const mdContent = readTextFile(zipFiles, path);
+      const parsed = mdContent ? parseFrontmatter(mdContent) : null;
+      const normalized = parsed ? normalizeFrontmatter(parsed.data) : null;
+
+      if (!normalized) return null;
+
+      const entry: PostEntry = {
+        dir,
+        title: normalized.title,
+        prefix: path.substring(0, path.lastIndexOf("/")),
+        mdPath: path,
+      };
+      return entry;
+    })
+    .filter((e): e is PostEntry => e !== null);
 }
 
 // --- Import single post (needs env for DB / R2) ---
@@ -121,9 +138,11 @@ export async function importSinglePost(
     }
   }
 
-  // 2. Normalize frontmatter + check duplicate
   const normalized = normalizeFrontmatter(metadata);
-  const title = normalized.title || entry.title || "Untitled";
+  if (!normalized) {
+    throw new Error("无法解析文章元数据或元数据不符合规范");
+  }
+  const title = normalized.title || "Untitled";
 
   const candidateSlug = normalized.slug || title;
   const slugAlreadyExists = await PostRepo.slugExists(
@@ -159,7 +178,7 @@ export async function importSinglePost(
 
   // 6. Resolve tags
   const tagIds: Array<number> = [];
-  if (normalized.tags && normalized.tags.length > 0) {
+  if (normalized.tags.length > 0) {
     for (const tagName of normalized.tags) {
       let tag = await TagRepo.findTagByName(db, tagName);
       if (!tag) {
@@ -176,7 +195,7 @@ export async function importSinglePost(
     summary: normalized.summary ?? null,
     contentJson,
     status: normalized.status === "draft" ? "draft" : "published",
-    readTimeInMinutes: normalized.readTimeInMinutes ?? 1,
+    readTimeInMinutes: normalized.readTimeInMinutes,
     publishedAt: normalized.publishedAt
       ? new Date(normalized.publishedAt)
       : normalized.status !== "draft"
@@ -220,15 +239,7 @@ export async function uploadImages(
     const oldKey = imagePath.slice(imagePrefix.length);
     const newKey = generateKey(oldKey);
 
-    const ext = oldKey.split(".").pop()?.toLowerCase() || "bin";
-    const mimeTypes: Record<string, string> = {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      webp: "image/webp",
-      gif: "image/gif",
-    };
-    const mimeType = mimeTypes[ext] || "application/octet-stream";
+    const mimeType = getContentTypeFromKey(oldKey) || "application/octet-stream";
 
     try {
       await env.R2.put(newKey, imageData, {

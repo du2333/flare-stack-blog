@@ -49,104 +49,153 @@ describe("parseFrontmatter", () => {
 });
 
 describe("normalizeFrontmatter", () => {
+  // Helper: minimal valid input (title is required by schema)
+  const base = { title: "Test Post" };
+
   it("should extract title", () => {
     const result = normalizeFrontmatter({ title: "My Post" });
-    expect(result.title).toBe("My Post");
+    expect(result).not.toBeNull();
+    expect(result!.title).toBe("My Post");
+  });
+
+  it("should return null when title is missing", () => {
+    const result = normalizeFrontmatter({ slug: "no-title" });
+    expect(result).toBeNull();
   });
 
   it("should extract slug from slug field", () => {
-    const result = normalizeFrontmatter({ slug: "my-post" });
-    expect(result.slug).toBe("my-post");
+    const result = normalizeFrontmatter({ ...base, slug: "my-post" });
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("my-post");
   });
 
   it("should extract slug from url field (Hugo)", () => {
-    const result = normalizeFrontmatter({ url: "/posts/my-post/" });
-    expect(result.slug).toBe("my-post");
+    const result = normalizeFrontmatter({ ...base, url: "/posts/my-post/" });
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("my-post");
   });
 
   it("should extract slug from permalink field", () => {
-    const result = normalizeFrontmatter({ permalink: "/blog/my-post" });
-    expect(result.slug).toBe("my-post");
+    const result = normalizeFrontmatter({
+      ...base,
+      permalink: "/blog/my-post",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("my-post");
   });
 
   it("should prefer slug over url/permalink", () => {
     const result = normalizeFrontmatter({
+      ...base,
       slug: "from-slug",
       url: "/from-url",
       permalink: "/from-permalink",
     });
-    expect(result.slug).toBe("from-slug");
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("from-slug");
   });
 
   it("should extract summary from description (Hexo)", () => {
-    const result = normalizeFrontmatter({ description: "A summary" });
-    expect(result.summary).toBe("A summary");
+    const result = normalizeFrontmatter({ ...base, description: "A summary" });
+    expect(result).not.toBeNull();
+    expect(result!.summary).toBe("A summary");
   });
 
   it("should extract summary from excerpt (Jekyll)", () => {
-    const result = normalizeFrontmatter({ excerpt: "An excerpt" });
-    expect(result.summary).toBe("An excerpt");
+    const result = normalizeFrontmatter({ ...base, excerpt: "An excerpt" });
+    expect(result).not.toBeNull();
+    expect(result!.summary).toBe("An excerpt");
   });
 
   it("should set status to draft when draft=true (Hugo)", () => {
-    const result = normalizeFrontmatter({ draft: true });
-    expect(result.status).toBe("draft");
+    const result = normalizeFrontmatter({ ...base, draft: true });
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("draft");
   });
 
   it("should set status to published by default", () => {
-    const result = normalizeFrontmatter({});
-    expect(result.status).toBe("published");
+    const result = normalizeFrontmatter(base);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("published");
   });
 
   it("should prefer draft field over status field", () => {
-    const result = normalizeFrontmatter({ draft: true, status: "published" });
-    expect(result.status).toBe("draft");
+    const result = normalizeFrontmatter({
+      ...base,
+      draft: true,
+      status: "published",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("draft");
   });
 
   it("should parse publishedAt from date field", () => {
-    const result = normalizeFrontmatter({ date: "2024-01-15" });
-    expect(result.publishedAt).toBeDefined();
-    expect(new Date(result.publishedAt!).getFullYear()).toBe(2024);
+    const result = normalizeFrontmatter({ ...base, date: "2024-01-15" });
+    expect(result).not.toBeNull();
+    expect(result!.publishedAt).toBeDefined();
+    expect(new Date(result!.publishedAt!).getFullYear()).toBe(2024);
   });
 
   it("should parse publishedAt from Date object", () => {
-    const result = normalizeFrontmatter({ date: new Date("2024-01-15") });
-    expect(result.publishedAt).toBeDefined();
+    const result = normalizeFrontmatter({
+      ...base,
+      date: new Date("2024-01-15"),
+    });
+    expect(result).not.toBeNull();
+    expect(result!.publishedAt).toBeDefined();
   });
 
   it("should parse updatedAt from lastmod (Hugo)", () => {
-    const result = normalizeFrontmatter({ lastmod: "2024-02-01" });
-    expect(result.updatedAt).toBeDefined();
+    const result = normalizeFrontmatter({ ...base, lastmod: "2024-02-01" });
+    expect(result).not.toBeNull();
+    expect(result!.updatedAt).toBeDefined();
   });
 
   it("should parse updatedAt from modified field", () => {
-    const result = normalizeFrontmatter({ modified: "2024-02-01" });
-    expect(result.updatedAt).toBeDefined();
+    const result = normalizeFrontmatter({ ...base, modified: "2024-02-01" });
+    expect(result).not.toBeNull();
+    expect(result!.updatedAt).toBeDefined();
   });
 
   it("should extract tags array", () => {
-    const result = normalizeFrontmatter({ tags: ["a", "b"] });
-    expect(result.tags).toEqual(["a", "b"]);
+    const result = normalizeFrontmatter({ ...base, tags: ["a", "b"] });
+    expect(result).not.toBeNull();
+    expect(result!.tags).toEqual(["a", "b"]);
   });
 
   it("should extract tags from categories (Hexo)", () => {
-    const result = normalizeFrontmatter({ categories: ["x", "y"] });
-    expect(result.tags).toEqual(["x", "y"]);
+    const result = normalizeFrontmatter({ ...base, categories: ["x", "y"] });
+    expect(result).not.toBeNull();
+    expect(result!.tags).toEqual(["x", "y"]);
   });
 
   it("should filter non-string items from tags", () => {
-    const result = normalizeFrontmatter({ tags: ["valid", 123, null, "ok"] });
-    expect(result.tags).toEqual(["valid", "ok"]);
+    const result = normalizeFrontmatter({
+      ...base,
+      tags: ["valid", 123, null, "ok"],
+    });
+    expect(result).not.toBeNull();
+    expect(result!.tags).toEqual(["valid", "ok"]);
   });
 
   it("should ignore invalid date strings", () => {
-    const result = normalizeFrontmatter({ date: "not-a-date" });
-    expect(result.publishedAt).toBeUndefined();
+    const result = normalizeFrontmatter({ ...base, date: "not-a-date" });
+    expect(result).not.toBeNull();
+    expect(result!.publishedAt).toBeUndefined();
   });
 
   it("should extract readTimeInMinutes", () => {
-    const result = normalizeFrontmatter({ readTimeInMinutes: 5 });
-    expect(result.readTimeInMinutes).toBe(5);
+    const result = normalizeFrontmatter({ ...base, readTimeInMinutes: 5 });
+    expect(result).not.toBeNull();
+    expect(result!.readTimeInMinutes).toBe(5);
+  });
+
+  it("should apply defaults from schema", () => {
+    const result = normalizeFrontmatter(base);
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe("published");
+    expect(result!.readTimeInMinutes).toBe(1);
+    expect(result!.tags).toEqual([]);
   });
 });
 
@@ -156,8 +205,6 @@ describe("stringifyFrontmatter", () => {
       title: "Test",
       slug: "test",
       status: "published",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
       readTimeInMinutes: 1,
       tags: [],
     };
