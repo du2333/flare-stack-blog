@@ -257,7 +257,7 @@ export function EmailServiceSection({
             ) : (
               <Wifi size={12} className="mr-3" />
             )}
-            {status === "TESTING" ? "Testing..." : "发送测试邮件"}
+            {status === "TESTING" ? "测试中..." : "发送测试邮件"}
           </Button>
         </div>
       </div>
