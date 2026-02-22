@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { forceCheckUpdateFn } from "@/features/version/version.api";
 import { VERSION_KEYS } from "@/features/version/queries";
+import { Button } from "@/components/ui/button";
 
 export function VersionMaintenance() {
   const queryClient = useQueryClient();
@@ -34,26 +35,46 @@ export function VersionMaintenance() {
   });
 
   return (
-    <div className="flex items-center justify-between py-4 border-b border-border/30 last:border-0 group">
-      <div className="space-y-1">
-        <h3 className="text-sm font-medium text-foreground">系统更新</h3>
-        <p className="text-xs text-muted-foreground">
-          当前版本: <span className="font-mono">{__APP_VERSION__}</span>
-        </p>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-500/10 rounded-full">
+            <CheckCircle2 size={18} className="text-emerald-500" />
+          </div>
+          <h3 className="text-lg font-serif font-medium text-foreground tracking-tight">
+            系统状态良好
+          </h3>
+        </div>
+        <div className="flex flex-col gap-1 ml-11">
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            当前运行版本:{" "}
+            <span className="font-mono text-foreground font-bold tracking-tight">
+              v{__APP_VERSION__}
+            </span>
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-widest">
+            Build: Production_Ready
+          </p>
+        </div>
       </div>
-      <button
+
+      <Button
         type="button"
+        variant="outline"
         onClick={() => checkUpdateMutation.mutate({})}
         disabled={checkUpdateMutation.isPending}
-        className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 uppercase tracking-widest"
+        className="h-10 px-6 font-mono text-[10px] uppercase tracking-[0.2em] rounded-none border-border/50 hover:bg-background transition-all group shrink-0"
       >
-        {checkUpdateMutation.isPending ? (
-          <RefreshCw size={12} className="animate-spin" />
-        ) : (
-          <RefreshCw size={12} />
-        )}
-        检查更新
-      </button>
+        <RefreshCw
+          size={12}
+          className={
+            checkUpdateMutation.isPending
+              ? "animate-spin mr-3"
+              : "mr-3 group-hover:rotate-180 transition-transform duration-500"
+          }
+        />
+        {checkUpdateMutation.isPending ? "Checking..." : "检查更新"}
+      </Button>
     </div>
   );
 }

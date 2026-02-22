@@ -1,0 +1,147 @@
+import { WorkflowEntrypoint } from "cloudflare:workers";
+import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import type {
+  ImportReport,
+  TaskProgress,
+} from "@/features/import-export/import-export.schema";
+import { IMPORT_EXPORT_CACHE_KEYS } from "@/features/import-export/import-export.schema";
+import { parseZip } from "@/features/import-export/utils/zip";
+import * as CacheService from "@/features/cache/cache.service";
+import {
+  enumerateMarkdownPosts,
+  enumerateNativePosts,
+  importSinglePost,
+} from "@/features/import-export/workflows/import-helpers";
+
+export class ImportWorkflow extends WorkflowEntrypoint<
+  Env,
+  ImportWorkflowParams
+> {
+  async run(event: WorkflowEvent<ImportWorkflowParams>, step: WorkflowStep) {
+    const { taskId, r2Key, mode } = event.payload;
+    const progressKey = IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId);
+
+    // 1. Enumerate posts from ZIP
+    // NOTE: step.do() serializes return values as JSON for durability.
+    // Uint8Array does NOT survive JSON round-tripping, so we must NOT
+    // return binary data from steps. Instead, each step re-fetches the
+    // ZIP from R2 when it needs the binary content.
+    const postEntries = await step.do("enumerate posts", async () => {
+      const zipFiles = await this.fetchZipFiles(r2Key);
+      if (mode === "native") {
+        return enumerateNativePosts(zipFiles);
+      }
+      return enumerateMarkdownPosts(zipFiles);
+    });
+
+    if (postEntries.length === 0) {
+      await this.updateProgress(progressKey, {
+        status: "completed",
+        total: 0,
+        completed: 0,
+        current: "",
+        errors: [],
+        warnings: ["ZIP 中没有找到可导入的文章"],
+        report: { succeeded: [], failed: [], warnings: [] },
+      });
+      return;
+    }
+
+    // 2. Process each post
+    const report: ImportReport = {
+      succeeded: [],
+      failed: [],
+      warnings: [],
+    };
+
+    for (let i = 0; i < postEntries.length; i++) {
+      const entry = postEntries[i];
+
+      await step.do(
+        `import post ${i + 1}/${postEntries.length}: ${entry.title || entry.dir}`,
+        async () => {
+          try {
+            const zipFiles = await this.fetchZipFiles(r2Key);
+            const result = await importSinglePost(
+              this.env,
+              zipFiles,
+              entry,
+              mode,
+            );
+            if (result.skipped) {
+              report.warnings.push(
+                `[${result.title}] 已存在相同 slug，跳过导入`,
+              );
+            } else {
+              report.succeeded.push({
+                title: result.title,
+                slug: result.slug,
+              });
+            }
+            for (const w of result.warnings) {
+              report.warnings.push(`[${result.title}] ${w}`);
+            }
+          } catch (error) {
+            const reason =
+              error instanceof Error ? error.message : String(error);
+            report.failed.push({
+              title: entry.title || entry.dir,
+              reason,
+            });
+          }
+
+          await this.updateProgress(progressKey, {
+            status: "processing",
+            total: postEntries.length,
+            completed: i + 1,
+            current: entry.title || entry.dir,
+            errors: report.failed.map((f) => ({
+              post: f.title,
+              reason: f.reason,
+            })),
+            warnings: report.warnings,
+          });
+        },
+      );
+    }
+
+    // 3. Cleanup and finalize
+    await step.do("finalize", async () => {
+      try {
+        await this.env.R2.delete(r2Key);
+      } catch {
+        // Ignore cleanup errors
+      }
+
+      await this.updateProgress(progressKey, {
+        status: "completed",
+        total: postEntries.length,
+        completed: postEntries.length,
+        current: "",
+        errors: report.failed.map((f) => ({
+          post: f.title,
+          reason: f.reason,
+        })),
+        warnings: report.warnings,
+        report,
+      });
+    });
+  }
+
+  private async fetchZipFiles(
+    r2Key: string,
+  ): Promise<Record<string, Uint8Array>> {
+    const r2Object = await this.env.R2.get(r2Key);
+    if (!r2Object) {
+      throw new Error("ZIP 文件未找到");
+    }
+    const arrayBuffer = await r2Object.arrayBuffer();
+    return parseZip(new Uint8Array(arrayBuffer));
+  }
+
+  private async updateProgress(key: string, progress: TaskProgress) {
+    await CacheService.set({ env: this.env }, key, JSON.stringify(progress), {
+      ttl: "24h",
+    });
+  }
+}

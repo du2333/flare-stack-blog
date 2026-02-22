@@ -13,6 +13,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import Toaster from "@/components/ui/toaster";
 // 管理后台固定使用 default 主题样式，不随 THEME 变量切换
 import "@/features/theme/themes/default/styles/index.css";
+import "@/styles/admin.css";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
@@ -48,7 +49,7 @@ function AdminLayout() {
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex relative font-sans">
+    <div className="min-h-screen bg-background text-foreground flex relative font-sans admin-layout">
       <SideBar
         isMobileSidebarOpen={isMobileSidebarOpen}
         closeMobileSidebar={closeMobileSidebar}

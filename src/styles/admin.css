@@ -1,0 +1,75 @@
+/* Admin Dashboard Specific Scaling and UI/UX Adjustments */
+
+.admin-layout {
+  /* Increase base font size slightly across the entire admin area */
+  font-size: 15px;
+}
+
+/* Typography Normalization - Professional Minimums */
+.admin-layout :is(.text-\[9px\], .text-\[10px\], .text-xs) {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+.admin-layout .text-sm {
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+}
+
+.admin-layout .text-base {
+  font-size: 16px !important;
+}
+
+/* Icon Scaling - Increase hardcoded small icons */
+.admin-layout svg {
+  /* Scale icons slightly if they are small */
+  transition: transform 0.2s ease;
+}
+
+/* Sidebar Specific Adjustments */
+.admin-layout aside nav .text-\[11px\] {
+  font-size: 13px !important;
+  letter-spacing: 0.1em !important;
+}
+
+.admin-layout aside .text-\[8px\],
+.admin-layout aside .text-\[9px\] {
+  font-size: 11px !important;
+}
+
+/* Dashboard Metrics & StatCards */
+.admin-layout .stat-card .text-2xl {
+  font-size: 1.75rem !important;
+}
+
+/* Navigation & Tabs */
+.admin-layout .tabs-trigger {
+  font-size: 12px !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Global Lucide Icon Overrides for tiny sizes */
+.admin-layout [size="10"],
+.admin-layout [size="12"],
+.admin-layout [size="14"] {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Header Adjustments */
+.admin-layout header .text-\[10px\] {
+  font-size: 12px !important;
+}
+
+/* Breathability Improvements */
+.admin-layout .p-6 {
+  padding: 1.75rem !important;
+}
+
+.admin-layout .md\:p-12 {
+  padding: 3.5rem !important;
+}
+
+.admin-layout .gap-4 {
+  gap: 1.25rem !important;
+}

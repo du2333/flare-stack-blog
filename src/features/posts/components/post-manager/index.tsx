@@ -136,14 +136,16 @@ export function PostManager({
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => createMutation.mutate()}
-          disabled={createMutation.isPending}
-          className="h-10 px-6 text-[11px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
-        >
-          <Plus size={14} />
-          {createMutation.isPending ? "创建中..." : "新建文章"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => createMutation.mutate()}
+            disabled={createMutation.isPending}
+            className="h-10 px-6 text-[11px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+          >
+            <Plus size={14} />
+            {createMutation.isPending ? "创建中..." : "新建文章"}
+          </Button>
+        </div>
       </div>
 
       <div className="animate-in fade-in duration-1000 delay-100 fill-mode-both space-y-8">

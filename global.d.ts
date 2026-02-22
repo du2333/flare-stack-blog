@@ -22,10 +22,24 @@ declare global {
     commentId: number;
   }
 
+  interface ExportWorkflowParams {
+    taskId: string;
+    postIds?: Array<number>;
+    status?: "draft" | "published";
+  }
+
+  interface ImportWorkflowParams {
+    taskId: string;
+    r2Key: string;
+    mode: "native" | "markdown";
+  }
+
   interface Env extends Cloudflare.Env {
     POST_PROCESS_WORKFLOW: Workflow<PostProcessWorkflowParams>;
     COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
+    EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
+    IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
     QUEUE: Queue<QueueMessage>;
   }
 

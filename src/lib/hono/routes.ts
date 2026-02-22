@@ -16,6 +16,7 @@ import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
 import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
 import tagsRoute from "@/features/tags/api/hono/tags.list.route";
 import searchRoute from "@/features/search/api/hono/search.route";
+import { exportDownloadRoute } from "@/features/import-export/api/hono/download.route";
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -132,6 +133,9 @@ app.post(
     return auth.handler(c.req.raw);
   },
 );
+
+// Admin export download route
+app.route("/api/admin/export", exportDownloadRoute);
 
 // Router之前的防护
 app.all("*", shieldMiddleware);

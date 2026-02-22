@@ -3,6 +3,8 @@ import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
 export { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
+export { ExportWorkflow } from "@/features/import-export/workflows/export.workflow";
+export { ImportWorkflow } from "@/features/import-export/workflows/import.workflow";
 export { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 export { ScheduledPublishWorkflow } from "@/features/posts/workflows/scheduled-publish";
 export { RateLimiter } from "@/lib/do/rate-limiter";

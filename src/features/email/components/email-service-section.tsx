@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Globe, Info, Lock, Wifi } from "lucide-react";
+import { Eye, EyeOff, Globe, Info, Loader2, Lock, Wifi } from "lucide-react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -58,179 +58,204 @@ export function EmailServiceSection({
   };
 
   return (
-    <div className="space-y-16">
-      {/* Service Notice Box - Redesigned */}
-      <div className="p-4 mb-8 border border-border/30 bg-muted/5">
-        <div className="flex gap-3">
-          <Info className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-foreground">
-              配置说明
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      {/* Service Notice Box - Premium Style */}
+      <div className="group relative border border-border/30 bg-muted/5 p-8 overflow-hidden transition-all hover:bg-muted/10">
+        <div className="absolute top-0 right-0 p-1 opacity-20 pointer-events-none">
+          <span className="text-[40px] font-serif font-black italic tracking-tighter select-none">
+            NOTICE
+          </span>
+        </div>
+
+        <div className="flex gap-6 items-start relative z-10">
+          <div className="p-3 bg-foreground/5 rounded-full">
+            <Info className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-[11px] font-mono uppercase tracking-[0.2em] text-foreground font-bold">
+              配置指南 / CONFIGURATION_GUIDE
             </h4>
-            <ul className="space-y-1 list-disc list-outside ml-3">
-              <li className="text-[10px] font-mono text-muted-foreground leading-relaxed">
-                邮件服务是用户注册验证及密码重置的核心组件。
-              </li>
-              <li className="text-[10px] font-mono text-muted-foreground leading-relaxed">
-                若不配置，系统将仅支持 GitHub 等第三方 OAuth 登录。
-              </li>
-              <li className="text-[10px] font-mono text-muted-foreground leading-relaxed">
-                Resend 需完成域名验证 (DNS)，否则仅能发送至注册邮箱。
-              </li>
-            </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
+              <div className="flex gap-3">
+                <span className="text-[10px] items-center justify-center flex h-4 w-4 rounded-full border border-border/50 font-mono text-muted-foreground shrink-0">
+                  1
+                </span>
+                <p className="text-[10px] font-mono text-muted-foreground leading-relaxed">
+                  邮件服务是用户注册验证及密码重置的核心组件。
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-[10px] items-center justify-center flex h-4 w-4 rounded-full border border-border/50 font-mono text-muted-foreground shrink-0">
+                  2
+                </span>
+                <p className="text-[10px] font-mono text-muted-foreground leading-relaxed">
+                  若不配置，系统将仅支持 GitHub 等第三方 OAuth 登录。
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-[10px] items-center justify-center flex h-4 w-4 rounded-full border border-border/50 font-mono text-muted-foreground shrink-0">
+                  3
+                </span>
+                <p className="text-[10px] font-mono text-muted-foreground leading-relaxed">
+                  Resend 需完成域名验证 (DNS)，否则仅能发送至注册邮箱。
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-16">
+      {/* Main Config Card */}
+      <div className="border border-border/30 bg-background/50 overflow-hidden divide-y divide-border/20">
         {/* Credentials Section */}
-        <section className="space-y-6">
-          <header className="flex items-center gap-3">
-            <Lock size={12} className="text-muted-foreground" />
-            <h5 className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              访问凭证
-            </h5>
-          </header>
-
-          <div className="grid grid-cols-1 gap-10 pl-6">
-            <div className="space-y-3 group max-w-2xl">
-              <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-focus-within:text-foreground transition-colors">
-                Resend API 密钥
-              </label>
-              <div className="flex-1 flex items-center gap-4">
-                <div className="flex-1 relative">
-                  <Input
-                    type={showKey ? "text" : "password"}
-                    {...register("email.apiKey", {
-                      onChange: () => setStatus("IDLE"),
-                    })}
-                    placeholder="re_xxxxxxxxxxxxxx (留空则禁用)"
-                    className="w-full bg-transparent border-none shadow-none text-sm font-mono text-foreground focus-visible:ring-0 placeholder:text-muted-foreground/20 pr-10 h-auto"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowKey(!showKey)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground transition-colors h-6 w-6 rounded-none"
-                  >
-                    {showKey ? (
-                      <EyeOff size={16} strokeWidth={1.5} />
-                    ) : (
-                      <Eye size={16} strokeWidth={1.5} />
-                    )}
-                  </Button>
-                </div>
+        <div className="p-8 space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-muted/40 rounded-sm">
+                <Lock size={16} className="text-muted-foreground" />
               </div>
-              {errors.email?.apiKey && (
-                <p className="text-[10px] text-red-500">
-                  {errors.email.apiKey.message}
-                </p>
-              )}
+              <h5 className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground font-medium">
+                访问凭证 / CREDENTIALS
+              </h5>
             </div>
           </div>
-        </section>
 
-        {/* Group: Sender Profile */}
-        <section className="space-y-6 pt-6 border-t border-border/30">
-          <header className="flex items-center gap-3">
-            <Globe size={12} className="text-muted-foreground" />
-            <h5 className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              发信身份
+          <div className="space-y-4 max-w-2xl px-2">
+            <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              Resend API 密钥 (Resend_API_Token)
+            </label>
+            <div className="relative group/input">
+              <Input
+                type={showKey ? "text" : "password"}
+                {...register("email.apiKey", {
+                  onChange: () => setStatus("IDLE"),
+                })}
+                placeholder="re_xxxxxxxxxxxxxx [ 留空则禁用 ]"
+                className="w-full bg-muted/10 border border-border/30 rounded-none py-6 text-sm font-mono text-foreground focus-visible:ring-1 focus-visible:ring-foreground/10 focus:border-border/60 transition-all px-4 pr-12"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowKey(!showKey)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground transition-colors h-8 w-8 rounded-none"
+              >
+                {showKey ? (
+                  <EyeOff size={16} strokeWidth={1.5} />
+                ) : (
+                  <Eye size={16} strokeWidth={1.5} />
+                )}
+              </Button>
+            </div>
+            {errors.email?.apiKey && (
+              <p className="text-[10px] text-red-500 font-mono italic">
+                ! {errors.email.apiKey.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Sender Profile Section */}
+        <div className="p-8 space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-muted/40 rounded-sm">
+              <Globe size={16} className="text-muted-foreground" />
+            </div>
+            <h5 className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground font-medium">
+              发信身份 / SENDER_PROFILE
             </h5>
-          </header>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 pl-6">
-            <div className="space-y-3 group">
-              <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-focus-within:text-foreground transition-colors">
-                显示名称
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 px-2">
+            <div className="space-y-4">
+              <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+                显示名称 (Display_Name)
               </label>
               <Input
                 {...register("email.senderName")}
                 placeholder="例如：Chronicle Blog"
-                className="w-full bg-transparent border-b border-border/50 rounded-none py-2 text-sm font-mono focus-visible:ring-0 focus:border-foreground transition-all px-0"
+                className="w-full bg-muted/10 border border-border/30 rounded-none py-6 text-sm font-mono focus-visible:ring-1 focus-visible:ring-foreground/10 focus:border-border/60 transition-all px-4"
               />
               {errors.email?.senderName && (
-                <p className="text-[10px] text-red-500">
-                  {errors.email.senderName.message}
+                <p className="text-[10px] text-red-500 font-mono italic">
+                  ! {errors.email.senderName.message}
                 </p>
               )}
             </div>
 
-            <div className="space-y-3 group">
-              <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-focus-within:text-foreground transition-colors">
-                发信邮箱 (已验证)
+            <div className="space-y-4">
+              <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+                发信邮箱 (Verified_Sender)
               </label>
               <Input
                 type="email"
                 {...register("email.senderAddress")}
                 placeholder="noreply@yourdomain.com"
-                className="w-full bg-transparent border-b border-border/50 rounded-none py-2 text-sm font-mono focus-visible:ring-0 focus:border-foreground transition-all px-0"
+                className="w-full bg-muted/10 border border-border/30 rounded-none py-6 text-sm font-mono focus-visible:ring-1 focus-visible:ring-foreground/10 focus:border-border/60 transition-all px-4"
               />
               {errors.email?.senderAddress && (
-                <p className="text-[10px] text-red-500">
-                  {errors.email.senderAddress.message}
+                <p className="text-[10px] text-red-500 font-mono italic">
+                  ! {errors.email.senderAddress.message}
                 </p>
               )}
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Property Row: Test Connection */}
-        <section className="space-y-6 pt-6 border-t border-border/30">
-          <header className="flex items-center gap-3">
-            <Wifi size={12} className="text-muted-foreground" />
-            <h5 className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              服务连通性
-            </h5>
-          </header>
-
-          <div className="pl-6 flex items-center justify-between group">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-                    status === "SUCCESS"
-                      ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                      : status === "ERROR"
-                        ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                        : status === "TESTING"
-                          ? "bg-amber-500 animate-pulse"
-                          : "bg-muted-foreground/30"
-                  }`}
-                />
-                <span className="text-xs font-serif text-foreground">
-                  {status === "SUCCESS"
-                    ? "连接正常"
+        {/* Connectivity Status Overlay/Bar */}
+        <div className="bg-muted/10 p-6 px-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-700 ${
+                  status === "SUCCESS"
+                    ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]"
                     : status === "ERROR"
-                      ? "连接失败"
-                      : "等待测试"}
-                </span>
-              </div>
-              <p className="text-[10px] font-mono text-muted-foreground/50 pl-3.5">
+                      ? "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]"
+                      : status === "TESTING"
+                        ? "bg-amber-500 animate-pulse"
+                        : "bg-muted-foreground/20"
+                }`}
+              />
+              <span className="text-sm font-serif font-medium text-foreground">
                 {status === "SUCCESS"
-                  ? "连接建立成功"
+                  ? "服务连接正常"
                   : status === "ERROR"
-                    ? "连接被拒绝"
-                    : "等待执行测试"}
-              </p>
+                    ? "连接测试失败"
+                    : status === "TESTING"
+                      ? "正在建立握手..."
+                      : "等待连通性测试"}
+              </span>
             </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleTest}
-              disabled={status === "TESTING" || !isConfigured}
-              className={`h-8 px-4 rounded-none text-[10px] font-mono uppercase tracking-widest transition-all border border-transparent hover:border-border/30 ${
-                !isConfigured
-                  ? "text-muted-foreground/30 cursor-not-allowed"
-                  : "text-foreground hover:bg-muted/50"
-              }`}
-            >
-              {status === "TESTING" ? "[ 验证中 ]" : "[ 发送测试 ]"}
-            </Button>
+            <span className="hidden md:block w-px h-4 bg-border/30" />
+
+            <p className="hidden md:block text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest">
+              {status === "IDLE"
+                ? "Resend_Endpoint: Waiting_Command"
+                : `Last_Status: ${status}_State`}
+            </p>
           </div>
-        </section>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleTest}
+            disabled={status === "TESTING" || !isConfigured}
+            className={`h-10 px-8 rounded-none text-[10px] font-mono uppercase tracking-[0.2em] transition-all border-border/50 hover:bg-background ${
+              !isConfigured
+                ? "opacity-30 cursor-not-allowed"
+                : "text-foreground"
+            }`}
+          >
+            {status === "TESTING" ? (
+              <Loader2 size={12} className="animate-spin mr-3" />
+            ) : (
+              <Wifi size={12} className="mr-3" />
+            )}
+            {status === "TESTING" ? "Testing..." : "发送测试邮件"}
+          </Button>
+        </div>
       </div>
     </div>
   );
