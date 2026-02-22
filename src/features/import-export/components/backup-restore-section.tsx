@@ -1,14 +1,20 @@
 import {
-  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
   Database,
-  Download,
+  Info,
   Loader2,
-  RefreshCw,
   Upload,
+  XCircle,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useExportProgress,
   useImportProgress,
@@ -17,13 +23,121 @@ import {
 } from "@/features/import-export/queries/import-export.queries";
 import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 
-function Progress({ value, className }: { value: number; className?: string }) {
+const EXPORT_TOAST_ID = "export-progress";
+const IMPORT_TOAST_ID = "import-progress";
+
+function ImportToastResult({
+  succeeded,
+  failed,
+  warnings,
+}: {
+  succeeded: Array<{ title: string; slug: string }>;
+  failed: Array<{ title: string; reason: string }>;
+  warnings: Array<string>;
+}) {
+  const hasSuccess = succeeded.length > 0;
+  const hasFailure = failed.length > 0;
+  const hasWarning = warnings.length > 0;
+
+  if (!hasSuccess && !hasFailure && !hasWarning) {
+    return (
+      <div className="flex items-center gap-2 text-muted-foreground py-1">
+        <Info size={14} />
+        <span>没有找到可导入的内容</span>
+      </div>
+    );
+  }
+
   return (
-    <div className={`relative w-full overflow-hidden ${className}`}>
-      <div
-        className="h-full bg-primary transition-all duration-500 ease-in-out"
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-      />
+    <div className="space-y-4 mt-2.5">
+      {hasSuccess && (
+        <div className="border-l-2 border-emerald-500 pl-3.5 py-0.5 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-wider">
+            <CheckCircle2 size={13} strokeWidth={2.5} />
+            <span>成功导入 {succeeded.length} 篇</span>
+          </div>
+          <ul className="grid gap-1">
+            {succeeded.slice(0, 3).map((p) => (
+              <li
+                key={p.slug}
+                className="text-[11px] text-muted-foreground/90 truncate leading-relaxed"
+              >
+                {p.title}
+                <span className="opacity-40 font-mono ml-1.5 text-[9px]">
+                  /{p.slug}
+                </span>
+              </li>
+            ))}
+            {succeeded.length > 3 && (
+              <li className="text-[10px] text-muted-foreground/40 italic font-medium">
+                + 其余 {succeeded.length - 3} 篇文章
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {hasFailure && (
+        <div className="border-l-2 border-red-500 pl-3.5 py-0.5 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-red-500 font-semibold text-xs uppercase tracking-wider">
+            <XCircle size={13} strokeWidth={2.5} />
+            <span>失败 {failed.length} 篇</span>
+          </div>
+          <ul className="grid gap-1">
+            {failed.slice(0, 3).map((p) => (
+              <li
+                key={p.title}
+                className="text-[11px] text-muted-foreground/90 truncate leading-relaxed"
+              >
+                {p.title}
+                <span className="text-red-400/50 font-medium ml-1.5 italic">
+                  — {p.reason}
+                </span>
+              </li>
+            ))}
+            {failed.length > 3 && (
+              <li className="text-[10px] text-muted-foreground/40 italic font-medium">
+                + 其余 {failed.length - 3} 篇
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {hasWarning && (
+        <div className="border-l-2 border-amber-500 pl-3.5 py-0.5 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500 font-semibold text-xs uppercase tracking-wider">
+            <AlertTriangle size={13} strokeWidth={2.5} />
+            <span>提示 {warnings.length} 条</span>
+          </div>
+          <ul className="grid gap-1">
+            {warnings.slice(0, 3).map((w, i) => (
+              <li
+                key={i}
+                className="text-[11px] text-muted-foreground/90 leading-relaxed italic"
+              >
+                {w}
+              </li>
+            ))}
+            {warnings.length > 3 && (
+              <li className="text-[10px] text-muted-foreground/40 italic font-medium">
+                + 其余 {warnings.length - 3} 条提醒
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {hasSuccess && (
+        <div className="pt-3 border-t border-border/10">
+          <div className="flex items-start gap-2 text-muted-foreground/60 leading-snug">
+            <Info size={12} className="shrink-0 mt-0.5" />
+            <p className="text-[10px] italic">
+              建议重置系统缓存以确保最新内容在首页立即生效。
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -35,9 +149,9 @@ export function BackupRestoreSection() {
   const { data: exportProgress } = useExportProgress(exportTaskId);
 
   const isExporting =
+    exportTaskId !== null ||
     exportProgress?.status === "pending" ||
     exportProgress?.status === "processing";
-  const exportCompleted = exportProgress?.status === "completed";
 
   const handleExport = () => {
     startExport.mutate(
@@ -45,7 +159,6 @@ export function BackupRestoreSection() {
       {
         onSuccess: (result) => {
           setExportTaskId(result.taskId);
-          toast.success("备份任务已启动");
         },
         onError: (error) => {
           toast.error("启动失败", { description: error.message });
@@ -54,17 +167,34 @@ export function BackupRestoreSection() {
     );
   };
 
-  const handleDownload = () => {
-    if (exportTaskId && exportProgress?.downloadKey) {
-      window.open(getExportDownloadUrl(exportTaskId), "_blank");
-      if (exportProgress.warnings.length > 0) {
-        toast.warning("导出完成（有警告）", {
-          description: exportProgress.warnings.join("\n"),
-        });
-      }
-      setTimeout(() => setExportTaskId(null), 2000);
+  // Export completion toast
+  useEffect(() => {
+    if (!exportTaskId || !exportProgress) return;
+
+    const { status, total } = exportProgress;
+
+    if (status === "completed") {
+      const currentTaskId = exportTaskId;
+      toast.success("导出完成", {
+        id: EXPORT_TOAST_ID,
+        duration: Infinity,
+        description: `共 ${total} 篇文章已打包完成`,
+        action: {
+          label: "下载",
+          onClick: () =>
+            window.open(getExportDownloadUrl(currentTaskId), "_blank"),
+        },
+      });
+      setExportTaskId(null);
+    } else if (status === "failed") {
+      toast.error("导出失败", {
+        id: EXPORT_TOAST_ID,
+        duration: Infinity,
+        description: "任务异常中断，请重试",
+      });
+      setExportTaskId(null);
     }
-  };
+  }, [exportProgress, exportTaskId]);
 
   // --- Import State ---
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,10 +203,9 @@ export function BackupRestoreSection() {
   const { data: importProgress } = useImportProgress(importTaskId);
 
   const isImporting =
+    importTaskId !== null ||
     importProgress?.status === "pending" ||
     importProgress?.status === "processing";
-  const importCompleted = importProgress?.status === "completed";
-  const importFailed = importProgress?.status === "failed";
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -91,7 +220,6 @@ export function BackupRestoreSection() {
     uploadMutation.mutate(formData, {
       onSuccess: (result) => {
         setImportTaskId(result.taskId);
-        toast.success("导入任务已启动");
       },
       onError: (error) => {
         toast.error("上传失败", { description: error.message });
@@ -100,6 +228,39 @@ export function BackupRestoreSection() {
 
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  // Import completion toast
+  useEffect(() => {
+    if (!importTaskId || !importProgress) return;
+
+    const { status, report } = importProgress;
+
+    if (status === "completed") {
+      const succeeded = report?.succeeded ?? [];
+      const failed = report?.failed ?? [];
+      const warnings = report?.warnings ?? [];
+
+      (failed.length > 0 ? toast.warning : toast.success)("导入完成", {
+        id: IMPORT_TOAST_ID,
+        duration: Infinity,
+        description: (
+          <ImportToastResult
+            succeeded={succeeded}
+            failed={failed}
+            warnings={warnings}
+          />
+        ),
+      });
+      setImportTaskId(null);
+    } else if (status === "failed") {
+      toast.error("导入失败", {
+        id: IMPORT_TOAST_ID,
+        duration: Infinity,
+        description: "任务异常中断，请检查文件格式后重试",
+      });
+      setImportTaskId(null);
+    }
+  }, [importProgress, importTaskId]);
 
   return (
     <div className="space-y-12 animate-in fade-in duration-1000">
@@ -128,58 +289,20 @@ export function BackupRestoreSection() {
 
           <div className="space-y-6 pt-4">
             <div className="flex gap-4">
-              {exportCompleted ? (
-                <Button
-                  type="button"
-                  onClick={handleDownload}
-                  className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/10"
-                >
-                  <Download size={14} />[ 下载当前备份 ]
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={handleExport}
-                  disabled={isExporting || startExport.isPending}
-                  className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
-                >
-                  {isExporting ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Database size={14} />
-                  )}
-                  [ {isExporting ? "正在打包数据" : "启动全量备份"} ]
-                </Button>
-              )}
+              <Button
+                type="button"
+                onClick={handleExport}
+                disabled={isExporting || startExport.isPending}
+                className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {isExporting ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Database size={14} />
+                )}
+                [ {isExporting ? "正在打包数据" : "启动全量备份"} ]
+              </Button>
             </div>
-
-            {exportProgress && isExporting && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                  <span className="flex items-center gap-2">
-                    <Loader2 size={10} className="animate-spin" /> Packing
-                    Resources...
-                  </span>
-                  <span>
-                    {exportProgress.total > 0
-                      ? Math.round(
-                          (exportProgress.completed / exportProgress.total) *
-                            100,
-                        )
-                      : 0}
-                    %
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    exportProgress.total > 0
-                      ? (exportProgress.completed / exportProgress.total) * 100
-                      : 0
-                  }
-                  className="h-1 bg-muted/20"
-                />
-              </div>
-            )}
           </div>
         </div>
 
@@ -191,9 +314,63 @@ export function BackupRestoreSection() {
                 <Upload size={20} className="text-muted-foreground" />
               </div>
               <div>
-                <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
-                  备份数据恢复
-                </h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
+                    备份数据恢复
+                  </h4>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                      >
+                        <Info size={14} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="w-80 whitespace-normal normal-case p-4 space-y-3 leading-relaxed tracking-normal font-sans">
+                      <div className="space-y-3">
+                        <p className="font-bold border-b border-border/20 pb-1 text-xs">
+                          支持格式与导入规范
+                        </p>
+                        <ul className="list-disc pl-4 space-y-2 text-[10px] text-muted-foreground/90">
+                          <li>
+                            直接上传{" "}
+                            <code className="bg-muted px-1 text-[9px]">
+                              .md
+                            </code>{" "}
+                            文件 — 外链图片保持原样
+                          </li>
+                          <li>
+                            带图片的{" "}
+                            <code className="bg-muted px-1 text-[9px]">
+                              .zip
+                            </code>{" "}
+                            — 图片路径怎么写都行，只要{" "}
+                            <code className="bg-muted px-1 text-[9px]">
+                              .md
+                            </code>{" "}
+                            里的相对路径能对应到 ZIP 里的文件：
+                            <div className="mt-2 space-y-1 pl-2 border-l border-border/20 text-[9px] text-muted-foreground/60 font-mono">
+                              <p>• 扁平：post.md + images/photo.jpg</p>
+                              <p>
+                                • 独立目录：post-a/post-a.md +
+                                post-a/img/photo.jpg
+                              </p>
+                              <p>
+                                • 跨目录：posts/a.md + 引用 ../shared/logo.png
+                              </p>
+                            </div>
+                          </li>
+                          <li>多篇文章可以放在同一个 ZIP 里一起导入</li>
+                          <li>兼容 Hugo / Hexo / Jekyll 的 frontmatter 字段</li>
+                        </ul>
+                        <div className="pt-2 border-t border-border/10 text-[9px] text-amber-500/80 italic">
+                          ※ 系统执行增量合并，检测到相同 Slug 的文章将自动跳过。
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
                   DATA_RECOVERY_LOADER
                 </p>
@@ -201,10 +378,10 @@ export function BackupRestoreSection() {
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            支持上传 `.zip` 格式的完整备份包，或单个 `.md` Markdown
-            文件进行内容迁移。该操作支持增量合并，不会覆盖已有的同名内容标识。
-          </p>
+          <div className="text-xs text-muted-foreground leading-relaxed">
+            支持上传本系统导出的 `.zip` 备份包，或外部 Markdown
+            文件进行内容迁移。增量合并，且能够兼容 Hugo / Hexo 等主流框架。
+          </div>
 
           <div className="space-y-6 pt-4">
             <input
@@ -217,86 +394,20 @@ export function BackupRestoreSection() {
             />
 
             <div className="flex gap-4">
-              {importCompleted || importFailed ? (
-                <Button
-                  type="button"
-                  onClick={() => setImportTaskId(null)}
-                  variant="outline"
-                  className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.15em] rounded-none gap-3 border-border/50 hover:bg-background transition-all"
-                >
-                  <RefreshCw size={14} />[ 清理状态 ]
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isImporting || uploadMutation.isPending}
-                  className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
-                >
-                  {uploadMutation.isPending || isImporting ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Upload size={14} />
-                  )}
-                  [ {uploadMutation.isPending ? "正在传输文件" : "上传备份文件"}{" "}
-                  ]
-                </Button>
-              )}
-            </div>
-
-            {importProgress && isImporting && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                  <span className="flex items-center gap-2">
-                    <Loader2 size={10} className="animate-spin" /> Restoring
-                    Streams...
-                  </span>
-                  <span>
-                    {importProgress.total > 0
-                      ? Math.round(
-                          (importProgress.completed / importProgress.total) *
-                            100,
-                        )
-                      : 0}
-                    %
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    importProgress.total > 0
-                      ? (importProgress.completed / importProgress.total) * 100
-                      : 0
-                  }
-                  className="h-1 bg-muted/20"
-                />
-              </div>
-            )}
-
-            {importCompleted && importProgress.report && (
-              <div className="p-4 bg-muted/10 border border-border/30 font-mono text-[10px] space-y-2 animate-in fade-in zoom-in-95">
-                <div className="text-muted-foreground uppercase tracking-widest pb-2 border-b border-border/20 mb-1">
-                  吞吐报告：
-                </div>
-                <div className="flex justify-between px-1">
-                  <span>成功入库资源:</span>
-                  <span className="text-emerald-500 font-bold">
-                    {importProgress.report.succeeded.length} UNITS
-                  </span>
-                </div>
-                {importProgress.report.failed.length > 0 && (
-                  <div className="flex justify-between px-1">
-                    <span>处理失败:</span>
-                    <span className="text-red-500 font-bold">
-                      {importProgress.report.failed.length} ERRORS
-                    </span>
-                  </div>
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImporting || uploadMutation.isPending}
+                className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {uploadMutation.isPending || isImporting ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Upload size={14} />
                 )}
-                <div className="flex items-start gap-2 pt-3 border-t border-border/20 mt-2 text-amber-500/80 leading-relaxed italic">
-                  <AlertCircle size={12} className="shrink-0 mt-0.5" />
-                  <span>建议重启缓存索引以应用全部更改。</span>
-                </div>
-              </div>
-            )}
+                [ {uploadMutation.isPending ? "正在导入" : "导入数据"} ]
+              </Button>
+            </div>
           </div>
         </div>
       </div>

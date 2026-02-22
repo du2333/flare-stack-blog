@@ -9,7 +9,9 @@ export function stringifyFrontmatter(
   frontmatter: PostFrontmatter,
   markdownContent: string,
 ): string {
-  return matter.stringify(markdownContent, frontmatter);
+  // js-yaml cannot serialize undefined values — JSON round-trip strips them
+  const clean = JSON.parse(JSON.stringify(frontmatter));
+  return matter.stringify(markdownContent, clean);
 }
 
 /**

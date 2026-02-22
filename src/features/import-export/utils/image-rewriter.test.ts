@@ -5,6 +5,7 @@ import {
   rewriteImagePaths,
   rewriteMarkdownImagePaths,
 } from "@/features/import-export/utils/image-rewriter";
+import { resolveRelativePath } from "@/features/import-export/workflows/import-helpers";
 
 describe("rewriteImagePaths", () => {
   it("should rewrite image src in JSONContent", () => {
@@ -180,5 +181,43 @@ describe("rewriteMarkdownImagePaths", () => {
   it("should handle markdown with no images", () => {
     const md = "Just text here";
     expect(rewriteMarkdownImagePaths(md, new Map([["a", "b"]]))).toBe(md);
+  });
+});
+
+describe("resolveRelativePath", () => {
+  it("should resolve simple relative path from base", () => {
+    expect(resolveRelativePath("posts", "images/a.jpg")).toBe(
+      "posts/images/a.jpg",
+    );
+  });
+
+  it("should strip leading ./", () => {
+    expect(resolveRelativePath("posts", "./images/a.jpg")).toBe(
+      "posts/images/a.jpg",
+    );
+  });
+
+  it("should resolve .. to parent directory", () => {
+    expect(resolveRelativePath("posts/sub", "../assets/a.jpg")).toBe(
+      "posts/assets/a.jpg",
+    );
+  });
+
+  it("should handle empty base (root-level .md)", () => {
+    expect(resolveRelativePath("", "images/a.jpg")).toBe("images/a.jpg");
+  });
+
+  it("should handle empty base with ./", () => {
+    expect(resolveRelativePath("", "./photo.jpg")).toBe("photo.jpg");
+  });
+
+  it("should handle sibling file reference", () => {
+    expect(resolveRelativePath("content/posts", "cover.jpg")).toBe(
+      "content/posts/cover.jpg",
+    );
+  });
+
+  it("should handle deeply nested ..", () => {
+    expect(resolveRelativePath("a/b/c", "../../img.jpg")).toBe("a/img.jpg");
   });
 });

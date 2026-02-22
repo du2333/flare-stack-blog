@@ -22,8 +22,11 @@ export function useExportProgress(taskId: string | null) {
     queryKey: ["export-progress", taskId],
     queryFn: () => getExportProgressFn({ data: { taskId: taskId! } }),
     refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      return status === "processing" || status === "pending" ? 2000 : false;
+      const data = query.state.data;
+      if (!data) return 2000; // KV not ready yet — keep polling
+      return data.status === "processing" || data.status === "pending"
+        ? 2000
+        : false;
     },
     enabled: !!taskId,
   });
@@ -43,8 +46,11 @@ export function useImportProgress(taskId: string | null) {
     queryKey: ["import-progress", taskId],
     queryFn: () => getImportProgressFn({ data: { taskId: taskId! } }),
     refetchInterval: (q) => {
-      const status = q.state.data?.status;
-      return status === "processing" || status === "pending" ? 2000 : false;
+      const data = q.state.data;
+      if (!data) return 2000; // KV not ready yet — keep polling
+      return data.status === "processing" || data.status === "pending"
+        ? 2000
+        : false;
     },
     enabled: !!taskId,
   });

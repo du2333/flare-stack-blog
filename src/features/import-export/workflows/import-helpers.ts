@@ -21,7 +21,11 @@ import {
   normalizeFrontmatter,
   parseFrontmatter,
 } from "@/features/import-export/utils/frontmatter";
-import { rewriteImagePaths } from "@/features/import-export/utils/image-rewriter";
+import {
+  extractMarkdownImages,
+  rewriteImagePaths,
+  rewriteMarkdownImagePaths,
+} from "@/features/import-export/utils/image-rewriter";
 import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 
 // --- Enumerate posts (pure — no env dependency) ---
@@ -127,8 +131,20 @@ export async function importSinglePost(
       metadata = data;
 
       if (content.trim()) {
+        // Upload relative images and rewrite markdown paths before conversion
+        const mdDir = mdPath.substring(0, mdPath.lastIndexOf("/"));
+        const imageResult = await uploadMarkdownImages(
+          env,
+          zipFiles,
+          content,
+          mdDir,
+        );
+        warnings.push(...imageResult.warnings);
+
         try {
-          contentJson = await markdownToJsonContent(content);
+          contentJson = await markdownToJsonContent(
+            imageResult.rewrittenMarkdown,
+          );
         } catch (error) {
           warnings.push(
             `Markdown 转换失败: ${error instanceof Error ? error.message : String(error)}`,
@@ -153,8 +169,8 @@ export async function importSinglePost(
     return { title, slug: candidateSlug, skipped: true, warnings };
   }
 
-  // 3. Upload images and rewrite paths
-  if (contentJson) {
+  // 3. Upload images and rewrite paths (native mode only — markdown mode handles images pre-conversion)
+  if (contentJson && mode === "native") {
     const imageResult = await uploadImages(env, zipFiles, entry);
     warnings.push(...imageResult.warnings);
     if (imageResult.rewriteMap.size > 0) {
@@ -239,7 +255,8 @@ export async function uploadImages(
     const oldKey = imagePath.slice(imagePrefix.length);
     const newKey = generateKey(oldKey);
 
-    const mimeType = getContentTypeFromKey(oldKey) || "application/octet-stream";
+    const mimeType =
+      getContentTypeFromKey(oldKey) || "application/octet-stream";
 
     try {
       await env.R2.put(newKey, imageData, {
@@ -269,4 +286,98 @@ export async function uploadImages(
   }
 
   return { rewriteMap, warnings };
+}
+
+// --- Markdown image upload (resolves relative paths from .md location) ---
+
+/**
+ * 解析相对路径：以 markdown 文件所在目录为基准
+ * resolveRelativePath("posts", "./images/a.jpg") → "posts/images/a.jpg"
+ * resolveRelativePath("", "images/a.jpg") → "images/a.jpg"
+ * resolveRelativePath("posts/sub", "../assets/a.jpg") → "posts/assets/a.jpg"
+ */
+export function resolveRelativePath(base: string, relative: string): string {
+  const cleaned = relative.replace(/^\.\//, "");
+  if (!base) return cleaned;
+
+  const parts = base.split("/");
+  for (const segment of cleaned.split("/")) {
+    if (segment === "..") {
+      parts.pop();
+    } else if (segment !== ".") {
+      parts.push(segment);
+    }
+  }
+  return parts.join("/");
+}
+
+/**
+ * 扫描 Markdown 中的相对图片引用，上传到 R2，重写路径
+ */
+async function uploadMarkdownImages(
+  env: Env,
+  zipFiles: Record<string, Uint8Array>,
+  markdown: string,
+  mdDir: string,
+): Promise<{ rewrittenMarkdown: string; warnings: Array<string> }> {
+  const warnings: Array<string> = [];
+
+  const images = extractMarkdownImages(markdown);
+  const relativeImages = images.filter((img) => img.type === "relative");
+
+  if (relativeImages.length === 0) {
+    return { rewrittenMarkdown: markdown, warnings };
+  }
+
+  const rewriteMap = new Map<string, string>();
+
+  for (const img of relativeImages) {
+    const resolvedPath = resolveRelativePath(mdDir, img.original);
+
+    if (!(resolvedPath in zipFiles)) {
+      warnings.push(`图片未在 ZIP 中找到: ${img.original}`);
+      continue;
+    }
+
+    const imageData = zipFiles[resolvedPath];
+    if (imageData.length === 0) continue;
+
+    const fileName = resolvedPath.split("/").pop() || resolvedPath;
+    const newKey = generateKey(fileName);
+    const mimeType =
+      getContentTypeFromKey(fileName) || "application/octet-stream";
+
+    try {
+      await env.R2.put(newKey, imageData, {
+        httpMetadata: { contentType: mimeType },
+        customMetadata: { originalName: fileName },
+      });
+
+      await MediaRepo.insertMedia(getDb(env), {
+        key: newKey,
+        url: `/images/${newKey}`,
+        fileName,
+        mimeType,
+        sizeInBytes: imageData.length,
+      });
+
+      rewriteMap.set(img.original, `/images/${newKey}?quality=80`);
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          message: "markdown image upload failed during import",
+          resolvedPath,
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      warnings.push(`图片上传失败: ${img.original}`);
+    }
+  }
+
+  const rewrittenMarkdown =
+    rewriteMap.size > 0
+      ? rewriteMarkdownImagePaths(markdown, rewriteMap)
+      : markdown;
+
+  return { rewrittenMarkdown, warnings };
 }
