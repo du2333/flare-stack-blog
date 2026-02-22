@@ -27,6 +27,7 @@ import {
   rewriteMarkdownImagePaths,
 } from "@/features/import-export/utils/image-rewriter";
 import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
+import { PostTagsTable } from "@/lib/db/schema";
 
 // --- Enumerate posts (pure — no env dependency) ---
 
@@ -222,7 +223,6 @@ export async function importSinglePost(
 
   // 8. Link tags
   if (tagIds.length > 0) {
-    const { PostTagsTable } = await import("@/lib/db/schema");
     await db
       .insert(PostTagsTable)
       .values(tagIds.map((tagId) => ({ postId: post.id, tagId })));

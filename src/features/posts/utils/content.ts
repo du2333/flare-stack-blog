@@ -1,5 +1,6 @@
 import type { JSONContent } from "@tiptap/react";
 import { extractImageKey } from "@/features/media/media.utils";
+import { highlight } from "@/lib/shiki";
 
 export function slugify(text: string | null | undefined) {
   if (!text) return "untitled-log";
@@ -46,7 +47,6 @@ export function extractAllImageKeys(doc: JSONContent | null): Array<string> {
 export async function highlightCodeBlocks(
   doc: JSONContent,
 ): Promise<JSONContent> {
-  const { highlight } = await import("@/lib/shiki");
   const cloned = structuredClone(doc);
 
   async function traverse(node: JSONContent) {

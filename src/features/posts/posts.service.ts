@@ -22,7 +22,11 @@ import {
 } from "@/features/posts/posts.schema";
 import * as AiService from "@/features/ai/ai.service";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
-import { convertToPlainText, slugify } from "@/features/posts/utils/content";
+import {
+  convertToPlainText,
+  highlightCodeBlocks,
+  slugify,
+} from "@/features/posts/utils/content";
 import { purgePostCDNCache } from "@/lib/invalidate";
 import * as SearchService from "@/features/search/search.service";
 import { calculatePostHash } from "@/features/posts/utils/sync";
@@ -70,8 +74,6 @@ export async function findPostBySlug(
 
     let contentJson = post.contentJson;
     if (contentJson) {
-      const { highlightCodeBlocks } =
-        await import("@/features/posts/utils/content");
       contentJson = await highlightCodeBlocks(contentJson);
     }
 
