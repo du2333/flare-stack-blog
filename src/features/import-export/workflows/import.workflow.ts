@@ -21,6 +21,10 @@ export class ImportWorkflow extends WorkflowEntrypoint<
     const { taskId, r2Key, mode } = event.payload;
     const progressKey = IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId);
 
+    console.log(
+      JSON.stringify({ message: "import workflow started", taskId, mode }),
+    );
+
     try {
       // 1. Enumerate posts from ZIP
       // NOTE: step.do() serializes return values as JSON for durability.
@@ -34,6 +38,14 @@ export class ImportWorkflow extends WorkflowEntrypoint<
         }
         return enumerateMarkdownPosts(zipFiles);
       });
+
+      console.log(
+        JSON.stringify({
+          message: "posts enumerated",
+          taskId,
+          count: postEntries.length,
+        }),
+      );
 
       if (postEntries.length === 0) {
         await this.updateProgress(progressKey, {
@@ -49,6 +61,8 @@ export class ImportWorkflow extends WorkflowEntrypoint<
       }
 
       // 2. Process each post
+      // Each step returns a delta (serializable). Accumulation happens outside
+      // steps so it re-executes correctly on workflow restart/replay.
       const report: ImportReport = {
         succeeded: [],
         failed: [],
@@ -58,9 +72,15 @@ export class ImportWorkflow extends WorkflowEntrypoint<
       for (let i = 0; i < postEntries.length; i++) {
         const entry = postEntries[i];
 
-        await step.do(
+        const delta = await step.do(
           `import post ${i + 1}/${postEntries.length}: ${entry.title || entry.dir}`,
           async () => {
+            const stepReport: ImportReport = {
+              succeeded: [],
+              failed: [],
+              warnings: [],
+            };
+
             try {
               const zipFiles = await this.fetchZipFiles(r2Key);
               const result = await importSinglePost(
@@ -70,40 +90,60 @@ export class ImportWorkflow extends WorkflowEntrypoint<
                 mode,
               );
               if (result.skipped) {
-                report.warnings.push(
+                stepReport.warnings.push(
                   `[${result.title}] 已存在相同 slug，跳过导入`,
                 );
               } else {
-                report.succeeded.push({
+                stepReport.succeeded.push({
                   title: result.title,
                   slug: result.slug,
                 });
               }
               for (const w of result.warnings) {
-                report.warnings.push(`[${result.title}] ${w}`);
+                stepReport.warnings.push(`[${result.title}] ${w}`);
               }
             } catch (error) {
               const reason =
                 error instanceof Error ? error.message : String(error);
-              report.failed.push({
+              stepReport.failed.push({
                 title: entry.title || entry.dir,
                 reason,
               });
             }
 
-            await this.updateProgress(progressKey, {
-              status: "processing",
-              total: postEntries.length,
-              completed: i + 1,
-              current: entry.title || entry.dir,
-              errors: report.failed.map((f) => ({
-                post: f.title,
-                reason: f.reason,
-              })),
-              warnings: report.warnings,
-            });
+            return stepReport;
           },
         );
+
+        // Accumulate outside step — on replay, cached return values flow here
+        report.succeeded.push(...delta.succeeded);
+        report.failed.push(...delta.failed);
+        report.warnings.push(...delta.warnings);
+
+        console.log(
+          JSON.stringify({
+            message: "post import step completed",
+            taskId,
+            step: i + 1,
+            total: postEntries.length,
+            title: entry.title || entry.dir,
+            succeeded: delta.succeeded.length,
+            failed: delta.failed.length,
+          }),
+        );
+
+        // Progress update outside step — idempotent KV write, safe on replay
+        await this.updateProgress(progressKey, {
+          status: "processing",
+          total: postEntries.length,
+          completed: i + 1,
+          current: entry.title || entry.dir,
+          errors: report.failed.map((f) => ({
+            post: f.title,
+            reason: f.reason,
+          })),
+          warnings: report.warnings,
+        });
       }
 
       // 3. Cleanup and finalize
@@ -127,6 +167,16 @@ export class ImportWorkflow extends WorkflowEntrypoint<
           report,
         });
       });
+
+      console.log(
+        JSON.stringify({
+          message: "import workflow completed",
+          taskId,
+          succeeded: report.succeeded.length,
+          failed: report.failed.length,
+          warnings: report.warnings.length,
+        }),
+      );
     } catch (error) {
       console.error(
         JSON.stringify({
