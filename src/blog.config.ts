@@ -13,6 +13,16 @@ export const blogConfig = {
     email: env.VITE_BLOG_EMAIL || "demo@example.com",
   },
   theme: {
+    default: {
+      background: {
+        homeImage: env.VITE_DEFAULT_HOME_IMAGE || "", // R2 path or external URL (hero on homepage)
+        globalImage: env.VITE_DEFAULT_GLOBAL_IMAGE || "", // R2 path or external URL (all other pages + scroll target)
+        light: { opacity: env.VITE_DEFAULT_LIGHT_OPACITY ?? 0.15 }, // opacity in light mode
+        dark: { opacity: env.VITE_DEFAULT_DARK_OPACITY ?? 0.1 }, // opacity in dark mode
+        backdropBlur: env.VITE_DEFAULT_BACKDROP_BLUR ?? 8, // px, Gaussian blur
+        transitionDuration: env.VITE_DEFAULT_TRANSITION_DURATION ?? 600, // ms, route crossfade (0-3000)
+      },
+    },
     fuwari: {
       homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.jpg",
       avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",

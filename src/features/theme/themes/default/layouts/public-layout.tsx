@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BackgroundLayer } from "../components/background-layer";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
@@ -15,6 +16,7 @@ export function PublicLayout({
 
   return (
     <div className="default-theme min-h-screen flex flex-col">
+      <BackgroundLayer />
       <Navbar
         navOptions={navOptions}
         onMenuClick={() => setIsMenuOpen(true)}
