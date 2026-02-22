@@ -172,7 +172,9 @@ export function EmailServiceSection({
                 显示名称 (Display_Name)
               </label>
               <Input
-                {...register("email.senderName")}
+                {...register("email.senderName", {
+                  onChange: () => setStatus("IDLE"),
+                })}
                 placeholder="例如：Chronicle Blog"
                 className="w-full bg-muted/10 border border-border/30 rounded-none py-6 text-sm font-mono focus-visible:ring-1 focus-visible:ring-foreground/10 focus:border-border/60 transition-all px-4"
               />
@@ -189,7 +191,9 @@ export function EmailServiceSection({
               </label>
               <Input
                 type="email"
-                {...register("email.senderAddress")}
+                {...register("email.senderAddress", {
+                  onChange: () => setStatus("IDLE"),
+                })}
                 placeholder="noreply@yourdomain.com"
                 className="w-full bg-muted/10 border border-border/30 rounded-none py-6 text-sm font-mono focus-visible:ring-1 focus-visible:ring-foreground/10 focus:border-border/60 transition-all px-4"
               />
