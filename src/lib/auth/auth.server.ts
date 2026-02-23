@@ -22,10 +22,6 @@ async function checkEmailRateLimit(
 }
 
 export function getAuth({ db, env }: { db: DB; env: Env }) {
-  return createAuth({ db, env });
-}
-
-function createAuth({ db, env }: { db: DB; env: Env }) {
   const {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
@@ -127,5 +123,5 @@ function createAuth({ db, env }: { db: DB; env: Env }) {
   });
 }
 
-export type Auth = ReturnType<typeof createAuth>;
+export type Auth = ReturnType<typeof getAuth>;
 export type Session = Auth["$Infer"]["Session"];
