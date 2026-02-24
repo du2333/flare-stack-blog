@@ -13,22 +13,57 @@ function escapeHtmlAttr(s: string): string {
  * so that marked passes them through and DOMParser can parse them.
  */
 function preprocessMathInMarkdown(markdown: string): string {
+  const placeholders: Array<string> = [];
+  const savePlaceholder = (raw: string): string => {
+    const idx = placeholders.push(raw) - 1;
+    return `\u0000MATH_PLACEHOLDER_${idx}\u0000`;
+  };
+
+  // Protect code regions first to avoid replacing math syntax inside code.
+  let result = markdown
+    .replace(/```[\s\S]*?```/g, (m) => savePlaceholder(m))
+    .replace(/`[^`\n]+`/g, (m) => savePlaceholder(m));
+
   // Block math first: $$...$$ (multiline)
-  let result = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
+  result = result.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
     const trimmed = latex.trim();
     const escaped = escapeHtmlAttr(trimmed);
     return `<div data-type="block-math" data-latex="${escaped}"></div>`;
   });
   // Inline math: $...$ (no $ or newline inside)
-  // Leave as plain text when content looks like currency (e.g. "5 and " in "$5 and $10")
-  result = result.replace(/\$([^$\n]+?)\$/g, (_, latex) => {
+  result = result.replace(/\$([^$\n]+?)\$/g, (match, latex) => {
     const trimmed = latex.trim();
-    if (/\s+and\s*/.test(trimmed)) return `$${latex}$`; // "5 and" or "5 and " -> leave as-is
-    if (/^\d+([.,]\d+)?\s*$/.test(trimmed)) return `$${latex}$`; // "$10.99" -> leave as-is
+
+    const startsWithNumber = /^\d+([.,]\d+)?/.test(trimmed);
+    const isPureNumber = /^\d+([.,]\d+)?\s*$/.test(trimmed);
+    const hasRangeOrCurrencyWords = /\b(?:and|or|to|per|each)\b/i.test(trimmed);
+    const hasEnglishWordsAfterNumber = /^\d+([.,]\d+)?\s+[a-zA-Z]+/.test(
+      trimmed,
+    );
+    const hasNonLatexToken = /[^\d\s.,+\-*/=^_(){}\\a-zA-Z]/.test(trimmed);
+
+    if (
+      isPureNumber ||
+      (startsWithNumber &&
+        (hasRangeOrCurrencyWords ||
+          hasEnglishWordsAfterNumber ||
+          hasNonLatexToken))
+    ) {
+      return match; // leave as-is for currency/range-like text
+    }
+
     const escaped = escapeHtmlAttr(trimmed);
     return `<span data-type="inline-math" data-latex="${escaped}"></span>`;
   });
-  return result;
+
+  let restored = result;
+  placeholders.forEach((value, idx) => {
+    restored = restored.replaceAll(
+      `\u0000MATH_PLACEHOLDER_${idx}\u0000`,
+      value,
+    );
+  });
+  return restored;
 }
 
 /**

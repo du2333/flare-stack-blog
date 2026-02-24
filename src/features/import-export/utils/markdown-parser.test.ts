@@ -136,4 +136,39 @@ describe("markdownToJsonContent", () => {
       .join("");
     expect(textContent).toBe("Cost: $100");
   });
+
+  it("should keep currency range text as plain text", async () => {
+    const json = await markdownToJsonContent("Budget is $5 or $10.");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textContent = p!
+      .content!.filter((n) => n.type === "text")
+      .map((n) => n.text ?? "")
+      .join("");
+    expect(textContent).toContain("$5");
+    expect(textContent).toContain("$10");
+  });
+
+  it("should not parse math inside inline code", async () => {
+    const json = await markdownToJsonContent("Use `$x^2$` here.");
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    expect(JSON.stringify(p)).toContain("$x^2");
+  });
+
+  it("should not parse math inside fenced code blocks", async () => {
+    const json = await markdownToJsonContent(
+      "```md\n$x^2$ and $$E=mc^2$$\n```",
+    );
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    expect(JSON.stringify(json)).not.toContain('"type":"blockMath"');
+    const codeBlock = json.content!.find((n) => n.type === "codeBlock");
+    expect(codeBlock).toBeDefined();
+  });
 });

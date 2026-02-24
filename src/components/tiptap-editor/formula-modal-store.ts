@@ -11,18 +11,40 @@ export type FormulaModalPayload = {
 
 type FormulaModalOpener = (payload: FormulaModalPayload) => void;
 
-let opener: FormulaModalOpener | null = null;
+const openers = new Map<symbol, FormulaModalOpener>();
 
-export function setFormulaModalOpener(fn: FormulaModalOpener | null) {
-  opener = fn;
+export function addFormulaModalOpener(key: symbol, fn: FormulaModalOpener) {
+  openers.set(key, fn);
+}
+
+export function removeFormulaModalOpener(key: symbol) {
+  openers.delete(key);
 }
 
 export function openFormulaModalForEdit(payload: FormulaModalPayload) {
-  if (!opener) {
+  if (openers.size === 0) {
     console.warn(
-      "[formula-modal-store] openFormulaModalForEdit called but no opener is registered.",
+      JSON.stringify({
+        module: "formula-modal-store",
+        event: "openFormulaModalForEdit.noOpener",
+        message: "openFormulaModalForEdit called but no opener is registered.",
+      }),
     );
     return;
   }
-  opener(payload);
+
+  for (const opener of openers.values()) {
+    try {
+      opener(payload);
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          module: "formula-modal-store",
+          event: "openFormulaModalForEdit.openerError",
+          message: "An opener threw an error.",
+          error: String(err),
+        }),
+      );
+    }
+  }
 }

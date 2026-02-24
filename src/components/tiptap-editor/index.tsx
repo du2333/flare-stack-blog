@@ -1,10 +1,13 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import InsertModal from "./ui/insert-modal";
 import EditorToolbar from "./ui/editor-toolbar";
 import { TableBubbleMenu } from "./ui/table-bubble-menu";
 import { FormulaModal } from "./ui/formula-modal";
-import { setFormulaModalOpener } from "./formula-modal-store";
+import {
+  addFormulaModalOpener,
+  removeFormulaModalOpener,
+} from "./formula-modal-store";
 import type { FormulaModalPayload } from "./formula-modal-store";
 import type {
   Extensions,
@@ -28,6 +31,7 @@ export const Editor = memo(function Editor({
   onCreated,
   extensions,
 }: EditorProps) {
+  const formulaOpenerKeyRef = useRef(Symbol("formula-modal-opener"));
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
   const [modalInitialUrl, setModalInitialUrl] = useState("");
   const [formulaModalOpen, setFormulaModalOpen] = useState(false);
@@ -84,8 +88,8 @@ export const Editor = memo(function Editor({
       });
       setFormulaModalOpen(true);
     };
-    setFormulaModalOpener(opener);
-    return () => setFormulaModalOpener(null);
+    addFormulaModalOpener(formulaOpenerKeyRef.current, opener);
+    return () => removeFormulaModalOpener(formulaOpenerKeyRef.current);
   }, []);
 
   const handleFormulaApply = useCallback(
