@@ -7,11 +7,13 @@ export type FormulaModalPayload = {
   latex: string;
   pos: number;
   type: "inline" | "block";
+  instanceKey?: symbol;
 };
 
 type FormulaModalOpener = (payload: FormulaModalPayload) => void;
 
 const openers = new Map<symbol, FormulaModalOpener>();
+let activeOpenerKey: symbol | null = null;
 
 export function addFormulaModalOpener(key: symbol, fn: FormulaModalOpener) {
   openers.set(key, fn);
@@ -19,6 +21,17 @@ export function addFormulaModalOpener(key: symbol, fn: FormulaModalOpener) {
 
 export function removeFormulaModalOpener(key: symbol) {
   openers.delete(key);
+  if (activeOpenerKey === key) {
+    activeOpenerKey = null;
+  }
+}
+
+export function setActiveFormulaModalOpenerKey(key: symbol) {
+  activeOpenerKey = key;
+}
+
+export function getActiveFormulaModalOpenerKey(): symbol | null {
+  return activeOpenerKey;
 }
 
 export function openFormulaModalForEdit(payload: FormulaModalPayload) {
@@ -33,9 +46,12 @@ export function openFormulaModalForEdit(payload: FormulaModalPayload) {
     return;
   }
 
-  for (const opener of openers.values()) {
+  const targetKey = payload.instanceKey ?? activeOpenerKey;
+  if (targetKey && openers.has(targetKey)) {
+    const targetOpener = openers.get(targetKey);
+    if (!targetOpener) return;
     try {
-      opener(payload);
+      targetOpener(payload);
     } catch (err) {
       console.error(
         JSON.stringify({
@@ -46,5 +62,30 @@ export function openFormulaModalForEdit(payload: FormulaModalPayload) {
         }),
       );
     }
+    return;
+  }
+
+  // Fallback for legacy calls without active target
+  const firstOpener = openers.values().next().value;
+  if (!firstOpener) return;
+  console.warn(
+    JSON.stringify({
+      module: "formula-modal-store",
+      event: "openFormulaModalForEdit.fallback",
+      message:
+        "No targeted opener found; falling back to first registered opener.",
+    }),
+  );
+  try {
+    firstOpener(payload);
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        module: "formula-modal-store",
+        event: "openFormulaModalForEdit.openerError",
+        message: "Fallback opener threw an error.",
+        error: String(err),
+      }),
+    );
   }
 }

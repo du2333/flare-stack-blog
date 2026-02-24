@@ -171,4 +171,24 @@ describe("markdownToJsonContent", () => {
     const codeBlock = json.content!.find((n) => n.type === "codeBlock");
     expect(codeBlock).toBeDefined();
   });
+
+  it("should not parse math inside tilde fenced code blocks", async () => {
+    const json = await markdownToJsonContent(
+      "~~~md\n$x^2$ and $$E=mc^2$$\n~~~",
+    );
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    expect(JSON.stringify(json)).not.toContain('"type":"blockMath"');
+    const codeBlock = json.content!.find((n) => n.type === "codeBlock");
+    expect(codeBlock).toBeDefined();
+  });
+
+  it("should not parse math inside double-backtick inline code", async () => {
+    const json = await markdownToJsonContent("Use ``$x^2$`` here.");
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    expect(JSON.stringify(p)).toContain("$x^2");
+  });
 });

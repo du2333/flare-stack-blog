@@ -22,6 +22,8 @@ function preprocessMathInMarkdown(markdown: string): string {
   // Protect code regions first to avoid replacing math syntax inside code.
   let result = markdown
     .replace(/```[\s\S]*?```/g, (m) => savePlaceholder(m))
+    .replace(/~~~[\s\S]*?~~~/g, (m) => savePlaceholder(m))
+    .replace(/``[^`]+``/g, (m) => savePlaceholder(m))
     .replace(/`[^`\n]+`/g, (m) => savePlaceholder(m));
 
   // Block math first: $$...$$ (multiline)

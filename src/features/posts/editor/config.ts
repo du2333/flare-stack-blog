@@ -19,7 +19,10 @@ import {
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
 import { uploadImageFn } from "@/features/media/media.api";
 import { slugify } from "@/features/posts/utils/content";
-import { openFormulaModalForEdit } from "@/components/tiptap-editor/formula-modal-store";
+import {
+  getActiveFormulaModalOpenerKey,
+  openFormulaModalForEdit,
+} from "@/components/tiptap-editor/formula-modal-store";
 
 const ALLOWED_IMAGE_MIME_TYPES = [
   "image/png",
@@ -131,6 +134,7 @@ export const extensions = [
           latex: node.attrs.latex ?? "",
           pos,
           type: "inline",
+          instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
         });
       },
     },
@@ -140,6 +144,7 @@ export const extensions = [
           latex: node.attrs.latex ?? "",
           pos,
           type: "block",
+          instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
         });
       },
     },

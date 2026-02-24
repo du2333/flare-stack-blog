@@ -7,6 +7,7 @@ import { FormulaModal } from "./ui/formula-modal";
 import {
   addFormulaModalOpener,
   removeFormulaModalOpener,
+  setActiveFormulaModalOpenerKey,
 } from "./formula-modal-store";
 import type { FormulaModalPayload } from "./formula-modal-store";
 import type {
@@ -92,6 +93,10 @@ export const Editor = memo(function Editor({
     return () => removeFormulaModalOpener(formulaOpenerKeyRef.current);
   }, []);
 
+  const markActiveFormulaOpener = useCallback(() => {
+    setActiveFormulaModalOpenerKey(formulaOpenerKeyRef.current);
+  }, []);
+
   const handleFormulaApply = useCallback(
     (
       latex: string,
@@ -173,7 +178,11 @@ export const Editor = memo(function Editor({
 
       <TableBubbleMenu editor={editor} />
 
-      <div className="relative min-h-125">
+      <div
+        className="relative min-h-125"
+        onMouseDownCapture={markActiveFormulaOpener}
+        onFocusCapture={markActiveFormulaOpener}
+      >
         <EditorContent editor={editor} />
       </div>
 
