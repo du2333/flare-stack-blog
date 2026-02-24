@@ -208,4 +208,18 @@ describe("markdownToJsonContent", () => {
     expect(textContent).toContain("$50,000,000");
     expect(textContent).toContain("$1,234,567.89");
   });
+
+  it("should keep balanced comma-grouped dollar value as plain text", async () => {
+    const json = await markdownToJsonContent("Value $50,000$ was recorded.");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textContent = p!
+      .content!.filter((n) => n.type === "text")
+      .map((n) => n.text ?? "")
+      .join("");
+    expect(textContent).toContain("$50,000$");
+  });
 });
