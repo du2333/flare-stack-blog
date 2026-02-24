@@ -191,4 +191,21 @@ describe("markdownToJsonContent", () => {
     expect(p).toBeDefined();
     expect(JSON.stringify(p)).toContain("$x^2");
   });
+
+  it("should treat comma-grouped numbers as plain text", async () => {
+    const json = await markdownToJsonContent(
+      "Amounts: $50,000,000 and $1,234,567.89",
+    );
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textContent = p!
+      .content!.filter((n) => n.type === "text")
+      .map((n) => n.text ?? "")
+      .join("");
+    expect(textContent).toContain("$50,000,000");
+    expect(textContent).toContain("$1,234,567.89");
+  });
 });

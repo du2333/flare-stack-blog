@@ -37,7 +37,9 @@ function preprocessMathInMarkdown(markdown: string): string {
     const trimmed = latex.trim();
 
     const startsWithNumber = /^\d+([.,]\d+)?/.test(trimmed);
-    const isPureNumber = /^\d+([.,]\d+)?\s*$/.test(trimmed);
+    const isPureNumber = /^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*$/.test(
+      trimmed,
+    );
     const hasRangeOrCurrencyWords = /\b(?:and|or|to|per|each)\b/i.test(trimmed);
     const hasEnglishWordsAfterNumber = /^\d+([.,]\d+)?\s+[a-zA-Z]+/.test(
       trimmed,
