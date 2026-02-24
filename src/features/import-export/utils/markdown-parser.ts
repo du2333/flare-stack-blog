@@ -13,7 +13,7 @@ function escapeHtmlAttr(s: string): string {
  * so that marked passes them through and DOMParser can parse them.
  */
 function preprocessMathInMarkdown(markdown: string): string {
-  // Block math first: $...$ (multiline)
+  // Block math first: $$...$$ (multiline)
   let result = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
     const trimmed = latex.trim();
     const escaped = escapeHtmlAttr(trimmed);

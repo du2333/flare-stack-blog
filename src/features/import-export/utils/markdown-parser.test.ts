@@ -106,8 +106,8 @@ describe("markdownToJsonContent", () => {
     expect(p).toBeDefined();
     const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
     expect(inlineMath).toBeUndefined();
-    const textContent = p!.content!
-      .filter((n) => n.type === "text")
+    const textContent = p!
+      .content!.filter((n) => n.type === "text")
       .map((n) => n.text ?? "")
       .join("");
     expect(textContent).toContain("$5");
@@ -130,8 +130,8 @@ describe("markdownToJsonContent", () => {
     expect(p).toBeDefined();
     const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
     expect(inlineMath).toBeUndefined();
-    const textContent = p!.content!
-      .filter((n) => n.type === "text")
+    const textContent = p!
+      .content!.filter((n) => n.type === "text")
       .map((n) => n.text ?? "")
       .join("");
     expect(textContent).toBe("Cost: $100");

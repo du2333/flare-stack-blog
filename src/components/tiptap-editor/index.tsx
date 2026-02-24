@@ -95,7 +95,17 @@ export const Editor = memo(function Editor({
       editContext: { pos: number; type: FormulaMode } | null,
     ) => {
       if (!editor) return;
-      if (editContext) {
+      if (editContext && editContext.type !== mode) {
+        const chain = editor
+          .chain()
+          .setNodeSelection(editContext.pos)
+          .deleteSelection();
+        if (mode === "inline") {
+          chain.insertInlineMath({ latex }).focus().run();
+        } else {
+          chain.insertBlockMath({ latex }).focus().run();
+        }
+      } else if (editContext) {
         if (editContext.type === "inline") {
           editor
             .chain()
