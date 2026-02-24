@@ -7,23 +7,32 @@ import {
   Download,
   ExternalLink,
   FileText,
+  Guitar,
   HardDrive,
+  Headphones,
   Layout,
   Link2,
   Loader2,
   Pencil,
+  Play,
   Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
+import { GuitarProViewer } from "@/features/media/components/guitar-pro-viewer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getLinkedPostsFn } from "@/features/media/media.api";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
 import { MEDIA_KEYS } from "@/features/media/queries";
+import {
+  isGuitarProFile,
+  isVideoFile,
+  isAudioFile,
+} from "@/features/media/media.utils";
 
 interface MediaPreviewModalProps {
   asset: MediaAsset | null;
@@ -49,6 +58,7 @@ export function MediaPreviewModal({
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [gpViewerOpen, setGpViewerOpen] = useState(false);
 
   useEffect(() => {
     if (asset) {
@@ -168,11 +178,91 @@ export function MediaPreviewModal({
           <div className="absolute top-4 left-4 text-[10px] font-mono text-muted-foreground uppercase tracking-widest z-20">
             预览模式
           </div>
-          <img
-            src={activeAsset.url}
-            alt={activeAsset.fileName}
-            className="max-w-full max-h-full object-contain relative z-10 shadow-sm"
-          />
+          {activeAsset.mimeType.startsWith("image/") ? (
+            <img
+              src={activeAsset.url}
+              alt={activeAsset.fileName}
+              className="max-w-full max-h-full object-contain relative z-10 shadow-sm"
+            />
+          ) : isGuitarProFile(activeAsset.fileName) ? (
+            <div className="flex flex-col items-center justify-center gap-6 text-muted-foreground">
+              <Guitar size={64} strokeWidth={1} className="opacity-40" />
+              <div className="text-center space-y-2">
+                <p className="text-sm font-mono font-medium text-foreground">
+                  {activeAsset.fileName}
+                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest opacity-60">
+                  Guitar Pro 吉他谱文件
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setGpViewerOpen(true)}
+                  className="rounded-none gap-2 font-mono text-xs uppercase tracking-wider"
+                >
+                  <Play size={14} />
+                  播放吉他谱
+                </Button>
+                <a
+                  href={activeAsset.url}
+                  download={activeAsset.fileName}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "sm" }),
+                    "rounded-none gap-2 font-mono text-xs uppercase tracking-wider",
+                  )}
+                >
+                  <Download size={14} />
+                  下载文件
+                </a>
+              </div>
+            </div>
+          ) : isVideoFile(activeAsset.fileName) ? (
+            <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
+              <video
+                src={`${activeAsset.url}?original=true`}
+                controls
+                className="max-w-full max-h-[50vh] rounded-none border border-border/30"
+              >
+                您的浏览器不支持视频播放
+              </video>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-mono font-medium text-foreground">
+                  {activeAsset.fileName}
+                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground opacity-60">
+                  视频文件
+                </p>
+              </div>
+            </div>
+          ) : isAudioFile(activeAsset.fileName) ? (
+            <div className="flex flex-col items-center justify-center gap-6 text-muted-foreground">
+              <Headphones size={64} strokeWidth={1} className="opacity-40" />
+              <div className="text-center space-y-2">
+                <p className="text-sm font-mono font-medium text-foreground">
+                  {activeAsset.fileName}
+                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest opacity-60">
+                  音频文件
+                </p>
+              </div>
+              <audio
+                src={`${activeAsset.url}?original=true`}
+                controls
+                className="w-full max-w-md"
+              >
+                您的浏览器不支持音频播放
+              </audio>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
+              <FileText size={48} strokeWidth={1} className="opacity-40" />
+              <p className="text-[10px] font-mono uppercase tracking-widest">
+                无法预览此文件
+              </p>
+            </div>
+          )}
         </div>
 
         {/* --- Metadata Sidebar (Right/Bottom) --- */}
@@ -361,6 +451,16 @@ export function MediaPreviewModal({
           </div>
         </div>
       </div>
+
+      {/* Guitar Pro 查看器 */}
+      {isGuitarProFile(activeAsset.fileName) && (
+        <GuitarProViewer
+          isOpen={gpViewerOpen}
+          fileUrl={`${activeAsset.url}?original=true`}
+          fileName={activeAsset.fileName}
+          onClose={() => setGpViewerOpen(false)}
+        />
+      )}
     </div>
   );
 }

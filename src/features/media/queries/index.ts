@@ -4,6 +4,7 @@ import {
   getMediaFn,
   getTotalMediaSizeFn,
 } from "../media.api";
+import type { MediaCategory } from "../media.schema";
 
 export const MEDIA_KEYS = {
   all: ["media"] as const,
@@ -14,8 +15,8 @@ export const MEDIA_KEYS = {
   linked: ["media", "linked-keys"] as const,
 
   // Child keys (functions for specific queries)
-  list: (search: string = "", unusedOnly: boolean = false) =>
-    ["media", "list", search, unusedOnly] as const,
+  list: (search: string = "", unusedOnly: boolean = false, category?: MediaCategory) =>
+    ["media", "list", search, unusedOnly, category ?? "all"] as const,
   linkedKeys: (keys: string) => ["media", "linked-keys", keys] as const,
   linkedPosts: (key: string) => ["media", "linked-posts", key] as const,
 };
@@ -23,15 +24,17 @@ export const MEDIA_KEYS = {
 export function mediaInfiniteQueryOptions(
   search: string = "",
   unusedOnly: boolean = false,
+  category?: MediaCategory,
 ) {
   return infiniteQueryOptions({
-    queryKey: MEDIA_KEYS.list(search, unusedOnly),
+    queryKey: MEDIA_KEYS.list(search, unusedOnly, category),
     queryFn: ({ pageParam }) =>
       getMediaFn({
         data: {
           cursor: pageParam,
           search: search || undefined,
           unusedOnly: unusedOnly || undefined,
+          category: category || undefined,
         },
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

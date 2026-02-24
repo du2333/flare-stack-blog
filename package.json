@@ -29,6 +29,7 @@
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it"
   },
   "dependencies": {
+    "@coderline/alphatab": "^1.8.1",
     "@hono/zod-validator": "^0.7.6",
     "@hookform/resolvers": "^5.2.2",
     "@noble/hashes": "^2.0.1",
@@ -92,6 +93,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.15",
     "@cloudflare/vitest-pool-workers": "^0.11.1",
+    "@coderline/alphatab-vite": "^1.8.1",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/noto-sans-sc": "^5.2.9",
     "@fontsource-variable/noto-serif-sc": "^5.2.10",

@@ -101,6 +101,12 @@ function serializeNode(
       return `\n$$\n${latex}\n$$\n`;
     }
 
+    case "guitarPro": {
+      const src = node.attrs?.src ?? "";
+      const fileName = node.attrs?.fileName ?? "";
+      return `\n<guitar-pro src="${src}" title="${fileName}"></guitar-pro>\n`;
+    }
+
     default:
       // 未知块级节点：尝试递归子节点
       if (node.content) {

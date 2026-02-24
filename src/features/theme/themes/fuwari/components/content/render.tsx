@@ -1,6 +1,7 @@
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
 import { MathFormula } from "@/components/content/math-formula";
+import { GuitarProEmbed } from "@/components/content/guitar-pro-embed";
 import { CodeBlock } from "@/features/theme/themes/fuwari/components/content/code-block";
 import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
 import { extensions } from "@/features/posts/editor/config";
@@ -97,6 +98,15 @@ export function renderReact(content: JSONContent) {
         blockMath: ({ node }) => {
           const latex = (node.attrs as { latex?: string }).latex ?? "";
           return <MathFormula latex={latex} mode="block" />;
+        },
+        guitarPro: ({ node }) => {
+          const attrs = node.attrs as { src?: string; fileName?: string };
+          return (
+            <GuitarProEmbed
+              src={attrs.src ?? ""}
+              fileName={attrs.fileName ?? ""}
+            />
+          );
         },
       },
     },

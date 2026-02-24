@@ -16,11 +16,12 @@ import {
 } from "@/features/media/queries";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Route } from "@/routes/admin/media";
+import type { MediaCategory } from "@/features/media/media.schema";
 
 export function useMediaLibrary() {
   const queryClient = useQueryClient();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { search, unused } = Route.useSearch();
+  const { search, unused, category } = Route.useSearch();
 
   // Search Param Handlers
   const setSearchQuery = (term: string) => {
@@ -33,6 +34,12 @@ export function useMediaLibrary() {
   const setUnusedOnly = (val: boolean) => {
     navigate({
       search: (prev) => ({ ...prev, unused: val }),
+    });
+  };
+
+  const setCategory = (val: MediaCategory | undefined) => {
+    navigate({
+      search: (prev) => ({ ...prev, category: val }),
     });
   };
 
@@ -53,7 +60,7 @@ export function useMediaLibrary() {
     isPending,
     refetch,
   } = useInfiniteQuery({
-    ...mediaInfiniteQueryOptions(debouncedSearch, unused),
+    ...mediaInfiniteQueryOptions(debouncedSearch, unused, category),
   });
 
   // Flatten all pages into a single array
@@ -81,7 +88,7 @@ export function useMediaLibrary() {
   useEffect(() => {
     setSelectedKeys(new Set());
     setDeleteTarget(null);
-  }, [debouncedSearch, unused]);
+  }, [debouncedSearch, unused, category]);
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -199,6 +206,8 @@ export function useMediaLibrary() {
     setSearchQuery,
     unusedOnly: unused ?? false,
     setUnusedOnly,
+    category,
+    setCategory,
     selectedIds: selectedKeys, // 保持接口兼容
     toggleSelection,
     selectAll,

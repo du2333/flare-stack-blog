@@ -20,6 +20,8 @@ export function MediaLibrary() {
     setSearchQuery,
     unusedOnly,
     setUnusedOnly,
+    category,
+    setCategory,
     selectedIds,
     toggleSelection,
     selectAll,
@@ -88,6 +90,8 @@ export function MediaLibrary() {
           onSearchChange={setSearchQuery}
           unusedOnly={unusedOnly}
           onUnusedOnlyChange={setUnusedOnly}
+          category={category}
+          onCategoryChange={setCategory}
           selectedCount={selectedIds.size}
           totalCount={mediaItems.length}
           onSelectAll={selectAll}

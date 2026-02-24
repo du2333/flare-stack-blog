@@ -8,6 +8,9 @@ import * as PostMediaRepo from "@/features/posts/data/post-media.data";
 import {
   buildTransformOptions,
   getContentTypeFromKey,
+  isAudioFile,
+  isGuitarProFile,
+  isVideoFile,
 } from "@/features/media/media.utils";
 import { CACHE_CONTROL } from "@/lib/constants";
 
@@ -141,7 +144,8 @@ export async function handleImageRequest(
   const isLoop = viaHeader && /image-resizing/.test(viaHeader);
   const wantsOriginal = searchParams.get("original") === "true";
 
-  if (isLoop || wantsOriginal) {
+  // Guitar Pro / 视频 / 音频等非图片文件直接返回原文件
+  if (isLoop || wantsOriginal || isGuitarProFile(key) || isVideoFile(key) || isAudioFile(key)) {
     return await serveOriginal();
   }
 

@@ -5,6 +5,10 @@ import { MediaLibrary } from "@/features/media/components/media-library";
 const mediaSearchSchema = z.object({
   unused: z.boolean().optional().catch(false),
   search: z.string().optional().catch(""),
+  category: z
+    .enum(["image", "guitar-pro", "video", "audio"])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/admin/media/")({

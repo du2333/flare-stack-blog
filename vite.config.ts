@@ -1,5 +1,6 @@
 import path from "node:path";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { alphaTab } from "@coderline/alphatab-vite";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -33,6 +34,7 @@ const config = defineConfig(({ mode }) => {
       },
     },
     plugins: [
+      alphaTab(),
       cloudflare({
         viteEnvironment: {
           name: "ssr",

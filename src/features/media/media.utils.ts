@@ -1,3 +1,5 @@
+import type { MediaCategory } from "./media.schema";
+
 export function getContentTypeFromKey(key: string): string | undefined {
   const extension = key.split(".").pop()?.toLowerCase();
   const contentTypes: Record<string, string> = {
@@ -7,8 +9,59 @@ export function getContentTypeFromKey(key: string): string | undefined {
     webp: "image/webp",
     gif: "image/gif",
     svg: "image/svg+xml",
+    // Guitar Pro
+    gp3: "application/x-guitar-pro",
+    gp4: "application/x-guitar-pro",
+    gp5: "application/x-guitar-pro",
+    gpx: "application/x-guitar-pro",
+    gp: "application/x-guitar-pro",
+    // Video
+    mp4: "video/mp4",
+    webm: "video/webm",
+    mov: "video/quicktime",
+    avi: "video/x-msvideo",
+    mkv: "video/x-matroska",
+    // Audio
+    mp3: "audio/mpeg",
+    wav: "audio/wav",
+    ogg: "audio/ogg",
+    flac: "audio/flac",
+    aac: "audio/aac",
+    m4a: "audio/mp4",
+    weba: "audio/webm",
   };
   return contentTypes[extension || ""];
+}
+
+/** 判断 MIME 类型是否为 Guitar Pro 文件 */
+export function isGuitarProMimeType(mimeType: string): boolean {
+  return mimeType === "application/x-guitar-pro";
+}
+
+/** 判断文件名是否为 Guitar Pro 文件 */
+export function isGuitarProFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
+  return [".gp3", ".gp4", ".gp5", ".gpx", ".gp"].includes(ext);
+}
+
+/** 判断文件名是否为视频文件 */
+export function isVideoFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
+  return [".mp4", ".webm", ".mov", ".avi", ".mkv"].includes(ext);
+}
+
+/** 判断文件名是否为音频文件 */
+export function isAudioFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
+  return [".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a", ".weba"].includes(ext);
+}
+
+/** 根据文件名或 MIME 推断媒体分类 */
+export function getMediaCategoryFromKey(key: string, mimeType?: string): MediaCategory {
+  if (isGuitarProFile(key)) return "guitar-pro";
+  if (isVideoFile(key) || mimeType?.startsWith("video/")) return "video";
+  if (isAudioFile(key) || mimeType?.startsWith("audio/")) return "audio";
+  return "image";
 }
 
 export function generateKey(fileName: string): string {

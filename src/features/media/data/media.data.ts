@@ -1,7 +1,8 @@
-import { and, desc, eq, lt, sql, sum } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql, sum } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { escapeLikeString } from "@/features/media/data/helper";
 import { MediaTable, PostMediaTable } from "@/lib/db/schema";
+import type { MediaCategory } from "@/features/media/media.schema";
 
 export type Media = typeof MediaTable.$inferSelect;
 
@@ -40,6 +41,7 @@ export async function getMediaList(
     limit?: number;
     search?: string;
     unusedOnly?: boolean;
+    category?: MediaCategory;
   },
 ): Promise<{ items: Array<Media>; nextCursor: number | null }> {
   const {
@@ -47,6 +49,7 @@ export async function getMediaList(
     limit = DEFAULT_PAGE_SIZE,
     search,
     unusedOnly,
+    category,
   } = options ?? {};
 
   // 构建条件
@@ -57,6 +60,29 @@ export async function getMediaList(
   if (search) {
     const pattern = `%${escapeLikeString(search)}%`;
     conditions.push(sql`${MediaTable.fileName} LIKE ${pattern} ESCAPE '\\'`);
+  }
+
+  // 按类别过滤
+  if (category) {
+    switch (category) {
+      case "image":
+        conditions.push(sql`${MediaTable.mimeType} LIKE 'image/%'`);
+        break;
+      case "guitar-pro":
+        conditions.push(
+          or(
+            sql`${MediaTable.mimeType} = 'application/x-guitar-pro'`,
+            sql`(${MediaTable.mimeType} = 'application/octet-stream' AND (${MediaTable.key} LIKE '%.gp3' OR ${MediaTable.key} LIKE '%.gp4' OR ${MediaTable.key} LIKE '%.gp5' OR ${MediaTable.key} LIKE '%.gpx' OR ${MediaTable.key} LIKE '%.gp'))`,
+          )!,
+        );
+        break;
+      case "video":
+        conditions.push(sql`${MediaTable.mimeType} LIKE 'video/%'`);
+        break;
+      case "audio":
+        conditions.push(sql`${MediaTable.mimeType} LIKE 'audio/%'`);
+        break;
+    }
   }
 
   // 基础查询

@@ -90,6 +90,7 @@ function UploadModalInternal({
           onChange={handleInputChange}
           className="hidden"
           multiple
+          accept="image/*,video/*,audio/*,.gp,.gp3,.gp4,.gp5,.gpx"
         />
 
         <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1 min-h-0 bg-muted/5">
@@ -121,8 +122,10 @@ function UploadModalInternal({
               <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-foreground">
                 {isDragging ? "松开即可上传" : "点击或拖拽文件至此"}
               </p>
-              <p className="text-[9px] font-mono text-muted-foreground">
-                最大文件大小: 10MB
+              <p className="text-[9px] font-mono text-muted-foreground leading-relaxed max-w-md">
+                图片 (JPG/PNG/WebP/GIF ≤30MB) · 吉他谱 (GP3/4/5/GPX ≤50MB)
+                <br />
+                视频 (MP4/WebM/MOV ≤512MB) · 音频 (MP3/WAV/OGG/FLAC ≤50MB)
               </p>
             </div>
           </div>

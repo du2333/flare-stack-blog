@@ -17,6 +17,7 @@ import {
   OrderedListExtension,
 } from "@/features/posts/editor/extensions/typography/list";
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
+import { GuitarProExtension } from "@/features/posts/editor/extensions/guitar-pro";
 import { uploadImageFn } from "@/features/media/media.api";
 import { slugify } from "@/features/posts/utils/content";
 import {
@@ -151,6 +152,7 @@ export const extensions = [
   }),
   ...TableBlockExtension,
   ImageExtension,
+  GuitarProExtension,
   ImageUpload.configure({
     onUpload: handleImageUpload,
     onError: (error) => {

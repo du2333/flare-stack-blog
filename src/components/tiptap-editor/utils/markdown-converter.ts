@@ -74,5 +74,18 @@ function escapeHtmlAttr(s: string): string {
 export async function markdownToHtml(markdown: string): Promise<string> {
   const preprocessed = preprocessMathInMarkdown(markdown);
   const { marked } = await import("marked");
-  return await marked(preprocessed);
+
+  // 配置 marked 保留 guitar-pro 自定义标签
+  const renderer = new marked.Renderer();
+  const originalHtml = renderer.html;
+  renderer.html = function (token) {
+    // guitar-pro 标签直接保留
+    if (typeof token === "object" && "raw" in token) {
+      const raw = (token as { raw: string }).raw;
+      if (raw.includes("<guitar-pro")) return raw;
+    }
+    return originalHtml.call(this, token);
+  };
+
+  return await marked(preprocessed, { renderer });
 }

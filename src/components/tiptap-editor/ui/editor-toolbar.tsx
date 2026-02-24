@@ -4,6 +4,7 @@ import {
   Bold,
   Code,
   FileCode,
+  Guitar,
   Heading2,
   Heading3,
   Image as ImageIcon,
@@ -33,6 +34,7 @@ interface EditorToolbarProps {
   onModeSwitch: (mode: EditorMode) => void;
   onLinkClick: () => void;
   onImageClick: () => void;
+  onGuitarProClick: () => void;
   onFormulaInlineClick: () => void;
   onFormulaBlockClick: () => void;
 }
@@ -72,6 +74,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onModeSwitch,
   onLinkClick,
   onImageClick,
+  onGuitarProClick,
   onFormulaInlineClick,
   onFormulaBlockClick,
 }) => {
@@ -300,6 +303,12 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
             isActive={false}
             icon={ImageIcon}
             label="插入图片"
+          />
+          <ToolbarButton
+            onClick={onGuitarProClick}
+            isActive={false}
+            icon={Guitar}
+            label="插入吉他谱"
           />
 
           <div className="ml-auto flex gap-1">

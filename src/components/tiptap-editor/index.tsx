@@ -1,6 +1,7 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import InsertModal from "./ui/insert-modal";
+import GuitarProModal from "./ui/guitar-pro-modal";
 import EditorToolbar from "./ui/editor-toolbar";
 import { TableBubbleMenu } from "./ui/table-bubble-menu";
 import { FormulaModal } from "./ui/formula-modal";
@@ -43,6 +44,7 @@ export const Editor = memo(function Editor({
   const formulaOpenerKeyRef = useRef(Symbol("formula-modal-opener"));
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
   const [modalInitialUrl, setModalInitialUrl] = useState("");
+  const [gpModalOpen, setGpModalOpen] = useState(false);
   const [formulaModalOpen, setFormulaModalOpen] = useState(false);
   const [formulaPayload, setFormulaPayload] = useState<{
     mode: FormulaMode;
@@ -152,6 +154,23 @@ export const Editor = memo(function Editor({
     setModalOpen("IMAGE");
   }, []);
 
+  const openGuitarProModal = useCallback(() => {
+    setGpModalOpen(true);
+  }, []);
+
+  const handleGuitarProSubmit = useCallback(
+    (src: string, fileName: string) => {
+      if (!editor) return;
+      editor
+        .chain()
+        .focus()
+        .insertContent({ type: "guitarPro", attrs: { src, fileName } })
+        .run();
+      setGpModalOpen(false);
+    },
+    [editor],
+  );
+
   const openFormulaModal = useCallback((mode: FormulaMode) => {
     setFormulaPayload({
       mode,
@@ -255,6 +274,7 @@ export const Editor = memo(function Editor({
         onModeSwitch={handleModeSwitch}
         onLinkClick={openLinkModal}
         onImageClick={openImageModal}
+        onGuitarProClick={openGuitarProModal}
         onFormulaInlineClick={() => openFormulaModal("inline")}
         onFormulaBlockClick={() => openFormulaModal("block")}
       />
@@ -285,6 +305,12 @@ export const Editor = memo(function Editor({
         initialUrl={modalInitialUrl}
         onClose={() => setModalOpen(null)}
         onSubmit={handleModalSubmit}
+      />
+
+      <GuitarProModal
+        isOpen={gpModalOpen}
+        onClose={() => setGpModalOpen(false)}
+        onSubmit={handleGuitarProSubmit}
       />
 
       <FormulaModal

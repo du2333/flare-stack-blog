@@ -1,12 +1,39 @@
-import { CheckSquare, Filter, Search, Square, Trash2, X } from "lucide-react";
+import {
+  CheckSquare,
+  Film,
+  Filter,
+  Guitar,
+  Headphones,
+  Image as ImageIcon,
+  LayoutGrid,
+  Search,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { MediaCategory } from "@/features/media/media.schema";
+
+const CATEGORY_TABS: Array<{
+  key: MediaCategory | undefined;
+  label: string;
+  icon: React.ElementType;
+}> = [
+  { key: undefined, label: "全部", icon: LayoutGrid },
+  { key: "image", label: "图片", icon: ImageIcon },
+  { key: "guitar-pro", label: "吉他谱", icon: Guitar },
+  { key: "video", label: "视频", icon: Film },
+  { key: "audio", label: "音频", icon: Headphones },
+];
 
 interface MediaToolbarProps {
   searchQuery: string;
   onSearchChange: (val: string) => void;
   unusedOnly: boolean;
   onUnusedOnlyChange: (val: boolean) => void;
+  category: MediaCategory | undefined;
+  onCategoryChange: (val: MediaCategory | undefined) => void;
   selectedCount: number;
   totalCount: number;
   onSelectAll: () => void;
@@ -18,13 +45,39 @@ export function MediaToolbar({
   onSearchChange,
   unusedOnly,
   onUnusedOnlyChange,
+  category,
+  onCategoryChange,
   selectedCount,
   totalCount,
   onSelectAll,
   onDelete,
 }: MediaToolbarProps) {
   return (
-    <div className="flex flex-col lg:flex-row gap-4 mb-8 items-stretch lg:items-center w-full border-b border-border/30 pb-8">
+    <div className="flex flex-col gap-4 mb-8 w-full border-b border-border/30 pb-8">
+      {/* Category Tabs */}
+      <div className="flex items-center gap-1 overflow-x-auto">
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = category === tab.key;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.label}
+              onClick={() => onCategoryChange(tab.key)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-[10px] uppercase tracking-[0.15em] font-mono whitespace-nowrap transition-all border-b-2 ${
+                isActive
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/50"
+              }`}
+            >
+              <Icon size={13} strokeWidth={1.5} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search, Filter & Actions */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center w-full">
       {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto flex-1">
         <div className="relative group w-full sm:w-80">
@@ -102,6 +155,7 @@ export function MediaToolbar({
             <Trash2 size={14} strokeWidth={1.5} />[ 删除选中 ({selectedCount}) ]
           </Button>
         )}
+      </div>
       </div>
     </div>
   );

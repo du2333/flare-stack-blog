@@ -1,8 +1,13 @@
-import { Check, Film, Image as ImageIcon } from "lucide-react";
+import { Check, Film, Guitar, Headphones, Image as ImageIcon } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useLongPress } from "../hooks";
 import type { MediaAsset } from "../types";
-import { getOptimizedImageUrl } from "@/features/media/media.utils";
+import {
+  getOptimizedImageUrl,
+  isGuitarProFile,
+  isVideoFile,
+  isAudioFile,
+} from "@/features/media/media.utils";
 import { formatBytes } from "@/lib/utils";
 
 interface MediaGridProps {
@@ -126,6 +131,27 @@ const MediaCard = memo(
                 onLoad={() => setIsLoaded(true)}
               />
             </>
+          ) : isGuitarProFile(asset.fileName) ? (
+            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+              <Guitar size={28} strokeWidth={1} />
+              <span className="text-[9px] font-mono uppercase tracking-wider opacity-60">
+                Guitar Pro
+              </span>
+            </div>
+          ) : isVideoFile(asset.fileName) ? (
+            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+              <Film size={28} strokeWidth={1} />
+              <span className="text-[9px] font-mono uppercase tracking-wider opacity-60">
+                视频
+              </span>
+            </div>
+          ) : isAudioFile(asset.fileName) ? (
+            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+              <Headphones size={28} strokeWidth={1} />
+              <span className="text-[9px] font-mono uppercase tracking-wider opacity-60">
+                音频
+              </span>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               <Film size={24} strokeWidth={1} />
