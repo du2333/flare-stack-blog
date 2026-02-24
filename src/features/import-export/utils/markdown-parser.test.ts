@@ -222,4 +222,28 @@ describe("markdownToJsonContent", () => {
       .join("");
     expect(textContent).toContain("$50,000$");
   });
+
+  it("should not parse math inside triple-backtick inline code", async () => {
+    const json = await markdownToJsonContent("Use ```$x^2$``` here.");
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    expect(JSON.stringify(p)).toContain("$x^2");
+  });
+
+  it("should not parse math inside quadruple-backtick inline code", async () => {
+    const json = await markdownToJsonContent("Use ````$x^2$```` here.");
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+  });
+
+  it("should handle backticks inside code spans correctly", async () => {
+    const json = await markdownToJsonContent("Use `` `$x^2$` `` here.");
+
+    expect(JSON.stringify(json)).not.toContain('"type":"inlineMath"');
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    expect(JSON.stringify(p)).toContain("$x^2");
+  });
 });
