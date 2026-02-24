@@ -78,4 +78,62 @@ describe("markdownToJsonContent", () => {
     const paragraph = json.content!.find((n) => n.type === "paragraph");
     expect(paragraph).toBeDefined();
   });
+
+  it("should convert inline math", async () => {
+    const json = await markdownToJsonContent("text $x^2 + y^2 = z^2$ more");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeDefined();
+    expect(inlineMath!.attrs?.latex).toBe("x^2 + y^2 = z^2");
+  });
+
+  it("should convert block math", async () => {
+    const json = await markdownToJsonContent(
+      "before\n\n$$\nE = mc^2\n$$\n\nafter",
+    );
+
+    const blockMath = json.content!.find((n) => n.type === "blockMath");
+    expect(blockMath).toBeDefined();
+    expect(blockMath!.attrs?.latex).toBe("E = mc^2");
+  });
+
+  it("should keep ordinary dollar text as plain text (no math)", async () => {
+    const json = await markdownToJsonContent("I have $5 in my pocket.");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textContent = p!.content!
+      .filter((n) => n.type === "text")
+      .map((n) => n.text ?? "")
+      .join("");
+    expect(textContent).toContain("$5");
+  });
+
+  it("should keep price-like dollar text as plain text", async () => {
+    const json = await markdownToJsonContent("The price is $10.99.");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    expect(JSON.stringify(p)).toContain("$10.99");
+  });
+
+  it("should treat dollar in currency as plain text", async () => {
+    const json = await markdownToJsonContent("Cost: $100");
+
+    const p = json.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textContent = p!.content!
+      .filter((n) => n.type === "text")
+      .map((n) => n.text ?? "")
+      .join("");
+    expect(textContent).toBe("Cost: $100");
+  });
 });

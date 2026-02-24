@@ -94,6 +94,13 @@ function serializeNode(
     case "hardBreak":
       return "\n";
 
+    case "blockMath": {
+      const attrs = node.attrs as { latex?: string } | undefined;
+      const latex = attrs?.latex ?? "";
+      if (!latex.trim()) return "";
+      return `\n$$\n${latex}\n$$\n`;
+    }
+
     default:
       // 未知块级节点：尝试递归子节点
       if (node.content) {
@@ -175,6 +182,13 @@ function serializeInlineNode(
 
   if (node.type === "hardBreak") {
     return "  \n";
+  }
+
+  if (node.type === "inlineMath") {
+    const attrs = node.attrs as { latex?: string } | undefined;
+    const latex = attrs?.latex ?? "";
+    if (!latex.trim()) return "";
+    return `$${latex}$`;
   }
 
   return "";

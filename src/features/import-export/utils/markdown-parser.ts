@@ -1,5 +1,36 @@
 import type { JSONContent } from "@tiptap/react";
 
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * Pre-process markdown: convert $...$ and $$...$$ to HTML elements
+ * so that marked passes them through and DOMParser can parse them.
+ */
+function preprocessMathInMarkdown(markdown: string): string {
+  // Block math first: $...$ (multiline)
+  let result = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
+    const trimmed = latex.trim();
+    const escaped = escapeHtmlAttr(trimmed);
+    return `<div data-type="block-math" data-latex="${escaped}"></div>`;
+  });
+  // Inline math: $...$ (no $ or newline inside)
+  // Leave as plain text when content looks like currency (e.g. "5 and " in "$5 and $10")
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, latex) => {
+    const trimmed = latex.trim();
+    if (/\s+and\s*/.test(trimmed)) return `$${latex}$`; // "5 and" or "5 and " -> leave as-is
+    if (/^\d+([.,]\d+)?\s*$/.test(trimmed)) return `$${latex}$`; // "$10.99" -> leave as-is
+    const escaped = escapeHtmlAttr(trimmed);
+    return `<span data-type="inline-math" data-latex="${escaped}"></span>`;
+  });
+  return result;
+}
+
 /**
  * Markdown → JSONContent 转换
  *
@@ -10,8 +41,10 @@ import type { JSONContent } from "@tiptap/react";
 export async function markdownToJsonContent(
   markdown: string,
 ): Promise<JSONContent> {
+  const preprocessed = preprocessMathInMarkdown(markdown);
+
   const { marked } = await import("marked");
-  const html = await marked(markdown);
+  const html = await marked(preprocessed);
 
   const { getSchema } = await import("@tiptap/core");
   const { DOMParser: PMDOMParser } = await import("@tiptap/pm/model");
@@ -19,6 +52,8 @@ export async function markdownToJsonContent(
 
   const { default: StarterKit } = await import("@tiptap/starter-kit");
   const { default: ImageExt } = await import("@tiptap/extension-image");
+  const { default: Mathematics } =
+    await import("@tiptap/extension-mathematics");
   const { Table } = await import("@tiptap/extension-table");
   const { default: TableRow } = await import("@tiptap/extension-table-row");
   const { default: TableHeader } =
@@ -28,6 +63,7 @@ export async function markdownToJsonContent(
   const schema = getSchema([
     StarterKit,
     ImageExt,
+    Mathematics.configure({ katexOptions: { throwOnError: false } }),
     Table,
     TableRow,
     TableHeader,

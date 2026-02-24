@@ -4,6 +4,7 @@ import {
   jsonContentToMarkdown,
   makeExportImageRewriter,
 } from "@/features/import-export/utils/markdown-serializer";
+import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 
 function doc(...content: Array<JSONContent>): JSONContent {
   return { type: "doc", content };
@@ -207,6 +208,45 @@ describe("jsonContentToMarkdown", () => {
     expect(result).toContain("![](./local/abc.jpg)");
   });
 
+  it("should convert inline math", () => {
+    const result = jsonContentToMarkdown(
+      doc(
+        paragraph(text("formula: "), {
+          type: "inlineMath",
+          attrs: { latex: "x^2 + y^2 = z^2" },
+        }),
+      ),
+    );
+    expect(result).toContain("formula: $x^2 + y^2 = z^2$");
+  });
+
+  it("should convert block math", () => {
+    const result = jsonContentToMarkdown(
+      doc(
+        paragraph(text("before")),
+        { type: "blockMath", attrs: { latex: "E = mc^2" } },
+        paragraph(text("after")),
+      ),
+    );
+    expect(result).toContain("$$");
+    expect(result).toContain("E = mc^2");
+  });
+
+  it("should skip empty math nodes", () => {
+    const result = jsonContentToMarkdown(
+      doc(
+        paragraph(
+          text("a"),
+          { type: "inlineMath", attrs: { latex: "" } },
+          text("b"),
+        ),
+      ),
+    );
+    expect(result).not.toContain("$$");
+    expect(result).toContain("a");
+    expect(result).toContain("b");
+  });
+
   it("should convert nested list", () => {
     const result = jsonContentToMarkdown(
       doc({
@@ -232,6 +272,55 @@ describe("jsonContentToMarkdown", () => {
     );
     expect(result).toContain("- parent");
     expect(result).toContain("  - child");
+  });
+});
+
+describe("math round-trip", () => {
+  it("should preserve inline math through json -> md -> json", async () => {
+    const original = doc(
+      paragraph(text("formula: "), {
+        type: "inlineMath",
+        attrs: { latex: "\\frac{a}{b}" },
+      }),
+    );
+    const md = jsonContentToMarkdown(original);
+    const round = await markdownToJsonContent(md);
+
+    const p = round.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeDefined();
+    expect(inlineMath!.attrs?.latex).toBe("\\frac{a}{b}");
+  });
+
+  it("should preserve ordinary dollar text through json -> md -> json", async () => {
+    const original = doc(paragraph(text("I have $5 and $10.")));
+    const md = jsonContentToMarkdown(original);
+    const round = await markdownToJsonContent(md);
+
+    const p = round.content!.find((n) => n.type === "paragraph");
+    expect(p).toBeDefined();
+    const inlineMath = p!.content!.find((n) => n.type === "inlineMath");
+    expect(inlineMath).toBeUndefined();
+    const textNodes = p!.content!.filter((n) => n.type === "text");
+    expect(textNodes.length).toBeGreaterThan(0);
+    const textContent = textNodes.map((n) => n.text ?? "").join("");
+    expect(textContent).toContain("$5");
+    expect(textContent).toContain("$10");
+  });
+
+  it("should preserve block math through json -> md -> json", async () => {
+    const original = doc(
+      paragraph(text("before")),
+      { type: "blockMath", attrs: { latex: "\\sum_{i=1}^{n} x_i" } },
+      paragraph(text("after")),
+    );
+    const md = jsonContentToMarkdown(original);
+    const round = await markdownToJsonContent(md);
+
+    const blockMath = round.content!.find((n) => n.type === "blockMath");
+    expect(blockMath).toBeDefined();
+    expect(blockMath!.attrs?.latex).toBe("\\sum_{i=1}^{n} x_i");
   });
 });
 

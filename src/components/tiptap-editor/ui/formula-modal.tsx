@@ -21,7 +21,11 @@ interface FormulaModalProps {
   /** When editing existing node: { pos, type }. When inserting: null. */
   editContext: { pos: number; type: FormulaMode } | null;
   onClose: () => void;
-  onApply: (latex: string, mode: FormulaMode, editContext: FormulaModalProps["editContext"]) => void;
+  onApply: (
+    latex: string,
+    mode: FormulaMode,
+    editContext: FormulaModalProps["editContext"],
+  ) => void;
 }
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -110,7 +114,9 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
   return createPortal(
     <div
       className={`fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 ease-out ${
-        isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        isOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
       }`}
     >
       <div
@@ -119,7 +125,9 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
       />
       <div
         className={`relative w-full sm:max-w-2xl bg-background border border-border shadow-2xl flex flex-col overflow-hidden rounded-t-xl sm:rounded-none max-h-[90vh] sm:max-h-[85vh] transition-all duration-300 ease-out transform ${
-          isOpen ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-[0.98] opacity-0"
+          isOpen
+            ? "translate-y-0 scale-100 opacity-100"
+            : "translate-y-4 scale-[0.98] opacity-0"
         }`}
       >
         <div className="flex justify-between items-start sm:items-center gap-2 p-4 sm:p-6 border-b border-border/50 bg-muted/5 shrink-0">
@@ -181,7 +189,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               value={latex}
               onChange={(e) => setLatex(e.target.value)}
               placeholder="输入 LaTeX，如 x^2 + y^2 = z^2"
-              className="w-full min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 font-mono text-sm bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
+              className="w-full min-h-25 sm:min-h-30 p-3 sm:p-4 font-mono text-sm bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
               spellCheck={false}
             />
           </div>
@@ -190,19 +198,23 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               预览
             </label>
             <div
-              className={`min-h-[80px] sm:min-h-[120px] p-3 sm:p-4 border border-border flex items-center justify-center overflow-auto ${
+              className={`min-h-20 sm:min-h-30 p-3 sm:p-4 border border-border flex items-center justify-center overflow-auto ${
                 previewError ? "bg-destructive/5" : "bg-muted/5"
               }`}
             >
               {previewError ? (
-                <p className="text-xs font-mono text-destructive break-words text-center">{previewError}</p>
+                <p className="text-xs font-mono text-destructive wrap-break-word text-center">
+                  {previewError}
+                </p>
               ) : previewHtml ? (
                 <div
                   className="katex-preview [&_.katex]:text-inherit overflow-x-auto max-w-full"
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
               ) : (
-                <p className="text-xs font-mono text-muted-foreground/50">输入 LaTeX 查看预览</p>
+                <p className="text-xs font-mono text-muted-foreground/50">
+                  输入 LaTeX 查看预览
+                </p>
               )}
             </div>
           </div>
