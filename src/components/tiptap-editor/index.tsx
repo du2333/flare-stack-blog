@@ -4,11 +4,17 @@ import InsertModal from "./ui/insert-modal";
 import EditorToolbar from "./ui/editor-toolbar";
 import { TableBubbleMenu } from "./ui/table-bubble-menu";
 import { FormulaModal } from "./ui/formula-modal";
+import { MarkdownSourceEditor } from "./ui/markdown-source-editor";
 import {
   addFormulaModalOpener,
   removeFormulaModalOpener,
   setActiveFormulaModalOpenerKey,
 } from "./formula-modal-store";
+import {
+  jsonToMarkdown,
+  markdownToHtml,
+} from "./utils/markdown-converter";
+import type { EditorMode } from "./utils/markdown-converter";
 import type { FormulaModalPayload } from "./formula-modal-store";
 import type {
   Extensions,
@@ -26,6 +32,8 @@ interface EditorProps {
   extensions: Extensions;
 }
 
+export { type EditorMode } from "./utils/markdown-converter";
+
 export const Editor = memo(function Editor({
   content,
   onChange,
@@ -42,6 +50,14 @@ export const Editor = memo(function Editor({
     editContext: { pos: number; type: FormulaMode } | null;
   }>({ mode: "inline", initialLatex: "", editContext: null });
 
+  // Dual-mode editing state
+  const [editorMode, setEditorMode] = useState<EditorMode>("wysiwyg");
+  const [markdownContent, setMarkdownContent] = useState("");
+  const isSwitchingRef = useRef(false);
+  const markdownSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
   const editor = useEditor({
     extensions,
     content,
@@ -49,7 +65,10 @@ export const Editor = memo(function Editor({
       onCreated?.(currentEditor);
     },
     onUpdate: ({ editor: currentEditor }) => {
-      onChange?.(currentEditor.getJSON());
+      // Only emit changes in WYSIWYG mode (markdown mode syncs separately)
+      if (!isSwitchingRef.current) {
+        onChange?.(currentEditor.getJSON());
+      }
     },
     editorProps: {
       attributes: {
@@ -59,6 +78,68 @@ export const Editor = memo(function Editor({
     },
     immediatelyRender: false,
   });
+
+  // --- Mode switching ---
+  const handleModeSwitch = useCallback(
+    async (targetMode: EditorMode) => {
+      if (!editor || targetMode === editorMode) return;
+      isSwitchingRef.current = true;
+
+      try {
+        if (targetMode === "markdown") {
+          // WYSIWYG → Markdown: serialize JSONContent to markdown
+          const json = editor.getJSON();
+          const md = jsonToMarkdown(json);
+          setMarkdownContent(md);
+        } else {
+          // Markdown → WYSIWYG: parse markdown to HTML and load into editor
+          const html = await markdownToHtml(markdownContent);
+          editor.commands.setContent(html, { emitUpdate: false });
+          // Emit the converted content after setting
+          onChange?.(editor.getJSON());
+        }
+        setEditorMode(targetMode);
+      } finally {
+        isSwitchingRef.current = false;
+      }
+    },
+    [editor, editorMode, markdownContent, onChange],
+  );
+
+  // Debounced markdown → JSON sync for auto-save support
+  const handleMarkdownChange = useCallback(
+    (md: string) => {
+      setMarkdownContent(md);
+
+      // Clear previous timer
+      if (markdownSyncTimerRef.current) {
+        clearTimeout(markdownSyncTimerRef.current);
+      }
+
+      // Debounce: convert markdown → Tiptap JSON and notify parent after 1s
+      markdownSyncTimerRef.current = setTimeout(async () => {
+        if (!editor) return;
+        try {
+          isSwitchingRef.current = true;
+          const html = await markdownToHtml(md);
+          editor.commands.setContent(html, { emitUpdate: false });
+          onChange?.(editor.getJSON());
+        } finally {
+          isSwitchingRef.current = false;
+        }
+      }, 1000);
+    },
+    [editor, onChange],
+  );
+
+  // Cleanup sync timer on unmount
+  useEffect(() => {
+    return () => {
+      if (markdownSyncTimerRef.current) {
+        clearTimeout(markdownSyncTimerRef.current);
+      }
+    };
+  }, []);
 
   const openLinkModal = useCallback(() => {
     const previousUrl = editor?.getAttributes("link").href;
@@ -170,21 +251,34 @@ export const Editor = memo(function Editor({
     <div className="flex flex-col relative group">
       <EditorToolbar
         editor={editor}
+        editorMode={editorMode}
+        onModeSwitch={handleModeSwitch}
         onLinkClick={openLinkModal}
         onImageClick={openImageModal}
         onFormulaInlineClick={() => openFormulaModal("inline")}
         onFormulaBlockClick={() => openFormulaModal("block")}
       />
 
-      <TableBubbleMenu editor={editor} />
+      {editorMode === "wysiwyg" ? (
+        <>
+          <TableBubbleMenu editor={editor} />
 
-      <div
-        className="relative min-h-125"
-        onMouseDownCapture={markActiveFormulaOpener}
-        onFocusCapture={markActiveFormulaOpener}
-      >
-        <EditorContent editor={editor} />
-      </div>
+          <div
+            className="relative min-h-125"
+            onMouseDownCapture={markActiveFormulaOpener}
+            onFocusCapture={markActiveFormulaOpener}
+          >
+            <EditorContent editor={editor} />
+          </div>
+        </>
+      ) : (
+        <div className="relative min-h-125">
+          <MarkdownSourceEditor
+            value={markdownContent}
+            onChange={handleMarkdownChange}
+          />
+        </div>
+      )}
 
       <InsertModal
         type={modalOpen}
