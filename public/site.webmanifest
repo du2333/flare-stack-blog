@@ -1,6 +1,6 @@
 {
-  "name": "冷静的阿旷",
-  "short_name": "阿旷",
+  "name": "MyWebSite",
+  "short_name": "MySite",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

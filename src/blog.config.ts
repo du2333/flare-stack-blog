@@ -24,7 +24,7 @@ export const blogConfig = {
       },
     },
     fuwari: {
-      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.webp",
+      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.png",
       avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
     },
   },
