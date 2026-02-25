@@ -12,20 +12,50 @@ export function DashboardSkeleton() {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="p-6 border border-border/30 rounded-sm space-y-4"
-          >
-            <div className="flex justify-between items-start">
-              <Skeleton className="h-3 w-20" />
-              <Skeleton className="h-5 w-5 rounded-sm" />
-            </div>
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-2 w-24" />
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-16" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="p-6 border border-border/30 rounded-sm space-y-4"
+              >
+                <div className="flex justify-between items-start">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-5 w-5 rounded-sm" />
+                </div>
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-2 w-24" />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Skeleton className="h-3 w-12" />
+            <div className="grid grid-cols-2 gap-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="p-6 border border-border/30 rounded-sm space-y-4"
+                >
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-3 w-12" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-6 border border-border/30 rounded-sm space-y-4">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Visuals Row */}

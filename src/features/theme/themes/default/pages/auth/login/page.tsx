@@ -45,7 +45,7 @@ export function LoginPage({
               没有账户?{" "}
               <Link
                 to="/register"
-                className="text-foreground hover:opacity-70 transition-opacity ml-1"
+                className="text-accent hover:opacity-70 transition-opacity ml-1"
               >
                 [ 立即注册 ]
               </Link>

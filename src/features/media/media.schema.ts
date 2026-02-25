@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ─── 文件类别 ─────────────────────────────────────────
 
-export type MediaCategory = "image" | "guitar-pro" | "video" | "audio";
+export type MediaCategory = "image" | "guitar-pro" | "video" | "audio" | "album-cover";
 
 // ─── 按类型的大小限制 ─────────────────────────────────
 
@@ -14,6 +14,7 @@ export const MAX_FILE_SIZE_BY_CATEGORY: Record<MediaCategory, number> = {
   "guitar-pro": 50 * 1024 * 1024, // 50 MB
   video: 512 * 1024 * 1024,       // 512 MB
   audio: 50 * 1024 * 1024,        // 50 MB
+  "album-cover": 10 * 1024 * 1024, // 10 MB
 };
 
 export function getMaxFileSize(category: MediaCategory): number {
@@ -182,8 +183,30 @@ export const GetMediaListInputSchema = z.object({
   limit: z.number().optional(),
   search: z.string().optional(),
   unusedOnly: z.boolean().optional(),
-  category: z.enum(["image", "guitar-pro", "video", "audio"]).optional(),
+  category: z.enum(["image", "guitar-pro", "video", "audio", "album-cover"]).optional(),
 });
 
 export type UpdateMediaNameInput = z.infer<typeof UpdateMediaNameInputSchema>;
 export type GetMediaListInput = z.infer<typeof GetMediaListInputSchema>;
+
+// ─── 用户提交吉他谱 ──────────────────────────────────
+
+export const SubmitGuitarTabInputSchema = z
+  .instanceof(FormData)
+  .transform((formData) => {
+    const file = formData.get("file");
+    if (!(file instanceof File)) throw new Error("文件不能为空");
+
+    // 检查是否为 Guitar Pro 文件
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (!GUITAR_PRO_EXTENSIONS.includes(ext)) {
+      throw new Error("只支持 Guitar Pro 文件格式 (GP3/GP4/GP5/GPX/GP)");
+    }
+
+    const maxSize = MAX_FILE_SIZE_BY_CATEGORY["guitar-pro"];
+    if (file.size > maxSize) {
+      throw new Error(`文件大小超过限制 (${formatMaxSize("guitar-pro")})`);
+    }
+
+    return { file };
+  });

@@ -7,30 +7,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Warm cream tones — richer than pure white, comfortable for extended reading */
+    --background: 38 25% 95%;
+    --foreground: 20 15% 12%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 35 18% 90%;
+    --muted-foreground: 25 8% 48%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 38 22% 96%;
+    --popover-foreground: 20 15% 12%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 32 16% 86%;
+    --input: 32 16% 86%;
 
-    --primary: 240 10% 3.9%;
-    --primary-foreground: 0 0% 98%;
+    --card: 38 22% 96.5%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --primary: 20 15% 12%;
+    --primary-foreground: 38 25% 95%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 35 18% 90%;
+    --secondary-foreground: 20 12% 18%;
 
-    --ring: 240 10% 3.9%;
+    --accent: 25 60% 52%;
+    --accent-foreground: 40 20% 97%;
 
-    --destructive: 0 84.2% 60.2%;
+    --ring: 25 60% 52%;
+
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 98%;
 
     --warning: 38 92% 50%;
@@ -39,35 +42,38 @@
     --info: 221.2 83.2% 53.3%;
     --info-foreground: 0 0% 100%;
 
-    --selection: 240 10% 3.9%;
+    --selection: 25 60% 52%;
     --selection-foreground: 0 0% 100%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Deep warm dark — rich charcoal with subtle warmth */
+    --background: 24 10% 8%;
+    --foreground: 35 15% 90%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 25 8% 14%;
+    --muted-foreground: 30 8% 56%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 24 10% 10%;
+    --popover-foreground: 35 15% 90%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 25 8% 16%;
+    --input: 25 8% 16%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 10% 3.9%;
+    --card: 24 10% 10%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 35 15% 90%;
+    --primary-foreground: 24 10% 8%;
 
-    --accent: 240 3.7% 15.9%;
+    --secondary: 25 8% 14%;
+    --secondary-foreground: 35 15% 90%;
+
+    --accent: 25 70% 55%;
     --accent-foreground: 0 0% 98%;
 
-    --ring: 240 4.9% 83.9%;
+    --ring: 25 70% 55%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 42%;
     --destructive-foreground: 0 0% 98%;
 
     --warning: 48 96% 89%;
@@ -76,8 +82,8 @@
     --info: 217.2 91.2% 59.8%;
     --info-foreground: 0 0% 100%;
 
-    --selection: 0 0% 100%;
-    --selection-foreground: 240 10% 3.9%;
+    --selection: 25 70% 55%;
+    --selection-foreground: 0 0% 100%;
   }
 }
 
@@ -92,8 +98,50 @@ mark {
   mix-blend-mode: normal;
 }
 
+/* Route View Transitions — smooth crossfade with spring-like feel */
+::view-transition-old(root) {
+  animation: vt-fade-out 250ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+
+/* Morph transitions for named elements (e.g. post titles) */
+::view-transition-old(post-title),
+::view-transition-new(post-title) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98) translateY(4px);
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(-6px);
+  }
+}
+
 @theme {
   --tw-transition-duration: 0.3s;
+
+  /* Apple-like Easing Curves */
+  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Animation Durations */
+  --duration-fast: 200ms;
+  --duration-base: 350ms;
+  --duration-slow: 500ms;
+  --duration-slower: 700ms;
 
   /* Awwwards Style Font Families */
   --font-serif: "Noto Serif SC Variable", serif;
@@ -117,6 +165,8 @@ mark {
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-ring: hsl(var(--ring));
 
+  --color-card: hsl(var(--card));
+
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
@@ -131,12 +181,38 @@ mark {
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground overflow-x-hidden font-sans antialiased;
     transition:
-      background-color 0.5s ease-in-out,
-      color 0.5s ease-in-out;
+      background-color var(--duration-slow) var(--ease-apple),
+      color var(--duration-slow) var(--ease-apple);
     line-height: 1.6;
+    /* Warm layered background: subtle gradient wash + fine paper grain + geometric line art */
+    background-image:
+      /* 顶部到中部的渐变调色 — 让导航栏区域更通透 */
+      linear-gradient(
+        to bottom,
+        hsl(var(--background) / 0) 0%,
+        hsl(var(--accent) / 0.018) 30%,
+        hsl(var(--accent) / 0.008) 60%,
+        hsl(var(--background) / 0) 100%
+      ),
+      /* 大椭圆式的淡 accent 色渐变 — 左上 */
+      radial-gradient(ellipse 80% 60% at 20% 10%, hsl(var(--accent) / 0.03) 0%, transparent 60%),
+      /* 大椭圆式的淡 accent 色渐变 — 右下 */
+      radial-gradient(ellipse 70% 50% at 85% 90%, hsl(var(--accent) / 0.025) 0%, transparent 55%),
+      /* 细微纸纹颗粒 — 24px网格 */
+      radial-gradient(circle at 25% 25%, hsl(var(--foreground) / 0.012) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, hsl(var(--foreground) / 0.008) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+    background-attachment: fixed, fixed, fixed, scroll, scroll;
   }
 
   ::selection {
@@ -145,6 +221,82 @@ mark {
 
   p {
     @apply leading-relaxed;
+  }
+
+  /* Apple-like stagger entrance animation with spring overshoot */
+  @keyframes apple-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    70% {
+      transform: translateY(-3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes apple-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes apple-scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    70% {
+      transform: scale(1.02);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes apple-slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Page entrance: lively content reveal with spring overshoot */
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+      filter: blur(4px);
+    }
+    50% {
+      filter: blur(0);
+      transform: translateY(-2px) scale(1.005);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  /* Smooth card lift on hover */
+  @keyframes card-glow {
+    from { box-shadow: 0 0 0 0 hsl(var(--accent) / 0); }
+    to   { box-shadow: 0 2px 16px -4px hsl(var(--accent) / 0.08); }
+  }
+
+  /* Ambient floating orb for hero decoration */
+  @keyframes ambient-float {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(15px, -20px) scale(1.05); }
+    100% { transform: translate(-10px, 10px) scale(0.97); }
   }
 
   /* Typography Defaults */
@@ -178,7 +330,8 @@ mark {
     }
 
     blockquote {
-      @apply mt-6 border-l-2 pl-6 italic text-muted-foreground;
+      @apply mt-6 border-l-[3px] pl-6 italic text-muted-foreground;
+      border-color: hsl(var(--accent) / 0.5);
     }
 
     ul {
@@ -212,9 +365,9 @@ mark {
     @apply text-sm font-medium leading-none;
   }
 
-  /* Minimalist Custom Scrollbar */
+  /* Apple-like Custom Scrollbar */
   ::-webkit-scrollbar {
-    @apply w-1.5 h-1.5;
+    @apply w-2 h-2;
   }
 
   ::-webkit-scrollbar-track {
@@ -222,11 +375,12 @@ mark {
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted rounded-full transition-colors;
+    @apply bg-muted-foreground/15 rounded-full;
+    transition: background-color 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-accent;
+    @apply bg-accent/40;
   }
 }
 
@@ -307,12 +461,12 @@ mark {
 /* Comment Highlight for Anchor Navigation */
 @keyframes highlight-flash {
   0% {
-    background-color: hsl(var(--foreground));
-    color: hsl(var(--background));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
   15% {
-    background-color: hsl(var(--foreground));
-    color: hsl(var(--background));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
   100% {
     background-color: transparent;

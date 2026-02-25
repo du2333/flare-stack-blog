@@ -28,9 +28,12 @@ export function PostPage({ post }: PostPageProps) {
       <nav className="py-12 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: "/posts" })}
-          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
+          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 group"
+          style={{
+            transition: `opacity 350ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+          }}
         >
-          <ArrowLeft size={12} />
+          <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]" />
           <span>返回目录</span>
         </button>
       </nav>
@@ -66,7 +69,7 @@ export function PostPage({ post }: PostPageProps) {
                         key={tag.id}
                         to="/posts"
                         search={{ tagName: tag.name }}
-                        className="hover:text-foreground transition-colors"
+                        className="hover:text-accent transition-colors"
                       >
                         #{tag.name}
                       </Link>
@@ -78,14 +81,16 @@ export function PostPage({ post }: PostPageProps) {
 
             <h1
               className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium leading-[1.1] tracking-tight text-foreground"
-              style={{ viewTransitionName: `post-title-${post.slug}` }}
+              style={{
+                viewTransitionName: `post-title-${post.slug}`,
+              }}
             >
               {post.title}
             </h1>
           </div>
 
           {post.summary && (
-            <div className="bg-muted/30 rounded-lg p-6 space-y-3 border border-border/40">
+            <div className="bg-card rounded-xl p-6 space-y-3 border border-border/40 shadow-sm">
               <div className="flex items-center gap-2 text-muted-foreground/80 font-medium text-sm uppercase tracking-widest">
                 <Sparkles className="w-4 h-4" />
                 <span>摘要</span>
@@ -129,13 +134,13 @@ export function PostPage({ post }: PostPageProps) {
                       });
                     });
                 }}
-                className="group h-auto p-0 flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-muted-foreground hover:text-foreground transition-colors bg-transparent hover:bg-transparent"
+                className="group h-auto p-0 flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-muted-foreground hover:text-accent transition-colors bg-transparent hover:bg-transparent"
               >
                 <span>分享</span>
                 <Share2
                   size={12}
                   strokeWidth={1.5}
-                  className="group-hover:-translate-y-0.5 transition-transform"
+                  className="group-hover:-translate-y-0.5 transition-transform duration-[350ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                 />
               </Button>
             </footer>
@@ -157,11 +162,14 @@ export function PostPage({ post }: PostPageProps) {
 
       {/* Back To Top */}
       <div
-        className={`fixed bottom-8 right-8 z-40 transition-all duration-700 ${
+        className={`fixed bottom-8 right-8 z-40 ${
           showBackToTop
             ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-10 pointer-events-none"
+            : "opacity-0 translate-y-6 pointer-events-none"
         }`}
+        style={{
+          transition: `all 500ms cubic-bezier(0.16, 1, 0.3, 1)`,
+        }}
       >
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -169,9 +177,9 @@ export function PostPage({ post }: PostPageProps) {
         >
           <ArrowUp
             size={16}
-            className="text-muted-foreground/60 group-hover:text-foreground group-hover:-translate-y-1 transition-all duration-300"
+            className="text-muted-foreground/60 group-hover:text-accent group-hover:-translate-y-1.5 transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
           />
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-foreground transition-colors duration-300">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-accent transition-colors duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]">
             顶部
           </span>
         </button>

@@ -35,12 +35,18 @@ declare global {
     mode: "native" | "markdown";
   }
 
+  interface GuitarTabProcessWorkflowParams {
+    mediaId: number;
+    r2Key: string;
+  }
+
   interface Env extends Cloudflare.Env {
     POST_PROCESS_WORKFLOW: Workflow<PostProcessWorkflowParams>;
     COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
     IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
+    GUITAR_TAB_PROCESS_WORKFLOW: Workflow<GuitarTabProcessWorkflowParams>;
     QUEUE: Queue<QueueMessage>;
   }
 

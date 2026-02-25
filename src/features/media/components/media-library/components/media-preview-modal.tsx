@@ -4,6 +4,7 @@ import {
   Calendar,
   Check,
   Copy,
+  Disc3,
   Download,
   ExternalLink,
   FileText,
@@ -13,9 +14,11 @@ import {
   Layout,
   Link2,
   Loader2,
+  Music,
   Pencil,
   Play,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,8 +30,9 @@ import { Input } from "@/components/ui/input";
 import { getLinkedPostsFn } from "@/features/media/media.api";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { MEDIA_KEYS, guitarTabMetaQuery } from "@/features/media/queries";
 import {
+  getOptimizedImageUrl,
   isGuitarProFile,
   isVideoFile,
   isAudioFile,
@@ -135,6 +139,13 @@ export function MediaPreviewModal({
     enabled: !!activeAsset?.key,
   });
 
+  // Query guitar tab metadata for GP files
+  const isGp = activeAsset ? isGuitarProFile(activeAsset.fileName) : false;
+  const { data: gpMeta } = useQuery({
+    ...guitarTabMetaQuery(activeAsset?.id ?? 0),
+    enabled: isGp && !!activeAsset?.id,
+  });
+
   if (!shouldRender || !activeAsset) return null;
 
   return (
@@ -186,11 +197,34 @@ export function MediaPreviewModal({
             />
           ) : isGuitarProFile(activeAsset.fileName) ? (
             <div className="flex flex-col items-center justify-center gap-6 text-muted-foreground">
-              <Guitar size={64} strokeWidth={1} className="opacity-40" />
+              {gpMeta?.coverKey ? (
+                <div className="relative w-48 h-48 md:w-56 md:h-56 shadow-lg border border-border/30 overflow-hidden">
+                  <img
+                    src={getOptimizedImageUrl(gpMeta.coverKey, 400)}
+                    alt={gpMeta.title ?? activeAsset.fileName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <Guitar size={64} strokeWidth={1} className="opacity-40" />
+              )}
               <div className="text-center space-y-2">
-                <p className="text-sm font-mono font-medium text-foreground">
-                  {activeAsset.fileName}
-                </p>
+                {gpMeta?.title ? (
+                  <>
+                    <p className="text-base font-mono font-medium text-foreground">
+                      {gpMeta.title}
+                    </p>
+                    {gpMeta.artist && (
+                      <p className="text-xs font-mono text-muted-foreground">
+                        {gpMeta.artist}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm font-mono font-medium text-foreground">
+                    {activeAsset.fileName}
+                  </p>
+                )}
                 <p className="text-[10px] font-mono uppercase tracking-widest opacity-60">
                   Guitar Pro 吉他谱文件
                 </p>
@@ -324,6 +358,84 @@ export function MediaPreviewModal({
 
           {/* Details List */}
           <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto custom-scrollbar">
+            {/* Guitar Tab Metadata Section */}
+            {isGp && gpMeta && (
+              <div className="space-y-4 pb-6 border-b border-border/30">
+                <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                  <Guitar size={10} /> 吉他谱信息
+                </div>
+                <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+                  {gpMeta.title && (
+                    <div className="space-y-1 col-span-2">
+                      <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <Music size={10} /> 曲名
+                      </div>
+                      <div className="text-xs font-mono font-medium">
+                        {gpMeta.title}
+                      </div>
+                    </div>
+                  )}
+                  {gpMeta.artist && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <User size={10} /> 艺术家
+                      </div>
+                      <div className="text-xs font-mono font-medium">
+                        {gpMeta.artist}
+                      </div>
+                    </div>
+                  )}
+                  {gpMeta.album && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                        <Disc3 size={10} /> 专辑
+                      </div>
+                      <div className="text-xs font-mono font-medium">
+                        {gpMeta.album}
+                      </div>
+                    </div>
+                  )}
+                  {gpMeta.tempo && (
+                    <div className="space-y-1">
+                      <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                        BPM
+                      </div>
+                      <div className="text-xs font-mono font-medium">
+                        {gpMeta.tempo}
+                      </div>
+                    </div>
+                  )}
+                  {gpMeta.trackCount && (
+                    <div className="space-y-1">
+                      <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                        音轨数
+                      </div>
+                      <div className="text-xs font-mono font-medium">
+                        {gpMeta.trackCount}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {gpMeta.trackNames && (
+                  <div className="space-y-2">
+                    <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                      音轨列表
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {gpMeta.trackNames.split(",").map((name, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 bg-muted/20 border border-border/30 text-[9px] font-mono"
+                        >
+                          {name.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground uppercase tracking-widest">

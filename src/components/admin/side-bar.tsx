@@ -1,17 +1,20 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   FileText,
+  Guitar,
   Image as ImageIcon,
   LayoutDashboard,
   Link2,
   LogOut,
   MessageSquare,
+  Settings,
   Tag,
+  Users,
   User,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { FileRoutesByTo } from "@/routeTree.gen";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -42,6 +45,47 @@ export function SideBar({
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // ── 侧边栏滑动选中指示器 ──
+  const navContainerRef = useRef<HTMLElement>(null);
+  const navItemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [navIndicator, setNavIndicator] = useState<{ top: number; height: number } | null>(null);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const updateNavIndicator = useCallback(() => {
+    const container = navContainerRef.current;
+    if (!container) return;
+    const activeItem = navItems.find((item) =>
+      item.exact ? pathname === item.path : pathname.startsWith(item.path)
+    );
+    if (!activeItem) {
+      setNavIndicator(null);
+      return;
+    }
+    const el = navItemRefs.current.get(activeItem.path);
+    if (!el) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setNavIndicator({
+      top: elRect.top - containerRect.top,
+      height: elRect.height,
+    });
+  }, [pathname]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: updateNavIndicator covers deps
+  useLayoutEffect(() => {
+    updateNavIndicator();
+  }, [updateNavIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", updateNavIndicator);
+    return () => window.removeEventListener("resize", updateNavIndicator);
+  }, [updateNavIndicator]);
+
+  const setNavItemRef = useCallback((path: string) => (el: HTMLDivElement | null) => {
+    if (el) navItemRefs.current.set(path, el);
+    else navItemRefs.current.delete(path);
+  }, []);
 
   const handleSignOutClick = () => {
     setShowLogoutConfirm(true);
@@ -92,6 +136,12 @@ export function SideBar({
       exact: false,
     },
     {
+      path: "/admin/guitar-tabs",
+      icon: Guitar,
+      label: "吉他谱审核",
+      exact: false,
+    },
+    {
       path: "/admin/comments",
       icon: MessageSquare,
       label: "评论管理",
@@ -101,6 +151,18 @@ export function SideBar({
       path: "/admin/friend-links",
       icon: Link2,
       label: "友链管理",
+      exact: false,
+    },
+    {
+      path: "/admin/users",
+      icon: Users,
+      label: "用户管理",
+      exact: false,
+    },
+    {
+      path: "/admin/settings",
+      icon: Settings,
+      label: "系统设置",
       exact: false,
     },
   ] satisfies Array<NavItem>;
@@ -139,7 +201,18 @@ export function SideBar({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
+        <nav ref={navContainerRef} className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar relative">
+          {/* 滑动选中指示器 — 黑色背景块 */}
+          {navIndicator && (
+            <div
+              className="absolute left-4 right-4 bg-foreground pointer-events-none z-0"
+              style={{
+                top: navIndicator.top,
+                height: navIndicator.height,
+                transition: "top 500ms cubic-bezier(0.34, 1.56, 0.64, 1), height 400ms cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+            />
+          )}
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -150,10 +223,11 @@ export function SideBar({
             >
               {({ isActive }) => (
                 <div
+                  ref={setNavItemRef(item.path)}
                   className={cn(
-                    "flex items-center gap-4 px-4 py-3 text-[11px] font-mono transition-all border border-transparent",
+                    "relative z-[1] flex items-center gap-4 px-4 py-3 text-[11px] font-mono transition-colors duration-300 border border-transparent",
                     isActive
-                      ? "bg-foreground text-background border-foreground"
+                      ? "text-background"
                       : "text-muted-foreground hover:text-foreground hover:border-border/30",
                   )}
                 >

@@ -5,10 +5,13 @@ export const DashboardStatsSchema = z.object({
   publishedPosts: z.number(),
   drafts: z.number(),
   mediaSize: z.number(),
+  totalUsers: z.number(),
+  totalGuitarTabs: z.number(),
+  pendingGuitarTabs: z.number(),
 });
 
 export const ActivityLogItemSchema = z.object({
-  type: z.enum(["comment", "post", "user"]),
+  type: z.enum(["comment", "post", "user", "guitar-tab"]),
   text: z.string(),
   time: z.date().nullable(),
   link: z.string().optional(),

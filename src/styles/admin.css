@@ -73,3 +73,47 @@
 .admin-layout .gap-4 {
   gap: 1.25rem !important;
 }
+
+/* ── 非线性动画覆盖 — 让 admin 页面切换更灵动 ── */
+.admin-layout .animate-in {
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* slide-in 系列增加弹性幅度 */
+.admin-layout .slide-in-from-bottom-4 {
+  --tw-enter-translate-y: 1.5rem !important;
+}
+
+.admin-layout .slide-in-from-right-2 {
+  --tw-enter-translate-x: 1rem !important;
+}
+
+/* ── Admin 内容区域切换动画 — 仅右侧内容区变化 ── */
+::view-transition-old(admin-content) {
+  animation: admin-content-out 200ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+::view-transition-new(admin-content) {
+  animation: admin-content-in 350ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+}
+
+@keyframes admin-content-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+}
+
+@keyframes admin-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+  70% {
+    transform: translateY(1px) scale(1.001);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

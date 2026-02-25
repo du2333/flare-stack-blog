@@ -58,14 +58,17 @@ export default function TableOfContents({
                   }
                 }}
                 className={`
-                            block text-[11px] transition-all duration-300 leading-relaxed relative border-l-[1.5px] py-0.5
+                            block text-[11px] leading-relaxed relative border-l-[1.5px] py-0.5
                             ${
                               activeId === node.id
                                 ? "text-foreground border-foreground pl-3 font-medium"
                                 : "text-muted-foreground/60 border-border/30 pl-3 hover:text-foreground hover:border-border/60"
                             }
                         `}
-                style={{ marginLeft: `${(node.level - 2) * 0.5}rem` }}
+                style={{
+                  marginLeft: `${(node.level - 2) * 0.5}rem`,
+                  transition: `all 350ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+                }}
               >
                 {node.text}
               </a>

@@ -6,7 +6,7 @@ const mediaSearchSchema = z.object({
   unused: z.boolean().optional().catch(false),
   search: z.string().optional().catch(""),
   category: z
-    .enum(["image", "guitar-pro", "video", "audio"])
+    .enum(["image", "guitar-pro", "video", "audio", "album-cover"])
     .optional()
     .catch(undefined),
 });

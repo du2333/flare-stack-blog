@@ -4,3 +4,4 @@ export * from "./media.table";
 export * from "./comments.table";
 export * from "./friend-links.table";
 export * from "./config.table";
+export * from "./guitar-tab-metadata.table";

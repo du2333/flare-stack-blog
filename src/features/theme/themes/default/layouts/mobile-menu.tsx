@@ -21,23 +21,35 @@ export function MobileMenu({
 }: MobileMenuProps) {
   return (
     <div
-      className={`fixed inset-0 z-100 transition-all duration-500 ease-in-out ${
+      className={`fixed inset-0 z-100 ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
       }`}
+      style={{
+        transition: `opacity 500ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+      }}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/95 backdrop-blur-2xl"
+        className={`absolute inset-0 bg-background/90 backdrop-blur-3xl backdrop-saturate-150 ${
+          isOpen ? "scale-100" : "scale-105"
+        }`}
+        style={{
+          transition: `all 600ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+        }}
         onClick={onClose}
       />
 
       {/* Content Container */}
       <div
-        className={`relative h-full w-full flex flex-col p-8 md:p-20 transition-all duration-500 delay-75 ${
-          isOpen ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+        className={`relative h-full w-full flex flex-col p-8 md:p-20 ${
+          isOpen ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
         }`}
+        style={{
+          transition: `all 600ms cubic-bezier(0.16, 1, 0.3, 1)`,
+          transitionDelay: isOpen ? '100ms' : '0ms',
+        }}
       >
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -63,31 +75,34 @@ export function MobileMenu({
               key={item.id}
               to={item.to}
               onClick={onClose}
-              className={`group flex items-center gap-4 transition-all duration-500 ${
+              className={`group flex items-center gap-4 ${
                 isOpen
                   ? "translate-x-0 opacity-100"
-                  : "-translate-x-8 opacity-0"
+                  : "-translate-x-12 opacity-0"
               }`}
               activeProps={{
-                className: "!text-foreground",
+                className: "!text-accent",
               }}
-              style={{ transitionDelay: isOpen ? `${50 + idx * 50}ms` : "0ms" }}
+              style={{
+                transition: `all 700ms cubic-bezier(0.16, 1, 0.3, 1)`,
+                transitionDelay: isOpen ? `${120 + idx * 70}ms` : "0ms",
+              }}
             >
               {({ isActive }) => (
                 <>
                   <span
                     className={`text-sm md:text-base text-muted-foreground/50 transition-colors ${
                       isActive
-                        ? "text-foreground"
-                        : "group-hover:text-foreground"
+                        ? "text-accent"
+                        : "group-hover:text-accent"
                     }`}
                   >
                     &gt;_
                   </span>
-                  <span className="text-3xl md:text-5xl font-bold tracking-tight text-muted-foreground transition-colors group-hover:text-foreground">
+                  <span className="text-3xl md:text-5xl font-bold tracking-tight text-muted-foreground transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:text-foreground group-hover:translate-x-2">
                     {item.label}
                     {isActive && (
-                      <span className="animate-pulse ml-2 inline-block w-3 h-8 bg-foreground -mb-1 align-middle" />
+                      <span className="animate-pulse ml-2 inline-block w-3 h-8 bg-accent -mb-1 align-middle" />
                     )}
                   </span>
                 </>
@@ -99,24 +114,25 @@ export function MobileMenu({
             <Link
               to="/admin"
               onClick={onClose}
-              className={`group flex items-center gap-4 transition-all duration-500 ${
+              className={`group flex items-center gap-4 ${
                 isOpen
                   ? "translate-x-0 opacity-100"
-                  : "-translate-x-8 opacity-0"
+                  : "-translate-x-12 opacity-0"
               }`}
               activeProps={{
-                className: "!text-foreground",
+                className: "!text-accent",
               }}
               style={{
+                transition: `all 700ms cubic-bezier(0.16, 1, 0.3, 1)`,
                 transitionDelay: isOpen
-                  ? `${100 + navOptions.length * 75}ms`
+                  ? `${180 + navOptions.length * 70}ms`
                   : "0ms",
               }}
             >
-              <span className="text-sm md:text-base text-muted-foreground/50 group-hover:text-foreground transition-colors">
+              <span className="text-sm md:text-base text-muted-foreground/50 group-hover:text-accent transition-colors">
                 &gt;_
               </span>
-              <span className="text-3xl md:text-5xl font-bold tracking-tight text-muted-foreground group-hover:text-foreground transition-colors">
+              <span className="text-3xl md:text-5xl font-bold tracking-tight text-muted-foreground group-hover:text-foreground group-hover:translate-x-2 transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]">
                 管理
               </span>
             </Link>
@@ -125,11 +141,15 @@ export function MobileMenu({
 
         {/* Footer: User Info / Login */}
         <div
-          className={`transition-all duration-500 border-t border-border/40 pt-8 ${
+          className={`border-t border-border/20 pt-8 ${
             isOpen
-              ? "opacity-100 translate-y-0 delay-500"
+              ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-4"
           }`}
+          style={{
+            transition: `all 600ms cubic-bezier(0.16, 1, 0.3, 1)`,
+            transitionDelay: isOpen ? '500ms' : '0ms',
+          }}
         >
           {user ? (
             <div className="flex items-center justify-between">

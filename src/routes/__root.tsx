@@ -12,14 +12,47 @@ import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import appCss from "@/styles.css?url";
 import { blogConfig } from "@/blog.config";
 import { clientEnv } from "@/lib/env/client.env";
+import { getSeoVerificationFn } from "@/features/config/config.api";
 
 interface MyRouterContext {
   queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => {
+  loader: async () => {
+    // SSR 侧获取 SEO 验证码
+    try {
+      const seoVerification = await getSeoVerificationFn();
+      return { seoVerification };
+    } catch {
+      return { seoVerification: null };
+    }
+  },
+  head: ({ loaderData }) => {
     const env = clientEnv();
+    const seo = loaderData?.seoVerification;
+
+    // 构建 SEO 验证 meta tags
+    const seoMeta: Array<Record<string, string>> = [];
+    if (seo?.googleVerification) {
+      seoMeta.push({
+        name: "google-site-verification",
+        content: seo.googleVerification,
+      });
+    }
+    if (seo?.bingVerification) {
+      seoMeta.push({
+        name: "msvalidate.01",
+        content: seo.bingVerification,
+      });
+    }
+    if (seo?.baiduVerification) {
+      seoMeta.push({
+        name: "baidu-site-verification",
+        content: seo.baiduVerification,
+      });
+    }
+
     return {
       meta: [
         {
@@ -36,6 +69,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           name: "description",
           content: blogConfig.description,
         },
+        ...seoMeta,
       ],
       links: [
         {

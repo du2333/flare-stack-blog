@@ -2,13 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { and, desc, eq, lte } from "drizzle-orm";
 import { PostsTable } from "@/lib/db/schema";
 import { getDb } from "@/lib/db";
+import * as GuitarTabMetaRepo from "@/features/media/data/guitar-tab-metadata.data";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async ({ context: { env } }) => {
         const db = getDb(env);
-        // Only fetch published posts that are publicly viewable
+
+        // 获取已发布文章
         const posts = await db
           .select({
             slug: PostsTable.slug,
@@ -23,6 +25,9 @@ export const Route = createFileRoute("/sitemap.xml")({
           )
           .orderBy(desc(PostsTable.updatedAt))
           .limit(100);
+
+        // 获取已通过审核的吉他谱
+        const guitarTabs = await GuitarTabMetaRepo.getAllApprovedSlugs(db);
 
         // Format date to ISO 8601 (required by sitemap spec)
         const formatDate = (date: Date | null) => {
@@ -42,6 +47,11 @@ export const Route = createFileRoute("/sitemap.xml")({
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://${env.DOMAIN}/guitar-tabs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
   ${posts
     .map(
       (post) => `
@@ -50,6 +60,17 @@ export const Route = createFileRoute("/sitemap.xml")({
     <lastmod>${formatDate(post.updatedAt)}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>`,
+    )
+    .join("")}
+  ${guitarTabs
+    .map(
+      (tab) => `
+  <url>
+    <loc>https://${env.DOMAIN}/guitar-tab/${encodeURIComponent(tab.slug)}</loc>
+    <lastmod>${formatDate(tab.updatedAt)}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>`,
     )
     .join("")}

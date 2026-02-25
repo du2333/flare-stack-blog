@@ -1,5 +1,23 @@
 import type { MediaCategory } from "./media.schema";
 
+/**
+ * 生成吉他谱 URL 友好的 slug
+ * 格式：artist-title-shortid（全部小写，非ASCII字符保留，空格和特殊字符替换为-）
+ */
+export function generateGuitarTabSlug(artist: string, title: string): string {
+  const raw = [artist, title].filter(Boolean).join("-");
+  // 保留中文/日文/韩文等字符，替换空格和特殊符号为连字符
+  const slug = raw
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")           // 空格/下划线 → -
+    .replace(/[^\p{L}\p{N}-]/gu, "")   // 移除非字母数字和连字符
+    .replace(/-+/g, "-")               // 合并多个连字符
+    .replace(/^-|-$/g, "");            // 去掉首尾连字符
+  // 添加短 ID 防止冲突
+  const shortId = crypto.randomUUID().slice(0, 6);
+  return slug ? `${slug}-${shortId}` : shortId;
+}
+
 export function getContentTypeFromKey(key: string): string | undefined {
   const extension = key.split(".").pop()?.toLowerCase();
   const contentTypes: Record<string, string> = {

@@ -5,6 +5,7 @@ import {
   Database,
   Eye,
   FileText,
+  Guitar,
   MessageSquare,
   MousePointerClick,
   RefreshCw,
@@ -163,38 +164,88 @@ function DashboardOverview() {
         </div>
       </header>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/admin/comments" search={{ status: "pending" }}>
-          <StatCard
-            label="待审核评论"
-            value={stats.pendingComments.toString()}
-            icon={<MessageSquare size={14} />}
-            trend={stats.pendingComments > 0 ? "需要处理" : "一切正常"}
-          />
-        </Link>
-        <Link to="/admin/posts" search={{ status: "PUBLISHED" }}>
-          <StatCard
-            label="已发布文章"
-            value={stats.publishedPosts.toString()}
-            icon={<FileText size={14} />}
-            trend="活跃内容"
-          />
-        </Link>
-        <StatCard
-          label="媒体库占用"
-          value={formatBytes(stats.mediaSize)}
-          icon={<Database size={14} />}
-          trend="存储使用"
-        />
-        <Link to="/admin/posts" search={{ status: "DRAFT" }}>
-          <StatCard
-            label="草稿箱"
-            value={stats.drafts.toString()}
-            icon={<Activity size={14} />}
-            trend="进行中"
-          />
-        </Link>
+      {/* Stats Overview */}
+      <div className="space-y-6">
+        {/* 内容概览 */}
+        <div className="space-y-3">
+          <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
+            内容管理
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Link to="/admin/posts" search={{ status: "PUBLISHED" }}>
+              <StatCard
+                label="已发布文章"
+                value={stats.publishedPosts.toString()}
+                icon={<FileText size={14} />}
+                trend="活跃内容"
+              />
+            </Link>
+            <Link to="/admin/posts" search={{ status: "DRAFT" }}>
+              <StatCard
+                label="草稿箱"
+                value={stats.drafts.toString()}
+                icon={<FileText size={14} />}
+                trend="进行中"
+              />
+            </Link>
+            <Link to="/admin/comments" search={{ status: "pending" }}>
+              <StatCard
+                label="待审核评论"
+                value={stats.pendingComments.toString()}
+                icon={<MessageSquare size={14} />}
+                trend={stats.pendingComments > 0 ? "需要处理" : "一切正常"}
+              />
+            </Link>
+            <StatCard
+              label="媒体库占用"
+              value={formatBytes(stats.mediaSize)}
+              icon={<Database size={14} />}
+              trend="存储使用"
+            />
+          </div>
+        </div>
+
+        {/* 吉他谱 & 用户 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
+              吉他谱
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <Link to="/admin/guitar-tabs">
+                <StatCard
+                  label="谱子总数"
+                  value={stats.totalGuitarTabs.toString()}
+                  icon={<Guitar size={14} />}
+                  trend="全部"
+                />
+              </Link>
+              <Link to="/admin/guitar-tabs" search={{ status: "pending" }}>
+                <StatCard
+                  label="待审核"
+                  value={stats.pendingGuitarTabs.toString()}
+                  icon={<Guitar size={14} />}
+                  trend={stats.pendingGuitarTabs > 0 ? "需要处理" : "一切正常"}
+                />
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
+              用户
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              <Link to="/admin/users">
+                <StatCard
+                  label="注册用户"
+                  value={stats.totalUsers.toString()}
+                  icon={<Users size={14} />}
+                  trend="总数"
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content Area */}

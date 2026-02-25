@@ -18,11 +18,13 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as UserSubmitGuitarTabRouteImport } from './routes/_user/submit-guitar-tab'
 import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
 import { Route as UserProfileRouteImport } from './routes/_user/profile'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicPostsRouteImport } from './routes/_public/posts'
+import { Route as PublicGuitarTabsRouteImport } from './routes/_public/guitar-tabs'
 import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
@@ -30,13 +32,16 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AdminPostsRouteRouteImport } from './routes/admin/posts/route'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
+import { Route as AdminGuitarTabsIndexRouteImport } from './routes/admin/guitar-tabs/index'
 import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
 import { Route as AdminCommentsIndexRouteImport } from './routes/admin/comments/index'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
+import { Route as PublicGuitarTabSlugRouteImport } from './routes/_public/guitar-tab/$slug'
 import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -81,6 +86,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const UserSubmitGuitarTabRoute = UserSubmitGuitarTabRouteImport.update({
+  id: '/submit-guitar-tab',
+  path: '/submit-guitar-tab',
+  getParentRoute: () => UserRouteRoute,
+} as any)
 const UserSubmitFriendLinkRoute = UserSubmitFriendLinkRouteImport.update({
   id: '/submit-friend-link',
   path: '/submit-friend-link',
@@ -104,6 +114,11 @@ const PublicSearchRoute = PublicSearchRouteImport.update({
 const PublicPostsRoute = PublicPostsRouteImport.update({
   id: '/posts',
   path: '/posts',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicGuitarTabsRoute = PublicGuitarTabsRouteImport.update({
+  id: '/guitar-tabs',
+  path: '/guitar-tabs',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
@@ -141,6 +156,11 @@ const AdminPostsRouteRoute = AdminPostsRouteRouteImport.update({
   path: '/posts',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminTagsIndexRoute = AdminTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
@@ -161,6 +181,11 @@ const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
   path: '/media/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminGuitarTabsIndexRoute = AdminGuitarTabsIndexRouteImport.update({
+  id: '/guitar-tabs/',
+  path: '/guitar-tabs/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminFriendLinksIndexRoute = AdminFriendLinksIndexRouteImport.update({
   id: '/friend-links/',
   path: '/friend-links/',
@@ -174,6 +199,11 @@ const AdminCommentsIndexRoute = AdminCommentsIndexRouteImport.update({
 const PublicPostSlugRoute = PublicPostSlugRouteImport.update({
   id: '/post/$slug',
   path: '/post/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicGuitarTabSlugRoute = PublicGuitarTabSlugRouteImport.update({
+  id: '/guitar-tab/$slug',
+  path: '/guitar-tab/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AdminPostsEditIdRoute = AdminPostsEditIdRouteImport.update({
@@ -194,20 +224,25 @@ export interface FileRoutesByFullPath {
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/friend-links': typeof PublicFriendLinksRoute
+  '/guitar-tabs': typeof PublicGuitarTabsRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
+  '/submit-guitar-tab': typeof UserSubmitGuitarTabRoute
   '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/guitar-tab/$slug': typeof PublicGuitarTabSlugRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
+  '/admin/guitar-tabs': typeof AdminGuitarTabsIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
 }
 export interface FileRoutesByTo {
@@ -220,20 +255,25 @@ export interface FileRoutesByTo {
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/friend-links': typeof PublicFriendLinksRoute
+  '/guitar-tabs': typeof PublicGuitarTabsRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
+  '/submit-guitar-tab': typeof UserSubmitGuitarTabRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/guitar-tab/$slug': typeof PublicGuitarTabSlugRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
+  '/admin/guitar-tabs': typeof AdminGuitarTabsIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
 }
 export interface FileRoutesById {
@@ -252,20 +292,25 @@ export interface FileRoutesById {
   '/_auth/reset-link': typeof AuthResetLinkRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_public/friend-links': typeof PublicFriendLinksRoute
+  '/_public/guitar-tabs': typeof PublicGuitarTabsRoute
   '/_public/posts': typeof PublicPostsRoute
   '/_public/search': typeof PublicSearchRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/_user/profile': typeof UserProfileRoute
   '/_user/submit-friend-link': typeof UserSubmitFriendLinkRoute
+  '/_user/submit-guitar-tab': typeof UserSubmitGuitarTabRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/_public/guitar-tab/$slug': typeof PublicGuitarTabSlugRoute
   '/_public/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments/': typeof AdminCommentsIndexRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
+  '/admin/guitar-tabs/': typeof AdminGuitarTabsIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
 }
 export interface FileRouteTypes {
@@ -282,20 +327,25 @@ export interface FileRouteTypes {
     | '/reset-link'
     | '/verify-email'
     | '/friend-links'
+    | '/guitar-tabs'
     | '/posts'
     | '/search'
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
+    | '/submit-guitar-tab'
     | '/'
     | '/admin/'
+    | '/guitar-tab/$slug'
     | '/post/$slug'
     | '/admin/comments'
     | '/admin/friend-links'
+    | '/admin/guitar-tabs'
     | '/admin/media'
     | '/admin/posts/'
     | '/admin/settings'
     | '/admin/tags'
+    | '/admin/users'
     | '/admin/posts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -308,20 +358,25 @@ export interface FileRouteTypes {
     | '/reset-link'
     | '/verify-email'
     | '/friend-links'
+    | '/guitar-tabs'
     | '/posts'
     | '/search'
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
+    | '/submit-guitar-tab'
     | '/'
     | '/admin'
+    | '/guitar-tab/$slug'
     | '/post/$slug'
     | '/admin/comments'
     | '/admin/friend-links'
+    | '/admin/guitar-tabs'
     | '/admin/media'
     | '/admin/posts'
     | '/admin/settings'
     | '/admin/tags'
+    | '/admin/users'
     | '/admin/posts/edit/$id'
   id:
     | '__root__'
@@ -339,20 +394,25 @@ export interface FileRouteTypes {
     | '/_auth/reset-link'
     | '/_auth/verify-email'
     | '/_public/friend-links'
+    | '/_public/guitar-tabs'
     | '/_public/posts'
     | '/_public/search'
     | '/_public/unsubscribe'
     | '/_user/profile'
     | '/_user/submit-friend-link'
+    | '/_user/submit-guitar-tab'
     | '/_public/'
     | '/admin/'
+    | '/_public/guitar-tab/$slug'
     | '/_public/post/$slug'
     | '/admin/comments/'
     | '/admin/friend-links/'
+    | '/admin/guitar-tabs/'
     | '/admin/media/'
     | '/admin/posts/'
     | '/admin/settings/'
     | '/admin/tags/'
+    | '/admin/users/'
     | '/admin/posts/edit/$id'
   fileRoutesById: FileRoutesById
 }
@@ -431,6 +491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_user/submit-guitar-tab': {
+      id: '/_user/submit-guitar-tab'
+      path: '/submit-guitar-tab'
+      fullPath: '/submit-guitar-tab'
+      preLoaderRoute: typeof UserSubmitGuitarTabRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
     '/_user/submit-friend-link': {
       id: '/_user/submit-friend-link'
       path: '/submit-friend-link'
@@ -464,6 +531,13 @@ declare module '@tanstack/react-router' {
       path: '/posts'
       fullPath: '/posts'
       preLoaderRoute: typeof PublicPostsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/guitar-tabs': {
+      id: '/_public/guitar-tabs'
+      path: '/guitar-tabs'
+      fullPath: '/guitar-tabs'
+      preLoaderRoute: typeof PublicGuitarTabsRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/friend-links': {
@@ -515,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPostsRouteRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/tags/': {
       id: '/admin/tags/'
       path: '/tags'
@@ -543,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMediaIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/guitar-tabs/': {
+      id: '/admin/guitar-tabs/'
+      path: '/guitar-tabs'
+      fullPath: '/admin/guitar-tabs'
+      preLoaderRoute: typeof AdminGuitarTabsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/friend-links/': {
       id: '/admin/friend-links/'
       path: '/friend-links'
@@ -562,6 +650,13 @@ declare module '@tanstack/react-router' {
       path: '/post/$slug'
       fullPath: '/post/$slug'
       preLoaderRoute: typeof PublicPostSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/guitar-tab/$slug': {
+      id: '/_public/guitar-tab/$slug'
+      path: '/guitar-tab/$slug'
+      fullPath: '/guitar-tab/$slug'
+      preLoaderRoute: typeof PublicGuitarTabSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/admin/posts/edit/$id': {
@@ -596,19 +691,23 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface PublicRouteRouteChildren {
   PublicFriendLinksRoute: typeof PublicFriendLinksRoute
+  PublicGuitarTabsRoute: typeof PublicGuitarTabsRoute
   PublicPostsRoute: typeof PublicPostsRoute
   PublicSearchRoute: typeof PublicSearchRoute
   PublicUnsubscribeRoute: typeof PublicUnsubscribeRoute
   PublicIndexRoute: typeof PublicIndexRoute
+  PublicGuitarTabSlugRoute: typeof PublicGuitarTabSlugRoute
   PublicPostSlugRoute: typeof PublicPostSlugRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicFriendLinksRoute: PublicFriendLinksRoute,
+  PublicGuitarTabsRoute: PublicGuitarTabsRoute,
   PublicPostsRoute: PublicPostsRoute,
   PublicSearchRoute: PublicSearchRoute,
   PublicUnsubscribeRoute: PublicUnsubscribeRoute,
   PublicIndexRoute: PublicIndexRoute,
+  PublicGuitarTabSlugRoute: PublicGuitarTabSlugRoute,
   PublicPostSlugRoute: PublicPostSlugRoute,
 }
 
@@ -619,11 +718,13 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 interface UserRouteRouteChildren {
   UserProfileRoute: typeof UserProfileRoute
   UserSubmitFriendLinkRoute: typeof UserSubmitFriendLinkRoute
+  UserSubmitGuitarTabRoute: typeof UserSubmitGuitarTabRoute
 }
 
 const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserProfileRoute: UserProfileRoute,
   UserSubmitFriendLinkRoute: UserSubmitFriendLinkRoute,
+  UserSubmitGuitarTabRoute: UserSubmitGuitarTabRoute,
 }
 
 const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
@@ -649,9 +750,11 @@ interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCommentsIndexRoute: typeof AdminCommentsIndexRoute
   AdminFriendLinksIndexRoute: typeof AdminFriendLinksIndexRoute
+  AdminGuitarTabsIndexRoute: typeof AdminGuitarTabsIndexRoute
   AdminMediaIndexRoute: typeof AdminMediaIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminTagsIndexRoute: typeof AdminTagsIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
@@ -659,9 +762,11 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminCommentsIndexRoute: AdminCommentsIndexRoute,
   AdminFriendLinksIndexRoute: AdminFriendLinksIndexRoute,
+  AdminGuitarTabsIndexRoute: AdminGuitarTabsIndexRoute,
   AdminMediaIndexRoute: AdminMediaIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminTagsIndexRoute: AdminTagsIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

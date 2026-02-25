@@ -7,6 +7,7 @@ export { ExportWorkflow } from "@/features/import-export/workflows/export.workfl
 export { ImportWorkflow } from "@/features/import-export/workflows/import.workflow";
 export { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 export { ScheduledPublishWorkflow } from "@/features/posts/workflows/scheduled-publish";
+export { GuitarTabProcessWorkflow } from "@/features/media/workflows/guitar-tab-process";
 export { RateLimiter } from "@/lib/do/rate-limiter";
 export { PasswordHasher } from "@/lib/do/password-hasher";
 

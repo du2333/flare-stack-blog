@@ -24,6 +24,7 @@
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **AI 辅助** — Cloudflare Workers AI 集成
 - **主题系统** — 可扩展的主题模板，支持完整替换所有页面和布局
+- **吉他谱系统** — Guitar Pro 文件上传、解析、在线播放、投稿审核
 - **导入导出** — 支持Markdown导入导出，保留图片以及Frontmatter
 
 ## 技术栈
@@ -143,6 +144,45 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
                          SSR 渲染（带缓存头）
 ```
 
+## 吉他谱系统
+
+完整的 Guitar Pro 吉他谱管理系统，支持用户投稿 → 管理员审核 → 公开展示 → 在线播放的全流程。
+
+### 支持格式
+
+| 格式 | 说明 |
+| :--- | :--- |
+| `.gp3` | Guitar Pro 3 |
+| `.gp4` | Guitar Pro 4 |
+| `.gp5` | Guitar Pro 5 |
+| `.gpx` | Guitar Pro 6（BCFZ 压缩容器） |
+| `.gp` | Guitar Pro 7/8（ZIP 容器） |
+
+文件大小限制：50 MB
+
+### 功能特性
+
+- **元数据自动解析** — 纯 TypeScript 二进制解析器，自动提取曲名、艺术家、专辑、BPM、轨道信息，支持 UTF-8/GBK/Latin-1 编码
+- **专辑封面获取** — 通过第三方 API 自动获取封面并存储至 R2，相同曲目复用已有封面
+- **在线播放器** — 基于 [alphaTab](https://www.alphatab.net/) 引擎，支持播放控制、速度调节、轨道选择、多种谱面模式（标准+TAB / 五线谱 / TAB 谱）
+- **文件去重** — SHA-256 哈希校验，防止重复上传
+- **SEO 优化** — 自动生成 URL slug，每个谱子有独立详情页和 meta 标签
+- **同曲多版本** — 基于艺术家+曲名自动关联同首歌的不同版本
+
+### 投稿流程
+
+1. 登录用户访问 `/submit-guitar-tab` 上传 GP 文件
+2. Cloudflare Workflow 自动解析元数据 + 获取封面（后台异步）
+3. 管理员在 `/admin/guitar-tabs` 审核（预览播放、批量操作）
+4. 审核结果通过邮件异步通知上传者（Queues）
+5. 通过的谱子自动在列表和搜索中展示
+
+### 配置
+
+通过环境变量 `VITE_ENABLE_GUITAR_TABS` 控制功能开关（默认 `true`）。关闭后所有吉他谱页面会重定向到首页。具体配置见 `src/blog.config.ts` 中的 `features.guitarTabs`。
+
+---
+
 ## 部署指南
 
 请参考 **[Flare Stack Blog 部署教程](https://blog.dukda.com/post/flare-stack-blog%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)**，包含 Cloudflare 资源创建、凭证获取、GitHub OAuth 配置、两种部署方式的详细图文步骤及常见问题排查。
@@ -198,6 +238,7 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                                                                                  |
 | `VITE_FUWARI_HOME_BG`     | 构建时 | Fuwari 主题首页背景图路径，默认 `/images/home-bg.webp`                                                    |
 | `VITE_FUWARI_AVATAR`      | 构建时 | Fuwari 主题头像图片路径，默认 `/images/avatar.png`                                                        |
+| `VITE_ENABLE_GUITAR_TABS` | 构建时 | 吉他谱功能开关，默认 `true`，设为 `false` 关闭                                                           |
 
 ---
 

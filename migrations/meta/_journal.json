@@ -29,6 +29,27 @@
       "when": 1770449895500,
       "tag": "0003_zippy_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1772035200000,
+      "tag": "0004_mysterious_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1772121600000,
+      "tag": "0005_guitar_tab_uploader",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1772208000000,
+      "tag": "0006_guitar_tab_file_hash",
+      "breakpoints": true
     }
   ]
 }

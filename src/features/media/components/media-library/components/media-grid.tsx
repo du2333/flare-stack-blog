@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Check, Film, Guitar, Headphones, Image as ImageIcon } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useLongPress } from "../hooks";
@@ -8,6 +9,7 @@ import {
   isVideoFile,
   isAudioFile,
 } from "@/features/media/media.utils";
+import { guitarTabMetaQuery } from "@/features/media/queries";
 import { formatBytes } from "@/lib/utils";
 
 interface MediaGridProps {
@@ -42,6 +44,12 @@ const MediaCard = memo(
   }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const thumbnailUrl = getOptimizedImageUrl(asset.key);
+    const isGp = isGuitarProFile(asset.fileName);
+    const { data: gpMeta } = useQuery({
+      ...guitarTabMetaQuery(asset.id),
+      enabled: isGp,
+    });
+    const [isCoverLoaded, setIsCoverLoaded] = useState(false);
 
     const handleStandardClick = () => {
       // Direct preview on click unless in explicit selection mode (multi-select triggered by checkbox)
@@ -132,11 +140,56 @@ const MediaCard = memo(
               />
             </>
           ) : isGuitarProFile(asset.fileName) ? (
-            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-              <Guitar size={28} strokeWidth={1} />
-              <span className="text-[9px] font-mono uppercase tracking-wider opacity-60">
-                Guitar Pro
-              </span>
+            <div className="w-full h-full relative">
+              {gpMeta?.coverKey ? (
+                <>
+                  {!isCoverLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse">
+                      <Guitar size={20} className="text-muted-foreground/30" />
+                    </div>
+                  )}
+                  <img
+                    src={getOptimizedImageUrl(gpMeta.coverKey, 300)}
+                    alt={gpMeta.title ?? asset.fileName}
+                    className={`w-full h-full object-cover transition-all duration-500 ${isCoverLoaded ? "opacity-100" : "opacity-0"} ${isSelected ? "opacity-50" : ""}`}
+                    onLoad={() => setIsCoverLoaded(true)}
+                  />
+                  {/* GP badge */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
+                    <div className="flex items-center gap-1.5">
+                      <Guitar size={10} className="text-white/80" />
+                      <span className="text-[9px] font-mono uppercase tracking-wider text-white/90 truncate">
+                        {gpMeta.title || "Guitar Pro"}
+                      </span>
+                    </div>
+                    {gpMeta.artist && (
+                      <span className="text-[8px] font-mono text-white/60 truncate block mt-0.5 pl-4">
+                        {gpMeta.artist}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+                  <Guitar size={28} strokeWidth={1} />
+                  {gpMeta?.title ? (
+                    <div className="text-center px-2">
+                      <span className="text-[9px] font-mono block truncate max-w-full">
+                        {gpMeta.title}
+                      </span>
+                      {gpMeta.artist && (
+                        <span className="text-[8px] font-mono opacity-50 block truncate max-w-full">
+                          {gpMeta.artist}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[9px] font-mono uppercase tracking-wider opacity-60">
+                      Guitar Pro
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ) : isVideoFile(asset.fileName) ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">

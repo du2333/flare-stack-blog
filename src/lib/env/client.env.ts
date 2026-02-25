@@ -13,6 +13,11 @@ const clientEnvSchema = z.object({
   // Fuwari 主题配置
   VITE_FUWARI_HOME_BG: z.string().optional(),
   VITE_FUWARI_AVATAR: z.string().optional(),
+  // 功能开关
+  VITE_ENABLE_GUITAR_TABS: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((v) => v !== "false"),
   // 背景图片配置
   VITE_DEFAULT_HOME_IMAGE: z.string().optional(),
   VITE_DEFAULT_GLOBAL_IMAGE: z.string().optional(),

@@ -60,18 +60,24 @@ export function PostsPage({
           <button
             onClick={() => onTagClick("")}
             className={cn(
-              "text-sm font-mono transition-all duration-300 relative group",
+              "text-sm font-mono relative group",
               !selectedTag
-                ? "text-foreground font-medium"
+                ? "text-accent font-medium"
                 : "text-muted-foreground hover:text-foreground/80",
             )}
+            style={{
+              transition: `all 350ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+            }}
           >
             全部
             <span
               className={cn(
-                "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-300",
-                !selectedTag ? "w-full" : "w-0 group-hover:w-full",
+                "absolute -bottom-1 left-0 h-px bg-accent",
+                !selectedTag ? "w-full" : "w-0 group-hover:w-full group-hover:bg-foreground/40",
               )}
+              style={{
+                transition: `all 400ms cubic-bezier(0.16, 1, 0.3, 1)`,
+              }}
             />
           </button>
 
@@ -80,23 +86,34 @@ export function PostsPage({
               key={tag.id}
               onClick={() => onTagClick(tag.name)}
               className={cn(
-                "text-sm font-mono transition-all duration-300 relative group flex items-baseline gap-1.5",
+                "text-sm font-mono relative group flex items-baseline gap-1.5",
                 selectedTag === tag.name
-                  ? "text-foreground font-medium"
+                  ? "text-accent font-medium"
                   : "text-muted-foreground hover:text-foreground/80",
               )}
+              style={{
+                transition: `all 350ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+              }}
             >
               <span>{tag.name}</span>
-              <span className="text-[10px] opacity-40 group-hover:opacity-70 transition-opacity">
+              <span
+                className="text-[10px] opacity-40 group-hover:opacity-70"
+                style={{
+                  transition: `opacity 350ms cubic-bezier(0.25, 0.1, 0.25, 1)`,
+                }}
+              >
                 {tag.postCount}
               </span>
               <span
                 className={cn(
-                  "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-300",
+                  "absolute -bottom-1 left-0 h-px bg-accent",
                   selectedTag === tag.name
                     ? "w-full"
-                    : "w-0 group-hover:w-full",
+                    : "w-0 group-hover:w-full group-hover:bg-foreground/40",
                 )}
+                style={{
+                  transition: `all 400ms cubic-bezier(0.16, 1, 0.3, 1)`,
+                }}
               />
             </button>
           ))}
@@ -114,8 +131,8 @@ export function PostsPage({
         </div>
       </div>
 
-      {/* Posts List - Clean Divide */}
-      <div className="flex flex-col gap-0 border-t border-border/40">
+      {/* Posts List - Card Layout */}
+      <div className="flex flex-col gap-2">
         {posts.length === 0 ? (
           <div className="py-20 text-left">
             <p className="font-serif text-xl text-muted-foreground/50">

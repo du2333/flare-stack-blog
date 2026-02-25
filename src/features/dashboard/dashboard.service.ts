@@ -198,17 +198,25 @@ export async function getDashboardStats(
     publishedPosts,
     drafts,
     mediaSize,
+    totalUsers,
+    totalGuitarTabs,
+    pendingGuitarTabs,
     recentComments,
     recentPosts,
     recentUsers,
+    recentGuitarTabs,
   ] = await Promise.all([
     DashboardRepo.getPendingCommentsCount(db),
     DashboardRepo.getPublishedPostsCount(db),
     DashboardRepo.getDraftsCount(db),
     MediaRepo.getTotalMediaSize(db),
+    DashboardRepo.getTotalUsersCount(db),
+    DashboardRepo.getTotalGuitarTabsCount(db),
+    DashboardRepo.getPendingGuitarTabsCount(db),
     DashboardRepo.getRecentComments(db, 10),
     DashboardRepo.getRecentPosts(db, 10),
     DashboardRepo.getRecentUsers(db, 10),
+    DashboardRepo.getRecentGuitarTabs(db, 10),
   ]);
 
   const env = serverEnv(context.env);
@@ -277,6 +285,16 @@ export async function getDashboardStats(
       text: `新用户 ${u.name} 注册了`,
       time: u.createdAt,
     })),
+    ...recentGuitarTabs.map((t) => {
+      const statusLabel = t.status === "approved" ? "已审核" : t.status === "pending" ? "待审核" : "已拒绝";
+      const uploader = t.uploaderName ? `用户 ${t.uploaderName} 上传了` : "上传了";
+      return {
+        type: "guitar-tab" as const,
+        text: `${uploader}吉他谱《${t.title || "未命名"}》(${t.artist || "未知艺术家"}) — ${statusLabel}`,
+        time: t.createdAt,
+        link: t.slug ? `/guitar-tab/${t.slug}` : undefined,
+      };
+    }),
   ]
     .sort((a, b) => {
       const timeA = a.time ? new Date(a.time).getTime() : 0;
@@ -291,6 +309,9 @@ export async function getDashboardStats(
       publishedPosts,
       drafts,
       mediaSize,
+      totalUsers,
+      totalGuitarTabs,
+      pendingGuitarTabs,
     },
     activities,
     trafficByRange,

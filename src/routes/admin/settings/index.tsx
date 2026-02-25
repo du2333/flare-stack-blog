@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Hammer, Loader2, Server } from "lucide-react";
+import { Check, Globe, Hammer, Loader2, Server } from "lucide-react";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import {
 } from "@/features/config/config.schema";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
 import { MaintenanceSection } from "@/features/config/components/maintenance-section";
+import { SeoSection } from "@/features/config/components/seo-section";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
 import { SectionSkeleton } from "@/features/config/components/settings-skeleton";
@@ -131,6 +132,17 @@ function RouteComponent() {
               />
               系统维护
             </TabsTrigger>
+            <TabsTrigger
+              value="seo"
+              className="w-full md:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
+            >
+              <Globe
+                size={14}
+                className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
+              />
+              站长工具
+            </TabsTrigger>
+
           </TabsList>
 
           <div className="flex-1 min-w-0 space-y-12">
@@ -167,6 +179,25 @@ function RouteComponent() {
               </div>
               <MaintenanceSection />
             </TabsContent>
+
+            <TabsContent
+              value="seo"
+              className="mt-0 space-y-10 animate-in fade-in slide-in-from-right-2 duration-500"
+            >
+              <div className="space-y-2 pb-6 border-b border-border/30">
+                <h2 className="text-2xl font-serif font-medium tracking-tight">
+                  站长工具
+                </h2>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                    SEO_WEBMASTER_TOOLS
+                  </p>
+                </div>
+              </div>
+              <SeoSection />
+            </TabsContent>
+
+
           </div>
         </Tabs>
       </form>

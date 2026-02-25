@@ -27,3 +27,9 @@ export const getRelatedPostsFn = createServerFn()
   .handler(async ({ data, context }) => {
     return await PostService.getRelatedPosts(context, data);
   });
+
+export const getPublicPostsCountFn = createServerFn()
+  .middleware([dbMiddleware])
+  .handler(async ({ context }) => {
+    return await PostService.getPostsCount(context, { publicOnly: true });
+  });

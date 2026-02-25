@@ -8,6 +8,9 @@ export const blogConfig = {
   author: env.VITE_BLOG_AUTHOR || "作者",
   description:
     env.VITE_BLOG_DESCRIPTION || "这是博客的描述，写一段话介绍一下这个博客，",
+  features: {
+    guitarTabs: env.VITE_ENABLE_GUITAR_TABS ?? true,
+  },
   social: {
     github: env.VITE_BLOG_GITHUB || "https://github.com/example",
     email: env.VITE_BLOG_EMAIL || "demo@example.com",

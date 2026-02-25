@@ -8,7 +8,7 @@ interface FooterProps {
 
 export function Footer({ navOptions }: FooterProps) {
   return (
-    <footer className="border-t border-border/40 bg-background/50 py-16 mt-32">
+    <footer className="border-t border-border/30 bg-card/50 backdrop-blur-sm py-16 mt-32">
       <div className="max-w-3xl mx-auto px-6 md:px-0 flex flex-col md:flex-row justify-between items-center gap-8">
         {/* Brand / Copyright */}
         <div className="flex flex-col items-center md:items-start gap-2">
@@ -26,7 +26,7 @@ export function Footer({ navOptions }: FooterProps) {
             <Link
               key={option.id}
               to={option.to}
-              className="hover:text-foreground transition-colors"
+              className="hover:text-accent transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]"
             >
               {option.label}
             </Link>
@@ -35,13 +35,13 @@ export function Footer({ navOptions }: FooterProps) {
             href={blogConfig.social.github}
             target="_blank"
             rel="noreferrer"
-            className="hover:text-foreground transition-colors"
+            className="hover:text-accent transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]"
           >
             Github
           </a>
           <a
             href={`mailto:${blogConfig.social.email}`}
-            className="hover:text-foreground transition-colors"
+            className="hover:text-accent transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]"
           >
             Email
           </a>

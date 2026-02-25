@@ -3,6 +3,7 @@ import { findPostByIdFn } from "../api/posts.admin.api";
 import {
   findPostBySlugFn,
   getPostsCursorFn,
+  getPublicPostsCountFn,
   getRelatedPostsFn,
 } from "../api/posts.public.api";
 import type {
@@ -36,6 +37,17 @@ export const POSTS_KEYS = {
     ["posts", "admin-list", params] as const,
   count: (params: GetPostsCountInput) => ["posts", "count", params] as const,
 };
+
+export const publicPostsCountQuery = queryOptions({
+  queryKey: POSTS_KEYS.count({ publicOnly: true }),
+  queryFn: async () => {
+    if (isSSR) {
+      return await getPublicPostsCountFn();
+    }
+    // Client-side: reuse SSR data, no separate endpoint needed
+    return await getPublicPostsCountFn();
+  },
+});
 
 export function featuredPostsQuery(limit: number) {
   return queryOptions({

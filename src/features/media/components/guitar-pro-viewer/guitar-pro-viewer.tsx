@@ -1,10 +1,11 @@
-import { AlphaTabApi } from "@coderline/alphatab";
+import { AlphaTabApi, Environment } from "@coderline/alphatab";
 import {
   Activity,
   ChevronDown,
   ListMusic,
-  Loader2,
+  Maximize2,
   Mic,
+  Minimize2,
   Minus,
   Music,
   Pause,
@@ -43,6 +44,39 @@ const ZOOM_STEPS = [0.5, 0.75, 0.9, 1.0, 1.1, 1.25, 1.5, 2.0];
 const DEFAULT_MASTER_VOLUME = 1.0;
 const MAX_MASTER_VOLUME = 1.0;
 
+/**
+ * 将歌词从曲谱上方移动到下方。
+ * alphaTab 内部将歌词绑定在 BarRendererFactory 上，
+ * 使用 EffectBandMode.SharedTop (2) 渲染在谱上方。
+ * 这里通过 monkey-patch 将其改为 SharedBottom (3)，使歌词渲染在谱下方。
+ * 在模块加载时立即执行，确保在任何 AlphaTabApi 实例化之前完成。
+ */
+const EFFECT_BAND_MODE_SHARED_BOTTOM = 3;
+const NOTATION_ELEMENT_EFFECT_LYRICS = 24;
+try {
+  const env = Environment as unknown as Record<string, unknown>;
+  const renderers = env.defaultRenderers as unknown[];
+  if (Array.isArray(renderers)) {
+    for (const factory of renderers) {
+      const f = factory as Record<string, unknown>;
+      const bands = f.effectBands as Array<Record<string, unknown>> | undefined;
+      if (!Array.isArray(bands)) continue;
+      for (const band of bands) {
+        const effect = band.effect as Record<string, unknown> | undefined;
+        if (!effect) continue;
+        // 尝试读取 notationElement (getter)
+        let ne: unknown;
+        try { ne = effect.notationElement; } catch { continue; }
+        if (ne === NOTATION_ELEMENT_EFFECT_LYRICS) {
+          band.mode = EFFECT_BAND_MODE_SHARED_BOTTOM;
+        }
+      }
+    }
+  }
+} catch {
+  // 静默失败
+}
+
 type DisplayMode = "scoreTab" | "score" | "tab";
 
 interface DisplayModeOption {
@@ -67,7 +101,7 @@ interface TrackState {
 }
 
 /**
- * alphaTab 光标样式
+ * alphaTab 光标样式 + 深色模式适配
  *
  * 注意：`.at-cursor-beat` 的 width / height / transform 由 alphaTab JS 通过
  * inline style 设定（ScalableHtmlElementContainer），CSS !important 无法覆盖。
@@ -76,19 +110,108 @@ interface TrackState {
  */
 const ALPHATAB_CURSOR_STYLES = `
   .at-cursor-bar {
-    background: rgba(59, 130, 246, 0.06) !important;
+    background: hsl(var(--accent) / 0.06) !important;
   }
   .at-cursor-beat {
-    background: rgba(59, 130, 246, 0.85) !important;
+    background: hsl(var(--accent) / 0.85) !important;
     opacity: 1 !important;
     z-index: 100 !important;
     overflow: visible !important;
   }
   .at-highlight * {
-    fill: #3b82f6 !important;
+    fill: hsl(var(--accent)) !important;
   }
   .at-selection div {
-    background: rgba(59, 130, 246, 0.1) !important;
+    background: hsl(var(--accent) / 0.1) !important;
+  }
+
+  /* ── alphaTab 深色模式适配 ── */
+  /* alphaTab SVG 使用 rgb(0,0,0) / rgb(255,255,255) 硬编码颜色 */
+  .dark .at-surface svg text {
+    fill: hsl(var(--foreground)) !important;
+  }
+  .dark .at-surface svg path {
+    fill: hsl(var(--foreground) / 0.85) !important;
+    stroke: hsl(var(--foreground) / 0.85) !important;
+  }
+  /* 背景矩形（白色 → 透明） */
+  .dark .at-surface svg rect[fill="rgb(255,255,255)"],
+  .dark .at-surface svg rect[fill="white"],
+  .dark .at-surface svg rect[fill="#ffffff"],
+  .dark .at-surface svg rect[fill="#FFFFFF"],
+  .dark .at-surface svg rect[fill="#fff"] {
+    fill: transparent !important;
+  }
+  /* 拍线和小节线 — 使用较高不透明度确保可见 */
+  .dark .at-surface svg line {
+    stroke: hsl(var(--foreground) / 0.75) !important;
+  }
+  /* 黑色细矩形（alphaTab 用于绘制小节线、beam 等） */
+  .dark .at-surface svg rect[fill="rgb(0,0,0)"],
+  .dark .at-surface svg rect[fill="black"],
+  .dark .at-surface svg rect[fill="#000000"],
+  .dark .at-surface svg rect[fill="#000"] {
+    fill: hsl(var(--foreground) / 0.75) !important;
+  }
+  .dark .at-surface svg circle {
+    fill: hsl(var(--foreground) / 0.85) !important;
+    stroke: hsl(var(--foreground) / 0.85) !important;
+  }
+  /* 让高亮保持 accent 色不被覆盖 */
+  .dark .at-highlight * {
+    fill: hsl(var(--accent)) !important;
+    stroke: hsl(var(--accent)) !important;
+  }
+
+  /* Viewer open/close — clip-path expand from origin */
+  .gp-viewer-root {
+    will-change: clip-path;
+    transition: clip-path 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .gp-viewer-root[data-state="exiting"] {
+    transition-duration: 350ms;
+  }
+  .gp-viewer-root[data-state="open"] {
+    clip-path: inset(0 0 0 0);
+  }
+
+  /* Backdrop */
+  .gp-viewer-backdrop {
+    transition: opacity 400ms ease;
+  }
+  .gp-viewer-root[data-state="entering"] .gp-viewer-backdrop {
+    opacity: 0;
+  }
+  .gp-viewer-root[data-state="open"] .gp-viewer-backdrop {
+    opacity: 1;
+  }
+  .gp-viewer-root[data-state="exiting"] .gp-viewer-backdrop {
+    opacity: 0;
+    transition-duration: 250ms;
+  }
+
+  /* Inner panel — smooth fullscreen toggle */
+  .gp-viewer-panel {
+    transition: top 500ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                left 500ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                right 500ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                bottom 500ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-radius 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 400ms ease;
+  }
+
+  .gp-viewer-content {
+    transition: opacity 350ms ease;
+  }
+  .gp-viewer-root[data-state="entering"] .gp-viewer-content {
+    opacity: 0;
+  }
+  .gp-viewer-root[data-state="open"] .gp-viewer-content {
+    opacity: 1;
+  }
+  .gp-viewer-root[data-state="exiting"] .gp-viewer-content {
+    opacity: 0;
+    transition-duration: 200ms;
   }
 `;
 
@@ -249,7 +372,7 @@ function setupIBeamOverlay(container: HTMLElement): (() => void) | null {
     el.style.width = `${SERIF_W}px`;
     el.style.height = `${SERIF_H}px`;
     el.style.pointerEvents = "none";
-    el.style.background = "rgba(59, 130, 246, 0.9)";
+    el.style.background = "hsl(var(--accent) / 0.9)";
     el.style.borderRadius = "1px";
     el.style.zIndex = "101";
   }
@@ -301,10 +424,70 @@ export default function GuitarProViewer({
   fileUrl,
   fileName,
   onClose,
+  originRect,
 }: GuitarProViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<AlphaTabApi | null>(null);
   const ibeamCleanupRef = useRef<(() => void) | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // ── clip-path 展开/折叠动画 ──
+  // 计算从 originRect 到全屏的 inset 值
+  const getClipInset = useCallback(() => {
+    if (!originRect) return "inset(0 0 0 0)";
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1920;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 1080;
+    const top = originRect.top;
+    const right = vw - originRect.left - originRect.width;
+    const bottom = vh - originRect.top - originRect.height;
+    const left = originRect.left;
+    return `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+  }, [originRect]);
+
+  type ViewerState = "entering" | "open" | "exiting";
+  const [viewerState, setViewerState] = useState<ViewerState>("entering");
+
+  // ── 锁定 body 滚动，防止查看器打开期间页面漂移 ──
+  useEffect(() => {
+    if (!isOpen) return;
+    const html = document.documentElement;
+    const scrollY = window.scrollY;
+    const origOverflow = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = origOverflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = rootRef.current;
+    if (!el) return;
+    // 设置初始 clip-path (卡片位置)
+    el.style.clipPath = getClipInset();
+    // 下一帧展开到全屏
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.style.clipPath = "inset(0 0 0 0)";
+        setViewerState("open");
+      });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isOpen, getClipInset]);
+
+  const handleClose = useCallback(() => {
+    const el = rootRef.current;
+    if (el) {
+      el.style.clipPath = getClipInset();
+    }
+    setViewerState("exiting");
+    setTimeout(() => onClose(), 370);
+  }, [onClose, getClipInset]);
+
+  const handleToggleFullscreen = useCallback(() => {
+    setIsFullscreen((v) => !v);
+  }, []);
 
   // ── 基础状态 ──
   const [isLoading, setIsLoading] = useState(true);
@@ -328,6 +511,7 @@ export default function GuitarProViewer({
   const [displayMode, setDisplayMode] = useState<DisplayMode>("scoreTab");
   const [scale, setScale] = useState(1.0);
   const [showDisplayMenu, setShowDisplayMenu] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // ── 轨道 ──
   const [tracks, setTracks] = useState<TrackState[]>([]);
@@ -362,6 +546,7 @@ export default function GuitarProViewer({
         engine: "svg",
         logLevel: 1,
         enableLazyLoading: true,
+        useWorkers: false, // 主线程渲染，使歌词位置 monkey-patch 生效
         tracks: [-1], // 渲染所有音轨（-1 = all）
       },
       display: {
@@ -369,6 +554,7 @@ export default function GuitarProViewer({
         layoutMode: 0, // Page
         staveProfile: 1, // ScoreTab
         padding: [40, 40, 40, 40],
+        lyricLinesPaddingBetween: 8, // 多行歌词间距
       },
       player: {
         enablePlayer: true,
@@ -382,6 +568,9 @@ export default function GuitarProViewer({
       },
       notation: {
         notationMode: 0, // GuitarPro
+      },
+      importer: {
+        beatTextAsLyrics: true, // 将拍文本解析为歌词（GP3-5）
       },
     });
 
@@ -529,12 +718,12 @@ export default function GuitarProViewer({
         e.preventDefault();
         apiRef.current?.playPause();
       } else if (e.key === "Escape") {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, isPlayerReady, onClose]);
+  }, [isOpen, isPlayerReady, handleClose]);
 
   // ────────────────────────────────────────────────────
   // 操作回调
@@ -792,18 +981,31 @@ export default function GuitarProViewer({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex flex-col bg-background">
+    <div ref={rootRef} className="fixed inset-0 z-[200] gp-viewer-root overflow-hidden" data-state={viewerState}>
       {/* 注入拍光标样式 */}
       <style>{ALPHATAB_CURSOR_STYLES}</style>
+
+      {/* 背景遮罩 */}
+      <div
+        className="absolute inset-0 bg-black/50 gp-viewer-backdrop"
+        onClick={handleClose}
+      />
+
+      {/* 查看器面板 */}
+      <div className={`gp-viewer-panel absolute flex flex-col bg-background overflow-hidden ${
+        isFullscreen
+          ? "inset-0"
+          : "top-[4%] left-[8%] right-[8%] bottom-[4%] rounded-2xl shadow-2xl"
+      }`}>
 
       {/* ════════════════════════════════════════════════
           顶部工具栏
           ════════════════════════════════════════════════ */}
-      <div className="h-12 border-b border-border/20 flex items-center justify-between px-4 shrink-0 bg-background/95 backdrop-blur-sm">
+      <div className="h-12 border-b border-border/20 flex items-center justify-between px-4 shrink-0 bg-background/95 backdrop-blur-sm gp-viewer-content">
         {/* 左：曲目信息 */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="shrink-0 w-7 h-7 flex items-center justify-center bg-foreground/5">
-            <Music size={14} className="text-muted-foreground" />
+          <div className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-accent/10">
+            <Music size={14} className="text-accent" />
           </div>
           <div className="min-w-0 flex items-baseline gap-2">
             <span className="text-sm font-medium truncate max-w-[280px]">
@@ -825,7 +1027,7 @@ export default function GuitarProViewer({
               variant="ghost"
               size="sm"
               onClick={() => setShowDisplayMenu((v) => !v)}
-              className="rounded-none h-8 gap-1 text-[10px] uppercase tracking-wider font-mono px-2.5"
+              className="rounded-lg h-8 gap-1 text-[10px] uppercase tracking-wider font-mono px-2.5"
             >
               <span className="hidden sm:inline">{currentDisplayLabel}</span>
               <span className="sm:hidden">谱面</span>
@@ -837,7 +1039,7 @@ export default function GuitarProViewer({
                   className="fixed inset-0 z-10"
                   onClick={() => setShowDisplayMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 z-20 bg-background border border-border shadow-lg min-w-[130px]">
+                <div className="absolute right-0 top-full mt-1 z-20 bg-background border border-border rounded-lg shadow-lg min-w-[130px] overflow-hidden">
                   {DISPLAY_MODES.map((m) => (
                     <button
                       key={m.value}
@@ -863,9 +1065,8 @@ export default function GuitarProViewer({
               size="icon"
               onClick={handleZoomOut}
               disabled={scale <= ZOOM_STEPS[0]}
-              className="rounded-none h-7 w-7"
-              title="缩小"
-            >
+              className="rounded-lg h-7 w-7"
+              title="缩小">
               <ZoomOut size={12} />
             </Button>
             <button
@@ -888,20 +1089,28 @@ export default function GuitarProViewer({
               size="icon"
               onClick={handleZoomIn}
               disabled={scale >= ZOOM_STEPS[ZOOM_STEPS.length - 1]}
-              className="rounded-none h-7 w-7"
-              title="放大"
-            >
+              className="rounded-lg h-7 w-7"
+              title="放大">
               <ZoomIn size={12} />
             </Button>
           </div>
 
-          {/* 关闭 */}
-          <div className="border-l border-border/20 ml-1 pl-1">
+          {/* 全屏切换 + 关闭 */}
+          <div className="border-l border-border/20 ml-1 pl-1 flex items-center gap-0.5">
             <Button
               variant="ghost"
               size="icon"
-              onClick={onClose}
-              className="rounded-none h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={handleToggleFullscreen}
+              className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
+              title={isFullscreen ? "退出全屏" : "全屏"}
+            >
+              {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               title="关闭 (Esc)"
             >
               <X size={16} />
@@ -913,12 +1122,12 @@ export default function GuitarProViewer({
       {/* ════════════════════════════════════════════════
           乐谱渲染区域
           ════════════════════════════════════════════════ */}
-      <div className="flex-1 min-h-0 relative overflow-auto custom-scrollbar">
+      <div className="flex-1 min-h-0 relative overflow-auto custom-scrollbar gp-viewer-content">
         {/* 加载中 */}
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4">
-              <Loader2 size={24} className="animate-spin text-foreground" />
+              <div className="w-10 h-10 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
                 解析乐谱中...
               </span>
@@ -941,8 +1150,8 @@ export default function GuitarProViewer({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onClose}
-                className="rounded-none font-mono text-xs"
+                onClick={handleClose}
+                className="rounded-lg font-mono text-xs"
               >
                 关闭
               </Button>
@@ -964,10 +1173,10 @@ export default function GuitarProViewer({
       {showTrackPanel && (
         <>
           <div
-            className="fixed inset-0 z-[201]"
+            className="absolute inset-0 z-[201]"
             onClick={() => setShowTrackPanel(false)}
           />
-          <div className="fixed bottom-14 right-3 z-[202] w-80 max-h-72 overflow-y-auto bg-background border border-border shadow-xl">
+          <div className="absolute bottom-14 right-3 z-[202] w-80 max-h-72 overflow-y-auto bg-background border border-border rounded-xl shadow-xl">
             <div className="px-3 py-2 border-b border-border/30">
               <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                 轨道管理
@@ -1106,24 +1315,24 @@ export default function GuitarProViewer({
       {/* ════════════════════════════════════════════════
           底部播放控制栏
           ════════════════════════════════════════════════ */}
-      <div className="h-14 border-t border-border/20 flex items-center gap-1.5 px-3 shrink-0 bg-background/95 backdrop-blur-sm relative">
+      <div className="h-14 border-t border-border/20 flex items-center gap-1.5 px-3 shrink-0 bg-background/95 backdrop-blur-sm relative gp-viewer-content">
         {/* ── 播放 / 停止 ── */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handlePlayPause}
           disabled={!isPlayerReady}
-          className="rounded-none h-9 w-9"
+          className="rounded-full h-9 w-9 bg-accent/10 hover:bg-accent/20 text-accent disabled:opacity-30 transition-all"
           title={isPlaying ? "暂停 (Space)" : "播放 (Space)"}
         >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={handleStop}
           disabled={!isPlayerReady}
-          className="rounded-none h-8 w-8"
+          className="rounded-lg h-8 w-8"
           title="停止"
         >
           <Square size={13} />
@@ -1136,39 +1345,36 @@ export default function GuitarProViewer({
           variant="ghost"
           size="icon"
           onClick={handleToggleLoop}
-          className={`rounded-none h-8 w-8 transition-colors ${
+          className={`rounded-lg h-8 w-8 transition-colors ${
             isLooping
-              ? "text-blue-500 bg-blue-500/10"
+              ? "text-accent bg-accent/10"
               : "text-muted-foreground"
           }`}
-          title="循环播放"
-        >
+          title="循环播放">
           <Repeat size={13} />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={handleToggleCountIn}
-          className={`rounded-none h-8 w-8 transition-colors ${
+          className={`rounded-lg h-8 w-8 transition-colors ${
             countInEnabled
-              ? "text-blue-500 bg-blue-500/10"
+              ? "text-accent bg-accent/10"
               : "text-muted-foreground"
           }`}
-          title="节拍预备（播放前倒数）"
-        >
+          title="节拍预备（播放前倒数）">
           <Timer size={13} />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={handleToggleMetronome}
-          className={`rounded-none h-8 w-8 transition-colors ${
+          className={`rounded-lg h-8 w-8 transition-colors ${
             metronomeEnabled
-              ? "text-blue-500 bg-blue-500/10"
+              ? "text-accent bg-accent/10"
               : "text-muted-foreground"
           }`}
-          title="节拍器"
-        >
+          title="节拍器">
           <Activity size={13} />
         </Button>
 
@@ -1204,9 +1410,8 @@ export default function GuitarProViewer({
               if (idx > 0) handleSpeedChange(SPEED_OPTIONS[idx - 1]);
             }}
             disabled={speed <= SPEED_OPTIONS[0]}
-            className="rounded-none h-7 w-7"
-            title="减速"
-          >
+            className="rounded-lg h-7 w-7"
+            title="减速">
             <Minus size={11} />
           </Button>
           <span className="text-[10px] font-mono w-9 text-center tabular-nums select-none">
@@ -1221,9 +1426,8 @@ export default function GuitarProViewer({
                 handleSpeedChange(SPEED_OPTIONS[idx + 1]);
             }}
             disabled={speed >= SPEED_OPTIONS[SPEED_OPTIONS.length - 1]}
-            className="rounded-none h-7 w-7"
-            title="加速"
-          >
+            className="rounded-lg h-7 w-7"
+            title="加速">
             <Plus size={11} />
           </Button>
         </div>
@@ -1236,7 +1440,7 @@ export default function GuitarProViewer({
             variant="ghost"
             size="icon"
             onClick={handleToggleMute}
-            className="rounded-none h-8 w-8"
+            className="rounded-lg h-8 w-8"
             title={isMuted ? "取消静音" : "静音"}
           >
             <VolumeIcon size={14} />
@@ -1256,7 +1460,7 @@ export default function GuitarProViewer({
           variant="ghost"
           size="sm"
           onClick={() => setShowTrackPanel((v) => !v)}
-          className={`rounded-none h-8 gap-1 text-[10px] uppercase tracking-wider font-mono px-2 ${
+          className={`rounded-lg h-8 gap-1 text-[10px] uppercase tracking-wider font-mono px-2 ${
             showTrackPanel
               ? "text-foreground bg-accent/10"
               : audioTrackUrl
@@ -1272,6 +1476,7 @@ export default function GuitarProViewer({
           )}
         </Button>
       </div>
+      </div>{/* end gp-viewer-panel */}
     </div>,
     document.body,
   );

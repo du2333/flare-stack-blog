@@ -96,6 +96,7 @@ export function MediaLibrary() {
           totalCount={mediaItems.length}
           onSelectAll={selectAll}
           onDelete={handleDeleteRequest}
+          onRefetch={refetch}
         />
 
         {/* Media Grid / Partial Skeleton */}

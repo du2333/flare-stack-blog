@@ -21,7 +21,7 @@ export function SearchPage({
       <header className="flex items-center justify-between mb-12">
         <button
           onClick={onBack}
-          className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="group flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors"
         >
           <ArrowLeft
             size={18}
@@ -34,7 +34,7 @@ export function SearchPage({
       </header>
 
       <section className="mb-16">
-        <div className="relative flex items-center gap-4 border-b border-border/30 pb-4 focus-within:border-foreground transition-all">
+        <div className="relative flex items-center gap-4 border-b border-border/30 pb-4 focus-within:border-accent transition-all">
           <div className="flex-1">
             <label className="block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1 opacity-50">
               搜索文章
@@ -65,12 +65,12 @@ export function SearchPage({
             <div
               key={result.post.id}
               onClick={() => onSelectPost(result.post.slug)}
-              className="group relative cursor-pointer p-4 -mx-4 transition-all duration-300 rounded-lg hover:bg-muted/10"
+              className="group relative cursor-pointer p-4 -mx-4 transition-all duration-300 rounded-xl hover:bg-card"
             >
               <div className="flex flex-col gap-2">
                 <div className="flex items-baseline justify-between">
                   <h4
-                    className="text-lg md:text-xl text-muted-foreground font-serif tracking-tight transition-colors duration-300 group-hover:text-foreground"
+                    className="text-lg md:text-xl text-muted-foreground font-serif tracking-tight transition-colors duration-300 group-hover:text-accent"
                     style={{
                       viewTransitionName: `post-title-${result.post.slug}`,
                     }}

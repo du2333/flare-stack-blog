@@ -15,7 +15,7 @@ export function FriendLinkCard({ link }: FriendLinkCardProps) {
       href={link.siteUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-start gap-4 p-4 rounded-lg hover:bg-muted/40 transition-colors border border-transparent hover:border-border/40"
+      className="group flex items-start gap-4 p-4 rounded-xl hover:bg-card transition-all duration-300 border border-transparent hover:border-border/30 hover:shadow-sm"
     >
       {/* Logo */}
       <div className="shrink-0 w-10 h-10 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden">
@@ -35,7 +35,7 @@ export function FriendLinkCard({ link }: FriendLinkCardProps) {
 
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-medium text-foreground tracking-tight truncate group-hover:underline decoration-border/60 underline-offset-4 decoration-1">
+          <h3 className="font-medium text-foreground tracking-tight truncate group-hover:text-accent transition-colors duration-300">
             {link.siteName}
           </h3>
           <span className="text-[10px] font-mono text-muted-foreground/30 hidden sm:block truncate shrink-0">

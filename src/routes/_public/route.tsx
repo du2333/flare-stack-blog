@@ -21,11 +21,19 @@ export const Route = createFileRoute("/_public")({
   }),
 });
 
-const navOptions = [
+import { blogConfig } from "@/blog.config";
+
+const allNavOptions = [
   { label: "主页", to: "/" as const, id: "home" },
   { label: "文章", to: "/posts" as const, id: "posts" },
+  { label: "吉他谱", to: "/guitar-tabs" as const, id: "guitar-tabs" },
   { label: "友链", to: "/friend-links" as const, id: "friend-links" },
 ];
+
+const navOptions = allNavOptions.filter((opt) => {
+  if (opt.id === "guitar-tabs" && !blogConfig.features.guitarTabs) return false;
+  return true;
+});
 
 function PublicLayout() {
   const navigate = useNavigate();

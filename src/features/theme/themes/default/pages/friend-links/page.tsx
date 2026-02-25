@@ -47,7 +47,7 @@ export function FriendLinksPage({ links }: FriendLinksPageProps) {
 
         <Link
           to="/submit-friend-link"
-          className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group"
+          className="text-sm font-mono text-muted-foreground hover:text-accent transition-colors flex items-center gap-2 group"
         >
           <span>申请加入</span>
           <ArrowUpRight
