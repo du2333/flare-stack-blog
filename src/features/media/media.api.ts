@@ -5,6 +5,7 @@ import {
   UpdateMediaNameInputSchema,
   UploadMediaInputSchema,
   SubmitGuitarTabInputSchema,
+  UploadAvatarInputSchema,
 } from "@/features/media/media.schema";
 import * as MediaService from "@/features/media/media.service";
 import {
@@ -191,3 +192,20 @@ export const getMyGuitarTabsFn = createServerFn()
     return await MediaService.getMyGuitarTabs(context);
   });
 
+// ─── User: 上传头像 ──────────────────────────────────
+
+export const uploadAvatarFn = createServerFn({
+  method: "POST",
+})
+  .middleware([
+    createRateLimitMiddleware({
+      capacity: 10,
+      interval: "1h",
+      key: "avatar:upload",
+    }),
+    authMiddleware,
+  ])
+  .inputValidator(UploadAvatarInputSchema)
+  .handler(async ({ data, context }) => {
+    return await MediaService.uploadAvatar(context, data.file);
+  });

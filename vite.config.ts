@@ -39,6 +39,8 @@ const config = defineConfig(({ mode }) => {
         viteEnvironment: {
           name: "ssr",
         },
+        // persistState: true,
+        // remoteBindings: false,
       }),
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],

@@ -18,6 +18,8 @@ export interface ProfileFormData {
   errors: FieldErrors<ProfileSchema>;
   handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   isSubmitting: boolean;
+  uploadAvatar: (file: File) => Promise<void>;
+  isUploadingAvatar: boolean;
 }
 
 export interface PasswordSchema {

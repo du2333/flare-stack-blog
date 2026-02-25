@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ─── 文件类别 ─────────────────────────────────────────
 
-export type MediaCategory = "image" | "guitar-pro" | "video" | "audio" | "album-cover";
+export type MediaCategory = "image" | "guitar-pro" | "video" | "audio" | "album-cover" | "avatar";
 
 // ─── 按类型的大小限制 ─────────────────────────────────
 
@@ -15,6 +15,7 @@ export const MAX_FILE_SIZE_BY_CATEGORY: Record<MediaCategory, number> = {
   video: 512 * 1024 * 1024,       // 512 MB
   audio: 50 * 1024 * 1024,        // 50 MB
   "album-cover": 10 * 1024 * 1024, // 10 MB
+  avatar: 10 * 1024 * 1024,       // 10 MB
 };
 
 export function getMaxFileSize(category: MediaCategory): number {
@@ -183,7 +184,7 @@ export const GetMediaListInputSchema = z.object({
   limit: z.number().optional(),
   search: z.string().optional(),
   unusedOnly: z.boolean().optional(),
-  category: z.enum(["image", "guitar-pro", "video", "audio", "album-cover"]).optional(),
+  category: z.enum(["image", "guitar-pro", "video", "audio", "album-cover", "avatar"]).optional(),
 });
 
 export type UpdateMediaNameInput = z.infer<typeof UpdateMediaNameInputSchema>;
@@ -206,6 +207,34 @@ export const SubmitGuitarTabInputSchema = z
     const maxSize = MAX_FILE_SIZE_BY_CATEGORY["guitar-pro"];
     if (file.size > maxSize) {
       throw new Error(`文件大小超过限制 (${formatMaxSize("guitar-pro")})`);
+    }
+
+    return { file };
+  });
+
+// ─── 用户头像上传 ─────────────────────────────────────
+
+const MAX_AVATAR_SIZE = 3 * 1024 * 1024; // 3 MB
+
+const ACCEPTED_AVATAR_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+
+export const UploadAvatarInputSchema = z
+  .instanceof(FormData)
+  .transform((formData) => {
+    const file = formData.get("avatar");
+    if (!(file instanceof File)) throw new Error("请选择头像文件");
+
+    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
+      throw new Error("头像仅支持 JPG / PNG / WebP 格式");
+    }
+
+    if (file.size > MAX_AVATAR_SIZE) {
+      throw new Error("头像文件不得超过 3MB");
     }
 
     return { file };

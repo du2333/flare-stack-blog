@@ -1,7 +1,7 @@
 import { generateKey } from "@/features/media/media.utils";
 
-export async function putToR2(env: Env, image: File) {
-  const key = generateKey(image.name);
+export async function putToR2(env: Env, image: File, prefix?: string) {
+  const key = generateKey(image.name, prefix);
   const contentType = image.type;
   const url = `/images/${key}`;
 

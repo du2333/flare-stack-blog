@@ -11,6 +11,7 @@ import {
   Pause,
   Play,
   Plus,
+  Printer,
   Repeat,
   Square,
   Timer,
@@ -427,6 +428,7 @@ export default function GuitarProViewer({
   originRect,
 }: GuitarProViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<AlphaTabApi | null>(null);
   const ibeamCleanupRef = useRef<(() => void) | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -565,6 +567,7 @@ export default function GuitarProViewer({
         soundFont: "/soundfont/sonivox.sf2",
         scrollMode: 1, // Continuous
         scrollSpeed: 300,
+        scrollElement: scrollContainerRef.current ?? undefined,
       },
       notation: {
         notationMode: 0, // GuitarPro
@@ -841,6 +844,12 @@ export default function GuitarProViewer({
     setScale(next);
   }, [scale]);
 
+  // 打印 / 导出 PDF
+  const handlePrint = useCallback(() => {
+    if (!apiRef.current) return;
+    apiRef.current.print();
+  }, []);
+
   // 轨道 — 渲染可见性
   const handleTrackToggle = useCallback(
     (trackIndex: number) => {
@@ -1095,8 +1104,18 @@ export default function GuitarProViewer({
             </Button>
           </div>
 
-          {/* 全屏切换 + 关闭 */}
+          {/* 全屏切换 + 打印 + 关闭 */}
           <div className="border-l border-border/20 ml-1 pl-1 flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrint}
+              disabled={isLoading}
+              className="rounded-lg h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
+              title="打印 / 导出 PDF"
+            >
+              <Printer size={14} />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -1122,7 +1141,7 @@ export default function GuitarProViewer({
       {/* ════════════════════════════════════════════════
           乐谱渲染区域
           ════════════════════════════════════════════════ */}
-      <div className="flex-1 min-h-0 relative overflow-auto custom-scrollbar gp-viewer-content">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 relative overflow-auto custom-scrollbar gp-viewer-content">
         {/* 加载中 */}
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">

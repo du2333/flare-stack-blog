@@ -11,10 +11,13 @@ import {
   deletePostFn,
   getPostsCountFn,
   getPostsFn,
+  startPostProcessWorkflowFn,
+  updatePostFn,
 } from "@/features/posts/api/posts.admin.api";
 
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { POSTS_KEYS } from "@/features/posts/queries";
+import { toLocalDateString } from "@/lib/utils";
 
 interface UsePostsOptions {
   page: number;
@@ -88,6 +91,39 @@ export function useDeletePost({ onSuccess }: UseDeletePostOptions = {}) {
     onError: (_error, post) => {
       toast.error("删除条目失败", {
         description: `删除条目 "${post.title}" 失败`,
+      });
+    },
+  });
+}
+
+interface UseUnpublishPostOptions {
+  onSuccess?: () => void;
+}
+
+export function useUnpublishPost({ onSuccess }: UseUnpublishPostOptions = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (post: PostListItem) => {
+      // 1. 将状态改为 draft
+      await updatePostFn({ data: { id: post.id, data: { status: "draft" } } });
+      // 2. 触发下架工作流
+      const clientToday = toLocalDateString(new Date());
+      await startPostProcessWorkflowFn({
+        data: { id: post.id, status: "draft", clientToday },
+      });
+    },
+    onSuccess: (_data, post) => {
+      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
+      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
+      toast.success("文章已下架", {
+        description: `"${post.title}" 已从前台移除`,
+      });
+      onSuccess?.();
+    },
+    onError: (_error, post) => {
+      toast.error("下架失败", {
+        description: `"${post.title}" 下架失败，请重试`,
       });
     },
   });

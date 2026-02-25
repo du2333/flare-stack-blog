@@ -1,9 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2, Terminal } from "lucide-react";
+import { Loader2, Terminal, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+const AVATAR_ACCEPT = "image/jpeg,image/jpg,image/png,image/webp";
+const AVATAR_MAX_SIZE = 3 * 1024 * 1024; // 3MB
 
 export function ProfilePage({
   user,
@@ -42,21 +47,27 @@ export function ProfilePage({
 
       {/* Identity Section */}
       <section className="flex items-center gap-8">
-        <div
-          className="w-24 h-24 rounded-full overflow-hidden border border-border bg-muted/30 relative"
-          style={{ viewTransitionName: "user-avatar" }}
-        >
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground font-serif text-3xl">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+        <div className="relative group">
+          <div
+            className="w-24 h-24 rounded-full overflow-hidden border border-border bg-muted/30 relative"
+            style={{ viewTransitionName: "user-avatar" }}
+          >
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground font-serif text-3xl">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <AvatarUploadOverlay
+            isUploading={profileForm.isUploadingAvatar}
+            onUpload={profileForm.uploadAvatar}
+          />
         </div>
 
         <div className="space-y-2">
@@ -99,18 +110,14 @@ export function ProfilePage({
 
               <div className="space-y-2 group">
                 <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                  头像链接
+                  头像
                 </label>
-                <Input
-                  {...profileForm.register("image")}
-                  className="bg-transparent border-0 border-b border-border text-foreground font-mono text-sm px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all placeholder:text-muted-foreground/30 shadow-none h-auto py-2"
-                  placeholder="https://..."
+                <AvatarDropZone
+                  currentImage={user.image}
+                  userName={user.name}
+                  isUploading={profileForm.isUploadingAvatar}
+                  onUpload={profileForm.uploadAvatar}
                 />
-                {profileForm.errors.image && (
-                  <span className="text-[10px] text-destructive font-mono">
-                    {profileForm.errors.image.message}
-                  </span>
-                )}
               </div>
             </div>
 
@@ -264,6 +271,153 @@ export function ProfilePage({
             [ 退出登录 ]
           </Button>
         </section>
+      </div>
+    </div>
+  );
+}
+
+// ─── Avatar upload helpers ──────────────────────────────
+
+function handleAvatarFile(
+  file: File | undefined,
+  onUpload: (file: File) => Promise<void>,
+) {
+  if (!file) return;
+  if (file.size > AVATAR_MAX_SIZE) {
+    toast.error("文件过大", { description: "头像文件不能超过 3MB" });
+    return;
+  }
+  void onUpload(file);
+}
+
+function AvatarUploadOverlay({
+  isUploading,
+  onUpload,
+}: {
+  isUploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={AVATAR_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          handleAvatarFile(e.target.files?.[0], onUpload);
+          e.target.value = "";
+        }}
+      />
+      <button
+        type="button"
+        disabled={isUploading}
+        onClick={() => inputRef.current?.click()}
+        className="absolute inset-0 rounded-full bg-black/0 hover:bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all cursor-pointer disabled:cursor-wait"
+      >
+        {isUploading ? (
+          <Loader2 size={20} className="text-white animate-spin" />
+        ) : (
+          <Upload size={20} className="text-white" />
+        )}
+      </button>
+    </>
+  );
+}
+
+function AvatarDropZone({
+  currentImage,
+  userName,
+  isUploading,
+  onUpload,
+}: {
+  currentImage?: string | null;
+  userName: string;
+  isUploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    handleAvatarFile(file, onUpload);
+  };
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={cn(
+        "relative flex items-center gap-4 border border-dashed p-4 cursor-pointer transition-all duration-200",
+        isDragging
+          ? "border-foreground bg-accent/10"
+          : "border-border/50 hover:border-foreground/40 hover:bg-accent/5",
+        isUploading && "pointer-events-none opacity-60",
+      )}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept={AVATAR_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          handleAvatarFile(e.target.files?.[0], onUpload);
+          e.target.value = "";
+        }}
+      />
+
+      {/* Preview */}
+      <div className="w-16 h-16 rounded-full overflow-hidden border border-border/30 bg-muted/20 shrink-0">
+        {currentImage ? (
+          <img src={currentImage} alt={userName} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground font-serif text-xl">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col gap-1 min-w-0">
+        {isUploading ? (
+          <span className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <Loader2 size={12} className="animate-spin" /> 上传中...
+          </span>
+        ) : (
+          <>
+            <span className="text-xs font-mono text-foreground/80">
+              {isDragging ? "松开鼠标上传" : "点击选择或拖拽文件至此"}
+            </span>
+            <span className="text-[10px] font-mono text-muted-foreground/50">
+              JPG / PNG / WebP · 最大 3MB
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Upload Icon */}
+      <div className="ml-auto shrink-0 text-muted-foreground/30">
+        <Upload size={16} />
       </div>
     </div>
   );

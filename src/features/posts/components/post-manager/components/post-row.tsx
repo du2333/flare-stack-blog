@@ -1,5 +1,5 @@
 import { ClientOnly, useNavigate } from "@tanstack/react-router";
-import { Edit3, MoreVertical, Trash2 } from "lucide-react";
+import { Edit3, EyeOff, MoreVertical, Trash2 } from "lucide-react";
 import type { PostListItem } from "../types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,11 @@ import { formatDate } from "@/lib/utils";
 interface PostRowProps {
   post: PostListItem;
   onDelete: (post: PostListItem) => void;
+  onUnpublish: (post: PostListItem) => void;
+  isUnpublishing?: boolean;
 }
 
-export function PostRow({ post, onDelete }: PostRowProps) {
+export function PostRow({ post, onDelete, onUnpublish, isUnpublishing }: PostRowProps) {
   const navigate = useNavigate();
 
   const handleEdit = () => {
@@ -82,6 +84,21 @@ export function PostRow({ post, onDelete }: PostRowProps) {
           >
             <Edit3 size={14} strokeWidth={1.5} />
           </Button>
+          {post.status === "published" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-orange-500 hover:bg-transparent rounded-none"
+              title="下架"
+              disabled={isUnpublishing}
+              onClick={(e) => {
+                e.stopPropagation();
+                onUnpublish(post);
+              }}
+            >
+              <EyeOff size={14} strokeWidth={1.5} />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -114,6 +131,15 @@ export function PostRow({ post, onDelete }: PostRowProps) {
                 icon: <Edit3 size={14} strokeWidth={1.5} />,
                 onClick: handleEdit,
               },
+              ...(post.status === "published"
+                ? [
+                    {
+                      label: "下架文章",
+                      icon: <EyeOff size={14} strokeWidth={1.5} />,
+                      onClick: () => onUnpublish(post),
+                    },
+                  ]
+                : []),
               {
                 label: "删除文章",
                 icon: <Trash2 size={14} strokeWidth={1.5} />,

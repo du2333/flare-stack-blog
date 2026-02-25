@@ -68,9 +68,10 @@ export async function getMediaList(
     switch (category) {
       case "image":
         conditions.push(sql`${MediaTable.mimeType} LIKE 'image/%'`);
-        // 排除专辑封面（它们存储在 album-covers/ 前缀下）
+        // 排除专辑封面和头像（它们有特殊前缀）
         conditions.push(
           sql`${MediaTable.key} NOT LIKE 'album-covers/%'`,
+          sql`${MediaTable.key} NOT LIKE 'avatars/%'`,
         );
         break;
       case "guitar-pro":
@@ -89,6 +90,9 @@ export async function getMediaList(
         break;
       case "album-cover":
         conditions.push(sql`${MediaTable.key} LIKE 'album-covers/%'`);
+        break;
+      case "avatar":
+        conditions.push(sql`${MediaTable.key} LIKE 'avatars/%'`);
         break;
     }
   }

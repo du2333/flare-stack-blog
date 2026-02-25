@@ -222,6 +222,70 @@ export async function getMyGuitarTabs(context: AuthContext) {
   return await GuitarTabMetaRepo.getByUploaderId(context.db, context.session.user.id);
 }
 
+/**
+ * 用户上传头像
+ * 上传到 R2 后返回 /images/<key> URL，走 Cloudflare Image Resizing 处理
+ */
+export async function uploadAvatar(
+  context: AuthContext,
+  file: File,
+) {
+  const { user: userTable } = await import("@/lib/db/schema/auth.table");
+  const { eq } = await import("drizzle-orm");
+
+  // 删除旧头像（如果旧头像是本站 R2 中的）
+  const currentImage = context.session.user.image;
+  if (currentImage?.startsWith("/images/")) {
+    const oldKey = currentImage.replace("/images/", "").split("?")[0]!;
+    try {
+      await Storage.deleteFromR2(context.env, oldKey);
+      await MediaRepo.deleteMedia(context.db, oldKey);
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          message: "delete old avatar failed",
+          key: oldKey,
+          error: err instanceof Error ? err.message : String(err),
+        }),
+      );
+    }
+  }
+
+  const uploaded = await Storage.putToR2(context.env, file, "avatars");
+
+  // 头像 URL 附加尺寸参数，通过 Cloudflare Image Resizing 裁剪
+  const avatarUrl = `/images/${uploaded.key}?width=256&height=256&fit=cover`;
+
+  // 在媒体表中记录头像文件，使其在媒体库中可见
+  try {
+    await MediaRepo.insertMedia(context.db, {
+      key: uploaded.key,
+      url: uploaded.url,
+      fileName: uploaded.fileName,
+      mimeType: uploaded.mimeType,
+      sizeInBytes: uploaded.sizeInBytes,
+      width: 256,
+      height: 256,
+    });
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        message: "insert avatar media record failed",
+        key: uploaded.key,
+        error: err instanceof Error ? err.message : String(err),
+      }),
+    );
+  }
+
+  // 直接通过 Drizzle 更新用户头像
+  await context.db
+    .update(userTable)
+    .set({ image: avatarUrl })
+    .where(eq(userTable.id, context.session.user.id));
+
+  return { url: avatarUrl };
+}
+
 export async function upload(
   context: DbContext & { executionCtx: ExecutionContext; session?: Session },
   input: { file: File; width?: number; height?: number },

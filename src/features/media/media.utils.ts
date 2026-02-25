@@ -76,17 +76,20 @@ export function isAudioFile(fileName: string): boolean {
 
 /** 根据文件名或 MIME 推断媒体分类 */
 export function getMediaCategoryFromKey(key: string, mimeType?: string): MediaCategory {
+  if (key.startsWith("avatars/")) return "avatar";
+  if (key.startsWith("album-covers/")) return "album-cover";
   if (isGuitarProFile(key)) return "guitar-pro";
   if (isVideoFile(key) || mimeType?.startsWith("video/")) return "video";
   if (isAudioFile(key) || mimeType?.startsWith("audio/")) return "audio";
   return "image";
 }
 
-export function generateKey(fileName: string): string {
+export function generateKey(fileName: string, prefix?: string): string {
   const uuid = crypto.randomUUID();
   const extension = fileName.split(".").pop()?.toLowerCase() || "bin";
+  const key = `${uuid}.${extension}`;
 
-  return `${uuid}.${extension}`;
+  return prefix ? `${prefix}/${key}` : key;
 }
 
 /**

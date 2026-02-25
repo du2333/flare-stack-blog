@@ -4,7 +4,7 @@ import { ListFilter, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PostRow, PostsToolbar } from "./components";
-import { useDeletePost, usePosts } from "./hooks";
+import { useDeletePost, usePosts, useUnpublishPost } from "./hooks";
 import { PostManagerSkeleton } from "./post-manager-skeleton";
 import type {
   PostListItem,
@@ -112,8 +112,15 @@ export function PostManager({
     onSuccess: () => setPostToDelete(null),
   });
 
+  // Unpublish mutation
+  const unpublishMutation = useUnpublishPost();
+
   const handleDelete = (post: PostListItem) => {
     setPostToDelete(post);
+  };
+
+  const handleUnpublish = (post: PostListItem) => {
+    unpublishMutation.mutate(post);
   };
 
   const confirmDelete = () => {
@@ -200,6 +207,8 @@ export function PostManager({
                       key={post.id}
                       post={post}
                       onDelete={handleDelete}
+                      onUnpublish={handleUnpublish}
+                      isUnpublishing={unpublishMutation.isPending}
                     />
                   ))}
                 </div>

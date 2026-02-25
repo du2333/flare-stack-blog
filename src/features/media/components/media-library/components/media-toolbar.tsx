@@ -12,6 +12,7 @@ import {
   Search,
   Square,
   Trash2,
+  UserCircle,
   X,
 } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
@@ -35,6 +36,7 @@ const CATEGORY_TABS: Array<{
   { key: "video", label: "视频", icon: Film },
   { key: "audio", label: "音频", icon: Headphones },
   { key: "album-cover", label: "专辑封面", icon: Disc },
+  { key: "avatar", label: "头像", icon: UserCircle },
 ];
 
 interface MediaToolbarProps {

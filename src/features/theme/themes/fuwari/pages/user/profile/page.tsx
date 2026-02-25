@@ -1,7 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { CodeSquare, Loader2, LogOut, Settings2, Shield } from "lucide-react";
+import { CodeSquare, Loader2, LogOut, Settings2, Shield, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { cn } from "@/lib/utils";
+
+const AVATAR_ACCEPT = "image/jpeg,image/jpg,image/png,image/webp";
+const AVATAR_MAX_SIZE = 3 * 1024 * 1024; // 3MB
 
 export function ProfilePage({
   user,
@@ -22,21 +27,27 @@ export function ProfilePage({
         className="fuwari-card-base p-8 md:p-10 relative overflow-hidden flex flex-col items-center justify-center fuwari-onload-animation bg-linear-to-br from-(--fuwari-primary)/5 to-transparent"
         style={{ animationDelay: "150ms" }}
       >
-        <div
-          className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-(--fuwari-card-bg) bg-(--fuwari-btn-regular-bg) shadow-md relative mb-4"
-          style={{ viewTransitionName: "user-avatar" }}
-        >
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-(--fuwari-btn-content) font-bold text-3xl">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+        <div className="relative group">
+          <div
+            className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-(--fuwari-card-bg) bg-(--fuwari-btn-regular-bg) shadow-md relative mb-4"
+            style={{ viewTransitionName: "user-avatar" }}
+          >
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-(--fuwari-btn-content) font-bold text-3xl">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <FuwariAvatarOverlay
+            isUploading={profileForm.isUploadingAvatar}
+            onUpload={profileForm.uploadAvatar}
+          />
         </div>
 
         <h1 className="text-2xl font-bold fuwari-text-90 mb-2 transition-colors">
@@ -80,17 +91,13 @@ export function ProfilePage({
               </div>
 
               <div>
-                <label className={labelClassName}>头像链接</label>
-                <input
-                  {...profileForm.register("image")}
-                  placeholder="https://..."
-                  className={inputClassName}
+                <label className={labelClassName}>头像</label>
+                <FuwariAvatarDropZone
+                  currentImage={user.image}
+                  userName={user.name}
+                  isUploading={profileForm.isUploadingAvatar}
+                  onUpload={profileForm.uploadAvatar}
                 />
-                {profileForm.errors.image && (
-                  <span className="text-sm text-red-500 font-medium ml-1 mt-1 block">
-                    {profileForm.errors.image.message}
-                  </span>
-                )}
               </div>
 
               <div className="pt-2">
@@ -243,6 +250,153 @@ export function ProfilePage({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Avatar upload helpers ──────────────────────────────
+
+function handleAvatarFile(
+  file: File | undefined,
+  onUpload: (file: File) => Promise<void>,
+) {
+  if (!file) return;
+  if (file.size > AVATAR_MAX_SIZE) {
+    toast.error("文件过大", { description: "头像文件不能超过 3MB" });
+    return;
+  }
+  void onUpload(file);
+}
+
+function FuwariAvatarOverlay({
+  isUploading,
+  onUpload,
+}: {
+  isUploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={AVATAR_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          handleAvatarFile(e.target.files?.[0], onUpload);
+          e.target.value = "";
+        }}
+      />
+      <button
+        type="button"
+        disabled={isUploading}
+        onClick={() => inputRef.current?.click()}
+        className="absolute inset-0 -mb-4 rounded-full bg-black/0 hover:bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-all cursor-pointer disabled:cursor-wait"
+      >
+        {isUploading ? (
+          <Loader2 size={20} className="text-white animate-spin" />
+        ) : (
+          <Upload size={20} className="text-white" />
+        )}
+      </button>
+    </>
+  );
+}
+
+function FuwariAvatarDropZone({
+  currentImage,
+  userName,
+  isUploading,
+  onUpload,
+}: {
+  currentImage?: string | null;
+  userName: string;
+  isUploading: boolean;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    handleAvatarFile(file, onUpload);
+  };
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={cn(
+        "relative flex items-center gap-4 border-2 border-dashed rounded-xl p-4 cursor-pointer transition-all duration-200",
+        isDragging
+          ? "border-(--fuwari-primary) bg-(--fuwari-primary)/5"
+          : "border-(--fuwari-input-border) hover:border-(--fuwari-primary)/50 hover:bg-(--fuwari-primary)/5",
+        isUploading && "pointer-events-none opacity-60",
+      )}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept={AVATAR_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          handleAvatarFile(e.target.files?.[0], onUpload);
+          e.target.value = "";
+        }}
+      />
+
+      {/* Preview */}
+      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white dark:border-(--fuwari-card-bg) bg-(--fuwari-btn-regular-bg) shadow-sm shrink-0">
+        {currentImage ? (
+          <img src={currentImage} alt={userName} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-(--fuwari-btn-content) font-bold text-lg">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
+
+      {/* Text */}
+      <div className="flex flex-col gap-0.5 min-w-0">
+        {isUploading ? (
+          <span className="flex items-center gap-2 text-sm font-medium fuwari-text-75">
+            <Loader2 className="w-4 h-4 animate-spin" /> 上传中...
+          </span>
+        ) : (
+          <>
+            <span className="text-sm font-medium fuwari-text-75">
+              {isDragging ? "松开鼠标上传" : "点击选择或拖拽文件至此"}
+            </span>
+            <span className="text-xs fuwari-text-50">
+              JPG / PNG / WebP · 最大 3MB
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Upload Icon */}
+      <div className="ml-auto shrink-0 fuwari-text-50">
+        <Upload size={18} />
       </div>
     </div>
   );

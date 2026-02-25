@@ -2,6 +2,7 @@ import { useBlocker } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import TextareaAutosize from "react-textarea-autosize";
 import { useAutoSave, usePostActions } from "./hooks";
 import { EditorTableOfContents } from "./editor-table-of-contents";
@@ -104,7 +105,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     setPost((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-80 flex flex-col bg-background overflow-hidden">
       <ConfirmationModal
         isOpen={status === "blocked"}
@@ -121,7 +122,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
           <Breadcrumbs />
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 shrink-0">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -139,7 +140,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
 
             <div className="h-4 w-px bg-border/30" />
 
-            <Button
+            <button
               onClick={handleProcessData}
               disabled={
                 processState !== "IDLE" ||
@@ -147,28 +148,27 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
                 !isPostDirty ||
                 (post.status === "published" && !post.publishedAt)
               }
-              variant="ghost"
               className={`
-                    h-8 px-2 rounded-none text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent
+                    inline-flex items-center justify-center whitespace-nowrap
+                    h-9 px-5 text-xs font-medium tracking-wide shrink-0 transition-all
+                    disabled:pointer-events-none disabled:opacity-40
                     ${
                       processState === "SUCCESS"
-                        ? "text-emerald-500"
+                        ? "bg-emerald-600 text-white"
                         : post.status === "draft" && post.hasPublicCache
-                          ? "text-orange-500"
-                          : "text-foreground hover:text-foreground/80"
+                          ? "bg-orange-500 text-white hover:bg-orange-600"
+                          : "bg-foreground text-background hover:opacity-90"
                     }
                 `}
             >
-              <span className="mr-2 opacity-50">[</span>
               {processState === "PROCESSING"
                 ? "处理中..."
                 : processState === "SUCCESS"
-                  ? "成功"
+                  ? "✓ 已发布"
                   : post.status === "draft" && post.hasPublicCache
                     ? "下架"
                     : "发布"}
-              <span className="ml-2 opacity-50">]</span>
-            </Button>
+            </button>
           </div>
         </div>
       </header>
@@ -427,6 +427,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
