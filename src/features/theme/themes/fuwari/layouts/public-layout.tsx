@@ -55,7 +55,8 @@ export function PublicLayout({
       >
         <img
           src={blogConfig.theme.fuwari.homeBg}
-          alt=""
+          alt="banner"
+          fetchPriority="high"
           className="w-full h-full object-cover object-center"
         />
       </div>

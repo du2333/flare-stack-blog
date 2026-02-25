@@ -9,7 +9,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import { z } from "zod";
 import packageJson from "./package.json";
 
-import { themeNames, themes } from "./src/features/theme/config";
+import { themeNames, themes } from "./src/features/theme/registry";
 
 const buildEnvSchema = z.object({
   THEME: z.enum(themeNames).catch("default"),

@@ -12,6 +12,13 @@ export const Route = createFileRoute("/_public")({
   headers: () => {
     return CACHE_CONTROL.public;
   },
+  head: () => ({
+    links: (theme.config.preloadImages ?? []).map((href) => ({
+      rel: "preload" as const,
+      as: "image",
+      href,
+    })),
+  }),
 });
 
 const navOptions = [

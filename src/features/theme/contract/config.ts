@@ -17,4 +17,6 @@ export interface ThemeConfig {
     /** 文章详情页显示的相关文章数量 */
     relatedPostsLimit: number;
   };
+  /** 需要在公共布局中 preload 的图片（用于 LCP 优化） */
+  preloadImages?: Array<string>;
 }

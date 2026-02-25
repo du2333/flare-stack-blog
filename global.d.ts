@@ -4,7 +4,7 @@ import type {
   Session as SessionType,
 } from "@/lib/auth/auth.server";
 import type { QueueMessage } from "@/lib/queue/queue.schema";
-import type { ThemeConfig } from "@/features/theme/config";
+import type { ThemeRouterConfig } from "@/features/theme/registry";
 
 declare global {
   interface PostProcessWorkflowParams {
@@ -66,5 +66,5 @@ declare global {
   };
 
   const __APP_VERSION__: string;
-  const __THEME_CONFIG__: ThemeConfig;
+  const __THEME_CONFIG__: ThemeRouterConfig;
 }

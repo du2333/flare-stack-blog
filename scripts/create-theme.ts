@@ -175,6 +175,25 @@ export function ProfilePage(_props: ProfilePageProps) {
 `,
   });
 
+  // config.ts
+  files.push({
+    path: path.join(themeDir, "config.ts"),
+    content: `import type { ThemeConfig } from "@/features/theme/contract/config";
+
+export const config: ThemeConfig = {
+  home: {
+    featuredPostsLimit: 4,
+  },
+  posts: {
+    postsPerPage: 12,
+  },
+  post: {
+    relatedPostsLimit: 3,
+  },
+};
+`,
+  });
+
   // index.ts
   files.push({
     path: path.join(themeDir, "index.ts"),
@@ -187,15 +206,15 @@ import { AuthLayout } from "./layouts/auth-layout";
 import { UserLayout } from "./layouts/user-layout";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
 import { SearchPage } from "./pages/search";
-import {
-  SubmitFriendLinkPage,
-} from "./pages/submit-friend-link";
+import { SubmitFriendLinkPage } from "./pages/submit-friend-link";
 import { LoginPage } from "./pages/auth/login";
 import { RegisterPage } from "./pages/auth/register";
 import { ForgotPasswordPage } from "./pages/auth/forgot-password";
 import { ResetPasswordPage } from "./pages/auth/reset-password";
 import { VerifyEmailPage } from "./pages/auth/verify-email";
 import { ProfilePage } from "./pages/user/profile";
+import { config } from "./config";
+import Toaster from "@/components/ui/toaster";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -203,6 +222,7 @@ import type { ThemeComponents } from "@/features/theme/contract/components";
  * TypeScript will error at compile time if any required component is missing.
  */
 export default {
+  config,
   HomePage,
   HomePageSkeleton,
   PostsPage,
@@ -222,6 +242,7 @@ export default {
   ResetPasswordPage,
   VerifyEmailPage,
   ProfilePage,
+  Toaster,
 } satisfies ThemeComponents;
 `,
   });
@@ -232,7 +253,9 @@ export default {
 
   console.log(`\n✅ 主题 "${name}" 已创建于 ${themeDir}`);
   console.log("\n后续步骤：");
-  console.log('  1. 在 vite.config.ts 的 z.enum(["default"]) 中加入新主题名');
+  console.log(
+    "  1. 在 src/features/theme/registry.ts 中注册新主题名并配置路由行为（详见 docs/theme-guide.md）",
+  );
   console.log(`  2. 在 .env 中设置 THEME=${name} 并启动开发`);
 }
 

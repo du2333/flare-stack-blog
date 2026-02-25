@@ -41,6 +41,8 @@ vite.config.ts
 | `ResetPasswordPage`                           | 重置密码页                     |
 | `VerifyEmailPage`                             | 邮箱验证页                     |
 | `ProfilePage`                                 | 个人资料页                     |
+| `config`                                      | 主题静态配置（数据获取参数）   |
+| `Toaster`                                     | Toast 通知组件（Sonner 封装）  |
 
 > **骨架屏（Skeleton）**：用作 TanStack Router 的 `pendingComponent`，在页面数据请求期间展示的过渡 UI。主题可以根据自身的交互设计语言自行决定是否需要实现它（例如，为了配合某些入场动画，您可以选择直接返回 `null` 而不渲染占位图）。
 
@@ -133,7 +135,7 @@ src/features/theme/themes/<your-theme>/
 │   └── comments/             # 评论区组件（可选，可复用共享组件）
 │       ├── view/             # 评论展示
 │       └── editor/           # 评论编辑器
-└── config.ts                 # 主题静态配置
+└── config.ts                 # 主题静态配置（数据获取参数：分页大小、相关文章数等）
 ```
 
 ## Step-by-step：创建第一个主题
@@ -148,7 +150,7 @@ bun run create-theme
 
 脚本会创建所有必需的布局、页面和骨架屏文件，组件实现为占位符，方便你在此基础上逐步替换为真实 UI。完成后按提示：
 
-1. 在 `vite.config.ts` 的 `z.enum(["default"])` 中加入新主题名
+1. 在 `src/features/theme/registry.ts` 中注册新主题（详见下文 [注册主题](#step-5注册主题并启动)）
 2. 在 `.env` 中设置 `THEME=<your-theme>` 并启动开发
 
 ---
@@ -228,18 +230,22 @@ export function HomePageSkeleton() {
 ```ts
 // src/features/theme/themes/my-theme/index.ts
 import type { ThemeComponents } from "@/features/theme/contract/components";
+import { config } from "./config";
 import { PublicLayout } from "./layouts/public-layout";
 import { AuthLayout } from "./layouts/auth-layout";
 import { UserLayout } from "./layouts/user-layout";
 import { HomePage, HomePageSkeleton } from "./pages/home/page";
+import Toaster from "@/components/ui/toaster";
 // ... 其余 import
 
 export default {
+  config,
   PublicLayout,
   AuthLayout,
   UserLayout,
   HomePage,
   HomePageSkeleton,
+  Toaster,
   // ... 其余组件
 } satisfies ThemeComponents;
 ```
@@ -248,22 +254,23 @@ export default {
 
 ### Step 5：注册主题并启动
 
-打开 `src/features/theme/config.ts`，在 `themeNames` 中将你的主题名加入枚举：
+打开 `src/features/theme/registry.ts`（主题注册表），进行以下操作：
+
+1. 在 `themeNames` 中加入新主题名。
+2. 在 `themes` 常量中增加该主题的路由级配置（`viewTransition`、`pendingMs`）。
+
+> [!NOTE]
+> `vite.config.ts` 会自动从该文件中同步主题列表，因此你无需手动修改 Vite 配置。
+> [!TIP]
+> 这个文件中的 `ThemeRouterConfig` 只控制路由行为（过渡动画、pending 延迟），不要与每个主题自身的 `config.ts`（数据获取参数如分页大小）混淆。
 
 ```ts
-// src/features/theme/config.ts
-export const themeNames = ["default", "my-theme"] as const;
-export type ThemeName = (typeof themeNames)[number];
-
-export interface ThemeConfig {
-  viewTransition: boolean;
-}
-
-export const themes: Record<ThemeName, ThemeConfig> = {
-  default: {
-    viewTransition: true,
-  },
-  my-theme: {
+// src/features/theme/registry.ts
+export const themeNames = ["default", "fuwari", "my-theme"] as const;
+// ...
+export const themes: Record<ThemeName, ThemeRouterConfig> = {
+  // ...
+  "my-theme": {
     viewTransition: false,
   },
 };
@@ -331,7 +338,7 @@ export function renderReact(content: JSONContent) {
 
 ## 主题专属配置
 
-除了 `ThemeConfig`（数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。
+除了主题契约中的 `ThemeConfig`（`contract/config.ts` 中定义的数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。
 
 ### 约定
 
@@ -343,7 +350,7 @@ export const blogConfig = {
   // ... 公共配置 ...
   theme: {
     fuwari: {
-      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.jpg",
+      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.webp",
       avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
     },
     // "my-theme": { ... }
@@ -355,10 +362,10 @@ export const blogConfig = {
 
 使用 `VITE_<THEME_NAME>_<KEY>` 格式，例如：
 
-| 环境变量              | 说明                  | 默认值                |
-| :-------------------- | :-------------------- | :-------------------- |
-| `VITE_FUWARI_HOME_BG` | Fuwari 首页背景图路径 | `/images/home-bg.jpg` |
-| `VITE_FUWARI_AVATAR`  | Fuwari 侧边栏头像路径 | `/images/avatar.png`  |
+| 环境变量              | 说明                  | 默认值                 |
+| :-------------------- | :-------------------- | :--------------------- |
+| `VITE_FUWARI_HOME_BG` | Fuwari 首页背景图路径 | `/images/home-bg.webp` |
+| `VITE_FUWARI_AVATAR`  | Fuwari 侧边栏头像路径 | `/images/avatar.png`   |
 
 新增的环境变量需要同步添加到 `src/lib/env/client.env.ts` 的 Zod schema 中。
 
