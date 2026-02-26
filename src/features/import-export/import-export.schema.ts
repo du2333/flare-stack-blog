@@ -64,7 +64,7 @@ export type ExportManifest = z.infer<typeof ExportManifestSchema>;
 // --- Frontmatter ---
 
 export const PostFrontmatterSchema = z.object({
-  title: z.string(),
+  title: z.string().default(""),
   slug: z.string().default(""),
   summary: z.string().optional().nullable(),
   status: z.enum(POST_STATUSES).default("published"),
