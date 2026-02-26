@@ -22,6 +22,7 @@ import {
   useUploadForImport,
 } from "@/features/import-export/queries/import-export.queries";
 import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
+import { ms } from "@/lib/duration";
 
 const EXPORT_TOAST_ID = "export-progress";
 const IMPORT_TOAST_ID = "import-progress";
@@ -177,7 +178,7 @@ export function BackupRestoreSection() {
       const currentTaskId = exportTaskId;
       toast.success("导出完成", {
         id: EXPORT_TOAST_ID,
-        duration: Infinity,
+        duration: ms("10s"),
         description: `共 ${total} 篇文章已打包完成`,
         action: {
           label: "下载",
@@ -189,7 +190,7 @@ export function BackupRestoreSection() {
     } else if (status === "failed") {
       toast.error("导出失败", {
         id: EXPORT_TOAST_ID,
-        duration: Infinity,
+        duration: ms("10s"),
         description: "任务异常中断，请重试",
       });
       setExportTaskId(null);
@@ -242,7 +243,7 @@ export function BackupRestoreSection() {
 
       (failed.length > 0 ? toast.warning : toast.success)("导入完成", {
         id: IMPORT_TOAST_ID,
-        duration: Infinity,
+        duration: ms("10s"),
         description: (
           <ImportToastResult
             succeeded={succeeded}
@@ -255,7 +256,7 @@ export function BackupRestoreSection() {
     } else if (status === "failed") {
       toast.error("导入失败", {
         id: IMPORT_TOAST_ID,
-        duration: Infinity,
+        duration: ms("10s"),
         description: "任务异常中断，请检查文件格式后重试",
       });
       setImportTaskId(null);

@@ -45,7 +45,7 @@ export function enumerateNativePosts(
 
       const entry: PostEntry = {
         dir,
-        title: normalized.title,
+        title: normalized.title || dir,
         prefix: `posts/${dir}`,
       };
       return entry;
@@ -70,7 +70,7 @@ export function enumerateMarkdownPosts(
 
       const entry: PostEntry = {
         dir,
-        title: normalized.title,
+        title: normalized.title || dir,
         prefix: path.substring(0, path.lastIndexOf("/")),
         mdPath: path,
       };
@@ -159,7 +159,7 @@ export async function importSinglePost(
   if (!normalized) {
     throw new Error("无法解析文章元数据或元数据不符合规范");
   }
-  const title = normalized.title || "Untitled";
+  const title = normalized.title || entry.dir || "Untitled";
 
   const candidateSlug = normalized.slug || title;
   const slugAlreadyExists = await PostRepo.slugExists(

@@ -9,7 +9,6 @@ const Toaster: React.FC<ToasterProps> = (props) => {
       position="bottom-right"
       visibleToasts={3}
       duration={4000}
-      closeButton
       toastOptions={{
         unstyled: true,
         classNames: {
@@ -22,8 +21,6 @@ const Toaster: React.FC<ToasterProps> = (props) => {
             "shrink-0 bg-foreground text-background text-xs font-medium px-4 py-2 hover:opacity-90 transition-opacity rounded-none",
           cancelButton:
             "shrink-0 border border-border bg-transparent text-muted-foreground text-xs font-medium px-4 py-2 hover:bg-muted transition-colors rounded-none",
-          closeButton:
-            "!absolute !-right-2 !-top-2 !left-auto !bottom-auto !transform-none !bg-background !border-2 !border-border !text-foreground/80 hover:!text-foreground hover:!bg-muted !transition-all !p-1.5 !rounded-full shadow-lg z-50",
         },
       }}
       {...props}

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowUp, Share2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUp, Pencil, Share2, Sparkles } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CommentSection } from "../../components/comments/view/comment-section";
@@ -9,9 +9,11 @@ import type { PostPageProps } from "@/features/theme/contract/pages";
 import { ContentRenderer } from "@/features/theme/themes/default/components/content/content-renderer";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import { authClient } from "@/lib/auth/auth.client";
 
 export function PostPage({ post }: PostPageProps) {
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -33,6 +35,16 @@ export function PostPage({ post }: PostPageProps) {
           <ArrowLeft size={12} />
           <span>返回目录</span>
         </button>
+        {session?.user.role === "admin" && (
+          <Link
+            to="/admin/posts/edit/$id"
+            params={{ id: String(post.id) }}
+            className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
+          >
+            <Pencil size={12} />
+            <span>编辑文章</span>
+          </Link>
+        )}
       </nav>
 
       <article className="space-y-16">

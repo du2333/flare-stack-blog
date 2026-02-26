@@ -58,9 +58,18 @@ describe("normalizeFrontmatter", () => {
     expect(result!.title).toBe("My Post");
   });
 
-  it("should return null when title is missing", () => {
+  it("should succeed with empty title when title is missing", () => {
     const result = normalizeFrontmatter({ slug: "no-title" });
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result!.title).toBe("");
+  });
+
+  it("should succeed with empty title when there is no frontmatter at all", () => {
+    const result = normalizeFrontmatter({});
+    expect(result).not.toBeNull();
+    expect(result!.title).toBe("");
+    expect(result!.status).toBe("published");
+    expect(result!.tags).toEqual([]);
   });
 
   it("should extract slug from slug field", () => {
