@@ -23,21 +23,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup bun
+      - name: Setup bun (固定版本，避免下载失败)
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.10  # 替换 latest 为具体版本，解决 socket hang up
+          # 移除 token 参数，官方 Bun 下载无需 token
 
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}  # 修正：bun 锁文件是 lockb 不是 lock
           restore-keys: |
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        run: bun ci
+        run: bun install --frozen-lockfile  # 替换 bun ci 为标准命令，兼容性更好
 
       - name: Setup Wrangler Config
         run: cp wrangler.example.jsonc wrangler.jsonc
@@ -53,21 +54,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup bun
+      - name: Setup bun (固定版本)
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.10
+          # 移除 token 参数
 
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        run: bun ci
+        run: bun install --frozen-lockfile
 
       # === Original repo: fetch secrets from Vault ===
       - name: "[Vault] Import cloudflare secrets"
@@ -92,6 +94,7 @@ jobs:
       - name: "[Fork] Import secrets from repository"
         if: github.repository != 'du2333/flare-stack-blog'
         run: |
+          # 核心修正1：统一 Secrets 命名（建议你按这个名称配置 GitHub Secrets）
           echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> $GITHUB_ENV
           echo "CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" >> $GITHUB_ENV
           echo "D1_DATABASE_ID=${{ secrets.D1_DATABASE_ID }}" >> $GITHUB_ENV
@@ -100,78 +103,105 @@ jobs:
           echo "BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}" >> $GITHUB_ENV
           echo "BETTER_AUTH_URL=${{ secrets.BETTER_AUTH_URL }}" >> $GITHUB_ENV
           echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $GITHUB_ENV
-          echo "GITHUB_CLIENT_ID=${{ secrets.GH_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "GITHUB_CLIENT_SECRET=${{ secrets.GH_CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN=${{ secrets.GH_TOKEN }}" >> $GITHUB_ENV
+          echo "GITHUB_CLIENT_ID=${{ secrets.GITHUB_CLIENT_ID }}" >> $GITHUB_ENV  # 修正：统一为 GITHUB_ 前缀
+          echo "GITHUB_CLIENT_SECRET=${{ secrets.GITHUB_CLIENT_SECRET }}" >> $GITHUB_ENV  # 同上
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV  # 使用 GitHub 内置 token，无需手动配置
           echo "CLOUDFLARE_ZONE_ID=${{ secrets.CLOUDFLARE_ZONE_ID }}" >> $GITHUB_ENV
           echo "CLOUDFLARE_PURGE_API_TOKEN=${{ secrets.CLOUDFLARE_PURGE_API_TOKEN }}" >> $GITHUB_ENV
           echo "DOMAIN=${{ secrets.DOMAIN }}" >> $GITHUB_ENV
-          echo "CDN_DOMAIN=${{ secrets.CDN_DOMAIN }}" >> $GITHUB_ENV
+          echo "CDN_DOMAIN=${{ secrets.CDN_DOMAIN || secrets.DOMAIN }}" >> $GITHUB_ENV  # 兜底：CDN_DOMAIN 为空时用 DOMAIN
           echo "UMAMI_SRC=${{ secrets.UMAMI_SRC }}" >> $GITHUB_ENV
           echo "UMAMI_API_KEY=${{ secrets.UMAMI_API_KEY }}" >> $GITHUB_ENV
           echo "UMAMI_USERNAME=${{ secrets.UMAMI_USERNAME }}" >> $GITHUB_ENV
           echo "UMAMI_PASSWORD=${{ secrets.UMAMI_PASSWORD }}" >> $GITHUB_ENV
-          echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}" >> $GITHUB_ENV
-          echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_TITLE=${{ vars.VITE_BLOG_TITLE }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_NAME=${{ vars.VITE_BLOG_NAME }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_AUTHOR=${{ vars.VITE_BLOG_AUTHOR }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_DESCRIPTION=${{ vars.VITE_BLOG_DESCRIPTION }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_GITHUB=${{ vars.VITE_BLOG_GITHUB }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_EMAIL=${{ vars.VITE_BLOG_EMAIL }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_HOME_IMAGE=${{ vars.VITE_DEFAULT_HOME_IMAGE }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_GLOBAL_IMAGE=${{ vars.VITE_DEFAULT_GLOBAL_IMAGE }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_LIGHT_OPACITY=${{ vars.VITE_DEFAULT_LIGHT_OPACITY }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_DARK_OPACITY=${{ vars.VITE_DEFAULT_DARK_OPACITY }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_BACKDROP_BLUR=${{ vars.VITE_DEFAULT_BACKDROP_BLUR }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_TRANSITION_DURATION=${{ vars.VITE_DEFAULT_TRANSITION_DURATION }}" >> $GITHUB_ENV
-          echo "VITE_FUWARI_HOME_BG=${{ vars.VITE_FUWARI_HOME_BG }}" >> $GITHUB_ENV
-          echo "VITE_FUWARI_AVATAR=${{ vars.VITE_FUWARI_AVATAR }}" >> $GITHUB_ENV
-          echo "THEME=${{ vars.THEME }}" >> $GITHUB_ENV
-          echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID || '' }}" >> $GITHUB_ENV
+          echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY || '' }}" >> $GITHUB_ENV
+          echo "VITE_BLOG_TITLE=${{ vars.VITE_BLOG_TITLE || '我的stackblog' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_BLOG_NAME=${{ vars.VITE_BLOG_NAME || '默认导航栏显示的短名称' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_BLOG_AUTHOR=${{ vars.VITE_BLOG_AUTHOR || 'AMNOTSR' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_BLOG_DESCRIPTION=${{ vars.VITE_BLOG_DESCRIPTION || '主页の描述' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_BLOG_GITHUB=${{ vars.VITE_BLOG_GITHUB || 'https://github.com/AMNOTSR' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_BLOG_EMAIL=${{ vars.VITE_BLOG_EMAIL || 'fl@mail.io' }}" >> $GITHUB_ENV  # 加默认值
+          echo "VITE_DEFAULT_HOME_IMAGE=${{ vars.VITE_DEFAULT_HOME_IMAGE || '' }}" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_GLOBAL_IMAGE=${{ vars.VITE_DEFAULT_GLOBAL_IMAGE || '' }}" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_LIGHT_OPACITY=${{ vars.VITE_DEFAULT_LIGHT_OPACITY || '' }}" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_DARK_OPACITY=${{ vars.VITE_DEFAULT_DARK_OPACITY || '' }}" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_BACKDROP_BLUR=${{ vars.VITE_DEFAULT_BACKDROP_BLUR || '' }}" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_TRANSITION_DURATION=${{ vars.VITE_DEFAULT_TRANSITION_DURATION || '' }}" >> $GITHUB_ENV
+          echo "VITE_FUWARI_HOME_BG=${{ vars.VITE_FUWARI_HOME_BG || '' }}" >> $GITHUB_ENV
+          echo "VITE_FUWARI_AVATAR=${{ vars.VITE_FUWARI_AVATAR || '' }}" >> $GITHUB_ENV
+          echo "THEME=${{ vars.THEME || 'fuwari' }}" >> $GITHUB_ENV  # 加默认值
+          echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY || '' }}" >> $GITHUB_ENV
+        shell: /usr/bin/bash -e {0}
 
-      - name: Inject Resource IDs
+      - name: Inject Resource IDs (修正 sed 兼容性)
         run: |
           cp wrangler.example.jsonc wrangler.jsonc
-          sed -i "s/D1_DATABASE_ID/$D1_DATABASE_ID/g" wrangler.jsonc
-          sed -i "s/KV_NAMESPACE_ID/$KV_NAMESPACE_ID/g" wrangler.jsonc
-          sed -i "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" wrangler.jsonc
-          sed -i "s/bucket-name-placeholder/$BUCKET_NAME/g" wrangler.jsonc
+          # 核心修正2：sed -i 加 '' 参数，适配 Ubuntu 系统
+          sed -i'' "s/D1_DATABASE_ID/$D1_DATABASE_ID/g" wrangler.jsonc
+          sed -i'' "s/KV_NAMESPACE_ID/$KV_NAMESPACE_ID/g" wrangler.jsonc
+          sed -i'' "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" wrangler.jsonc
+          sed -i'' "s/bucket-name-placeholder/$BUCKET_NAME/g" wrangler.jsonc
+          # 核心修正3：补充 Account ID/Zone ID 到 wrangler.jsonc
+          echo -e "\naccount_id = \"$CLOUDFLARE_ACCOUNT_ID\"" >> wrangler.jsonc
+          echo "zone_id = \"$CLOUDFLARE_ZONE_ID\"" >> wrangler.jsonc
 
-      - name: Generate Secrets JSON
+      - name: Generate Secrets JSON (处理空值，避免 JSON 格式错误)
         run: |
-          cat <<EOF > secrets.json
-          {
-            "BETTER_AUTH_SECRET": "$BETTER_AUTH_SECRET",
-            "BETTER_AUTH_URL": "$BETTER_AUTH_URL",
-            "ADMIN_EMAIL": "$ADMIN_EMAIL",
-            "GITHUB_CLIENT_ID": "$GITHUB_CLIENT_ID",
-            "GITHUB_CLIENT_SECRET": "$GITHUB_CLIENT_SECRET",
-            "CLOUDFLARE_ZONE_ID": "$CLOUDFLARE_ZONE_ID",
-            "CLOUDFLARE_PURGE_API_TOKEN": "$CLOUDFLARE_PURGE_API_TOKEN",
-            "DOMAIN": "$DOMAIN",
-            "CDN_DOMAIN": "$CDN_DOMAIN",
-            "VITE_UMAMI_WEBSITE_ID": "$VITE_UMAMI_WEBSITE_ID",
-            "UMAMI_SRC": "$UMAMI_SRC",
-            "UMAMI_API_KEY": "$UMAMI_API_KEY",
-            "UMAMI_USERNAME": "$UMAMI_USERNAME",
-            "UMAMI_PASSWORD": "$UMAMI_PASSWORD",
-            "TURNSTILE_SECRET_KEY": "$TURNSTILE_SECRET_KEY"
-          }
-          EOF
+          # 核心修正4：用 jq 生成合法 JSON（避免空值导致的语法错误）
+          jq -n \
+            --arg BAS "$BETTER_AUTH_SECRET" \
+            --arg BAU "$BETTER_AUTH_URL" \
+            --arg AE "$ADMIN_EMAIL" \
+            --arg GCI "$GITHUB_CLIENT_ID" \
+            --arg GCS "$GITHUB_CLIENT_SECRET" \
+            --arg CZI "$CLOUDFLARE_ZONE_ID" \
+            --arg CPAT "$CLOUDFLARE_PURGE_API_TOKEN" \
+            --arg DOM "$DOMAIN" \
+            --arg CDN "$CDN_DOMAIN" \
+            --arg VUWID "$VITE_UMAMI_WEBSITE_ID" \
+            --arg US "$UMAMI_SRC" \
+            --arg UAK "$UMAMI_API_KEY" \
+            --arg UN "$UMAMI_USERNAME" \
+            --arg UP "$UMAMI_PASSWORD" \
+            --arg TSK "$TURNSTILE_SECRET_KEY" \
+            '{
+              BETTER_AUTH_SECRET: $BAS,
+              BETTER_AUTH_URL: $BAU,
+              ADMIN_EMAIL: $AE,
+              GITHUB_CLIENT_ID: $GCI,
+              GITHUB_CLIENT_SECRET: $GCS,
+              CLOUDFLARE_ZONE_ID: $CZI,
+              CLOUDFLARE_PURGE_API_TOKEN: $CPAT,
+              DOMAIN: $DOM,
+              CDN_DOMAIN: $CDN,
+              VITE_UMAMI_WEBSITE_ID: $VUWID,
+              UMAMI_SRC: $US,
+              UMAMI_API_KEY: $UAK,
+              UMAMI_USERNAME: $UN,
+              UMAMI_PASSWORD: $UP,
+              TURNSTILE_SECRET_KEY: $TSK
+            }' > secrets.json
 
-      - name: Deploy to Cloudflare Workers
+      - name: Deploy to Cloudflare Workers (补充认证，避免 Zone 错误)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          # 核心修正5：登录 Wrangler，避免部署时认证失败
+          bunx wrangler login --api-token $CLOUDFLARE_API_TOKEN
           bunx wrangler secret bulk secrets.json
           bun run build
           bun run deploy
 
-      - name: Purge Cloudflare CDN Cache
+      - name: Purge Cloudflare CDN Cache (容错处理)
+        if: env.CLOUDFLARE_PURGE_API_TOKEN != '' && env.CLOUDFLARE_ZONE_ID != ''  # 空值时跳过
         run: |
           PURGE_DOMAIN=${CDN_DOMAIN:-$DOMAIN}
           echo "Purging CDN cache for $PURGE_DOMAIN"
+          # 核心修正6：用 jq 生成合法 JSON，避免变量为空导致的格式错误
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
             -H "Authorization: Bearer $CLOUDFLARE_PURGE_API_TOKEN" \
             -H "Content-Type: application/json" \
-            --data '{"prefixes":["'$PURGE_DOMAIN'"]}'
+            --data "$(jq -n --arg pd "$PURGE_DOMAIN" '{prefixes: [$pd]}')"
           echo ""
+        shell: /usr/bin/bash -e {0}
