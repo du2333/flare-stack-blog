@@ -13,7 +13,7 @@
 
 ## 目录结构
 
-```
+```text
 cuckoo/
 ├── components/          # 组件
 │   ├── content/         # 内容渲染组件
@@ -207,7 +207,7 @@ export const config: ThemeConfig = {
 
 本主题基于 [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0.html) 开源。
 
-```
+```text
 Copyright (C) 2024
 
 This program is free software: you can redistribute it and/or modify

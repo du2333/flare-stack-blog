@@ -48,38 +48,37 @@ export function BackgroundLayer() {
   const transition = `opacity ${transitionDuration}ms ease`;
 
   const isHomepage = pathname === "/" || pathname === "";
-  const homeOpacityExpr = isHomepage
-    ? "calc((1 - var(--scroll-progress, 0)) * var(--bg-opacity))"
-    : "0";
-  const globalOpacityExpr = isHomepage
-    ? "calc(var(--scroll-progress, 0) * var(--bg-opacity))"
-    : "var(--bg-opacity)";
+
+  // Use CSS custom property for dynamic opacity calculation
+  // The opacity is computed via CSS calc() expressions
+  const dynamicOpacityVar = isHomepage
+    ? "calc((1 - var(--scroll-progress, 0)) * var(--bg-max-opacity))"
+    : "var(--bg-max-opacity)";
 
   return (
-    <>
-      {imageUrl && <link rel="preload" as="image" href={imageUrl} />}
-
+    <div
+      ref={containerRef}
+      aria-hidden="true"
+      style={
+        {
+          ...baseStyle,
+          "--bg-max-opacity-light": light.opacity,
+          "--bg-max-opacity-dark": dark.opacity,
+          "--scroll-progress": 0,
+        } as React.CSSProperties
+      }
+      className="[--bg-max-opacity:var(--bg-max-opacity-light)] dark:[--bg-max-opacity:var(--bg-max-opacity-dark)]"
+    >
       <div
-        ref={containerRef}
-        aria-hidden="true"
-        className="[--bg-opacity:var(--bg-opacity-light)] dark:[--bg-opacity:var(--bg-opacity-dark)]"
-        style={
-          {
-            "--bg-opacity-light": light.opacity,
-            "--bg-opacity-dark": dark.opacity,
-            "--scroll-progress": "0",
-          } as React.CSSProperties
-        }
-      >
-        <div
-          style={{
-            ...imageStyle,
-            backgroundImage: `url(${imageUrl})`,
-            opacity: isHomepage ? homeOpacityExpr : globalOpacityExpr,
-            transition,
-          }}
-        />
-      </div>
-    </>
+        className="cuckoo-bg-layer"
+        style={{
+          ...imageStyle,
+          backgroundImage: `url(${imageUrl})`,
+          transition,
+          // @ts-expect-error - CSS custom property for opacity
+          "--dynamic-opacity": dynamicOpacityVar,
+        }}
+      />
+    </div>
   );
 }

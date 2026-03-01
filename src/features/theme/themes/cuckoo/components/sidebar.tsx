@@ -74,7 +74,7 @@ export function Sidebar({ className }: SidebarProps) {
           <li>
             <Link
               to="/"
-              className="block px-4 py-2.5 rounded-lg cuckoo-text-secondary hover:cuckoo-text-primary hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              className="cuckoo-nav-link"
             >
               首页
             </Link>
@@ -82,7 +82,7 @@ export function Sidebar({ className }: SidebarProps) {
           <li>
             <Link
               to="/posts"
-              className="block px-4 py-2.5 rounded-lg cuckoo-text-secondary hover:cuckoo-text-primary hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              className="cuckoo-nav-link"
             >
               文章
             </Link>
@@ -90,7 +90,7 @@ export function Sidebar({ className }: SidebarProps) {
           <li>
             <Link
               to="/friend-links"
-              className="block px-4 py-2.5 rounded-lg cuckoo-text-secondary hover:cuckoo-text-primary hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              className="cuckoo-nav-link"
             >
               友情链接
             </Link>
@@ -98,7 +98,7 @@ export function Sidebar({ className }: SidebarProps) {
           <li>
             <Link
               to="/search"
-              className="block px-4 py-2.5 rounded-lg cuckoo-text-secondary hover:cuckoo-text-primary hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              className="cuckoo-nav-link"
             >
               搜索
             </Link>

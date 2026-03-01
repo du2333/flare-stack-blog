@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 interface ImageDisplayProps {
@@ -17,6 +17,16 @@ export function ImageDisplay({
   caption,
 }: ImageDisplayProps) {
   const [isZoomed, setIsZoomed] = useState(false);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isZoomed) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsZoomed(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isZoomed]);
 
   return (
     <>
@@ -44,6 +54,7 @@ export function ImageDisplay({
           onClick={() => setIsZoomed(false)}
         >
           <button
+            onClick={() => setIsZoomed(false)}
             className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
             aria-label="关闭"
           >

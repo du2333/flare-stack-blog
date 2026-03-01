@@ -312,6 +312,12 @@
     border-color: var(--cuckoo-primary);
   }
 
+  .cuckoo-tag-active {
+    background-color: color-mix(in srgb, var(--cuckoo-primary) 15%, transparent);
+    color: var(--cuckoo-primary);
+    border-color: color-mix(in srgb, var(--cuckoo-primary) 30%, transparent);
+  }
+
   /* ===== Input ===== */
 
   .cuckoo-input {
@@ -348,7 +354,25 @@
   .cuckoo-scale-in {
     animation: cuckoo-scale-in 0.3s ease-out forwards;
   }
-}
+
+  /* ===== Navigation Link ===== */
+  .cuckoo-nav-link {
+    display: block;
+    padding: 0.625rem 1rem;
+    border-radius: var(--cuckoo-radius);
+    color: var(--cuckoo-text-secondary);
+    transition: var(--cuckoo-transition-fast);
+  }
+
+  .cuckoo-nav-link:hover {
+    color: var(--cuckoo-primary);
+    background-color: color-mix(in srgb, var(--cuckoo-primary) 10%, transparent);
+  }
+
+  /* ===== Background Layer ===== */
+  .cuckoo-bg-layer {
+    opacity: var(--dynamic-opacity, var(--bg-max-opacity, 1));
+  }
 
 @keyframes cuckoo-fade-in {
   from {

@@ -52,6 +52,7 @@ export function ResetPasswordPage({
             />
             <input
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               {...resetPasswordForm.register("password")}
               placeholder="请输入新密码"
               className="cuckoo-input pl-10 pr-10"
@@ -59,6 +60,7 @@ export function ResetPasswordPage({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "隐藏密码" : "显示密码"}
               className="absolute right-3 top-1/2 -translate-y-1/2 cuckoo-text-muted hover:cuckoo-text-secondary"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -82,6 +84,7 @@ export function ResetPasswordPage({
             />
             <input
               type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
               {...resetPasswordForm.register("confirmPassword")}
               placeholder="请再次输入新密码"
               className="cuckoo-input pl-10 pr-10"
@@ -89,6 +92,7 @@ export function ResetPasswordPage({
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={showConfirmPassword ? "隐藏密码" : "显示密码"}
               className="absolute right-3 top-1/2 -translate-y-1/2 cuckoo-text-muted hover:cuckoo-text-secondary"
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}

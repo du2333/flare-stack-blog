@@ -44,7 +44,16 @@ const FOLD_THRESHOLD = 400;
 
 export const CodeBlock = memo(
   ({ code, language, highlightedHtml }: CodeBlockProps) => {
-    const fallback = `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-[var(--cuckoo-text-secondary)] bg-transparent! p-0 m-0 border-0"><code>${code}</code></pre>`;
+    // Escape HTML to prevent XSS vulnerability in fallback
+    const escapeHtml = (str: string): string =>
+      str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    const fallback = `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-[var(--cuckoo-text-secondary)] bg-transparent! p-0 m-0 border-0"><code>${escapeHtml(code)}</code></pre>`;
     const html = highlightedHtml || fallback;
 
     const [copied, setCopied] = useState(false);
@@ -67,10 +76,14 @@ export const CodeBlock = memo(
       ? LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase()
       : "text";
 
-    const handleCopy = () => {
-      setCopied(true);
-      navigator.clipboard.writeText(code);
-      setTimeout(() => setCopied(false), 2000);
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        console.warn("Failed to copy to clipboard");
+      }
     };
 
     return (

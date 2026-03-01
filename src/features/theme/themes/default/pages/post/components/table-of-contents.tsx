@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
 import { useActiveTOC } from "@/hooks/use-active-toc";
 
@@ -9,25 +9,8 @@ export default function TableOfContents({
   headers: Array<TableOfContentsItem>;
 }) {
   const activeId = useActiveTOC(headers);
-  const [, setIndicatorTop] = useState<number>(0);
   const navRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
-
-  // Update visual indicator position
-  useEffect(() => {
-    if (activeId && navRef.current) {
-      const activeLink = navRef.current.querySelector(`a[href="#${activeId}"]`);
-      if (activeLink instanceof HTMLElement) {
-        const listRect = navRef.current
-          .querySelector(".toc-root")
-          ?.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        if (listRect) {
-          setIndicatorTop(linkRect.top - listRect.top);
-        }
-      }
-    }
-  }, [activeId]);
 
   if (headers.length === 0) return null;
 

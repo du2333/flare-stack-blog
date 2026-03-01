@@ -67,6 +67,7 @@ export function LoginPage({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "隐藏密码" : "显示密码"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 cuckoo-text-muted hover:cuckoo-text-secondary"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -109,7 +110,7 @@ export function LoginPage({
             <div className="w-full border-t border-[var(--cuckoo-border)]" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white dark:bg-gray-900 px-2 cuckoo-text-muted">
+            <span className="bg-[var(--cuckoo-card-bg)] px-2 cuckoo-text-muted">
               或使用以下方式登录
             </span>
           </div>

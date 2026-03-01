@@ -26,7 +26,7 @@ export function PostsPage({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onTagClick("")}
-              className={`cuckoo-tag ${!selectedTag ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700" : ""}`}
+              className={`cuckoo-tag ${!selectedTag ? "cuckoo-tag-active" : ""}`}
             >
               全部
             </button>
@@ -34,7 +34,7 @@ export function PostsPage({
               <button
                 key={tag.id}
                 onClick={() => onTagClick(tag.name)}
-                className={`cuckoo-tag ${selectedTag === tag.name ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700" : ""}`}
+                className={`cuckoo-tag ${selectedTag === tag.name ? "cuckoo-tag-active" : ""}`}
               >
                 {tag.name}
                 <span className="ml-1 opacity-60">({tag.postCount})</span>

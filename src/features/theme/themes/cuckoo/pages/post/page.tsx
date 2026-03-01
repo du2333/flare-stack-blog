@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Clock, Share2, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { ContentRenderer } from "../../components/content/content-renderer";
@@ -26,13 +26,13 @@ export function PostPage({ post }: PostPageProps) {
   return (
     <article className="space-y-8 cuckoo-fade-in">
       {/* Back Button */}
-      <button
-        onClick={() => navigate({ to: "/posts" })}
+      <Link
+        to="/posts"
         className="flex items-center gap-2 cuckoo-text-secondary hover:cuckoo-primary transition-colors"
       >
         <ArrowLeft size={16} />
         <span className="text-sm">返回文章列表</span>
-      </button>
+      </Link>
 
       {/* Article Header */}
       <header className="space-y-6">
