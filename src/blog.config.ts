@@ -27,6 +27,18 @@ export const blogConfig = {
       homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.webp",
       avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
     },
+    cuckoo: {
+      coverImage: env.VITE_CUCKOO_COVER_IMAGE || "/images/home-bg.webp",
+      avatar: env.VITE_CUCKOO_AVATAR || "/images/avatar.png",
+      primaryColor: env.VITE_CUCKOO_PRIMARY_COLOR || "#39C5BB",
+      background: {
+        enabled: env.VITE_CUCKOO_BACKGROUND_ENABLED ?? true, // 是否启用背景图片
+        apiUrl: env.VITE_CUCKOO_BACKGROUND_API || "https://www.dmoe.cc/random.php", // 背景图片 API
+        light: { opacity: env.VITE_CUCKOO_BG_LIGHT_OPACITY ?? 0.8 }, // 浅色模式透明度
+        dark: { opacity: env.VITE_CUCKOO_BG_DARK_OPACITY ?? 0.75 }, // 深色模式透明度
+        transitionDuration: env.VITE_CUCKOO_BG_TRANSITION ?? 600, // ms
+      },
+    },
   },
 };
 
