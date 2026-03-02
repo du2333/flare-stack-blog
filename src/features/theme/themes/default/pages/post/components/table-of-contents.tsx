@@ -13,17 +13,41 @@ export default function TableOfContents({
   const navRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  // Update visual indicator position
+  // Update visual indicator position and scroll TOC
   useEffect(() => {
     if (activeId && navRef.current) {
-      const activeLink = navRef.current.querySelector(`a[href="#${activeId}"]`);
+      const container = navRef.current;
+      const activeLink = container.querySelector(
+        `a[href="#${CSS.escape(activeId)}"]`,
+      );
+
       if (activeLink instanceof HTMLElement) {
-        const listRect = navRef.current
+        const listRect = container
           .querySelector(".toc-root")
           ?.getBoundingClientRect();
         const linkRect = activeLink.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
         if (listRect) {
           setIndicatorTop(linkRect.top - listRect.top);
+        }
+
+        // Auto-scroll TOC container
+        const linkTop =
+          container.scrollTop + (linkRect.top - containerRect.top);
+        const linkBottom = linkTop + linkRect.height;
+        const padding = 40; // Minimum distance from container top/bottom
+
+        if (linkBottom > container.scrollTop + containerRect.height - padding) {
+          container.scrollTo({
+            top: linkBottom - containerRect.height + padding,
+            behavior: "smooth",
+          });
+        } else if (linkTop < container.scrollTop + padding) {
+          container.scrollTo({
+            top: Math.max(0, linkTop - padding),
+            behavior: "smooth",
+          });
         }
       }
     }

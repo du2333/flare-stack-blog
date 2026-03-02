@@ -212,6 +212,41 @@
     background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
     z-index: 10;
   }
+
+  .fuwari-toc-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  }
+  .dark .fuwari-toc-scrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+  .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  .dark .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: none;
+  }
+  .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  .dark .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .dark .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 /* Fuwari onload / entrance animations */
