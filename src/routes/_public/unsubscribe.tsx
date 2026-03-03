@@ -17,6 +17,7 @@ const unsubscribeSearchSchema = z
   .partial();
 
 export const Route = createFileRoute("/_public/unsubscribe")({
+  ssr: false,
   validateSearch: unsubscribeSearchSchema,
   component: UnsubscribePage,
 });

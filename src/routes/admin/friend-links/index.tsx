@@ -17,6 +17,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin/friend-links/")({
+  ssr: false,
   validateSearch: searchSchema,
   component: FriendLinksAdminPage,
   loader: () => {
