@@ -17,6 +17,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin/comments/")({
+  ssr: false,
   validateSearch: searchSchema,
   component: CommentAdminPage,
   loader: () => {

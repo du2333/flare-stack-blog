@@ -12,6 +12,7 @@ import { AUTH_KEYS } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 
 export const Route = createFileRoute("/_user/profile")({
+  ssr: false,
   component: ProfilePage,
   loader: async () => {
     return {

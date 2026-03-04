@@ -14,6 +14,7 @@ import {
 import { MEDIA_KEYS } from "@/features/media/queries";
 
 export const Route = createFileRoute("/admin/posts/edit/$id")({
+  ssr: "data-only",
   component: EditPost,
   pendingComponent: PostEditorSkeleton,
   loader: async ({ context, params }) => {

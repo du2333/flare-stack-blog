@@ -3,6 +3,7 @@ import { TagManager } from "@/features/tags/components/tag-manager";
 import { tagsWithCountAdminQueryOptions } from "@/features/tags/queries";
 
 export const Route = createFileRoute("/admin/tags/")({
+  ssr: "data-only",
   component: TagManagerRoute,
   loader: async ({ context }) => {
     // Prefetch tags with count for a smooth load

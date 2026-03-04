@@ -44,6 +44,7 @@ const SearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin/")({
+  ssr: "data-only",
   component: DashboardOverview,
   pendingComponent: DashboardSkeleton,
   validateSearch: (search) => SearchSchema.parse(search),
