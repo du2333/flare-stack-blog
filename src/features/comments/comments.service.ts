@@ -14,7 +14,7 @@ import { AdminNotificationEmail } from "@/features/email/templates/AdminNotifica
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { serverEnv } from "@/lib/env/server.env";
-import { err, ok } from "@/lib/error";
+import { err, ok } from "@/lib/errors";
 
 // ============ Public Service Methods ============
 
@@ -206,13 +206,13 @@ export async function deleteComment(
   const comment = await CommentRepo.findCommentById(context.db, data.id);
 
   if (!comment) {
-    throw new Error("COMMENT_NOT_FOUND");
+    return err({ reason: "COMMENT_NOT_FOUND" });
   }
 
   // Only allow deleting own comments (unless admin)
   const userRole = context.session.user.role;
   if (comment.userId !== context.session.user.id && userRole !== "admin") {
-    throw new Error("PERMISSION_DENIED");
+    return err({ reason: "PERMISSION_DENIED" });
   }
 
   // Soft delete by setting status to deleted
@@ -220,14 +220,14 @@ export async function deleteComment(
     status: "deleted",
   });
 
-  return { success: true };
+  return ok({ success: true });
 }
 
 export async function getMyComments(
   context: AuthContext,
   data: GetMyCommentsInput,
 ) {
-  const comments = await CommentRepo.getCommentsByUserId(
+  return await CommentRepo.getCommentsByUserId(
     context.db,
     context.session.user.id,
     {
@@ -236,8 +236,6 @@ export async function getMyComments(
       status: data.status,
     },
   );
-
-  return comments;
 }
 
 // ============ Admin Service Methods ============
@@ -274,7 +272,7 @@ export async function moderateComment(
   const comment = await CommentRepo.findCommentById(context.db, data.id);
 
   if (!comment) {
-    throw new Error("COMMENT_NOT_FOUND");
+    return err({ reason: "COMMENT_NOT_FOUND" });
   }
 
   const updatedComment = await CommentRepo.updateComment(context.db, data.id, {
@@ -306,7 +304,7 @@ export async function moderateComment(
     }
   }
 
-  return updatedComment;
+  return ok(updatedComment);
 }
 
 export async function adminDeleteComment(
@@ -316,13 +314,13 @@ export async function adminDeleteComment(
   const comment = await CommentRepo.findCommentById(context.db, data.id);
 
   if (!comment) {
-    throw new Error("COMMENT_NOT_FOUND");
+    return err({ reason: "COMMENT_NOT_FOUND" });
   }
 
   // Hard delete for admin
   await CommentRepo.deleteComment(context.db, data.id);
 
-  return { success: true };
+  return ok({ success: true });
 }
 
 // ============ Workflow Methods ============

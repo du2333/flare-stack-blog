@@ -25,7 +25,7 @@ export function useFriendLinkSubmitForm(defaultEmail?: string) {
       await submit({ data });
       form.reset({ contactEmail: defaultEmail || "" });
     } catch {
-      // Error toast is handled by useFriendLinks mutation onError
+      // Error toast is handled by mutation onSuccess branch / global onError
       // Keep form state intact on error
     } finally {
       resetTurnstile();

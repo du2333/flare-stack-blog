@@ -9,7 +9,7 @@ import {
 import * as PostService from "@/features/posts/posts.service";
 import * as TagService from "@/features/tags/tags.service";
 import * as CacheService from "@/features/cache/cache.service";
-import { unwrap } from "@/lib/error";
+import { unwrap } from "@/lib/errors";
 
 describe("PostService", () => {
   let adminContext: ReturnType<typeof createAdminTestContext>;
@@ -18,6 +18,10 @@ describe("PostService", () => {
     adminContext = createAdminTestContext();
     await seedUser(adminContext.db, adminContext.session.user);
   });
+
+  const updatePost = async (
+    input: Parameters<typeof PostService.updatePost>[1],
+  ) => unwrap(await PostService.updatePost(adminContext, input));
 
   describe("Post CRUD", () => {
     it("should create an empty draft post", async () => {
@@ -33,7 +37,7 @@ describe("PostService", () => {
     it("should update a post with content", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
 
-      const updatedPost = await PostService.updatePost(adminContext, {
+      const updatedPost = await updatePost({
         id,
         data: {
           title: "Updated Title",
@@ -53,14 +57,14 @@ describe("PostService", () => {
       });
 
       expect(updatedPost).not.toBeNull();
-      expect(updatedPost!.title).toBe("Updated Title");
-      expect(updatedPost!.slug).toBe("updated-title");
-      expect(updatedPost!.status).toBe("published");
+      expect(updatedPost.title).toBe("Updated Title");
+      expect(updatedPost.slug).toBe("updated-title");
+      expect(updatedPost.status).toBe("published");
     });
 
     it("should find a published post by slug", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Public Post",
@@ -84,7 +88,7 @@ describe("PostService", () => {
 
     it("should delete a post", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: { title: "To Delete", slug: "to-delete" },
       });
@@ -99,7 +103,7 @@ describe("PostService", () => {
   describe("Slug Generation", () => {
     it("should generate a unique slug when there is a collision", async () => {
       const post1 = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: post1.id,
         data: { title: "Collision", slug: "collision" },
       });
@@ -113,13 +117,13 @@ describe("PostService", () => {
 
     it("should generate incrementing slugs for multiple collisions", async () => {
       const post1 = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: post1.id,
         data: { title: "Test", slug: "test" },
       });
 
       const post2 = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: post2.id,
         data: { title: "Test", slug: "test-1" },
       });
@@ -135,7 +139,7 @@ describe("PostService", () => {
   describe("Cache Behavior", () => {
     it("should cache post by slug after first fetch", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Cached Post",
@@ -166,7 +170,7 @@ describe("PostService", () => {
 
     it("should invalidate cache when version is bumped", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Version Test",
@@ -222,7 +226,7 @@ describe("PostService", () => {
       // Create 5 published posts
       for (let i = 1; i <= 5; i++) {
         const { id } = await PostService.createEmptyPost(adminContext);
-        await PostService.updatePost(adminContext, {
+        await updatePost({
           id,
           data: {
             title: `Post ${i}`,
@@ -264,7 +268,7 @@ describe("PostService", () => {
 
       // Create 2 posts, only 1 with the tag
       const { id: post1Id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: post1Id,
         data: {
           title: "TypeScript Post",
@@ -279,7 +283,7 @@ describe("PostService", () => {
       });
 
       const { id: post2Id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: post2Id,
         data: {
           title: "JavaScript Post",
@@ -303,7 +307,7 @@ describe("PostService", () => {
 
       // Create a post without tags
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "No Tag Post",
@@ -334,7 +338,7 @@ describe("PostService", () => {
 
       // Create post with multiple tags
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Frontend Post",
@@ -361,13 +365,13 @@ describe("PostService", () => {
     it("should get posts for admin with status filter", async () => {
       // Create draft and published posts
       const { id: draftId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: draftId,
         data: { title: "Draft Post", slug: "draft-post", status: "draft" },
       });
 
       const { id: pubId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: pubId,
         data: {
           title: "Published Post",
@@ -395,19 +399,19 @@ describe("PostService", () => {
     it("should search posts by title keyword", async () => {
       // Create posts with different titles
       const { id: id1 } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: id1,
         data: { title: "Learn TypeScript", slug: "learn-ts" },
       });
 
       const { id: id2 } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: id2,
         data: { title: "Learn JavaScript", slug: "learn-js" },
       });
 
       const { id: id3 } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: id3,
         data: { title: "Python Guide", slug: "python-guide" },
       });
@@ -426,7 +430,7 @@ describe("PostService", () => {
       // Create mixed posts
       for (let i = 0; i < 3; i++) {
         const { id } = await PostService.createEmptyPost(adminContext);
-        await PostService.updatePost(adminContext, {
+        await updatePost({
           id,
           data: {
             title: `Draft ${i}`,
@@ -438,7 +442,7 @@ describe("PostService", () => {
 
       for (let i = 0; i < 2; i++) {
         const { id } = await PostService.createEmptyPost(adminContext);
-        await PostService.updatePost(adminContext, {
+        await updatePost({
           id,
           data: {
             title: `Published ${i}`,
@@ -466,7 +470,7 @@ describe("PostService", () => {
     it("should find post by slug for admin including drafts", async () => {
       // Create a draft post
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Secret Draft",
@@ -494,7 +498,7 @@ describe("PostService", () => {
   describe("Workflow Integration", () => {
     it("should trigger POST_PROCESS_WORKFLOW when startPostProcessWorkflow called", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Workflow Test",
@@ -526,7 +530,7 @@ describe("PostService", () => {
       const { id } = await PostService.createEmptyPost(adminContext);
 
       // Update to published WITHOUT setting publishedAt
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id,
         data: {
           title: "Auto Publish Date",
@@ -566,7 +570,7 @@ describe("PostService", () => {
 
       // 2. Create Main Post (Tags: T1, T2)
       const { id: mainId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: mainId,
         data: {
           title: "Main Post",
@@ -582,7 +586,7 @@ describe("PostService", () => {
 
       // 3. Create High Relevance Post (Tags: T1, T2) -> 2 matches
       const { id: highId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: highId,
         data: {
           title: "High Relevance",
@@ -598,7 +602,7 @@ describe("PostService", () => {
 
       // 4. Create Low Relevance Post (Tags: T1) -> 1 match
       const { id: lowId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: lowId,
         data: {
           title: "Low Relevance",
@@ -615,7 +619,7 @@ describe("PostService", () => {
       // 5. Create Unrelated Post (Tags: T3) -> 0 matches
       const { id: unrelatedId } =
         await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: unrelatedId,
         data: {
           title: "Unrelated",
@@ -631,7 +635,7 @@ describe("PostService", () => {
 
       // 6. Create Draft Post (Tags: T1, T2) -> High match but draft
       const { id: draftId } = await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
+      await updatePost({
         id: draftId,
         data: {
           title: "Draft High Rel",

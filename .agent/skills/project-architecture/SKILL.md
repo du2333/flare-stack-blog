@@ -17,8 +17,9 @@ The project deeply integrates multiple Cloudflare services:
 | **Database**        | `DB`           | Cloudflare D1 (SQLite) with Drizzle ORM          |
 | **Object Storage**  | `R2`           | Media assets storage                             |
 | **KV Storage**      | `KV`           | Persistent caching layer                         |
-| **Durable Objects** | `RATE_LIMITER` | Distributed rate limiting                        |
+| **Durable Objects** | `RATE_LIMITER`, `PASSWORD_HASHER` | Distributed rate limiting, password hashing |
 | **Workflows**       | Various        | Async tasks (email, post-processing, moderation) |
+| **Queues**          | `QUEUE`        | Message queue (email notifications)              |
 | **AI**              | `AI`           | Cloudflare Workers AI                            |
 | **Authentication**  | -              | Better Auth (D1 integrated)                      |
 
@@ -80,9 +81,10 @@ The project uses a layered dependency injection pattern:
 
 ## Request Flow
 
-1. **Entry**: All requests first hit the Hono container in `src/server.ts`
-2. **Gateway Routing**: Hono handles specific API/resource paths; others go to TanStack
-3. **Context Injection**: Before entering TanStack Start, context is constructed with `db`, `auth`, and `env`
-4. **Business Routing**: TanStack Router matches paths to components and invokes loaders
-5. **Logic Execution**: Loaders/Server Functions pass through middleware, then call Feature services
-6. **Rendering**: SSR renders the result with CDN-optimized cache headers
+1. **Entry**: All requests hit Hono container (`src/server.ts`)
+2. **Gateway**: Hono routes specific paths (`/api/auth/*`, `/images/*`); everything else proxied to TanStack Start
+3. **DI**: TanStack middlewares progressively inject `db`, `auth`, `session` into context
+4. **Business**: Router matches paths → loaders/server functions call Feature services
+5. **Render**: SSR with CDN-optimized cache headers
+
+> For full tech stack details, directory structure, and deployment, see `README.md`.

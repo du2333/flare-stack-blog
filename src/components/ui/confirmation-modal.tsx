@@ -50,13 +50,13 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
         <div className="px-6 pt-8 pb-4 flex items-start justify-between">
           <div className="space-y-2">
             <p
-              className={`text-[10px] font-mono uppercase tracking-widest ${
+              className={`text-xs font-mono uppercase tracking-widest ${
                 isDanger ? "text-destructive" : "text-muted-foreground/60"
               }`}
             >
               [ {isDanger ? "DANGER" : "CONFIRM"} ]
             </p>
-            <h2 className="text-xl font-serif font-medium text-foreground">
+            <h2 className="text-2xl font-serif font-medium text-foreground">
               {title}
             </h2>
           </div>
@@ -71,12 +71,12 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
 
         {/* Body */}
         <div className="px-6 pb-6">
-          <p className="text-sm text-muted-foreground/70 leading-relaxed font-light">
+          <p className="text-base text-muted-foreground/80 leading-relaxed font-light">
             {message}
           </p>
 
           {isDanger && (
-            <div className="mt-6 p-3 border-l-2 border-destructive/50 text-[9px] font-mono uppercase tracking-widest text-destructive/70">
+            <div className="mt-6 p-3 border-l-2 border-destructive/50 text-[11px] font-mono uppercase tracking-widest text-destructive/70">
               此操作无法撤销
             </div>
           )}
@@ -87,7 +87,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
           <button
             onClick={() => onClose()}
             disabled={isLoading}
-            className="px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors disabled:opacity-50"
           >
             取消
           </button>
@@ -95,7 +95,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
             onClick={() => onConfirm()}
             disabled={isLoading}
             className={`
-              flex items-center justify-center gap-2 px-6 py-2.5 text-[10px] font-mono uppercase tracking-widest transition-all
+              flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-mono uppercase tracking-widest transition-all
               ${
                 isDanger
                   ? "bg-destructive text-destructive-foreground hover:opacity-80"

@@ -1,9 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import {
-  getRequestHeaders,
-  setResponseHeader,
-} from "@tanstack/react-start/server";
-import {
   CreateCommentInputSchema,
   DeleteCommentInputSchema,
   GetCommentsByPostIdInputSchema,
@@ -17,32 +13,18 @@ import {
   sessionMiddleware,
   turnstileMiddleware,
 } from "@/lib/middlewares";
-import { CACHE_CONTROL } from "@/lib/constants";
 
 // Public API - Get root comments by post ID (published + viewer's pending)
 export const getRootCommentsByPostIdFn = createServerFn()
   .middleware([sessionMiddleware])
   .inputValidator(GetCommentsByPostIdInputSchema)
   .handler(async ({ data, context }) => {
-    const session = await context.auth.api.getSession({
-      headers: getRequestHeaders(),
-    });
+    const session = context.session;
 
     const result = await CommentService.getRootCommentsByPostId(context, {
       ...data,
       viewerId: session?.user.id,
     });
-
-    // Handle caching based on session
-    if (!session) {
-      Object.entries(CACHE_CONTROL.swr).forEach(([k, v]) => {
-        setResponseHeader(k, v);
-      });
-    } else {
-      Object.entries(CACHE_CONTROL.private).forEach(([k, v]) => {
-        setResponseHeader(k, v);
-      });
-    }
 
     return result;
   });
@@ -52,25 +34,12 @@ export const getRepliesByRootIdFn = createServerFn()
   .middleware([sessionMiddleware])
   .inputValidator(GetRepliesByRootIdInputSchema)
   .handler(async ({ data, context }) => {
-    const session = await context.auth.api.getSession({
-      headers: getRequestHeaders(),
-    });
+    const session = context.session;
 
     const result = await CommentService.getRepliesByRootId(context, {
       ...data,
       viewerId: session?.user.id,
     });
-
-    // Handle caching based on session
-    if (!session) {
-      Object.entries(CACHE_CONTROL.swr).forEach(([k, v]) => {
-        setResponseHeader(k, v);
-      });
-    } else {
-      Object.entries(CACHE_CONTROL.private).forEach(([k, v]) => {
-        setResponseHeader(k, v);
-      });
-    }
 
     return result;
   });
@@ -89,9 +58,10 @@ export const createCommentFn = createServerFn({
     authMiddleware,
   ])
   .inputValidator(CreateCommentInputSchema)
-  .handler(async ({ data, context }) => {
-    return await CommentService.createComment(context, data);
-  });
+  .handler(
+    async ({ data, context }) =>
+      await CommentService.createComment(context, data),
+  );
 
 export const deleteCommentFn = createServerFn({
   method: "POST",
@@ -105,13 +75,15 @@ export const deleteCommentFn = createServerFn({
     authMiddleware,
   ])
   .inputValidator(DeleteCommentInputSchema)
-  .handler(async ({ data, context }) => {
-    return await CommentService.deleteComment(context, data);
-  });
+  .handler(
+    async ({ data, context }) =>
+      await CommentService.deleteComment(context, data),
+  );
 
 export const getMyCommentsFn = createServerFn()
   .middleware([authMiddleware])
   .inputValidator(GetMyCommentsInputSchema)
-  .handler(async ({ data, context }) => {
-    return await CommentService.getMyComments(context, data);
-  });
+  .handler(
+    async ({ data, context }) =>
+      await CommentService.getMyComments(context, data),
+  );

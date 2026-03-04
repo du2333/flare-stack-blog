@@ -56,7 +56,7 @@ export function normalizeFrontmatter(
   // status
   if (data.draft === true) {
     mapped.status = "draft";
-  } else if (typeof data.status === "string") {
+  } else if (data.status === "draft" || data.status === "published") {
     mapped.status = data.status;
   } else {
     mapped.status = "published";

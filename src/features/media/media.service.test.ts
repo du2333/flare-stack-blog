@@ -8,6 +8,7 @@ import * as MediaService from "./media.service";
 import * as Storage from "./data/media.storage";
 import * as PostService from "@/features/posts/posts.service";
 import * as PostMediaRepo from "@/features/posts/data/post-media.data";
+import { unwrap } from "@/lib/errors";
 
 /**
  * MediaService Tests
@@ -55,7 +56,7 @@ describe("MediaService", () => {
         type: "image/png",
       });
 
-      const result = await MediaService.upload(adminContext, { file });
+      const result = unwrap(await MediaService.upload(adminContext, { file }));
 
       expect(result).toMatchObject({
         fileName: "test-image.png",
@@ -93,9 +94,8 @@ describe("MediaService", () => {
         new Error("DB Error"),
       );
 
-      await expect(MediaService.upload(adminContext, { file })).rejects.toThrow(
-        "Failed to insert media record",
-      );
+      const result = await MediaService.upload(adminContext, { file });
+      expect(result.error?.reason).toBe("MEDIA_RECORD_CREATE_FAILED");
 
       // Wait for rollback
       await waitForBackgroundTasks(adminContext.executionCtx);
@@ -113,7 +113,7 @@ describe("MediaService", () => {
         type: "image/jpeg",
       });
 
-      const result = await MediaService.upload(adminContext, { file });
+      const result = unwrap(await MediaService.upload(adminContext, { file }));
 
       expect(result.sizeInBytes).toBe(1024);
     });
@@ -128,13 +128,15 @@ describe("MediaService", () => {
       const file = new File(["delete me"], "to-delete.png", {
         type: "image/png",
       });
-      const uploaded = await MediaService.upload(adminContext, { file });
+      const uploaded = unwrap(
+        await MediaService.upload(adminContext, { file }),
+      );
 
       // Reset mock to track deletion call
       vi.mocked(Storage.deleteFromR2).mockClear();
 
       // Delete it
-      await MediaService.deleteImage(adminContext, uploaded.key);
+      unwrap(await MediaService.deleteImage(adminContext, uploaded.key));
 
       // Wait for R2 deletion in waitUntil
       await waitForBackgroundTasks(adminContext.executionCtx);
@@ -163,7 +165,7 @@ describe("MediaService", () => {
         const file = new File([`content ${i}`], `query-test-${i}.png`, {
           type: "image/png",
         });
-        await MediaService.upload(adminContext, { file });
+        unwrap(await MediaService.upload(adminContext, { file }));
       }
     });
 
@@ -199,7 +201,7 @@ describe("MediaService", () => {
       const uniqueFile = new File(["unique"], "special-unique-file.png", {
         type: "image/png",
       });
-      await MediaService.upload(adminContext, { file: uniqueFile });
+      unwrap(await MediaService.upload(adminContext, { file: uniqueFile }));
 
       const result = await MediaService.getMediaList(adminContext, {
         search: "special-unique",
@@ -220,7 +222,9 @@ describe("MediaService", () => {
       const file = new File(["rename me"], "original-name.png", {
         type: "image/png",
       });
-      const uploaded = await MediaService.upload(adminContext, { file });
+      const uploaded = unwrap(
+        await MediaService.upload(adminContext, { file }),
+      );
 
       await MediaService.updateMediaName(adminContext, {
         key: uploaded.key,
@@ -243,7 +247,7 @@ describe("MediaService", () => {
       const file = new File(["linked image"], "linked-image.png", {
         type: "image/png",
       });
-      const media = await MediaService.upload(adminContext, { file });
+      const media = unwrap(await MediaService.upload(adminContext, { file }));
 
       // Create a post
       const { id: postId } = await PostService.createEmptyPost(adminContext);
@@ -275,7 +279,7 @@ describe("MediaService", () => {
       const file = new File(["unused"], "unused-image.png", {
         type: "image/png",
       });
-      const media = await MediaService.upload(adminContext, { file });
+      const media = unwrap(await MediaService.upload(adminContext, { file }));
 
       const isInUse = await MediaService.isMediaInUse(adminContext, media.key);
       expect(isInUse).toBe(false);
@@ -288,7 +292,7 @@ describe("MediaService", () => {
 
       for (const fileName of files) {
         const file = new File(["content"], fileName, { type: "image/png" });
-        const media = await MediaService.upload(adminContext, { file });
+        const media = unwrap(await MediaService.upload(adminContext, { file }));
         mediaKeys.push(media.key);
       }
 

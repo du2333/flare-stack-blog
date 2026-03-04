@@ -2,38 +2,44 @@ import { createMiddleware } from "@tanstack/react-start";
 import {
   getRequestHeader,
   getRequestHeaders,
-  setResponseHeader,
 } from "@tanstack/react-start/server";
 import type { RateLimitOptions } from "@/lib/do/rate-limiter";
-import { CACHE_CONTROL } from "@/lib/constants";
 import { getDb } from "@/lib/db";
 import { getAuth } from "@/lib/auth/auth.server";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { serverEnv } from "@/lib/env/server.env";
+import {
+  createAuthError,
+  createPermissionError,
+  createRateLimitError,
+  createTurnstileError,
+} from "@/lib/errors";
 
-// ======================= Cache Control ====================== */
-// deprecated 感觉没啥用了，现在都是hono api来获取公开博客数据了，hono那里设置好缓存头就行了
-export const createCacheHeaderMiddleware = (
-  strategy: "private" | "immutable" | "swr" | "public",
-) => {
-  return createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const result = await next();
+/* ======================= Error Logging ====================== */
 
-    // 只在客户端直接请求 Server Function 时设置 headers
-    // SSR 期间请求 Accept header 为 text/html，此时不设置 headers，让 route headers() 生效
-    // 客户端 React Query 请求 Accept header 包含 application/json
-    const accept = getRequestHeader("Accept");
-    const isClientRequest = accept?.includes("application/json");
-
-    if (isClientRequest) {
-      Object.entries(CACHE_CONTROL[strategy]).forEach(([k, v]) => {
-        setResponseHeader(k, v);
-      });
-    }
-
-    return result;
-  });
-};
+export const errorLoggingMiddleware = createMiddleware({
+  type: "function",
+}).server(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "server function error",
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              }
+            : String(error),
+        timestamp: new Date().toISOString(),
+      }),
+    );
+    throw error;
+  }
+});
 
 /* ======================= Infrastructure ====================== */
 
@@ -68,12 +74,12 @@ export const sessionMiddleware = createMiddleware({ type: "function" })
   });
 
 export const authMiddleware = createMiddleware({ type: "function" })
-  .middleware([createCacheHeaderMiddleware("private"), sessionMiddleware])
+  .middleware([sessionMiddleware])
   .server(async ({ next, context }) => {
     const session = context.session;
 
     if (!session) {
-      throw new Error("UNAUTHENTICATED");
+      throw createAuthError();
     }
 
     return next({
@@ -89,7 +95,7 @@ export const adminMiddleware = createMiddleware({ type: "function" })
     const session = context.session;
 
     if (session.user.role !== "admin") {
-      throw new Error("PERMISSION_DENIED");
+      throw createPermissionError();
     }
 
     return next({
@@ -119,9 +125,7 @@ export const createRateLimitMiddleware = (
       const result = await rateLimiter.checkLimit(options);
 
       if (!result.allowed) {
-        throw new Error(
-          `请求过于频繁，请 ${Math.ceil(result.retryAfterMs / 1000)} 秒后重试`,
-        );
+        throw createRateLimitError(result.retryAfterMs);
       }
 
       return next();
@@ -146,13 +150,13 @@ export const turnstileMiddleware = createMiddleware({ type: "function" })
 
     const token = getRequestHeader("X-Turnstile-Token");
     if (!token) {
-      throw new Error("Missing Turnstile token");
+      throw createTurnstileError("缺少人机验证凭证");
     }
 
     const result = await verifyTurnstileToken({ secretKey, token });
 
     if (!result.success) {
-      throw new Error("人机验证失败，请刷新页面重试");
+      throw createTurnstileError();
     }
 
     return next();

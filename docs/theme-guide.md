@@ -24,25 +24,25 @@ vite.config.ts
 
 `ThemeComponents` 接口列出了主题必须导出的所有组件。你的 `index.ts` 必须满足这个接口：
 
-| 字段                                          | 说明                           |
-| :-------------------------------------------- | :----------------------------- |
-| `PublicLayout`                                | 公共布局（含 Navbar / Footer） |
-| `AuthLayout`                                  | 认证页布局                     |
-| `UserLayout`                                  | 登录用户专属布局               |
-| `HomePage` / `HomePageSkeleton`               | 首页及其加载骨架屏             |
-| `PostsPage` / `PostsPageSkeleton`             | 文章列表页及骨架屏             |
-| `PostPage` / `PostPageSkeleton`               | 文章详情页及骨架屏             |
-| `FriendLinksPage` / `FriendLinksPageSkeleton` | 友链列表页及骨架屏             |
-| `SearchPage`                                  | 搜索页                         |
-| `SubmitFriendLinkPage`                        | 友链提交页                     |
-| `LoginPage`                                   | 登录页                         |
-| `RegisterPage`                                | 注册页                         |
-| `ForgotPasswordPage`                          | 找回密码页                     |
-| `ResetPasswordPage`                           | 重置密码页                     |
-| `VerifyEmailPage`                             | 邮箱验证页                     |
-| `ProfilePage`                                 | 个人资料页                     |
-| `config`                                      | 主题静态配置（数据获取参数）   |
-| `Toaster`                                     | Toast 通知组件（Sonner 封装）  |
+| 字段                                          | 说明                                     |
+| :-------------------------------------------- | :--------------------------------------- |
+| `PublicLayout`                                | 公共布局（含 Navbar / Footer）           |
+| `AuthLayout`                                  | 认证页布局                               |
+| `UserLayout`                                  | 登录用户专属布局                         |
+| `HomePage` / `HomePageSkeleton`               | 首页及其加载骨架屏                       |
+| `PostsPage` / `PostsPageSkeleton`             | 文章列表页及骨架屏                       |
+| `PostPage` / `PostPageSkeleton`               | 文章详情页及骨架屏                       |
+| `FriendLinksPage` / `FriendLinksPageSkeleton` | 友链列表页及骨架屏                       |
+| `SearchPage`                                  | 搜索页                                   |
+| `SubmitFriendLinkPage`                        | 友链提交页                               |
+| `LoginPage`                                   | 登录页                                   |
+| `RegisterPage`                                | 注册页                                   |
+| `ForgotPasswordPage`                          | 找回密码页                               |
+| `ResetPasswordPage`                           | 重置密码页                               |
+| `VerifyEmailPage`                             | 邮箱验证页                               |
+| `ProfilePage`                                 | 个人资料页                               |
+| `config`                                      | 主题静态配置（数据获取参数与预加载配置） |
+| `Toaster`                                     | Toast 通知组件（Sonner 封装）            |
 
 > **骨架屏（Skeleton）**：用作 TanStack Router 的 `pendingComponent`，在页面数据请求期间展示的过渡 UI。主题可以根据自身的交互设计语言自行决定是否需要实现它（例如，为了配合某些入场动画，您可以选择直接返回 `null` 而不渲染占位图）。
 

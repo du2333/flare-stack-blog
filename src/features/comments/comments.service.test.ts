@@ -8,7 +8,7 @@ import {
 } from "tests/test-utils";
 import * as CommentService from "@/features/comments/comments.service";
 import * as PostService from "@/features/posts/posts.service";
-import { unwrap } from "@/lib/error";
+import { unwrap } from "@/lib/errors";
 
 describe("CommentService", () => {
   let adminContext: ReturnType<typeof createAdminTestContext>;
@@ -47,14 +47,16 @@ describe("CommentService", () => {
 
     // Create a published post for comments
     const { id } = await PostService.createEmptyPost(adminContext);
-    await PostService.updatePost(adminContext, {
-      id,
-      data: {
-        title: "Test Post",
-        status: "published",
-        slug: `test-post-${Date.now()}`,
-      },
-    });
+    unwrap(
+      await PostService.updatePost(adminContext, {
+        id,
+        data: {
+          title: "Test Post",
+          status: "published",
+          slug: `test-post-${Date.now()}`,
+        },
+      }),
+    );
     postId = id;
   });
 
@@ -117,12 +119,11 @@ describe("CommentService", () => {
         }),
       );
 
-      const moderatedComment = await CommentService.moderateComment(
-        adminContext,
-        {
+      const moderatedComment = unwrap(
+        await CommentService.moderateComment(adminContext, {
           id: comment.id,
           status: "published",
-        },
+        }),
       );
 
       expect(moderatedComment.status).toBe("published");
@@ -143,12 +144,11 @@ describe("CommentService", () => {
       });
 
       // Then mark as pending for re-review
-      const pendingComment = await CommentService.moderateComment(
-        adminContext,
-        {
+      const pendingComment = unwrap(
+        await CommentService.moderateComment(adminContext, {
           id: comment.id,
           status: "pending",
-        },
+        }),
       );
 
       expect(pendingComment.status).toBe("pending");
@@ -197,11 +197,10 @@ describe("CommentService", () => {
       });
       await seedUser(otherUserContext.db, otherUserSession.user);
 
-      await expect(
-        CommentService.deleteComment(otherUserContext, {
-          id: comment.id,
-        }),
-      ).rejects.toThrow("PERMISSION_DENIED");
+      const result = await CommentService.deleteComment(otherUserContext, {
+        id: comment.id,
+      });
+      expect(result.error?.reason).toBe("PERMISSION_DENIED");
     });
 
     it("should allow admin to hard delete any comment", async () => {
@@ -379,14 +378,16 @@ describe("CommentService", () => {
       // Create another post
       const { id: otherPostId } =
         await PostService.createEmptyPost(adminContext);
-      await PostService.updatePost(adminContext, {
-        id: otherPostId,
-        data: {
-          title: "Other Post",
-          status: "published",
-          slug: `other-post-${Date.now()}`,
-        },
-      });
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: otherPostId,
+          data: {
+            title: "Other Post",
+            status: "published",
+            slug: `other-post-${Date.now()}`,
+          },
+        }),
+      );
 
       const otherPostComment = unwrap(
         await CommentService.createComment(userContext, {

@@ -77,9 +77,6 @@ function DashboardOverview() {
       queryClient.invalidateQueries(dashboardStatsQuery);
       toast.success("数据已刷新");
     },
-    onError: () => {
-      toast.error("刷新失败，请重试");
-    },
   });
 
   const currentRangeData = trafficByRange?.[range];

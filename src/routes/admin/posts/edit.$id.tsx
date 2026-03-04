@@ -74,17 +74,19 @@ function EditPost() {
   };
 
   const handleSave = async (data: PostEditorData) => {
+    const publishedAt =
+      data.status === "published" && !post.publishedAt
+        ? new Date()
+        : data.publishedAt;
+
     // Parallelize updates
-    await Promise.all([
+    const [updateResult] = await Promise.all([
       adminUpdatePostFn({
         data: {
           id: post.id,
           data: {
             ...data,
-            publishedAt:
-              data.status === "published" && !post.publishedAt
-                ? new Date()
-                : data.publishedAt,
+            publishedAt,
           },
         },
       }),
@@ -95,6 +97,10 @@ function EditPost() {
         },
       }),
     ]);
+
+    if (updateResult.error) {
+      throw new Error("文章不存在");
+    }
 
     // Invalidate cache to ensure fresh data on next visit
     queryClient.invalidateQueries({ queryKey: POSTS_KEYS.detail(postId) });

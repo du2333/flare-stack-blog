@@ -9,11 +9,17 @@ export async function handleEmailMessage(
   const db = getDb(env);
   const result = await sendEmail({ db, env }, data);
 
-  if (result.status === "FAILED") {
-    throw new Error(`邮件发送失败: ${result.error}`);
-  }
-
-  if (result.status === "DISABLED") {
-    console.log(`[Email] 邮件服务未启用，跳过: ${data.to}`);
+  if (result.error) {
+    const reason = result.error.reason;
+    switch (reason) {
+      case "SEND_FAILED":
+        throw new Error(`邮件发送失败: ${result.error.message}`);
+      case "EMAIL_DISABLED":
+        console.log(`[Email] 邮件服务未启用，跳过: ${data.to}`);
+        return;
+      default: {
+        reason satisfies never;
+      }
+    }
   }
 }

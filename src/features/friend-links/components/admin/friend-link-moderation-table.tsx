@@ -35,7 +35,12 @@ export const FriendLinkModerationTable = ({
   page = 1,
 }: FriendLinkModerationTableProps) => {
   const navigate = routeApi.useNavigate();
-  const { data: response, isLoading } = useQuery(
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+  } = useQuery(
     allFriendLinksQuery({
       status,
       limit: PAGE_SIZE,
@@ -44,7 +49,7 @@ export const FriendLinkModerationTable = ({
   );
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const { approve, reject } = useAdminFriendLinks();
+  const { approveAsync, rejectAsync } = useAdminFriendLinks();
   const queryClient = useQueryClient();
 
   const handleSelectAll = () => {
@@ -71,13 +76,15 @@ export const FriendLinkModerationTable = ({
     const toastId = toast.loading(`正在批准 ${selectedIds.size} 条友链...`);
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => approve({ data: { id } })),
+        Array.from(selectedIds).map((id) => approveAsync({ data: { id } })),
       );
       toast.success("批量批准完成", { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-    } catch {
-      toast.error("部分操作失败", { id: toastId });
+    } catch (caughtError) {
+      toast.error("部分操作失败", {
+        id: toastId,
+      });
     }
   };
 
@@ -86,13 +93,15 @@ export const FriendLinkModerationTable = ({
     const toastId = toast.loading(`正在拒绝 ${selectedIds.size} 条友链...`);
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => reject({ data: { id } })),
+        Array.from(selectedIds).map((id) => rejectAsync({ data: { id } })),
       );
       toast.success("批量拒绝完成", { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-    } catch {
-      toast.error("部分操作失败", { id: toastId });
+    } catch (caughtError) {
+      toast.error("部分操作失败", {
+        id: toastId,
+      });
     }
   };
 
@@ -100,6 +109,15 @@ export const FriendLinkModerationTable = ({
     return (
       <div className="py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
+        <ShieldAlert size={40} strokeWidth={1} className="opacity-30" />
+        <p>{error.message}</p>
       </div>
     );
   }
@@ -456,14 +474,16 @@ const FriendLinkActions = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleApprove = async () => {
+  const handleApprove = () => {
     setIsOpen(false);
-    await approve({ data: { id: friendLinkId } });
+    approve({ data: { id: friendLinkId } });
   };
 
-  const confirmDelete = async () => {
-    await adminDelete({ data: { id: friendLinkId } });
-    setShowDeleteConfirm(false);
+  const confirmDelete = () => {
+    adminDelete(
+      { data: { id: friendLinkId } },
+      { onSuccess: () => setShowDeleteConfirm(false) },
+    );
   };
 
   const isLoading = isApproving || isRejecting || isUpdating || isAdminDeleting;
@@ -552,9 +572,11 @@ const FriendLinkActions = ({
       <RejectModal
         isOpen={showRejectModal}
         onClose={() => setShowRejectModal(false)}
-        onConfirm={async (reason) => {
-          await reject({ data: { id: friendLinkId, rejectionReason: reason } });
-          setShowRejectModal(false);
+        onConfirm={(reason) => {
+          reject(
+            { data: { id: friendLinkId, rejectionReason: reason } },
+            { onSuccess: () => setShowRejectModal(false) },
+          );
         }}
         isLoading={isRejecting}
       />
@@ -563,9 +585,11 @@ const FriendLinkActions = ({
         key={friendLinkId}
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        onConfirm={async (data) => {
-          await update({ data: { id: friendLinkId, ...data } });
-          setShowEditModal(false);
+        onConfirm={(data) => {
+          update(
+            { data: { id: friendLinkId, ...data } },
+            { onSuccess: () => setShowEditModal(false) },
+          );
         }}
         isLoading={isUpdating}
         initialData={friendLink}
@@ -584,7 +608,7 @@ const RejectModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (reason?: string) => Promise<void>;
+  onConfirm: (reason?: string) => void;
   isLoading: boolean;
 }) => {
   const [reason, setReason] = useState("");
@@ -656,7 +680,7 @@ const EditModal = ({
     description?: string;
     logoUrl?: string;
     contactEmail?: string;
-  }) => Promise<void>;
+  }) => void;
   isLoading: boolean;
   initialData: {
     siteName: string;

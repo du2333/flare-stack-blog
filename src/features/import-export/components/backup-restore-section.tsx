@@ -148,21 +148,35 @@ export function BackupRestoreSection() {
   const [exportTaskId, setExportTaskId] = useState<string | null>(null);
   const startExport = useStartExport();
   const { data: exportProgress } = useExportProgress(exportTaskId);
+  const exportProgressData = exportProgress?.error
+    ? null
+    : exportProgress?.data;
 
   const isExporting =
     exportTaskId !== null ||
-    exportProgress?.status === "pending" ||
-    exportProgress?.status === "processing";
+    exportProgressData?.status === "pending" ||
+    exportProgressData?.status === "processing";
 
   const handleExport = () => {
     startExport.mutate(
       {},
       {
         onSuccess: (result) => {
-          setExportTaskId(result.taskId);
-        },
-        onError: (error) => {
-          toast.error("启动失败", { description: error.message });
+          if (result.error) {
+            const reason = result.error.reason;
+            switch (reason) {
+              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+              case "WORKFLOW_CREATE_FAILED":
+                toast.error("启动失败", { description: "启动导出任务失败" });
+                return;
+              default: {
+                reason satisfies never;
+                toast.error("启动失败", { description: "未知错误" });
+                return;
+              }
+            }
+          }
+          setExportTaskId(result.data.taskId);
         },
       },
     );
@@ -172,7 +186,28 @@ export function BackupRestoreSection() {
   useEffect(() => {
     if (!exportTaskId || !exportProgress) return;
 
-    const { status, total } = exportProgress;
+    if (exportProgress.error) {
+      const reason = exportProgress.error.reason;
+      switch (reason) {
+        case "TASK_NOT_FOUND":
+          // KV eventual consistency: keep polling
+          return;
+        case "INVALID_PROGRESS_DATA":
+          toast.error("导出失败", {
+            id: EXPORT_TOAST_ID,
+            duration: ms("10s"),
+            description: "导出进度数据异常，请重试",
+          });
+          setExportTaskId(null);
+          return;
+        default: {
+          reason satisfies never;
+          return;
+        }
+      }
+    }
+
+    const { status, total } = exportProgress.data;
 
     if (status === "completed") {
       const currentTaskId = exportTaskId;
@@ -202,11 +237,14 @@ export function BackupRestoreSection() {
   const [importTaskId, setImportTaskId] = useState<string | null>(null);
   const uploadMutation = useUploadForImport();
   const { data: importProgress } = useImportProgress(importTaskId);
+  const importProgressData = importProgress?.error
+    ? null
+    : importProgress?.data;
 
   const isImporting =
     importTaskId !== null ||
-    importProgress?.status === "pending" ||
-    importProgress?.status === "processing";
+    importProgressData?.status === "pending" ||
+    importProgressData?.status === "processing";
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -220,10 +258,26 @@ export function BackupRestoreSection() {
 
     uploadMutation.mutate(formData, {
       onSuccess: (result) => {
-        setImportTaskId(result.taskId);
-      },
-      onError: (error) => {
-        toast.error("上传失败", { description: error.message });
+        if (result.error) {
+          const reason = result.error.reason;
+          switch (reason) {
+            case "NO_FILES":
+              toast.error("上传失败", { description: "缺少文件" });
+              return;
+            case "UPLOAD_FAILED":
+              toast.error("上传失败", { description: "上传文件失败，请重试" });
+              return;
+            case "WORKFLOW_CREATE_FAILED":
+              toast.error("上传失败", { description: "启动导入任务失败" });
+              return;
+            default: {
+              reason satisfies never;
+              toast.error("上传失败", { description: "未知错误" });
+              return;
+            }
+          }
+        }
+        setImportTaskId(result.data.taskId);
       },
     });
 
@@ -234,7 +288,28 @@ export function BackupRestoreSection() {
   useEffect(() => {
     if (!importTaskId || !importProgress) return;
 
-    const { status, report } = importProgress;
+    if (importProgress.error) {
+      const reason = importProgress.error.reason;
+      switch (reason) {
+        case "TASK_NOT_FOUND":
+          // KV eventual consistency: keep polling
+          return;
+        case "INVALID_PROGRESS_DATA":
+          toast.error("导入失败", {
+            id: IMPORT_TOAST_ID,
+            duration: ms("10s"),
+            description: "导入进度数据异常，请重试",
+          });
+          setImportTaskId(null);
+          return;
+        default: {
+          reason satisfies never;
+          return;
+        }
+      }
+    }
+
+    const { status, report } = importProgress.data;
 
     if (status === "completed") {
       const succeeded = report?.succeeded ?? [];

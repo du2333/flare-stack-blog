@@ -28,8 +28,7 @@ export function useMediaUpload() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append("image", file);
-      const result = await uploadImageFn({ data: formData });
-      return result;
+      return await uploadImageFn({ data: formData });
     },
   });
 
@@ -73,7 +72,27 @@ export function useMediaUpload() {
       );
 
       try {
-        await uploadMutation.mutateAsync(item.file);
+        const result = await uploadMutation.mutateAsync(item.file);
+        if (result.error) {
+          if (isMountedRef.current) {
+            const message = "媒体入库失败，请重试";
+
+            setQueue((prev) =>
+              prev.map((q, i) =>
+                i === waitingIndex
+                  ? {
+                      ...q,
+                      status: "ERROR",
+                      progress: 0,
+                      log: `> ERROR: ${message}`,
+                    }
+                  : q,
+              ),
+            );
+            toast.error(`上传失败: ${item.name}`, { description: message });
+          }
+          return;
+        }
 
         if (isMountedRef.current) {
           setQueue((prev) =>

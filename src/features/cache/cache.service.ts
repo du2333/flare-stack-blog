@@ -3,6 +3,8 @@ import type { z } from "zod";
 import type { CacheKey, CacheNamespace } from "./types";
 import type { Duration } from "@/lib/duration";
 import { ms } from "@/lib/duration";
+import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
+import { purgeSiteCDNCache } from "@/lib/invalidate";
 
 /**
  * 缓存数据
@@ -185,4 +187,18 @@ export async function bumpVersion(
   console.log(
     JSON.stringify({ message: "cache version bumped", key, version: next }),
   );
+}
+
+export async function invalidateSiteCache(
+  context: BaseContext & { executionCtx: ExecutionContext },
+) {
+  const purgeTask = purgeSiteCDNCache(context.env);
+  const kvTasks = [
+    bumpVersion(context, "posts:list"),
+    bumpVersion(context, "posts:detail"),
+    deleteKey(context, TAGS_CACHE_KEYS.publicList),
+  ];
+
+  await Promise.all([purgeTask, ...kvTasks]);
+  return { success: true };
 }

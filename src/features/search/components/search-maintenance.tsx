@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { Database, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -6,20 +7,28 @@ import { buildSearchIndexFn } from "@/features/search/search.api";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 
 export function SearchMaintenance() {
-  const [isIndexing, setIsIndexing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const rebuildToastId = "search-index-rebuild";
+  const rebuildSearchIndexMutation = useMutation({
+    mutationFn: buildSearchIndexFn,
+    onMutate: () => {
+      toast.loading("正在重新映射索引...", { id: rebuildToastId });
+    },
+    onSuccess: (result) => {
+      toast.success(
+        `索引重建完成 (耗时 ${result.duration}ms, 共 ${result.indexed} 条数据)`,
+        { id: rebuildToastId },
+      );
+    },
+    onSettled: (_data, error) => {
+      if (!error) return;
+      toast.dismiss(rebuildToastId);
+    },
+  });
 
   const handleRebuild = () => {
     setIsModalOpen(false);
-    setIsIndexing(true);
-    toast.promise(buildSearchIndexFn, {
-      loading: "正在重新映射索引...",
-      success: ({ duration, indexed }) => {
-        setIsIndexing(false);
-        return `索引重建完成 (耗时 ${duration}ms, 共 ${indexed} 条数据)`;
-      },
-      error: "索引重建失败",
-    });
+    rebuildSearchIndexMutation.mutate({});
   };
 
   return (
@@ -48,10 +57,10 @@ export function SearchMaintenance() {
         <Button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          disabled={isIndexing}
+          disabled={rebuildSearchIndexMutation.isPending}
           className="w-full h-10 px-4 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 transition-opacity"
         >
-          {isIndexing ? (
+          {rebuildSearchIndexMutation.isPending ? (
             <RefreshCw size={12} className="animate-spin" />
           ) : (
             <RefreshCw size={12} />

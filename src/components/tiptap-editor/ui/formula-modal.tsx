@@ -137,10 +137,10 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                 <Icon size={14} />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground leading-none mb-0.5">
+                <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground leading-none mb-0.5">
                   FORMULA
                 </span>
-                <span className="text-sm font-bold font-mono tracking-wider text-foreground uppercase truncate">
+                <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase truncate">
                   {editContext ? "编辑公式" : "插入公式"}
                 </span>
               </div>
@@ -149,7 +149,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveMode("inline")}
-                className={`px-2 py-1 text-[10px] font-mono uppercase transition-colors ${
+                className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
                   activeMode === "inline"
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
@@ -160,7 +160,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveMode("block")}
-                className={`px-2 py-1 text-[10px] font-mono uppercase transition-colors ${
+                className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
                   activeMode === "block"
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
@@ -181,7 +181,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 p-4 sm:p-6 gap-4 md:gap-6 overflow-auto">
           <div className="flex flex-col min-w-0 shrink-0 md:flex-1">
-            <label className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground mb-2">
+            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
               LaTeX
             </label>
             <textarea
@@ -189,12 +189,12 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               value={latex}
               onChange={(e) => setLatex(e.target.value)}
               placeholder="输入 LaTeX，如 x^2 + y^2 = z^2"
-              className="w-full min-h-25 sm:min-h-30 p-3 sm:p-4 font-mono text-sm bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
+              className="w-full min-h-25 sm:min-h-30 p-3 sm:p-4 font-mono text-base bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
               spellCheck={false}
             />
           </div>
           <div className="flex flex-col min-w-0 shrink-0 md:flex-1 md:border-l md:border-border/50 md:pl-6">
-            <label className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground mb-2">
+            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
               预览
             </label>
             <div
@@ -203,7 +203,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               }`}
             >
               {previewError ? (
-                <p className="text-xs font-mono text-destructive wrap-break-word text-center">
+                <p className="text-sm font-mono text-destructive wrap-break-word text-center">
                   {previewError}
                 </p>
               ) : previewHtml ? (
@@ -212,7 +212,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
               ) : (
-                <p className="text-xs font-mono text-muted-foreground/50">
+                <p className="text-sm font-mono text-muted-foreground/50">
                   输入 LaTeX 查看预览
                 </p>
               )}
@@ -221,13 +221,13 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
         </div>
 
         <div className="flex items-center justify-end gap-0 border-t border-border/50 shrink-0">
-          <span className="hidden sm:inline px-4 text-[10px] font-mono text-muted-foreground/60">
+          <span className="hidden sm:inline px-4 text-xs font-mono text-muted-foreground/60">
             Ctrl+Enter 应用 · Esc 取消
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50 active:bg-muted/20"
+            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50 active:bg-muted/20"
           >
             [ 取消 ]
           </button>
@@ -235,7 +235,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
             type="button"
             onClick={handleApply}
             disabled={!latex.trim()}
-            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground active:bg-foreground/90"
+            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground active:bg-foreground/90"
           >
             [ 应用 ]
           </button>

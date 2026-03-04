@@ -21,9 +21,10 @@ export const submitFriendLinkFn = createServerFn({
     authMiddleware,
   ])
   .inputValidator(SubmitFriendLinkInputSchema)
-  .handler(async ({ data, context }) => {
-    return await FriendLinkService.submitFriendLink(context, data);
-  });
+  .handler(
+    async ({ data, context }) =>
+      await FriendLinkService.submitFriendLink(context, data),
+  );
 
 export const getApprovedFriendLinksFn = createServerFn()
   .middleware([dbMiddleware])
@@ -33,6 +34,6 @@ export const getApprovedFriendLinksFn = createServerFn()
 
 export const getMyFriendLinksFn = createServerFn()
   .middleware([authMiddleware])
-  .handler(async ({ context }) => {
-    return await FriendLinkService.getMyFriendLinks(context);
-  });
+  .handler(
+    async ({ context }) => await FriendLinkService.getMyFriendLinks(context),
+  );

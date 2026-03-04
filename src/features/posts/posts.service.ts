@@ -28,6 +28,7 @@ import {
   highlightCodeBlocks,
   slugify,
 } from "@/features/posts/utils/content";
+import { err, ok } from "@/lib/errors";
 import { purgePostCDNCache } from "@/lib/invalidate";
 import * as SearchService from "@/features/search/search.service";
 import { calculatePostHash } from "@/features/posts/utils/sync";
@@ -141,15 +142,15 @@ export async function generateSummaryByPostId({
   const post = await PostRepo.findPostById(context.db, postId);
 
   if (!post) {
-    throw new Error("Post not found");
+    return err({ reason: "POST_NOT_FOUND" });
   }
 
   // 如果已经存在摘要，则直接返回
-  if (post.summary && post.summary.trim().length > 0) return post;
+  if (post.summary && post.summary.trim().length > 0) return ok(post);
 
   const plainText = convertToPlainText(post.contentJson);
   if (plainText.length < 100) {
-    return post;
+    return ok(post);
   }
 
   const { summary } = await AiService.summarizeText(context, plainText);
@@ -158,7 +159,11 @@ export async function generateSummaryByPostId({
     summary,
   });
 
-  return updatedPost;
+  if (!updatedPost) {
+    return err({ reason: "POST_NOT_FOUND" });
+  }
+
+  return ok(updatedPost);
 }
 
 // ============ Admin Service Methods ============
@@ -294,7 +299,7 @@ export async function updatePost(
 ) {
   const updatedPost = await PostRepo.updatePost(context.db, data.id, data.data);
   if (!updatedPost) {
-    throw new Error("Post not found");
+    return err({ reason: "POST_NOT_FOUND" });
   }
 
   if (data.data.contentJson !== undefined) {
@@ -303,7 +308,7 @@ export async function updatePost(
     );
   }
 
-  return findPostById(context, { id: updatedPost.id });
+  return ok(updatedPost);
 }
 
 export async function deletePost(
@@ -311,7 +316,9 @@ export async function deletePost(
   data: DeletePostInput,
 ) {
   const post = await PostRepo.findPostById(context.db, data.id);
-  if (!post) return;
+  if (!post) {
+    return err({ reason: "POST_NOT_FOUND" });
+  }
 
   await PostRepo.deletePost(context.db, data.id);
 
@@ -339,6 +346,8 @@ export async function deletePost(
       CacheService.deleteKey(context, POSTS_CACHE_KEYS.syncHash(data.id)),
     );
   }
+
+  return ok({ success: true });
 }
 
 export async function previewSummary(

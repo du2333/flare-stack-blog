@@ -28,6 +28,9 @@ export const PostRepo = {
 ### 2. Service Layer (`[name].service.ts`)
 
 - **Responsibility**: Business logic orchestration. Data transformation, caching, calling other services.
+- **Error Contract**:
+  - Business errors use `Result` (`ok/err`) in service layer.
+  - Services with no business error path should return plain `T`.
 - **Dependencies**: Receives typed Context object. Use the most specific type needed:
   - `DbContext` for database-only operations
   - `DbContext & { executionCtx: ExecutionContext }` for operations with background tasks
@@ -56,13 +59,37 @@ export async function createEmptyPost(context: DbContext) {
 ### 3. API Layer (`api/[name].api.ts`)
 
 - **Responsibility**: Define Server Functions as frontend RPC entry points. Handle auth and input validation.
+- **Pattern**: API should remain thin (middleware + validation + service call). Avoid re-wrapping service return values in API layer when not needed.
 - **Pattern**: Use `createServerFn()` with middleware chains to progressively build context.
+
+#### File Naming Convention
+
+Small modules use a single file; larger modules split by access level:
+
+| Pattern | When to use |
+| :--- | :--- |
+| `api/<name>.api.ts` | Simple modules with few endpoints |
+| `api/<name>.public.api.ts` | Public endpoints (no auth required) |
+| `api/<name>.admin.api.ts` | Admin-only endpoints |
+| `api/<name>.user.api.ts` | Authenticated user endpoints |
 
 #### Middleware Composition
 
 ```typescript
 import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware, dbMiddleware, createRateLimitMiddleware } from "@/lib/middlewares";
+import { CreateTagInputSchema } from "./tags.schema";
+
+// Public endpoint (database only)
+export const getPostsFn = createServerFn()
+  .middleware([dbMiddleware])
+  .handler(({ context }) => PostService.getPosts(context));
+
+// Admin endpoint with Zod validation
+export const createTagFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(CreateTagInputSchema) // ← Zod schema, not .validator()
+  .handler(({ data, context }) => TagService.createTag(context, data));
 
 // Public endpoint with rate limiting
 export const createCommentFn = createServerFn()
@@ -70,16 +97,6 @@ export const createCommentFn = createServerFn()
     createRateLimitMiddleware({ capacity: 10, interval: "1m", key: "comments:create" }),
   ])
   .handler(({ data, context }) => CommentService.createComment(context, data));
-
-// Public endpoint (database only)
-export const getPostsFn = createServerFn()
-  .middleware([dbMiddleware])
-  .handler(({ context }) => PostService.getPosts(context));
-
-// Admin endpoint (auth + admin role required)
-export const updatePostFn = createServerFn()
-  .middleware([adminMiddleware]) // Includes dbMiddleware + sessionMiddleware + auth check + admin check
-  .handler(({ data, context }) => PostService.updatePost(context, data));
 ```
 
 > For CDN caching patterns (Cache-Control headers via page or Hono routes), see the **caching-strategies** skill.
@@ -139,24 +156,31 @@ Middlewares progressively inject dependencies and enforce policies.
 
 | Middleware                        | Purpose                                 | Depends On          |
 | :-------------------------------- | :-------------------------------------- | :------------------ |
-| `authMiddleware`                  | Requires valid session (401 if missing) | `sessionMiddleware` |
-| `adminMiddleware`                 | Requires admin role (403 if not admin)  | `authMiddleware`    |
-| `createRateLimitMiddleware(opts)` | Rate limiting via Durable Object        | (none)              |
+| `authMiddleware`                  | Requires valid session (request error)  | `sessionMiddleware` |
+| `adminMiddleware`                 | Requires admin role (request error)     | `authMiddleware`    |
+| `createRateLimitMiddleware(opts)` | Rate limiting via Durable Object        | `sessionMiddleware` |
 
 ### Middleware Chain Example
 
 ```typescript
+import { createPermissionError } from "@/lib/errors";
+
 // adminMiddleware already includes the full chain:
 // dbMiddleware -> sessionMiddleware -> private cache -> auth check -> admin check
 export const adminMiddleware = createMiddleware()
   .middleware([authMiddleware]) // authMiddleware includes sessionMiddleware which includes dbMiddleware
   .server(async ({ next, context }) => {
     if (context.session.user.role !== "admin") {
-      throw json({ message: "PERMISSION_DENIED" }, { status: 403 });
+      throw createPermissionError();
     }
-    return next({ context: { session } });
+    return next();
   });
 ```
+
+## Full-Chain Error Rules
+
+1. Request-level errors (auth/permission/rate-limit/turnstile) are thrown in middleware and handled by global TanStack Query `onError`.
+2. Business errors are returned as `Result` in service and consumed in frontend `onSuccess` branches (`if (result.error) { ... }`).
 
 ## Cloudflare Workflows
 

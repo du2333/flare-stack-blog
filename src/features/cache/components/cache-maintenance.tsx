@@ -10,11 +10,16 @@ export function CacheMaintenance() {
 
   const handleInvalidate = () => {
     setIsModalOpen(false);
-    toast.promise(invalidateSiteCacheFn, {
-      loading: "正在重置全站缓存...",
-      success: "全站缓存重置成功",
-      error: "缓存重置失败",
-    });
+    toast.promise(
+      async () => {
+        await invalidateSiteCacheFn();
+      },
+      {
+        loading: "正在重置全站缓存...",
+        success: "全站缓存重置成功",
+        error: (error) => error.message || "缓存重置失败",
+      },
+    );
   };
   return (
     <div className="flex flex-col border border-border/30 bg-background overflow-hidden group hover:border-red-500/30 transition-colors">

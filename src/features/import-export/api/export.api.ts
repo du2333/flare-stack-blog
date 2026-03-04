@@ -27,14 +27,8 @@ export const startExportFn = createServerFn({
           reason: result.error.reason,
         }),
       );
-      switch (result.error.reason) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        case "WORKFLOW_CREATE_FAILED":
-          throw new Error("启动导出任务失败");
-        default:
-          result.error.reason satisfies never;
-          throw new Error("未知错误");
-      }
+      // Keep the full Result shape so client can handle typed reasons.
+      return result;
     }
     console.log(
       JSON.stringify({
@@ -42,7 +36,7 @@ export const startExportFn = createServerFn({
         taskId: result.data.taskId,
       }),
     );
-    return result.data;
+    return result;
   });
 
 export const getExportProgressFn = createServerFn()

@@ -190,7 +190,7 @@ async function fetchUmamiDataForRange(
 
 export async function getDashboardStats(
   context: DbContext & { executionCtx: ExecutionContext },
-): Promise<DashboardResponse> {
+) {
   const { db } = context;
 
   const [

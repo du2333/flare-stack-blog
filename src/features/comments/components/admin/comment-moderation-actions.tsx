@@ -30,16 +30,18 @@ export const CommentModerationActions = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleStatusChange = async (
+  const handleStatusChange = (
     newStatus: "published" | "pending" | "deleted",
   ) => {
     setIsOpen(false);
-    await moderate({ data: { id: commentId, status: newStatus } });
+    moderate({ data: { id: commentId, status: newStatus } });
   };
 
-  const confirmDelete = async () => {
-    await adminDelete({ data: { id: commentId } });
-    setShowDeleteConfirm(false);
+  const confirmDelete = () => {
+    adminDelete(
+      { data: { id: commentId } },
+      { onSuccess: () => setShowDeleteConfirm(false) },
+    );
   };
 
   const isLoading = isModerating || isAdminDeleting;

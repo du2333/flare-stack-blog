@@ -26,16 +26,17 @@ export const Route = createFileRoute("/sitemap.xml")({
 
 ### Cache Control Constants (`lib/constants.ts`)
 
-Predefined constants for common scenarios:
+Predefined constants for common scenarios. Each constant is an object with two headers: `Cache-Control` (browser) and `CDN-Cache-Control` (CDN edge). This dual-header pattern lets you control browser and CDN caching independently.
 
-| Constant                    | Browser Cache         | CDN Cache                           | Use Case      |
-| :-------------------------- | :-------------------- | :---------------------------------- | :------------ |
-| `CACHE_CONTROL.immutable`   | max-age=31536000      | s-maxage=31536000                   | Static assets |
-| `CACHE_CONTROL.swr`         | must-revalidate       | s-maxage=1, stale-while-revalidate  | General pages |
-| `CACHE_CONTROL.standard`    | must-revalidate       | s-maxage=3600                       | List pages    |
-| `CACHE_CONTROL.private`     | no-store, no-cache    | private, no-store                   | Admin pages   |
-| `CACHE_CONTROL.notFound`    | must-revalidate       | s-maxage=10                         | 404 pages     |
-| `CACHE_CONTROL.serverError` | must-revalidate       | s-maxage=10                         | 500 pages     |
+| Constant                    | `Cache-Control` (Browser)            | `CDN-Cache-Control` (CDN)                          | Use Case      |
+| :-------------------------- | :----------------------------------- | :------------------------------------------------- | :------------ |
+| `CACHE_CONTROL.immutable`   | `public, max-age=31536000, immutable`| `public, max-age=31536000, immutable`              | Static assets |
+| `CACHE_CONTROL.swr`         | `public, max-age=0, must-revalidate` | `public, s-maxage=1, stale-while-revalidate=604800`| General pages |
+| `CACHE_CONTROL.public`      | `public, max-age=0, must-revalidate` | `public, s-maxage=31536000`                        | Public pages  |
+| `CACHE_CONTROL.forbidden`   | `public, max-age=0, must-revalidate` | `public, s-maxage=3600`                            | 403 pages     |
+| `CACHE_CONTROL.private`     | `private, no-store, no-cache, must-revalidate` | `private, no-store`                     | Admin pages   |
+| `CACHE_CONTROL.notFound`    | `public, max-age=0, must-revalidate` | `public, s-maxage=10`                              | 404 pages     |
+| `CACHE_CONTROL.serverError` | `public, max-age=0, must-revalidate` | `public, s-maxage=10`                              | 500 pages     |
 
 ### Hono Route Caching
 
