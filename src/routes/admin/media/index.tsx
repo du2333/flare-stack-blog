@@ -8,6 +8,7 @@ const mediaSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin/media/")({
+  ssr: false,
   validateSearch: mediaSearchSchema,
   component: MediaLibrary,
   loader: () => ({

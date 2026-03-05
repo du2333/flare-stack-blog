@@ -27,6 +27,7 @@ const searchSchema = z.object({
 export type PostsSearchParams = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute("/admin/posts/")({
+  ssr: false,
   validateSearch: searchSchema,
   component: PostManagerPage,
 });

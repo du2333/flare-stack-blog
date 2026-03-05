@@ -8,5 +8,5 @@ export const DASHBOARD_KEYS = {
 
 export const dashboardStatsQuery = queryOptions({
   queryKey: DASHBOARD_KEYS.stats,
-  queryFn: getDashboardStatsFn,
+  queryFn: () => getDashboardStatsFn(),
 });

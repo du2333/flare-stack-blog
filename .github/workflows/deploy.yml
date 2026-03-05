@@ -156,7 +156,8 @@ jobs:
             "UMAMI_API_KEY": "$UMAMI_API_KEY",
             "UMAMI_USERNAME": "$UMAMI_USERNAME",
             "UMAMI_PASSWORD": "$UMAMI_PASSWORD",
-            "TURNSTILE_SECRET_KEY": "$TURNSTILE_SECRET_KEY"
+            "TURNSTILE_SECRET_KEY": "$TURNSTILE_SECRET_KEY",
+            "GITHUB_TOKEN": "$GITHUB_TOKEN"
           }
           EOF
 

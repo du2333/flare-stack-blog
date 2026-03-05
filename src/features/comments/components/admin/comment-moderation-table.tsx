@@ -33,7 +33,12 @@ export const CommentModerationTable = ({
   page = 1,
 }: CommentModerationTableProps) => {
   const navigate = routeApi.useNavigate();
-  const { data: response, isLoading } = useQuery(
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+  } = useQuery(
     allCommentsQuery({
       status,
       postId,
@@ -45,7 +50,7 @@ export const CommentModerationTable = ({
   );
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const { moderate } = useAdminComments();
+  const { moderateAsync } = useAdminComments();
   const queryClient = useQueryClient();
 
   const handleSelectAll = () => {
@@ -73,14 +78,16 @@ export const CommentModerationTable = ({
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
-          moderate({ data: { id, status: "published" } }),
+          moderateAsync({ data: { id, status: "published" } }),
         ),
       );
       toast.success("批量批准完成", { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
-    } catch (error) {
-      toast.error("部分操作失败", { id: toastId });
+    } catch (caughtError) {
+      toast.error("部分操作失败", {
+        id: toastId,
+      });
     }
   };
 
@@ -92,14 +99,16 @@ export const CommentModerationTable = ({
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
-          moderate({ data: { id, status: "deleted" } }),
+          moderateAsync({ data: { id, status: "deleted" } }),
         ),
       );
       toast.success("已移入垃圾箱", { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
-    } catch (error) {
-      toast.error("部分操作失败", { id: toastId });
+    } catch (caughtError) {
+      toast.error("部分操作失败", {
+        id: toastId,
+      });
     }
   };
 
@@ -107,6 +116,15 @@ export const CommentModerationTable = ({
     return (
       <div className="py-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
+        <AlertTriangle size={40} strokeWidth={1} className="opacity-30" />
+        <p>{error.message}</p>
       </div>
     );
   }

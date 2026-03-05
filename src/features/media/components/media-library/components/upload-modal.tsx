@@ -1,10 +1,13 @@
 import { ClientOnly } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 import type { UploadItem } from "../types";
 import type React from "react";
-import { Button } from "@/components/ui/button";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE,
+} from "@/features/media/media.schema";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -28,6 +31,8 @@ function UploadModalInternal({
   onDrop,
 }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const accept = ACCEPTED_IMAGE_TYPES.join(",");
+  const maxSizeMb = Math.floor(MAX_FILE_SIZE / 1024 / 1024);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -39,12 +44,11 @@ function UploadModalInternal({
   const isAllComplete =
     queue.length > 0 &&
     queue.every((i) => i.status === "COMPLETE" || i.status === "ERROR");
-
   const hasErrors = queue.some((i) => i.status === "ERROR");
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-500 ease-in-out ${
+      className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-300 ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
@@ -52,36 +56,34 @@ function UploadModalInternal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/95 backdrop-blur-md"
+        className="absolute inset-0 bg-background/90 backdrop-blur-sm"
         onClick={onClose}
       />
 
+      {/* Modal Content */}
       <div
         className={`
-          relative w-full max-w-2xl bg-background border border-border shadow-none 
-          flex flex-col overflow-hidden rounded-none max-h-[85vh] transition-all duration-500 ease-in-out transform
-          ${
-            isOpen
-              ? "translate-y-0 scale-100 opacity-100"
-              : "translate-y-4 scale-95 opacity-0"
-          }
+          relative w-full max-w-md bg-background border border-border/30
+          flex flex-col transform transition-all duration-300 max-h-[85vh]
+          ${isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}
         `}
       >
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-border/30 shrink-0">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-mono tracking-wider uppercase text-foreground">
-              上传管理
-            </span>
+        <div className="px-6 pt-8 pb-4 flex items-start justify-between shrink-0">
+          <div className="space-y-2">
+            <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60">
+              [ UPLOAD ]
+            </p>
+            <h2 className="text-2xl font-serif font-medium text-foreground">
+              上传文件
+            </h2>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
             onClick={onClose}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-none"
+            className="p-2 -mr-2 text-muted-foreground/50 hover:text-foreground transition-colors"
           >
-            <X size={14} />
-          </Button>
+            <X size={16} strokeWidth={1.5} />
+          </button>
         </div>
 
         <input
@@ -90,9 +92,11 @@ function UploadModalInternal({
           onChange={handleInputChange}
           className="hidden"
           multiple
+          accept={accept}
         />
 
-        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1 min-h-0 bg-muted/5">
+        {/* Body */}
+        <div className="px-6 space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-0 pb-2">
           {/* Drop Zone */}
           <div
             onClick={() => fileInputRef.current?.click()}
@@ -100,7 +104,7 @@ function UploadModalInternal({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             className={`
-              relative border border-dashed aspect-video flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-4 rounded-none
+              relative border border-dashed py-8 px-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300
               ${
                 isDragging
                   ? "border-foreground bg-accent/20"
@@ -108,111 +112,127 @@ function UploadModalInternal({
               }
             `}
           >
-            <div className="font-mono text-[10px] text-muted-foreground whitespace-pre text-center leading-none opacity-50 select-none pointer-events-none">
-              {`
-      +-----------------------------+
-      |        在此处释放文件        |
-      |   [ image.png, video.mp4 ]  |
-      +-----------------------------+
-`}
-            </div>
-
-            <div className="text-center space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-foreground">
-                {isDragging ? "松开即可上传" : "点击或拖拽文件至此"}
+            <div className="text-center space-y-2">
+              <p className="text-xs font-mono uppercase tracking-widest text-foreground">
+                {isDragging ? "松开此处以上传" : "点击或拖拽文件至此"}
               </p>
-              <p className="text-[9px] font-mono text-muted-foreground">
-                最大文件大小: 10MB
+              <p className="text-xs font-mono text-muted-foreground/60">
+                支持 JPEG/JPG/PNG/WEBP/GIF (最大 {maxSizeMb}MB)
               </p>
             </div>
           </div>
 
           {/* Queue List */}
-          <div className="space-y-4">
-            {queue.length > 0 && (
+          {queue.length > 0 && (
+            <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-border/30 pb-2">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-                  队列状态
-                </span>
-                <span className="text-[10px] font-mono text-foreground">
-                  {queue.length} 个项目
+                <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60">
+                  上传队列 [{queue.length}]
                 </span>
               </div>
-            )}
 
-            <div className="space-y-2">
-              {queue.map((item) => (
-                <div
-                  key={item.id}
-                  className="group bg-background p-3 border border-border/30 flex flex-col gap-2 transition-all hover:border-border/60"
-                >
-                  <div className="flex justify-between items-center text-[10px] font-mono">
-                    <span className="truncate max-w-50 text-foreground">
-                      {item.name}
-                    </span>
-                    <span className="text-muted-foreground">{item.size}</span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="relative h-2 w-full bg-muted/30 overflow-hidden">
-                    <div
-                      className={`absolute top-0 left-0 h-full transition-all duration-300 ${
-                        item.status === "COMPLETE"
-                          ? "bg-emerald-500"
-                          : item.status === "ERROR"
-                            ? "bg-red-500"
-                            : "bg-foreground"
-                      }`}
-                      style={{ width: `${item.progress}%` }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center text-[9px] font-mono uppercase">
-                    <span
-                      className={`${
-                        item.status === "ERROR"
-                          ? "text-red-500"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {item.status === "COMPLETE"
-                        ? "完成"
-                        : item.status === "ERROR"
-                          ? "失败"
-                          : "上传中..."}
-                    </span>
-                    {item.log && (
-                      <span className="text-red-500 max-w-37.5 truncate">
-                        {item.log}
+              <div className="space-y-2">
+                {queue.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group bg-background p-3 border border-border/30 flex flex-col gap-2 transition-all hover:border-border/60"
+                  >
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="truncate max-w-40 text-foreground font-medium">
+                        {item.name}
                       </span>
-                    )}
+                      <span className="text-muted-foreground/70">
+                        {item.size}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="relative h-1 w-full bg-muted/30 overflow-hidden">
+                      <div
+                        className={`absolute top-0 left-0 h-full transition-all duration-300 ${
+                          item.status === "COMPLETE"
+                            ? "bg-emerald-500"
+                            : item.status === "ERROR"
+                              ? "bg-destructive"
+                              : "bg-foreground"
+                        }`}
+                        style={{ width: `${item.progress}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs font-mono tracking-widest mt-1">
+                      <div className="flex items-center gap-2">
+                        {item.status === "UPLOADING" && (
+                          <Loader2
+                            size={10}
+                            className="animate-spin text-foreground"
+                          />
+                        )}
+                        <span
+                          className={`uppercase ${
+                            item.status === "ERROR"
+                              ? "text-destructive"
+                              : item.status === "COMPLETE"
+                                ? "text-emerald-500"
+                                : "text-muted-foreground/70"
+                          }`}
+                        >
+                          {item.status === "COMPLETE"
+                            ? "完成"
+                            : item.status === "ERROR"
+                              ? "失败"
+                              : item.status === "UPLOADING"
+                                ? "上传中"
+                                : "等待中"}
+                        </span>
+                      </div>
+                      {item.log && (
+                        <span
+                          className={`max-w-37.5 truncate normal-case tracking-normal ${item.status === "ERROR" ? "text-destructive/80" : "text-muted-foreground/50"}`}
+                        >
+                          {item.log.replace(/^>\s*/, "")}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border/30 flex justify-end gap-3 shrink-0 bg-background">
+        <div className="px-6 pb-6 pt-4 flex justify-end gap-3 shrink-0">
+          {queue.length > 0 && !isAllComplete && (
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
+            >
+              后台上传
+            </button>
+          )}
+
           {isAllComplete ? (
-            <Button
+            <button
               onClick={onClose}
-              variant={hasErrors ? "destructive" : "default"}
-              size="sm"
-              className="h-9 px-6 text-[10px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90"
+              className={`
+                px-6 py-2.5 text-xs font-mono uppercase tracking-widest transition-all
+                ${
+                  hasErrors
+                    ? "bg-destructive text-destructive-foreground hover:opacity-80"
+                    : "bg-foreground text-background hover:opacity-80"
+                }
+              `}
             >
-              [ {hasErrors ? "确认 (含错误)" : "完成"} ]
-            </Button>
+              {hasErrors ? "确认 (含错误)" : "完成"}
+            </button>
           ) : (
-            <Button
+            <button
               onClick={onClose}
-              variant="ghost"
-              size="sm"
-              className="h-9 px-6 text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-none"
+              className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              [ 取消 ]
-            </Button>
+              取消
+            </button>
           )}
         </div>
       </div>

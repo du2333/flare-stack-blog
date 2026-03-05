@@ -17,6 +17,7 @@ const unsubscribeSearchSchema = z
   .partial();
 
 export const Route = createFileRoute("/_public/unsubscribe")({
+  ssr: false,
   validateSearch: unsubscribeSearchSchema,
   component: UnsubscribePage,
 });
@@ -25,7 +26,7 @@ function UnsubscribePage() {
   const { userId, type, token } = Route.useSearch();
   const hasValidParams = !!(userId && type && token);
 
-  const { error, isLoading } = useQuery({
+  const { data, error, isLoading } = useQuery({
     queryKey: EMAIL_KEYS.unsubscribe({
       userId: userId!,
       type: type!,
@@ -38,6 +39,8 @@ function UnsubscribePage() {
     retry: false,
     enabled: hasValidParams,
   });
+  const hasBusinessError = !!data?.error;
+  const hasFailed = !!error || hasBusinessError;
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
@@ -60,7 +63,7 @@ function UnsubscribePage() {
             <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
             <h1 className="text-2xl font-serif">正在处理退订请求...</h1>
           </div>
-        ) : error ? (
+        ) : hasFailed ? (
           <div className="space-y-6">
             <AlertCircle className="w-16 h-16 mx-auto text-red-500" />
             <div className="space-y-2">

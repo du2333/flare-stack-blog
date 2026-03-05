@@ -44,6 +44,7 @@ const SearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin/")({
+  ssr: "data-only",
   component: DashboardOverview,
   pendingComponent: DashboardSkeleton,
   validateSearch: (search) => SearchSchema.parse(search),
@@ -75,9 +76,6 @@ function DashboardOverview() {
     onSuccess: () => {
       queryClient.invalidateQueries(dashboardStatsQuery);
       toast.success("数据已刷新");
-    },
-    onError: () => {
-      toast.error("刷新失败，请重试");
     },
   });
 

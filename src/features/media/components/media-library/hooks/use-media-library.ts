@@ -86,46 +86,62 @@ export function useMediaLibrary() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (keys: Array<string>) => {
-      // 逐个删除
+      const deletedKeys: Array<string> = [];
+
       for (const key of keys) {
-        await deleteImageFn({ data: { key } });
+        const result = await deleteImageFn({ data: { key } });
+        if (result.error) {
+          return { deletedKeys, error: result.error };
+        }
+        deletedKeys.push(key);
       }
-      return keys; // 返回 keys 以便在 onSuccess 中使用
+
+      return { deletedKeys: keys, error: null };
     },
-    onSuccess: (deletedKeys) => {
-      // 刷新列表
-      queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
-      // 清除选择
-      setSelectedKeys((prev) => {
-        const next = new Set(prev);
-        deletedKeys.forEach((key) => next.delete(key));
-        return next;
-      });
-      setDeleteTarget(null);
+    onSuccess: (result) => {
+      const deletedKeys = result.deletedKeys;
+
+      if (deletedKeys.length > 0) {
+        // 刷新列表
+        queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
+        // 清除选择
+        setSelectedKeys((prev) => {
+          const next = new Set(prev);
+          deletedKeys.forEach((key) => next.delete(key));
+          return next;
+        });
+      }
+
+      if (result.error) {
+        if (deletedKeys.length > 0) {
+          toast.warning("部分删除成功", {
+            description: `已删除 ${deletedKeys.length} 个项目，部分资源正在被文章使用，无法删除。`,
+          });
+        } else {
+          toast.warning("删除失败", {
+            description: "资源正在被文章使用，无法删除",
+          });
+        }
+        return;
+      }
+
       toast.success("资源已永久删除", {
         description: `${deletedKeys.length} 个项目已从存储中永久删除。`,
       });
     },
-    onError: (error) => {
+    onSettled: () => {
       setDeleteTarget(null);
-      toast.error("删除失败", {
-        description: error.message,
-      });
     },
   });
 
   // Update name mutation
   const updateAsset = useMutation({
-    mutationFn: updateMediaNameFn,
+    mutationFn: (payload: Parameters<typeof updateMediaNameFn>[0]) =>
+      updateMediaNameFn(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
       toast.success("资源元数据已更新", {
         description: `元数据更改已保存。`,
-      });
-    },
-    onError: (error) => {
-      toast.error("更新元数据失败", {
-        description: error.message,
       });
     },
   });

@@ -11,6 +11,31 @@ This skill covers TanStack Query patterns, route loaders, component organization
 
 The project follows **TanStack Start / TanStack Query** standard practices for seamless SSR and client-side caching.
 
+### Query/Mutation Error Rules
+
+1. Do not add custom `onError` by default in `useQuery` / `useMutation`; request-level errors are handled by global QueryClient `onError`.
+2. Handle business errors in `onSuccess` using `result.error` branches.
+
+```typescript
+const mutation = useMutation({
+  mutationFn: (input: Parameters<typeof approveFriendLinkFn>[0]) =>
+    approveFriendLinkFn(input),
+  onSuccess: (result) => {
+    if (result.error) {
+      switch (result.error.reason) {
+        case "FRIEND_LINK_NOT_FOUND":
+          toast.error("操作失败: 友链不存在");
+          return;
+        default:
+          result.error.reason satisfies never;
+          return;
+      }
+    }
+    toast.success("友链已批准");
+  },
+});
+```
+
 ### 1. Query Definition
 
 Organize query definitions in `features/<name>/queries/index.ts`. Use a **Query Key Factory** pattern to centralize and type-safe your cache keys.
@@ -224,10 +249,58 @@ Reusable hooks for cross-feature functionality:
 
 | Hook                   | Purpose                        |
 | :--------------------- | :----------------------------- |
-| `use-debounce.ts`      | Generic debouncing             |
-| `use-media-query.ts`   | Responsive media queries       |
-| `use-navigate-back.ts` | Navigation with fallback       |
-| `use-active-toc.ts`    | Table of contents active state |
+| `use-debounce.ts`           | Generic debouncing             |
+| `use-media-query.ts`        | Responsive media queries       |
+| `use-navigate-back.ts`      | Navigation with fallback       |
+| `use-active-toc.ts`         | Table of contents active state |
+| `use-delay-unmount.ts`      | Delayed unmount for exit animations |
+| `use-previous-location.ts`  | Track previous route location  |
+
+## Mutation Hook Conventions
+
+Mutation hooks live in `features/<name>/hooks/` and follow these patterns:
+
+### Type Inference
+
+Use `Parameters<typeof xxxFn>[0]` to infer server function input types — no need to import/export separate input types:
+
+```typescript
+const mutation = useMutation({
+  mutationFn: async (input: Parameters<typeof deleteTagFn>[0]) => {
+    return await deleteTagFn(input);
+  },
+  // ...
+});
+```
+
+### `mutate` vs `mutateAsync` Exposure
+
+Hooks should choose what to expose based on calling context:
+
+| Scenario | Expose | Reason |
+| :--- | :--- | :--- |
+| Simple fire-and-forget (e.g. admin approve) | `mutate` only | Avoids floating promises |
+| Caller needs to `await` (e.g. form submit then close modal) | `mutateAsync` only | Sequential logic required |
+| Used in both contexts (e.g. single + batch operations) | Both `mutate` and `mutateAsync` | Flexibility for callers |
+
+```typescript
+// Hook return example
+return {
+  approve: approveMutation.mutate,       // simple use
+  approveAsync: approveMutation.mutateAsync, // batch use
+  isApproving: approveMutation.isPending,
+};
+```
+
+### Public / Admin Hook Split
+
+For features with distinct user roles, split hooks (matching the API split):
+
+```typescript
+// hooks/use-friend-links.ts
+export function useFriendLinks() { ... }      // Regular user actions
+export function useAdminFriendLinks() { ... } // Admin-only actions
+```
 
 ## Naming Conventions
 

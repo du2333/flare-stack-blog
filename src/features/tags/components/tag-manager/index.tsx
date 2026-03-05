@@ -47,71 +47,64 @@ export function TagManager() {
 
   const updateTagMutation = useMutation({
     mutationFn: async (data: { id: number; name: string }) => {
-      const result = await updateTagFn({
+      return await updateTagFn({
         data: { id: data.id, data: { name: data.name } },
       });
+    },
+    onSuccess: (result) => {
       if (result.error) {
         const reason = result.error.reason;
         switch (reason) {
           case "TAG_NOT_FOUND":
-            throw new Error("标签不存在");
+            toast.error("标签不存在");
+            return;
           case "TAG_NAME_ALREADY_EXISTS":
-            throw new Error("该标签名称已存在");
+            toast.error("该标签名称已存在");
+            return;
           default: {
             reason satisfies never;
-            throw new Error("未知错误");
+            toast.error("未知错误");
+            return;
           }
         }
       }
-      return result.data;
-    },
-    onSuccess: () => {
+
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setTagToEdit(null);
       toast.success("标签已重命名");
     },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
   });
 
   const deleteTagMutation = useMutation({
-    mutationFn: (id: number) => deleteTagFn({ data: { id } }),
-    onSuccess: () => {
+    mutationFn: async (id: number) => {
+      return await deleteTagFn({ data: { id } });
+    },
+    onSuccess: (result) => {
+      if (result.error) {
+        toast.error("删除失败: 标签不存在");
+        return;
+      }
+
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setTagToDelete(null);
       toast.success("标签已删除");
-    },
-    onError: (err: Error) => {
-      toast.error("删除失败: " + (err.message || "未知错误"));
     },
   });
 
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
-      const result = await createTagFn({ data: { name } });
-      if (result.error) {
-        const reason = result.error.reason;
-        switch (reason) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          case "TAG_NAME_ALREADY_EXISTS":
-            throw new Error("该标签名称已存在");
-          default: {
-            reason satisfies never;
-            throw new Error("未知错误");
-          }
-        }
-      }
-      return result.data;
+      return await createTagFn({ data: { name } });
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.error) {
+        toast.error("该标签名称已存在");
+        return;
+      }
+
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setNewTagName("");
       setIsCreating(false);
       toast.success("标签已创建");
-    },
-    onError: (err: Error) => {
-      toast.error(err.message);
     },
   });
 

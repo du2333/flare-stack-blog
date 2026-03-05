@@ -38,12 +38,12 @@ features/<name>/
 └── workflows/        # Cloudflare Workflows (async processing)
 ```
 
-### Result Type for Error Handling (`src/lib/error.ts`)
+### Result Type for Error Handling (`src/lib/errors/error.ts`)
 
 Service functions return `Result<TData, { reason: string }>` instead of throwing:
 
 ```typescript
-import { ok, err } from "@/lib/error";
+import { ok, err } from "@/lib/errors";
 
 // Service returns Result
 const exists = await TagRepo.nameExists(db, name);
@@ -64,6 +64,8 @@ if (result.error) {
 ### Middleware Chain (`src/lib/middlewares.ts`)
 
 TanStack Start middleware composes as: `dbMiddleware` → `sessionMiddleware` → `authMiddleware` → `adminMiddleware`. Each layer injects into context (`context.db`, `context.session`, `context.auth`). The `DbContext` type is used widely in service function signatures.
+
+Additionally, `errorLoggingMiddleware` is globally registered (via `@tanstack/react-start` global middleware) to log unhandled server function errors in structured JSON format.
 
 ### Caching Strategy
 

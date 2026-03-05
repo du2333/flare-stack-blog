@@ -2,6 +2,7 @@ import { Eye, EyeOff, Globe, Info, Loader2, Lock, Wifi } from "lucide-react";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import type { SystemConfig } from "@/features/config/config.schema";
+import type { Result } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -14,7 +15,9 @@ interface EmailSectionProps {
       senderAddress: string;
       senderName?: string;
     };
-  }) => Promise<{ success: boolean; error?: string }>;
+  }) => Promise<
+    Result<{ success: boolean }, { reason: "SEND_FAILED"; message: string }>
+  >;
 }
 
 export function EmailServiceSection({
@@ -47,7 +50,7 @@ export function EmailServiceSection({
         },
       });
 
-      if (result.success) {
+      if (!result.error) {
         setStatus("SUCCESS");
       } else {
         setStatus("ERROR");

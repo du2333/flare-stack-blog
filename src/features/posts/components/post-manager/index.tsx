@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ListFilter, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { PostRow, PostsToolbar } from "./components";
 import { useDeletePost, usePosts } from "./hooks";
 import { PostManagerSkeleton } from "./post-manager-skeleton";
@@ -91,18 +90,13 @@ export function PostManager({
   // Create empty post mutation
   const createMutation = useMutation({
     mutationFn: () => createEmptyPostFn(),
-    onSuccess: (result) => {
+    onSuccess: (createdPost) => {
       // Precise invalidation for new post creation
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
       navigate({
         to: "/admin/posts/edit/$id",
-        params: { id: String(result.id) },
-      });
-    },
-    onError: (e) => {
-      toast.error("新建条目失败", {
-        description: e.message,
+        params: { id: String(createdPost.id) },
       });
     },
   });

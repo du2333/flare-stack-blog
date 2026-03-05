@@ -2,7 +2,6 @@ import type {
   StartExportInput,
   TaskProgress,
 } from "@/features/import-export/import-export.schema";
-import type { Result } from "@/lib/error";
 import {
   ExportManifestSchema,
   IMPORT_EXPORT_CACHE_KEYS,
@@ -10,12 +9,12 @@ import {
   TaskProgressSchema,
 } from "@/features/import-export/import-export.schema";
 import * as CacheService from "@/features/cache/cache.service";
-import { err, ok } from "@/lib/error";
+import { err, ok } from "@/lib/errors";
 
 export async function startExport(
   context: BaseContext,
   input: StartExportInput,
-): Promise<Result<{ taskId: string }, { reason: "WORKFLOW_CREATE_FAILED" }>> {
+) {
   const taskId = crypto.randomUUID();
 
   const initialProgress: TaskProgress = {
@@ -59,15 +58,7 @@ export async function startExport(
   return ok({ taskId });
 }
 
-export async function startImport(
-  context: BaseContext,
-  files: Array<File>,
-): Promise<
-  Result<
-    { taskId: string; mode: "native" | "markdown" },
-    { reason: "NO_FILES" | "UPLOAD_FAILED" | "WORKFLOW_CREATE_FAILED" }
-  >
-> {
+export async function startImport(context: BaseContext, files: Array<File>) {
   if (files.length === 0) {
     return err({ reason: "NO_FILES" });
   }
@@ -172,10 +163,7 @@ export async function startImport(
   return ok({ taskId, mode });
 }
 
-export async function getExportProgress(
-  context: BaseContext,
-  taskId: string,
-): Promise<TaskProgress | null> {
+export async function getExportProgress(context: BaseContext, taskId: string) {
   const raw = await CacheService.getRaw(
     context,
     IMPORT_EXPORT_CACHE_KEYS.exportProgress(taskId),
@@ -183,10 +171,7 @@ export async function getExportProgress(
   return parseProgress(raw);
 }
 
-export async function getImportProgress(
-  context: BaseContext,
-  taskId: string,
-): Promise<TaskProgress | null> {
+export async function getImportProgress(context: BaseContext, taskId: string) {
   const raw = await CacheService.getRaw(
     context,
     IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId),
@@ -198,8 +183,8 @@ export function getExportDownloadUrl(taskId: string): string {
   return `/api/admin/export/download/${taskId}`;
 }
 
-function parseProgress(raw: string | null): TaskProgress | null {
-  if (!raw) return null;
+function parseProgress(raw: string | null) {
+  if (!raw) return err({ reason: "TASK_NOT_FOUND" });
   try {
     const parsed = TaskProgressSchema.safeParse(JSON.parse(raw));
     if (!parsed.success) {
@@ -209,10 +194,10 @@ function parseProgress(raw: string | null): TaskProgress | null {
           errors: parsed.error.issues,
         }),
       );
-      return null;
+      return err({ reason: "INVALID_PROGRESS_DATA" });
     }
-    return parsed.data;
+    return ok(parsed.data);
   } catch {
-    return null;
+    return err({ reason: "INVALID_PROGRESS_DATA" });
   }
 }

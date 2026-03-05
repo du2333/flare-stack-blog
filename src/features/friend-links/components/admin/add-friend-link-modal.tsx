@@ -24,25 +24,31 @@ const AddFriendLinkModalInternal = ({
     contactEmail: "",
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!formData.siteName || !formData.siteUrl) return;
-    await create({
-      data: {
-        siteName: formData.siteName,
-        siteUrl: formData.siteUrl,
-        description: formData.description || undefined,
-        logoUrl: formData.logoUrl || undefined,
-        contactEmail: formData.contactEmail || undefined,
+    create(
+      {
+        data: {
+          siteName: formData.siteName,
+          siteUrl: formData.siteUrl,
+          description: formData.description || undefined,
+          logoUrl: formData.logoUrl || undefined,
+          contactEmail: formData.contactEmail || undefined,
+        },
       },
-    });
-    setFormData({
-      siteName: "",
-      siteUrl: "",
-      description: "",
-      logoUrl: "",
-      contactEmail: "",
-    });
-    onClose();
+      {
+        onSuccess: () => {
+          setFormData({
+            siteName: "",
+            siteUrl: "",
+            description: "",
+            logoUrl: "",
+            contactEmail: "",
+          });
+          onClose();
+        },
+      },
+    );
   };
 
   if (!isOpen) return null;
@@ -60,8 +66,8 @@ const AddFriendLinkModalInternal = ({
         >
           <X size={16} strokeWidth={1.5} />
         </button>
-        <h3 className="text-lg font-serif font-medium mb-6">添加友链</h3>
-        <p className="text-xs text-muted-foreground mb-6">
+        <h3 className="text-xl font-serif font-medium mb-6">添加友链</h3>
+        <p className="text-sm text-muted-foreground mb-6">
           手动添加的友链将直接设为已通过状态。
         </p>
         <div className="space-y-4">
@@ -99,14 +105,14 @@ const AddFriendLinkModalInternal = ({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="font-mono text-[10px] uppercase tracking-widest rounded-none"
+              className="font-mono text-xs uppercase tracking-widest rounded-none"
             >
               取消
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isCreating || !formData.siteName || !formData.siteUrl}
-              className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-[10px] uppercase tracking-widest"
+              className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-xs uppercase tracking-widest"
             >
               {isCreating ? (
                 <Loader2 size={12} className="animate-spin" />
@@ -143,14 +149,14 @@ function ModalFormField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+      <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
         {label}
       </label>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="bg-transparent border-0 border-b border-border/50 text-sm px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5 placeholder:text-muted-foreground/30"
+        className="bg-transparent border-0 border-b border-border/50 text-base px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5 placeholder:text-muted-foreground/30"
       />
     </div>
   );

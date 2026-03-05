@@ -118,8 +118,8 @@ describe("FriendLinkService", () => {
         siteUrl: "https://admin-added.com",
       });
 
-      expect(result.data?.status).toBe("approved");
-      expect(result.data?.userId).toBeNull();
+      expect(result.status).toBe("approved");
+      expect(result.userId).toBeNull();
     });
 
     it("should invalidate cache on creation", async () => {
@@ -210,7 +210,7 @@ describe("FriendLinkService", () => {
       });
 
       const updated = await FriendLinkService.updateFriendLink(adminContext, {
-        id: created.data!.id,
+        id: created.id,
         siteName: "Updated Name",
         description: "Updated description",
       });
@@ -230,7 +230,7 @@ describe("FriendLinkService", () => {
 
       // Only update siteName
       const updated = await FriendLinkService.updateFriendLink(adminContext, {
-        id: created.data!.id,
+        id: created.id,
         siteName: "New Name",
       });
 
@@ -248,14 +248,14 @@ describe("FriendLinkService", () => {
       });
 
       const result = await FriendLinkService.deleteFriendLink(adminContext, {
-        id: created.data!.id,
+        id: created.id,
       });
 
       expect(result.data?.success).toBe(true);
 
       // Verify it's actually deleted
       const list = await FriendLinkService.getAllFriendLinks(adminContext, {});
-      expect(list.items.find((l) => l.id === created.data!.id)).toBeUndefined();
+      expect(list.items.find((l) => l.id === created.id)).toBeUndefined();
     });
 
     it("should return NOT_FOUND for non-existent ID", async () => {
@@ -310,7 +310,9 @@ describe("FriendLinkService", () => {
       // Query by status
       const approvedList = await FriendLinkService.getAllFriendLinks(
         adminContext,
-        { status: "approved" },
+        {
+          status: "approved",
+        },
       );
       expect(approvedList.items.every((l) => l.status === "approved")).toBe(
         true,
@@ -318,7 +320,9 @@ describe("FriendLinkService", () => {
 
       const rejectedList = await FriendLinkService.getAllFriendLinks(
         adminContext,
-        { status: "rejected" },
+        {
+          status: "rejected",
+        },
       );
       expect(rejectedList.items.every((l) => l.status === "rejected")).toBe(
         true,

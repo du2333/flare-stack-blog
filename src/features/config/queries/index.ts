@@ -10,5 +10,5 @@ export const CONFIG_KEYS = {
 
 export const systemConfigQuery = queryOptions({
   queryKey: CONFIG_KEYS.system,
-  queryFn: getSystemConfigFn,
+  queryFn: () => getSystemConfigFn(),
 });

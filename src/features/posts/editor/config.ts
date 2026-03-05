@@ -56,14 +56,17 @@ async function handleImageUpload(file: File): Promise<ImageUploadResult> {
     formData.append("height", dimensions.height.toString());
 
   const result = await uploadImageFn({ data: formData });
+  if (result.error) {
+    throw new Error("图片入库失败，请重试");
+  }
   toast.success("图片上传成功", {
     description: `${file.name} 已归档保存`,
   });
 
   return {
-    url: result.url,
-    width: result.width || dimensions.width || undefined,
-    height: result.height || dimensions.height || undefined,
+    url: result.data.url,
+    width: result.data.width || dimensions.width || undefined,
+    height: result.data.height || dimensions.height || undefined,
   };
 }
 

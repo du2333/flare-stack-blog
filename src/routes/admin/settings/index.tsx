@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/admin/settings/")({
+  ssr: false,
   component: RouteComponent,
   loader: () => ({
     title: "设置",

@@ -17,7 +17,7 @@ import * as CacheService from "@/features/cache/cache.service";
 import { FriendLinkAdminNotificationEmail } from "@/features/email/templates/FriendLinkAdminNotificationEmail";
 import { FriendLinkResultNotificationEmail } from "@/features/email/templates/FriendLinkResultNotificationEmail";
 import { serverEnv } from "@/lib/env/server.env";
-import { err, ok } from "@/lib/error";
+import { err, ok } from "@/lib/errors";
 import { purgeCDNCache } from "@/lib/invalidate";
 
 // ============ Authed User Methods ============
@@ -131,7 +131,7 @@ export async function createFriendLink(
 
   invalidateCache(context);
 
-  return ok(friendLink);
+  return friendLink;
 }
 
 export async function getAllFriendLinks(
@@ -204,7 +204,7 @@ export async function rejectFriendLink(
     data.id,
   );
   if (!friendLink) {
-    return err({ reason: "NOT_FOUND" as const });
+    return err({ reason: "NOT_FOUND" });
   }
 
   const updated = await FriendLinkRepo.updateFriendLink(context.db, data.id, {
@@ -248,7 +248,7 @@ export async function updateFriendLink(
     data.id,
   );
   if (!friendLink) {
-    return err({ reason: "NOT_FOUND" as const });
+    return err({ reason: "NOT_FOUND" });
   }
 
   const { id, ...updateData } = data;
@@ -275,7 +275,7 @@ export async function deleteFriendLink(
     data.id,
   );
   if (!friendLink) {
-    return err({ reason: "NOT_FOUND" as const });
+    return err({ reason: "NOT_FOUND" });
   }
 
   await FriendLinkRepo.deleteFriendLink(context.db, data.id);

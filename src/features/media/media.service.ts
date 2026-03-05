@@ -10,6 +10,7 @@ import {
   getContentTypeFromKey,
 } from "@/features/media/media.utils";
 import { CACHE_CONTROL } from "@/lib/constants";
+import { err, ok } from "@/lib/errors";
 
 export async function upload(
   context: DbContext & { executionCtx: ExecutionContext },
@@ -28,7 +29,7 @@ export async function upload(
       width,
       height,
     });
-    return mediaRecord;
+    return ok(mediaRecord);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -38,17 +39,20 @@ export async function upload(
       }),
     );
     context.executionCtx.waitUntil(
-      Storage.deleteFromR2(context.env, uploaded.key).catch((err) =>
+      Storage.deleteFromR2(context.env, uploaded.key).catch((rollbackError) =>
         console.error(
           JSON.stringify({
             message: "r2 rollback delete failed",
             key: uploaded.key,
-            error: err instanceof Error ? err.message : String(err),
+            error:
+              rollbackError instanceof Error
+                ? rollbackError.message
+                : String(rollbackError),
           }),
         ),
       ),
     );
-    throw new Error("Failed to insert media record");
+    return err({ reason: "MEDIA_RECORD_CREATE_FAILED" });
   }
 }
 
@@ -59,21 +63,26 @@ export async function deleteImage(
   // 后端兜底检查：防止删除正在被引用的媒体
   const inUse = await PostMediaRepo.isMediaInUse(context.db, key);
   if (inUse) {
-    throw new Error("Cannot delete media that is in use");
+    return err({ reason: "MEDIA_IN_USE" });
   }
 
   await MediaRepo.deleteMedia(context.db, key);
   context.executionCtx.waitUntil(
-    Storage.deleteFromR2(context.env, key).catch((err) =>
+    Storage.deleteFromR2(context.env, key).catch((deleteError) =>
       console.error(
         JSON.stringify({
           message: "r2 delete failed",
           key,
-          error: err instanceof Error ? err.message : String(err),
+          error:
+            deleteError instanceof Error
+              ? deleteError.message
+              : String(deleteError),
         }),
       ),
     ),
   );
+
+  return ok({ success: true });
 }
 
 export async function getMediaList(

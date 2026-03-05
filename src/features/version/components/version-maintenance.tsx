@@ -26,11 +26,11 @@ export function VersionMaintenance() {
             onClick: () => window.open(result.data.releaseUrl, "_blank"),
           },
         });
-      } else {
-        toast.success("系统已是最新", {
-          description: `当前版本 v${__APP_VERSION__} 为最新版本。`,
-        });
+        return;
       }
+      toast.success("系统已是最新", {
+        description: `当前版本 v${__APP_VERSION__} 为最新版本。`,
+      });
     },
   });
 

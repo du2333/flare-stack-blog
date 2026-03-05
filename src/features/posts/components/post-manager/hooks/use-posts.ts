@@ -76,19 +76,26 @@ export function useDeletePost({ onSuccess }: UseDeletePostOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (post: PostListItem) => deletePostFn({ data: { id: post.id } }),
-    onSuccess: (_data, post) => {
+    mutationFn: async (post: PostListItem) => {
+      return {
+        post,
+        result: await deletePostFn({ data: { id: post.id } }),
+      };
+    },
+    onSuccess: ({ post, result }) => {
+      if (result.error) {
+        toast.error("删除条目失败", {
+          description: `条目 "${post.title}" 不存在或已删除`,
+        });
+        return;
+      }
+
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
       toast.success("条目已删除", {
         description: `条目 "${post.title}" 已删除成功`,
       });
       onSuccess?.();
-    },
-    onError: (_error, post) => {
-      toast.error("删除条目失败", {
-        description: `删除条目 "${post.title}" 失败`,
-      });
     },
   });
 }

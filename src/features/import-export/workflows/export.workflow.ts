@@ -189,10 +189,27 @@ export class ExportWorkflow extends WorkflowEntrypoint<
 
         // Upload ZIP to R2
         const r2Key = IMPORT_EXPORT_R2_KEYS.exportZip(taskId);
-        await this.env.R2.put(r2Key, zipData, {
-          httpMetadata: { contentType: "application/zip" },
-          customMetadata: { taskId },
-        });
+        try {
+          await this.env.R2.put(r2Key, zipData, {
+            httpMetadata: { contentType: "application/zip" },
+            customMetadata: { taskId },
+          });
+        } catch (error) {
+          await this.updateProgress(progressKey, {
+            status: "failed",
+            total: posts.length,
+            completed: 0,
+            current: "",
+            errors: [
+              {
+                post: "上传 ZIP 失败",
+                reason: error instanceof Error ? error.message : String(error),
+              },
+            ],
+            warnings,
+          });
+          throw error;
+        }
 
         // Mark completed
         await this.updateProgress(progressKey, {

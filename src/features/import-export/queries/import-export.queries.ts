@@ -23,8 +23,11 @@ export function useExportProgress(taskId: string | null) {
     queryFn: () => getExportProgressFn({ data: { taskId: taskId! } }),
     refetchInterval: (query) => {
       const data = query.state.data;
-      if (!data) return 2000; // KV not ready yet — keep polling
-      return data.status === "processing" || data.status === "pending"
+      if (!data) return 2000;
+      if (data.error) {
+        return data.error.reason === "TASK_NOT_FOUND" ? 2000 : false;
+      }
+      return data.data.status === "processing" || data.data.status === "pending"
         ? 2000
         : false;
     },
@@ -47,15 +50,18 @@ export function useImportProgress(taskId: string | null) {
     queryFn: () => getImportProgressFn({ data: { taskId: taskId! } }),
     refetchInterval: (q) => {
       const data = q.state.data;
-      if (!data) return 2000; // KV not ready yet — keep polling
-      return data.status === "processing" || data.status === "pending"
+      if (!data) return 2000;
+      if (data.error) {
+        return data.error.reason === "TASK_NOT_FOUND" ? 2000 : false;
+      }
+      return data.data.status === "processing" || data.data.status === "pending"
         ? 2000
         : false;
     },
     enabled: !!taskId,
   });
 
-  const status = query.data?.status;
+  const status = query.data?.data?.status;
 
   useEffect(() => {
     if (

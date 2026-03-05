@@ -19,15 +19,22 @@ cd flare-stack-blog
 # 安装依赖
 bun install
 
-# 配置本地环境变量
-cp .dev.vars.example .dev.vars
-# 编辑 .dev.vars 填入必要的配置
+# 配置环境变量
+cp .env.example .env            # 客户端变量
+cp .dev.vars.example .dev.vars  # 服务端变量
+# 编辑 .env 和 .dev.vars 填入必要的配置
+
+# 配置 Wrangler
+cp wrangler.example.jsonc wrangler.jsonc
+# 编辑 wrangler.jsonc，填入你的资源 ID
 
 # 启动开发服务器
 bun dev
 ```
 
 访问 http://localhost:3000 查看应用。
+
+开始改动业务前，建议先阅读 [错误处理与 Result 模式快速上手](./docs/error-handling-quickstart.md)。
 
 ## 开发工作流
 
@@ -39,15 +46,6 @@ bun dev
 bun check  # 类型检查 + Lint + 格式化
 bun run test  # 运行测试
 ```
-
-### 分支策略
-
-| 分支类型     | 命名规范               | 用途             |
-| ------------ | ---------------------- | ---------------- |
-| `main`       | -                      | 生产分支，受保护 |
-| `feature/*`  | `feature/add-rss`      | 新功能开发       |
-| `fix/*`      | `fix/login-error`      | Bug 修复         |
-| `refactor/*` | `refactor/cache-layer` | 代码重构         |
 
 ### 提交信息
 
@@ -105,12 +103,19 @@ export async function findPostBySlug(
 
 ### 2. Result 类型（错误处理）
 
-服务层返回 `Result<T, { reason: string }>` 而不是抛出异常：
+遵循以下约定：
+
+1. `Result` 仅用于业务错误（如 `POST_NOT_FOUND`、`MEDIA_IN_USE`）。
+2. 请求级错误（鉴权、权限、限流、人机验证）由 middleware 直接 `throw`。
+3. 无业务错误的 service 直接返回 `T`，不包 `ok(...)`。
+4. 默认依赖 TypeScript 自动推断返回类型，只有在公共边界需要锁定类型时才显式标注。
+
+示例：
 
 ```typescript
-import { ok, err } from "@/lib/error";
+import { ok, err } from "@/lib/errors";
 
-// 服务层
+// 服务层（有业务错误 -> Result）
 export async function createTag(context: DbContext, name: string) {
   const exists = await TagRepo.nameExists(context.db, name);
   if (exists) return err({ reason: "TAG_NAME_ALREADY_EXISTS" });
@@ -119,15 +124,28 @@ export async function createTag(context: DbContext, name: string) {
   return ok(tag);
 }
 
-// 调用方
-const result = await TagService.createTag(context, "React");
-if (result.error) {
-  switch (result.error.reason) {
-    case "TAG_NAME_ALREADY_EXISTS":
-      throw new Error("标签已存在");
-    default:
-      result.error.reason satisfies never; // 穷尽检查
-  }
+// 调用方（query/mutation 约定：在 onSuccess 处理业务错误）
+const createTagMutation = useMutation({
+  mutationFn: (name: string) => createTagFn({ data: { name } }),
+  onSuccess: (result) => {
+    if (result.error) {
+      switch (result.error.reason) {
+        case "TAG_NAME_ALREADY_EXISTS":
+          toast.error("标签已存在");
+          return;
+        default:
+          result.error.reason satisfies never; // 穷尽检查
+          return;
+      }
+    }
+
+    toast.success("标签已创建");
+  },
+});
+
+// 服务层（无业务错误 -> 直接返回 T）
+export async function getTags(context: DbContext) {
+  return TagRepo.findAll(context.db);
 }
 ```
 
@@ -185,6 +203,8 @@ await CacheService.deleteKey(context, POSTS_CACHE_KEYS.detail(version, slug));
 ```
 
 ### 5. TanStack Query 模式
+
+错误处理规范统一维护在 [错误处理与 Result 模式快速上手](./docs/error-handling-quickstart.md)，这里不再重复。
 
 Query Key 工厂：
 

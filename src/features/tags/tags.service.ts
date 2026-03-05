@@ -18,7 +18,7 @@ import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
 import * as TagRepo from "@/features/tags/data/tags.data";
 import * as CacheService from "@/features/cache/cache.service";
 import { purgeCDNCache } from "@/lib/invalidate";
-import { err, ok } from "@/lib/error";
+import { err, ok } from "@/lib/errors";
 
 /**
  * Get all tags (cached)
@@ -152,7 +152,7 @@ async function invalidateTagRelatedCache(
 export const createTag = async (context: DbContext, data: CreateTagInput) => {
   const exists = await TagRepo.nameExists(context.db, data.name);
   if (exists) {
-    return err({ reason: "TAG_NAME_ALREADY_EXISTS" as const });
+    return err({ reason: "TAG_NAME_ALREADY_EXISTS" });
   }
 
   const tag = await TagRepo.insertTag(context.db, {
@@ -171,7 +171,7 @@ export async function updateTag(
 ) {
   const existingTag = await TagRepo.findTagById(context.db, data.id);
   if (!existingTag) {
-    return err({ reason: "TAG_NOT_FOUND" as const });
+    return err({ reason: "TAG_NOT_FOUND" });
   }
 
   if (data.data.name && data.data.name !== existingTag.name) {
@@ -179,7 +179,7 @@ export async function updateTag(
       excludeId: data.id,
     });
     if (exists) {
-      return err({ reason: "TAG_NAME_ALREADY_EXISTS" as const });
+      return err({ reason: "TAG_NAME_ALREADY_EXISTS" });
     }
   }
 
@@ -205,7 +205,9 @@ export async function deleteTag(
   data: DeleteTagInput,
 ) {
   const tag = await TagRepo.findTagById(context.db, data.id);
-  if (!tag) return;
+  if (!tag) {
+    return err({ reason: "TAG_NOT_FOUND" });
+  }
 
   // Fetch published posts associated with this tag BEFORE deleting
   const affectedPosts = await TagRepo.getPublishedPostsByTagId(
@@ -218,6 +220,8 @@ export async function deleteTag(
   context.executionCtx.waitUntil(
     invalidateTagRelatedCache(context, affectedPosts),
   );
+
+  return ok({ success: true });
 }
 
 /**

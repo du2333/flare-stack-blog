@@ -192,10 +192,10 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground leading-none mb-1">
+              <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground leading-none mb-1">
                 COMMAND
               </span>
-              <span className="text-sm font-bold font-mono tracking-wider text-foreground uppercase">
+              <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase">
                 {activeType === "LINK" ? "插入链接" : "选择媒体"}
               </span>
             </div>
@@ -223,7 +223,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                   placeholder="搜索媒体资产..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-none text-foreground text-xs font-mono pl-12 pr-6 py-4 focus:ring-0 placeholder:text-muted-foreground/40"
+                  className="w-full bg-transparent border-none text-foreground text-sm font-mono pl-12 pr-6 py-4 focus:ring-0 placeholder:text-muted-foreground/40"
                 />
               </div>
 
@@ -241,7 +241,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 ) : mediaItems.length === 0 ? (
                   <div className="h-48 flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <Search size={24} className="opacity-20" />
-                    <span className="text-xs font-mono">NO_ASSETS_FOUND</span>
+                    <span className="text-sm font-mono">NO_ASSETS_FOUND</span>
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 content-start pb-4">
@@ -277,12 +277,12 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           <div className="p-6 space-y-4 border-t border-border/50 bg-background">
             <div className="flex items-center gap-2 mb-2">
               <Globe size={12} className="text-muted-foreground" />
-              <label className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+              <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground">
                 {activeType === "IMAGE" ? "外部链接" : "目标地址"}
               </label>
             </div>
             <div className="group relative">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-xs pointer-events-none group-focus-within:text-foreground transition-colors"></span>
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-sm pointer-events-none group-focus-within:text-foreground transition-colors"></span>
               <input
                 type="text"
                 autoFocus={activeType === "LINK"}
@@ -293,7 +293,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 placeholder="https://..."
-                className="w-full bg-transparent border-b border-border text-foreground font-mono text-sm py-2 pl-4 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/20"
+                className="w-full bg-transparent border-b border-border text-foreground font-mono text-base py-2 pl-4 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/20"
               />
             </div>
           </div>
@@ -304,7 +304,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-6 py-4 text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50"
+            className="flex-1 px-6 py-4 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50"
           >
             [ 取消 ]
           </button>
@@ -316,7 +316,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 ? !inputUrl.trim() && !initialUrl.trim()
                 : !inputUrl.trim()
             }
-            className="flex-1 px-6 py-4 text-[10px] font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground"
+            className="flex-1 px-6 py-4 text-xs font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground"
           >
             {activeType === "LINK" && !inputUrl.trim() && initialUrl.trim()
               ? "[ 移除 ]"
