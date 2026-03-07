@@ -10,7 +10,7 @@
   "keep_vars": true,
   "routes": [
     {
-      "pattern": "https://1026.online/",
+      "pattern": "1026.online",
       "custom_domain": true,
     },
   ],
