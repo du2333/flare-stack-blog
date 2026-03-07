@@ -1,4 +1,5 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
+import { handleWebhookMessage } from "@/features/notification/api/webhook.consumer";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -43,15 +44,18 @@ export default {
       try {
         const event = parsed.data;
         switch (event.type) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           case "EMAIL":
             await handleEmailMessage(env, {
               ...event.data,
               idempotencyKey: message.id,
             });
             break;
+          case "WEBHOOK":
+            await handleWebhookMessage(event.data, message.id);
+            break;
           default:
-            event.type satisfies never;
+            event satisfies never;
+            throw new Error("Unknown queue message type");
         }
         message.ack();
       } catch (error) {

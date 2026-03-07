@@ -198,7 +198,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
         const { ADMIN_EMAIL, DOMAIN } = serverEnv(this.env);
         const commentPreview = plainText.slice(0, 100);
         await publishNotificationEvent(
-          { env: this.env },
+          { db, env: this.env },
           {
             type: "comment.admin_pending_review",
             data: {

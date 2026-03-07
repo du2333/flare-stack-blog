@@ -102,7 +102,7 @@ export async function sendReplyNotification(
 
   try {
     await publishNotificationEvent(
-      { env },
+      { db, env },
       {
         type:
           replyToAuthor.role === "admin"

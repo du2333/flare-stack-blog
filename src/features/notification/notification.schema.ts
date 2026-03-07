@@ -2,9 +2,20 @@ import { z } from "zod";
 
 export const NOTIFICATION_CHANNELS = ["email", "webhook"] as const;
 export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
+export const NOTIFICATION_EVENT = {
+  COMMENT_ADMIN_ROOT_CREATED: "comment.admin_root_created",
+  COMMENT_ADMIN_PENDING_REVIEW: "comment.admin_pending_review",
+  COMMENT_REPLY_TO_ADMIN_PUBLISHED: "comment.reply_to_admin_published",
+  COMMENT_REPLY_TO_USER_PUBLISHED: "comment.reply_to_user_published",
+  FRIEND_LINK_SUBMITTED: "friend_link.submitted",
+  FRIEND_LINK_APPROVED: "friend_link.approved",
+  FRIEND_LINK_REJECTED: "friend_link.rejected",
+} as const;
 
-const adminCommentRootCreatedNotificationSchema = z.object({
-  type: z.literal("comment.admin_root_created"),
+export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
+
+const commentAdminRootCreatedNotificationSchema = z.object({
+  type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -14,8 +25,8 @@ const adminCommentRootCreatedNotificationSchema = z.object({
   }),
 });
 
-const adminCommentPendingReviewNotificationSchema = z.object({
-  type: z.literal("comment.admin_pending_review"),
+const commentAdminPendingReviewNotificationSchema = z.object({
+  type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -26,7 +37,7 @@ const adminCommentPendingReviewNotificationSchema = z.object({
 });
 
 const commentReplyToAdminPublishedNotificationSchema = z.object({
-  type: z.literal("comment.reply_to_admin_published"),
+  type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -38,7 +49,7 @@ const commentReplyToAdminPublishedNotificationSchema = z.object({
 });
 
 const commentReplyToUserPublishedNotificationSchema = z.object({
-  type: z.literal("comment.reply_to_user_published"),
+  type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -50,7 +61,7 @@ const commentReplyToUserPublishedNotificationSchema = z.object({
 });
 
 const friendLinkSubmittedNotificationSchema = z.object({
-  type: z.literal("friend_link.submitted"),
+  type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED),
   data: z.object({
     to: z.string(),
     siteName: z.string(),
@@ -62,7 +73,7 @@ const friendLinkSubmittedNotificationSchema = z.object({
 });
 
 const friendLinkApprovedNotificationSchema = z.object({
-  type: z.literal("friend_link.approved"),
+  type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_APPROVED),
   data: z.object({
     to: z.string(),
     siteName: z.string(),
@@ -71,7 +82,7 @@ const friendLinkApprovedNotificationSchema = z.object({
 });
 
 const friendLinkRejectedNotificationSchema = z.object({
-  type: z.literal("friend_link.rejected"),
+  type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_REJECTED),
   data: z.object({
     to: z.string(),
     siteName: z.string(),
@@ -80,8 +91,8 @@ const friendLinkRejectedNotificationSchema = z.object({
 });
 
 export const notificationEventSchema = z.discriminatedUnion("type", [
-  adminCommentRootCreatedNotificationSchema,
-  adminCommentPendingReviewNotificationSchema,
+  commentAdminRootCreatedNotificationSchema,
+  commentAdminPendingReviewNotificationSchema,
   commentReplyToAdminPublishedNotificationSchema,
   commentReplyToUserPublishedNotificationSchema,
   friendLinkSubmittedNotificationSchema,
@@ -90,5 +101,5 @@ export const notificationEventSchema = z.discriminatedUnion("type", [
 ]);
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
-export type NotificationEventType = NotificationEvent["type"];
+export type NotificationEventType = z.infer<typeof notificationEventTypeSchema>;
 export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
