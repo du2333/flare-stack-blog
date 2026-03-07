@@ -22,11 +22,7 @@ export async function updateSystemConfig(
   data: SystemConfig,
 ) {
   await ConfigRepo.upsertSystemConfig(context.db, data);
-  await CacheService.deleteKey(
-    context,
-    CONFIG_CACHE_KEYS.system,
-    CONFIG_CACHE_KEYS.isEmailConfigured,
-  );
+  await CacheService.deleteKey(context, CONFIG_CACHE_KEYS.system);
 
   return { success: true };
 }
