@@ -1,10 +1,9 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import type { JSONContent } from "@tiptap/core";
 import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as EmailData from "@/features/email/data/email.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
-import { ReplyNotificationEmail } from "@/features/email/templates/ReplyNotificationEmail";
+import { publishNotificationEvent } from "@/features/notification/notification.service";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { serverEnv } from "@/lib/env/server.env";
 
@@ -101,29 +100,21 @@ export async function sendReplyNotification(
   const rootId = comment.rootId ?? comment.id;
   const commentUrl = `https://${DOMAIN}/post/${post.slug}?highlightCommentId=${comment.id}&rootId=${rootId}#comment-${comment.id}`;
 
-  const emailHtml = renderToStaticMarkup(
-    ReplyNotificationEmail({
-      postTitle: post.title,
-      replierName,
-      replyPreview: `${replyPreview}${replyPreview.length >= 100 ? "..." : ""}`,
-      commentUrl,
-      unsubscribeUrl,
-    }),
-  );
-
   try {
-    await env.QUEUE.send({
-      type: "EMAIL",
-      data: {
-        to: replyToAuthor.email,
-        subject: `[评论回复] ${replierName} 回复了您在《${post.title}》的评论`,
-        html: emailHtml,
-        headers: {
-          "List-Unsubscribe": `<${unsubscribeUrl}>`,
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    await publishNotificationEvent(
+      { env },
+      {
+        type: "comment.reply_published",
+        data: {
+          to: replyToAuthor.email,
+          postTitle: post.title,
+          replierName,
+          replyPreview: `${replyPreview}${replyPreview.length >= 100 ? "..." : ""}`,
+          commentUrl,
+          unsubscribeUrl,
         },
       },
-    });
+    );
 
     console.log(
       JSON.stringify({

@@ -1,4 +1,3 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import type {
   CreateCommentInput,
   DeleteCommentInput,
@@ -10,7 +9,7 @@ import type {
 } from "@/features/comments/comments.schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as PostService from "@/features/posts/posts.service";
-import { AdminNotificationEmail } from "@/features/email/templates/AdminNotificationEmail";
+import { publishNotificationEvent } from "@/features/notification/notification.service";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { serverEnv } from "@/lib/env/server.env";
@@ -175,22 +174,14 @@ export async function createComment(
       const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
       const commentPreview = convertToPlainText(data.content).slice(0, 100);
       const commenterName = context.session.user.name;
-
-      const emailHtml = renderToStaticMarkup(
-        AdminNotificationEmail({
+      await publishNotificationEvent(context, {
+        type: "comment.created",
+        data: {
+          to: ADMIN_EMAIL,
           postTitle: post.title,
           commenterName,
           commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
           commentUrl: `https://${DOMAIN}/post/${post.slug}?highlightCommentId=${comment.id}&rootId=${comment.id}#comment-${comment.id}`,
-        }),
-      );
-
-      await context.env.QUEUE.send({
-        type: "EMAIL",
-        data: {
-          to: ADMIN_EMAIL,
-          subject: `[新评论] ${post.title}`,
-          html: emailHtml,
         },
       });
     }

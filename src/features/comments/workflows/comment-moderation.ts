@@ -1,12 +1,11 @@
 import { WorkflowEntrypoint } from "cloudflare:workers";
-import { renderToStaticMarkup } from "react-dom/server";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import * as CommentService from "@/features/comments/comments.service";
 import * as AiService from "@/features/ai/ai.service";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as PostService from "@/features/posts/posts.service";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
-import { AdminNotificationEmail } from "@/features/email/templates/AdminNotificationEmail";
+import { publishNotificationEvent } from "@/features/notification/notification.service";
 import { getDb } from "@/lib/db";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
 import {
@@ -198,24 +197,19 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
         );
         const { ADMIN_EMAIL, DOMAIN } = serverEnv(this.env);
         const commentPreview = plainText.slice(0, 100);
-
-        const emailHtml = renderToStaticMarkup(
-          AdminNotificationEmail({
-            postTitle: post.title,
-            commenterName: commenter?.name ?? "匿名用户",
-            commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
-            commentUrl: `https://${DOMAIN}/admin/comments`,
-          }),
-        );
-
-        await this.env.QUEUE.send({
-          type: "EMAIL",
-          data: {
-            to: ADMIN_EMAIL,
-            subject: `[待审核] ${post.title}`,
-            html: emailHtml,
+        await publishNotificationEvent(
+          { env: this.env },
+          {
+            type: "comment.pending_review",
+            data: {
+              to: ADMIN_EMAIL,
+              postTitle: post.title,
+              commenterName: commenter?.name ?? "匿名用户",
+              commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
+              reviewUrl: `https://${DOMAIN}/admin/comments`,
+            },
           },
-        });
+        );
       });
     }
 
