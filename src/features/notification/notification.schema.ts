@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const NOTIFICATION_CHANNELS = ["email", "webhook"] as const;
+export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
+
 const adminCommentCreatedNotificationSchema = z.object({
   type: z.literal("comment.created"),
   data: z.object({
@@ -74,3 +77,5 @@ export const notificationEventSchema = z.discriminatedUnion("type", [
 ]);
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
+export type NotificationEventType = NotificationEvent["type"];
+export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
