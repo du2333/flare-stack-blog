@@ -10,7 +10,7 @@ export function createEmailMessageFromNotification(
   event: NotificationEvent,
 ): EmailMessage["data"] {
   switch (event.type) {
-    case "comment.created":
+    case "comment.admin_root_created":
       return {
         to: event.data.to,
         subject: `[新评论] ${event.data.postTitle}`,
@@ -23,7 +23,7 @@ export function createEmailMessageFromNotification(
           }),
         ),
       };
-    case "comment.pending_review":
+    case "comment.admin_pending_review":
       return {
         to: event.data.to,
         subject: `[待审核] ${event.data.postTitle}`,
@@ -36,7 +36,8 @@ export function createEmailMessageFromNotification(
           }),
         ),
       };
-    case "comment.reply_published":
+    case "comment.reply_to_admin_published":
+    case "comment.reply_to_user_published":
       return {
         to: event.data.to,
         subject: `[评论回复] ${event.data.replierName} 回复了您在《${event.data.postTitle}》的评论`,

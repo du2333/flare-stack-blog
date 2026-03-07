@@ -3,8 +3,8 @@ import { z } from "zod";
 export const NOTIFICATION_CHANNELS = ["email", "webhook"] as const;
 export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
 
-const adminCommentCreatedNotificationSchema = z.object({
-  type: z.literal("comment.created"),
+const adminCommentRootCreatedNotificationSchema = z.object({
+  type: z.literal("comment.admin_root_created"),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -15,7 +15,7 @@ const adminCommentCreatedNotificationSchema = z.object({
 });
 
 const adminCommentPendingReviewNotificationSchema = z.object({
-  type: z.literal("comment.pending_review"),
+  type: z.literal("comment.admin_pending_review"),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -25,8 +25,20 @@ const adminCommentPendingReviewNotificationSchema = z.object({
   }),
 });
 
-const commentReplyPublishedNotificationSchema = z.object({
-  type: z.literal("comment.reply_published"),
+const commentReplyToAdminPublishedNotificationSchema = z.object({
+  type: z.literal("comment.reply_to_admin_published"),
+  data: z.object({
+    to: z.string(),
+    postTitle: z.string(),
+    replierName: z.string(),
+    replyPreview: z.string(),
+    commentUrl: z.string(),
+    unsubscribeUrl: z.string(),
+  }),
+});
+
+const commentReplyToUserPublishedNotificationSchema = z.object({
+  type: z.literal("comment.reply_to_user_published"),
   data: z.object({
     to: z.string(),
     postTitle: z.string(),
@@ -68,9 +80,10 @@ const friendLinkRejectedNotificationSchema = z.object({
 });
 
 export const notificationEventSchema = z.discriminatedUnion("type", [
-  adminCommentCreatedNotificationSchema,
+  adminCommentRootCreatedNotificationSchema,
   adminCommentPendingReviewNotificationSchema,
-  commentReplyPublishedNotificationSchema,
+  commentReplyToAdminPublishedNotificationSchema,
+  commentReplyToUserPublishedNotificationSchema,
   friendLinkSubmittedNotificationSchema,
   friendLinkApprovedNotificationSchema,
   friendLinkRejectedNotificationSchema,

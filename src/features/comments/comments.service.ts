@@ -175,7 +175,7 @@ export async function createComment(
       const commentPreview = convertToPlainText(data.content).slice(0, 100);
       const commenterName = context.session.user.name;
       await publishNotificationEvent(context, {
-        type: "comment.created",
+        type: "comment.admin_root_created",
         data: {
           to: ADMIN_EMAIL,
           postTitle: post.title,

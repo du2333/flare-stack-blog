@@ -200,7 +200,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
         await publishNotificationEvent(
           { env: this.env },
           {
-            type: "comment.pending_review",
+            type: "comment.admin_pending_review",
             data: {
               to: ADMIN_EMAIL,
               postTitle: post.title,

@@ -7,9 +7,10 @@ import { notificationEventSchema } from "@/features/notification/notification.sc
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 
 const notificationChannelPolicy = {
-  "comment.created": ["email"],
-  "comment.pending_review": ["email"],
-  "comment.reply_published": ["email"],
+  "comment.admin_root_created": ["email"],
+  "comment.admin_pending_review": ["email"],
+  "comment.reply_to_admin_published": ["email"],
+  "comment.reply_to_user_published": ["email"],
   "friend_link.submitted": ["email"],
   "friend_link.approved": ["email"],
   "friend_link.rejected": ["email"],
@@ -43,6 +44,13 @@ async function enqueueNotificationDelivery(
       return;
     default: {
       channel satisfies never;
+      console.log(
+        JSON.stringify({
+          level: "error",
+          message: "Unknown notification channel",
+          channel,
+        }),
+      );
       throw new Error("Unknown notification channel");
     }
   }
@@ -54,6 +62,14 @@ export async function publishNotificationEvent(
 ) {
   const parsed = notificationEventSchema.parse(event);
   const channels = resolveNotificationChannels(parsed);
+  console.log(
+    JSON.stringify({
+      level: "info",
+      message: "Notification published",
+      eventType: parsed.type,
+      channels,
+    }),
+  );
   await Promise.all(
     channels.map((channel) =>
       enqueueNotificationDelivery(context, channel, parsed),

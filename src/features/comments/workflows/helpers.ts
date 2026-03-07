@@ -104,7 +104,10 @@ export async function sendReplyNotification(
     await publishNotificationEvent(
       { env },
       {
-        type: "comment.reply_published",
+        type:
+          replyToAuthor.role === "admin"
+            ? "comment.reply_to_admin_published"
+            : "comment.reply_to_user_published",
         data: {
           to: replyToAuthor.email,
           postTitle: post.title,
