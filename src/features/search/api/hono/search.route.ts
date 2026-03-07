@@ -4,7 +4,7 @@ import { z } from "zod";
 import { baseMiddleware } from "@/lib/hono/middlewares";
 import { setCacheHeaders } from "@/lib/hono/helper";
 import { SearchQuerySchema } from "@/features/search/search.schema";
-import * as SearchService from "@/features/search/search.service";
+import * as SearchService from "@/features/search/service/search.service";
 
 const app = new Hono<{ Bindings: Env }>();
 

@@ -1,4 +1,4 @@
-import { handleEmailMessage } from "@/features/email/email.queue";
+import { handleEmailMessage } from "@/features/email/api/email.consumer";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 

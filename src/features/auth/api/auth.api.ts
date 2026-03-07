@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import * as AuthService from "@/features/auth/auth.service";
+import * as AuthService from "@/features/auth/service/auth.service";
 import {
   authMiddleware,
   dbMiddleware,

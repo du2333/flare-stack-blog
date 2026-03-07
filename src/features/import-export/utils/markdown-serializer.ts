@@ -1,5 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
-import { extractImageKey } from "@/features/media/media.utils";
+import { extractImageKey } from "@/features/media/utils/media.utils";
 
 /**
  * JSONContent → Markdown 转换器

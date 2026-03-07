@@ -5,7 +5,7 @@ import * as AiService from "@/features/ai/ai.service";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as PostService from "@/features/posts/posts.service";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
-import { publishNotificationEvent } from "@/features/notification/notification.service";
+import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { getDb } from "@/lib/db";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
 import {

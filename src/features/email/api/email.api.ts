@@ -6,7 +6,7 @@ import {
   authMiddleware,
   dbMiddleware,
 } from "@/lib/middlewares";
-import * as EmailService from "@/features/email/email.service";
+import * as EmailService from "@/features/email/service/email.service";
 import { TestEmailConnectionSchema } from "@/features/email/email.schema";
 
 export const testEmailConnectionFn = createServerFn({

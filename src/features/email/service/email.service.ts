@@ -1,7 +1,7 @@
 import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import type { TestEmailConnectionInput } from "@/features/email/email.schema";
 import * as EmailData from "@/features/email/data/email.data";
-import { getSystemConfig } from "@/features/config/config.data";
+import { getSystemConfig } from "@/features/config/data/config.data";
 import {
   createEmailClient,
   verifyUnsubscribeToken,

@@ -1,5 +1,5 @@
 import type { EmailMessage } from "@/lib/queue/queue.schema";
-import { sendEmail } from "@/features/email/email.service";
+import { sendEmail } from "@/features/email/service/email.service";
 import { getDb } from "@/lib/db";
 
 export async function handleEmailMessage(

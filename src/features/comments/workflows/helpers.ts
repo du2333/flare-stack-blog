@@ -3,7 +3,7 @@ import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as EmailData from "@/features/email/data/email.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
-import { publishNotificationEvent } from "@/features/notification/notification.service";
+import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { serverEnv } from "@/lib/env/server.env";
 

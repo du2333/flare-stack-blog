@@ -1,6 +1,6 @@
 import type { NotificationEvent } from "@/features/notification/notification.schema";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
-import { createEmailMessageFromNotification } from "@/features/email/email.notification";
+import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 
 export async function publishNotificationEvent(
   context: Pick<DbContext, "env">,

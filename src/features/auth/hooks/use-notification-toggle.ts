@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import {
   getReplyNotificationStatusFn,
   toggleReplyNotificationFn,
-} from "@/features/email/email.api";
+} from "@/features/email/api/email.api";
 import { EMAIL_KEYS } from "@/features/email/queries";
 
 export function useNotificationToggle(userId: string | undefined) {

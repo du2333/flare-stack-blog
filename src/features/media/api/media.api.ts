@@ -5,7 +5,7 @@ import {
   UpdateMediaNameInputSchema,
   UploadMediaInputSchema,
 } from "@/features/media/media.schema";
-import * as MediaService from "@/features/media/media.service";
+import * as MediaService from "@/features/media/service/media.service";
 import { adminMiddleware } from "@/lib/middlewares";
 
 export const uploadImageFn = createServerFn({

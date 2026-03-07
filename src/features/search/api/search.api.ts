@@ -3,10 +3,10 @@ import {
   DeleteSearchDocSchema,
   UpsertSearchDocSchema,
 } from "@/features/search/search.schema";
-import * as SearchService from "@/features/search/search.service";
+import * as SearchService from "@/features/search/service/search.service";
 import { adminMiddleware, dbMiddleware } from "@/lib/middlewares";
 
-export const buildSearchIndexFn = createServerFn()
+export const buildSearchIndexFn = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .handler(({ context }) => SearchService.rebuildIndex(context));
 

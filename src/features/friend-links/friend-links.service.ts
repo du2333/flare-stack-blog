@@ -13,7 +13,7 @@ import type {
   UpdateFriendLinkInput,
 } from "./friend-links.schema";
 import * as CacheService from "@/features/cache/cache.service";
-import { publishNotificationEvent } from "@/features/notification/notification.service";
+import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
 import { purgeCDNCache } from "@/lib/invalidate";

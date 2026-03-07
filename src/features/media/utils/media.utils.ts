@@ -7,6 +7,7 @@ export function getContentTypeFromKey(key: string): string | undefined {
     webp: "image/webp",
     gif: "image/gif",
     svg: "image/svg+xml",
+    avif: "image/avif",
   };
   return contentTypes[extension || ""];
 }
@@ -61,15 +62,19 @@ export function buildTransformOptions(
 ) {
   const transformOptions: Record<string, unknown> = { quality: 80 };
 
-  if (searchParams.has("width"))
-    transformOptions.width = Number.parseInt(searchParams.get("width")!, 10);
-  if (searchParams.has("height"))
-    transformOptions.height = Number.parseInt(searchParams.get("height")!, 10);
-  if (searchParams.has("quality"))
-    transformOptions.quality = Number.parseInt(
-      searchParams.get("quality")!,
-      10,
-    );
+  if (searchParams.has("width")) {
+    const width = Number.parseInt(searchParams.get("width")!, 10);
+    if (!Number.isNaN(width) && width > 0) transformOptions.width = width;
+  }
+  if (searchParams.has("height")) {
+    const height = Number.parseInt(searchParams.get("height")!, 10);
+    if (!Number.isNaN(height) && height > 0) transformOptions.height = height;
+  }
+  if (searchParams.has("quality")) {
+    const quality = Number.parseInt(searchParams.get("quality")!, 10);
+    if (!Number.isNaN(quality) && quality > 0 && quality <= 100)
+      transformOptions.quality = quality;
+  }
   if (searchParams.has("fit")) transformOptions.fit = searchParams.get("fit");
 
   if (/image\/avif/.test(accept)) {

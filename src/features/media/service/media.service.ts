@@ -8,7 +8,7 @@ import * as PostMediaRepo from "@/features/posts/data/post-media.data";
 import {
   buildTransformOptions,
   getContentTypeFromKey,
-} from "@/features/media/media.utils";
+} from "@/features/media/utils/media.utils";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { err, ok } from "@/lib/errors";
 

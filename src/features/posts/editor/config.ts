@@ -17,7 +17,7 @@ import {
   OrderedListExtension,
 } from "@/features/posts/editor/extensions/typography/list";
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
-import { uploadImageFn } from "@/features/media/media.api";
+import { uploadImageFn } from "@/features/media/api/media.api";
 import { slugify } from "@/features/posts/utils/content";
 import {
   getActiveFormulaModalOpenerKey,

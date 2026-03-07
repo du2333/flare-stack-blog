@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import * as ConfigService from "@/features/config/config.service";
+import * as ConfigService from "@/features/config/service/config.service";
 import { adminMiddleware } from "@/lib/middlewares";
 import { SystemConfigSchema } from "@/features/config/config.schema";
 

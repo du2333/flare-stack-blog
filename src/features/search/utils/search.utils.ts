@@ -3,7 +3,7 @@ import {
   SCAN_LIMIT,
   SNIPPET_CONTEXT,
   SNIPPET_SLICE,
-} from "./search.service";
+} from "../service/search.service";
 import type { search } from "@orama/orama";
 
 type OramaHit = Awaited<ReturnType<typeof search>>["hits"][number];
@@ -12,6 +12,7 @@ export function buildSnippet({
   text,
   terms,
   fallbackTerm,
+  options,
 }: {
   text?: string | null;
   terms: Array<string>;
@@ -23,6 +24,10 @@ export function buildSnippet({
     fuzzyMaxDistance?: number;
   };
 }) {
+  const snippetSlice = options?.snippetSlice ?? SNIPPET_SLICE;
+  const scanLimit = options?.scanLimit ?? SCAN_LIMIT;
+  const fuzzyMaxDistance = options?.fuzzyMaxDistance ?? FUZZY_MAX_DISTANCE;
+
   const source = text?.trim() ?? "";
   if (source.length === 0) return null;
 
@@ -30,16 +35,16 @@ export function buildSnippet({
     terms.length > 0 ? terms : fallbackTerm ? [fallbackTerm] : [];
 
   if (activeTerms.length === 0) {
-    return source.slice(0, SNIPPET_SLICE);
+    return source.slice(0, snippetSlice);
   }
 
   const lowerSource = source.toLowerCase();
   const match =
     findExactMatch(source, lowerSource, activeTerms) ??
-    findApproxMatch(source, activeTerms, SCAN_LIMIT, FUZZY_MAX_DISTANCE);
+    findApproxMatch(source, activeTerms, scanLimit, fuzzyMaxDistance);
 
   if (!match) {
-    return source.slice(0, SNIPPET_SLICE);
+    return source.slice(0, snippetSlice);
   }
 
   const { idx, len, token } = match;

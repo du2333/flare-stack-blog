@@ -1,10 +1,10 @@
+import type { UpdateCheckResult } from "@/features/version/version.schema";
+import type { Result } from "@/lib/errors";
 import {
   GitHubReleaseSchema,
   UpdateCheckResultSchema,
   VERSION_CACHE_KEYS,
-} from "./version.schema";
-import type { UpdateCheckResult } from "./version.schema";
-import type { Result } from "@/lib/errors";
+} from "@/features/version/version.schema";
 import { err, ok } from "@/lib/errors";
 import * as CacheService from "@/features/cache/cache.service";
 import { serverEnv } from "@/lib/env/server.env";

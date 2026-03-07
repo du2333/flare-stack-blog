@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { forceCheckUpdateFn } from "@/features/version/version.api";
+import { forceCheckUpdateFn } from "@/features/version/api/version.api";
 import { VERSION_KEYS } from "@/features/version/queries";
 import { Button } from "@/components/ui/button";
 

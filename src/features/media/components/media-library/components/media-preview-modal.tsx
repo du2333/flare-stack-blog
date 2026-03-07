@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getLinkedPostsFn } from "@/features/media/media.api";
+import { getLinkedPostsFn } from "@/features/media/api/media.api";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
 import { MEDIA_KEYS } from "@/features/media/queries";

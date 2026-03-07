@@ -4,7 +4,7 @@ import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
 import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
 import { getDb } from "@/lib/db";
 import { purgePostCDNCache } from "@/lib/invalidate";
-import * as SearchService from "@/features/search/search.service";
+import * as SearchService from "@/features/search/service/search.service";
 
 export async function fetchPost(env: Env, postId: number) {
   const db = getDb(env);

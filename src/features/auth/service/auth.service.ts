@@ -1,6 +1,6 @@
 import { z } from "zod";
-import * as AuthRepo from "@/features/auth/auth.data";
-import * as ConfigRepo from "@/features/config/config.data";
+import * as AuthRepo from "@/features/auth/data/auth.data";
+import * as ConfigRepo from "@/features/config/data/config.data";
 import * as CacheService from "@/features/cache/cache.service";
 
 export async function getSession(context: SessionContext) {

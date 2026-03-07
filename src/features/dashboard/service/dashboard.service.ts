@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { UmamiClient } from "./services/umami-client";
 import type {
   DashboardRange,
   DashboardResponse,
 } from "@/features/dashboard/dashboard.schema";
+import { UmamiClient } from "@/features/dashboard/data/umami.client";
 import {
   ALL_RANGES,
   DASHBOARD_CACHE_KEYS,
