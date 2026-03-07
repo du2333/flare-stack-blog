@@ -4,7 +4,7 @@
 
 [部署指南](#部署指南) | [本地开发](#本地开发) | [错误处理开发规范](./docs/error-handling-quickstart.md)
 
-> 建了个tg群，欢迎来技术交流👏 [Telegram 群](https://t.me/+vWuQYybv1kgxMDkx)
+> 建了个 Telegram 群组，欢迎交流本项目相关问题 [Telegram 群](https://t.me/+vWuQYybv1kgxMDkx)
 
 基于 Cloudflare Workers 的现代化全栈博客 CMS。
 

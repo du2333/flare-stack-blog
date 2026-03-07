@@ -118,3 +118,12 @@ export function convertToPlainText(doc: JSONContent | null): string {
   // 将连续的换行符替换为单个空格或单个换行
   return textParts.join("").replace(/\n+/g, "\n").trim();
 }
+
+export function buildContentPreview(
+  doc: JSONContent | null,
+  maxLength = 1500,
+): string {
+  const preview = convertToPlainText(doc).trim();
+  if (!preview) return "";
+  return preview.slice(0, maxLength);
+}

@@ -138,9 +138,9 @@ export const shieldMiddleware = createMiddleware(async (c, next) => {
   if (isPathValid(path)) {
     return next();
   }
-  const response = c.text("Forbidden", 403);
-  // 只缓存 Shield 拦截的 403，保护正常 403
-  Object.entries(CACHE_CONTROL.forbidden).forEach(([k, v]) => {
+  const response = c.text("Not Found", 404);
+  // 只缓存 Shield 拦截的 404，保护正常 404
+  Object.entries(CACHE_CONTROL.notFound).forEach(([k, v]) => {
     response.headers.set(k, v);
   });
   return response;

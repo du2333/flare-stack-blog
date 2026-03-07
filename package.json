@@ -1,6 +1,6 @@
 {
   "name": "flare-stack-blog",
-  "version": "0.9.6",
+  "version": "0.10.0",
   "type": "module",
   "author": {
     "email": "kuangdadu@gmail.com",
@@ -86,7 +86,7 @@
     "tailwindcss": "^4.0.6",
     "tw-animate-css": "^1.3.6",
     "vite-tsconfig-paths": "^6.0.4",
-    "workers-ai-provider": "^3.0.2",
+    "workers-ai-provider": "^3.1.1",
     "zod": "^4.1.13"
   },
   "devDependencies": {

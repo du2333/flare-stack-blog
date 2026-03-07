@@ -41,19 +41,19 @@ describe("Hono Integration Test", () => {
   describe("Security Shield", () => {
     it("should block malicious extension (.php) with 404", async () => {
       const res = await testRequest(app, "/index.php");
-      expect(res.status).toBe(403);
-      expect(await res.text()).toBe("Forbidden");
+      expect(res.status).toBe(404);
+      expect(await res.text()).toBe("Not Found");
     });
 
     it("should block suspicious AWS config path with 404", async () => {
       const res = await testRequest(app, "/.aws/config");
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(404);
     });
 
     it("should block unknown paths with 404 before triggering loader", async () => {
       const res = await testRequest(app, "/random-bad-path");
-      expect(res.status).toBe(403);
-      expect(await res.text()).toBe("Forbidden");
+      expect(res.status).toBe(404);
+      expect(await res.text()).toBe("Not Found");
     });
 
     it("should allow home page", async () => {
