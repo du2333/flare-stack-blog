@@ -9,7 +9,10 @@ import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { AdminNotificationEmail } from "@/features/email/templates/AdminNotificationEmail";
 import { getDb } from "@/lib/db";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
-import { convertToPlainText } from "@/features/posts/utils/content";
+import {
+  buildContentPreview,
+  convertToPlainText,
+} from "@/features/posts/utils/content";
 
 interface Params {
   commentId: number;
@@ -68,8 +71,36 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
       return;
     }
 
+    const threadContext = await step.do("fetch thread context", async () => {
+      const db = getDb(this.env);
+      const [rootComment, replyToComment] = await Promise.all([
+        comment.rootId
+          ? CommentService.findCommentById(
+              { db, env: this.env },
+              comment.rootId,
+            )
+          : null,
+        comment.replyToCommentId
+          ? CommentService.findCommentById(
+              { db, env: this.env },
+              comment.replyToCommentId,
+            )
+          : null,
+      ]);
+
+      return {
+        rootCommentText: rootComment
+          ? convertToPlainText(rootComment.content).trim()
+          : "",
+        replyToCommentText: replyToComment
+          ? convertToPlainText(replyToComment.content).trim()
+          : "",
+      };
+    });
+
     // Extract plain text from JSONContent
     const plainText = convertToPlainText(comment.content);
+    const postContentPreview = buildContentPreview(post.contentJson);
 
     if (!plainText || plainText.trim().length === 0) {
       // Empty comment, mark as pending for manual review
@@ -110,6 +141,12 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
               post: {
                 title: post.title,
                 summary: post.summary ?? "",
+                contentPreview: postContentPreview,
+              },
+              thread: {
+                isReply: Boolean(comment.replyToCommentId),
+                rootComment: threadContext.rootCommentText,
+                replyToComment: threadContext.replyToCommentText,
               },
             },
           );
