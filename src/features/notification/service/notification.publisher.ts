@@ -52,8 +52,8 @@ async function enqueueEmailNotification(
 async function enqueueWebhookNotification(
   context: DbContext & { executionCtx: ExecutionContext },
   event: Extract<NotificationEvent, { type: NotificationWebhookEventType }>,
+  config: Awaited<ReturnType<typeof ConfigService.getSystemConfig>>,
 ) {
-  const config = await ConfigService.getSystemConfig(context);
   const endpoints = getMatchedWebhookEndpoints(config, event.type);
 
   await Promise.all(
@@ -89,6 +89,14 @@ export async function publishNotificationEvent(
     }
 
     await enqueueEmailNotification(context, parsed);
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Notification published",
+        eventType: parsed.type,
+        deliveries: { email: true },
+      }),
+    );
     return;
   }
 
@@ -100,7 +108,7 @@ export async function publishNotificationEvent(
     }
 
     if (adminWebhookEnabled && isNotificationWebhookEventType(parsed)) {
-      deliveries.push(enqueueWebhookNotification(context, parsed));
+      deliveries.push(enqueueWebhookNotification(context, parsed, config));
     }
 
     console.log(

@@ -88,6 +88,7 @@ export async function sendWebhookRequest(
 
   const response = await fetch(data.url, {
     method: "POST",
+    signal: AbortSignal.timeout(10_000),
     headers: {
       "Content-Type": "application/json",
       "User-Agent": "flare-stack-blog/webhook",
