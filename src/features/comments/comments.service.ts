@@ -151,19 +151,16 @@ export async function createComment(
       id: data.postId,
     });
     if (post) {
-      await sendReplyNotification(
-        context,
-        {
-          comment: {
-            id: comment.id,
-            rootId: comment.rootId,
-            replyToCommentId: comment.replyToCommentId,
-            userId: comment.userId,
-            content: data.content,
-          },
-          post: { slug: post.slug, title: post.title },
+      await sendReplyNotification(context, {
+        comment: {
+          id: comment.id,
+          rootId: comment.rootId,
+          replyToCommentId: comment.replyToCommentId,
+          userId: comment.userId,
+          content: data.content,
         },
-      );
+        post: { slug: post.slug, title: post.title },
+      });
     }
   }
 
@@ -284,20 +281,17 @@ export async function moderateComment(
       id: comment.postId,
     });
     if (post) {
-      await sendReplyNotification(
-        context,
-        {
-          comment: {
-            id: comment.id,
-            rootId: comment.rootId,
-            replyToCommentId: comment.replyToCommentId,
-            userId: comment.userId,
-            content: comment.content,
-          },
-          post: { slug: post.slug, title: post.title },
-          skipNotifyUserId: moderatorUserId,
+      await sendReplyNotification(context, {
+        comment: {
+          id: comment.id,
+          rootId: comment.rootId,
+          replyToCommentId: comment.replyToCommentId,
+          userId: comment.userId,
+          content: comment.content,
         },
-      );
+        post: { slug: post.slug, title: post.title },
+        skipNotifyUserId: moderatorUserId,
+      });
     }
   }
 

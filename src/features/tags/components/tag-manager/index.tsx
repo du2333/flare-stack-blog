@@ -10,9 +10,7 @@ import {
   deleteTagFn,
   updateTagFn,
 } from "@/features/tags/api/tags.api";
-import {
-  CreateTagInputSchema,
-} from "@/features/tags/tags.schema";
+import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import {
   TAGS_KEYS,
   tagsWithCountAdminQueryOptions,

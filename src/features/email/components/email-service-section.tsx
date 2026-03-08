@@ -107,7 +107,7 @@ export function EmailServiceSection({
         <div className="p-8 space-y-6">
           <h5 className="text-sm font-medium text-foreground">通知范围</h5>
           <div className="grid gap-4 xl:grid-cols-2">
-            <label className="flex items-start gap-3 border border-border/20 bg-muted/10 p-4">
+            <label className="flex items-center gap-4 border border-border/20 bg-muted/10 p-4 cursor-pointer hover:bg-muted/20 transition-colors">
               <Checkbox
                 checked={adminEmailEnabled}
                 onCheckedChange={(checked) =>
@@ -118,17 +118,17 @@ export function EmailServiceSection({
                   })
                 }
               />
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
                   管理员邮件通知
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground break-all">
                   新评论、待审核评论和友链申请会发送到管理员邮箱。
                 </p>
               </div>
             </label>
 
-            <label className="flex items-start gap-3 border border-border/20 bg-muted/10 p-4">
+            <label className="flex items-center gap-4 border border-border/20 bg-muted/10 p-4 cursor-pointer hover:bg-muted/20 transition-colors">
               <Checkbox
                 checked={userEmailEnabled}
                 onCheckedChange={(checked) =>
@@ -139,11 +139,11 @@ export function EmailServiceSection({
                   })
                 }
               />
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
                   用户邮件通知
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground break-all">
                   回复提醒和友链审核结果会发送给用户；关闭后资料页不再显示通知开关。
                 </p>
               </div>

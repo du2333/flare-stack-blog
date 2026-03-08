@@ -15,9 +15,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { FRIEND_LINKS_KEYS, allFriendLinksQuery } from "../../queries";
 import { useAdminFriendLinks } from "../../hooks/use-friend-links";
-import {
-  CreateFriendLinkInputSchema,
-} from "../../friend-links.schema";
+import { CreateFriendLinkInputSchema } from "../../friend-links.schema";
 import type { CreateFriendLinkInput } from "../../friend-links.schema";
 
 import type { FriendLinkStatus } from "@/lib/db/schema";

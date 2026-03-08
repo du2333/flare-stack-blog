@@ -17,12 +17,6 @@ interface Params {
   commentId: number;
 }
 
-const workflowExecutionCtx: ExecutionContext = {
-  props: undefined,
-  waitUntil() {},
-  passThroughOnException() {},
-};
-
 export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
   async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
     const { commentId } = event.payload;
@@ -204,7 +198,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
         const { ADMIN_EMAIL, DOMAIN } = serverEnv(this.env);
         const commentPreview = plainText.slice(0, 100);
         await publishNotificationEvent(
-          { db, env: this.env, executionCtx: workflowExecutionCtx },
+          { db, env: this.env, executionCtx: this.ctx },
           {
             type: "comment.admin_pending_review",
             data: {
@@ -223,16 +217,19 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
     if (moderationResult.safe && comment.replyToCommentId) {
       await step.do("send reply notification", async () => {
         const db = getDb(this.env);
-        await sendReplyNotification(db, this.env, workflowExecutionCtx, {
-          comment: {
-            id: comment.id,
-            rootId: comment.rootId,
-            replyToCommentId: comment.replyToCommentId,
-            userId: comment.userId,
-            content: comment.content,
+        await sendReplyNotification(
+          { db, env: this.env, executionCtx: this.ctx },
+          {
+            comment: {
+              id: comment.id,
+              rootId: comment.rootId,
+              replyToCommentId: comment.replyToCommentId,
+              userId: comment.userId,
+              content: comment.content,
+            },
+            post: { slug: post.slug, title: post.title },
           },
-          post: { slug: post.slug, title: post.title },
-        });
+        );
       });
     }
   }
