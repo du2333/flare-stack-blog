@@ -2,9 +2,13 @@ import type {
   NotificationChannel,
   NotificationEvent,
   NotificationEventType,
+  NotificationWebhookEventType,
 } from "@/features/notification/notification.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import { notificationEventSchema } from "@/features/notification/notification.schema";
+import {
+  isNotificationWebhookEventType,
+  notificationEventSchema,
+} from "@/features/notification/notification.schema";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 
 const notificationChannelPolicy = {
@@ -22,7 +26,7 @@ const notificationChannelPolicy = {
 
 function getMatchedWebhookEndpoints(
   config: Awaited<ReturnType<typeof ConfigRepo.getSystemConfig>>,
-  eventType: NotificationEventType,
+  eventType: NotificationWebhookEventType,
 ) {
   return (
     config?.notification?.webhooks?.filter(
@@ -52,6 +56,10 @@ async function enqueueNotificationDelivery(
       return;
     }
     case "webhook": {
+      if (!isNotificationWebhookEventType(event.type)) {
+        return;
+      }
+
       const config = await ConfigRepo.getSystemConfig(context.db);
       const endpoints = getMatchedWebhookEndpoints(config, event.type);
 

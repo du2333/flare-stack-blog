@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { notificationEventTypeSchema } from "@/features/notification/notification.schema";
+import { notificationWebhookEventTypeSchema } from "@/features/notification/notification.schema";
 
-const webhookEndpointSchema = z.object({
+export const webhookEndpointSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
   url: z.url(),
   enabled: z.boolean(),
   secret: z.string().min(1),
-  events: z.array(notificationEventTypeSchema),
+  events: z.array(notificationWebhookEventTypeSchema),
 });
 
 export const SystemConfigSchema = z.object({

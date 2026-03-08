@@ -20,6 +20,17 @@ export const NOTIFICATION_WEBHOOK_EVENTS = [
 ] as const;
 
 export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
+export const notificationWebhookEventTypeSchema = z.enum(
+  NOTIFICATION_WEBHOOK_EVENTS,
+);
+
+export function isNotificationWebhookEventType(
+  eventType: NotificationEventType,
+): eventType is NotificationWebhookEventType {
+  return (NOTIFICATION_WEBHOOK_EVENTS as ReadonlyArray<string>).includes(
+    eventType,
+  );
+}
 
 const commentAdminRootCreatedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),

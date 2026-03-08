@@ -1,6 +1,18 @@
-import { Eye, EyeOff, Globe, Info, KeyRound, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Globe,
+  Info,
+  KeyRound,
+  Loader2,
+  Plus,
+  Send,
+  Trash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 import type {
   NotificationEventType,
   NotificationWebhookEventType,
@@ -10,27 +22,18 @@ import {
   NOTIFICATION_EVENT,
   NOTIFICATION_WEBHOOK_EVENTS,
 } from "@/features/notification/notification.schema";
+import { getWebhookDocItems } from "@/features/notification/notification.docs";
+import { useWebhookConnection } from "@/features/notification/hooks/use-webhook-connection";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
 const WEBHOOK_EVENT_LABELS: Record<NotificationWebhookEventType, string> = {
-  [NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED]: "读者发表新根评论",
+  [NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED]: "读者发表新评论",
   [NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW]: "评论进入待审核",
   [NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED]:
-    "读者回复博主评论并发布",
+    "读者回复博主评论",
   [NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED]: "收到新的友链申请",
-};
-
-const WEBHOOK_EVENT_HINTS: Record<NotificationWebhookEventType, string> = {
-  [NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED]:
-    "适合推送到 Telegram、Discord、飞书等管理员通知渠道。",
-  [NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW]:
-    "适合接入审核工作流或告警系统。",
-  [NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED]:
-    "当读者回复博主评论后，通知管理员及时跟进。",
-  [NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED]:
-    "新友链申请到来时同步到你的常用通知平台。",
 };
 
 function createWebhookEndpoint() {
@@ -55,14 +58,20 @@ export function WebhookSettingsSection() {
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useFormContext<SystemConfig>();
+  const { testWebhook, isTesting, testingEndpointId } = useWebhookConnection();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "notification.webhooks",
   });
 
   const webhookFields = watch("notification.webhooks") ?? [];
+  const webhookDocItems = useMemo(
+    () => getWebhookDocItems(NOTIFICATION_WEBHOOK_EVENTS),
+    [],
+  );
   const enabledCount = useMemo(
     () => webhookFields.filter((endpoint) => endpoint.enabled).length,
     [webhookFields],
@@ -90,6 +99,25 @@ export function WebhookSettingsSection() {
       shouldTouch: true,
       shouldValidate: true,
     });
+  };
+
+  const handleTestWebhook = async (endpointIndex: number) => {
+    const endpoint = getValues(`notification.webhooks.${endpointIndex}`);
+
+    if (!endpoint) {
+      return;
+    }
+
+    try {
+      await testWebhook({
+        data: {
+          endpoint,
+        },
+      });
+      toast.success("测试请求已发送");
+    } catch {
+      toast.error("测试请求发送失败");
+    }
   };
 
   return (
@@ -127,6 +155,129 @@ export function WebhookSettingsSection() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-border/30 bg-background/50 p-8 space-y-6">
+        <div className="space-y-1">
+          <h5 className="text-sm font-medium text-foreground">请求格式</h5>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Webhook 固定发送 <code>application/json</code>。接收端可以读取
+            结构化字段 <code>type</code>、<code>data</code>，也可以直接复用
+            <code>subject</code>、<code>message</code> 和 <code>html</code>。
+          </p>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
+          <div className="space-y-3">
+            <h6 className="text-sm font-medium text-foreground">请求头</h6>
+            <div className="border border-border/20 bg-muted/10 p-4">
+              <pre className="whitespace-pre-wrap break-all text-xs leading-6 text-muted-foreground">
+                {`Content-Type: application/json
+User-Agent: flare-stack-blog/webhook
+X-Flare-Event: comment.admin_root_created
+X-Flare-Timestamp: 2026-03-07T12:34:56.000Z
+X-Flare-Signature: sha256=...`}
+              </pre>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h6 className="text-sm font-medium text-foreground">
+              示例 Payload
+            </h6>
+            <div className="border border-border/20 bg-muted/10 p-4">
+              <pre className="overflow-x-auto text-xs leading-6 text-muted-foreground">
+                <code>{`{
+  "id": "msg_123456",
+  "type": "comment.admin_root_created",
+  "timestamp": "2026-03-07T12:34:56.000Z",
+  "source": "flare-stack-blog",
+  "test": false,
+  "data": { ... },
+  "subject": "[新评论] 欢迎使用通知系统",
+  "message": "测试用户在《欢迎使用通知系统》下发表了评论：这是一条示例评论。",
+  "html": "<!doctype html>..."
+}`}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h6 className="text-sm font-medium text-foreground">事件字段</h6>
+          <p className="text-sm text-muted-foreground">
+            不同事件的 <code>data</code>{" "}
+            字段不同。展开下面的事件项可以查看每个事件的字段和完整示例。
+          </p>
+          <div className="space-y-3">
+            {webhookDocItems.map((item) => {
+              const examplePayload = {
+                id: "msg_123456",
+                type: item.event.type,
+                timestamp: "2026-03-07T12:34:56.000Z",
+                source: "flare-stack-blog",
+                test: false,
+                data: item.event.data,
+                subject: "...",
+                message: "...",
+                html: "<!doctype html>...",
+              };
+
+              return (
+                <details
+                  key={item.eventType}
+                  className="group border border-border/20 bg-muted/10"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4">
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        {WEBHOOK_EVENT_LABELS[item.eventType]}
+                      </p>
+                      <p className="text-xs text-muted-foreground break-all">
+                        {item.eventType} · {item.fields.length} 个字段
+                      </p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                  </summary>
+
+                  <div className="space-y-4 border-t border-border/20 px-4 py-4">
+                    <div className="overflow-hidden border border-border/20">
+                      <table className="w-full border-collapse text-left text-xs">
+                        <thead className="bg-muted/20 text-muted-foreground">
+                          <tr>
+                            <th className="px-3 py-2 font-medium">字段</th>
+                            <th className="px-3 py-2 font-medium">示例</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {item.fields.map((field) => (
+                            <tr
+                              key={field.path}
+                              className="border-t border-border/10 text-muted-foreground"
+                            >
+                              <td className="px-3 py-2 font-mono text-foreground">
+                                {field.path}
+                              </td>
+                              <td className="px-3 py-2 break-all">
+                                {String(field.example)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="border border-border/20 bg-background/40 p-4">
+                      <pre className="overflow-x-auto text-xs leading-6 text-muted-foreground">
+                        <code>{JSON.stringify(examplePayload, null, 2)}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </details>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -189,7 +340,23 @@ export function WebhookSettingsSection() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-3 md:gap-6">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleTestWebhook(index)}
+                          disabled={
+                            isTesting && testingEndpointId === endpoint.id
+                          }
+                          className="h-9 rounded-none px-4 text-[10px] font-mono uppercase tracking-[0.15em]"
+                        >
+                          {isTesting && testingEndpointId === endpoint.id ? (
+                            <Loader2 size={12} className="mr-2 animate-spin" />
+                          ) : (
+                            <Send size={12} className="mr-2" />
+                          )}
+                          发送测试
+                        </Button>
                         <label className="flex items-center gap-3 text-xs text-muted-foreground">
                           <Checkbox
                             checked={endpoint.enabled}
@@ -282,12 +449,12 @@ export function WebhookSettingsSection() {
                             )}
                           </Button>
                         </div>
-                        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                          <KeyRound size={12} className="mt-0.5 shrink-0" />
-                          <p>
-                            接收端可使用该密钥验证
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <KeyRound size={12} className="shrink-0" />
+                          <p className="leading-5">
+                            如需校验来源，可使用该密钥验证
                             <code className="mx-1">X-Flare-Signature</code>
-                            头，避免伪造请求。
+                            请求头。
                           </p>
                         </div>
                         {fieldError?.secret && (
@@ -328,9 +495,6 @@ export function WebhookSettingsSection() {
                                   </p>
                                   <p className="text-xs text-muted-foreground break-all">
                                     {eventType}
-                                  </p>
-                                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                    {WEBHOOK_EVENT_HINTS[eventType]}
                                   </p>
                                 </div>
                               </label>
