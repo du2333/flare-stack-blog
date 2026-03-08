@@ -4,7 +4,7 @@ import { adminMiddleware } from "@/lib/middlewares";
 import { webhookEndpointSchema } from "@/features/config/config.schema";
 import { NOTIFICATION_EVENT } from "@/features/notification/notification.schema";
 import { sendWebhookRequest } from "@/features/notification/api/webhook.consumer";
-import { createNotificationExampleEvent } from "@/features/notification/notification.docs";
+import { createNotificationExampleEvent } from "@/features/notification/notification.helpers";
 
 const testWebhookInputSchema = z.object({
   endpoint: webhookEndpointSchema,

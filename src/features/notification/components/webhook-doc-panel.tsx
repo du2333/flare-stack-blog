@@ -1,13 +1,98 @@
 import { ChevronDown, Info } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+
 import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
-import { getWebhookDocItems } from "@/features/notification/notification.docs";
+import type { WebhookTranslationKey } from "@/features/notification/notification.helpers";
+import type {
+  NotificationEvent,
+  NotificationWebhookEventType,
+} from "@/features/notification/notification.schema";
+import { createNotificationExampleEvent } from "@/features/notification/notification.helpers";
 import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/notification/notification.schema";
 
-export function WebhookDocPanel() {
-  const webhookDocItems = useMemo(
-    () => getWebhookDocItems(NOTIFICATION_WEBHOOK_EVENTS),
+interface NotificationDocField {
+  path: string;
+  example: string;
+}
+
+interface WebhookDocItem {
+  eventType: NotificationWebhookEventType;
+  event: NotificationEvent;
+  fields: Array<NotificationDocField>;
+}
+
+function createEventFields(
+  event: NotificationEvent,
+): Array<NotificationDocField> {
+  return Object.entries(event.data).map(([key, value]) => ({
+    path: `data.${key}`,
+    example: value,
+  }));
+}
+
+function getWebhookDocItems(
+  eventTypes: ReadonlyArray<NotificationWebhookEventType>,
+  t: (key: WebhookTranslationKey) => string = (k) => k,
+): Array<WebhookDocItem> {
+  return eventTypes.map((eventType) => {
+    const event = createNotificationExampleEvent(eventType, t);
+
+    return {
+      eventType,
+      event,
+      fields: createEventFields(event),
+    };
+  });
+}
+
+const WEBHOOK_DOC_EXAMPLE_LABELS: Record<WebhookTranslationKey, string> = {
+  admin_email: "admin@example.com",
+  post_title: "欢迎使用通知系统",
+  commenter_name: "测试用户",
+  comment_preview: "这是一条用于校验 Webhook 链路的测试评论。",
+  review_url: "https://example.com/admin/comments",
+  comment_url: "https://example.com/posts/welcome#comments",
+  unsubscribe_url: "https://example.com/unsubscribe?token=test",
+  replier_name: "测试用户",
+  reply_preview: "这是一条用于检查回复通知的测试内容。",
+  site_name: "测试站点",
+  site_url: "https://example.com",
+  description: "这是一个用于测试 Webhook 通知的示例友链申请。",
+  submitter_name: "测试用户",
+  friend_link_review_url: "https://example.com/admin/friend-links",
+  subject: "[新评论] 欢迎使用通知系统",
+  message: "测试用户在《欢迎使用通知系统》下发表了评论：这是一条示例评论。",
+};
+
+function useWebhookDocTranslation() {
+  return useCallback(
+    (key: WebhookTranslationKey) => WEBHOOK_DOC_EXAMPLE_LABELS[key],
     [],
+  );
+}
+
+export function WebhookDocPanel() {
+  const t = useWebhookDocTranslation();
+
+  const webhookDocItems = useMemo(
+    () => getWebhookDocItems(NOTIFICATION_WEBHOOK_EVENTS, t),
+    [t],
+  );
+
+  const commonExamplePayload = JSON.stringify(
+    {
+      id: "msg_123456",
+      type: "comment.admin_root_created",
+      timestamp: "2026-03-07T12:34:56.000Z",
+      source: "flare-stack-blog",
+      test: false,
+      data: { "...": "..." },
+      subject: t("subject"),
+      message: t("message"),
+      html: "<!doctype html>...",
+    },
+    null,
+    2,
   );
 
   return (
@@ -64,17 +149,7 @@ X-Flare-Signature: sha256=...`}
             </h6>
             <div className="border border-border/20 bg-muted/10 p-4">
               <pre className="overflow-x-auto text-xs leading-6 text-muted-foreground">
-                <code>{`{
-  "id": "msg_123456",
-  "type": "comment.admin_root_created",
-  "timestamp": "2026-03-07T12:34:56.000Z",
-  "source": "flare-stack-blog",
-  "test": false,
-  "data": { ... },
-  "subject": "[新评论] 欢迎使用通知系统",
-  "message": "测试用户在《欢迎使用通知系统》下发表了评论：这是一条示例评论。",
-  "html": "<!doctype html>..."
-}`}</code>
+                <code>{commonExamplePayload}</code>
               </pre>
             </div>
           </div>
@@ -95,8 +170,8 @@ X-Flare-Signature: sha256=...`}
                 source: "flare-stack-blog",
                 test: false,
                 data: item.event.data,
-                subject: "...",
-                message: "...",
+                subject: t("subject"),
+                message: t("message"),
                 html: "<!doctype html>...",
               };
 
@@ -136,7 +211,7 @@ X-Flare-Signature: sha256=...`}
                                 {field.path}
                               </td>
                               <td className="break-all px-3 py-2">
-                                {String(field.example)}
+                                {field.example}
                               </td>
                             </tr>
                           ))}
