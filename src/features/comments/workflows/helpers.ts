@@ -1,7 +1,5 @@
 import type { JSONContent } from "@tiptap/core";
-import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
-import * as EmailData from "@/features/email/data/email.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { convertToPlainText } from "@/features/posts/utils/content";
@@ -64,23 +62,6 @@ export async function sendReplyNotification(
     return;
   }
 
-  // Check for unsubscription
-  const unsubscribed = await EmailData.isUnsubscribed(
-    context.db,
-    replyToAuthor.id,
-    "reply_notification",
-  );
-
-  if (unsubscribed) {
-    console.log(
-      JSON.stringify({
-        message: "reply notification skipped, user unsubscribed",
-        userId: replyToAuthor.id,
-      }),
-    );
-    return;
-  }
-
   // Get replier info
   const replier = await CommentRepo.getCommentAuthorWithEmail(
     context.db,
@@ -90,7 +71,7 @@ export async function sendReplyNotification(
   const replyPreview = convertToPlainText(comment.content).slice(0, 100);
 
   const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(context.env);
-  const unsubscribeType: EmailUnsubscribeType = "reply_notification";
+  const unsubscribeType = "reply_notification" as const;
   const token = await generateUnsubscribeToken(
     BETTER_AUTH_SECRET,
     replyToAuthor.id,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
 
 export const emailMessageSchema = z.object({
@@ -9,6 +10,12 @@ export const emailMessageSchema = z.object({
     html: z.string(),
     headers: z.record(z.string(), z.string()).optional(),
     idempotencyKey: z.string().optional(),
+    unsubscribe: z
+      .object({
+        userId: z.string(),
+        type: z.enum(EMAIL_UNSUBSCRIBE_TYPES),
+      })
+      .optional(),
   }),
 });
 

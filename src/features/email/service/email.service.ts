@@ -102,8 +102,33 @@ export async function sendEmail(
     html: string;
     headers?: Record<string, string>;
     idempotencyKey?: string;
+    unsubscribe?: {
+      userId: string;
+      type: EmailUnsubscribeType;
+    };
   },
 ) {
+  if (options.unsubscribe) {
+    const unsubscribed = await EmailData.isUnsubscribed(
+      context.db,
+      options.unsubscribe.userId,
+      options.unsubscribe.type,
+    );
+
+    if (unsubscribed) {
+      console.log(
+        JSON.stringify({
+          event: "email_skipped",
+          reason: "user_unsubscribed",
+          to: options.to,
+          userId: options.unsubscribe.userId,
+          type: options.unsubscribe.type,
+        }),
+      );
+      return ok({ success: true });
+    }
+  }
+
   if (isNotInProduction(context.env)) {
     console.log(
       `[EMAIL_SERVICE] 开发环境跳过发送至 ${options.to} 的邮件：${options.subject}:\n${options.html}`,

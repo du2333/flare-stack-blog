@@ -6,6 +6,21 @@ import { FriendLinkAdminNotificationEmail } from "@/features/email/templates/Fri
 import { FriendLinkResultNotificationEmail } from "@/features/email/templates/FriendLinkResultNotificationEmail";
 import { ReplyNotificationEmail } from "@/features/email/templates/ReplyNotificationEmail";
 
+function getReplyNotificationUnsubscribe(url: string) {
+  const unsubscribeUrl = new URL(url);
+  const userId = unsubscribeUrl.searchParams.get("userId");
+  const type = unsubscribeUrl.searchParams.get("type");
+
+  if (!userId || type !== "reply_notification") {
+    return undefined;
+  }
+
+  return {
+    userId,
+    type,
+  } as const;
+}
+
 export function createEmailMessageFromNotification(
   event: NotificationEvent,
 ): EmailMessage["data"] {
@@ -54,6 +69,7 @@ export function createEmailMessageFromNotification(
           "List-Unsubscribe": `<${event.data.unsubscribeUrl}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
+        unsubscribe: getReplyNotificationUnsubscribe(event.data.unsubscribeUrl),
       };
     case "friend_link.submitted":
       return {
