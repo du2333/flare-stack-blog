@@ -38,7 +38,9 @@ function EmailDocTip({
       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border/50 text-[10px] font-mono text-muted-foreground">
         {index}
       </span>
-      <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {children}
+      </p>
     </div>
   );
 }

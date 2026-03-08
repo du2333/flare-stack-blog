@@ -18,7 +18,10 @@ export function EmailNotificationScope({
       <h5 className="text-sm font-medium text-foreground">通知范围</h5>
       <div className="grid gap-4 xl:grid-cols-2">
         <label className="flex cursor-pointer items-center gap-4 border border-border/20 bg-muted/10 p-4 transition-colors hover:bg-muted/20">
-          <Checkbox checked={adminEmailEnabled} onCheckedChange={onToggleAdmin} />
+          <Checkbox
+            checked={adminEmailEnabled}
+            onCheckedChange={onToggleAdmin}
+          />
           <div className="min-w-0 space-y-1">
             <p className="text-sm font-medium text-foreground">
               管理员邮件通知

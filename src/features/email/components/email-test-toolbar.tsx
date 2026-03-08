@@ -41,7 +41,9 @@ export function EmailTestToolbar({
         <span className="hidden h-4 w-px bg-border/30 md:block" />
 
         <p className="hidden text-xs text-muted-foreground md:block">
-          {status === "IDLE" ? "填写完成后可发送测试邮件" : `当前状态：${status}`}
+          {status === "IDLE"
+            ? "填写完成后可发送测试邮件"
+            : `当前状态：${status}`}
         </p>
       </div>
 
