@@ -481,6 +481,46 @@ describe("CommentService", () => {
       );
     });
 
+    it("should enqueue both email and webhook when both channels are enabled", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: true,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "dual-channel-endpoint",
+              name: "Dual Channel Endpoint",
+              url: "https://example.com/webhook",
+              enabled: true,
+              secret: "secret",
+              events: ["comment.admin_root_created"],
+            },
+          ],
+        },
+      });
+
+      vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(userContext, {
+        postId,
+        content: createCommentContent("Dual channel comment"),
+      });
+
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(2);
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "EMAIL" }),
+      );
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "WEBHOOK" }),
+      );
+    });
+
     it("should enqueue admin webhook without email when admin email is disabled", async () => {
       await ConfigRepo.upsertSystemConfig(adminContext.db, {
         ...DEFAULT_CONFIG,
