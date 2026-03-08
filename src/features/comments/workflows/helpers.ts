@@ -23,8 +23,7 @@ interface SendReplyNotificationParams {
 }
 
 export async function sendReplyNotification(
-  db: DB,
-  env: Env,
+  context: DbContext & { executionCtx: ExecutionContext },
   params: SendReplyNotificationParams,
 ): Promise<void> {
   const { comment, post } = params;
@@ -33,7 +32,7 @@ export async function sendReplyNotification(
 
   // Get the author of the comment being replied to
   const replyToAuthor = await CommentRepo.getCommentAuthorWithEmail(
-    db,
+    context.db,
     comment.replyToCommentId,
   );
 
@@ -67,7 +66,7 @@ export async function sendReplyNotification(
 
   // Check for unsubscription
   const unsubscribed = await EmailData.isUnsubscribed(
-    db,
+    context.db,
     replyToAuthor.id,
     "reply_notification",
   );
@@ -83,11 +82,14 @@ export async function sendReplyNotification(
   }
 
   // Get replier info
-  const replier = await CommentRepo.getCommentAuthorWithEmail(db, comment.id);
+  const replier = await CommentRepo.getCommentAuthorWithEmail(
+    context.db,
+    comment.id,
+  );
   const replierName = replier?.name ?? "有人";
   const replyPreview = convertToPlainText(comment.content).slice(0, 100);
 
-  const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(env);
+  const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(context.env);
   const unsubscribeType: EmailUnsubscribeType = "reply_notification";
   const token = await generateUnsubscribeToken(
     BETTER_AUTH_SECRET,
@@ -102,7 +104,7 @@ export async function sendReplyNotification(
 
   try {
     await publishNotificationEvent(
-      { db, env },
+      { db: context.db, env: context.env, executionCtx: context.executionCtx },
       {
         type:
           replyToAuthor.role === "admin"

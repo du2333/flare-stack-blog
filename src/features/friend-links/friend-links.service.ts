@@ -21,7 +21,7 @@ import { purgeCDNCache } from "@/lib/invalidate";
 // ============ Authed User Methods ============
 
 export async function submitFriendLink(
-  context: AuthContext,
+  context: AuthContext & { executionCtx: ExecutionContext },
   data: SubmitFriendLinkInput,
 ) {
   const existing = await FriendLinkRepo.getFriendLinksByUserId(

@@ -1,7 +1,7 @@
 import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import type { TestEmailConnectionInput } from "@/features/email/email.schema";
 import * as EmailData from "@/features/email/data/email.data";
-import { getSystemConfig } from "@/features/config/data/config.data";
+import * as ConfigService from "@/features/config/service/config.service";
 import {
   createEmailClient,
   verifyUnsubscribeToken,
@@ -72,6 +72,16 @@ export async function getReplyNotificationStatus(
   return { enabled: !unsubscribed };
 }
 
+export async function getNotificationConfig(
+  context: DbContext & { executionCtx: ExecutionContext },
+) {
+  const config = await ConfigService.getSystemConfig(context);
+
+  return {
+    userEmailEnabled: config?.notification?.user?.emailEnabled ?? true,
+  };
+}
+
 export async function toggleReplyNotification(
   context: DbContext,
   data: { userId: string; enabled: boolean },
@@ -85,7 +95,7 @@ export async function toggleReplyNotification(
 }
 
 export async function sendEmail(
-  context: DbContext,
+  context: DbContext & { executionCtx: ExecutionContext },
   options: {
     to: string;
     subject: string;
@@ -101,7 +111,7 @@ export async function sendEmail(
     return ok({ success: true });
   }
 
-  const config = await getSystemConfig(context.db);
+  const config = await ConfigService.getSystemConfig(context);
   const email = config?.email;
 
   if (!email?.apiKey || !email.senderAddress) {

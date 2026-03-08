@@ -78,7 +78,7 @@ export async function getRepliesByRootId(
 // ============ Authed User Service Methods ============
 
 export async function createComment(
-  context: AuthContext,
+  context: AuthContext & { executionCtx: ExecutionContext },
   data: CreateCommentInput,
 ) {
   // Validation: ensure 2-level structure
@@ -151,16 +151,19 @@ export async function createComment(
       id: data.postId,
     });
     if (post) {
-      await sendReplyNotification(context.db, context.env, {
-        comment: {
-          id: comment.id,
-          rootId: comment.rootId,
-          replyToCommentId: comment.replyToCommentId,
-          userId: comment.userId,
-          content: data.content,
+      await sendReplyNotification(
+        context,
+        {
+          comment: {
+            id: comment.id,
+            rootId: comment.rootId,
+            replyToCommentId: comment.replyToCommentId,
+            userId: comment.userId,
+            content: data.content,
+          },
+          post: { slug: post.slug, title: post.title },
         },
-        post: { slug: post.slug, title: post.title },
-      });
+      );
     }
   }
 
@@ -256,7 +259,7 @@ export async function getAllComments(
 }
 
 export async function moderateComment(
-  context: DbContext,
+  context: DbContext & { executionCtx: ExecutionContext },
   data: ModerateCommentInput,
   moderatorUserId?: string,
 ) {
@@ -281,17 +284,20 @@ export async function moderateComment(
       id: comment.postId,
     });
     if (post) {
-      await sendReplyNotification(context.db, context.env, {
-        comment: {
-          id: comment.id,
-          rootId: comment.rootId,
-          replyToCommentId: comment.replyToCommentId,
-          userId: comment.userId,
-          content: comment.content,
+      await sendReplyNotification(
+        context,
+        {
+          comment: {
+            id: comment.id,
+            rootId: comment.rootId,
+            replyToCommentId: comment.replyToCommentId,
+            userId: comment.userId,
+            content: comment.content,
+          },
+          post: { slug: post.slug, title: post.title },
+          skipNotifyUserId: moderatorUserId,
         },
-        post: { slug: post.slug, title: post.title },
-        skipNotifyUserId: moderatorUserId,
-      });
+      );
     }
   }
 

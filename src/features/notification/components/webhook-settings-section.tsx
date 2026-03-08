@@ -67,6 +67,8 @@ export function WebhookSettingsSection() {
   });
 
   const webhookFields = watch("notification.webhooks") ?? [];
+  const adminWebhookEnabled =
+    watch("notification.admin.channels.webhook") ?? true;
   const webhookDocItems = useMemo(
     () => getWebhookDocItems(NOTIFICATION_WEBHOOK_EVENTS),
     [],
@@ -308,6 +310,27 @@ X-Flare-Signature: sha256=...`}
               添加端点
             </Button>
           </div>
+
+          <label className="flex items-start gap-3 border border-border/20 bg-muted/10 p-4 cursor-pointer hover:bg-muted/20 transition-colors">
+            <Checkbox
+              checked={adminWebhookEnabled}
+              onCheckedChange={(checked) =>
+                setValue("notification.admin.channels.webhook", checked, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: true,
+                })
+              }
+            />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                开启管理员 Webhook 此渠道通知
+              </p>
+              <p className="text-sm text-muted-foreground">
+                全局开关。关闭后，不再向所有端点发送相关事件；开启后，下方可单独启停各端点。
+              </p>
+            </div>
+          </label>
 
           {fields.length === 0 ? (
             <div className="border border-dashed border-border/40 bg-muted/5 p-10 text-center">

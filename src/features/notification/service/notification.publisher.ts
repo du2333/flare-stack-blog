@@ -1,31 +1,48 @@
 import type {
-  NotificationChannel,
   NotificationEvent,
-  NotificationEventType,
   NotificationWebhookEventType,
 } from "@/features/notification/notification.schema";
-import * as ConfigRepo from "@/features/config/data/config.data";
+import * as ConfigService from "@/features/config/service/config.service";
 import {
+  NOTIFICATION_EVENT,
   isNotificationWebhookEventType,
   notificationEventSchema,
 } from "@/features/notification/notification.schema";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 
-const notificationChannelPolicy = {
-  "comment.admin_root_created": ["email", "webhook"],
-  "comment.admin_pending_review": ["email", "webhook"],
-  "comment.reply_to_admin_published": ["email", "webhook"],
-  "comment.reply_to_user_published": ["email"],
-  "friend_link.submitted": ["email", "webhook"],
-  "friend_link.approved": ["email"],
-  "friend_link.rejected": ["email"],
-} as const satisfies Record<
-  NotificationEventType,
-  ReadonlyArray<NotificationChannel>
->;
+const adminNotificationEventTypes = [
+  NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED,
+  NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW,
+  NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED,
+  NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED,
+] as const;
+
+const userNotificationEventTypes = [
+  NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED,
+  NOTIFICATION_EVENT.FRIEND_LINK_APPROVED,
+  NOTIFICATION_EVENT.FRIEND_LINK_REJECTED,
+] as const;
+
+function isAdminNotificationEvent(
+  event: NotificationEvent,
+): event is Extract<
+  NotificationEvent,
+  { type: (typeof adminNotificationEventTypes)[number] }
+> {
+  return adminNotificationEventTypes.some((type) => type === event.type);
+}
+
+function isUserNotificationEvent(
+  event: NotificationEvent,
+): event is Extract<
+  NotificationEvent,
+  { type: (typeof userNotificationEventTypes)[number] }
+> {
+  return userNotificationEventTypes.some((type) => type === event.type);
+}
 
 function getMatchedWebhookEndpoints(
-  config: Awaited<ReturnType<typeof ConfigRepo.getSystemConfig>>,
+  config: Awaited<ReturnType<typeof ConfigService.getSystemConfig>>,
   eventType: NotificationWebhookEventType,
 ) {
   return (
@@ -35,80 +52,85 @@ function getMatchedWebhookEndpoints(
   );
 }
 
-function resolveNotificationChannels(
-  event: NotificationEvent,
-): Array<NotificationChannel> {
-  return [...notificationChannelPolicy[event.type]];
-}
-
-async function enqueueNotificationDelivery(
+async function enqueueEmailNotification(
   context: DbContext,
-  channel: NotificationChannel,
   event: NotificationEvent,
 ) {
-  switch (channel) {
-    case "email": {
-      const emailMessage = createEmailMessageFromNotification(event);
-      await context.env.QUEUE.send({
-        type: "EMAIL",
-        data: emailMessage,
-      });
-      return;
-    }
-    case "webhook": {
-      if (!isNotificationWebhookEventType(event.type)) {
-        return;
-      }
+  const emailMessage = createEmailMessageFromNotification(event);
+  await context.env.QUEUE.send({
+    type: "EMAIL",
+    data: emailMessage,
+  });
+}
 
-      const config = await ConfigRepo.getSystemConfig(context.db);
-      const endpoints = getMatchedWebhookEndpoints(config, event.type);
+async function enqueueWebhookNotification(
+  context: DbContext & { executionCtx: ExecutionContext },
+  event: Extract<NotificationEvent, { type: NotificationWebhookEventType }>,
+) {
+  const config = await ConfigService.getSystemConfig(context);
+  const endpoints = getMatchedWebhookEndpoints(config, event.type);
 
-      await Promise.all(
-        endpoints.map((endpoint) =>
-          context.env.QUEUE.send({
-            type: "WEBHOOK",
-            data: {
-              endpointId: endpoint.id,
-              url: endpoint.url,
-              secret: endpoint.secret,
-              event,
-            },
-          }),
-        ),
-      );
-      return;
-    }
-    default: {
-      channel satisfies never;
-      console.log(
-        JSON.stringify({
-          level: "error",
-          message: "Unknown notification channel",
-          channel,
-        }),
-      );
-      throw new Error("Unknown notification channel");
-    }
-  }
+  await Promise.all(
+    endpoints.map((endpoint) =>
+      context.env.QUEUE.send({
+        type: "WEBHOOK",
+        data: {
+          endpointId: endpoint.id,
+          url: endpoint.url,
+          secret: endpoint.secret,
+          event,
+        },
+      }),
+    ),
+  );
 }
 
 export async function publishNotificationEvent(
-  context: DbContext,
+  context: DbContext & { executionCtx: ExecutionContext },
   event: NotificationEvent,
 ) {
   const parsed = notificationEventSchema.parse(event);
-  const channels = resolveNotificationChannels(parsed);
-  console.log(
-    JSON.stringify({
-      level: "info",
-      message: "Notification published",
-      eventType: parsed.type,
-      channels,
-    }),
-  );
-  await Promise.all(
-    channels.map((channel) =>
-      enqueueNotificationDelivery(context, channel, parsed),
-    ),
-  );
+  const config = await ConfigService.getSystemConfig(context);
+  const adminEmailEnabled =
+    config?.notification?.admin?.channels?.email ?? true;
+  const adminWebhookEnabled =
+    config?.notification?.admin?.channels?.webhook ?? true;
+  const userEmailEnabled = config?.notification?.user?.emailEnabled ?? true;
+
+  if (isUserNotificationEvent(parsed)) {
+    if (!userEmailEnabled) {
+      return;
+    }
+
+    await enqueueEmailNotification(context, parsed);
+    return;
+  }
+
+  if (isAdminNotificationEvent(parsed)) {
+    const deliveries: Array<Promise<void>> = [];
+
+    if (adminEmailEnabled) {
+      deliveries.push(enqueueEmailNotification(context, parsed));
+    }
+
+    if (adminWebhookEnabled && isNotificationWebhookEventType(parsed.type)) {
+      deliveries.push(enqueueWebhookNotification(context, parsed));
+    }
+
+    console.log(
+      JSON.stringify({
+        level: "info",
+        message: "Notification published",
+        eventType: parsed.type,
+        deliveries: {
+          email: adminEmailEnabled,
+          webhook: adminWebhookEnabled,
+        },
+      }),
+    );
+    await Promise.all(deliveries);
+    return;
+  }
+
+  parsed satisfies never;
 }

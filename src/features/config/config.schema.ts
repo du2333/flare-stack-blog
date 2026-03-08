@@ -20,6 +20,21 @@ export const SystemConfigSchema = z.object({
     .optional(),
   notification: z
     .object({
+      admin: z
+        .object({
+          channels: z
+            .object({
+              email: z.boolean().optional(),
+              webhook: z.boolean().optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+      user: z
+        .object({
+          emailEnabled: z.boolean().optional(),
+        })
+        .optional(),
       webhooks: z.array(webhookEndpointSchema).optional(),
     })
     .optional(),
@@ -34,6 +49,15 @@ export const DEFAULT_CONFIG: SystemConfig = {
     senderAddress: "",
   },
   notification: {
+    admin: {
+      channels: {
+        email: true,
+        webhook: true,
+      },
+    },
+    user: {
+      emailEnabled: true,
+    },
     webhooks: [],
   },
 };

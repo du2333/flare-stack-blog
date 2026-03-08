@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
+import * as ConfigService from "@/features/config/service/config.service";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import {
   adminMiddleware,
@@ -42,6 +43,18 @@ export const getReplyNotificationStatusFn = createServerFn({
       context,
       context.session.user.id,
     );
+  });
+
+export const getUserNotificationAvailabilityFn = createServerFn({
+  method: "GET",
+})
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const config = await ConfigService.getSystemConfig(context);
+
+    return {
+      emailEnabled: config?.notification?.user?.emailEnabled ?? true,
+    };
   });
 
 export const toggleReplyNotificationFn = createServerFn({

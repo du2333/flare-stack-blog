@@ -4,6 +4,7 @@ import { useFormContext } from "react-hook-form";
 import type { SystemConfig } from "@/features/config/config.schema";
 import type { Result } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
 type ConnectionStatus = "IDLE" | "TESTING" | "SUCCESS" | "ERROR";
@@ -28,11 +29,14 @@ export function EmailServiceSection({
 
   const {
     register,
+    setValue,
     watch,
     formState: { errors },
   } = useFormContext<SystemConfig>();
 
   const emailConfig = watch("email");
+  const adminEmailEnabled = watch("notification.admin.channels.email") ?? true;
+  const userEmailEnabled = watch("notification.user.emailEnabled") ?? true;
   // Check if configured: need apiKey and senderAddress
   const isConfigured =
     !!emailConfig?.apiKey?.trim() && !!emailConfig.senderAddress?.trim();
@@ -100,6 +104,53 @@ export function EmailServiceSection({
       </div>
 
       <div className="border border-border/30 bg-background/50 overflow-hidden divide-y divide-border/20">
+        <div className="p-8 space-y-6">
+          <h5 className="text-sm font-medium text-foreground">通知范围</h5>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <label className="flex items-start gap-3 border border-border/20 bg-muted/10 p-4">
+              <Checkbox
+                checked={adminEmailEnabled}
+                onCheckedChange={(checked) =>
+                  setValue("notification.admin.channels.email", checked, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  管理员邮件通知
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  新评论、待审核评论和友链申请会发送到管理员邮箱。
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 border border-border/20 bg-muted/10 p-4">
+              <Checkbox
+                checked={userEmailEnabled}
+                onCheckedChange={(checked) =>
+                  setValue("notification.user.emailEnabled", checked, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  用户邮件通知
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  回复提醒和友链审核结果会发送给用户；关闭后资料页不再显示通知开关。
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div className="p-8 space-y-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

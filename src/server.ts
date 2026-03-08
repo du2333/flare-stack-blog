@@ -26,7 +26,7 @@ export default {
   fetch(request, env, ctx) {
     return app.fetch(request, env, ctx);
   },
-  async queue(batch, env) {
+  async queue(batch, env, ctx) {
     for (const message of batch.messages) {
       const parsed = queueMessageSchema.safeParse(message.body);
       if (!parsed.success) {
@@ -45,10 +45,16 @@ export default {
         const event = parsed.data;
         switch (event.type) {
           case "EMAIL":
-            await handleEmailMessage(env, {
-              ...event.data,
-              idempotencyKey: message.id,
-            });
+            await handleEmailMessage(
+              {
+                env,
+                executionCtx: ctx,
+              },
+              {
+                ...event.data,
+                idempotencyKey: message.id,
+              },
+            );
             break;
           case "WEBHOOK":
             await handleWebhookMessage(event.data, message.id);
