@@ -4,7 +4,7 @@ import { z } from "zod";
 import theme from "@theme";
 import { blogConfig } from "@/blog.config";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
-import { getSiteDomainFn } from "@/features/site/site.api";
+import { siteDomainQuery } from "@/features/config/queries";
 import {
   buildArticleJsonLd,
   buildCanonicalUrl,
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
     // 1. Critical: Main post data - use serverFn (executes directly on server, no HTTP)
     const [post, domain] = await Promise.all([
       context.queryClient.ensureQueryData(postBySlugQuery(params.slug)),
-      getSiteDomainFn(),
+      context.queryClient.ensureQueryData(siteDomainQuery),
     ]);
 
     // 2. Deferred: Related posts (prefetch only, don't await)

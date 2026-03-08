@@ -340,26 +340,23 @@ export function BackupRestoreSection() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-1000">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Export Card */}
-        <div className="group border border-border/30 bg-background/50 p-8 space-y-6 hover:border-border/60 transition-colors">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-muted/40 rounded-full">
-                <Database size={20} className="text-muted-foreground" />
-              </div>
-              <div>
-                <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
-                  全站备份导出
-                </h4>
-                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
-                  SYSTEM_EXPORT_JOB
-                </p>
-              </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+        <div className="space-y-6 border border-border/30 bg-background/50 p-8">
+          <div className="flex items-center gap-4">
+            <div className="rounded-sm bg-muted/40 p-3">
+              <Database size={20} className="text-muted-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
+                全站备份导出
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                打包文章、评论、标签和媒体文件。
+              </p>
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             将当前系统中所有的文章内容、标签映射、评论记录以及管理的媒体文件完整打包并加密。建议在每次重大内容更新或系统版本升级前执行。
           </p>
 
@@ -369,92 +366,72 @@ export function BackupRestoreSection() {
                 type="button"
                 onClick={handleExport}
                 disabled={isExporting || startExport.isPending}
-                className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
+                className="h-11 w-full gap-3 rounded-none bg-foreground px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-background transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {isExporting ? (
                   <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <Database size={14} />
                 )}
-                [ {isExporting ? "正在打包数据" : "启动全量备份"} ]
+                {isExporting ? "正在打包数据" : "开始备份"}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Import Card */}
-        <div className="group border border-border/30 bg-background/50 p-8 space-y-6 hover:border-border/60 transition-colors">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-muted/40 rounded-full">
-                <Upload size={20} className="text-muted-foreground" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
-                    备份数据恢复
-                  </h4>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                      >
-                        <Info size={14} />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="w-80 whitespace-normal normal-case p-4 space-y-3 leading-relaxed tracking-normal font-sans">
-                      <div className="space-y-3">
-                        <p className="font-bold border-b border-border/20 pb-1 text-xs">
-                          支持格式与导入规范
-                        </p>
-                        <ul className="list-disc pl-4 space-y-2 text-[10px] text-muted-foreground/90">
-                          <li>
-                            直接上传{" "}
-                            <code className="bg-muted px-1 text-[9px]">
-                              .md
-                            </code>{" "}
-                            文件 — 外链图片保持原样
-                          </li>
-                          <li>
-                            带图片的{" "}
-                            <code className="bg-muted px-1 text-[9px]">
-                              .zip
-                            </code>{" "}
-                            — 图片路径怎么写都行，只要{" "}
-                            <code className="bg-muted px-1 text-[9px]">
-                              .md
-                            </code>{" "}
-                            里的相对路径能对应到 ZIP 里的文件：
-                            <div className="mt-2 space-y-1 pl-2 border-l border-border/20 text-[9px] text-muted-foreground/60 font-mono">
-                              <p>• 扁平：post.md + images/photo.jpg</p>
-                              <p>
-                                • 独立目录：post-a/post-a.md +
-                                post-a/img/photo.jpg
-                              </p>
-                              <p>
-                                • 跨目录：posts/a.md + 引用 ../shared/logo.png
-                              </p>
-                            </div>
-                          </li>
-                          <li>多篇文章可以放在同一个 ZIP 里一起导入</li>
-                          <li>兼容 Hugo / Hexo / Jekyll 的 frontmatter 字段</li>
-                        </ul>
-                        <div className="pt-2 border-t border-border/10 text-[9px] text-amber-500/80 italic">
-                          ※ 系统执行增量合并，检测到相同 Slug 的文章将自动跳过。
-                        </div>
+        <div className="space-y-6 border border-border/30 bg-background/50 p-8">
+          <div className="flex items-start gap-4">
+            <div className="rounded-sm bg-muted/40 p-3">
+              <Upload size={20} className="text-muted-foreground" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
+                  备份数据恢复
+                </h4>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-muted-foreground/40 transition-colors hover:text-muted-foreground"
+                    >
+                      <Info size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="w-80 space-y-3 whitespace-normal p-4 font-sans leading-relaxed tracking-normal normal-case">
+                    <div className="space-y-3">
+                      <p className="border-b border-border/20 pb-1 text-xs font-bold">
+                        支持格式与导入规范
+                      </p>
+                      <ul className="list-disc space-y-2 pl-4 text-[10px] text-muted-foreground/90">
+                        <li>
+                          直接上传{" "}
+                          <code className="bg-muted px-1 text-[9px]">.md</code>{" "}
+                          文件，外链图片保持原样
+                        </li>
+                        <li>
+                          上传带图片的{" "}
+                          <code className="bg-muted px-1 text-[9px]">.zip</code>{" "}
+                          文件，Markdown 里的相对路径只要能对应到 ZIP
+                          中的文件即可
+                        </li>
+                        <li>多篇文章可以放在同一个 ZIP 中一起导入</li>
+                        <li>兼容 Hugo、Hexo、Jekyll 的 frontmatter 字段</li>
+                      </ul>
+                      <div className="border-t border-border/10 pt-2 text-[9px] italic text-amber-500/80">
+                        系统执行增量合并，检测到相同 slug 的文章会自动跳过。
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
-                  DATA_RECOVERY_LOADER
-                </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
+              <p className="text-sm text-muted-foreground">
+                导入系统备份包或 Markdown 文件。
+              </p>
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground leading-relaxed">
+          <div className="text-sm text-muted-foreground leading-relaxed">
             支持上传本系统导出的 `.zip` 备份包，或外部 Markdown
             文件进行内容迁移。增量合并，且能够兼容 Hugo / Hexo 等主流框架。
           </div>
@@ -474,14 +451,14 @@ export function BackupRestoreSection() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isImporting || uploadMutation.isPending}
-                className="w-full h-11 px-6 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-foreground text-background hover:opacity-90 disabled:opacity-50 transition-all"
+                className="h-11 w-full gap-3 rounded-none bg-foreground px-6 font-mono text-[10px] uppercase tracking-[0.2em] text-background transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {uploadMutation.isPending || isImporting ? (
                   <Loader2 size={14} className="animate-spin" />
                 ) : (
                   <Upload size={14} />
                 )}
-                [ {isImporting ? "正在导入" : "导入数据"} ]
+                {isImporting ? "正在导入" : "导入数据"}
               </Button>
             </div>
           </div>

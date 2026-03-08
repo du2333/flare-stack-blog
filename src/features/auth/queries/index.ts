@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getIsEmailConfiguredFn, getSessionFn } from "../auth.api";
+import { getIsEmailConfiguredFn, getSessionFn } from "../api/auth.api";
 
 export const AUTH_KEYS = {
   all: ["auth"] as const,

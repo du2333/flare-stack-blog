@@ -1,5 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
-import { extractImageKey } from "@/features/media/media.utils";
+import { extractImageKey } from "@/features/media/utils/media.utils";
 
 /**
  * 替换 JSONContent 中所有图片的 src 路径

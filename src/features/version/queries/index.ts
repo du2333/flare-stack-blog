@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { checkUpdateFn } from "../version.api";
+import { checkUpdateFn } from "../api/version.api";
 import { VERSION_CACHE_KEYS } from "../version.schema";
 
 export const VERSION_KEYS = {

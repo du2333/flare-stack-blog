@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db";
 import {
   generateKey,
   getContentTypeFromKey,
-} from "@/features/media/media.utils";
+} from "@/features/media/utils/media.utils";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import * as TagRepo from "@/features/tags/data/tags.data";
 import * as MediaRepo from "@/features/media/data/media.data";

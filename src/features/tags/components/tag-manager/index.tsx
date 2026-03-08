@@ -1,17 +1,21 @@
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown, Check, Hash, Search, X } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import type { CreateTagInput } from "@/features/tags/tags.schema";
 import {
   createTagFn,
   deleteTagFn,
   updateTagFn,
 } from "@/features/tags/api/tags.api";
+import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import {
   TAGS_KEYS,
   tagsWithCountAdminQueryOptions,
 } from "@/features/tags/queries";
+import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -30,7 +34,6 @@ export function TagManager() {
     id: number;
     name: string;
   } | null>(null);
-  const [newTagName, setNewTagName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const queryClient = useQueryClient();
@@ -102,17 +105,10 @@ export function TagManager() {
       }
 
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
-      setNewTagName("");
       setIsCreating(false);
       toast.success("标签已创建");
     },
   });
-
-  const handleCreateTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTagName.trim()) return;
-    createTagMutation.mutate(newTagName.trim());
-  };
 
   const toggleSort = (field: typeof sortBy) => {
     if (sortBy === field) {
@@ -196,46 +192,11 @@ export function TagManager() {
 
       {/* Creation Row (Inline) */}
       {isCreating && (
-        <form
-          onSubmit={handleCreateTag}
-          className="flex items-center gap-4 p-4 border border-border/30 bg-muted/5 animate-in slide-in-from-top-2 duration-300"
-        >
-          <span className="text-sm font-mono text-emerald-500 font-bold">
-            {">"}
-          </span>
-          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-            NEW_TAG:
-          </span>
-          <div className="flex-1">
-            <input
-              autoFocus
-              value={newTagName}
-              onChange={(e) => setNewTagName(e.target.value)}
-              placeholder="输入标签名称..."
-              className="w-full bg-transparent border-none outline-none font-mono text-sm"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="submit"
-              size="sm"
-              variant="ghost"
-              disabled={createTagMutation.isPending}
-              className="h-8 text-[10px] uppercase font-mono tracking-widest hover:text-emerald-500 hover:bg-emerald-500/10 rounded-none"
-            >
-              {createTagMutation.isPending ? "创建中..." : "[ 确认 ]"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsCreating(false)}
-              className="h-8 text-[10px] uppercase font-mono tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-none"
-            >
-              [ 取消 ]
-            </Button>
-          </div>
-        </form>
+        <InlineTagCreateForm
+          isSubmitting={createTagMutation.isPending}
+          onCancel={() => setIsCreating(false)}
+          onSubmit={(name) => createTagMutation.mutate(name)}
+        />
       )}
 
       {/* Mobile Card View */}
@@ -266,35 +227,16 @@ export function TagManager() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   {tagToEdit?.id === tag.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        autoFocus
-                        value={tagToEdit.name}
-                        onChange={(e) =>
-                          setTagToEdit({
-                            ...tagToEdit,
-                            name: e.target.value,
-                          })
-                        }
-                        className="h-8 text-sm"
-                      />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-emerald-500"
-                        onClick={() => updateTagMutation.mutate(tagToEdit)}
-                      >
-                        <Check size={16} />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-muted-foreground"
-                        onClick={() => setTagToEdit(null)}
-                      >
-                        <X size={16} />
-                      </Button>
-                    </div>
+                    <InlineTagEditForm
+                      key={`mobile-${tag.id}`}
+                      initialName={tag.name}
+                      isSubmitting={updateTagMutation.isPending}
+                      inputClassName="h-8 text-sm"
+                      onCancel={() => setTagToEdit(null)}
+                      onSubmit={(name) =>
+                        updateTagMutation.mutate({ id: tag.id, name })
+                      }
+                    />
                   ) : (
                     <div className="flex items-center gap-2">
                       <Hash size={14} className="text-muted-foreground/50" />
@@ -423,40 +365,16 @@ export function TagManager() {
                   >
                     <td className="px-6 py-4 font-medium">
                       {tagToEdit?.id === tag.id ? (
-                        <div className="flex items-center gap-2 max-w-xs animate-in fade-in duration-200">
-                          <Input
-                            autoFocus
-                            value={tagToEdit.name}
-                            onChange={(e) =>
-                              setTagToEdit({
-                                ...tagToEdit,
-                                name: e.target.value,
-                              })
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter")
-                                updateTagMutation.mutate(tagToEdit);
-                              if (e.key === "Escape") setTagToEdit(null);
-                            }}
-                            className="h-7 py-0 text-sm border-0 border-b border-foreground rounded-none focus-visible:ring-0 px-1 bg-transparent"
-                          />
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
-                            onClick={() => updateTagMutation.mutate(tagToEdit)}
-                          >
-                            <Check size={14} />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                            onClick={() => setTagToEdit(null)}
-                          >
-                            <X size={14} />
-                          </Button>
-                        </div>
+                        <InlineTagEditForm
+                          key={`desktop-${tag.id}`}
+                          initialName={tag.name}
+                          isSubmitting={updateTagMutation.isPending}
+                          inputClassName="h-7 py-0 text-sm border-0 border-b border-foreground rounded-none focus-visible:ring-0 px-1 bg-transparent"
+                          onCancel={() => setTagToEdit(null)}
+                          onSubmit={(name) =>
+                            updateTagMutation.mutate({ id: tag.id, name })
+                          }
+                        />
                       ) : (
                         <div className="flex items-center gap-2">
                           <Hash
@@ -538,5 +456,132 @@ export function TagManager() {
         isLoading={deleteTagMutation.isPending}
       />
     </div>
+  );
+}
+
+function InlineTagCreateForm({
+  isSubmitting,
+  onCancel,
+  onSubmit,
+}: {
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onSubmit: (name: string) => void;
+}) {
+  const form = useForm<CreateTagInput>({
+    resolver: standardSchemaResolver(CreateTagInputSchema),
+    defaultValues: { name: "" },
+  });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = form;
+  const name = watch("name");
+
+  return (
+    <form
+      onSubmit={handleSubmit((data) => onSubmit(data.name.trim()))}
+      className="space-y-2 border border-border/30 bg-muted/5 p-4 animate-in slide-in-from-top-2 duration-300"
+    >
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-mono text-emerald-500 font-bold">
+          {">"}
+        </span>
+        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+          NEW_TAG:
+        </span>
+        <div className="flex-1">
+          <input
+            autoFocus
+            {...register("name")}
+            placeholder="输入标签名称..."
+            className="w-full bg-transparent border-none outline-none font-mono text-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="submit"
+            size="sm"
+            variant="ghost"
+            disabled={isSubmitting || !name.trim()}
+            className="h-8 text-[10px] uppercase font-mono tracking-widest hover:text-emerald-500 hover:bg-emerald-500/10 rounded-none"
+          >
+            {isSubmitting ? "创建中..." : "[ 确认 ]"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={onCancel}
+            className="h-8 text-[10px] uppercase font-mono tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-none"
+          >
+            [ 取消 ]
+          </Button>
+        </div>
+      </div>
+      {errors.name?.message && (
+        <p className="pl-20 text-xs text-red-500">{errors.name.message}</p>
+      )}
+    </form>
+  );
+}
+
+function InlineTagEditForm({
+  initialName,
+  isSubmitting,
+  inputClassName,
+  onCancel,
+  onSubmit,
+}: {
+  initialName: string;
+  isSubmitting: boolean;
+  inputClassName: string;
+  onCancel: () => void;
+  onSubmit: (name: string) => void;
+}) {
+  const form = useForm<CreateTagInput>({
+    resolver: standardSchemaResolver(CreateTagInputSchema),
+    defaultValues: { name: initialName },
+  });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = form;
+  const name = watch("name");
+
+  return (
+    <form
+      onSubmit={handleSubmit((data) => onSubmit(data.name.trim()))}
+      className="max-w-xs animate-in fade-in duration-200"
+    >
+      <div className="flex items-center gap-2">
+        <Input autoFocus {...register("name")} className={inputClassName} />
+        <Button
+          type="submit"
+          size="icon"
+          variant="ghost"
+          disabled={isSubmitting || !name.trim()}
+          className="h-6 w-6 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+        >
+          <Check size={14} />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={onCancel}
+          className="h-6 w-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+        >
+          <X size={14} />
+        </Button>
+      </div>
+      {errors.name?.message && (
+        <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+      )}
+    </form>
   );
 }

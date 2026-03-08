@@ -40,7 +40,7 @@ export function LoginPage({
         <p className="text-sm font-medium fuwari-text-50">
           {isEmailConfigured
             ? "欢迎回来，请登录您的账户"
-            : "抱歉，目前仅支持第三方快捷登录"}
+            : "仅支持第三方快捷登录"}
         </p>
       </div>
 

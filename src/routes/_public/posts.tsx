@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { z } from "zod";
 import theme from "@theme";
 import { postsInfiniteQueryOptions } from "@/features/posts/queries";
-import { getSiteDomainFn } from "@/features/site/site.api";
+import { siteDomainQuery } from "@/features/config/queries";
 import { blogConfig } from "@/blog.config";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_public/posts")({
         }),
       ),
       context.queryClient.prefetchQuery(tagsQueryOptions),
-      getSiteDomainFn(),
+      context.queryClient.ensureQueryData(siteDomainQuery),
     ]);
 
     return {
