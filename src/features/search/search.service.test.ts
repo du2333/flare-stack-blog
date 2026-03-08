@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createAdminTestContext, seedUser } from "tests/test-utils";
 import { remove } from "@orama/orama";
-import * as SearchService from "./search.service";
+import * as SearchService from "./service/search.service";
 import { PostTagsTable, PostsTable, TagsTable } from "@/lib/db/schema";
 import { getOramaDb, persistOramaDb } from "@/features/search/model/store";
 

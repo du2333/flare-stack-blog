@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { unsubscribeByTokenFn } from "@/features/email/email.api";
+import { unsubscribeByTokenFn } from "@/features/email/api/email.api";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { EMAIL_KEYS } from "@/features/email/queries";
 

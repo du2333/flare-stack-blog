@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { updateSystemConfigFn } from "@/features/config/config.api";
+import { updateSystemConfigFn } from "@/features/config/api/config.api";
 
 import { CONFIG_KEYS, systemConfigQuery } from "@/features/config/queries";
 

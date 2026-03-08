@@ -2,13 +2,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getReplyNotificationStatusFn,
+  getUserNotificationAvailabilityFn,
   toggleReplyNotificationFn,
-} from "@/features/email/email.api";
+} from "@/features/email/api/email.api";
 import { EMAIL_KEYS } from "@/features/email/queries";
 
 export function useNotificationToggle(userId: string | undefined) {
   const queryClient = useQueryClient();
 
+  const {
+    data: availability,
+    isLoading: isAvailabilityLoading,
+    error: availabilityError,
+  } = useQuery({
+    queryKey: [...EMAIL_KEYS.notifications, "availability", userId],
+    queryFn: () => getUserNotificationAvailabilityFn(),
+    enabled: !!userId,
+  });
   const {
     data: notificationStatus,
     isLoading,
@@ -32,16 +42,21 @@ export function useNotificationToggle(userId: string | undefined) {
   });
 
   return {
+    available: availability?.emailEnabled ?? false,
     enabled: currentEnabled,
-    isLoading,
+    isLoading: isLoading || isAvailabilityLoading,
     isPending: mutation.isPending,
     toggle: () => {
-      if (isLoading) {
+      if (isLoading || isAvailabilityLoading) {
         toast.message("正在获取通知状态，请稍候");
         return;
       }
-      if (queryError) {
+      if (queryError || availabilityError) {
         toast.error("获取通知状态失败，请重试");
+        return;
+      }
+      if (!availability?.emailEnabled) {
+        toast.message("站点未开启用户邮件通知");
         return;
       }
       if (currentEnabled === undefined) {

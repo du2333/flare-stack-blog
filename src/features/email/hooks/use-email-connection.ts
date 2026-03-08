@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { testEmailConnectionFn } from "@/features/email/email.api";
+import { testEmailConnectionFn } from "@/features/email/api/email.api";
 
 export function useEmailConnection() {
   const mutation = useMutation({

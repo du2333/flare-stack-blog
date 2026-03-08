@@ -7,7 +7,10 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { deleteImageFn, updateMediaNameFn } from "@/features/media/media.api";
+import {
+  deleteImageFn,
+  updateMediaNameFn,
+} from "@/features/media/api/media.api";
 import {
   MEDIA_KEYS,
   linkedMediaKeysQuery,
@@ -73,7 +76,7 @@ export function useMediaLibrary() {
 
   // Build linkedMediaIds set
   const linkedMediaIds = useMemo(() => {
-    return new Set(linkedKeysData ?? []);
+    return new Set<string>(linkedKeysData ?? []);
   }, [linkedKeysData]);
 
   // Clear selections when filters changes (actual data refresh)

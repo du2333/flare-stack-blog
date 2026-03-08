@@ -22,38 +22,35 @@ export function CacheMaintenance() {
     );
   };
   return (
-    <div className="flex flex-col border border-border/30 bg-background overflow-hidden group hover:border-red-500/30 transition-colors">
+    <div className="flex flex-col overflow-hidden border border-border/30 bg-background/50">
       <div className="flex-1 p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="p-2 bg-red-500/10 rounded-sm">
+        <div className="flex items-center gap-3">
+          <div className="rounded-sm bg-red-500/10 p-2">
             <Flame size={16} className="text-red-500/70" />
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 bg-red-500 animate-pulse rounded-full" />
-            <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-red-500/60 font-medium">
-              CRITICAL_ACTION
-            </span>
+          <div className="space-y-1">
+            <h4 className="text-base font-serif font-medium text-foreground tracking-tight">
+              重置全站缓存
+            </h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              清除 CDN 和 KV 缓存，适合在内容严重不同步时执行。
+            </p>
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <h4 className="text-base font-serif font-medium text-foreground tracking-tight underline decoration-red-500/20 underline-offset-4">
-            重置全站缓存
-          </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            清除全站 CDN 及 KV
-            数据缓存。硬重置操作，请仅在数据严重不同步时执行。
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          执行后，首页、文章页和其他缓存内容会重新回源生成。通常只在发布后页面长时间未更新、资源版本异常，或手动修复数据后仍然显示旧内容时使用。
+        </p>
       </div>
 
       <div className="px-6 pb-6 mt-auto">
         <Button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="w-full h-10 px-4 text-[10px] font-mono uppercase tracking-[0.2em] rounded-none gap-3 bg-red-600 hover:bg-red-700 text-white transition-all shadow-lg shadow-red-500/10"
+          className="h-10 w-full gap-3 rounded-none bg-red-600 px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white transition-all hover:bg-red-700"
         >
-          <Trash2 size={12} />[ 确认重置 ]
+          <Trash2 size={12} />
+          重置缓存
         </Button>
       </div>
 

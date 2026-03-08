@@ -2,7 +2,7 @@ import { Check, Film, Image as ImageIcon } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useLongPress } from "../hooks";
 import type { MediaAsset } from "../types";
-import { getOptimizedImageUrl } from "@/features/media/media.utils";
+import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 
 interface MediaGridProps {

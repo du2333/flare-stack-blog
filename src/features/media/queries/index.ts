@@ -3,7 +3,7 @@ import {
   getLinkedMediaKeysFn,
   getMediaFn,
   getTotalMediaSizeFn,
-} from "../media.api";
+} from "../api/media.api";
 
 export const MEDIA_KEYS = {
   all: ["media"] as const,

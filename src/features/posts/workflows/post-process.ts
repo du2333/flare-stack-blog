@@ -4,7 +4,7 @@ import * as CacheService from "@/features/cache/cache.service";
 import * as PostService from "@/features/posts/posts.service";
 import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
 import { getDb } from "@/lib/db";
-import * as SearchService from "@/features/search/search.service";
+import * as SearchService from "@/features/search/service/search.service";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import {
   fetchPost,

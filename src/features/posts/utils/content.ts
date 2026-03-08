@@ -1,5 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
-import { extractImageKey } from "@/features/media/media.utils";
+import { extractImageKey } from "@/features/media/utils/media.utils";
 import { highlight } from "@/lib/shiki";
 
 export function slugify(text: string | null | undefined) {

@@ -1,7 +1,11 @@
 import { ClientOnly } from "@tanstack/react-router";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2, X } from "lucide-react";
-import { useState } from "react";
 import { createPortal } from "react-dom";
+import { useForm } from "react-hook-form";
+import type { ComponentProps } from "react";
+import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
+import { CreateFriendLinkInputSchema } from "@/features/friend-links/friend-links.schema";
 import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,35 +20,45 @@ const AddFriendLinkModalInternal = ({
   onClose,
 }: AddFriendLinkModalProps) => {
   const { create, isCreating } = useAdminFriendLinks();
-  const [formData, setFormData] = useState({
-    siteName: "",
-    siteUrl: "",
-    description: "",
-    logoUrl: "",
-    contactEmail: "",
+  const form = useForm<CreateFriendLinkInput>({
+    resolver: standardSchemaResolver(CreateFriendLinkInputSchema),
+    defaultValues: {
+      siteName: "",
+      siteUrl: "",
+      description: "",
+      logoUrl: "",
+      contactEmail: "",
+    },
   });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = form;
 
-  const handleSubmit = () => {
-    if (!formData.siteName || !formData.siteUrl) return;
+  const [siteName, siteUrl] = watch(["siteName", "siteUrl"]);
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const onSubmit = (data: CreateFriendLinkInput) => {
     create(
       {
         data: {
-          siteName: formData.siteName,
-          siteUrl: formData.siteUrl,
-          description: formData.description || undefined,
-          logoUrl: formData.logoUrl || undefined,
-          contactEmail: formData.contactEmail || undefined,
+          siteName: data.siteName,
+          siteUrl: data.siteUrl,
+          description: data.description || undefined,
+          logoUrl: data.logoUrl || undefined,
+          contactEmail: data.contactEmail || undefined,
         },
       },
       {
         onSuccess: () => {
-          setFormData({
-            siteName: "",
-            siteUrl: "",
-            description: "",
-            logoUrl: "",
-            contactEmail: "",
-          });
+          reset();
           onClose();
         },
       },
@@ -57,11 +71,11 @@ const AddFriendLinkModalInternal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="fixed inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200"
-        onClick={onClose}
+        onClick={handleClose}
       />
       <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200 shadow-lg">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute right-4 top-4 text-muted-foreground/50 hover:text-foreground transition-colors"
         >
           <X size={16} strokeWidth={1.5} />
@@ -70,48 +84,49 @@ const AddFriendLinkModalInternal = ({
         <p className="text-sm text-muted-foreground mb-6">
           手动添加的友链将直接设为已通过状态。
         </p>
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <ModalFormField
             label="站点名称 *"
-            value={formData.siteName}
-            onChange={(v) => setFormData((p) => ({ ...p, siteName: v }))}
             placeholder="例：我的博客"
+            error={errors.siteName?.message}
+            inputProps={register("siteName")}
           />
           <ModalFormField
             label="站点地址 *"
-            value={formData.siteUrl}
-            onChange={(v) => setFormData((p) => ({ ...p, siteUrl: v }))}
             placeholder="https://..."
+            error={errors.siteUrl?.message}
+            inputProps={register("siteUrl")}
           />
           <ModalFormField
             label="站点简介"
-            value={formData.description}
-            onChange={(v) => setFormData((p) => ({ ...p, description: v }))}
             placeholder="简要介绍该站点"
+            error={errors.description?.message}
+            inputProps={register("description")}
           />
           <ModalFormField
             label="Logo 地址"
-            value={formData.logoUrl}
-            onChange={(v) => setFormData((p) => ({ ...p, logoUrl: v }))}
             placeholder="https://..."
+            error={errors.logoUrl?.message}
+            inputProps={register("logoUrl")}
           />
           <ModalFormField
             label="联系邮箱"
-            value={formData.contactEmail}
-            onChange={(v) => setFormData((p) => ({ ...p, contactEmail: v }))}
             placeholder="可选"
+            error={errors.contactEmail?.message}
+            inputProps={register("contactEmail")}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button
+              type="button"
               variant="ghost"
-              onClick={onClose}
+              onClick={handleClose}
               className="font-mono text-xs uppercase tracking-widest rounded-none"
             >
               取消
             </Button>
             <Button
-              onClick={handleSubmit}
-              disabled={isCreating || !formData.siteName || !formData.siteUrl}
+              type="submit"
+              disabled={isCreating || !siteName.trim() || !siteUrl.trim()}
               className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-xs uppercase tracking-widest"
             >
               {isCreating ? (
@@ -121,7 +136,7 @@ const AddFriendLinkModalInternal = ({
               )}
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>,
     document.body,
@@ -138,14 +153,14 @@ export function AddFriendLinkModal(props: AddFriendLinkModalProps) {
 
 function ModalFormField({
   label,
-  value,
-  onChange,
   placeholder,
+  error,
+  inputProps,
 }: {
   label: string;
-  value: string;
-  onChange: (value: string) => void;
   placeholder?: string;
+  error?: string;
+  inputProps: ComponentProps<typeof Input>;
 }) {
   return (
     <div className="space-y-1.5">
@@ -153,11 +168,11 @@ function ModalFormField({
         {label}
       </label>
       <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        {...inputProps}
         placeholder={placeholder}
         className="bg-transparent border-0 border-b border-border/50 text-base px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5 placeholder:text-muted-foreground/30"
       />
+      {error && <p className="text-xs text-red-500">! {error}</p>}
     </div>
   );
 }

@@ -135,36 +135,37 @@ export function ProfilePage({
 
         <div className="w-full h-px bg-border/40" />
 
-        {/* Notifications */}
-        <section className="space-y-8">
-          <h3 className="text-lg font-serif font-medium text-foreground">
-            偏好设置
-          </h3>
-          <div className="flex items-center justify-between py-2 border-b border-border/40">
-            <div className="space-y-1">
-              <span className="text-sm font-sans text-foreground">
-                邮件通知
-              </span>
-              <span className="text-[10px] font-mono text-muted-foreground block">
-                当收到回复时通知我
-              </span>
+        {notification.available && (
+          <section className="space-y-8">
+            <h3 className="text-lg font-serif font-medium text-foreground">
+              偏好设置
+            </h3>
+            <div className="flex items-center justify-between py-2 border-b border-border/40">
+              <div className="space-y-1">
+                <span className="text-sm font-sans text-foreground">
+                  邮件通知
+                </span>
+                <span className="text-[10px] font-mono text-muted-foreground block">
+                  当收到回复时通知我
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={notification.isLoading || notification.isPending}
+                onClick={notification.toggle}
+                className={cn(
+                  "font-mono text-[10px] tracking-wider h-auto px-3 py-1 border transition-all rounded-full",
+                  notification.enabled
+                    ? "border-foreground text-foreground"
+                    : "border-border text-muted-foreground hover:border-foreground/50",
+                )}
+              >
+                {notification.enabled ? "已开启" : "已关闭"}
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={notification.isLoading || notification.isPending}
-              onClick={notification.toggle}
-              className={cn(
-                "font-mono text-[10px] tracking-wider h-auto px-3 py-1 border transition-all rounded-full",
-                notification.enabled
-                  ? "border-foreground text-foreground"
-                  : "border-border text-muted-foreground hover:border-foreground/50",
-              )}
-            >
-              {notification.enabled ? "已开启" : "已关闭"}
-            </Button>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Security Section */}
         {passwordForm && (

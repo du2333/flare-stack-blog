@@ -1,10 +1,7 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import type { JSONContent } from "@tiptap/core";
-import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
-import * as EmailData from "@/features/email/data/email.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
-import { ReplyNotificationEmail } from "@/features/email/templates/ReplyNotificationEmail";
+import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { serverEnv } from "@/lib/env/server.env";
 
@@ -24,8 +21,7 @@ interface SendReplyNotificationParams {
 }
 
 export async function sendReplyNotification(
-  db: DB,
-  env: Env,
+  context: DbContext & { executionCtx: ExecutionContext },
   params: SendReplyNotificationParams,
 ): Promise<void> {
   const { comment, post } = params;
@@ -34,7 +30,7 @@ export async function sendReplyNotification(
 
   // Get the author of the comment being replied to
   const replyToAuthor = await CommentRepo.getCommentAuthorWithEmail(
-    db,
+    context.db,
     comment.replyToCommentId,
   );
 
@@ -66,30 +62,16 @@ export async function sendReplyNotification(
     return;
   }
 
-  // Check for unsubscription
-  const unsubscribed = await EmailData.isUnsubscribed(
-    db,
-    replyToAuthor.id,
-    "reply_notification",
-  );
-
-  if (unsubscribed) {
-    console.log(
-      JSON.stringify({
-        message: "reply notification skipped, user unsubscribed",
-        userId: replyToAuthor.id,
-      }),
-    );
-    return;
-  }
-
   // Get replier info
-  const replier = await CommentRepo.getCommentAuthorWithEmail(db, comment.id);
+  const replier = await CommentRepo.getCommentAuthorWithEmail(
+    context.db,
+    comment.id,
+  );
   const replierName = replier?.name ?? "有人";
   const replyPreview = convertToPlainText(comment.content).slice(0, 100);
 
-  const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(env);
-  const unsubscribeType: EmailUnsubscribeType = "reply_notification";
+  const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(context.env);
+  const unsubscribeType = "reply_notification" as const;
   const token = await generateUnsubscribeToken(
     BETTER_AUTH_SECRET,
     replyToAuthor.id,
@@ -101,29 +83,24 @@ export async function sendReplyNotification(
   const rootId = comment.rootId ?? comment.id;
   const commentUrl = `https://${DOMAIN}/post/${post.slug}?highlightCommentId=${comment.id}&rootId=${rootId}#comment-${comment.id}`;
 
-  const emailHtml = renderToStaticMarkup(
-    ReplyNotificationEmail({
-      postTitle: post.title,
-      replierName,
-      replyPreview: `${replyPreview}${replyPreview.length >= 100 ? "..." : ""}`,
-      commentUrl,
-      unsubscribeUrl,
-    }),
-  );
-
   try {
-    await env.QUEUE.send({
-      type: "EMAIL",
-      data: {
-        to: replyToAuthor.email,
-        subject: `[评论回复] ${replierName} 回复了您在《${post.title}》的评论`,
-        html: emailHtml,
-        headers: {
-          "List-Unsubscribe": `<${unsubscribeUrl}>`,
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    await publishNotificationEvent(
+      { db: context.db, env: context.env, executionCtx: context.executionCtx },
+      {
+        type:
+          replyToAuthor.role === "admin"
+            ? "comment.reply_to_admin_published"
+            : "comment.reply_to_user_published",
+        data: {
+          to: replyToAuthor.email,
+          postTitle: post.title,
+          replierName,
+          replyPreview: `${replyPreview}${replyPreview.length >= 100 ? "..." : ""}`,
+          commentUrl,
+          unsubscribeUrl,
         },
       },
-    });
+    );
 
     console.log(
       JSON.stringify({
