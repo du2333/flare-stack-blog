@@ -5,12 +5,12 @@ import { createEmailMessageFromNotification } from "@/features/email/service/ema
 function createPlainTextMessage(event: NotificationEvent) {
   switch (event.type) {
     case "comment.admin_root_created":
-      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了评论：${event.data.commentPreview}`;
+      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了评论：${event.data.commentPreview} ${event.data.commentUrl}`;
     case "comment.admin_pending_review":
-      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了待审核评论：${event.data.commentPreview}`;
+      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了待审核评论：${event.data.commentPreview} ${event.data.reviewUrl}`;
     case "comment.reply_to_admin_published":
     case "comment.reply_to_user_published":
-      return `${event.data.replierName} 回复了《${event.data.postTitle}》下的评论：${event.data.replyPreview}`;
+      return `${event.data.replierName} 回复了《${event.data.postTitle}》下的评论：${event.data.replyPreview} ${event.data.commentUrl}`;
     case "friend_link.submitted":
       return `${event.data.submitterName} 提交了友链申请：${event.data.siteName}（${event.data.siteUrl}）`;
     case "friend_link.approved":
