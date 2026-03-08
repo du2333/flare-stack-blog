@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { testWebhookFn } from "@/features/notification/api/webhook.api";
+import { testWebhookFn } from "@/features/webhook/api/webhook.api";
 
 export function useWebhookConnection() {
   const mutation = useMutation({

@@ -1,44 +1,30 @@
-import type {
-  NotificationEvent,
-  NotificationWebhookEventType,
-} from "@/features/notification/notification.schema";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import * as ConfigService from "@/features/config/service/config.service";
 import {
-  NOTIFICATION_EVENT,
-  isNotificationWebhookEventType,
+  ADMIN_NOTIFICATION_EVENTS,
+  USER_NOTIFICATION_EVENTS,
   notificationEventSchema,
 } from "@/features/notification/notification.schema";
+import { isNotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
-
-const adminNotificationEventTypes = [
-  NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED,
-  NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW,
-  NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED,
-  NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED,
-] as const;
-
-const userNotificationEventTypes = [
-  NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED,
-  NOTIFICATION_EVENT.FRIEND_LINK_APPROVED,
-  NOTIFICATION_EVENT.FRIEND_LINK_REJECTED,
-] as const;
 
 function isAdminNotificationEvent(
   event: NotificationEvent,
 ): event is Extract<
   NotificationEvent,
-  { type: (typeof adminNotificationEventTypes)[number] }
+  { type: (typeof ADMIN_NOTIFICATION_EVENTS)[number] }
 > {
-  return adminNotificationEventTypes.some((type) => type === event.type);
+  return ADMIN_NOTIFICATION_EVENTS.some((type) => type === event.type);
 }
 
 function isUserNotificationEvent(
   event: NotificationEvent,
 ): event is Extract<
   NotificationEvent,
-  { type: (typeof userNotificationEventTypes)[number] }
+  { type: (typeof USER_NOTIFICATION_EVENTS)[number] }
 > {
-  return userNotificationEventTypes.some((type) => type === event.type);
+  return USER_NOTIFICATION_EVENTS.some((type) => type === event.type);
 }
 
 function getMatchedWebhookEndpoints(
@@ -113,7 +99,7 @@ export async function publishNotificationEvent(
       deliveries.push(enqueueEmailNotification(context, parsed));
     }
 
-    if (adminWebhookEnabled && isNotificationWebhookEventType(parsed.type)) {
+    if (adminWebhookEnabled && isNotificationWebhookEventType(parsed)) {
       deliveries.push(enqueueWebhookNotification(context, parsed));
     }
 

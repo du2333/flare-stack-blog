@@ -12,25 +12,20 @@ export const NOTIFICATION_EVENT = {
   FRIEND_LINK_REJECTED: "friend_link.rejected",
 } as const;
 
-export const NOTIFICATION_WEBHOOK_EVENTS = [
+export const ADMIN_NOTIFICATION_EVENTS = [
   NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED,
   NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW,
   NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED,
   NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED,
 ] as const;
 
-export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
-export const notificationWebhookEventTypeSchema = z.enum(
-  NOTIFICATION_WEBHOOK_EVENTS,
-);
+export const USER_NOTIFICATION_EVENTS = [
+  NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED,
+  NOTIFICATION_EVENT.FRIEND_LINK_APPROVED,
+  NOTIFICATION_EVENT.FRIEND_LINK_REJECTED,
+] as const;
 
-export function isNotificationWebhookEventType(
-  eventType: NotificationEventType,
-): eventType is NotificationWebhookEventType {
-  return (NOTIFICATION_WEBHOOK_EVENTS as ReadonlyArray<string>).includes(
-    eventType,
-  );
-}
+export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
 
 const commentAdminRootCreatedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),
@@ -121,5 +116,3 @@ export const notificationEventSchema = z.discriminatedUnion("type", [
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
 export type NotificationEventType = z.infer<typeof notificationEventTypeSchema>;
 export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
-export type NotificationWebhookEventType =
-  (typeof NOTIFICATION_WEBHOOK_EVENTS)[number];

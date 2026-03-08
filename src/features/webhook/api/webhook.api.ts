@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { adminMiddleware } from "@/lib/middlewares";
-import { webhookEndpointSchema } from "@/features/config/config.schema";
+import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
 import { NOTIFICATION_EVENT } from "@/features/notification/notification.schema";
-import { sendWebhookRequest } from "@/features/notification/api/webhook.consumer";
-import { createNotificationExampleEvent } from "@/features/notification/notification.helpers";
+import { sendWebhookRequest } from "@/features/webhook/api/webhook.consumer";
+import { createNotificationExampleEvent } from "@/features/webhook/webhook.helpers";
 
 const testWebhookInputSchema = z.object({
   endpoint: webhookEndpointSchema,

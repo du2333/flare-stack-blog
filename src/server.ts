@@ -1,5 +1,5 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
-import { handleWebhookMessage } from "@/features/notification/api/webhook.consumer";
+import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 

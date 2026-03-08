@@ -2,13 +2,11 @@ import { ChevronDown, Info } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
-import type { WebhookTranslationKey } from "@/features/notification/notification.helpers";
-import type {
-  NotificationEvent,
-  NotificationWebhookEventType,
-} from "@/features/notification/notification.schema";
-import { createNotificationExampleEvent } from "@/features/notification/notification.helpers";
-import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/notification/notification.schema";
+import type { WebhookTranslationKey } from "@/features/webhook/webhook.helpers";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import { createNotificationExampleEvent } from "@/features/webhook/webhook.helpers";
+import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
 
 interface NotificationDocField {
   path: string;
@@ -26,7 +24,7 @@ function createEventFields(
 ): Array<NotificationDocField> {
   return Object.entries(event.data).map(([key, value]) => ({
     path: `data.${key}`,
-    example: value,
+    example: String(value),
   }));
 }
 

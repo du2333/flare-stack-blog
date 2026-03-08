@@ -1,8 +1,8 @@
 import { Eye, EyeOff, KeyRound, Loader2, Send, Trash2 } from "lucide-react";
 import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
 import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form";
-import type { NotificationWebhookEventType } from "@/features/notification/notification.schema";
-import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

@@ -10,7 +10,7 @@ import {
   SystemConfigSchema,
 } from "@/features/config/config.schema";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
-import { WebhookSettingsSection } from "@/features/notification/components/webhook-settings-section";
+import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
 import { MaintenanceSection } from "@/features/config/components/maintenance-section";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";

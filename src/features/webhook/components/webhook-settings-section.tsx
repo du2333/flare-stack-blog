@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { WebhookDocPanel } from "./webhook-doc-panel";
 import { WebhookEndpointCard } from "./webhook-endpoint-card";
 import { createWebhookEndpoint } from "./webhook-settings.helpers";
-import type { NotificationWebhookEventType } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import type { SystemConfig } from "@/features/config/config.schema";
-import { useWebhookConnection } from "@/features/notification/hooks/use-webhook-connection";
+import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 

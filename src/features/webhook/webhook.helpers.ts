@@ -1,8 +1,5 @@
-import type {
-  NotificationEvent,
-  NotificationWebhookEventType,
-} from "@/features/notification/notification.schema";
-import { NOTIFICATION_EVENT } from "@/features/notification/notification.schema";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 
 export type WebhookTranslationKey =
   | "admin_email"
@@ -27,9 +24,9 @@ export function createNotificationExampleEvent(
   t: (key: WebhookTranslationKey) => string = (k) => k,
 ): NotificationEvent {
   switch (eventType) {
-    case NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED:
+    case "comment.admin_root_created":
       return {
-        type: NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED,
+        type: "comment.admin_root_created",
         data: {
           to: t("admin_email"),
           postTitle: t("post_title"),
@@ -38,9 +35,9 @@ export function createNotificationExampleEvent(
           commentUrl: t("comment_url"),
         },
       };
-    case NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW:
+    case "comment.admin_pending_review":
       return {
-        type: NOTIFICATION_EVENT.COMMENT_ADMIN_PENDING_REVIEW,
+        type: "comment.admin_pending_review",
         data: {
           to: t("admin_email"),
           postTitle: t("post_title"),
@@ -49,9 +46,9 @@ export function createNotificationExampleEvent(
           reviewUrl: t("review_url"),
         },
       };
-    case NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED:
+    case "comment.reply_to_admin_published":
       return {
-        type: NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED,
+        type: "comment.reply_to_admin_published",
         data: {
           to: t("admin_email"),
           postTitle: t("post_title"),
@@ -61,9 +58,9 @@ export function createNotificationExampleEvent(
           unsubscribeUrl: t("unsubscribe_url"),
         },
       };
-    case NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED:
+    case "friend_link.submitted":
       return {
-        type: NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED,
+        type: "friend_link.submitted",
         data: {
           to: t("admin_email"),
           siteName: t("site_name"),
