@@ -1,4 +1,3 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import * as FriendLinkRepo from "./data/friend-links.data";
 import {
   ApprovedFriendLinksResponseSchema,
@@ -14,8 +13,7 @@ import type {
   UpdateFriendLinkInput,
 } from "./friend-links.schema";
 import * as CacheService from "@/features/cache/cache.service";
-import { FriendLinkAdminNotificationEmail } from "@/features/email/templates/FriendLinkAdminNotificationEmail";
-import { FriendLinkResultNotificationEmail } from "@/features/email/templates/FriendLinkResultNotificationEmail";
+import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
 import { purgeCDNCache } from "@/lib/invalidate";
@@ -23,7 +21,7 @@ import { purgeCDNCache } from "@/lib/invalidate";
 // ============ Authed User Methods ============
 
 export async function submitFriendLink(
-  context: AuthContext,
+  context: AuthContext & { executionCtx: ExecutionContext },
   data: SubmitFriendLinkInput,
 ) {
   const existing = await FriendLinkRepo.getFriendLinksByUserId(
@@ -49,22 +47,15 @@ export async function submitFriendLink(
 
   // Notify admin via email
   const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
-  const emailHtml = renderToStaticMarkup(
-    FriendLinkAdminNotificationEmail({
+  await publishNotificationEvent(context, {
+    type: "friend_link.submitted",
+    data: {
+      to: ADMIN_EMAIL,
       siteName: data.siteName,
       siteUrl: data.siteUrl,
       description: data.description || "",
       submitterName: context.session.user.name,
       reviewUrl: `https://${DOMAIN}/admin/friend-links`,
-    }),
-  );
-
-  await context.env.QUEUE.send({
-    type: "EMAIL",
-    data: {
-      to: ADMIN_EMAIL,
-      subject: `[友链申请] ${data.siteName}`,
-      html: emailHtml,
     },
   });
 
@@ -174,20 +165,12 @@ export async function approveFriendLink(
   // Notify submitter if contactEmail exists
   if (friendLink.contactEmail) {
     const { DOMAIN } = serverEnv(context.env);
-    const emailHtml = renderToStaticMarkup(
-      FriendLinkResultNotificationEmail({
-        siteName: friendLink.siteName,
-        approved: true,
-        blogUrl: `https://${DOMAIN}`,
-      }),
-    );
-
-    await context.env.QUEUE.send({
-      type: "EMAIL",
+    await publishNotificationEvent(context, {
+      type: "friend_link.approved",
       data: {
         to: friendLink.contactEmail,
-        subject: `[友链审核通过] ${friendLink.siteName}`,
-        html: emailHtml,
+        siteName: friendLink.siteName,
+        blogUrl: `https://${DOMAIN}`,
       },
     });
   }
@@ -218,20 +201,12 @@ export async function rejectFriendLink(
 
   // Notify submitter if contactEmail exists
   if (friendLink.contactEmail) {
-    const emailHtml = renderToStaticMarkup(
-      FriendLinkResultNotificationEmail({
-        siteName: friendLink.siteName,
-        approved: false,
-        rejectionReason: data.rejectionReason,
-      }),
-    );
-
-    await context.env.QUEUE.send({
-      type: "EMAIL",
+    await publishNotificationEvent(context, {
+      type: "friend_link.rejected",
       data: {
         to: friendLink.contactEmail,
-        subject: `[友链审核结果] ${friendLink.siteName}`,
-        html: emailHtml,
+        siteName: friendLink.siteName,
+        rejectionReason: data.rejectionReason,
       },
     });
   }

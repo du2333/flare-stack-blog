@@ -30,7 +30,7 @@ import {
 } from "@/features/posts/utils/content";
 import { err, ok } from "@/lib/errors";
 import { purgePostCDNCache } from "@/lib/invalidate";
-import * as SearchService from "@/features/search/search.service";
+import * as SearchService from "@/features/search/service/search.service";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 
 export async function getPostsCursor(

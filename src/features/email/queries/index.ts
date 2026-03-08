@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getReplyNotificationStatusFn } from "@/features/email/email.api";
+import { getReplyNotificationStatusFn } from "@/features/email/api/email.api";
 
 export const EMAIL_KEYS = {
   all: ["email"] as const,

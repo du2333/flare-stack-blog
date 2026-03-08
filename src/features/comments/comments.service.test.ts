@@ -6,7 +6,10 @@ import {
   createMockSession,
   seedUser,
 } from "tests/test-utils";
+import { DEFAULT_CONFIG } from "@/features/config/config.schema";
+import * as ConfigRepo from "@/features/config/data/config.data";
 import * as CommentService from "@/features/comments/comments.service";
+import * as EmailData from "@/features/email/data/email.data";
 import * as PostService from "@/features/posts/posts.service";
 import { unwrap } from "@/lib/errors";
 
@@ -58,6 +61,8 @@ describe("CommentService", () => {
       }),
     );
     postId = id;
+
+    await ConfigRepo.upsertSystemConfig(adminContext.db, DEFAULT_CONFIG);
   });
 
   describe("Comment Creation", () => {
@@ -477,6 +482,180 @@ describe("CommentService", () => {
       );
     });
 
+    it("should enqueue both email and webhook when both channels are enabled", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: true,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "dual-channel-endpoint",
+              name: "Dual Channel Endpoint",
+              url: "https://example.com/webhook",
+              enabled: true,
+              secret: "secret",
+              events: ["comment.admin_root_created"],
+            },
+          ],
+        },
+      });
+
+      vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(userContext, {
+        postId,
+        content: createCommentContent("Dual channel comment"),
+      });
+
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(2);
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "EMAIL" }),
+      );
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "WEBHOOK" }),
+      );
+    });
+
+    it("should enqueue admin webhook without email when admin email is disabled", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: false,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "admin-webhook",
+              name: "Admin Webhook",
+              url: "https://example.com/webhook",
+              enabled: true,
+              secret: "secret",
+              events: ["comment.admin_root_created"],
+            },
+          ],
+        },
+      });
+
+      vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(userContext, {
+        postId,
+        content: createCommentContent("Webhook only notification"),
+      });
+
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "WEBHOOK",
+          data: expect.objectContaining({
+            endpointId: "admin-webhook",
+            url: "https://example.com/webhook",
+            event: expect.objectContaining({
+              type: "comment.admin_root_created",
+            }),
+          }),
+        }),
+      );
+    });
+
+    it("should only enqueue webhook for endpoints subscribed to the event", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: false,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "matched-endpoint",
+              name: "Matched Endpoint",
+              url: "https://example.com/matched",
+              enabled: true,
+              secret: "secret-1",
+              events: ["comment.admin_root_created"],
+            },
+            {
+              id: "unmatched-endpoint",
+              name: "Unmatched Endpoint",
+              url: "https://example.com/unmatched",
+              enabled: true,
+              secret: "secret-2",
+              events: ["friend_link.submitted"],
+            },
+          ],
+        },
+      });
+
+      vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(userContext, {
+        postId,
+        content: createCommentContent("Only matched webhook should receive"),
+      });
+
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
+      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "WEBHOOK",
+          data: expect.objectContaining({
+            endpointId: "matched-endpoint",
+            url: "https://example.com/matched",
+            event: expect.objectContaining({
+              type: "comment.admin_root_created",
+            }),
+          }),
+        }),
+      );
+    });
+
+    it("should not enqueue webhook for disabled endpoints", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: false,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "disabled-endpoint",
+              name: "Disabled Endpoint",
+              url: "https://example.com/disabled",
+              enabled: false,
+              secret: "secret",
+              events: ["comment.admin_root_created"],
+            },
+          ],
+        },
+      });
+
+      vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(userContext, {
+        postId,
+        content: createCommentContent("Comment with disabled webhook"),
+      });
+
+      expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
+    });
+
     it("should enqueue reply notification email when admin replies to a user comment", async () => {
       const rootComment = unwrap(
         await CommentService.createComment(userContext, {
@@ -509,6 +688,40 @@ describe("CommentService", () => {
           }),
         }),
       );
+    });
+
+    it("should skip user reply notification when user email notifications are disabled", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          user: {
+            emailEnabled: false,
+          },
+        },
+      });
+
+      const rootComment = unwrap(
+        await CommentService.createComment(userContext, {
+          postId,
+          content: createCommentContent("User comment"),
+        }),
+      );
+      await CommentService.moderateComment(adminContext, {
+        id: rootComment.id,
+        status: "published",
+      });
+
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(adminContext, {
+        postId,
+        content: createCommentContent("Admin reply"),
+        rootId: rootComment.id,
+        replyToCommentId: rootComment.id,
+      });
+
+      expect(adminContext.env.QUEUE.send).not.toHaveBeenCalled();
     });
 
     it("should not trigger reply notification when admin replies to own comment", async () => {
@@ -601,6 +814,123 @@ describe("CommentService", () => {
           data: expect.objectContaining({
             to: "admin@example.com",
             subject: expect.stringContaining("回复"),
+          }),
+        }),
+      );
+    });
+
+    it("should skip reply notification via moderateComment when admin email is disabled", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: false,
+              webhook: false,
+            },
+          },
+        },
+      });
+
+      // Admin creates a root comment (published immediately)
+      const rootComment = unwrap(
+        await CommentService.createComment(adminContext, {
+          postId,
+          content: createCommentContent("Admin root comment"),
+        }),
+      );
+
+      // User creates a reply (goes to verifying status)
+      const reply = unwrap(
+        await CommentService.createComment(userContext, {
+          postId,
+          content: createCommentContent("User reply to admin"),
+          rootId: rootComment.id,
+          replyToCommentId: rootComment.id,
+        }),
+      );
+
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+
+      // Approve the reply without passing moderatorUserId — normally sends reply notification to admin
+      // But admin email is disabled so no email should be enqueued
+      await CommentService.moderateComment(adminContext, {
+        id: reply.id,
+        status: "published",
+      });
+
+      expect(adminContext.env.QUEUE.send).not.toHaveBeenCalled();
+    });
+
+    it("should still emit admin webhook when reply notifications are unsubscribed", async () => {
+      await ConfigRepo.upsertSystemConfig(adminContext.db, {
+        ...DEFAULT_CONFIG,
+        notification: {
+          ...DEFAULT_CONFIG.notification,
+          admin: {
+            channels: {
+              email: false,
+              webhook: true,
+            },
+          },
+          webhooks: [
+            {
+              id: "admin-reply-webhook",
+              name: "Admin Reply Webhook",
+              enabled: true,
+              url: "https://example.com/reply-webhook",
+              secret: "secret",
+              events: ["comment.reply_to_admin_published"],
+            },
+          ],
+        },
+      });
+      await EmailData.unsubscribe(
+        adminContext.db,
+        adminContext.session.user.id,
+        "reply_notification",
+      );
+
+      const rootComment = unwrap(
+        await CommentService.createComment(adminContext, {
+          postId,
+          content: createCommentContent("Admin root comment"),
+        }),
+      );
+
+      const reply = unwrap(
+        await CommentService.createComment(userContext, {
+          postId,
+          content: createCommentContent("User reply to unsubscribed admin"),
+          rootId: rootComment.id,
+          replyToCommentId: rootComment.id,
+        }),
+      );
+
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+
+      await CommentService.moderateComment(adminContext, {
+        id: reply.id,
+        status: "published",
+      });
+
+      expect(adminContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
+      expect(adminContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "WEBHOOK",
+          data: expect.objectContaining({
+            endpointId: "admin-reply-webhook",
+            url: "https://example.com/reply-webhook",
+            event: expect.objectContaining({
+              type: "comment.reply_to_admin_published",
+              data: expect.objectContaining({
+                to: "admin@example.com",
+                postTitle: "Test Post",
+                replierName: "Test User",
+                replyPreview: "User reply to unsubscribed admin",
+              }),
+            }),
           }),
         }),
       );

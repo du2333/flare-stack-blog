@@ -1,4 +1,5 @@
-import { handleEmailMessage } from "@/features/email/email.queue";
+import { handleEmailMessage } from "@/features/email/api/email.consumer";
+import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -25,7 +26,7 @@ export default {
   fetch(request, env, ctx) {
     return app.fetch(request, env, ctx);
   },
-  async queue(batch, env) {
+  async queue(batch, env, ctx) {
     for (const message of batch.messages) {
       const parsed = queueMessageSchema.safeParse(message.body);
       if (!parsed.success) {
@@ -43,15 +44,24 @@ export default {
       try {
         const event = parsed.data;
         switch (event.type) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           case "EMAIL":
-            await handleEmailMessage(env, {
-              ...event.data,
-              idempotencyKey: message.id,
-            });
+            await handleEmailMessage(
+              {
+                env,
+                executionCtx: ctx,
+              },
+              {
+                ...event.data,
+                idempotencyKey: message.id,
+              },
+            );
+            break;
+          case "WEBHOOK":
+            await handleWebhookMessage(event.data, message.id);
             break;
           default:
-            event.type satisfies never;
+            event satisfies never;
+            throw new Error("Unknown queue message type");
         }
         message.ack();
       } catch (error) {

@@ -9,7 +9,7 @@ import {
   turnstileMiddleware,
 } from "./middlewares";
 import { createRateLimiterIdentifier } from "./helper";
-import { handleImageRequest } from "@/features/media/media.service";
+import { handleImageRequest } from "@/features/media/service/media.service";
 import { serverEnv } from "@/lib/env/server.env";
 import postsListRoute from "@/features/posts/api/hono/posts.list.route";
 import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";

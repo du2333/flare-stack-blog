@@ -34,6 +34,7 @@ export interface PasswordFormData {
 }
 
 export interface NotificationData {
+  available: boolean;
   enabled: boolean | undefined;
   isLoading: boolean;
   isPending: boolean;

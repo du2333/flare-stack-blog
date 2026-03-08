@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
 import { featuredPostsQuery } from "@/features/posts/queries";
-import { getSiteDomainFn } from "@/features/site/site.api";
+import { siteDomainQuery } from "@/features/config/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 
 const { featuredPostsLimit } = theme.config.home;
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_public/")({
       context.queryClient.ensureQueryData(
         featuredPostsQuery(featuredPostsLimit),
       ),
-      getSiteDomainFn(),
+      context.queryClient.ensureQueryData(siteDomainQuery),
     ]);
 
     return {

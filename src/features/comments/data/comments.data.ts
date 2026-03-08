@@ -391,6 +391,7 @@ export async function getCommentAuthorWithEmail(db: DB, commentId: number) {
       userId: CommentsTable.userId,
       userName: user.name,
       userEmail: user.email,
+      userRole: user.role,
     })
     .from(CommentsTable)
     .leftJoin(user, eq(CommentsTable.userId, user.id))
@@ -405,5 +406,6 @@ export async function getCommentAuthorWithEmail(db: DB, commentId: number) {
     id: result[0].userId,
     name: result[0].userName,
     email: result[0].userEmail,
+    role: result[0].userRole,
   };
 }

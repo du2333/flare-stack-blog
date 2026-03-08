@@ -4,7 +4,7 @@ import {
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
-import * as MediaService from "./media.service";
+import * as MediaService from "./service/media.service";
 import * as Storage from "./data/media.storage";
 import * as PostService from "@/features/posts/posts.service";
 import * as PostMediaRepo from "@/features/posts/data/post-media.data";

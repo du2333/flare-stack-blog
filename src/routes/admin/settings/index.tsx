@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Hammer, Loader2, Server } from "lucide-react";
+import { Check, Hammer, Loader2, Mail, Webhook } from "lucide-react";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   SystemConfigSchema,
 } from "@/features/config/config.schema";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
+import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
 import { MaintenanceSection } from "@/features/config/components/maintenance-section";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
@@ -85,11 +86,9 @@ function RouteComponent() {
             <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
               系统设置
             </h1>
-            <div className="flex items-center gap-2">
-              <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                SYSTEM_CONFIGURATION
-              </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              配置邮件通知、Webhook 通知和系统维护项。
+            </p>
           </div>
 
           <Button
@@ -108,23 +107,33 @@ function RouteComponent() {
 
         {/* Main Content with Tabs */}
         <Tabs
-          defaultValue="service"
-          className="flex flex-col md:grid md:grid-cols-[220px_1fr] gap-10 lg:gap-16 items-start"
+          defaultValue="email"
+          className="flex flex-col lg:grid lg:grid-cols-[220px_1fr] gap-10 lg:gap-16 items-start"
         >
-          <TabsList className="flex flex-row md:flex-col h-auto bg-transparent p-0 gap-1.5 md:w-full overflow-x-auto md:overflow-visible justify-start border-b md:border-b-0 md:border-r border-border/20 pb-4 md:pb-0 md:pr-6">
+          <TabsList className="flex flex-row lg:flex-col h-auto bg-transparent p-0 gap-1.5 lg:w-full overflow-x-auto lg:overflow-visible justify-start border-b lg:border-b-0 lg:border-r border-border/20 pb-4 lg:pb-0 lg:pr-6">
             <TabsTrigger
-              value="service"
-              className="w-full md:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
+              value="email"
+              className="w-full lg:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-b-2 lg:border-b-0 lg:border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
             >
-              <Server
+              <Mail
                 size={14}
                 className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
               />
-              服务配置
+              邮件配置
+            </TabsTrigger>
+            <TabsTrigger
+              value="webhook"
+              className="w-full lg:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-b-2 lg:border-b-0 lg:border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
+            >
+              <Webhook
+                size={14}
+                className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
+              />
+              Webhook 通知
             </TabsTrigger>
             <TabsTrigger
               value="maintenance"
-              className="w-full md:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
+              className="w-full lg:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-b-2 lg:border-b-0 lg:border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
             >
               <Hammer
                 size={14}
@@ -136,20 +145,33 @@ function RouteComponent() {
 
           <div className="flex-1 min-w-0 space-y-12">
             <TabsContent
-              value="service"
+              value="email"
               className="mt-0 space-y-10 animate-in fade-in slide-in-from-right-2 duration-500"
             >
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  服务连接
+                  邮件配置
                 </h2>
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                    EXTERNAL_INTEGRATIONS
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  配置发信账号，用于登录验证、密码重置和站内通知。
+                </p>
               </div>
               <EmailServiceSection testEmailConnection={testEmailConnection} />
+            </TabsContent>
+
+            <TabsContent
+              value="webhook"
+              className="mt-0 space-y-10 animate-in fade-in slide-in-from-right-2 duration-500"
+            >
+              <div className="space-y-2 pb-6 border-b border-border/30">
+                <h2 className="text-2xl font-serif font-medium tracking-tight">
+                  Webhook 通知
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  把管理员通知转发到你常用的平台或自动化系统。
+                </p>
+              </div>
+              <WebhookSettingsSection />
             </TabsContent>
 
             <TabsContent
@@ -158,13 +180,11 @@ function RouteComponent() {
             >
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  数据维护
+                  系统维护
                 </h2>
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                    SYSTEM_AND_DATA_HEALTH
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  执行清理和维护操作，保持数据状态稳定。
+                </p>
               </div>
               <MaintenanceSection />
             </TabsContent>

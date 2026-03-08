@@ -183,38 +183,42 @@ export function ProfilePage({
 
         {/* Right Column: Mini Widgets like Mail Prefs & Actions */}
         <div className="flex flex-col gap-6">
-          <div
-            className="fuwari-card-base p-6 fuwari-onload-animation flex flex-col gap-6"
-            style={{ animationDelay: "250ms" }}
-          >
-            <h3 className="text-lg font-bold fuwari-text-90 border-b border-(--fuwari-btn-regular-bg) pb-3">
-              偏好
-            </h3>
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-bold fuwari-text-75">邮件提醒</span>
-              <p className="text-xs text-(--fuwari-btn-content) mb-2">
-                当您收到他人的回复或评论时，将发送邮件通知。
-              </p>
-              <button
-                disabled={notification.isLoading || notification.isPending}
-                onClick={notification.toggle}
-                className={cn(
-                  "w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95",
-                  notification.enabled
-                    ? "fuwari-btn-primary"
-                    : "fuwari-btn-regular",
-                )}
-              >
-                {notification.isLoading || notification.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span>
-                    {notification.enabled ? "已开启通知" : "未开启通知"}
-                  </span>
-                )}
-              </button>
+          {notification.available && (
+            <div
+              className="fuwari-card-base p-6 fuwari-onload-animation flex flex-col gap-6"
+              style={{ animationDelay: "250ms" }}
+            >
+              <h3 className="text-lg font-bold fuwari-text-90 border-b border-(--fuwari-btn-regular-bg) pb-3">
+                偏好
+              </h3>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-bold fuwari-text-75">
+                  邮件提醒
+                </span>
+                <p className="text-xs text-(--fuwari-btn-content) mb-2">
+                  当您收到他人的回复或评论时，将发送邮件通知。
+                </p>
+                <button
+                  disabled={notification.isLoading || notification.isPending}
+                  onClick={notification.toggle}
+                  className={cn(
+                    "w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95",
+                    notification.enabled
+                      ? "fuwari-btn-primary"
+                      : "fuwari-btn-regular",
+                  )}
+                >
+                  {notification.isLoading || notification.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span>
+                      {notification.enabled ? "已开启通知" : "未开启通知"}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div
             className="fuwari-card-base p-6 fuwari-onload-animation flex flex-col gap-3"

@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getIndexVersionFn } from "../search.api";
+import { getIndexVersionFn } from "../api/search.api";
 import { apiClient } from "@/lib/api-client";
 
 export const SEARCH_KEYS = {
