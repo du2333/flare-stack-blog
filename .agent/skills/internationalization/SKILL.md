@@ -155,5 +155,5 @@ export const Route = createFileRoute("/_public/posts")({
 After adding new keys to the JSON files, run the compiler to update the type-safe definitions:
 
 ```bash
-bunx paraglide-js compile --project ./project.inlang --outdir ./src/paraglide
+bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide
 ```

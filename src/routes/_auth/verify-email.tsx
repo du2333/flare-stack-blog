@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import theme from "@theme";
 import { useVerifyEmail } from "@/features/auth/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_auth/verify-email")({
   validateSearch: z.object({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_auth/verify-email")({
   head: () => ({
     meta: [
       {
-        title: "验证邮箱",
+        title: m.verify_email_title(),
       },
     ],
   }),
