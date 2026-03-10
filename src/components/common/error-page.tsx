@@ -1,4 +1,5 @@
 import { useRouter } from "@tanstack/react-router";
+import { m } from "@/paraglide/messages";
 
 export function ErrorPage({ error: _error }: { error?: Error }) {
   const router = useRouter();
@@ -13,18 +14,20 @@ export function ErrorPage({ error: _error }: { error?: Error }) {
             [ ERROR ]
           </p>
           <h2 className="text-2xl md:text-3xl font-serif font-medium tracking-tight">
-            程序发生错误
+            {m.error_title()}
           </h2>
           <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-md mx-auto">
-            执行过程中遇到了意外情况，您可以尝试刷新或重试。
+            {m.error_desc()}
           </p>
         </div>
 
         <button
           onClick={onReset}
-          className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors duration-300"
+          className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors duration-300 gap-2 flex"
         >
-          [ 重试 ]
+          <span>[</span>
+          <span>{m.error_retry()}</span>
+          <span>]</span>
         </button>
       </div>
     </div>

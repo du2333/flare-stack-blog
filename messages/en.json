@@ -5,5 +5,10 @@
   "nav_friend_links": "Friend Links",
   "nav_search": "Search",
   "nav_login": "Login",
-  "fuwari_nav_home": "Home"
+  "error_title": "An Error Occurred",
+  "error_desc": "An unexpected situation happened during execution, you can try to refresh or retry.",
+  "error_retry": "Retry",
+  "not_found_title": "Page Not Found",
+  "not_found_desc": "The page you are looking for might have been removed or is temporarily unavailable.",
+  "not_found_return": "Return to Home"
 }

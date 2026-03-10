@@ -5,5 +5,10 @@
   "nav_friend_links": "友链",
   "nav_search": "搜索",
   "nav_login": "登录",
-  "fuwari_nav_home": "首页"
+  "error_title": "程序发生错误",
+  "error_desc": "执行过程中遇到了意外情况，您可以尝试刷新或重试。",
+  "error_retry": "重试",
+  "not_found_title": "找不到该页面",
+  "not_found_desc": "您请求的内容可能已被移除或地址输入有误。",
+  "not_found_return": "返回主页"
 }

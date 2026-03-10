@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { m } from "@/paraglide/messages";
 
 export function NotFound() {
   const navigate = useNavigate();
@@ -14,10 +15,10 @@ export function NotFound() {
             [ 404 ]
           </p>
           <h2 className="text-2xl md:text-3xl font-serif font-medium tracking-tight text-foreground">
-            找不到该页面
+            {m.not_found_title()}
           </h2>
           <p className="max-w-md mx-auto text-sm text-muted-foreground/70 font-light leading-relaxed">
-            您请求的内容可能已被移除或地址输入有误。
+            {m.not_found_desc()}
           </p>
         </div>
 
@@ -25,7 +26,9 @@ export function NotFound() {
           onClick={onReturn}
           className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors duration-300"
         >
-          [ 返回主页 ]
+          <span>[</span>
+          <span>{m.not_found_return()}</span>
+          <span>]</span>
         </button>
       </div>
     </div>
