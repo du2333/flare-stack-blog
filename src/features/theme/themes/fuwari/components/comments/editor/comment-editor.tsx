@@ -5,7 +5,7 @@ import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
 import { FuwariInsertModal } from "./comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
 import type { ModalType } from "./comment-insert-modal";
-import { commentExtensions } from "@/features/comments/components/editor/config";
+import { getCommentExtensions } from "@/features/comments/components/editor/config";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 import { m } from "@/paraglide/messages";
 
@@ -30,7 +30,7 @@ export const FuwariCommentEditor = ({
   const [modalInitialUrl, setModalInitialUrl] = useState("");
 
   const editor = useEditor({
-    extensions: commentExtensions,
+    extensions: getCommentExtensions(),
     content: "",
     autofocus: autoFocus ? "end" : false,
     editorProps: {
