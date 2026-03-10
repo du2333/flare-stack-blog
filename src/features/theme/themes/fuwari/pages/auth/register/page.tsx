@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2, MailCheck } from "lucide-react";
 import type { RegisterPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 export function RegisterPage({
   registerForm,
@@ -19,17 +20,17 @@ export function RegisterPage({
         </div>
         <div className="space-y-3">
           <h3 className="text-2xl font-bold fuwari-text-90 tracking-tight">
-            验证您的邮箱
+            {m.register_success_title()}
           </h3>
           <p className="text-sm font-medium fuwari-text-50 leading-relaxed max-w-xs mx-auto">
-            一封验证邮件已发送至您的邮箱。请点击邮件中的链接以激活账户。
+            {m.register_success_desc()}
           </p>
         </div>
         <Link
           to="/login"
           className="w-full py-3.5 rounded-xl fuwari-btn-regular font-bold text-sm transition-all active:scale-[0.98] mt-4"
         >
-          返回登录
+          {m.register_back_to_login()}
         </Link>
       </div>
     );
@@ -39,9 +40,11 @@ export function RegisterPage({
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold fuwari-text-90">注册账户</h1>
+        <h1 className="text-2xl font-bold fuwari-text-90">
+          {m.register_header_title()}
+        </h1>
         <p className="text-sm font-medium fuwari-text-50">
-          欢迎加入，填写以下信息创建新账户
+          {m.register_header_desc()}
         </p>
       </div>
 
@@ -50,13 +53,13 @@ export function RegisterPage({
           {/* Name Field */}
           <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
             <label htmlFor="reg-name" className="text-sm font-bold ml-1">
-              用户昵称
+              {m.register_nickname()}
             </label>
             <input
               id="reg-name"
               type="text"
               {...register("name")}
-              placeholder="输入您的昵称"
+              placeholder={m.register_nickname_placeholder()}
               disabled={isFormDisabled}
               className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
@@ -70,13 +73,13 @@ export function RegisterPage({
           {/* Email Field */}
           <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
             <label htmlFor="reg-email" className="text-sm font-bold ml-1">
-              邮箱地址
+              {m.login_email_address()}
             </label>
             <input
               id="reg-email"
               type="email"
               {...register("email")}
-              placeholder="example@mail.com"
+              placeholder={m.login_email_placeholder()}
               disabled={isFormDisabled}
               className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
@@ -91,13 +94,13 @@ export function RegisterPage({
             {/* Password Field */}
             <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
               <label htmlFor="reg-password" className="text-sm font-bold ml-1">
-                密码
+                {m.register_password()}
               </label>
               <input
                 id="reg-password"
                 type="password"
                 {...register("password")}
-                placeholder="••••••••"
+                placeholder={m.login_password_placeholder()}
                 disabled={isFormDisabled}
                 className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
@@ -114,13 +117,13 @@ export function RegisterPage({
                 htmlFor="reg-confirm-password"
                 className="text-sm font-bold ml-1"
               >
-                确认密码
+                {m.register_confirm_password()}
               </label>
               <input
                 id="reg-confirm-password"
                 type="password"
                 {...register("confirmPassword")}
-                placeholder="••••••••"
+                placeholder={m.login_password_placeholder()}
                 disabled={isFormDisabled}
                 className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
@@ -140,10 +143,10 @@ export function RegisterPage({
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" size={16} />
-                <span>提交中...</span>
+                <span>{m.register_submitting()}</span>
               </>
             ) : (
-              <span>创建账户</span>
+              <span>{m.register_submit()}</span>
             )}
           </button>
         </form>
@@ -153,12 +156,12 @@ export function RegisterPage({
         {/* Footer Link */}
         <div className="text-center pt-2">
           <p className="text-sm font-medium fuwari-text-50">
-            已有账户?{" "}
+            {m.register_have_account()}{" "}
             <Link
               to="/login"
               className="text-(--fuwari-primary) hover:underline"
             >
-              前往登录
+              {m.register_go_to_login()}
             </Link>
           </p>
         </div>
