@@ -256,5 +256,10 @@
     }
   ],
   "profile_toast_password_updated": "Password updated",
-  "profile_toast_security_synced": "Your security settings have been synchronized."
+  "profile_toast_security_synced": "Your security settings have been synchronized.",
+  "auth_layout_login_required": "Login Required",
+  "auth_layout_login_required_desc": "You need to log in to access this page.",
+  "auth_layout_login_required_desc2": "Please log in to continue.",
+  "auth_layout_go_to_login": "Go to Login",
+  "auth_layout_back_home": "Back to Home"
 }

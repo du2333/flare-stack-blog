@@ -250,5 +250,10 @@
     }
   ],
   "profile_toast_password_updated": "密码已更新",
-  "profile_toast_security_synced": "你的安全设置已同步。"
+  "profile_toast_security_synced": "你的安全设置已同步。",
+  "auth_layout_login_required": "需要登录",
+  "auth_layout_login_required_desc": "您需要登录后才能访问此页面内容。",
+  "auth_layout_login_required_desc2": "请登录以继续。",
+  "auth_layout_go_to_login": "前往登录",
+  "auth_layout_back_home": "返回首页"
 }
