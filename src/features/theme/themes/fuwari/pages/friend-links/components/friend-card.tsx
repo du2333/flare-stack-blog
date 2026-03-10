@@ -1,6 +1,7 @@
 import { ExternalLink, Globe } from "lucide-react";
 import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface FriendCardProps {
   link: Omit<FriendLinkWithUser, "createdAt" | "updatedAt">;
@@ -10,7 +11,7 @@ interface FriendCardProps {
 
 export function FriendCard({ link, className, style }: FriendCardProps) {
   const avatarUrl = link.logoUrl || link.user?.image;
-  const description = link.description || "一个未知的神秘网站";
+  const description = link.description || m.friend_links_unknown_site();
 
   return (
     <a

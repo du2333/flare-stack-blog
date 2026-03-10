@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
 import { approvedFriendLinksQuery } from "@/features/friend-links/queries";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public/friend-links")({
   component: FriendLinksPage,
@@ -9,8 +10,8 @@ export const Route = createFileRoute("/_public/friend-links")({
     await context.queryClient.ensureQueryData(approvedFriendLinksQuery());
 
     return {
-      title: "友情链接",
-      description: "志同道合的站点，彼此链接，互相照亮。",
+      title: m.friend_links_title(),
+      description: m.friend_links_desc(),
     };
   },
   head: ({ loaderData }) => ({

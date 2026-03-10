@@ -2,7 +2,7 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "nav_home": "Home",
   "nav_posts": "Posts",
-  "nav_friend_links": "Friend Links",
+  "nav_friend_links": "Links",
   "nav_search": "Search",
   "nav_login": "Login",
   "error_title": "An Error Occurred",
@@ -49,6 +49,17 @@
       }
     }
   ],
+  "friend_links_title": "Links",
+  "friend_links_desc": "Like-minded sites, linking each other, lighting each other up.",
+  "friend_links_no_links": "No links yet",
+  "friend_links_first_link": "// Be the first to link",
+  "friend_links_join_title": "Join Us",
+  "friend_links_join_desc": "Welcome to submit your site information, which will be displayed here after approval.",
+  "friend_links_apply": "Apply to Join",
+  "friend_links_fuwari_desc": "Distance cannot separate true friends. If you also like to tinker, welcome to leave your footprint here.",
+  "friend_links_fuwari_apply": "Apply",
+  "friend_links_fuwari_no_links": "No friend links found",
+  "friend_links_unknown_site": "A mysterious unknown site",
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],

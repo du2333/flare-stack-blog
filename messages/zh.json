@@ -48,6 +48,17 @@
       }
     }
   ],
+  "friend_links_title": "友情链接",
+  "friend_links_desc": "志同道合的站点，彼此链接，互相照亮。",
+  "friend_links_no_links": "暂无友链",
+  "friend_links_first_link": "// 成为第一个链接的站点",
+  "friend_links_join_title": "加入我们",
+  "friend_links_join_desc": "欢迎提交您的站点信息，通过审核后将在此展示。",
+  "friend_links_apply": "申请加入",
+  "friend_links_fuwari_desc": "海内存知己，天涯若比邻。如果你也喜欢折腾，欢迎在这里留下脚印。",
+  "friend_links_fuwari_apply": "申请友链",
+  "friend_links_fuwari_no_links": "暂无友情链接记录",
+  "friend_links_unknown_site": "一个未知的神秘网站",
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountZh = count: number"],
