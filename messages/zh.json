@@ -153,5 +153,48 @@
     }
   ],
   "search_fuwari_intro_title": "探索海量内容",
-  "search_fuwari_intro_desc": "在上方输入关键词开始搜索，支持全文检索。您可以搜索文章标题、摘要、标签或正文内容。"
+  "search_fuwari_intro_desc": "在上方输入关键词开始搜索，支持全文检索。您可以搜索文章标题、摘要、标签或正文内容。",
+  "friend_link_submit_title": "申请友链",
+  "friend_link_submit_desc": "提交你的站点信息，审核通过后将展示在友链页面。",
+  "friend_link_submit_form_title": "提交申请",
+  "friend_link_my_submissions": "我的申请记录",
+  "friend_link_status_pending": "审核中",
+  "friend_link_status_approved": "已通过",
+  "friend_link_status_rejected": "未通过",
+  "friend_link_status_rejected_fuwari": "已拒绝",
+  "friend_link_rejection_reason": "拒绝理由",
+  "friend_link_rejection_reason_fuwari": "拒绝原因：",
+  "friend_link_field_site_name": "站点名称",
+  "friend_link_field_site_url": "站点地址",
+  "friend_link_field_site_url_fuwari": "站点链接",
+  "friend_link_field_description": "站点描述",
+  "friend_link_field_description_default": "站点简介",
+  "friend_link_field_logo_url": "Logo 链接",
+  "friend_link_field_logo_url_default": "Logo 地址",
+  "friend_link_field_contact_email": "联系邮箱",
+  "friend_link_placeholder_site_name_default": "例：我的无敌博客",
+  "friend_link_placeholder_site_name_fuwari": "例如：Fuwari Blog",
+  "friend_link_placeholder_site_url": "https://...",
+  "friend_link_placeholder_site_url_fuwari": "例如：https://example.com",
+  "friend_link_placeholder_description_default": "简要介绍你的站点",
+  "friend_link_placeholder_description_fuwari": "一句话介绍您的网站",
+  "friend_link_placeholder_logo_url_fuwari": "例如：https://example.com/logo.png",
+  "friend_link_placeholder_contact_email_default": "用于接收审核结果通知",
+  "friend_link_placeholder_contact_email_fuwari": "用于接收审核结果",
+  "friend_link_submit_button_default": "[ 提交申请 ]",
+  "friend_link_submitting": "提交中...",
+  "friend_link_no_submissions": "暂无申请记录",
+  "friend_link_submitted_at": "提交于",
+  "friend_link_back_to_list": "返回友情链接列表",
+  "friend_link_validation_required": "站点名称不能为空",
+  "friend_link_validation_too_long": [
+    {
+      "declarations": ["input max"],
+      "match": {
+        "max=*": "最长{max}字"
+      }
+    }
+  ],
+  "friend_link_validation_invalid_url": "请输入有效的 URL",
+  "friend_link_validation_invalid_email": "请输入有效的邮箱地址"
 }

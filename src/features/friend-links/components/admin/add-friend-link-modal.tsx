@@ -5,7 +5,8 @@ import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import type { ComponentProps } from "react";
 import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
-import { CreateFriendLinkInputSchema } from "@/features/friend-links/friend-links.schema";
+import { createCreateFriendLinkSchema } from "@/features/friend-links/friend-links.schema";
+import { m } from "@/paraglide/messages";
 import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ const AddFriendLinkModalInternal = ({
 }: AddFriendLinkModalProps) => {
   const { create, isCreating } = useAdminFriendLinks();
   const form = useForm<CreateFriendLinkInput>({
-    resolver: standardSchemaResolver(CreateFriendLinkInputSchema),
+    resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
       siteName: "",
       siteUrl: "",

@@ -15,10 +15,11 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { FRIEND_LINKS_KEYS, allFriendLinksQuery } from "../../queries";
 import { useAdminFriendLinks } from "../../hooks/use-friend-links";
-import { CreateFriendLinkInputSchema } from "../../friend-links.schema";
+import { createCreateFriendLinkSchema } from "../../friend-links.schema";
 import type { CreateFriendLinkInput } from "../../friend-links.schema";
-
 import type { FriendLinkStatus } from "@/lib/db/schema";
+import { m } from "@/paraglide/messages";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -695,7 +696,7 @@ const EditModal = ({
   };
 }) => {
   const form = useForm<CreateFriendLinkInput>({
-    resolver: standardSchemaResolver(CreateFriendLinkInputSchema),
+    resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
       siteName: initialData.siteName,
       siteUrl: initialData.siteUrl,

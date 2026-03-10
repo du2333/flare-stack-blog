@@ -159,5 +159,48 @@
     }
   ],
   "search_fuwari_intro_title": "Explore Content",
-  "search_fuwari_intro_desc": "Enter keywords above to start searching. Supports full-text search across titles, summaries, tags, and content."
+  "search_fuwari_intro_desc": "Enter keywords above to start searching. Supports full-text search across titles, summaries, tags, and content.",
+  "friend_link_submit_title": "Apply for Friend Link",
+  "friend_link_submit_desc": "Submit your site information. It will be displayed on the friend links page after approval.",
+  "friend_link_submit_form_title": "Submit Application",
+  "friend_link_my_submissions": "My Submissions",
+  "friend_link_status_pending": "Pending",
+  "friend_link_status_approved": "Approved",
+  "friend_link_status_rejected": "Rejected",
+  "friend_link_status_rejected_fuwari": "Rejected",
+  "friend_link_rejection_reason": "Rejection Reason",
+  "friend_link_rejection_reason_fuwari": "Rejection Reason: ",
+  "friend_link_field_site_name": "Site Name",
+  "friend_link_field_site_url": "Site URL",
+  "friend_link_field_site_url_fuwari": "Site URL",
+  "friend_link_field_description": "Description",
+  "friend_link_field_description_default": "Description",
+  "friend_link_field_logo_url": "Logo URL",
+  "friend_link_field_logo_url_default": "Logo URL",
+  "friend_link_field_contact_email": "Contact Email",
+  "friend_link_placeholder_site_name_default": "e.g. My Awesome Blog",
+  "friend_link_placeholder_site_name_fuwari": "e.g. Fuwari Blog",
+  "friend_link_placeholder_site_url": "https://...",
+  "friend_link_placeholder_site_url_fuwari": "e.g. https://example.com",
+  "friend_link_placeholder_description_default": "Brief description of your site",
+  "friend_link_placeholder_description_fuwari": "One sentence description of your site",
+  "friend_link_placeholder_logo_url_fuwari": "e.g. https://example.com/logo.png",
+  "friend_link_placeholder_contact_email_default": "To receive approval notifications",
+  "friend_link_placeholder_contact_email_fuwari": "To receive approval results",
+  "friend_link_submit_button_default": "[ Submit Application ]",
+  "friend_link_submitting": "Submitting...",
+  "friend_link_no_submissions": "No submission records yet",
+  "friend_link_submitted_at": "Submitted at",
+  "friend_link_back_to_list": "Back to friend links list",
+  "friend_link_validation_required": "Site name is required",
+  "friend_link_validation_too_long": [
+    {
+      "declarations": ["input max"],
+      "match": {
+        "max=*": "Maximum {max} characters"
+      }
+    }
+  ],
+  "friend_link_validation_invalid_url": "Please enter a valid URL",
+  "friend_link_validation_invalid_email": "Please enter a valid email address"
 }
