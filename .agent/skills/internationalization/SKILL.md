@@ -66,6 +66,26 @@ Use parameters for dynamic content and plurals. Define these in the JSON files u
 <span>{m.posts_count({ count: posts.length })}</span>
 ```
 
+## Zod Schema Validation
+
+Separate Server API validation from Client UI validation:
+
+1. **Server (API)**: Use standard static schemas for `inputValidator`. 
+2. **Client (UI)**: Use a factory `(m: Messages) => z.object(...)` for localized form errors. Do NOT use dynamic imports `await import(...)`. Pass the imported `m` object directly in the UI component.
+
+```typescript
+// feature.schema.ts
+import type { Messages } from "@/lib/i18n";
+
+// 1. Static schema for API
+export const SubmitSchema = z.object({ name: z.string().min(1) });
+
+// 2. Factory schema for UI Form
+export const createSubmitSchema = (m: Messages) => z.object({ 
+  name: z.string().min(1, m.validation_required()) 
+}); 
+```
+
 ## Date and Time Formatting
 
 Do NOT use `Intl.DateTimeFormat` directly in components. Define formatting logic in the translation files to ensure locale-appropriate display.
