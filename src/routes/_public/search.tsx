@@ -8,6 +8,7 @@ import {
   searchMetaQuery,
 } from "@/features/search/queries";
 import { useDebounce } from "@/hooks/use-debounce";
+import { m } from "@/paraglide/messages";
 
 const searchSchema = z.object({
   q: z.string().optional(),
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_public/search")({
   component: SearchRoute,
   loader: () => {
     return {
-      title: "搜索",
+      title: m.search_title(),
     };
   },
   head: ({ loaderData }) => {

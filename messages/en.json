@@ -144,5 +144,20 @@
         "count=*": "{formattedCountEn} days ago"
       }
     }
-  ]
+  ],
+  "search_title": "Search",
+  "search_back": "Back",
+  "search_placeholder": "Search posts...",
+  "search_input_label": "Search Posts",
+  "search_no_results": "No results found",
+  "search_no_results_with_query": [
+    {
+      "declarations": ["input query"],
+      "match": {
+        "query=*": "Sorry, no content found for \"{query}\". Please try other keywords."
+      }
+    }
+  ],
+  "search_fuwari_intro_title": "Explore Content",
+  "search_fuwari_intro_desc": "Enter keywords above to start searching. Supports full-text search across titles, summaries, tags, and content."
 }

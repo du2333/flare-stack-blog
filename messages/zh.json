@@ -138,5 +138,20 @@
         "count=*": "{formattedCountZh} 天前"
       }
     }
-  ]
+  ],
+  "search_title": "搜索",
+  "search_back": "返回",
+  "search_placeholder": "搜索文章...",
+  "search_input_label": "搜索文章",
+  "search_no_results": "未找到相关文章",
+  "search_no_results_with_query": [
+    {
+      "declarations": ["input query"],
+      "match": {
+        "query=*": "未找到关于 \"{query}\" 的相关内容，请尝试其他关键词。"
+      }
+    }
+  ],
+  "search_fuwari_intro_title": "探索海量内容",
+  "search_fuwari_intro_desc": "在上方输入关键词开始搜索，支持全文检索。您可以搜索文章标题、摘要、标签或正文内容。"
 }
