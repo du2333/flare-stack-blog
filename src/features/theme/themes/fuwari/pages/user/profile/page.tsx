@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CodeSquare, Loader2, LogOut, Settings2, Shield } from "lucide-react";
 import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function ProfilePage({
   user,
@@ -46,7 +47,9 @@ export function ProfilePage({
           <span>{user.email}</span>
           <span className="w-1 h-1 rounded-full bg-(--fuwari-meta-divider)" />
           <span className="uppercase tracking-wider text-xs px-2 py-0.5 rounded-md bg-(--fuwari-btn-regular-bg)">
-            {user.role === "admin" ? "管理员" : "读者"}
+            {user.role === "admin"
+              ? m.profile_role_admin()
+              : m.profile_role_reader()}
           </span>
         </div>
       </div>
@@ -62,12 +65,14 @@ export function ProfilePage({
               <div className="w-10 h-10 rounded-xl bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) flex items-center justify-center">
                 <Settings2 className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-bold fuwari-text-90">基本设置</h2>
+              <h2 className="text-xl font-bold fuwari-text-90">
+                {m.profile_basic_settings()}
+              </h2>
             </div>
 
             <form onSubmit={profileForm.handleSubmit} className="space-y-6">
               <div>
-                <label className={labelClassName}>昵称</label>
+                <label className={labelClassName}>{m.profile_name()}</label>
                 <input
                   {...profileForm.register("name")}
                   className={inputClassName}
@@ -80,10 +85,12 @@ export function ProfilePage({
               </div>
 
               <div>
-                <label className={labelClassName}>头像链接</label>
+                <label className={labelClassName}>
+                  {m.profile_avatar_url()}
+                </label>
                 <input
                   {...profileForm.register("image")}
-                  placeholder="https://..."
+                  placeholder={m.profile_avatar_url_placeholder()}
                   className={inputClassName}
                 />
                 {profileForm.errors.image && (
@@ -102,7 +109,7 @@ export function ProfilePage({
                   {profileForm.isSubmitting && (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   )}
-                  保存更改
+                  {m.profile_save_changes_fuwari()}
                 </button>
               </div>
             </form>
@@ -118,12 +125,16 @@ export function ProfilePage({
                 <div className="w-10 h-10 rounded-xl bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) flex items-center justify-center">
                   <Shield className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-bold fuwari-text-90">密码安全</h2>
+                <h2 className="text-xl font-bold fuwari-text-90">
+                  {m.profile_password_security()}
+                </h2>
               </div>
 
               <form onSubmit={passwordForm.handleSubmit} className="space-y-6">
                 <div>
-                  <label className={labelClassName}>当前密码</label>
+                  <label className={labelClassName}>
+                    {m.profile_current_password()}
+                  </label>
                   <input
                     type="password"
                     {...passwordForm.register("currentPassword")}
@@ -137,7 +148,9 @@ export function ProfilePage({
                 </div>
 
                 <div>
-                  <label className={labelClassName}>新密码</label>
+                  <label className={labelClassName}>
+                    {m.profile_new_password()}
+                  </label>
                   <input
                     type="password"
                     {...passwordForm.register("newPassword")}
@@ -151,7 +164,9 @@ export function ProfilePage({
                 </div>
 
                 <div>
-                  <label className={labelClassName}>确认密码</label>
+                  <label className={labelClassName}>
+                    {m.profile_confirm_password()}
+                  </label>
                   <input
                     type="password"
                     {...passwordForm.register("confirmPassword")}
@@ -173,7 +188,7 @@ export function ProfilePage({
                     {passwordForm.isSubmitting && (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     )}
-                    更新密码
+                    {m.profile_update_password_fuwari()}
                   </button>
                 </div>
               </form>
@@ -189,14 +204,14 @@ export function ProfilePage({
               style={{ animationDelay: "250ms" }}
             >
               <h3 className="text-lg font-bold fuwari-text-90 border-b border-(--fuwari-btn-regular-bg) pb-3">
-                偏好
+                {m.profile_preferences()}
               </h3>
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-bold fuwari-text-75">
-                  邮件提醒
+                  {m.profile_email_notify()}
                 </span>
                 <p className="text-xs text-(--fuwari-btn-content) mb-2">
-                  当您收到他人的回复或评论时，将发送邮件通知。
+                  {m.profile_email_notify_desc_fuwari()}
                 </p>
                 <button
                   disabled={notification.isLoading || notification.isPending}
@@ -212,7 +227,9 @@ export function ProfilePage({
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <span>
-                      {notification.enabled ? "已开启通知" : "未开启通知"}
+                      {notification.enabled
+                        ? m.profile_notify_enabled_fuwari()
+                        : m.profile_notify_disabled_fuwari()}
                     </span>
                   )}
                 </button>
@@ -225,7 +242,7 @@ export function ProfilePage({
             style={{ animationDelay: "350ms" }}
           >
             <h3 className="text-lg font-bold fuwari-text-90 border-b border-(--fuwari-btn-regular-bg) pb-3 mb-2">
-              操作
+              {m.profile_actions()}
             </h3>
 
             {user.role === "admin" && (
@@ -234,7 +251,7 @@ export function ProfilePage({
                 className="w-full fuwari-btn-regular py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm active:scale-95 transition-all"
               >
                 <CodeSquare className="w-4 h-4" />
-                管理后台
+                {m.profile_admin_dashboard_fuwari()}
               </Link>
             )}
 
@@ -243,7 +260,7 @@ export function ProfilePage({
               className="w-full bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm active:scale-95 transition-all"
             >
               <LogOut className="w-4 h-4" />
-              退出登录
+              {m.profile_logout_fuwari()}
             </button>
           </div>
         </div>
