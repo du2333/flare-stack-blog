@@ -1,4 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "hello": "Hello"
+  "nav_home": "Home",
+  "nav_posts": "Posts",
+  "nav_friend_links": "Friend Links",
+  "nav_search": "Search",
+  "nav_login": "Login",
+  "fuwari_nav_home": "Home"
 }

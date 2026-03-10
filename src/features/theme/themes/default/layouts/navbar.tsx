@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { LanguageSwitcher } from "./language-switcher";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
@@ -12,7 +14,6 @@ interface NavbarProps {
   isLoading?: boolean;
   user?: UserInfo;
 }
-
 export function Navbar({
   onMenuClick,
   user,
@@ -66,9 +67,11 @@ export function Navbar({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <ThemeToggle />
+              <LanguageSwitcher className="text-muted-foreground hover:text-foreground h-8 w-8" />
               <Link
                 to="/search"
                 className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center transition-colors"
+                aria-label={m.nav_search()}
               >
                 <Search
                   size={16}
@@ -113,7 +116,7 @@ export function Navbar({
                         to="/login"
                         className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        Login
+                        {m.nav_login()}
                       </Link>
                     )}
                   </div>
