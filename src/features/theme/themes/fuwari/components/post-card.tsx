@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Calendar, ChevronRight, Tag } from "lucide-react";
 import type { PostItem } from "@/features/posts/posts.schema";
+import { m } from "@/paraglide/messages";
 import { formatDate } from "@/lib/utils";
 
 interface PostCardProps {
@@ -70,7 +71,7 @@ export function PostCard({ post }: PostCardProps) {
 
         {/* Read time */}
         <div className="text-sm fuwari-text-30 flex gap-4">
-          <span>{post.readTimeInMinutes} 分钟</span>
+          <span>{m.read_time({ count: post.readTimeInMinutes })}</span>
         </div>
       </div>
 

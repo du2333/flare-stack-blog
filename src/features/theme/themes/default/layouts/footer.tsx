@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { NavOption } from "@/features/theme/contract/layouts";
 import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 interface FooterProps {
   navOptions: Array<NavOption>;
@@ -16,7 +17,10 @@ export function Footer({ navOptions }: FooterProps) {
             [ {blogConfig.name} ]
           </span>
           <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
-            © {new Date().getFullYear()} {blogConfig.author}.
+            {m.footer_copyright({
+              year: new Date().getFullYear().toString(),
+              author: blogConfig.author,
+            })}
           </span>
         </div>
 

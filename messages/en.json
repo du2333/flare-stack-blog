@@ -10,5 +10,76 @@
   "error_retry": "Retry",
   "not_found_title": "Page Not Found",
   "not_found_desc": "The page you are looking for might have been removed or is temporarily unavailable.",
-  "not_found_return": "Return to Home"
+  "not_found_return": "Return to Home",
+  "home_greeting": "Hello",
+  "home_latest_posts": "Latest Posts",
+  "home_view_all_posts": "View all posts",
+  "home_intro_prefix": "I am",
+  "rss_subscription": "RSS Subscription",
+  "send_email": "Send Email",
+  "tags_title": "Tags",
+  "tags_collapse": "Collapse",
+  "tags_expand": "Expand More",
+  "profile_avatar_label": "Back to Home",
+  "footer_copyright": "© {year} {author}. All Rights Reserved.",
+  "footer_powered_by": "Powered by",
+  "read_time": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} minute",
+        "count=*": "{formattedCountEn} minutes"
+      }
+    }
+  ],
+  "format_date": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateEn = date: datetime year=numeric month=long day=numeric"
+      ],
+      "match": {
+        "date=*": "{formattedDateEn}"
+      }
+    }
+  ],
+  "format_datetime": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateTimeEn = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit"
+      ],
+      "match": {
+        "date=*": "{formattedDateTimeEn}"
+      }
+    }
+  ],
+  "time_ago_just_now": "just now",
+  "time_ago_minutes": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} minute ago",
+        "count=*": "{formattedCountEn} minutes ago"
+      }
+    }
+  ],
+  "time_ago_hours": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} hour ago",
+        "count=*": "{formattedCountEn} hours ago"
+      }
+    }
+  ],
+  "time_ago_days": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} day ago",
+        "count=*": "{formattedCountEn} days ago"
+      }
+    }
+  ]
 }

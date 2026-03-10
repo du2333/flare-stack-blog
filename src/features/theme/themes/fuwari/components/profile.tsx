@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Github, Mail, Rss } from "lucide-react";
 import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 export function Profile() {
   return (
@@ -8,7 +9,7 @@ export function Profile() {
       <Link
         to="/"
         className="group block relative mx-auto mb-3 max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"
-        aria-label="返回首页"
+        aria-label={m.profile_avatar_label()}
       >
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/30 group-active:bg-black/50 transition-colors pointer-events-none" />
         <img

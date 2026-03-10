@@ -1,5 +1,6 @@
 import type { NavOption } from "@/features/theme/contract/layouts";
 import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 interface FooterProps {
   navOptions: Array<NavOption>;
@@ -13,7 +14,11 @@ export function Footer(_: FooterProps) {
       <div className="border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-4 md:mx-32" />
       <div className="border-dashed border-black/10 dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6 py-8">
         <div className="fuwari-text-50 text-sm text-center">
-          © {currentYear} {blogConfig.author}. All Rights Reserved. /{" "}
+          {m.footer_copyright({
+            year: currentYear.toString(),
+            author: blogConfig.author,
+          })}{" "}
+          /{" "}
           <a
             href="/rss.xml"
             target="_blank"
@@ -32,7 +37,7 @@ export function Footer(_: FooterProps) {
             Sitemap
           </a>
           <br />
-          Powered by{" "}
+          {m.footer_powered_by()}{" "}
           <a
             href="https://tanstack.com/start"
             target="_blank"

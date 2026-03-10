@@ -10,5 +10,72 @@
   "error_retry": "重试",
   "not_found_title": "找不到该页面",
   "not_found_desc": "您请求的内容可能已被移除或地址输入有误。",
-  "not_found_return": "返回主页"
+  "not_found_return": "返回主页",
+  "home_greeting": "你好",
+  "home_latest_posts": "最新文章",
+  "home_view_all_posts": "查看全部文章",
+  "home_intro_prefix": "我是",
+  "rss_subscription": "RSS 订阅",
+  "send_email": "发送邮件",
+  "tags_title": "标签",
+  "tags_collapse": "收起",
+  "tags_expand": "展开更多",
+  "profile_avatar_label": "返回首页",
+  "footer_copyright": "© {year} {author}. All Rights Reserved.",
+  "footer_powered_by": "Powered by",
+  "read_time": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 分钟"
+      }
+    }
+  ],
+  "format_date": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateZh = date: datetime year=numeric month=long day=numeric"
+      ],
+      "match": {
+        "date=*": "{formattedDateZh}"
+      }
+    }
+  ],
+  "format_datetime": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateTimeZh = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit hour12=false"
+      ],
+      "match": {
+        "date=*": "{formattedDateTimeZh}"
+      }
+    }
+  ],
+  "time_ago_just_now": "刚刚",
+  "time_ago_minutes": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 分钟前"
+      }
+    }
+  ],
+  "time_ago_hours": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 小时前"
+      }
+    }
+  ],
+  "time_ago_days": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 天前"
+      }
+    }
+  ]
 }
