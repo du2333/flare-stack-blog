@@ -3,13 +3,18 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { authClient } from "@/lib/auth/auth.client";
 
-const forgotPasswordSchema = z.object({
-  email: z.email("无效的邮箱格式"),
-});
+const createForgotPasswordSchema = (messages: Messages) =>
+  z.object({
+    email: z.email(messages.register_validation_email_invalid()),
+  });
 
-type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordSchema = z.infer<
+  ReturnType<typeof createForgotPasswordSchema>
+>;
 
 export interface UseForgotPasswordFormOptions {
   turnstileToken: string | null;
@@ -22,6 +27,7 @@ export function useForgotPasswordForm(options: UseForgotPasswordFormOptions) {
 
   const [isSent, setIsSent] = useState(false);
   const [sentEmail, setSentEmail] = useState("");
+  const forgotPasswordSchema = createForgotPasswordSchema(m);
 
   const form = useForm<ForgotPasswordSchema>({
     resolver: standardSchemaResolver(forgotPasswordSchema),
@@ -40,17 +46,21 @@ export function useForgotPasswordForm(options: UseForgotPasswordFormOptions) {
 
     if (error) {
       if (error.message?.includes("Turnstile")) {
-        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+        toast.error(m.turnstile_error_failed_short(), {
+          description: m.turnstile_error_failed_desc(),
+        });
       } else {
-        toast.error("重置邮件发送失败", { description: error.message });
+        toast.error(m.forgot_password_toast_failed(), {
+          description: error.message,
+        });
       }
       return;
     }
 
     setSentEmail(data.email);
     setIsSent(true);
-    toast.success("重置邮件已发送", {
-      description: "请检查您的收件箱以获取重置链接。",
+    toast.success(m.forgot_password_toast_sent(), {
+      description: m.forgot_password_toast_sent_desc(),
     });
   };
 

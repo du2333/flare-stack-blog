@@ -69,8 +69,8 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
 
     if (error) {
       if (error.message?.includes("Turnstile")) {
-        toast.error(m.login_error_turnstile_failed_short(), {
-          description: m.login_error_turnstile_failed_desc(),
+        toast.error(m.turnstile_error_failed_short(), {
+          description: m.turnstile_error_failed_desc(),
         });
       } else {
         toast.error(m.register_toast_failed(), {
