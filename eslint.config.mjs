@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["worker-configuration.d.ts", ".wrangler/**"],
+    ignores: ["worker-configuration.d.ts", ".wrangler/**", "src/paraglide/**"],
   },
   {
     extends: tanstackConfig,

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
@@ -33,6 +34,12 @@ const config = defineConfig(({ mode }) => {
       },
     },
     plugins: [
+      paraglideVitePlugin({
+        project: "./project.inlang",
+        outdir: "./src/paraglide",
+        strategy: ["cookie", "preferredLanguage", "baseLocale"],
+        cookieName: "LOCALE",
+      }),
       cloudflare({
         viteEnvironment: {
           name: "ssr",

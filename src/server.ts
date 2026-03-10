@@ -1,5 +1,6 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
 import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
+import { paraglideMiddleware } from "@/paraglide/server";
 import { app } from "@/lib/hono";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -24,7 +25,9 @@ declare module "@tanstack/react-start" {
 
 export default {
   fetch(request, env, ctx) {
-    return app.fetch(request, env, ctx);
+    return paraglideMiddleware(request, () => {
+      return app.fetch(request, env, ctx);
+    });
   },
   async queue(batch, env, ctx) {
     for (const message of batch.messages) {

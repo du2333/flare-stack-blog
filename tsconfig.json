@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "noEmit": true,
     "verbatimModuleSyntax": false,
+    "allowJs": true,
     /* Linting */
     "skipLibCheck": true,
     "noUncheckedSideEffectImports": true
