@@ -1,3 +1,5 @@
+import { m } from "@/paraglide/messages";
+
 interface ArchiveYearProps {
   year: number;
   count: number;
@@ -16,7 +18,7 @@ export function ArchiveYear({ year, count }: ArchiveYearProps) {
         />
       </div>
       <div className="w-[70%] md:w-[80%] transition text-left fuwari-text-50">
-        {count} 篇文章
+        {m.posts_count({ count })}
       </div>
     </div>
   );

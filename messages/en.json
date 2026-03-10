@@ -23,6 +23,32 @@
   "profile_avatar_label": "Back to Home",
   "footer_copyright": "© {year} {author}. All Rights Reserved.",
   "footer_powered_by": "Powered by",
+  "posts_title": "All Posts",
+  "posts_no_posts": "No posts found",
+  "posts_loading": "Loading...",
+  "posts_end": "End",
+  "posts_tags_filter": "// TAGS_FILTER",
+  "posts_all": "All",
+  "posts_count": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} post",
+        "count=*": "{formattedCountEn} posts"
+      }
+    }
+  ],
+  "format_month_day": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateEn = date: datetime month=2-digit day=2-digit"
+      ],
+      "match": {
+        "date=*": "{formattedDateEn}"
+      }
+    }
+  ],
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],

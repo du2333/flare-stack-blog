@@ -11,6 +11,7 @@ import { siteDomainQuery } from "@/features/config/queries";
 import { blogConfig } from "@/blog.config";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
+import { m } from "@/paraglide/messages";
 
 const { postsPerPage } = theme.config.posts;
 
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/_public/posts")({
     ]);
 
     return {
-      title: "全部文章",
+      title: m.posts_title(),
       canonicalHref: buildCanonicalUrl(domain, "/posts", {
         tagName: deps.tagName,
       }),

@@ -23,6 +23,31 @@
   "profile_avatar_label": "返回首页",
   "footer_copyright": "© {year} {author}. All Rights Reserved.",
   "footer_powered_by": "Powered by",
+  "posts_title": "全部文章",
+  "posts_no_posts": "暂无文章",
+  "posts_loading": "加载中...",
+  "posts_end": "到底啦",
+  "posts_tags_filter": "// 分类_筛选",
+  "posts_all": "全部",
+  "posts_count": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 篇文章"
+      }
+    }
+  ],
+  "format_month_day": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateZh = date: datetime month=2-digit day=2-digit"
+      ],
+      "match": {
+        "date=*": "{formattedDateZh}"
+      }
+    }
+  ],
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountZh = count: number"],
