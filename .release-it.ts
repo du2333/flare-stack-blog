@@ -12,7 +12,7 @@ export default {
     releaseName: "v${version}",
   },
   hooks: {
-    "before:init": ["bun check", "bun run test"],
+    "before:init": ["bun check", "bun run test", "bun verify-translations"],
     "after:release":
       "echo Successfully released ${name} v${version} to ${repo.repository}.",
   },

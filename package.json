@@ -26,6 +26,7 @@
     "db:migrate": "wrangler d1 migrations apply DB --remote",
     "auth:generate-schema": "bunx @better-auth/cli generate --config auth-cli.ts --output src/lib/db/schema/auth.table.ts",
     "create-theme": "bun scripts/create-theme.ts",
+    "verify-translations": "bun scripts/verify-translations.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it"
   },
   "dependencies": {
