@@ -5,16 +5,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
 
-const loginSchema = z.object({
-  email: z.email("无效的邮箱格式"),
-  password: z.string().min(1, "请输入密码"),
-});
+const createLoginSchema = (messages: Messages) =>
+  z.object({
+    email: z.email(messages.login_validation_invalid_email()),
+    password: z.string().min(1, messages.login_validation_password_required()),
+  });
 
-type LoginSchema = z.infer<typeof loginSchema>;
+type LoginSchema = z.infer<ReturnType<typeof createLoginSchema>>;
 
 export interface UseLoginFormOptions {
   turnstileToken: string | null;
@@ -35,6 +38,7 @@ export function useLoginForm(options: UseLoginFormOptions) {
   const navigate = useNavigate();
   const previousLocation = usePreviousLocation();
   const queryClient = useQueryClient();
+  const loginSchema = createLoginSchema(m);
 
   const form = useForm<LoginSchema>({
     resolver: standardSchemaResolver(loginSchema),
@@ -61,23 +65,29 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
       switch (error.code as keyof typeof authClient.$ERROR_CODES | undefined) {
         case "EMAIL_NOT_VERIFIED":
-          form.setError("root", { message: "邮箱尚未验证" });
+          form.setError("root", {
+            message: m.login_error_email_not_verified(),
+          });
           setIsUnverifiedEmail(true);
           break;
         case "INVALID_EMAIL_OR_PASSWORD":
-          form.setError("root", { message: "无效的账号或密码" });
+          form.setError("root", {
+            message: m.login_error_invalid_credentials(),
+          });
           break;
         default:
           if (error.message?.includes("Turnstile")) {
             form.setError("root", {
-              message: "人机验证失败，请等待验证完成后重试",
+              message: m.login_error_turnstile_failed(),
             });
           } else {
-            form.setError("root", { message: error.message || "登录失败" });
+            form.setError("root", {
+              message: error.message || m.login_error_default(),
+            });
           }
       }
 
-      toast.error("登录失败", { description: error.message });
+      toast.error(m.login_error_default(), { description: error.message });
       return;
     }
 
@@ -86,18 +96,18 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
     setTimeout(() => {
       navigate({ to: redirectTo ?? previousLocation });
-      toast.success("欢迎回来");
+      toast.success(m.login_toast_success());
     }, 800);
   };
 
   const handleResendVerification = async () => {
     if (!emailValue) return;
     if (turnstilePending) {
-      toast.error("请等待人机验证完成");
+      toast.error(m.login_toast_wait_turnstile());
       return;
     }
 
-    const loadingToast = toast.loading("正在发送验证邮件...");
+    const loadingToast = toast.loading(m.login_toast_sending_verification());
 
     const { error } = await authClient.sendVerificationEmail({
       email: emailValue,
@@ -112,14 +122,20 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
     if (error) {
       if (error.message?.includes("Turnstile")) {
-        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+        toast.error(m.login_error_turnstile_failed_short(), {
+          description: m.login_error_turnstile_failed_desc(),
+        });
       } else {
-        toast.error("发送失败，请稍后重试", { description: error.message });
+        toast.error(m.login_toast_send_failed(), {
+          description: error.message,
+        });
       }
       return;
     }
 
-    toast.success("验证邮件已发送", { description: "请检查您的收件箱" });
+    toast.success(m.login_toast_verification_sent(), {
+      description: m.login_toast_check_inbox(),
+    });
   };
 
   return {

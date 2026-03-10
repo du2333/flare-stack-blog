@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import type { LoginFormData } from "@/features/theme/contract/pages";
 import { Input } from "@/components/ui/input";
+import { m } from "@/paraglide/messages";
 
 interface LoginFormProps {
   form: LoginFormData;
@@ -34,7 +35,7 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
               onClick={handleResendVerification}
               className="text-[9px] font-mono text-muted-foreground hover:text-foreground transition-colors"
             >
-              [ 重新发送验证邮件 ]
+              [ {m.login_resend_verification()} ]
             </button>
           )}
         </div>
@@ -46,14 +47,14 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
             htmlFor="login-email"
             className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
           >
-            邮箱地址
+            {m.login_email_address()}
           </label>
           <Input
             id="login-email"
             type="email"
             {...register("email")}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
-            placeholder="example@mail.com"
+            placeholder={m.login_email_placeholder()}
             autoComplete="username"
             disabled={isSubmitting || loginStep !== "IDLE"}
           />
@@ -70,7 +71,7 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
               htmlFor="login-password"
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
             >
-              登录密码
+              {m.login_password()}
             </label>
             {isEmailConfigured && (
               <Link
@@ -78,7 +79,7 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
                 tabIndex={-1}
                 className="text-[9px] font-mono text-muted-foreground/40 hover:text-foreground transition-colors"
               >
-                [ 找回密码 ]
+                [ {m.login_forgot_password()} ]
               </Link>
             )}
           </div>
@@ -87,7 +88,7 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
             type="password"
             {...register("password")}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
-            placeholder="••••••••"
+            placeholder={m.login_password_placeholder()}
             autoComplete="current-password"
             disabled={isSubmitting || loginStep !== "IDLE"}
           />
@@ -107,7 +108,7 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
         {loginStep === "VERIFYING" ? (
           <Loader2 className="animate-spin" size={14} />
         ) : (
-          <span>登录</span>
+          <span>{m.login_submit()}</span>
         )}
       </button>
     </form>

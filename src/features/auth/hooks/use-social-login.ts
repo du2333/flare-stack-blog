@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
+import { m } from "@/paraglide/messages";
 
 export interface UseSocialLoginOptions {
   turnstileToken: string | null;
@@ -35,9 +36,13 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
 
     if (error) {
       if (error.message?.includes("Turnstile")) {
-        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
+        toast.error(m.login_error_turnstile_failed_short(), {
+          description: m.login_error_turnstile_failed_desc(),
+        });
       } else {
-        toast.error("第三方登录失败", { description: error.message });
+        toast.error(m.login_toast_social_failed(), {
+          description: error.message,
+        });
       }
       setIsLoading(false);
       return;

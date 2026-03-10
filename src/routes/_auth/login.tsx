@@ -2,13 +2,14 @@ import { createFileRoute, useRouteContext } from "@tanstack/react-router";
 import theme from "@theme";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { useLoginForm, useSocialLogin } from "@/features/auth/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_auth/login")({
   component: RouteComponent,
   head: () => ({
     meta: [
       {
-        title: "登录",
+        title: m.login_title(),
       },
     ],
   }),
