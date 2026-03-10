@@ -60,6 +60,32 @@
   "friend_links_fuwari_apply": "Apply",
   "friend_links_fuwari_no_links": "No friend links found",
   "friend_links_unknown_site": "A mysterious unknown site",
+  "post_back_to_list": "Back to List",
+  "post_edit": "Edit Post",
+  "post_published_at": "Published at",
+  "post_last_updated": "Last updated",
+  "post_summary_title": "Summary",
+  "post_end_notice": "End of Content",
+  "post_share": "Share",
+  "post_share_success": "Link copied",
+  "post_share_success_desc": "Post link has been copied to clipboard",
+  "post_share_error": "Copy failed",
+  "post_share_error_desc": "Could not access clipboard, please copy the link manually",
+  "post_related_posts": "Related Reading",
+  "post_read_more": "Read",
+  "post_back_to_top": "Top",
+  "post_word_count": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "About {formattedCountEn} word",
+        "count=*": "About {formattedCountEn} words"
+      }
+    }
+  ],
+  "post_fuwari_related_posts": "Related Posts",
+  "post_fuwari_no_related_posts": "No related posts found",
+  "post_no_tags": "No tags",
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],

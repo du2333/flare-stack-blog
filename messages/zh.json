@@ -59,6 +59,31 @@
   "friend_links_fuwari_apply": "申请友链",
   "friend_links_fuwari_no_links": "暂无友情链接记录",
   "friend_links_unknown_site": "一个未知的神秘网站",
+  "post_back_to_list": "返回目录",
+  "post_edit": "编辑文章",
+  "post_published_at": "发布于",
+  "post_last_updated": "最后更新",
+  "post_summary_title": "摘要",
+  "post_end_notice": "正文结束",
+  "post_share": "分享",
+  "post_share_success": "链接已复制",
+  "post_share_success_desc": "文章链接已复制到剪贴板",
+  "post_share_error": "复制失败",
+  "post_share_error_desc": "无法访问剪贴板，请手动复制链接",
+  "post_related_posts": "相关阅读",
+  "post_read_more": "阅读",
+  "post_back_to_top": "顶部",
+  "post_word_count": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "约 {formattedCountZh} 字"
+      }
+    }
+  ],
+  "post_fuwari_related_posts": "相关文章",
+  "post_fuwari_no_related_posts": "暂无相关文章",
+  "post_no_tags": "无标签",
   "read_time": [
     {
       "declarations": ["input count", "local formattedCountZh = count: number"],
@@ -82,10 +107,10 @@
     {
       "declarations": [
         "input date",
-        "local formattedDateTimeZh = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit hour12=false"
+        "local formattedDateZh = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit hour12=false"
       ],
       "match": {
-        "date=*": "{formattedDateTimeZh}"
+        "date=*": "{formattedDateZh}"
       }
     }
   ],
