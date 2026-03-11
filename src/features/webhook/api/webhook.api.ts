@@ -4,9 +4,10 @@ import { NOTIFICATION_EVENT } from "@/features/notification/notification.schema"
 import { sendWebhookRequest } from "@/features/webhook/api/webhook.consumer";
 import {
   createNotificationExampleEvent,
-  WEBHOOK_EXAMPLE_LABELS,
+  getWebhookExampleLabel,
 } from "@/features/webhook/webhook.helpers";
 import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
+import { serverEnv } from "@/lib/env/server.env";
 import { adminMiddleware } from "@/lib/middlewares";
 
 const testWebhookInputSchema = z.object({
@@ -23,6 +24,7 @@ export const testWebhookFn = createServerFn({
       data.endpoint.events.length > 0
         ? data.endpoint.events[0]
         : NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED;
+    const locale = serverEnv(context.env).LOCALE;
 
     await sendWebhookRequest(
       { env: context.env },
@@ -30,9 +32,8 @@ export const testWebhookFn = createServerFn({
         endpointId: data.endpoint.id,
         url: data.endpoint.url,
         secret: data.endpoint.secret,
-        event: createNotificationExampleEvent(
-          resolvedEventType,
-          (k) => WEBHOOK_EXAMPLE_LABELS[k],
+        event: createNotificationExampleEvent(resolvedEventType, (k) =>
+          getWebhookExampleLabel(k, { locale }),
         ),
       },
       crypto.randomUUID(),

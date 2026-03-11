@@ -4,7 +4,7 @@ import type { NotificationEvent } from "@/features/notification/notification.sch
 import type { WebhookTranslationKey } from "@/features/webhook/webhook.helpers";
 import {
   createNotificationExampleEvent,
-  WEBHOOK_EXAMPLE_LABELS,
+  getWebhookExampleLabel,
 } from "@/features/webhook/webhook.helpers";
 import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
@@ -48,7 +48,7 @@ function getWebhookDocItems(
 
 function useWebhookDocTranslation() {
   return useCallback(
-    (key: WebhookTranslationKey) => WEBHOOK_EXAMPLE_LABELS[key],
+    (key: WebhookTranslationKey) => getWebhookExampleLabel(key),
     [],
   );
 }
