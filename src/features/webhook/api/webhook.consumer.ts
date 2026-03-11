@@ -134,7 +134,7 @@ export async function sendWebhookRequest(
     messageId,
     data.event,
     options,
-    serverEnv(context.env).EMAIL_LOCALE,
+    serverEnv(context.env).LOCALE,
   );
   const payload = JSON.stringify(body);
   const timestamp = body.timestamp;

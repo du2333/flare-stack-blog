@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Messages } from "@/lib/i18n";
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const ACCEPTED_IMAGE_TYPES = [
@@ -9,27 +10,44 @@ export const ACCEPTED_IMAGE_TYPES = [
   "image/gif",
 ];
 
-export const UploadMediaInputSchema = z
-  .instanceof(FormData)
-  .transform((formData) => {
-    const file = formData.get("image");
-    if (!(file instanceof File)) throw new Error("Image file is required");
-    if (file.size > MAX_FILE_SIZE)
-      throw new Error("File size must be less than 10MB");
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type))
-      throw new Error("File type must be an image");
+export const UploadMediaInputSchema = z.instanceof(FormData);
 
-    const rawWidth = formData.get("width");
-    const rawHeight = formData.get("height");
-    const parsedWidth = rawWidth ? parseInt(rawWidth.toString()) : NaN;
-    const parsedHeight = rawHeight ? parseInt(rawHeight.toString()) : NaN;
+export function parseUploadMediaInput(formData: FormData, messages: Messages) {
+  const file = formData.get("image");
+  if (!(file instanceof File)) {
+    throw new Error(messages.media_validation_file_required());
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(messages.media_validation_file_too_large());
+  }
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(messages.media_validation_file_invalid_type());
+  }
 
-    return {
-      file,
-      width: Number.isNaN(parsedWidth) ? undefined : parsedWidth,
-      height: Number.isNaN(parsedHeight) ? undefined : parsedHeight,
-    };
-  });
+  const rawWidth = formData.get("width");
+  const rawHeight = formData.get("height");
+  const parsedWidth = rawWidth ? parseInt(rawWidth.toString()) : NaN;
+  const parsedHeight = rawHeight ? parseInt(rawHeight.toString()) : NaN;
+
+  return {
+    file,
+    width: Number.isNaN(parsedWidth) ? undefined : parsedWidth,
+    height: Number.isNaN(parsedHeight) ? undefined : parsedHeight,
+  };
+}
+
+export const MediaKeyInputSchema = z.object({
+  key: z.string(),
+});
+
+export function assertMediaKey(key: string, messages: Messages) {
+  const trimmedKey = key.trim();
+  if (trimmedKey.length === 0) {
+    throw new Error(messages.media_validation_key_required());
+  }
+
+  return trimmedKey;
+}
 
 export const UpdateMediaNameInputSchema = z.object({
   key: z.string().min(1),

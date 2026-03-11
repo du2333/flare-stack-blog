@@ -45,7 +45,7 @@ async function enqueueEmailNotification(
 ) {
   const emailMessage = createEmailMessageFromNotification(
     event,
-    serverEnv(context.env).EMAIL_LOCALE,
+    serverEnv(context.env).LOCALE,
   );
   await context.env.QUEUE.send({
     type: "EMAIL",

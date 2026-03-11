@@ -29,7 +29,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
     ADMIN_EMAIL,
-    EMAIL_LOCALE,
+    LOCALE,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
   } = serverEnv(env);
@@ -46,7 +46,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     try {
       return getLocale();
     } catch {
-      return EMAIL_LOCALE;
+      return LOCALE;
     }
   }
 

@@ -187,7 +187,7 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key                                                                  |
 | `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
 | `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |
-| `EMAIL_LOCALE`            | 运行时 | 邮件默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件与 Webhook 渲染文本会使用该语言                        |
+| `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
 | `CDN_DOMAIN`              | 运行时 | 独立 CDN 域名（如 `cdn.example.com`），purge 时优先使用；须为当前 Zone 下通过 SaaS CNAME 接入的自定义域名 |
 | `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`）                                                         |
 | `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）                                                                      |
