@@ -18,13 +18,14 @@ export const testWebhookFn = createServerFn({
 })
   .middleware([adminMiddleware])
   .inputValidator(testWebhookInputSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
     const resolvedEventType =
       data.endpoint.events.length > 0
         ? data.endpoint.events[0]
         : NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED;
 
     await sendWebhookRequest(
+      { env: context.env },
       {
         endpointId: data.endpoint.id,
         url: data.endpoint.url,

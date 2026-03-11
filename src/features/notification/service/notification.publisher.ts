@@ -8,6 +8,7 @@ import {
 } from "@/features/notification/notification.schema";
 import { isNotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
+import { serverEnv } from "@/lib/env/server.env";
 
 function isAdminNotificationEvent(
   event: NotificationEvent,
@@ -42,7 +43,10 @@ async function enqueueEmailNotification(
   context: DbContext,
   event: NotificationEvent,
 ) {
-  const emailMessage = createEmailMessageFromNotification(event);
+  const emailMessage = createEmailMessageFromNotification(
+    event,
+    serverEnv(context.env).EMAIL_LOCALE,
+  );
   await context.env.QUEUE.send({
     type: "EMAIL",
     data: emailMessage,

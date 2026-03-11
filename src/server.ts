@@ -60,7 +60,7 @@ export default {
             );
             break;
           case "WEBHOOK":
-            await handleWebhookMessage(event.data, message.id);
+            await handleWebhookMessage({ env }, event.data, message.id);
             break;
           default:
             event satisfies never;
