@@ -1,16 +1,35 @@
+<div align="center">
+
+中文 | [English](./docs/README.en.md)
+
 # Flare Stack Blog
 
-> **注意**：本项目专为 Cloudflare Workers 生态设计，深度集成 D1、R2、KV、Workflows 等服务，**仅支持部署在 Cloudflare Workers**。
+基于 **Cloudflare Workers** 的全栈现代化博客 CMS<br>
+深度集成 D1、R2、KV、Workflows 等 Serverless 服务
 
-[部署指南](#部署指南) | [本地开发](#本地开发) | [错误处理开发规范](./docs/error-handling-quickstart.md)
+[![License](https://img.shields.io/github/license/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/network/members)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react&style=flat-square)](https://react.dev)
+[![TanStack Start](https://img.shields.io/badge/TanStack%20Start-black?logo=tanstack&style=flat-square)](https://tanstack.com/start)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&style=flat-square)](https://tailwindcss.com)
+
+[部署指南](#部署指南) · [本地开发](#本地开发) · [开发规范](./docs/error-handling-quickstart.md)
+
+</div>
+
+---
+
+> **注意**：本项目专为 Cloudflare 生态设计，**仅支持**部署在 Cloudflare Workers。
 
 > 建了个 Telegram 群组，欢迎交流本项目相关问题 [Telegram 群](https://t.me/+vWuQYybv1kgxMDkx)
 
-基于 Cloudflare Workers 的现代化全栈博客 CMS。
+## 界面预览
 
-![首页](docs/assets/home.png)
-
-![管理后台](docs/assets/admin.png)
+<div align="center">
+  <img src="docs/assets/home.png" alt="首页预览" width="49%">
+  <img src="docs/assets/admin.png" alt="管理后台预览" width="49%">
+</div>
 
 ## 核心功能
 

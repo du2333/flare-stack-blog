@@ -49,7 +49,7 @@ bun run test  # 运行测试
 
 ### 提交信息
 
-使用清晰的提交信息：
+请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 标准，编写提交说明：
 
 ```
 feat: 添加 RSS 订阅功能
