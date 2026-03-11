@@ -16,31 +16,11 @@ export function LoginForm({ form, isEmailConfigured }: LoginFormProps) {
     handleSubmit,
     loginStep,
     isSubmitting,
-    isUnverifiedEmail,
-    rootError,
-    handleResendVerification,
     turnstilePending,
   } = form;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {rootError && (
-        <div className="border-l-2 border-destructive p-4 space-y-2 animate-in fade-in duration-300">
-          <p className="text-[10px] font-mono text-destructive uppercase tracking-widest">
-            {rootError}
-          </p>
-          {isUnverifiedEmail && (
-            <button
-              type="button"
-              onClick={handleResendVerification}
-              className="text-[9px] font-mono text-muted-foreground hover:text-foreground transition-colors"
-            >
-              [ {m.login_resend_verification()} ]
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="space-y-6">
         <div className="space-y-2 group">
           <label

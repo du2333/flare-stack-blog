@@ -15,9 +15,6 @@ export function LoginPage({
     handleSubmit,
     loginStep,
     isSubmitting,
-    isUnverifiedEmail,
-    rootError,
-    handleResendVerification,
     turnstilePending: formTurnstilePending,
   } = loginForm;
 
@@ -49,21 +46,6 @@ export function LoginPage({
         {/* Email Login Form */}
         {isEmailConfigured && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {rootError && (
-              <div className="bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-medium animate-in fade-in flex flex-col items-center gap-2">
-                <span>{rootError}</span>
-                {isUnverifiedEmail && (
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    className="text-xs hover:underline"
-                  >
-                    {m.login_resend_verification()}
-                  </button>
-                )}
-              </div>
-            )}
-
             <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
               <label htmlFor="login-email" className="text-sm font-bold ml-1">
                 {m.login_email_address()}

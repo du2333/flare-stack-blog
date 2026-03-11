@@ -8,6 +8,7 @@ import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import { getResetPasswordAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 const createResetPasswordSchema = (messages: Messages) =>
   z
@@ -52,7 +53,9 @@ export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
 
     if (error) {
       toast.error(m.reset_password_toast_failed(), {
-        description: m.reset_password_toast_failed_desc(),
+        description:
+          getResetPasswordAuthErrorMessage(error, m) ??
+          m.reset_password_toast_failed_desc(),
       });
       return;
     }

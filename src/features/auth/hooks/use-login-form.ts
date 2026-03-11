@@ -1,7 +1,7 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,6 +10,10 @@ import { m } from "@/paraglide/messages";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import {
+  getLoginAuthErrorMessage,
+  isEmailNotVerifiedError,
+} from "@/lib/auth/auth-errors";
 
 const createLoginSchema = (messages: Messages) =>
   z.object({
@@ -33,7 +37,6 @@ export function useLoginForm(options: UseLoginFormOptions) {
   const [loginStep, setLoginStep] = useState<"IDLE" | "VERIFYING" | "SUCCESS">(
     "IDLE",
   );
-  const [isUnverifiedEmail, setIsUnverifiedEmail] = useState(false);
 
   const navigate = useNavigate();
   const previousLocation = usePreviousLocation();
@@ -45,10 +48,20 @@ export function useLoginForm(options: UseLoginFormOptions) {
   });
 
   const emailValue = form.watch("email");
+  const latestResendStateRef = useRef({
+    emailValue: "",
+    turnstilePending,
+    turnstileToken,
+  });
+
+  latestResendStateRef.current = {
+    emailValue,
+    turnstilePending,
+    turnstileToken,
+  };
 
   const onSubmit = async (data: LoginSchema) => {
     setLoginStep("VERIFYING");
-    setIsUnverifiedEmail(false);
 
     const { error } = await authClient.signIn.email({
       email: data.email,
@@ -62,32 +75,20 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
     if (error) {
       setLoginStep("IDLE");
+      const description =
+        getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc();
 
-      switch (error.code as keyof typeof authClient.$ERROR_CODES | undefined) {
-        case "EMAIL_NOT_VERIFIED":
-          form.setError("root", {
-            message: m.login_error_email_not_verified(),
-          });
-          setIsUnverifiedEmail(true);
-          break;
-        case "INVALID_EMAIL_OR_PASSWORD":
-          form.setError("root", {
-            message: m.login_error_invalid_credentials(),
-          });
-          break;
-        default:
-          if (error.message?.includes("Turnstile")) {
-            form.setError("root", {
-              message: m.login_error_turnstile_failed(),
-            });
-          } else {
-            form.setError("root", {
-              message: error.message || m.login_error_default(),
-            });
-          }
-      }
-
-      toast.error(m.login_error_default(), { description: error.message });
+      toast.error(m.login_error_default(), {
+        description,
+        action: isEmailNotVerifiedError(error)
+          ? {
+              label: m.login_resend_verification(),
+              onClick: () => {
+                void handleResendVerification();
+              },
+            }
+          : undefined,
+      });
       return;
     }
 
@@ -101,8 +102,14 @@ export function useLoginForm(options: UseLoginFormOptions) {
   };
 
   const handleResendVerification = async () => {
-    if (!emailValue) return;
-    if (turnstilePending) {
+    const {
+      emailValue: currentEmailValue,
+      turnstilePending: isTurnstilePending,
+      turnstileToken: currentTurnstileToken,
+    } = latestResendStateRef.current;
+
+    if (!currentEmailValue) return;
+    if (isTurnstilePending) {
       toast.error(m.login_toast_wait_turnstile());
       return;
     }
@@ -110,10 +117,10 @@ export function useLoginForm(options: UseLoginFormOptions) {
     const loadingToast = toast.loading(m.login_toast_sending_verification());
 
     const { error } = await authClient.sendVerificationEmail({
-      email: emailValue,
+      email: currentEmailValue,
       callbackURL: `${window.location.origin}/verify-email`,
       fetchOptions: {
-        headers: { "X-Turnstile-Token": turnstileToken || "" },
+        headers: { "X-Turnstile-Token": currentTurnstileToken || "" },
       },
     });
 
@@ -121,15 +128,11 @@ export function useLoginForm(options: UseLoginFormOptions) {
     toast.dismiss(loadingToast);
 
     if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error(m.turnstile_error_failed_short(), {
-          description: m.turnstile_error_failed_desc(),
-        });
-      } else {
-        toast.error(m.login_toast_send_failed(), {
-          description: error.message,
-        });
-      }
+      const description =
+        getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc();
+      toast.error(m.login_toast_send_failed(), {
+        description,
+      });
       return;
     }
 
@@ -144,10 +147,6 @@ export function useLoginForm(options: UseLoginFormOptions) {
     handleSubmit: form.handleSubmit(onSubmit),
     loginStep,
     isSubmitting: form.formState.isSubmitting,
-    isUnverifiedEmail,
-    rootError: form.formState.errors.root?.message,
-    handleResendVerification,
-    emailValue,
     loginSchema,
   };
 }

@@ -10,6 +10,7 @@ import { m } from "@/paraglide/messages";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import { getRegisterAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 const createRegisterSchema = (messages: Messages) =>
   z
@@ -68,15 +69,10 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
     resetTurnstile();
 
     if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error(m.turnstile_error_failed_short(), {
-          description: m.turnstile_error_failed_desc(),
-        });
-      } else {
-        toast.error(m.register_toast_failed(), {
-          description: error.message || m.register_error_default(),
-        });
-      }
+      toast.error(m.register_toast_failed(), {
+        description:
+          getRegisterAuthErrorMessage(error, m) ?? m.register_error_default(),
+      });
       return;
     }
 

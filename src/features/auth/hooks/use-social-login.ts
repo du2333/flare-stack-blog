@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import { getSocialLoginAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 export interface UseSocialLoginOptions {
   turnstileToken: string | null;
@@ -35,15 +36,11 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
     resetTurnstile();
 
     if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error(m.turnstile_error_failed_short(), {
-          description: m.turnstile_error_failed_desc(),
-        });
-      } else {
-        toast.error(m.login_toast_social_failed(), {
-          description: error.message,
-        });
-      }
+      toast.error(m.login_toast_social_failed(), {
+        description:
+          getSocialLoginAuthErrorMessage(error, m) ??
+          m.auth_error_default_desc(),
+      });
       setIsLoading(false);
       return;
     }

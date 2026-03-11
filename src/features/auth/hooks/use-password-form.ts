@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import { getPasswordAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 const createPasswordSchema = (messages: Messages) =>
   z
@@ -42,7 +43,8 @@ export function usePasswordForm() {
     });
     if (error) {
       toast.error(m.profile_toast_update_failed(), {
-        description: error.message,
+        description:
+          getPasswordAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
       });
       return;
     }

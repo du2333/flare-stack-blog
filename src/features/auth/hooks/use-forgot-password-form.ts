@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 import { authClient } from "@/lib/auth/auth.client";
+import { getForgotPasswordAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 const createForgotPasswordSchema = (messages: Messages) =>
   z.object({
@@ -45,15 +46,11 @@ export function useForgotPasswordForm(options: UseForgotPasswordFormOptions) {
     resetTurnstile();
 
     if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error(m.turnstile_error_failed_short(), {
-          description: m.turnstile_error_failed_desc(),
-        });
-      } else {
-        toast.error(m.forgot_password_toast_failed(), {
-          description: error.message,
-        });
-      }
+      toast.error(m.forgot_password_toast_failed(), {
+        description:
+          getForgotPasswordAuthErrorMessage(error, m) ??
+          m.auth_error_default_desc(),
+      });
       return;
     }
 
