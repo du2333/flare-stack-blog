@@ -11,6 +11,7 @@ import { SideBar } from "@/components/admin/side-bar";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Toaster from "@/components/ui/toaster";
+import { m } from "@/paraglide/messages";
 // 管理后台固定使用 default 主题样式，不随 THEME 变量切换
 import "@/features/theme/themes/default/styles/index.css";
 import "@/styles/admin.css";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/admin")({
   },
   component: AdminLayout,
   loader: () => ({
-    title: "管理后台",
+    title: m.admin_layout_title(),
   }),
   head: ({ loaderData }) => ({
     meta: [
@@ -63,6 +64,7 @@ function AdminLayout() {
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className="lg:hidden p-2 hover:bg-muted/50 rounded-sm transition-colors text-foreground"
+              aria-label={m.admin_layout_open_navigation()}
             >
               <Menu size={20} strokeWidth={1.5} />
             </button>
@@ -73,7 +75,7 @@ function AdminLayout() {
             <Link
               to="/admin/settings"
               className="group p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-              title="系统设置"
+              title={m.admin_layout_settings()}
             >
               <Settings
                 size={18}
@@ -86,7 +88,7 @@ function AdminLayout() {
               to="/"
               className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-mono font-medium text-muted-foreground hover:text-foreground transition-colors group"
             >
-              <span>返回前台</span>
+              <span>{m.admin_layout_back_to_site()}</span>
               <ArrowUpRight
                 size={10}
                 strokeWidth={1.5}

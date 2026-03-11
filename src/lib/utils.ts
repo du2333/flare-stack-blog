@@ -22,6 +22,18 @@ export function formatDate(
   return m.format_date({ date: d });
 }
 
+export function formatTime(date: Date | undefined | null | string | number) {
+  if (!date) return "";
+  return m.format_time({ date: new Date(date) });
+}
+
+export function formatMonthDayTime(
+  date: Date | undefined | null | string | number,
+) {
+  if (!date) return "";
+  return m.format_month_day_time({ date: new Date(date) });
+}
+
 export function formatTimeAgo(date: Date | null | string) {
   if (!date) return "";
   const now = new Date();

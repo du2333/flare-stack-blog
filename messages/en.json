@@ -122,8 +122,8 @@
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],
       "match": {
-        "count=1": "{formattedCountEn} minute ago",
-        "count=*": "{formattedCountEn} minutes ago"
+        "count=1": "{formattedCountEn}m ago",
+        "count=*": "{formattedCountEn}m ago"
       }
     }
   ],
@@ -131,8 +131,8 @@
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],
       "match": {
-        "count=1": "{formattedCountEn} hour ago",
-        "count=*": "{formattedCountEn} hours ago"
+        "count=1": "{formattedCountEn}h ago",
+        "count=*": "{formattedCountEn}h ago"
       }
     }
   ],
@@ -140,8 +140,8 @@
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],
       "match": {
-        "count=1": "{formattedCountEn} day ago",
-        "count=*": "{formattedCountEn} days ago"
+        "count=1": "{formattedCountEn}d ago",
+        "count=*": "{formattedCountEn}d ago"
       }
     }
   ],
@@ -426,5 +426,100 @@
   "comments_item_reply": "Reply",
   "comments_item_delete": "Delete",
   "comments_item_unknown_user": "Unknown User",
-  "comments_item_unknown": "Unknown"
+  "comments_item_unknown": "Unknown",
+  "common_confirm": "Confirm",
+  "common_cancel": "Cancel",
+  "common_processing": "Processing...",
+  "common_irreversible": "This action cannot be undone",
+  "common_modal_state_confirm": "Confirm",
+  "common_modal_state_danger": "Danger",
+  "theme_light": "Light",
+  "theme_dark": "Dark",
+  "theme_system": "System",
+  "theme_toggle_title": "Theme: {theme}",
+  "format_time": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedTimeEn = date: datetime hour=2-digit minute=2-digit hour12=true"
+      ],
+      "match": {
+        "date=*": "{formattedTimeEn}"
+      }
+    }
+  ],
+  "format_month_day_time": [
+    {
+      "declarations": [
+        "input date",
+        "local formattedDateTimeEn = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=true"
+      ],
+      "match": {
+        "date=*": "{formattedDateTimeEn}"
+      }
+    }
+  ],
+  "admin_layout_title": "Admin",
+  "admin_layout_settings": "Settings",
+  "admin_layout_back_to_site": "Back to Site",
+  "admin_layout_open_navigation": "Open navigation",
+  "admin_sidebar_theme_mode": "Theme Mode",
+  "admin_sidebar_close_navigation": "Close navigation",
+  "admin_sidebar_dashboard": "Overview",
+  "admin_sidebar_posts": "Posts",
+  "admin_sidebar_tags": "Tags",
+  "admin_sidebar_media": "Media",
+  "admin_sidebar_comments": "Comments",
+  "admin_sidebar_friend_links": "Links",
+  "admin_sidebar_admin_fallback": "Admin",
+  "admin_sidebar_role_admin": "Administrator",
+  "admin_sidebar_role_user": "User",
+  "admin_sidebar_logout": "Sign Out",
+  "admin_sidebar_logout_title": "Sign Out",
+  "admin_sidebar_logout_message": "Are you sure you want to end this admin session and sign out?",
+  "admin_sidebar_logout_confirm": "Sign Out",
+  "admin_sidebar_logout_success": "Signed out",
+  "admin_sidebar_logout_failed": "Sign out failed",
+  "admin_sidebar_logout_failed_desc": "Please try again.",
+  "admin_overview_title": "Overview",
+  "admin_overview_heading": "Dashboard",
+  "admin_overview_status": "System Operational",
+  "admin_overview_refresh_success": "Data refreshed",
+  "admin_overview_range_24h": "24h",
+  "admin_overview_range_7d": "7d",
+  "admin_overview_range_30d": "30d",
+  "admin_overview_range_90d": "90d",
+  "admin_overview_refresh": "Refresh Data",
+  "admin_overview_stat_pending_comments": "Pending",
+  "admin_overview_trend_action_required": "Action needed",
+  "admin_overview_trend_all_good": "All good",
+  "admin_overview_stat_published_posts": "Published",
+  "admin_overview_trend_active_content": "Active",
+  "admin_overview_stat_media_storage": "Storage",
+  "admin_overview_trend_storage_usage": "Used",
+  "admin_overview_stat_drafts": "Drafts",
+  "admin_overview_trend_in_progress": "In progress",
+  "admin_overview_traffic_title": "Traffic",
+  "admin_overview_open_analytics": "Open Analytics",
+  "admin_overview_metric_visitors": "Visitors",
+  "admin_overview_metric_page_views": "Views",
+  "admin_overview_metric_visits": "Visits",
+  "admin_overview_metric_bounce_rate": "Bounce Rate",
+  "admin_overview_analytics_unconfigured": "Analytics not configured",
+  "admin_overview_analytics_unconfigured_desc": "Set the UMAMI_SRC and VITE_UMAMI_WEBSITE_ID environment variables",
+  "admin_overview_no_traffic": "No traffic data",
+  "admin_overview_top_pages_title": "Top Content",
+  "admin_overview_no_top_pages": "No data",
+  "admin_overview_activity_title": "Activity Log",
+  "admin_overview_no_activity": "No recent activity",
+  "admin_overview_last_updated": "Last updated: {time}",
+  "admin_overview_chart_views": "Views",
+  "admin_overview_activity_anonymous": "Anonymous",
+  "admin_overview_activity_comment": "{userName} commented on \"{postTitle}\"",
+  "admin_overview_activity_post_published": "\"{postTitle}\" published",
+  "admin_overview_activity_user_registered": "{userName} signed up",
+  "version_toast_available": "New version available",
+  "version_toast_available_desc": "{version} has been released.",
+  "version_action_view": "View",
+  "version_action_ignore": "Ignore"
 }
