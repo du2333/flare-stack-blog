@@ -109,17 +109,22 @@ export function useMediaUpload() {
                     ...q,
                     status: "COMPLETE",
                     progress: 100,
-                    log: "> 上传完成。资产已索引。",
+                    log: m.media_upload_log_complete(),
                   }
                 : q,
             ),
           );
 
-          toast.success(`上传完成: ${item.name}`);
+          toast.success(m.media_upload_success({ name: item.name }));
           queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
         }
       } catch (error) {
         if (isMountedRef.current) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : m.request_error_unknown_title();
+
           setQueue((prev) =>
             prev.map((q, i) =>
               i === waitingIndex
@@ -127,14 +132,14 @@ export function useMediaUpload() {
                     ...q,
                     status: "ERROR",
                     progress: 0,
-                    log: `> ERROR: ${
-                      error instanceof Error ? error.message : "上传失败"
-                    }`,
+                    log: m.media_upload_log_error({ message }),
                   }
                 : q,
             ),
           );
-          toast.error(`上传失败: ${item.name}`);
+          toast.error(m.media_upload_fail({ name: item.name }), {
+            description: message,
+          });
         }
       } finally {
         // 关键修复：使用 finally 确保锁一定会被释放

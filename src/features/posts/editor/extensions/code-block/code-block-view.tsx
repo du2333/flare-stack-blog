@@ -1,7 +1,7 @@
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LANGUAGES } from "./languages";
+import { getLanguages } from "./languages";
 import type { NodeViewProps } from "@tiptap/react";
 import {
   getHighlighter,
@@ -19,6 +19,7 @@ export function CodeBlockView({
   const [copied, setCopied] = useState(false);
   const [themeStyles, setThemeStyles] = useState<React.CSSProperties>({});
   const language = node.attrs.language || "text";
+  const languages = getLanguages();
 
   useEffect(() => {
     let mounted = true;
@@ -69,7 +70,7 @@ export function CodeBlockView({
               <DropdownMenu
                 value={language}
                 onChange={(val) => updateAttributes({ language: val })}
-                options={LANGUAGES.map((lang) => ({
+                options={languages.map((lang) => ({
                   label: lang.label,
                   value: lang.value,
                 }))}

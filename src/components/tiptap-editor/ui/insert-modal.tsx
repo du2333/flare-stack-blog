@@ -244,7 +244,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 ) : mediaItems.length === 0 ? (
                   <div className="h-48 flex flex-col items-center justify-center text-muted-foreground gap-2">
                     <Search size={24} className="opacity-20" />
-                    <span className="text-sm font-mono">NO_ASSETS_FOUND</span>
+                    <span className="text-sm font-mono">
+                      {m.media_grid_empty()}
+                    </span>
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 content-start pb-4">

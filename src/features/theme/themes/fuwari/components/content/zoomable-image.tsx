@@ -2,6 +2,7 @@ import { ClientOnly } from "@tanstack/react-router";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface ZoomableImageProps extends Omit<
   React.ImgHTMLAttributes<HTMLImageElement>,
@@ -135,7 +136,7 @@ function Lightbox({
         <button
           onClick={onClose}
           className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors group"
-          title="Close"
+          title={m.common_close()}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
