@@ -130,12 +130,8 @@ export async function sendWebhookRequest(
     isTest?: boolean;
   },
 ): Promise<void> {
-  const body = createWebhookBody(
-    messageId,
-    data.event,
-    options,
-    serverEnv(context.env).LOCALE,
-  );
+  const locale = serverEnv(context.env).LOCALE;
+  const body = createWebhookBody(messageId, data.event, options, locale);
   const payload = JSON.stringify(body);
   const timestamp = body.timestamp;
   const signature = await signPayload(data.secret, payload, timestamp);
@@ -161,7 +157,14 @@ export async function sendWebhookRequest(
       // Ignored
     }
 
-    const errorMessage = `Webhook delivery failed: ${response.status} ${response.statusText}${errorDetail ? ` - ${errorDetail.slice(0, 1000)}` : ""}`;
+    const errorMessage = m.settings_webhook_delivery_failed(
+      {
+        detail: errorDetail.slice(0, 1000),
+        status: String(response.status),
+        statusText: response.statusText,
+      },
+      { locale },
+    );
 
     throw new Error(errorMessage);
   }

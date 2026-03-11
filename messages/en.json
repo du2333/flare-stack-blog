@@ -1097,9 +1097,21 @@
   "settings_email_test_hint_current": "Current status: {status}",
   "settings_email_test_btn_testing": "Testing...",
   "settings_email_test_btn_send": "Send Test Email",
+  "settings_email_test_mail_subject": "Test Connection",
+  "settings_email_test_mail_body": "This is a test email.",
+  "settings_email_unknown_error": "Unknown error",
   "settings_webhook_toast_test_sent": "Test request sent",
   "settings_webhook_toast_test_fail": "Failed to send test request",
   "settings_webhook_toast_test_fail_msg": "Failed: {message}",
+  "settings_webhook_delivery_failed": [
+    {
+      "declarations": ["input status", "input statusText", "input detail"],
+      "match": {
+        "detail=": "Webhook delivery failed: {status} {statusText}",
+        "detail=*": "Webhook delivery failed: {status} {statusText} - {detail}"
+      }
+    }
+  ],
   "settings_webhook_endpoints_title": "Webhook Endpoints",
   "settings_webhook_endpoints_summary": "{enabledCount} enabled, {totalCount} total",
   "settings_webhook_btn_add": "Add Endpoint",

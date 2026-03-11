@@ -1090,9 +1090,21 @@
   "settings_email_test_hint_current": "当前状态：{status}",
   "settings_email_test_btn_testing": "测试中...",
   "settings_email_test_btn_send": "发送测试邮件",
+  "settings_email_test_mail_subject": "测试连接",
+  "settings_email_test_mail_body": "这是一封测试邮件。",
+  "settings_email_unknown_error": "未知错误",
   "settings_webhook_toast_test_sent": "测试请求已发送",
   "settings_webhook_toast_test_fail": "测试请求发送失败",
   "settings_webhook_toast_test_fail_msg": "测试请求发送失败: {message}",
+  "settings_webhook_delivery_failed": [
+    {
+      "declarations": ["input status", "input statusText", "input detail"],
+      "match": {
+        "detail=": "Webhook 投递失败: {status} {statusText}",
+        "detail=*": "Webhook 投递失败: {status} {statusText} - {detail}"
+      }
+    }
+  ],
   "settings_webhook_endpoints_title": "Webhook 端点",
   "settings_webhook_endpoints_summary": "已启用 {enabledCount} 个，共 {totalCount} 个",
   "settings_webhook_btn_add": "添加端点",
