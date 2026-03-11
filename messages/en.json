@@ -726,5 +726,157 @@
   "tag_manager_inline_confirm": "Confirm",
   "tag_manager_inline_cancel": "Cancel",
   "tag_manager_mobile_created": "CREATED:",
-  "tag_manager_mobile_posts": "POSTS"
+  "tag_manager_mobile_posts": "POSTS",
+  "media_title": "Media Library",
+  "media_stats_assets": [
+    {
+      "declarations": ["input count", "input size"],
+      "match": {
+        "count=*, size=*": "ASSETS / {count} Files / {size} Used"
+      }
+    }
+  ],
+  "media_upload_btn": "Upload File",
+  "media_delete_confirm_title": "Confirm Deletion",
+  "media_delete_confirm_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "Are you sure you want to permanently delete {count} media assets? This action cannot be reversed."
+      }
+    }
+  ],
+  "media_delete_confirm_btn": "Confirm Delete",
+  "media_search_placeholder": "Search media files...",
+  "media_filter_unused": "Unused Only",
+  "media_deselect_all": "Deselect All",
+  "media_select_all": "Select All",
+  "media_delete_selected": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "Delete Selected ({count})"
+      }
+    }
+  ],
+  "media_grid_linked": "Linked",
+  "media_grid_empty": "No media assets found",
+  "media_grid_refresh": "Refresh List",
+  "media_grid_loading": "Loading assets...",
+  "media_grid_end": "End of list",
+  "media_grid_unknown_size": "Unknown",
+  "media_upload_modal_tag": "UPLOAD",
+  "media_upload_modal_title": "Upload Files",
+  "media_upload_drop_release": "Release to upload",
+  "media_upload_drop_here": "Click or drag files here",
+  "media_upload_support_format": [
+    {
+      "declarations": ["input maxSizeMb"],
+      "match": {
+        "maxSizeMb=*": "Supports JPEG/JPG/PNG/WEBP/GIF (Max {maxSizeMb}MB)"
+      }
+    }
+  ],
+  "media_upload_queue": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "Upload Queue [{count}]"
+      }
+    }
+  ],
+  "media_upload_status_complete": "Complete",
+  "media_upload_status_error": "Failed",
+  "media_upload_status_uploading": "Uploading",
+  "media_upload_status_waiting": "Waiting",
+  "media_upload_btn_background": "Upload in Background",
+  "media_upload_btn_confirm_errors": "Confirm (with errors)",
+  "media_upload_btn_complete": "Done",
+  "media_upload_btn_cancel": "Cancel",
+  "media_preview_delete_fail": "Cannot Delete",
+  "media_preview_delete_fail_desc": "This asset is referenced by a post. Remove the reference first.",
+  "media_preview_delete_confirm": "Are you sure you want to permanently delete this file?",
+  "media_preview_copy_success": "Link Copied",
+  "media_preview_copy_success_desc": "Image URL copied to clipboard",
+  "media_preview_copy_fail": "Copy Failed",
+  "media_preview_copy_fail_desc": "Unable to access clipboard",
+  "media_preview_mode": "Preview Mode",
+  "media_preview_details": "Asset Details",
+  "media_preview_size": "Size",
+  "media_preview_format": "Format",
+  "media_preview_dimensions": "Dimensions",
+  "media_preview_created": "Created At",
+  "media_preview_linked": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "Linked ({count})"
+      }
+    }
+  ],
+  "media_preview_no_links": "No links found",
+  "media_preview_asset_key": "Asset Key",
+  "media_preview_btn_download": "Download",
+  "media_preview_btn_copy": "Copy URL",
+  "media_preview_btn_delete": "Delete",
+  "media_toast_partial_delete": "Partial Delete Success",
+  "media_toast_partial_delete_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "{count} items deleted. Some assets are in use and could not be deleted."
+      }
+    }
+  ],
+  "media_toast_delete_fail": "Delete Failed",
+  "media_toast_delete_fail_desc": "Assets are in use by posts and cannot be deleted",
+  "media_toast_delete_success": "Assets Permanently Deleted",
+  "media_toast_delete_success_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "{count} items permanently deleted from storage."
+      }
+    }
+  ],
+  "media_toast_metadata_updated": "Metadata Updated",
+  "media_toast_metadata_updated_desc": "Metadata changes saved.",
+  "media_toast_protected_delete": "Cannot Delete Protected Assets",
+  "media_toast_protected_delete_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "{count} items are currently in use. Deselect them first."
+      }
+    }
+  ],
+  "media_upload_log_error_no_data": "> ERROR: No data packet",
+  "media_upload_log_stream_sending": "> UPLOAD_STREAM: Sending data packet...",
+  "media_upload_error_db": "Failed to store media, please try again",
+  "media_upload_fail": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "name=*": "Upload failed: {name}"
+      }
+    }
+  ],
+  "media_upload_log_error": [
+    {
+      "declarations": ["input message"],
+      "match": {
+        "message=*": "> ERROR: {message}"
+      }
+    }
+  ],
+  "media_upload_log_complete": "> Upload complete. Asset indexed.",
+  "media_upload_success": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "name=*": "Upload complete: {name}"
+      }
+    }
+  ],
+  "media_upload_log_init": "> Initializing upload handshake..."
 }

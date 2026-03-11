@@ -5,6 +5,7 @@ import type { UploadItem } from "../types";
 import { uploadImageFn } from "@/features/media/api/media.api";
 import { MEDIA_KEYS } from "@/features/media/queries";
 import { formatBytes } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function useMediaUpload() {
   const queryClient = useQueryClient();
@@ -49,7 +50,11 @@ export function useMediaUpload() {
         setQueue((prev) =>
           prev.map((q, i) =>
             i === waitingIndex
-              ? { ...q, status: "ERROR", log: "> ERROR: 没有数据包" }
+              ? {
+                  ...q,
+                  status: "ERROR",
+                  log: m.media_upload_log_error_no_data(),
+                }
               : q,
           ),
         );
@@ -65,7 +70,7 @@ export function useMediaUpload() {
                 ...q,
                 status: "UPLOADING",
                 progress: 50,
-                log: "> UPLOAD_STREAM: 数据包发送中...",
+                log: m.media_upload_log_stream_sending(),
               }
             : q,
         ),
@@ -75,7 +80,7 @@ export function useMediaUpload() {
         const result = await uploadMutation.mutateAsync(item.file);
         if (result.error) {
           if (isMountedRef.current) {
-            const message = "媒体入库失败，请重试";
+            const message = m.media_upload_error_db();
 
             setQueue((prev) =>
               prev.map((q, i) =>
@@ -84,12 +89,14 @@ export function useMediaUpload() {
                       ...q,
                       status: "ERROR",
                       progress: 0,
-                      log: `> ERROR: ${message}`,
+                      log: m.media_upload_log_error({ message }),
                     }
                   : q,
               ),
             );
-            toast.error(`上传失败: ${item.name}`, { description: message });
+            toast.error(m.media_upload_fail({ name: item.name }), {
+              description: message,
+            });
           }
           return;
         }
@@ -145,7 +152,7 @@ export function useMediaUpload() {
       size: formatBytes(file.size),
       progress: 0,
       status: "WAITING" as const,
-      log: "> 初始化上传握手...",
+      log: m.media_upload_log_init(),
       file,
     }));
     setQueue((prev) => [...prev, ...newItems]);

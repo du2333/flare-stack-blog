@@ -720,5 +720,157 @@
   "tag_manager_inline_confirm": "确认",
   "tag_manager_inline_cancel": "取消",
   "tag_manager_mobile_created": "创建于:",
-  "tag_manager_mobile_posts": "文章"
+  "tag_manager_mobile_posts": "文章",
+  "media_title": "媒体库",
+  "media_stats_assets": [
+    {
+      "declarations": ["input count", "input size"],
+      "match": {
+        "count=*, size=*": "ASSETS / {count} 个文件 / {size} 已使用"
+      }
+    }
+  ],
+  "media_upload_btn": "上传文件",
+  "media_delete_confirm_title": "确认删除",
+  "media_delete_confirm_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "您确定要永久删除这 {count} 个媒体资产吗？此操作无法撤销。"
+      }
+    }
+  ],
+  "media_delete_confirm_btn": "确认删除",
+  "media_search_placeholder": "检索媒体文件...",
+  "media_filter_unused": "只显示未引用",
+  "media_deselect_all": "取消全选",
+  "media_select_all": "全选",
+  "media_delete_selected": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "删除选中 ({count})"
+      }
+    }
+  ],
+  "media_grid_linked": "已引用",
+  "media_grid_empty": "未找到媒体资产",
+  "media_grid_refresh": "刷新列表",
+  "media_grid_loading": "加载资产中...",
+  "media_grid_end": "已加载全部",
+  "media_grid_unknown_size": "未知",
+  "media_upload_modal_tag": "UPLOAD",
+  "media_upload_modal_title": "上传文件",
+  "media_upload_drop_release": "松开此处以上传",
+  "media_upload_drop_here": "点击或拖拽文件至此",
+  "media_upload_support_format": [
+    {
+      "declarations": ["input maxSizeMb"],
+      "match": {
+        "maxSizeMb=*": "支持 JPEG/JPG/PNG/WEBP/GIF (最大 {maxSizeMb}MB)"
+      }
+    }
+  ],
+  "media_upload_queue": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "上传队列 [{count}]"
+      }
+    }
+  ],
+  "media_upload_status_complete": "完成",
+  "media_upload_status_error": "失败",
+  "media_upload_status_uploading": "上传中",
+  "media_upload_status_waiting": "等待中",
+  "media_upload_btn_background": "后台上传",
+  "media_upload_btn_confirm_errors": "确认 (含错误)",
+  "media_upload_btn_complete": "完成",
+  "media_upload_btn_cancel": "取消",
+  "media_preview_delete_fail": "无法删除",
+  "media_preview_delete_fail_desc": "此资源被文章引用，请先移除引用。",
+  "media_preview_delete_confirm": "确定要永久删除此文件吗？",
+  "media_preview_copy_success": "链接已复制",
+  "media_preview_copy_success_desc": "图片地址已复制到剪贴板",
+  "media_preview_copy_fail": "复制失败",
+  "media_preview_copy_fail_desc": "无法访问剪贴板",
+  "media_preview_mode": "预览模式",
+  "media_preview_details": "资产详情",
+  "media_preview_size": "大小",
+  "media_preview_format": "格式",
+  "media_preview_dimensions": "尺寸",
+  "media_preview_created": "创建时间",
+  "media_preview_linked": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "引用 ({count})"
+      }
+    }
+  ],
+  "media_preview_no_links": "未找到引用",
+  "media_preview_asset_key": "资产键",
+  "media_preview_btn_download": "下载",
+  "media_preview_btn_copy": "复制链接",
+  "media_preview_btn_delete": "永久删除",
+  "media_toast_partial_delete": "部分删除成功",
+  "media_toast_partial_delete_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "已删除 {count} 个项目，部分资源正在被文章使用，无法删除。"
+      }
+    }
+  ],
+  "media_toast_delete_fail": "删除失败",
+  "media_toast_delete_fail_desc": "资源正在被文章使用，无法删除",
+  "media_toast_delete_success": "资源已永久删除",
+  "media_toast_delete_success_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "{count} 个项目已从存储中永久删除。"
+      }
+    }
+  ],
+  "media_toast_metadata_updated": "资源元数据已更新",
+  "media_toast_metadata_updated_desc": "元数据更改已保存。",
+  "media_toast_protected_delete": "无法删除受保护的资源",
+  "media_toast_protected_delete_desc": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "{count} 个项目正在被文章使用。请先取消选择这些项目。"
+      }
+    }
+  ],
+  "media_upload_log_error_no_data": "> ERROR: 没有数据包",
+  "media_upload_log_stream_sending": "> UPLOAD_STREAM: 数据包发送中...",
+  "media_upload_error_db": "媒体入库失败，请重试",
+  "media_upload_fail": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "name=*": "上传失败: {name}"
+      }
+    }
+  ],
+  "media_upload_log_error": [
+    {
+      "declarations": ["input message"],
+      "match": {
+        "message=*": "> ERROR: {message}"
+      }
+    }
+  ],
+  "media_upload_log_complete": "> 上传完成。资产已索引。",
+  "media_upload_success": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "name=*": "上传完成: {name}"
+      }
+    }
+  ],
+  "media_upload_log_init": "> 初始化上传握手..."
 }
