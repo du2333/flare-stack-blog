@@ -1,4 +1,4 @@
-import { Link, RouteApi } from "@tanstack/react-router";
+import { Link, getRouteApi } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, MessageSquareOff } from "lucide-react";
 import { useState } from "react";
@@ -25,7 +25,7 @@ interface CommentModerationTableProps {
 }
 
 const PAGE_SIZE = 20;
-const routeApi = new RouteApi({ id: "/admin/comments/" });
+const routeApi = getRouteApi("/admin/comments/");
 
 export const CommentModerationTable = ({
   status,

@@ -1,4 +1,4 @@
-import { RouteApi } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -33,7 +33,7 @@ interface FriendLinkModerationTableProps {
 }
 
 const PAGE_SIZE = 20;
-const routeApi = new RouteApi({ id: "/admin/friend-links/" });
+const routeApi = getRouteApi("/admin/friend-links/");
 
 export const FriendLinkModerationTable = ({
   status,
