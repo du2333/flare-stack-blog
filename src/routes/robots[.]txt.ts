@@ -25,6 +25,14 @@ Sitemap: https://${env.DOMAIN}/sitemap.xml`;
           },
         });
       },
+      HEAD: async () => {
+        return new Response(null, {
+          headers: {
+            "Content-Type": "text/plain",
+            "Cache-Control": "public, max-age=86400, s-maxage=86400",
+          },
+        });
+      },
     },
   },
 });
