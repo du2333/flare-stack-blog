@@ -515,5 +515,51 @@
   "version_toast_available": "发现新版本",
   "version_toast_available_desc": "{version} 已发布。",
   "version_action_view": "查看",
-  "version_action_ignore": "忽略"
+  "version_action_ignore": "忽略",
+  "admin_posts_title": "文章管理",
+  "admin_posts_sys_name": "POSTS_MANAGEMENT_SYSTEM",
+  "admin_posts_create": "新建文章",
+  "admin_posts_creating": "创建中...",
+  "admin_posts_search_placeholder": "搜索文章...",
+  "admin_posts_filter_status": "状态",
+  "admin_posts_filter_all": "全部",
+  "admin_posts_filter_published": "已发布",
+  "admin_posts_filter_draft": "草稿",
+  "admin_posts_sort_published": "发布时间",
+  "admin_posts_sort_updated": "修改时间",
+  "admin_posts_sort_recent_pub": "最近发布",
+  "admin_posts_sort_recent_upd": "最近修改",
+  "admin_posts_no_match": "未找到匹配的文章",
+  "admin_posts_clear_filters": "清除所有筛选",
+  "admin_posts_col_info": "文章信息",
+  "admin_posts_col_status": "当前状态",
+  "admin_posts_col_time": "时间节点",
+  "admin_posts_delete_confirm_title": "确认删除",
+  "admin_posts_delete_confirm_desc": "您确定要永久删除文章 \"{title}\" 吗？此操作无法撤销。",
+  "admin_posts_delete_confirm_btn": "确认删除",
+  "admin_posts_toast_delete_failed": "删除条目失败",
+  "admin_posts_toast_delete_failed_desc": "条目 \"{title}\" 不存在或已删除",
+  "admin_posts_toast_delete_success": "条目已删除",
+  "admin_posts_toast_delete_success_desc": "条目 \"{title}\" 已删除成功",
+  "admin_posts_no_summary": "无摘要",
+  "admin_posts_status_published": "已发布",
+  "admin_posts_status_draft": "草稿",
+  "admin_posts_status_pending": "待定",
+  "admin_posts_time_published": "发布",
+  "admin_posts_time_modified": "修改",
+  "admin_pagination_info": [
+    {
+      "declarations": ["input startItem", "input endItem", "input totalItems"],
+      "match": {
+        "startItem=*": "第 {startItem} - {endItem} 条 / 共 {totalItems} 条"
+      }
+    }
+  ],
+  "admin_posts_action_edit": "编辑",
+  "admin_posts_action_delete": "删除",
+  "admin_posts_action_edit_post": "编辑文章",
+  "admin_posts_action_delete_post": "删除文章",
+  "admin_post_edit_not_found_title": "未找到文章",
+  "admin_post_edit_not_found_desc": "ID 为 {id} 的文章记录不存在或已被移除。",
+  "admin_post_edit_error_not_found": "文章不存在"
 }

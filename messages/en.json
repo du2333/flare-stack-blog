@@ -99,7 +99,7 @@
     {
       "declarations": [
         "input date",
-        "local formattedDateEn = date: datetime year=numeric month=long day=numeric"
+        "local formattedDateEn = date: datetime year=numeric month=2-digit day=2-digit"
       ],
       "match": {
         "date=*": "{formattedDateEn}"
@@ -110,7 +110,7 @@
     {
       "declarations": [
         "input date",
-        "local formattedDateTimeEn = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit"
+        "local formattedDateTimeEn = date: datetime year=numeric month=2-digit day=2-digit hour=2-digit minute=2-digit"
       ],
       "match": {
         "date=*": "{formattedDateTimeEn}"
@@ -521,5 +521,51 @@
   "version_toast_available": "New version available",
   "version_toast_available_desc": "{version} has been released.",
   "version_action_view": "View",
-  "version_action_ignore": "Ignore"
+  "version_action_ignore": "Ignore",
+  "admin_posts_title": "Posts",
+  "admin_posts_sys_name": "POSTS_MANAGEMENT_SYSTEM",
+  "admin_posts_create": "New Post",
+  "admin_posts_creating": "Creating...",
+  "admin_posts_search_placeholder": "Search posts...",
+  "admin_posts_filter_status": "Status",
+  "admin_posts_filter_all": "All",
+  "admin_posts_filter_published": "Published",
+  "admin_posts_filter_draft": "Draft",
+  "admin_posts_sort_published": "Published At",
+  "admin_posts_sort_updated": "Updated At",
+  "admin_posts_sort_recent_pub": "Newest",
+  "admin_posts_sort_recent_upd": "Recent Updated",
+  "admin_posts_no_match": "No posts found",
+  "admin_posts_clear_filters": "Clear filters",
+  "admin_posts_col_info": "Info",
+  "admin_posts_col_status": "Status",
+  "admin_posts_col_time": "Time",
+  "admin_posts_delete_confirm_title": "Confirm Delete",
+  "admin_posts_delete_confirm_desc": "Are you sure you want to permanently delete \"{title}\"? This action cannot be undone.",
+  "admin_posts_delete_confirm_btn": "Delete",
+  "admin_posts_toast_delete_failed": "Delete failed",
+  "admin_posts_toast_delete_failed_desc": "\"{title}\" does not exist or has been deleted",
+  "admin_posts_toast_delete_success": "Deleted",
+  "admin_posts_toast_delete_success_desc": "\"{title}\" has been deleted",
+  "admin_posts_no_summary": "No summary",
+  "admin_posts_status_published": "Published",
+  "admin_posts_status_draft": "Draft",
+  "admin_posts_status_pending": "Pending",
+  "admin_posts_time_published": "Published",
+  "admin_posts_time_modified": "Modified",
+  "admin_pagination_info": [
+    {
+      "declarations": ["input startItem", "input endItem", "input totalItems"],
+      "match": {
+        "startItem=*": "Showing {startItem} - {endItem} of {totalItems}"
+      }
+    }
+  ],
+  "admin_posts_action_edit": "Edit",
+  "admin_posts_action_delete": "Delete",
+  "admin_posts_action_edit_post": "Edit Post",
+  "admin_posts_action_delete_post": "Delete Post",
+  "admin_post_edit_not_found_title": "Post Not Found",
+  "admin_post_edit_not_found_desc": "The post record with ID {id} does not exist or has been removed.",
+  "admin_post_edit_error_not_found": "Post does not exist"
 }
