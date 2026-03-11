@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { m } from "@/paraglide/messages";
 
 export function EmailDocPanel() {
   return (
@@ -8,17 +9,13 @@ export function EmailDocPanel() {
           <Info className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-foreground">使用说明</h4>
+          <h4 className="text-sm font-medium text-foreground">
+            {m.settings_email_doc_title()}
+          </h4>
           <div className="grid grid-cols-1 gap-x-12 gap-y-3 xl:grid-cols-2">
-            <EmailDocTip index="1">
-              邮件服务是用户注册验证及密码重置的核心组件。
-            </EmailDocTip>
-            <EmailDocTip index="2">
-              若不配置，系统将仅支持 GitHub 等第三方 OAuth 登录。
-            </EmailDocTip>
-            <EmailDocTip index="3">
-              Resend 需完成域名验证 (DNS)，否则仅能发送至注册邮箱。
-            </EmailDocTip>
+            <EmailDocTip index="1">{m.settings_email_doc_tip1()}</EmailDocTip>
+            <EmailDocTip index="2">{m.settings_email_doc_tip2()}</EmailDocTip>
+            <EmailDocTip index="3">{m.settings_email_doc_tip3()}</EmailDocTip>
           </div>
         </div>
       </div>

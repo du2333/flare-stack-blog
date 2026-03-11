@@ -10,7 +10,7 @@ export function MaintenanceSection() {
         <VersionMaintenance />
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
         <SearchMaintenance />
         <CacheMaintenance />
       </div>

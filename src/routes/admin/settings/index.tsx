@@ -17,12 +17,13 @@ import { useEmailConnection } from "@/features/email/hooks/use-email-connection"
 import { SectionSkeleton } from "@/features/config/components/settings-skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin/settings/")({
   ssr: false,
   component: RouteComponent,
   loader: () => ({
-    title: "设置",
+    title: m.settings_admin_title(),
   }),
   head: ({ loaderData }) => ({
     meta: [
@@ -58,11 +59,11 @@ function RouteComponent() {
   const onSubmit = async (data: SystemConfig) => {
     try {
       await saveSettings({ data });
-      toast.success("系统配置已生效");
+      toast.success(m.settings_toast_save_success());
       // Reset dirty state with new values
       reset(data);
     } catch {
-      toast.error("保存失败，请重试");
+      toast.error(m.settings_toast_save_error());
     }
   };
 
@@ -84,10 +85,10 @@ function RouteComponent() {
         <div className="flex justify-between items-end pb-8 border-b border-border/30">
           <div className="space-y-1">
             <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
-              系统设置
+              {m.settings_header_title()}
             </h1>
             <p className="text-sm text-muted-foreground">
-              配置邮件通知、Webhook 通知和系统维护项。
+              {m.settings_header_desc()}
             </p>
           </div>
 
@@ -101,7 +102,7 @@ function RouteComponent() {
             ) : (
               <Check size={14} className="mr-3" />
             )}
-            {isSubmitting ? "正在同步" : "应用更改"}
+            {isSubmitting ? m.settings_btn_saving() : m.settings_btn_save()}
           </Button>
         </div>
 
@@ -119,7 +120,7 @@ function RouteComponent() {
                 size={14}
                 className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
               />
-              邮件配置
+              {m.settings_tab_email()}
             </TabsTrigger>
             <TabsTrigger
               value="webhook"
@@ -129,7 +130,7 @@ function RouteComponent() {
                 size={14}
                 className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
               />
-              Webhook 通知
+              {m.settings_tab_webhook()}
             </TabsTrigger>
             <TabsTrigger
               value="maintenance"
@@ -139,7 +140,7 @@ function RouteComponent() {
                 size={14}
                 className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
               />
-              系统维护
+              {m.settings_tab_maintenance()}
             </TabsTrigger>
           </TabsList>
 
@@ -150,10 +151,10 @@ function RouteComponent() {
             >
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  邮件配置
+                  {m.settings_email_title()}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  配置发信账号，用于登录验证、密码重置和站内通知。
+                  {m.settings_email_desc()}
                 </p>
               </div>
               <EmailServiceSection testEmailConnection={testEmailConnection} />
@@ -165,10 +166,10 @@ function RouteComponent() {
             >
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  Webhook 通知
+                  {m.settings_webhook_title()}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  把管理员通知转发到你常用的平台或自动化系统。
+                  {m.settings_webhook_desc()}
                 </p>
               </div>
               <WebhookSettingsSection />
@@ -180,10 +181,10 @@ function RouteComponent() {
             >
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  系统维护
+                  {m.settings_maintenance_title()}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  执行清理和维护操作，保持数据状态稳定。
+                  {m.settings_maintenance_desc()}
                 </p>
               </div>
               <MaintenanceSection />
