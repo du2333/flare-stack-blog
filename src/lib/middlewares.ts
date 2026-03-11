@@ -150,13 +150,13 @@ export const turnstileMiddleware = createMiddleware({ type: "function" })
 
     const token = getRequestHeader("X-Turnstile-Token");
     if (!token) {
-      throw createTurnstileError("缺少人机验证凭证");
+      throw createTurnstileError("MISSING_TOKEN");
     }
 
     const result = await verifyTurnstileToken({ secretKey, token });
 
     if (!result.success) {
-      throw createTurnstileError();
+      throw createTurnstileError("VERIFY_FAILED");
     }
 
     return next();

@@ -287,6 +287,24 @@
   "login_error_turnstile_failed": "人机验证失败，请等待验证完成后重试",
   "turnstile_error_failed_short": "人机验证失败",
   "turnstile_error_failed_desc": "请等待验证完成后重试",
+  "request_error_unauthenticated_title": "未登录",
+  "request_error_unauthenticated_desc": "请先登录。",
+  "request_error_permission_denied_title": "权限不足",
+  "request_error_permission_denied_desc": "当前操作仅管理员可执行。",
+  "request_error_rate_limited_title": "请求过于频繁",
+  "request_error_rate_limited_desc": [
+    {
+      "declarations": ["input seconds"],
+      "match": {
+        "seconds=*": "请 {seconds} 秒后重试。"
+      }
+    }
+  ],
+  "request_error_turnstile_failed_title": "人机验证失败",
+  "request_error_turnstile_failed_desc": "请刷新页面后重新验证。",
+  "request_error_turnstile_missing_token_desc": "缺少人机验证凭证，请完成验证后重试。",
+  "request_error_unknown_title": "发生了未预期的错误",
+  "request_error_unknown_desc": "请稍后重试。",
   "login_error_default": "登录失败",
   "login_toast_success": "欢迎回来",
   "login_toast_wait_turnstile": "请等待人机验证完成",

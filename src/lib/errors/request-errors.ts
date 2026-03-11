@@ -5,20 +5,17 @@ const REQUEST_ERROR_PREFIX = "__REQ_ERR__:";
 const RequestErrorPayloadSchema = z.discriminatedUnion("code", [
   z.object({
     code: z.literal("UNAUTHENTICATED"),
-    message: z.string(),
   }),
   z.object({
     code: z.literal("PERMISSION_DENIED"),
-    message: z.string(),
   }),
   z.object({
     code: z.literal("RATE_LIMITED"),
     retryAfterMs: z.number().int().nonnegative(),
-    message: z.string(),
   }),
   z.object({
     code: z.literal("TURNSTILE_FAILED"),
-    message: z.string(),
+    detail: z.enum(["MISSING_TOKEN", "VERIFY_FAILED"]).optional(),
   }),
 ]);
 
@@ -46,36 +43,31 @@ function createRequestError(payload: RequestErrorPayload): Error {
   return new Error(formatRequestErrorMessage(payload));
 }
 
-export function createAuthError(message?: string): Error {
+export function createAuthError(): Error {
   return createRequestError({
     code: "UNAUTHENTICATED",
-    message: message ?? "登录状态已失效，请重新登录",
   });
 }
 
-export function createPermissionError(message?: string): Error {
+export function createPermissionError(): Error {
   return createRequestError({
     code: "PERMISSION_DENIED",
-    message: message ?? "权限不足",
   });
 }
 
-export function createRateLimitError(
-  retryAfterMs: number,
-  message?: string,
-): Error {
+export function createRateLimitError(retryAfterMs: number): Error {
   return createRequestError({
     code: "RATE_LIMITED",
     retryAfterMs,
-    message:
-      message ?? `请求过于频繁，请 ${Math.ceil(retryAfterMs / 1000)} 秒后重试`,
   });
 }
 
-export function createTurnstileError(message?: string): Error {
+export function createTurnstileError(
+  detail: "MISSING_TOKEN" | "VERIFY_FAILED" = "VERIFY_FAILED",
+): Error {
   return createRequestError({
     code: "TURNSTILE_FAILED",
-    message: message ?? "人机验证失败，请刷新页面重试",
+    detail,
   });
 }
 
@@ -96,23 +88,12 @@ function parseEnvelopeFromMessage(message: string): RequestErrorPayload | null {
 
 export function parseRequestError(error: unknown): ParsedRequestError {
   const rawMessage =
-    error instanceof Error ? error.message : String(error ?? "未知错误");
+    error instanceof Error ? error.message : String(error ?? "");
 
   const payload = parseEnvelopeFromMessage(rawMessage);
   if (!payload) {
     return { code: "UNKNOWN", message: rawMessage };
   }
 
-  if (payload.code === "RATE_LIMITED") {
-    return {
-      code: payload.code,
-      retryAfterMs: payload.retryAfterMs,
-      message: payload.message,
-    };
-  }
-
-  return {
-    code: payload.code,
-    message: payload.message,
-  };
+  return payload;
 }

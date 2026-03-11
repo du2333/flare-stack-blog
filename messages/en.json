@@ -293,6 +293,24 @@
   "login_error_turnstile_failed": "Verification failed, please wait and try again",
   "turnstile_error_failed_short": "Turnstile Verification Failed",
   "turnstile_error_failed_desc": "Please wait for verification to complete and try again.",
+  "request_error_unauthenticated_title": "Authentication Required",
+  "request_error_unauthenticated_desc": "Please sign in to continue.",
+  "request_error_permission_denied_title": "Permission Denied",
+  "request_error_permission_denied_desc": "This action is only available to administrators.",
+  "request_error_rate_limited_title": "Too Many Requests",
+  "request_error_rate_limited_desc": [
+    {
+      "declarations": ["input seconds"],
+      "match": {
+        "seconds=*": "Please try again in {seconds} seconds."
+      }
+    }
+  ],
+  "request_error_turnstile_failed_title": "Verification Failed",
+  "request_error_turnstile_failed_desc": "Please refresh the page and complete verification again.",
+  "request_error_turnstile_missing_token_desc": "Missing verification token. Please complete verification and try again.",
+  "request_error_unknown_title": "Unexpected Error",
+  "request_error_unknown_desc": "Please try again later.",
   "login_error_default": "Login failed",
   "login_toast_success": "Welcome back",
   "login_toast_wait_turnstile": "Please wait for verification to complete",
