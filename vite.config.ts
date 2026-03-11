@@ -55,4 +55,5 @@ const config = defineConfig(({ mode }) => {
     ],
   };
 });
+
 export default config;

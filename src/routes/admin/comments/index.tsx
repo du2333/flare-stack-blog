@@ -86,7 +86,7 @@ function CommentAdminPage() {
           </h1>
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
-              [ {m.comments_admin_tag()} ]
+              {m.comments_admin_tag()}
             </p>
           </div>
         </div>

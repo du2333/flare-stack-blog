@@ -130,7 +130,7 @@ export function TagManager() {
           </h1>
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-              TAXONOMY_MANAGEMENT
+              TAXONOMY MANAGEMENT
             </p>
           </div>
         </div>
