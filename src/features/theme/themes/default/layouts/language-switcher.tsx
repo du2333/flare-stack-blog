@@ -1,5 +1,6 @@
 import { ChevronDown, Languages } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
 
 export function LanguageSwitcher({ className = "" }: { className?: string }) {
@@ -34,7 +35,7 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-center w-full h-full text-muted-foreground hover:text-foreground transition-colors group"
-        aria-label="Switch Language"
+        aria-label={m.common_switch_language()}
       >
         <Languages
           size={18}

@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import type { AuthLayoutProps } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
 
 export function AuthLayout({ onBack, children }: AuthLayoutProps) {
   return (
@@ -15,7 +16,7 @@ export function AuthLayout({ onBack, children }: AuthLayoutProps) {
         <button
           onClick={onBack}
           className="group absolute -top-14 left-0 flex items-center justify-center w-10 h-10 rounded-xl bg-(--fuwari-card-bg) shadow-sm text-(--fuwari-text-50) hover:text-(--fuwari-text-90) hover:shadow-md transition-all shrink-0"
-          title="返回"
+          title={m.auth_layout_back_home()}
         >
           <ArrowLeft
             size={18}

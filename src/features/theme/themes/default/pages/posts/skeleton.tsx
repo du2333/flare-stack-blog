@@ -1,6 +1,7 @@
 import { INITIAL_TAG_COUNT } from "./page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 export function PostsPageSkeleton() {
   return (
@@ -8,7 +9,7 @@ export function PostsPageSkeleton() {
       {/* Header Section */}
       <header className="py-12 md:py-20 space-y-6">
         <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-foreground">
-          文章
+          {m.nav_posts()}
         </h1>
         <p className="max-w-xl text-base md:text-lg font-light text-muted-foreground leading-relaxed">
           {blogConfig.description}
@@ -18,7 +19,7 @@ export function PostsPageSkeleton() {
       {/* Tag Filters Skeleton */}
       <div className="mb-12 space-y-4">
         <div className="flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/50">
-          <span>// 分类_筛选</span>
+          <span>{m.posts_tags_filter()}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">

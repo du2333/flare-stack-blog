@@ -155,7 +155,7 @@ export function Navbar({
             <button
               className="fuwari-expand-animation rounded-lg w-11 h-11 flex items-center justify-center active:scale-90 md:hidden fuwari-text-75 hover:text-(--fuwari-primary)"
               onClick={onMenuClick}
-              aria-label="打开菜单"
+              aria-label={m.common_open_menu()}
               type="button"
             >
               <Menu size={18} strokeWidth={1.25} />

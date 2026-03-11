@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { renderCommentReact } from "./comment-render";
 import type { JSONContent } from "@tiptap/react";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface ExpandableContentProps {
   content: JSONContent | null;
@@ -48,7 +49,7 @@ export function ExpandableContent({
           onClick={() => setExpanded(!expanded)}
           className="mt-1.5 text-xs text-(--fuwari-primary) hover:text-(--fuwari-primary-hover) font-medium transition-colors"
         >
-          {expanded ? "收起" : "展开全部"}
+          {expanded ? m.common_collapse() : m.common_expand_all()}
         </button>
       )}
     </div>

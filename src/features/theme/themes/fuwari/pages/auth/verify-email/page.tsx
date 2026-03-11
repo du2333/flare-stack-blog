@@ -9,9 +9,6 @@ export function VerifyEmailPage({ status, error }: VerifyEmailPageProps) {
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold fuwari-text-90">
-          {status === "ANALYZING" && "正在验证您的邮箱"}
-          {status === "SUCCESS" && "邮箱验证成功"}
-          {status === "ERROR" && "邮箱验证失败"}
           {status === "ANALYZING" && m.verify_email_analyzing_title()}
           {status === "SUCCESS" && m.verify_email_success_title()}
           {status === "ERROR" && m.verify_email_error_title()}
@@ -52,21 +49,21 @@ export function VerifyEmailPage({ status, error }: VerifyEmailPageProps) {
             </div>
             <p className="text-sm font-medium fuwari-text-50 leading-relaxed max-w-xs mx-auto text-red-600 dark:text-red-400">
               {error === "invalid_token"
-                ? "验证链接已失效或已过期，请重新申请验证。"
-                : "验证过程中发生未知错误，请重试。"}
+                ? m.verify_email_error_invalid_token_desc()
+                : m.verify_email_error_generic_desc()}
             </p>
             <div className="space-y-4 w-full flex flex-col pt-4">
               <Link
                 to="/login"
                 className="w-full py-3.5 rounded-xl fuwari-btn-primary font-bold text-sm transition-all active:scale-[0.98]"
               >
-                返回登录
+                {m.verify_email_error_action()}
               </Link>
               <Link
                 to="/login"
                 className="text-xs font-medium text-(--fuwari-primary) hover:underline"
               >
-                重新发送验证邮件
+                {m.verify_email_error_resend_action()}
               </Link>
             </div>
           </div>

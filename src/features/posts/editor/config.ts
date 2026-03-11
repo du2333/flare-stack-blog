@@ -23,6 +23,7 @@ import {
   getActiveFormulaModalOpenerKey,
   openFormulaModalForEdit,
 } from "@/components/tiptap-editor/formula-modal-store";
+import { m } from "@/paraglide/messages";
 
 const ALLOWED_IMAGE_MIME_TYPES = [
   "image/png",
@@ -57,10 +58,10 @@ async function handleImageUpload(file: File): Promise<ImageUploadResult> {
 
   const result = await uploadImageFn({ data: formData });
   if (result.error) {
-    throw new Error("图片入库失败，请重试");
+    throw new Error(m.media_upload_error_db());
   }
-  toast.success("图片上传成功", {
-    description: `${file.name} 已归档保存`,
+  toast.success(m.media_upload_success({ name: file.name }), {
+    description: m.editor_image_upload_success_desc({ name: file.name }),
   });
 
   return {
@@ -157,8 +158,8 @@ export const extensions = [
   ImageUpload.configure({
     onUpload: handleImageUpload,
     onError: (error) => {
-      toast.error("图片上传失败", {
-        description: error.message,
+      toast.error(m.editor_image_upload_failed(), {
+        description: error.message || m.editor_action_unknown_error(),
       });
     },
   }),
@@ -168,7 +169,7 @@ export const extensions = [
     onPaste: handleFilePaste,
   }),
   Placeholder.configure({
-    placeholder: "开始记录...",
+    placeholder: m.editor_content_placeholder(),
     emptyEditorClass: "is-editor-empty",
   }),
   TableOfContents.configure({

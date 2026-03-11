@@ -9,6 +9,7 @@ import {
   themes as shikiThemes,
 } from "@/lib/shiki";
 import DropdownMenu from "@/components/ui/dropdown-menu";
+import { m } from "@/paraglide/messages";
 
 export function CodeBlockView({
   node,
@@ -83,7 +84,7 @@ export function CodeBlockView({
           >
             {copied ? (
               <span className="animate-in fade-in slide-in-from-right-1 opacity-70">
-                已复制
+                {m.common_copied()}
               </span>
             ) : null}
             <div className="p-0.5 opacity-60 group-hover/btn:opacity-100 transition-opacity">

@@ -158,7 +158,7 @@ export function PostsToolbar({
             size="icon"
             onClick={onResetFilters}
             className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-none"
-            title="重置"
+            title={m.admin_posts_clear_filters()}
           >
             <X size={16} strokeWidth={1.5} />
           </Button>

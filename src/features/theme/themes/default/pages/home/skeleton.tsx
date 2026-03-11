@@ -1,6 +1,7 @@
 import { Github, Mail, Rss, Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 export function HomePageSkeleton() {
   return (
@@ -9,16 +10,18 @@ export function HomePageSkeleton() {
       <section className="space-y-8">
         <header className="space-y-6">
           <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-foreground flex items-center gap-4">
-            你好 <span className="animate-wave origin-[70%_70%]">👋</span>
+            {m.home_greeting()}{" "}
+            <span className="animate-wave origin-[70%_70%]">👋</span>
           </h1>
 
           <div className="space-y-4 max-w-2xl text-base md:text-lg text-muted-foreground font-light leading-relaxed">
             <p>
-              我是{" "}
+              {m.home_intro_prefix()}{" "}
               <span className="text-foreground font-medium">
                 {blogConfig.author}
               </span>
-              ，{blogConfig.description}
+              {m.home_intro_separator()}
+              {blogConfig.description}
             </p>
           </div>
         </header>
@@ -33,7 +36,7 @@ export function HomePageSkeleton() {
       {/* Selected Posts Skeleton */}
       <section className="space-y-10">
         <h2 className="text-xl font-serif font-medium text-foreground tracking-tight flex items-center gap-2">
-          最新文章
+          {m.home_latest_posts()}
         </h2>
 
         <div className="space-y-8">

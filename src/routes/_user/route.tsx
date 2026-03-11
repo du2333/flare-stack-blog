@@ -40,7 +40,7 @@ function UserLayout() {
   const logout = async () => {
     const { error } = await authClient.signOut();
     if (error) {
-      toast.error("会话终止失败, 请稍后重试。", {
+      toast.error(m.auth_logout_failed(), {
         description: error.message,
       });
       return;
@@ -48,8 +48,8 @@ function UserLayout() {
 
     queryClient.removeQueries({ queryKey: AUTH_KEYS.session });
 
-    toast.success("会话已终止", {
-      description: "你已安全退出当前会话。",
+    toast.success(m.auth_logout_success(), {
+      description: m.auth_logout_success_desc(),
     });
   };
 

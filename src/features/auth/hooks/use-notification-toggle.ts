@@ -6,6 +6,7 @@ import {
   toggleReplyNotificationFn,
 } from "@/features/email/api/email.api";
 import { EMAIL_KEYS } from "@/features/email/queries";
+import { m } from "@/paraglide/messages";
 
 export function useNotificationToggle(userId: string | undefined) {
   const queryClient = useQueryClient();
@@ -37,7 +38,11 @@ export function useNotificationToggle(userId: string | undefined) {
       queryClient.setQueryData(EMAIL_KEYS.replyNotification(userId), {
         enabled,
       });
-      toast.success(enabled ? "已开启通知" : "已关闭通知");
+      toast.success(
+        enabled
+          ? m.profile_notify_enabled_fuwari()
+          : m.profile_notify_disabled_fuwari(),
+      );
     },
   });
 
@@ -48,19 +53,19 @@ export function useNotificationToggle(userId: string | undefined) {
     isPending: mutation.isPending,
     toggle: () => {
       if (isLoading || isAvailabilityLoading) {
-        toast.message("正在获取通知状态，请稍候");
+        toast.message(m.profile_notify_status_loading());
         return;
       }
       if (queryError || availabilityError) {
-        toast.error("获取通知状态失败，请重试");
+        toast.error(m.profile_notify_status_failed());
         return;
       }
       if (!availability?.emailEnabled) {
-        toast.message("站点未开启用户邮件通知");
+        toast.message(m.profile_notify_unavailable());
         return;
       }
       if (currentEnabled === undefined) {
-        toast.error("通知状态异常，请刷新后重试");
+        toast.error(m.profile_notify_invalid_state());
         return;
       }
       mutation.mutate(!currentEnabled);

@@ -22,7 +22,8 @@ export function HomePage({ posts }: HomePageProps) {
               <span className="text-foreground font-medium">
                 {blogConfig.author}
               </span>
-              ，{blogConfig.description}
+              {m.home_intro_separator()}
+              {blogConfig.description}
             </p>
           </div>
         </header>
