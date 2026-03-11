@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import theme from "@theme";
 import { m } from "@/paraglide/messages";
 import { authClient } from "@/lib/auth/auth.client";
+import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { AUTH_KEYS } from "@/features/auth/queries";
 
@@ -42,7 +43,8 @@ function PublicLayout() {
     const { error } = await authClient.signOut();
     if (error) {
       toast.error(m.auth_logout_failed(), {
-        description: error.message,
+        description:
+          getLogoutAuthErrorMessage(error, m) ?? m.auth_logout_failed_desc(),
       });
       return;
     }

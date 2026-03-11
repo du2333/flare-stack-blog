@@ -44,7 +44,6 @@ export const FriendLinkModerationTable = ({
     data: response,
     isLoading,
     isError,
-    error,
   } = useQuery(
     allFriendLinksQuery({
       status,
@@ -126,7 +125,7 @@ export const FriendLinkModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <ShieldAlert size={40} strokeWidth={1} className="opacity-30" />
-        <p>{error.message}</p>
+        <p>{m.friend_links_admin_load_fail()}</p>
       </div>
     );
   }

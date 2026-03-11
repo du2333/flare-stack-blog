@@ -38,7 +38,6 @@ export const CommentModerationTable = ({
     data: response,
     isLoading,
     isError,
-    error,
   } = useQuery(
     allCommentsQuery({
       status,
@@ -127,7 +126,7 @@ export const CommentModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <AlertTriangle size={40} strokeWidth={1} className="opacity-30" />
-        <p>{error.message}</p>
+        <p>{m.comments_admin_load_fail()}</p>
       </div>
     );
   }

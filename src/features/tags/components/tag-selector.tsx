@@ -31,7 +31,6 @@ export function TagSelector({
     data: tags = [],
     isLoading: isTagsLoading,
     isError,
-    error,
   } = useQuery(tagsAdminQueryOptions());
 
   // Strict optimistic update following TanStack Query best practices
@@ -285,11 +284,6 @@ export function TagSelector({
             {isError ? (
               <div className="p-2 text-xs text-destructive text-center">
                 <p>{m.tag_selector_load_fail()}</p>
-                <p className="text-[10px] opacity-70">
-                  {error instanceof Error
-                    ? error.message
-                    : m.tag_selector_unknown_error()}
-                </p>
               </div>
             ) : availableTags.length === 0 && !searchTerm ? (
               <p className="p-2 text-xs text-muted-foreground text-center">

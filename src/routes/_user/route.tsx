@@ -8,6 +8,7 @@ import { ErrorPage } from "@/components/common/error-page";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { AUTH_KEYS, sessionQuery } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
+import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 
 export const Route = createFileRoute("/_user")({
   loader: async ({ context }) => {
@@ -41,7 +42,8 @@ function UserLayout() {
     const { error } = await authClient.signOut();
     if (error) {
       toast.error(m.auth_logout_failed(), {
-        description: error.message,
+        description:
+          getLogoutAuthErrorMessage(error, m) ?? m.auth_logout_failed_desc(),
       });
       return;
     }
