@@ -567,5 +567,132 @@
   "admin_posts_action_delete_post": "Delete Post",
   "admin_post_edit_not_found_title": "Post Not Found",
   "admin_post_edit_not_found_desc": "The post record with ID {id} does not exist or has been removed.",
-  "admin_post_edit_error_not_found": "Post does not exist"
+  "admin_post_edit_error_not_found": "Post does not exist",
+  "editor_status_chars": "Chars",
+  "editor_status_words": "Words",
+  "editor_status_save_error": "Save failed",
+  "editor_status_saving": "Saving...",
+  "editor_status_unsaved": "Unsaved",
+  "editor_status_saved": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "time=*": "Saved {time}"
+      }
+    }
+  ],
+  "editor_status_synced": "Synced",
+  "editor_toc_title": "Table of Contents",
+  "editor_header_preview_unavailable": "Not available on frontend yet",
+  "editor_header_preview": "Preview on frontend",
+  "editor_header_preview_btn": "Preview",
+  "editor_header_processing": "Processing...",
+  "editor_header_success": "Success",
+  "editor_header_unpublish": "Unpublish",
+  "editor_header_publish": "Publish",
+  "editor_status_draft": "Draft",
+  "editor_status_published": "Published",
+  "editor_title_placeholder": "Enter post title here...",
+  "editor_meta_status": "Status",
+  "editor_meta_published_at": "Published At",
+  "editor_meta_read_time": "Read Time",
+  "editor_meta_minutes": "min",
+  "editor_meta_slug": "URL Slug",
+  "editor_meta_tags": "Tags",
+  "editor_meta_auto_generate": "Auto-gen",
+  "editor_meta_summary": "Summary",
+  "editor_summary_placeholder": "A brief introduction...",
+  "editor_leave_title": "Leave Page?",
+  "editor_leave_message": "You have unsaved changes. Leaving may cause data loss.",
+  "editor_leave_confirm": "Confirm Leave",
+  "editor_action_publish_start": "Publish Workflow Started",
+  "editor_action_publish_desc": "Content processing and deployment analysis in progress.",
+  "editor_action_slug_set": "URL Slug Set",
+  "editor_action_slug_set_desc": [
+    {
+      "declarations": ["input slug"],
+      "match": {
+        "slug=*": "URL slug set to \"{slug}\""
+      }
+    }
+  ],
+  "editor_action_slug_error": "Failed to generate slug",
+  "editor_action_no_content": "No Content",
+  "editor_action_no_content_read_time": "Please write some content before calculating read time.",
+  "editor_action_no_content_summary": "Please write some content before generating a summary.",
+  "editor_action_read_time_done": "Read Time Calculated",
+  "editor_action_read_time_desc": [
+    {
+      "declarations": ["input mins", "input words"],
+      "match": {
+        "mins=*, words=*": "Estimated read time {mins} min ({words} words)"
+      }
+    }
+  ],
+  "editor_action_title_empty": "Title cannot be empty",
+  "editor_action_tags_done": "AI Tags Generation Complete",
+  "editor_action_tags_added": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "Added {count} new tags"
+      }
+    }
+  ],
+  "editor_action_tags_none": "No new tags generated",
+  "editor_action_tags_error": "Failed to generate tags",
+  "editor_action_unknown_error": "Unknown error",
+  "editor_toolbar_heading2": "Heading 2",
+  "editor_toolbar_heading3": "Heading 3",
+  "editor_toolbar_bold": "Bold",
+  "editor_toolbar_italic": "Italic",
+  "editor_toolbar_underline": "Underline",
+  "editor_toolbar_strike": "Strikethrough",
+  "editor_toolbar_code": "Inline Code",
+  "editor_toolbar_code_block": "Code Block",
+  "editor_toolbar_formula_inline": "Inline Math",
+  "editor_toolbar_formula_block": "Block Math",
+  "editor_toolbar_bullet_list": "Bullet List",
+  "editor_toolbar_ordered_list": "Ordered List",
+  "editor_toolbar_blockquote": "Blockquote",
+  "editor_toolbar_table": "Insert Table",
+  "editor_toolbar_link": "Insert Link",
+  "editor_toolbar_image": "Insert Image",
+  "editor_toolbar_undo": "Undo",
+  "editor_toolbar_redo": "Redo",
+  "editor_insert_link_title": "Insert Link",
+  "editor_insert_media_title": "Select Media",
+  "editor_insert_search_placeholder": "Search media assets...",
+  "editor_insert_external_link": "External Link",
+  "editor_insert_target_url": "Target URL",
+  "editor_insert_cancel": "Cancel",
+  "editor_insert_remove": "Remove",
+  "editor_insert_confirm": "Confirm",
+  "editor_formula_edit": "Edit Formula",
+  "editor_formula_insert": "Insert Formula",
+  "editor_formula_inline": "Inline",
+  "editor_formula_block": "Block",
+  "editor_formula_placeholder": "Enter LaTeX, e.g. x^2 + y^2 = z^2",
+  "editor_formula_preview": "Preview",
+  "editor_formula_preview_empty": "Enter LaTeX to preview",
+  "editor_formula_shortcut": "Ctrl+Enter Apply · Esc Cancel",
+  "editor_formula_cancel": "Cancel",
+  "editor_formula_apply": "Apply",
+  "editor_table_add_col_before": "Add Column Before",
+  "editor_table_add_col_after": "Add Column After",
+  "editor_table_delete_col": "Delete Column",
+  "editor_table_add_row_before": "Add Row Before",
+  "editor_table_add_row_after": "Add Row After",
+  "editor_table_delete_row": "Delete Row",
+  "editor_table_toggle_header_col": "Toggle Header Column",
+  "editor_table_toggle_header_row": "Toggle Header Row",
+  "editor_table_delete_table": "Delete Table",
+  "tag_selector_create_fail": "Failed to create tag",
+  "tag_selector_create_fail_desc": "Tag name already exists",
+  "tag_selector_search_placeholder": "Search or create tag...",
+  "tag_selector_create_action": "Create \"{searchTerm}\"",
+  "tag_selector_load_fail": "Failed to load tags",
+  "tag_selector_unknown_error": "Unknown error",
+  "tag_selector_no_match": "No matching tags found",
+  "tag_selector_empty": "No tags available (type to create)"
 }

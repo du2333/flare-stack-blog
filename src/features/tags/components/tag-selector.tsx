@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { createTagFn } from "@/features/tags/api/tags.api";
 import { TAGS_KEYS, tagsAdminQueryOptions } from "@/features/tags/queries";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface TagSelectorProps {
   value: Array<number>;
@@ -81,7 +82,9 @@ export function TagSelector({
       if (result.error) {
         queryClient.setQueryData(TAGS_KEYS.adminList({}), context.previousTags);
         onChange(value.filter((id) => id !== context.optimisticTagId));
-        toast.error("创建标签失败", { description: "该标签名称已存在" });
+        toast.error(m.tag_selector_create_fail(), {
+          description: m.tag_selector_create_fail_desc(),
+        });
         return;
       }
 
@@ -239,7 +242,9 @@ export function TagSelector({
           ref={inputRef}
           type="text"
           className="flex-1 min-w-20 bg-transparent outline-none placeholder:text-muted-foreground text-sm h-6"
-          placeholder={selectedTags.length === 0 ? "搜索或创建标签..." : ""}
+          placeholder={
+            selectedTags.length === 0 ? m.tag_selector_search_placeholder() : ""
+          }
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -272,21 +277,25 @@ export function TagSelector({
                   onClick={() => createTagMutation.mutate(searchTerm)}
                 >
                   <Plus className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <span>创建 "{searchTerm}"</span>
+                  <span>{m.tag_selector_create_action({ searchTerm })}</span>
                 </div>
               )}
 
             {/* Filtered List */}
             {isError ? (
               <div className="p-2 text-xs text-destructive text-center">
-                <p>加载标签失败</p>
+                <p>{m.tag_selector_load_fail()}</p>
                 <p className="text-[10px] opacity-70">
-                  {error instanceof Error ? error.message : "未知错误"}
+                  {error instanceof Error
+                    ? error.message
+                    : m.tag_selector_unknown_error()}
                 </p>
               </div>
             ) : availableTags.length === 0 && !searchTerm ? (
               <p className="p-2 text-xs text-muted-foreground text-center">
-                {searchTerm ? "无匹配标签" : "暂无标签 (输入以创建)"}
+                {searchTerm
+                  ? m.tag_selector_no_match()
+                  : m.tag_selector_empty()}
               </p>
             ) : availableTags.length === 0 &&
               searchTerm &&

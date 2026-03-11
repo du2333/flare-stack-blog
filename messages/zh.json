@@ -561,5 +561,132 @@
   "admin_posts_action_delete_post": "删除文章",
   "admin_post_edit_not_found_title": "未找到文章",
   "admin_post_edit_not_found_desc": "ID 为 {id} 的文章记录不存在或已被移除。",
-  "admin_post_edit_error_not_found": "文章不存在"
+  "admin_post_edit_error_not_found": "文章不存在",
+  "editor_status_chars": "字符",
+  "editor_status_words": "词数",
+  "editor_status_save_error": "保存失败",
+  "editor_status_saving": "保存中...",
+  "editor_status_unsaved": "未保存",
+  "editor_status_saved": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "time=*": "已保存 {time}"
+      }
+    }
+  ],
+  "editor_status_synced": "已同步",
+  "editor_toc_title": "目录索引",
+  "editor_header_preview_unavailable": "前台暂无此文章",
+  "editor_header_preview": "预览前台文章",
+  "editor_header_preview_btn": "预览",
+  "editor_header_processing": "处理中...",
+  "editor_header_success": "成功",
+  "editor_header_unpublish": "下架",
+  "editor_header_publish": "发布",
+  "editor_status_draft": "草稿",
+  "editor_status_published": "已发布",
+  "editor_title_placeholder": "在此输入文章标题...",
+  "editor_meta_status": "状态",
+  "editor_meta_published_at": "发布时间",
+  "editor_meta_read_time": "阅读时长",
+  "editor_meta_minutes": "分钟",
+  "editor_meta_slug": "链接 slug",
+  "editor_meta_tags": "标签",
+  "editor_meta_auto_generate": "自动生成",
+  "editor_meta_summary": "摘要",
+  "editor_summary_placeholder": "简短的介绍...",
+  "editor_leave_title": "离开页面？",
+  "editor_leave_message": "您有正在保存的更改。离开可能会导致部分数据丢失。",
+  "editor_leave_confirm": "确认离开",
+  "editor_action_publish_start": "发布流启动",
+  "editor_action_publish_desc": "后台正在进行内容处理与部署分析。",
+  "editor_action_slug_set": "URL slug 已设置",
+  "editor_action_slug_set_desc": [
+    {
+      "declarations": ["input slug"],
+      "match": {
+        "slug=*": "URL slug 已设置为 \"{slug}\""
+      }
+    }
+  ],
+  "editor_action_slug_error": "Slug生成失败",
+  "editor_action_no_content": "没有内容",
+  "editor_action_no_content_read_time": "需要先写一些内容才能计算阅读时间。",
+  "editor_action_no_content_summary": "需要先写一些内容才能生成摘要。",
+  "editor_action_read_time_done": "阅读时间计算完成",
+  "editor_action_read_time_desc": [
+    {
+      "declarations": ["input mins", "input words"],
+      "match": {
+        "mins=*, words=*": "预计阅读时间 {mins} 分钟 ({words} 字)"
+      }
+    }
+  ],
+  "editor_action_title_empty": "标题不能为空",
+  "editor_action_tags_done": "AI 标签生成完成",
+  "editor_action_tags_added": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "已添加 {count} 个新标签"
+      }
+    }
+  ],
+  "editor_action_tags_none": "没有生成新的标签",
+  "editor_action_tags_error": "生成标签失败",
+  "editor_action_unknown_error": "未知错误",
+  "editor_toolbar_heading2": "二级标题",
+  "editor_toolbar_heading3": "三级标题",
+  "editor_toolbar_bold": "粗体",
+  "editor_toolbar_italic": "斜体",
+  "editor_toolbar_underline": "下划线",
+  "editor_toolbar_strike": "删除线",
+  "editor_toolbar_code": "行内代码",
+  "editor_toolbar_code_block": "代码块",
+  "editor_toolbar_formula_inline": "行内公式",
+  "editor_toolbar_formula_block": "块级公式",
+  "editor_toolbar_bullet_list": "无序列表",
+  "editor_toolbar_ordered_list": "有序列表",
+  "editor_toolbar_blockquote": "引用",
+  "editor_toolbar_table": "插入表格",
+  "editor_toolbar_link": "插入链接",
+  "editor_toolbar_image": "插入图片",
+  "editor_toolbar_undo": "撤销",
+  "editor_toolbar_redo": "重做",
+  "editor_insert_link_title": "插入链接",
+  "editor_insert_media_title": "选择媒体",
+  "editor_insert_search_placeholder": "搜索媒体资产...",
+  "editor_insert_external_link": "外部链接",
+  "editor_insert_target_url": "目标地址",
+  "editor_insert_cancel": "取消",
+  "editor_insert_remove": "移除",
+  "editor_insert_confirm": "确认",
+  "editor_formula_edit": "编辑公式",
+  "editor_formula_insert": "插入公式",
+  "editor_formula_inline": "行内",
+  "editor_formula_block": "块级",
+  "editor_formula_placeholder": "输入 LaTeX，如 x^2 + y^2 = z^2",
+  "editor_formula_preview": "预览",
+  "editor_formula_preview_empty": "输入 LaTeX 查看预览",
+  "editor_formula_shortcut": "Ctrl+Enter 应用 · Esc 取消",
+  "editor_formula_cancel": "取消",
+  "editor_formula_apply": "应用",
+  "editor_table_add_col_before": "左侧插列",
+  "editor_table_add_col_after": "右侧插列",
+  "editor_table_delete_col": "删除列",
+  "editor_table_add_row_before": "上方插行",
+  "editor_table_add_row_after": "下方插行",
+  "editor_table_delete_row": "删除行",
+  "editor_table_toggle_header_col": "表头列",
+  "editor_table_toggle_header_row": "表头行",
+  "editor_table_delete_table": "删除表格",
+  "tag_selector_create_fail": "创建标签失败",
+  "tag_selector_create_fail_desc": "该标签名称已存在",
+  "tag_selector_search_placeholder": "搜索或创建标签...",
+  "tag_selector_create_action": "创建 \"{searchTerm}\"",
+  "tag_selector_load_fail": "加载标签失败",
+  "tag_selector_unknown_error": "未知错误",
+  "tag_selector_no_match": "无匹配标签",
+  "tag_selector_empty": "暂无标签 (输入以创建)"
 }

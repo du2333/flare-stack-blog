@@ -12,6 +12,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
 import type React from "react";
+import { m } from "@/paraglide/messages";
 import { useMediaPicker } from "@/features/media/components/media-library/hooks";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
@@ -196,7 +197,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 COMMAND
               </span>
               <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase">
-                {activeType === "LINK" ? "插入链接" : "选择媒体"}
+                {activeType === "LINK"
+                  ? m.editor_insert_link_title()
+                  : m.editor_insert_media_title()}
               </span>
             </div>
           </div>
@@ -220,7 +223,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                 />
                 <input
                   type="text"
-                  placeholder="搜索媒体资产..."
+                  placeholder={m.editor_insert_search_placeholder()}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent border-none text-foreground text-sm font-mono pl-12 pr-6 py-4 focus:ring-0 placeholder:text-muted-foreground/40"
@@ -250,9 +253,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                         key={media.key}
                         media={media}
                         isSelected={selectedMedia?.key === media.key}
-                        onSelect={(m) => {
-                          setSelectedMedia(m);
-                          setInputUrl(m.url);
+                        onSelect={(asset) => {
+                          setSelectedMedia(asset);
+                          setInputUrl(asset.url);
                         }}
                       />
                     ))}
@@ -278,7 +281,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             <div className="flex items-center gap-2 mb-2">
               <Globe size={12} className="text-muted-foreground" />
               <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground">
-                {activeType === "IMAGE" ? "外部链接" : "目标地址"}
+                {activeType === "IMAGE"
+                  ? m.editor_insert_external_link()
+                  : m.editor_insert_target_url()}
               </label>
             </div>
             <div className="group relative">
@@ -306,7 +311,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             onClick={onClose}
             className="flex-1 px-6 py-4 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50"
           >
-            [ 取消 ]
+            [ {m.editor_insert_cancel()} ]
           </button>
           <button
             type="button"
@@ -318,9 +323,11 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             }
             className="flex-1 px-6 py-4 text-xs font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground"
           >
+            [{" "}
             {activeType === "LINK" && !inputUrl.trim() && initialUrl.trim()
-              ? "[ 移除 ]"
-              : "[ 确认 ]"}
+              ? m.editor_insert_remove()
+              : m.editor_insert_confirm()}{" "}
+            ]
           </button>
         </div>
       </div>

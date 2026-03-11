@@ -8,6 +8,7 @@ import { PostEditorMetadata } from "./post-editor-metadata";
 import { PostEditorStatusBar } from "./post-editor-status-bar";
 import type { JSONContent, Editor as TiptapEditor } from "@tiptap/react";
 import type { PostEditorData, PostEditorProps } from "./types";
+import { m } from "@/paraglide/messages";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { Editor } from "@/components/tiptap-editor";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -103,9 +104,9 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         isOpen={status === "blocked"}
         onClose={() => reset?.()}
         onConfirm={() => proceed?.()}
-        title="离开页面？"
-        message="您有正在保存的更改。离开可能会导致部分数据丢失。"
-        confirmLabel="确认离开"
+        title={m.editor_leave_title()}
+        message={m.editor_leave_message()}
+        confirmLabel={m.editor_leave_confirm()}
       />
 
       <PostEditorHeader
