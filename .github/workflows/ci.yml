@@ -40,6 +40,9 @@ jobs:
       - name: Lint Check
         run: bun lint
 
+      - name: Compile Paraglide Runtime
+        run: bun run i18n:compile
+
       - name: Type Check
         run: bun tsc --noEmit
 

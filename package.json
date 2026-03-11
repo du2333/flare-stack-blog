@@ -19,6 +19,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "check": "tsc --noEmit && bun lint:fix && bun format",
+    "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
+    "i18n:verify": "bun scripts/verify-translations.ts",
     "cf-typegen": "wrangler types --env-interface Env",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
@@ -26,7 +28,6 @@
     "db:migrate": "wrangler d1 migrations apply DB --remote",
     "auth:generate-schema": "bunx @better-auth/cli generate --config auth-cli.ts --output src/lib/db/schema/auth.table.ts",
     "create-theme": "bun scripts/create-theme.ts",
-    "verify-translations": "bun scripts/verify-translations.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it"
   },
   "dependencies": {

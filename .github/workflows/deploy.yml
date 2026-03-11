@@ -42,6 +42,9 @@ jobs:
       - name: Setup Wrangler Config
         run: cp wrangler.example.jsonc wrangler.jsonc
 
+      - name: Compile Paraglide Runtime
+        run: bun run i18n:compile
+
       - name: Run tests
         run: bun run test
 
