@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { Locale } from "@/lib/i18n";
 import { blogConfig } from "@/blog.config";
+import type { Locale } from "@/lib/i18n";
 
 interface EmailLayoutProps {
   children: ReactNode;

@@ -1,7 +1,7 @@
-import type { PostEditorData } from "./types";
-import { m } from "@/paraglide/messages";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
+import type { PostEditorData } from "./types";
 
 interface PostEditorHeaderProps {
   post: PostEditorData;

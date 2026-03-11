@@ -1,12 +1,12 @@
-import { z } from "zod";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { z } from "zod";
+import { TagSelectSchema } from "@/features/tags/tags.schema";
 import type { Post, PostStatus, Tag } from "@/lib/db/schema";
 import { POST_STATUSES, PostsTable } from "@/lib/db/schema";
-import { TagSelectSchema } from "@/features/tags/tags.schema";
 
 // Date fields need to accept both Date objects and ISO strings (for JSON serialization)
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);

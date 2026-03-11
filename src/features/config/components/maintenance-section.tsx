@@ -1,7 +1,7 @@
 import { CacheMaintenance } from "@/features/cache/components/cache-maintenance";
+import { BackupRestoreSection } from "@/features/import-export/components/backup-restore-section";
 import { SearchMaintenance } from "@/features/search/components/search-maintenance";
 import { VersionMaintenance } from "@/features/version/components/version-maintenance";
-import { BackupRestoreSection } from "@/features/import-export/components/backup-restore-section";
 
 export function MaintenanceSection() {
   return (

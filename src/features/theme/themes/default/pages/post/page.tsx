@@ -2,15 +2,15 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUp, Pencil, Share2, Sparkles } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CommentSection } from "../../components/comments/view/comment-section";
-import TableOfContents from "./components/table-of-contents";
-import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
+import { Button } from "@/components/ui/button";
 import type { PostPageProps } from "@/features/theme/contract/pages";
 import { ContentRenderer } from "@/features/theme/themes/default/components/content/content-renderer";
-import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
+import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { CommentSection } from "../../components/comments/view/comment-section";
+import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
+import TableOfContents from "./components/table-of-contents";
 
 export function PostPage({ post }: PostPageProps) {
   const navigate = useNavigate();

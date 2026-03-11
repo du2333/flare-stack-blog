@@ -1,9 +1,9 @@
 import { Check, Loader2, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAdminComments } from "../../hooks/use-comments";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { m } from "@/paraglide/messages";
+import { useAdminComments } from "../../hooks/use-comments";
 
 interface CommentModerationActionsProps {
   commentId: number;

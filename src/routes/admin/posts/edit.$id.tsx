@@ -1,18 +1,18 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import type { PostEditorData } from "@/features/posts/components/post-editor/types";
-import { m } from "@/paraglide/messages";
+import { MEDIA_KEYS } from "@/features/media/queries";
+import { updatePostFn as adminUpdatePostFn } from "@/features/posts/api/posts.admin.api";
 import { PostEditor } from "@/features/posts/components/post-editor";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
-import { updatePostFn as adminUpdatePostFn } from "@/features/posts/api/posts.admin.api";
-import { setPostTagsFn } from "@/features/tags/api/tags.api";
+import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { POSTS_KEYS, postByIdQuery } from "@/features/posts/queries";
+import { setPostTagsFn } from "@/features/tags/api/tags.api";
 import {
   TAGS_KEYS,
   tagsAdminQueryOptions,
   tagsByPostIdQueryOptions,
 } from "@/features/tags/queries";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin/posts/edit/$id")({
   ssr: "data-only",

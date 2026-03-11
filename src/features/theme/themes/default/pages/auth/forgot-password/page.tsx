@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ForgotPasswordForm } from "./form";
 import type { ForgotPasswordPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { ForgotPasswordForm } from "./form";
 
 export function ForgotPasswordPage({
   forgotPasswordForm,

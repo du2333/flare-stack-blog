@@ -1,6 +1,6 @@
-import { getRouteApi } from "@tanstack/react-router";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
 import {
   Check,
   ExternalLink,
@@ -13,19 +13,18 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { FRIEND_LINKS_KEYS, allFriendLinksQuery } from "../../queries";
-import { useAdminFriendLinks } from "../../hooks/use-friend-links";
-import { createCreateFriendLinkSchema } from "../../friend-links.schema";
-import type { CreateFriendLinkInput } from "../../friend-links.schema";
-import type { FriendLinkStatus } from "@/lib/db/schema";
-import { m } from "@/paraglide/messages";
-
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { AdminPagination } from "@/components/admin/admin-pagination";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Input } from "@/components/ui/input";
+import type { FriendLinkStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { CreateFriendLinkInput } from "../../friend-links.schema";
+import { createCreateFriendLinkSchema } from "../../friend-links.schema";
+import { useAdminFriendLinks } from "../../hooks/use-friend-links";
+import { allFriendLinksQuery, FRIEND_LINKS_KEYS } from "../../queries";
 
 interface FriendLinkModerationTableProps {
   status?: FriendLinkStatus;

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { FuwariCommentEditor } from "../editor/comment-editor";
-import { FuwariCommentItem } from "./comment-item";
-import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import type { JSONContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import { FuwariCommentEditor } from "../editor/comment-editor";
+import { FuwariCommentItem } from "./comment-item";
 
 type RootCommentWithUser = RootCommentWithReplyCount;
 

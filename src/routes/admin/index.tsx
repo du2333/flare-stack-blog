@@ -1,4 +1,9 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Activity,
   ArrowRight,
@@ -10,34 +15,27 @@ import {
   RefreshCw,
   Users,
 } from "lucide-react";
-
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-import { z } from "zod";
 import { toast } from "sonner";
-import type {
-  ActivityLogItem,
-  DashboardRange,
-} from "@/features/dashboard/dashboard.schema";
-import { dashboardStatsQuery } from "@/features/dashboard/queries";
-import { useVersionCheck } from "@/features/version/hooks/use-version-check";
+import { z } from "zod";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatBytes, formatTime, formatTimeAgo } from "@/lib/utils";
 import { refreshDashboardCacheFn } from "@/features/dashboard/api/dashboard.api";
+import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
+import { MetricItem } from "@/features/dashboard/components/metric-item";
 import { StatCard } from "@/features/dashboard/components/stat-card";
 import { TrafficChart } from "@/features/dashboard/components/traffic-chart";
-import { MetricItem } from "@/features/dashboard/components/metric-item";
+import type {
+  ActivityLogItem,
+  DashboardRange,
+} from "@/features/dashboard/dashboard.schema";
+import { dashboardStatsQuery } from "@/features/dashboard/queries";
+import { useVersionCheck } from "@/features/version/hooks/use-version-check";
+import { formatBytes, formatTime, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 const SearchSchema = z.object({

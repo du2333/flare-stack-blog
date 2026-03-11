@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { z } from "zod";
 import theme from "@theme";
+import { z } from "zod";
 import { useResetPasswordForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 

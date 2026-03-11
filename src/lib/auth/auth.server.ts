@@ -1,13 +1,13 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
-import type { Locale } from "@/lib/i18n";
+import { renderToStaticMarkup } from "react-dom/server";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
-import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
 import { authConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 async function checkEmailRateLimit(
   env: Env,

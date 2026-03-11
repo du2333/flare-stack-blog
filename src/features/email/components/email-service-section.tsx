@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import type { SystemConfig } from "@/features/config/config.schema";
+import type { Result } from "@/lib/errors";
 import { EmailCredentialsPanel } from "./email-credentials-panel";
 import { EmailDocPanel } from "./email-doc-panel";
 import { EmailNotificationScope } from "./email-notification-scope";
 import { EmailTestToolbar } from "./email-test-toolbar";
-import type { SystemConfig } from "@/features/config/config.schema";
-import type { Result } from "@/lib/errors";
 
 type ConnectionStatus = "IDLE" | "TESTING" | "SUCCESS" | "ERROR";
 

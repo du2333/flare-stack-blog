@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import type { FriendLinkStatus } from "@/lib/db/schema";
-import { FriendLinkModerationTable } from "@/features/friend-links/components/admin/friend-link-moderation-table";
-import { AddFriendLinkModal } from "@/features/friend-links/components/admin/add-friend-link-modal";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { AddFriendLinkModal } from "@/features/friend-links/components/admin/add-friend-link-modal";
+import { FriendLinkModerationTable } from "@/features/friend-links/components/admin/friend-link-moderation-table";
+import type { FriendLinkStatus } from "@/lib/db/schema";
 import { m } from "@/paraglide/messages";
 
 const searchSchema = z.object({

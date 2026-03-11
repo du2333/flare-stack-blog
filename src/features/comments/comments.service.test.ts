@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createAdminTestContext,
   createAuthTestContext,
@@ -6,9 +5,10 @@ import {
   createMockSession,
   seedUser,
 } from "tests/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as CommentService from "@/features/comments/comments.service";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import * as CommentService from "@/features/comments/comments.service";
 import * as EmailData from "@/features/email/data/email.data";
 import * as PostService from "@/features/posts/posts.service";
 import { unwrap } from "@/lib/errors";

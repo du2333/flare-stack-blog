@@ -1,9 +1,9 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { baseMiddleware } from "@/lib/hono/middlewares";
-import { getServiceContext, setCacheHeaders } from "@/lib/hono/helper";
+import { Hono } from "hono";
 import { FindPostBySlugInputSchema } from "@/features/posts/posts.schema";
 import * as PostService from "@/features/posts/posts.service";
+import { getServiceContext, setCacheHeaders } from "@/lib/hono/helper";
+import { baseMiddleware } from "@/lib/hono/middlewares";
 
 const app = new Hono<{ Bindings: Env }>();
 

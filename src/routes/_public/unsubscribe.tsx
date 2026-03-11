@@ -2,12 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
-import { m } from "@/paraglide/messages";
-
 import { Button } from "@/components/ui/button";
 import { unsubscribeByTokenFn } from "@/features/email/api/email.api";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { EMAIL_KEYS } from "@/features/email/queries";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
+import { m } from "@/paraglide/messages";
 
 const unsubscribeSearchSchema = z
   .object({

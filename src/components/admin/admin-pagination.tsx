@@ -1,6 +1,6 @@
 import React from "react";
-import { m } from "@/paraglide/messages";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 interface AdminPaginationProps {
   currentPage: number;

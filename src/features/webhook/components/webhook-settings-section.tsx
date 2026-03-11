@@ -2,15 +2,15 @@ import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { SystemConfig } from "@/features/config/config.schema";
+import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import { m } from "@/paraglide/messages";
 import { WebhookDocPanel } from "./webhook-doc-panel";
 import { WebhookEndpointCard } from "./webhook-endpoint-card";
 import { createWebhookEndpoint } from "./webhook-settings.helpers";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
-import type { SystemConfig } from "@/features/config/config.schema";
-import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { m } from "@/paraglide/messages";
 
 export function WebhookSettingsSection() {
   const [visibleSecrets, setVisibleSecrets] = useState<Record<number, boolean>>(

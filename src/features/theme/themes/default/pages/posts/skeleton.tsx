@@ -1,7 +1,7 @@
-import { INITIAL_TAG_COUNT } from "./page";
-import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
+import { INITIAL_TAG_COUNT } from "./page";
 
 export function PostsPageSkeleton() {
   return (

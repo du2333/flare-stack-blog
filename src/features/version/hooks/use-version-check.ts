@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { updateCheckQuery } from "../queries";
 import { ms } from "@/lib/duration";
 import { m } from "@/paraglide/messages";
+import { updateCheckQuery } from "../queries";
 
 export function useVersionCheck() {
   const { data: updateData } = useQuery(updateCheckQuery);

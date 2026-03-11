@@ -1,13 +1,13 @@
-import type { NotificationEvent } from "@/features/notification/notification.schema";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import * as ConfigService from "@/features/config/service/config.service";
+import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
 import {
   ADMIN_NOTIFICATION_EVENTS,
-  USER_NOTIFICATION_EVENTS,
   notificationEventSchema,
+  USER_NOTIFICATION_EVENTS,
 } from "@/features/notification/notification.schema";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { isNotificationWebhookEventType } from "@/features/webhook/webhook.schema";
-import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 import { serverEnv } from "@/lib/env/server.env";
 
 function isAdminNotificationEvent(

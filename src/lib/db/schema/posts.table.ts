@@ -1,3 +1,5 @@
+import type { JSONContent } from "@tiptap/react";
+import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -5,9 +7,7 @@ import {
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
-import { relations } from "drizzle-orm";
 import { createdAt, id, updatedAt } from "./helper";
-import type { JSONContent } from "@tiptap/react";
 
 export const POST_STATUSES = ["draft", "published"] as const;
 

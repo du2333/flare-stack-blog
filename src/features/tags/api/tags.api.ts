@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import * as AIService from "@/features/ai/ai.service";
 import {
   CreateTagInputSchema,
   DeleteTagInputSchema,
@@ -9,7 +10,6 @@ import {
   UpdateTagInputSchema,
 } from "@/features/tags/tags.schema";
 import * as TagService from "@/features/tags/tags.service";
-import * as AIService from "@/features/ai/ai.service";
 import { adminMiddleware, dbMiddleware } from "@/lib/middlewares";
 
 // ============ Public API ============

@@ -1,10 +1,10 @@
 import { memo, useMemo } from "react";
-import { ExpandableContent } from "./expandable-content";
+import { Button } from "@/components/ui/button";
 import type { CommentWithUser } from "@/features/comments/comments.schema";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn, formatDate } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
+import { ExpandableContent } from "./expandable-content";
 
 interface CommentItemProps {
   comment: CommentWithUser;

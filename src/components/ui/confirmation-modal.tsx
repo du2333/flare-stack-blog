@@ -1,7 +1,7 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
-import { createPortal } from "react-dom";
 import type React from "react";
+import { createPortal } from "react-dom";
 import { m } from "@/paraglide/messages";
 
 interface ConfirmationModalProps {

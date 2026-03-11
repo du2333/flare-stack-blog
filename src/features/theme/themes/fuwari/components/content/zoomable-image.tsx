@@ -1,13 +1,15 @@
 import { ClientOnly } from "@tanstack/react-router";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-interface ZoomableImageProps extends Omit<
-  React.ImgHTMLAttributes<HTMLImageElement>,
-  "src" | "width" | "height"
-> {
+interface ZoomableImageProps
+  extends Omit<
+    React.ImgHTMLAttributes<HTMLImageElement>,
+    "src" | "width" | "height"
+  > {
   src?: string;
   alt?: string;
   width?: number;

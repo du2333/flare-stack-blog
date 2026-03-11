@@ -1,5 +1,5 @@
-import type { NavOption } from "@/features/theme/contract/layouts";
 import { blogConfig } from "@/blog.config";
+import type { NavOption } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
 
 interface FooterProps {

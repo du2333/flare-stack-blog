@@ -1,4 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { isSSR } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 import {
   getTagsAdminFn,
   getTagsByPostIdFn,
@@ -6,9 +9,6 @@ import {
   getTagsWithCountAdminFn,
 } from "../api/tags.api";
 import type { GetTagsInput } from "../tags.schema";
-import { apiClient } from "@/lib/api-client";
-import { isSSR } from "@/lib/utils";
-import { m } from "@/paraglide/messages";
 
 export const TAGS_KEYS = {
   all: ["tags"] as const,

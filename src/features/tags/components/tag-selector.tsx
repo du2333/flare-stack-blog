@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Hash, Loader2, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Tag } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { createTagFn } from "@/features/tags/api/tags.api";
 import { TAGS_KEYS, tagsAdminQueryOptions } from "@/features/tags/queries";
+import type { Tag } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

@@ -1,6 +1,6 @@
-import { Output, generateText } from "ai";
-import { z } from "zod";
+import { generateText, Output } from "ai";
 import { createWorkersAI } from "workers-ai-provider";
+import { z } from "zod";
 
 export interface ModerationResult {
   safe: boolean;

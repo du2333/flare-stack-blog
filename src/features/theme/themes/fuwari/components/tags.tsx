@@ -2,8 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { tagsQueryOptions } from "@/features/tags/queries";
 import { Skeleton } from "@/components/ui/skeleton";
+import { tagsQueryOptions } from "@/features/tags/queries";
 import { m } from "@/paraglide/messages";
 
 export function TagsSkeleton() {

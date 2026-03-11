@@ -1,7 +1,7 @@
-import { alias } from "drizzle-orm/sqlite-core";
 import { and, count, desc, eq, like, sql } from "drizzle-orm";
-import type { CommentStatus } from "@/lib/db/schema";
+import { alias } from "drizzle-orm/sqlite-core";
 import { buildCommentWhereClause } from "@/features/comments/data/helper";
+import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable, PostsTable, user } from "@/lib/db/schema";
 
 const DEFAULT_PAGE_SIZE = 20;

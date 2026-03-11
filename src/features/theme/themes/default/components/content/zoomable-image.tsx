@@ -4,10 +4,11 @@ import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-interface ZoomableImageProps extends Omit<
-  React.ImgHTMLAttributes<HTMLImageElement>,
-  "src" | "width" | "height"
-> {
+interface ZoomableImageProps
+  extends Omit<
+    React.ImgHTMLAttributes<HTMLImageElement>,
+    "src" | "width" | "height"
+  > {
   className?: string;
   showHint?: boolean;
   src?: string;

@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LanguageSwitcher } from "./language-switcher";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
-import { m } from "@/paraglide/messages";
+import { blogConfig } from "@/blog.config";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import { blogConfig } from "@/blog.config";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
+import { LanguageSwitcher } from "./language-switcher";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;

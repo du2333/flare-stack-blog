@@ -1,11 +1,11 @@
-import { z } from "zod";
+import type { JSONContent } from "@tiptap/react";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { z } from "zod";
 import type { CommentStatus } from "@/lib/db/schema";
-import type { JSONContent } from "@tiptap/react";
 import { CommentsTable } from "@/lib/db/schema";
 
 // Date fields need to accept both Date objects and ISO strings (for JSON serialization)

@@ -1,10 +1,10 @@
+import type { Editor } from "@tiptap/react";
 import { AlignLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Editor } from "@tiptap/react";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
-import { m } from "@/paraglide/messages";
-import { cn } from "@/lib/utils";
 import { useActiveTOC } from "@/hooks/use-active-toc";
+import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function EditorTableOfContents({ editor }: { editor: Editor }) {
   const [items, setItems] = useState<Array<TableOfContentsItem>>([]);

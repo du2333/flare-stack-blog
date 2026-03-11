@@ -1,15 +1,15 @@
+import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getLanguages } from "./languages";
-import type { NodeViewProps } from "@tiptap/react";
+import DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   getHighlighter,
   loadLanguage,
   themes as shikiThemes,
 } from "@/lib/shiki";
-import DropdownMenu from "@/components/ui/dropdown-menu";
 import { m } from "@/paraglide/messages";
+import { getLanguages } from "./languages";
 
 export function CodeBlockView({
   node,

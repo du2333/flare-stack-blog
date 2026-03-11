@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createCommentFn, deleteCommentFn } from "../api/comments.public.api";
+import { COMMENTS_KEYS } from "@/features/comments/queries";
+import { m } from "@/paraglide/messages";
 import {
   adminDeleteCommentFn,
   moderateCommentFn,
 } from "../api/comments.admin.api";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
-import { m } from "@/paraglide/messages";
+import { createCommentFn, deleteCommentFn } from "../api/comments.public.api";
 
 export function useComments(postId?: number) {
   const queryClient = useQueryClient();

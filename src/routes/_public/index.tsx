@@ -1,8 +1,8 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
-import { featuredPostsQuery } from "@/features/posts/queries";
 import { siteDomainQuery } from "@/features/config/queries";
+import { featuredPostsQuery } from "@/features/posts/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 
 const { featuredPostsLimit } = theme.config.home;

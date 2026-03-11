@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { z } from "zod";
 import theme from "@theme";
+import { z } from "zod";
 import { blogConfig } from "@/blog.config";
-import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import { siteDomainQuery } from "@/features/config/queries";
+import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
   buildCanonicalUrl,

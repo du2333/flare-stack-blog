@@ -1,5 +1,5 @@
-import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import StarterKit from "@tiptap/starter-kit";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
 import { m } from "@/paraglide/messages";
 

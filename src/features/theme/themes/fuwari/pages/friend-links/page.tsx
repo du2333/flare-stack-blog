@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { FriendCard } from "./components/friend-card";
 import type { FriendLinksPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { FriendCard } from "./components/friend-card";
 
 export function FriendLinksPage({ links }: FriendLinksPageProps) {
   return (

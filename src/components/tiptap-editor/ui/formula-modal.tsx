@@ -1,11 +1,11 @@
 import { ClientOnly } from "@tanstack/react-router";
+import katex from "katex";
 import { Sigma, SquareFunction, X } from "lucide-react";
+import type React from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import katex from "katex";
-import type React from "react";
-import { m } from "@/paraglide/messages";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { m } from "@/paraglide/messages";
 
 export type FormulaMode = "inline" | "block";
 

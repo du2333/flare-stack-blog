@@ -3,8 +3,8 @@ import {
   defineWorkersConfig,
   readD1Migrations,
 } from "@cloudflare/vitest-pool-workers/config";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import { loadEnv } from "vite";
+import viteTsConfigPaths from "vite-tsconfig-paths";
 
 export default defineWorkersConfig(async () => {
   const migrationsPath = path.join(__dirname, "migrations");

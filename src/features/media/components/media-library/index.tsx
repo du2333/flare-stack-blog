@@ -1,5 +1,9 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { formatBytes } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 import {
   MediaGrid,
   MediaPreviewModal,
@@ -8,10 +12,6 @@ import {
 } from "./components";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import type { MediaAsset } from "./types";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { formatBytes } from "@/lib/utils";
-import { m } from "@/paraglide/messages";
 
 export function MediaLibrary() {
   // Logic Hooks

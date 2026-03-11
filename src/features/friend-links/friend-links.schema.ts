@@ -1,7 +1,7 @@
-import { z } from "zod";
 import { createSelectSchema } from "drizzle-zod";
-import type { Messages } from "@/lib/i18n";
+import { z } from "zod";
 import { FriendLinksTable } from "@/lib/db/schema";
+import type { Messages } from "@/lib/i18n";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 

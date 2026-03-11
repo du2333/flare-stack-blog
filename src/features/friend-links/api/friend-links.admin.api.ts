@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { adminMiddleware } from "@/lib/middlewares";
 import {
   ApproveFriendLinkInputSchema,
   CreateFriendLinkInputSchema,
@@ -8,7 +9,6 @@ import {
   UpdateFriendLinkInputSchema,
 } from "../friend-links.schema";
 import * as FriendLinkService from "../friend-links.service";
-import { adminMiddleware } from "@/lib/middlewares";
 
 export const getAllFriendLinksFn = createServerFn()
   .middleware([adminMiddleware])

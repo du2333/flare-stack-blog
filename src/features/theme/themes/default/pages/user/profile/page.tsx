@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2, Terminal } from "lucide-react";
-import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

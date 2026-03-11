@@ -1,6 +1,6 @@
 import { toast } from "sonner";
-import { parseRequestError } from "./request-errors";
 import { m } from "@/paraglide/messages";
+import { parseRequestError } from "./request-errors";
 
 export function handleServerError(error: unknown): void {
   const parsed = parseRequestError(error);

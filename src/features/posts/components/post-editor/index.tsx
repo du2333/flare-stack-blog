@@ -1,18 +1,18 @@
-import { useBlocker } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
-import { useAutoSave, usePostActions } from "./hooks";
-import { EditorTableOfContents } from "./editor-table-of-contents";
-import { PostEditorHeader } from "./post-editor-header";
-import { PostEditorMetadata } from "./post-editor-metadata";
-import { PostEditorStatusBar } from "./post-editor-status-bar";
+import { useBlocker } from "@tanstack/react-router";
 import type { JSONContent, Editor as TiptapEditor } from "@tiptap/react";
-import type { PostEditorData, PostEditorProps } from "./types";
-import { m } from "@/paraglide/messages";
-import { tagsAdminQueryOptions } from "@/features/tags/queries";
+import { useCallback, useState } from "react";
 import { Editor } from "@/components/tiptap-editor";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
+import { tagsAdminQueryOptions } from "@/features/tags/queries";
+import { m } from "@/paraglide/messages";
+import { EditorTableOfContents } from "./editor-table-of-contents";
+import { useAutoSave, usePostActions } from "./hooks";
+import { PostEditorHeader } from "./post-editor-header";
+import { PostEditorMetadata } from "./post-editor-metadata";
+import { PostEditorStatusBar } from "./post-editor-status-bar";
+import type { PostEditorData, PostEditorProps } from "./types";
 
 export function PostEditor({ initialData, onSave }: PostEditorProps) {
   // Initialize post state from initialData (always provided)

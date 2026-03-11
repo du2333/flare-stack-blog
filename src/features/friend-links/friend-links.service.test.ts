@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createAdminTestContext,
   createAuthTestContext,
@@ -7,9 +6,10 @@ import {
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
-import * as FriendLinkService from "./friend-links.service";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
+import * as FriendLinkService from "./friend-links.service";
 
 describe("FriendLinkService", () => {
   let adminContext: ReturnType<typeof createAdminTestContext>;

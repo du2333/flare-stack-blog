@@ -1,10 +1,10 @@
 import { ArrowUpDown, Filter, Search, X } from "lucide-react";
-import { STATUS_FILTERS } from "../types";
-import type { SortDirection, SortField, StatusFilter } from "../types";
-import { m } from "@/paraglide/messages";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Dropdown from "@/components/ui/dropdown";
+import { Input } from "@/components/ui/input";
+import { m } from "@/paraglide/messages";
+import type { SortDirection, SortField, StatusFilter } from "../types";
+import { STATUS_FILTERS } from "../types";
 
 interface PostsToolbarProps {
   searchTerm: string;

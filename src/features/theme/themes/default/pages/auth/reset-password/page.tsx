@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ResetPasswordForm } from "./form";
 import type { ResetPasswordPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { ResetPasswordForm } from "./form";
 
 export function ResetPasswordPage({
   resetPasswordForm,

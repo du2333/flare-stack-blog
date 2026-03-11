@@ -1,4 +1,6 @@
+import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
+import type { LucideIcon } from "lucide-react";
 import {
   Bold,
   Code,
@@ -10,8 +12,6 @@ import {
   Underline as UnderlineIcon,
   Undo,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
-import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";

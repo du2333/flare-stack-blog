@@ -1,8 +1,8 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import theme from "@theme";
 import { emailConfiguredQuery, sessionQuery } from "@/features/auth/queries";
-import { CACHE_CONTROL } from "@/lib/constants";
 import { useNavigateBack } from "@/hooks/use-navigate-back";
+import { CACHE_CONTROL } from "@/lib/constants";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async ({ context, location }) => {

@@ -1,18 +1,18 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Link, getRouteApi } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
-import { toast } from "sonner";
-import { FuwariCommentEditor } from "../editor/comment-editor";
-import FuwariConfirmationModal from "./confirmation-modal";
-import { FuwariCommentList } from "./comment-list";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { JSONContent } from "@tiptap/react";
-import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
-import { useComments } from "@/features/comments/hooks/use-comments";
-import { authClient } from "@/lib/auth/auth.client";
+import { LogIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useComments } from "@/features/comments/hooks/use-comments";
+import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
+import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import { FuwariCommentEditor } from "../editor/comment-editor";
+import { FuwariCommentList } from "./comment-list";
+import FuwariConfirmationModal from "./confirmation-modal";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 

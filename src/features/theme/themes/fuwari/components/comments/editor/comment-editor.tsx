@@ -1,13 +1,13 @@
-import { useCallback, useState } from "react";
-import { Loader2, Send } from "lucide-react";
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
-import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
-import { FuwariInsertModal } from "./comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
-import type { ModalType } from "./comment-insert-modal";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { Loader2, Send } from "lucide-react";
+import { useCallback, useState } from "react";
 import { getCommentExtensions } from "@/features/comments/components/editor/config";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 import { m } from "@/paraglide/messages";
+import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
+import type { ModalType } from "./comment-insert-modal";
+import { FuwariInsertModal } from "./comment-insert-modal";
 
 interface CommentEditorProps {
   onSubmit: (content: JSONContent) => Promise<void>;

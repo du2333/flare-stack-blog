@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { config } from "../../../config";
+import { Skeleton } from "@/components/ui/skeleton";
 import { relatedPostsQuery } from "@/features/posts/queries";
 import { formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
+import { config } from "../../../config";
 
 interface RelatedPostsProps {
   slug: string;

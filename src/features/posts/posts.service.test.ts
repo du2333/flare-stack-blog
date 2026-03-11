@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:test";
 import {
   createAdminTestContext,
@@ -6,9 +5,10 @@ import {
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
+import { beforeEach, describe, expect, it } from "vitest";
+import * as CacheService from "@/features/cache/cache.service";
 import * as PostService from "@/features/posts/posts.service";
 import * as TagService from "@/features/tags/tags.service";
-import * as CacheService from "@/features/cache/cache.service";
 import { unwrap } from "@/lib/errors";
 
 describe("PostService", () => {

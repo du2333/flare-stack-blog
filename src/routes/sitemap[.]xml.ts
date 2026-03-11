@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { and, desc, eq, lte } from "drizzle-orm";
-import { PostsTable } from "@/lib/db/schema";
 import { getDb } from "@/lib/db";
+import { PostsTable } from "@/lib/db/schema";
 
 export const Route = createFileRoute("/sitemap.xml")({
   server: {

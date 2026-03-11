@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createWebhookBody } from "./webhook.consumer";
 import type { NotificationEvent } from "@/features/notification/notification.schema";
+import { createWebhookBody } from "./webhook.consumer";
 
 const commentEvent: NotificationEvent = {
   type: "comment.admin_root_created",

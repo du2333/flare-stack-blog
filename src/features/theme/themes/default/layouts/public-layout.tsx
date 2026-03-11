@@ -1,9 +1,9 @@
 import { useState } from "react";
+import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackgroundLayer } from "../components/background-layer";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
-import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 
 export function PublicLayout({
   children,

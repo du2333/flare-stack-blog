@@ -1,9 +1,9 @@
-import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import { MathFormula } from "@/components/content/math-formula";
+import { extensions } from "@/features/posts/editor/config";
 import { CodeBlock } from "@/features/theme/themes/fuwari/components/content/code-block";
 import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
-import { extensions } from "@/features/posts/editor/config";
 
 export function renderReact(content: JSONContent) {
   return renderToReactElement({

@@ -9,21 +9,21 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { m } from "@/paraglide/messages";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 import {
   useExportProgress,
   useImportProgress,
   useStartExport,
   useUploadForImport,
 } from "@/features/import-export/queries/import-export.queries";
-import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 import { ms } from "@/lib/duration";
+import { m } from "@/paraglide/messages";
 
 const EXPORT_TOAST_ID = "export-progress";
 const IMPORT_TOAST_ID = "import-progress";
@@ -182,7 +182,6 @@ export function BackupRestoreSection() {
           if (result.error) {
             const reason = result.error.reason;
             switch (reason) {
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               case "WORKFLOW_CREATE_FAILED":
                 toast.error(m.settings_maintenance_backup_toast_start_fail(), {
                   description:

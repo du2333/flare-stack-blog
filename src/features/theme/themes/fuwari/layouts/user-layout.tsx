@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Home, LogIn } from "lucide-react";
-import { PublicLayout } from "./public-layout";
 import type { UserLayoutProps } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
+import { PublicLayout } from "./public-layout";
 
 export function UserLayout({
   isAuthenticated,

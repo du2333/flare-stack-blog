@@ -1,9 +1,9 @@
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { TurnstileProps } from "@/components/common/turnstile";
 import type {
   FriendLinkWithUser,
   SubmitFriendLinkInput,
 } from "@/features/friend-links/friend-links.schema";
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import type { TurnstileProps } from "@/components/common/turnstile";
 
 export interface FriendLinksPageProps {
   links: Array<Omit<FriendLinkWithUser, "createdAt" | "updatedAt">>;

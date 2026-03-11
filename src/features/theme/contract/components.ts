@@ -1,3 +1,9 @@
+import type { ThemeConfig } from "./config";
+import type {
+  AuthLayoutProps,
+  PublicLayoutProps,
+  UserLayoutProps,
+} from "./layouts";
 import type {
   ForgotPasswordPageProps,
   FriendLinksPageProps,
@@ -12,12 +18,6 @@ import type {
   SubmitFriendLinkPageProps,
   VerifyEmailPageProps,
 } from "./pages";
-import type {
-  AuthLayoutProps,
-  PublicLayoutProps,
-  UserLayoutProps,
-} from "./layouts";
-import type { ThemeConfig } from "./config";
 
 /**
  * 主题契约 — 组件接口

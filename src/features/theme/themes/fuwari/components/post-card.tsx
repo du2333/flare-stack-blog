@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Calendar, ChevronRight, Tag } from "lucide-react";
 import type { PostItem } from "@/features/posts/posts.schema";
-import { m } from "@/paraglide/messages";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface PostCardProps {
   post: PostItem;

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { RegisterForm } from "./form";
 import type { RegisterPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { RegisterForm } from "./form";
 
 export function RegisterPage({
   registerForm,

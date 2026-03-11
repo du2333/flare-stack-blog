@@ -1,5 +1,5 @@
-import type { ThemeConfig } from "@/features/theme/contract/config";
 import { blogConfig } from "@/blog.config";
+import type { ThemeConfig } from "@/features/theme/contract/config";
 
 export const config: ThemeConfig = {
   home: {

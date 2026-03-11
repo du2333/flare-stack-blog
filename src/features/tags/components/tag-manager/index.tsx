@@ -1,23 +1,23 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown, Check, Hash, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import type { CreateTagInput } from "@/features/tags/tags.schema";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Input } from "@/components/ui/input";
 import {
   createTagFn,
   deleteTagFn,
   updateTagFn,
 } from "@/features/tags/api/tags.api";
-import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import {
   TAGS_KEYS,
   tagsWithCountAdminQueryOptions,
 } from "@/features/tags/queries";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Input } from "@/components/ui/input";
+import type { CreateTagInput } from "@/features/tags/tags.schema";
+import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

@@ -1,16 +1,15 @@
 import { ChevronDown, Info } from "lucide-react";
 import { useCallback, useMemo } from "react";
-
-import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
-import type { WebhookTranslationKey } from "@/features/webhook/webhook.helpers";
 import type { NotificationEvent } from "@/features/notification/notification.schema";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
-import { m } from "@/paraglide/messages";
+import type { WebhookTranslationKey } from "@/features/webhook/webhook.helpers";
 import {
-  WEBHOOK_EXAMPLE_LABELS,
   createNotificationExampleEvent,
+  WEBHOOK_EXAMPLE_LABELS,
 } from "@/features/webhook/webhook.helpers";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
+import { m } from "@/paraglide/messages";
+import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
 
 interface NotificationDocField {
   path: string;

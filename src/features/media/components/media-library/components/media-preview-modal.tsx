@@ -17,13 +17,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getLinkedPostsFn } from "@/features/media/api/media.api";
+import type { MediaAsset } from "@/features/media/components/media-library/types";
+import { MEDIA_KEYS } from "@/features/media/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
-import { MEDIA_KEYS } from "@/features/media/queries";
 import { m } from "@/paraglide/messages";
 
 interface MediaPreviewModalProps {

@@ -1,14 +1,14 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
+import type React from "react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
-import type { UploadItem } from "../types";
-import type React from "react";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FILE_SIZE,
 } from "@/features/media/media.schema";
 import { m } from "@/paraglide/messages";
+import type { UploadItem } from "../types";
 
 interface UploadModalProps {
   isOpen: boolean;

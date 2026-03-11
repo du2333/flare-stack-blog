@@ -2,10 +2,10 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import type { Messages } from "@/lib/i18n";
 import { authClient } from "@/lib/auth/auth.client";
-import { m } from "@/paraglide/messages";
 import { getPasswordAuthErrorMessage } from "@/lib/auth/auth-errors";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 const createPasswordSchema = (messages: Messages) =>
   z

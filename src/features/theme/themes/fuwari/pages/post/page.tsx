@@ -1,15 +1,15 @@
+import { Link } from "@tanstack/react-router";
 import { Clock, FileText, Pencil } from "lucide-react";
 import { Suspense } from "react";
-import { Link } from "@tanstack/react-router";
-import TableOfContents from "./components/table-of-contents";
-import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
-import { PostMeta } from "./components/post-meta";
-import { PostSummary } from "./components/post-summary";
 import type { PostPageProps } from "@/features/theme/contract/pages";
-import { ContentRenderer } from "@/features/theme/themes/fuwari/components/content/content-renderer";
 import { FuwariCommentSection } from "@/features/theme/themes/fuwari/components/comments/view/comment-section";
+import { ContentRenderer } from "@/features/theme/themes/fuwari/components/content/content-renderer";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import { PostMeta } from "./components/post-meta";
+import { PostSummary } from "./components/post-summary";
+import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
+import TableOfContents from "./components/table-of-contents";
 
 export function PostPage({ post }: PostPageProps) {
   const { data: session } = authClient.useSession();

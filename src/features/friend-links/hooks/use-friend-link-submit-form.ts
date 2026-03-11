@@ -1,10 +1,10 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useForm } from "react-hook-form";
-import { createSubmitFriendLinkSchema } from "../friend-links.schema";
-import { useFriendLinks } from "./use-friend-links";
-import type { SubmitFriendLinkInput } from "../friend-links.schema";
 import { useTurnstile } from "@/components/common/turnstile";
 import { m } from "@/paraglide/messages";
+import type { SubmitFriendLinkInput } from "../friend-links.schema";
+import { createSubmitFriendLinkSchema } from "../friend-links.schema";
+import { useFriendLinks } from "./use-friend-links";
 
 export function useFriendLinkSubmitForm(defaultEmail?: string) {
   const { submit, isSubmitting } = useFriendLinks();

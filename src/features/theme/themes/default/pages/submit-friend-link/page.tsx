@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Terminal } from "lucide-react";
-import { FriendLinkSubmitForm } from "./form";
 import type { SubmitFriendLinkPageProps } from "@/features/theme/contract/pages/friend-links";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { FriendLinkSubmitForm } from "./form";
 
 export function SubmitFriendLinkPage(props: SubmitFriendLinkPageProps) {
   const { myLinks, form } = props;

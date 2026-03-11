@@ -1,22 +1,22 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Hammer, Loader2, Mail, Webhook } from "lucide-react";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MaintenanceSection } from "@/features/config/components/maintenance-section";
+import { SectionSkeleton } from "@/features/config/components/settings-skeleton";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
   DEFAULT_CONFIG,
   SystemConfigSchema,
 } from "@/features/config/config.schema";
-import { EmailServiceSection } from "@/features/email/components/email-service-section";
-import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
-import { MaintenanceSection } from "@/features/config/components/maintenance-section";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
+import { EmailServiceSection } from "@/features/email/components/email-service-section";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
-import { SectionSkeleton } from "@/features/config/components/settings-skeleton";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin/settings/")({

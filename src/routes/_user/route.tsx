@@ -1,14 +1,14 @@
-import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import theme from "@theme";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import theme from "@theme";
-import { m } from "@/paraglide/messages";
 import { ErrorPage } from "@/components/common/error-page";
-import { CACHE_CONTROL } from "@/lib/constants";
 import { AUTH_KEYS, sessionQuery } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
+import { CACHE_CONTROL } from "@/lib/constants";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_user")({
   loader: async ({ context }) => {

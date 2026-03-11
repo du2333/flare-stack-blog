@@ -13,14 +13,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { FileRoutesByTo } from "@/routeTree.gen";
+import { blogConfig } from "@/blog.config";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { authClient } from "@/lib/auth/auth.client";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import { authClient } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
-import { blogConfig } from "@/blog.config";
 import { m } from "@/paraglide/messages";
+import type { FileRoutesByTo } from "@/routeTree.gen";
 
 interface NavItem {
   path: keyof FileRoutesByTo;

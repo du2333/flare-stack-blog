@@ -1,7 +1,7 @@
-import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
-import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import { getCommentExtensions } from "@/features/comments/components/editor/config";
+import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
 
 /**
  * Fuwari comment renderer — uses commentExtensions with Fuwari's ImageDisplay.

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export function MetricItem({

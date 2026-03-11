@@ -5,15 +5,15 @@ import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import type { Messages } from "@/lib/i18n";
-import { m } from "@/paraglide/messages";
+import { AUTH_KEYS } from "@/features/auth/queries";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
-import { AUTH_KEYS } from "@/features/auth/queries";
 import {
   getLoginAuthErrorMessage,
   isEmailNotVerifiedError,
 } from "@/lib/auth/auth-errors";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 const createLoginSchema = (messages: Messages) =>
   z.object({

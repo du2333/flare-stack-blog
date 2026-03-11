@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
-import { FriendLinkCard } from "./friend-link-card";
 import type { FriendLinksPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { FriendLinkCard } from "./friend-link-card";
 
 export function FriendLinksPage({ links }: FriendLinksPageProps) {
   return (

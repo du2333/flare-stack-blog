@@ -1,7 +1,7 @@
+import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
-import type { NodeViewProps } from "@tiptap/react";
 import { m } from "@/paraglide/messages";
 
 export function ImageBlock({

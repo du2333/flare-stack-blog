@@ -1,21 +1,20 @@
-import { Link, getRouteApi } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi, Link } from "@tanstack/react-router";
+import type { JSONContent } from "@tiptap/react";
 import { AlertTriangle, Loader2, MessageSquareOff } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { COMMENTS_KEYS, allCommentsQuery } from "../../queries";
-import { useAdminComments } from "../../hooks/use-comments";
-
-import { CommentModerationActions } from "./comment-moderation-actions";
-import { UserHoverCard } from "./user-hover-card";
-import type { JSONContent } from "@tiptap/react";
-import type { CommentStatus } from "@/lib/db/schema";
-import { ExpandableContent } from "@/features/theme/themes/default/components/comments/view/expandable-content";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AdminPagination } from "@/components/admin/admin-pagination";
+import { ExpandableContent } from "@/features/theme/themes/default/components/comments/view/expandable-content";
+import type { CommentStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { useAdminComments } from "../../hooks/use-comments";
+import { allCommentsQuery, COMMENTS_KEYS } from "../../queries";
+import { CommentModerationActions } from "./comment-moderation-actions";
+import { UserHoverCard } from "./user-hover-card";
 
 interface CommentModerationTableProps {
   status?: CommentStatus;

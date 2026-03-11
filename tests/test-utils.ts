@@ -4,8 +4,8 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { vi } from "vitest";
-import * as schema from "@/lib/db/schema";
 import { getDb } from "@/lib/db";
+import * as schema from "@/lib/db/schema";
 
 export function createTestDb() {
   return getDb(env);

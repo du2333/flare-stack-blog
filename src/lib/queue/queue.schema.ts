@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 
 export const emailMessageSchema = z.object({
   type: z.literal("EMAIL"),

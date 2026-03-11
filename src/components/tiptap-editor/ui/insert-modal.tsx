@@ -8,14 +8,14 @@ import {
   Search,
   X,
 } from "lucide-react";
+import type React from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { MediaAsset } from "@/features/media/components/media-library/types";
-import type React from "react";
-import { m } from "@/paraglide/messages";
 import { useMediaPicker } from "@/features/media/components/media-library/hooks";
-import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
+import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { m } from "@/paraglide/messages";
 
 export type ModalType = "LINK" | "IMAGE" | null;
 

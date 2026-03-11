@@ -1,11 +1,11 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { getUserStatsFn } from "@/features/comments/api/comments.admin.api";
+import { COMMENTS_KEYS } from "@/features/comments/queries";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

@@ -27,7 +27,6 @@ export function ThemeToggle({ className }: { className?: string }) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!ref.current || !document.startViewTransition || isReducedMotion) {
       setTheme(nextTheme);
       return;

@@ -1,12 +1,11 @@
 import { ClientOnly, useNavigate } from "@tanstack/react-router";
 import { Edit3, MoreVertical, Trash2 } from "lucide-react";
-import type { PostListItem } from "../types";
-import { m } from "@/paraglide/messages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Dropdown from "@/components/ui/dropdown";
-
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { PostListItem } from "../types";
 
 interface PostRowProps {
   post: PostListItem;

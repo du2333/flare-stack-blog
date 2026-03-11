@@ -1,6 +1,6 @@
 import { Github, Mail, Rss, Terminal } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { blogConfig } from "@/blog.config";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 
 export function HomePageSkeleton() {

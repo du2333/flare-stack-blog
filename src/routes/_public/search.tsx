@@ -1,8 +1,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import theme from "@theme";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import theme from "@theme";
 import {
   searchDocsQueryOptions,
   searchMetaQuery,

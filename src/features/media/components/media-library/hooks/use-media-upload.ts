@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { UploadItem } from "../types";
 import { uploadImageFn } from "@/features/media/api/media.api";
 import { MEDIA_KEYS } from "@/features/media/queries";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import type { UploadItem } from "../types";
 
 export function useMediaUpload() {
   const queryClient = useQueryClient();

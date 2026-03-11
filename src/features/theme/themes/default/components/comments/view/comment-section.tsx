@@ -1,20 +1,20 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Link, getRouteApi } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
-import { toast } from "sonner";
-import { CommentList } from "./comment-list";
-import { CommentEditor } from "./comment-editor";
-import { CommentSectionSkeleton } from "./comment-section-skeleton";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { JSONContent } from "@tiptap/react";
+import { LogIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useComments } from "@/features/comments/hooks/use-comments";
 import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { CommentEditor } from "./comment-editor";
+import { CommentList } from "./comment-list";
+import { CommentSectionSkeleton } from "./comment-section-skeleton";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 

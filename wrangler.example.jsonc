@@ -5,79 +5,79 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/server.ts",
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
   "keep_vars": true,
   "routes": [
     {
       "pattern": "DOMAIN_PLACEHOLDER",
-      "custom_domain": true,
-    },
+      "custom_domain": true
+    }
   ],
   "d1_databases": [
     {
       "binding": "DB",
       "database_id": "D1_DATABASE_ID",
       "migrations_dir": "migrations",
-      "remote": true,
-    },
+      "remote": true
+    }
   ],
   "r2_buckets": [
     {
       "bucket_name": "bucket-name-placeholder",
       "binding": "R2",
-      "remote": true,
-    },
+      "remote": true
+    }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
       "id": "KV_NAMESPACE_ID",
-      "remote": true,
-    },
+      "remote": true
+    }
   ],
   "workflows": [
     {
       "name": "post-process-workflow",
       "binding": "POST_PROCESS_WORKFLOW",
-      "class_name": "PostProcessWorkflow",
+      "class_name": "PostProcessWorkflow"
     },
     {
       "name": "comment-moderation-workflow",
       "binding": "COMMENT_MODERATION_WORKFLOW",
-      "class_name": "CommentModerationWorkflow",
+      "class_name": "CommentModerationWorkflow"
     },
     {
       "name": "scheduled-publish-workflow",
       "binding": "SCHEDULED_PUBLISH_WORKFLOW",
-      "class_name": "ScheduledPublishWorkflow",
+      "class_name": "ScheduledPublishWorkflow"
     },
     {
       "name": "export-workflow",
       "binding": "EXPORT_WORKFLOW",
-      "class_name": "ExportWorkflow",
+      "class_name": "ExportWorkflow"
     },
     {
       "name": "import-workflow",
       "binding": "IMPORT_WORKFLOW",
-      "class_name": "ImportWorkflow",
-    },
+      "class_name": "ImportWorkflow"
+    }
   ],
   "durable_objects": {
     "bindings": [
       {
         "name": "RATE_LIMITER",
-        "class_name": "RateLimiter",
+        "class_name": "RateLimiter"
       },
       {
         "name": "PASSWORD_HASHER",
-        "class_name": "PasswordHasher",
-      },
-    ],
+        "class_name": "PasswordHasher"
+      }
+    ]
   },
   "ai": {
     "binding": "AI",
-    "remote": true,
+    "remote": true
   },
   "queues": {
     "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
@@ -86,19 +86,19 @@
         "queue": "blog-queue",
         "max_batch_size": 10,
         "max_batch_timeout": 5,
-        "max_retries": 3,
-      },
-    ],
+        "max_retries": 3
+      }
+    ]
   },
   "migrations": [
     {
       "tag": "rate-limiter-v1",
-      "new_sqlite_classes": ["RateLimiter"],
+      "new_sqlite_classes": ["RateLimiter"]
     },
     {
       "tag": "password-hasher-v1",
-      "new_sqlite_classes": ["PasswordHasher"],
-    },
+      "new_sqlite_classes": ["PasswordHasher"]
+    }
   ],
   "env": {
     "test": {
@@ -106,59 +106,59 @@
         "bindings": [
           {
             "name": "RATE_LIMITER",
-            "class_name": "RateLimiter",
+            "class_name": "RateLimiter"
           },
           {
             "name": "PASSWORD_HASHER",
-            "class_name": "PasswordHasher",
-          },
-        ],
+            "class_name": "PasswordHasher"
+          }
+        ]
       },
       "kv_namespaces": [
         {
-          "binding": "KV",
-        },
+          "binding": "KV"
+        }
       ],
       "r2_buckets": [
         {
-          "binding": "R2",
-        },
+          "binding": "R2"
+        }
       ],
       "d1_databases": [
         {
-          "binding": "DB",
-        },
+          "binding": "DB"
+        }
       ],
       "workflows": [
         {
           "name": "post-process-workflow",
           "binding": "POST_PROCESS_WORKFLOW",
-          "class_name": "PostProcessWorkflow",
+          "class_name": "PostProcessWorkflow"
         },
         {
           "name": "comment-moderation-workflow",
           "binding": "COMMENT_MODERATION_WORKFLOW",
-          "class_name": "CommentModerationWorkflow",
+          "class_name": "CommentModerationWorkflow"
         },
         {
           "name": "scheduled-publish-workflow",
           "binding": "SCHEDULED_PUBLISH_WORKFLOW",
-          "class_name": "ScheduledPublishWorkflow",
+          "class_name": "ScheduledPublishWorkflow"
         },
         {
           "name": "export-workflow",
           "binding": "EXPORT_WORKFLOW",
-          "class_name": "ExportWorkflow",
+          "class_name": "ExportWorkflow"
         },
         {
           "name": "import-workflow",
           "binding": "IMPORT_WORKFLOW",
-          "class_name": "ImportWorkflow",
-        },
+          "class_name": "ImportWorkflow"
+        }
       ],
       "queues": {
-        "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
-      },
-    },
-  },
+        "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }]
+      }
+    }
+  }
 }

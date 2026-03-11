@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import type { NotificationEvent } from "@/features/notification/notification.schema";
-import type { EmailMessage } from "@/lib/queue/queue.schema";
-import type { Locale } from "@/lib/i18n";
 import { AdminNotificationEmail } from "@/features/email/templates/AdminNotificationEmail";
 import { FriendLinkAdminNotificationEmail } from "@/features/email/templates/FriendLinkAdminNotificationEmail";
 import { FriendLinkResultNotificationEmail } from "@/features/email/templates/FriendLinkResultNotificationEmail";
 import { ReplyNotificationEmail } from "@/features/email/templates/ReplyNotificationEmail";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import type { Locale } from "@/lib/i18n";
+import type { EmailMessage } from "@/lib/queue/queue.schema";
 import { m } from "@/paraglide/messages";
 
 function getReplyNotificationUnsubscribe(url: string) {

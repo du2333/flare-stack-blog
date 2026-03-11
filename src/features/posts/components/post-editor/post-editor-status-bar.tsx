@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
-import type { SaveStatus } from "./types";
 import { m } from "@/paraglide/messages";
+import type { SaveStatus } from "./types";
 
 interface PostEditorStatusBarProps {
   chars: number;

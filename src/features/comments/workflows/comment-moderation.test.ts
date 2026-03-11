@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import {
   createAdminTestContext,
   createAuthTestContext,
@@ -6,7 +6,7 @@ import {
   createMockSession,
   seedUser,
 } from "tests/test-utils";
-import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as AiService from "@/features/ai/ai.service";
 import * as CommentService from "@/features/comments/comments.service";
 import { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
@@ -126,8 +126,9 @@ describe("CommentModerationWorkflow", () => {
         post: expect.objectContaining({
           title: "上下文测试文章",
           summary: "这是一篇讨论代码审核与评论交流边界的文章摘要。",
-          contentPreview:
-            expect.stringContaining("文章正文详细讨论了如何区分正常反驳"),
+          contentPreview: expect.stringContaining(
+            "文章正文详细讨论了如何区分正常反驳",
+          ),
         }),
         thread: {
           isReply: true,

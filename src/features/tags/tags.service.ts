@@ -1,4 +1,7 @@
 import { z } from "zod";
+import * as CacheService from "@/features/cache/cache.service";
+import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
+import * as TagRepo from "@/features/tags/data/tags.data";
 import type {
   CreateTagInput,
   DeleteTagInput,
@@ -9,16 +12,12 @@ import type {
   TagWithCount,
   UpdateTagInput,
 } from "@/features/tags/tags.schema";
-
 import {
   TAGS_CACHE_KEYS,
   TagWithCountSchema,
 } from "@/features/tags/tags.schema";
-import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
-import * as TagRepo from "@/features/tags/data/tags.data";
-import * as CacheService from "@/features/cache/cache.service";
-import { purgeCDNCache } from "@/lib/invalidate";
 import { err, ok } from "@/lib/errors";
+import { purgeCDNCache } from "@/lib/invalidate";
 
 /**
  * Get all tags (cached)

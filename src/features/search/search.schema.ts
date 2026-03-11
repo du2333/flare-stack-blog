@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { JSONContent } from "@tiptap/react";
+import { z } from "zod";
 
 export const SearchQuerySchema = z.object({
   q: z.string().min(1),

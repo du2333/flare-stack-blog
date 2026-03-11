@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   CheckCircle2,
   Clock,
@@ -6,13 +7,12 @@ import {
   PlusCircle,
   XCircle,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Turnstile } from "@/components/common/turnstile";
 import type {
   MyFriendLink,
   SubmitFriendLinkPageProps,
 } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
-import { Turnstile } from "@/components/common/turnstile";
 
 function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
   switch (status) {

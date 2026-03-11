@@ -1,10 +1,4 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
-import { findPostByIdFn } from "../api/posts.admin.api";
-import {
-  findPostBySlugFn,
-  getPostsCursorFn,
-  getRelatedPostsFn,
-} from "../api/posts.public.api";
 import type {
   GetPostsCountInput,
   GetPostsInput,
@@ -16,6 +10,12 @@ import {
 } from "@/features/posts/posts.schema";
 import { apiClient } from "@/lib/api-client";
 import { isSSR } from "@/lib/utils";
+import { findPostByIdFn } from "../api/posts.admin.api";
+import {
+  findPostBySlugFn,
+  getPostsCursorFn,
+  getRelatedPostsFn,
+} from "../api/posts.public.api";
 
 export const POSTS_KEYS = {
   all: ["posts"] as const,

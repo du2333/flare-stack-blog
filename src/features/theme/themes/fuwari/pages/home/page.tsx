@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { PostCard } from "../../components/post-card";
 import type { HomePageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { PostCard } from "../../components/post-card";
 
 export function HomePage({ posts }: HomePageProps) {
   return (

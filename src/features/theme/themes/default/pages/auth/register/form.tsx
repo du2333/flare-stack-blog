@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
-import type { RegisterFormData } from "@/features/theme/contract/pages";
 import { Input } from "@/components/ui/input";
+import type { RegisterFormData } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
 interface RegisterFormProps {

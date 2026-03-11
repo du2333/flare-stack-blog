@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { SubmitFriendLinkInputSchema } from "../friend-links.schema";
-import * as FriendLinkService from "../friend-links.service";
 import {
   authMiddleware,
   createRateLimitMiddleware,
   dbMiddleware,
   turnstileMiddleware,
 } from "@/lib/middlewares";
+import { SubmitFriendLinkInputSchema } from "../friend-links.schema";
+import * as FriendLinkService from "../friend-links.service";
 
 export const submitFriendLinkFn = createServerFn({
   method: "POST",

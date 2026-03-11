@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { ArchivePanel } from "../../components/archive/archive-panel";
-import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { ArchivePanel } from "../../components/archive/archive-panel";
 
 export function PostsPage({
   posts,

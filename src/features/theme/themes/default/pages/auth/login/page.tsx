@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { LoginForm } from "./form";
-import { SocialLogin } from "./social-login";
 import type { LoginPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
+import { LoginForm } from "./form";
+import { SocialLogin } from "./social-login";
 
 export function LoginPage({
   isEmailConfigured,

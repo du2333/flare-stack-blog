@@ -3,8 +3,8 @@ import { Database, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { buildSearchIndexFn } from "@/features/search/api/search.api";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { buildSearchIndexFn } from "@/features/search/api/search.api";
 import { m } from "@/paraglide/messages";
 
 export function SearchMaintenance() {

@@ -1,14 +1,18 @@
-import { toast } from "sonner";
 import FileHandler from "@tiptap/extension-file-handler";
 import Mathematics from "@tiptap/extension-mathematics";
 import Placeholder from "@tiptap/extension-placeholder";
-import StarterKit from "@tiptap/starter-kit";
 import TableOfContents from "@tiptap/extension-table-of-contents";
 import type { Editor as TiptapEditor } from "@tiptap/react";
-import type { ImageUploadResult } from "@/features/posts/editor/extensions/upload-image";
-import { TableBlockExtension } from "@/features/posts/editor/extensions/table";
+import StarterKit from "@tiptap/starter-kit";
+import { toast } from "sonner";
+import {
+  getActiveFormulaModalOpenerKey,
+  openFormulaModalForEdit,
+} from "@/components/tiptap-editor/formula-modal-store";
+import { uploadImageFn } from "@/features/media/api/media.api";
 import { CodeBlockExtension } from "@/features/posts/editor/extensions/code-block";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
+import { TableBlockExtension } from "@/features/posts/editor/extensions/table";
 import { BlockQuoteExtension } from "@/features/posts/editor/extensions/typography/block-quote";
 import { HeadingExtension } from "@/features/posts/editor/extensions/typography/heading";
 import {
@@ -16,13 +20,9 @@ import {
   ListItemExtension,
   OrderedListExtension,
 } from "@/features/posts/editor/extensions/typography/list";
+import type { ImageUploadResult } from "@/features/posts/editor/extensions/upload-image";
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
-import { uploadImageFn } from "@/features/media/api/media.api";
 import { slugify } from "@/features/posts/utils/content";
-import {
-  getActiveFormulaModalOpenerKey,
-  openFormulaModalForEdit,
-} from "@/components/tiptap-editor/formula-modal-store";
 import { m } from "@/paraglide/messages";
 
 const ALLOWED_IMAGE_MIME_TYPES = [

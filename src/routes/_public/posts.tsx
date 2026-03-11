@@ -3,12 +3,12 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import theme from "@theme";
 import { useMemo } from "react";
 import { z } from "zod";
-import theme from "@theme";
-import { postsInfiniteQueryOptions } from "@/features/posts/queries";
-import { siteDomainQuery } from "@/features/config/queries";
 import { blogConfig } from "@/blog.config";
+import { siteDomainQuery } from "@/features/config/queries";
+import { postsInfiniteQueryOptions } from "@/features/posts/queries";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";

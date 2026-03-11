@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
-import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
 import { Turnstile } from "@/components/common/turnstile";
 import { Input } from "@/components/ui/input";
+import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
 interface FriendLinkSubmitFormProps {

@@ -1,23 +1,23 @@
-import { EditorContent, useEditor } from "@tiptap/react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import InsertModal from "./ui/insert-modal";
-import EditorToolbar from "./ui/editor-toolbar";
-import { TableBubbleMenu } from "./ui/table-bubble-menu";
-import { FormulaModal } from "./ui/formula-modal";
-import {
-  addFormulaModalOpener,
-  removeFormulaModalOpener,
-  setActiveFormulaModalOpenerKey,
-} from "./formula-modal-store";
-import type { FormulaModalPayload } from "./formula-modal-store";
 import type {
   Extensions,
   JSONContent,
   Editor as TiptapEditor,
 } from "@tiptap/react";
-import type { ModalType } from "./ui/insert-modal";
-import type { FormulaMode } from "./ui/formula-modal";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
+import type { FormulaModalPayload } from "./formula-modal-store";
+import {
+  addFormulaModalOpener,
+  removeFormulaModalOpener,
+  setActiveFormulaModalOpenerKey,
+} from "./formula-modal-store";
+import EditorToolbar from "./ui/editor-toolbar";
+import type { FormulaMode } from "./ui/formula-modal";
+import { FormulaModal } from "./ui/formula-modal";
+import type { ModalType } from "./ui/insert-modal";
+import InsertModal from "./ui/insert-modal";
+import { TableBubbleMenu } from "./ui/table-bubble-menu";
 
 interface EditorProps {
   content?: JSONContent | string;

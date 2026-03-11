@@ -1,12 +1,12 @@
 import { Loader2, Sparkles } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
-import type { PostEditorData } from "./types";
-import { TagSelector } from "@/features/tags/components/tag-selector";
-import { m } from "@/paraglide/messages";
-import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import { TagSelector } from "@/features/tags/components/tag-selector";
 import { POST_STATUSES } from "@/lib/db/schema";
 import { toLocalDateString } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { PostEditorData } from "./types";
 
 const STATUS_LABELS: Record<PostEditorData["status"], () => string> = {
   draft: m.editor_status_draft,

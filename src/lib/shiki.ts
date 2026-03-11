@@ -1,8 +1,8 @@
+import type { HighlighterCore, LanguageRegistration } from "shiki/core";
 import { createHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import viteDark from "shiki/themes/vitesse-dark.mjs";
 import viteLight from "shiki/themes/vitesse-light.mjs";
-import type { HighlighterCore, LanguageRegistration } from "shiki/core";
 
 // Shiki language modules export `default` as an array of LanguageRegistration
 type LanguageModule = { default: Array<LanguageRegistration> };

@@ -1,15 +1,15 @@
-import { ClientOnly } from "@tanstack/react-router";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
+import type { ComponentProps } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
-import type { ComponentProps } from "react";
-import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
-import { createCreateFriendLinkSchema } from "@/features/friend-links/friend-links.schema";
-import { m } from "@/paraglide/messages";
-import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
+import { createCreateFriendLinkSchema } from "@/features/friend-links/friend-links.schema";
+import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
+import { m } from "@/paraglide/messages";
 
 interface AddFriendLinkModalProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
-import { memo, useLayoutEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Copy } from "lucide-react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

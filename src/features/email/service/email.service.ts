@@ -1,13 +1,13 @@
-import type { EmailUnsubscribeType } from "@/lib/db/schema";
-import type { TestEmailConnectionInput } from "@/features/email/email.schema";
-import * as EmailData from "@/features/email/data/email.data";
 import * as ConfigService from "@/features/config/service/config.service";
+import * as EmailData from "@/features/email/data/email.data";
+import type { TestEmailConnectionInput } from "@/features/email/email.schema";
 import {
   createEmailClient,
   verifyUnsubscribeToken,
 } from "@/features/email/email.utils";
-import { err, ok } from "@/lib/errors";
+import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
+import { err, ok } from "@/lib/errors";
 import { m } from "@/paraglide/messages";
 
 export async function testEmailConnection(

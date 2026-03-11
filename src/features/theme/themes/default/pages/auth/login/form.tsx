@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import type { LoginFormData } from "@/features/theme/contract/pages";
 import { Input } from "@/components/ui/input";
+import type { LoginFormData } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
 interface LoginFormProps {

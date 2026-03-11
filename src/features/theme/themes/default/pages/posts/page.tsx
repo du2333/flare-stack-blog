@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { blogConfig } from "@/blog.config";
+import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { PostItem } from "@/features/theme/themes/default/components/post-item";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";

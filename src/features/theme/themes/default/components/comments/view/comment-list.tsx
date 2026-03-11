@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { CommentItem } from "./comment-item";
-import { CommentReplyForm } from "./comment-reply-form";
-import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import type { JSONContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
-import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
+import { CommentItem } from "./comment-item";
+import { CommentReplyForm } from "./comment-reply-form";
 
 // Alias for local use
 type RootCommentWithUser = RootCommentWithReplyCount;

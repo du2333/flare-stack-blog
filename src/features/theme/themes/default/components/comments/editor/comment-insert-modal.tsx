@@ -1,8 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type React from "react";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { m } from "@/paraglide/messages";
 

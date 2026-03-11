@@ -1,7 +1,7 @@
-import clsx from "clsx";
-import { CommentEditor } from "./comment-editor";
 import type { JSONContent } from "@tiptap/react";
+import clsx from "clsx";
 import { m } from "@/paraglide/messages";
+import { CommentEditor } from "./comment-editor";
 
 interface CommentReplyFormProps {
   parentUserName: string;

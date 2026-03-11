@@ -1,5 +1,5 @@
-import { FriendLinkSkeleton } from "./friend-link-skeleton";
 import { m } from "@/paraglide/messages";
+import { FriendLinkSkeleton } from "./friend-link-skeleton";
 
 export function FriendLinksPageSkeleton() {
   return (

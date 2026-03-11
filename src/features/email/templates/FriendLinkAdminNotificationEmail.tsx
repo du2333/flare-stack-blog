@@ -1,6 +1,6 @@
-import { EmailLayout } from "./EmailLayout";
 import type { Locale } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
+import { EmailLayout } from "./EmailLayout";
 
 interface FriendLinkAdminNotificationEmailProps {
   description: string;

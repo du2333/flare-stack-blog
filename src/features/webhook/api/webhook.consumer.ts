@@ -1,10 +1,10 @@
-import type { NotificationEvent } from "@/features/notification/notification.schema";
-import type { WebhookMessage } from "@/lib/queue/queue.schema";
-import type { Locale } from "@/lib/i18n";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import { serverEnv } from "@/lib/env/server.env";
+import type { Locale } from "@/lib/i18n";
+import type { WebhookMessage } from "@/lib/queue/queue.schema";
 import { m } from "@/paraglide/messages";
 import { baseLocale } from "@/paraglide/runtime";
-import { serverEnv } from "@/lib/env/server.env";
 
 function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
   switch (event.type) {

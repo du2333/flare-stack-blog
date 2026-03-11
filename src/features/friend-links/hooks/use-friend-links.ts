@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { submitFriendLinkFn } from "../api/friend-links.user.api";
+import { m } from "@/paraglide/messages";
 import {
   approveFriendLinkFn,
   createFriendLinkFn,
@@ -8,8 +8,8 @@ import {
   rejectFriendLinkFn,
   updateFriendLinkFn,
 } from "../api/friend-links.admin.api";
+import { submitFriendLinkFn } from "../api/friend-links.user.api";
 import { FRIEND_LINKS_KEYS } from "../queries";
-import { m } from "@/paraglide/messages";
 
 export function useFriendLinks() {
   const queryClient = useQueryClient();

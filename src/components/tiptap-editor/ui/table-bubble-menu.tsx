@@ -1,4 +1,6 @@
+import type { Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowDownToLine,
   ArrowLeftToLine,
@@ -9,11 +11,9 @@ import {
   Table as TableIcon,
   Trash2,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
-import type { LucideIcon } from "lucide-react";
 import type React from "react";
-import { m } from "@/paraglide/messages";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface TableBubbleMenuProps {
   editor: Editor | null;
