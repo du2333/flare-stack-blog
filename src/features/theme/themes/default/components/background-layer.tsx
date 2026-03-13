@@ -1,6 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import type { DefaultThemeBackground } from "@/features/theme/themes/default/site-config";
+import type { DefaultThemeBackground } from "@/features/config/site-config.schema";
 
 const baseStyle: React.CSSProperties = {
   position: "fixed",

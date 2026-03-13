@@ -26,10 +26,12 @@ function SectionShell({
 function Field({
   label,
   hint,
+  error,
   children,
 }: {
   label: string;
   hint?: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -39,52 +41,75 @@ function Field({
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
       {children}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </label>
   );
 }
 
 export function SiteSettingsSection() {
-  const { register } = useFormContext<SystemConfig>();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<SystemConfig>();
+
+  const getInputClassName = (error?: string) =>
+    error ? "border-destructive focus-visible:border-destructive" : undefined;
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <SectionShell
-        title={m.settings_site_section_basic_title()}
-        description={m.settings_site_section_basic_desc()}
+        title={m.settings_site_section_site_title()}
+        description={m.settings_site_section_site_desc()}
       >
         <Field
           label={m.settings_site_field_title()}
           hint={m.settings_site_field_title_hint()}
+          error={errors.site?.title?.message}
         >
           <Input
             {...register("site.title")}
+            className={getInputClassName(errors.site?.title?.message)}
             placeholder={m.settings_site_field_title_ph()}
           />
         </Field>
-        <Field label={m.settings_site_field_author()}>
+        <Field
+          label={m.settings_site_field_author()}
+          error={errors.site?.author?.message}
+        >
           <Input
             {...register("site.author")}
+            className={getInputClassName(errors.site?.author?.message)}
             placeholder={m.settings_site_field_author_ph()}
           />
         </Field>
         <Field
           label={m.settings_site_field_description()}
           hint={m.settings_site_field_description_hint()}
+          error={errors.site?.description?.message}
         >
           <Input
             {...register("site.description")}
+            className={getInputClassName(errors.site?.description?.message)}
             placeholder={m.settings_site_field_description_ph()}
           />
         </Field>
-        <Field label={m.settings_site_field_github()}>
+        <Field
+          label={m.settings_site_field_github()}
+          error={errors.site?.social?.github?.message}
+        >
           <Input
             {...register("site.social.github")}
+            className={getInputClassName(errors.site?.social?.github?.message)}
             placeholder={m.settings_site_field_github_ph()}
           />
         </Field>
-        <Field label={m.settings_site_field_public_email()}>
+        <Field
+          label={m.settings_site_field_public_email()}
+          error={errors.site?.social?.email?.message}
+        >
           <Input
             {...register("site.social.email")}
+            className={getInputClassName(errors.site?.social?.email?.message)}
             placeholder={m.settings_site_field_public_email_ph()}
           />
         </Field>
@@ -101,63 +126,120 @@ export function SiteSettingsSection() {
             <Field
               label={m.settings_site_field_navbar_name()}
               hint={m.settings_site_field_navbar_name_hint()}
+              error={errors.site?.theme?.default?.navBarName?.message}
             >
               <Input
                 {...register("site.theme.default.navBarName")}
+                className={getInputClassName(
+                  errors.site?.theme?.default?.navBarName?.message,
+                )}
                 placeholder={m.settings_site_field_navbar_name_ph()}
               />
             </Field>
             <Field
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
+              error={
+                errors.site?.theme?.default?.background?.homeImage?.message
+              }
             >
               <Input
                 {...register("site.theme.default.background.homeImage")}
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.homeImage?.message,
+                )}
                 placeholder={m.settings_site_field_home_image_ph()}
               />
             </Field>
             <Field
               label={m.settings_site_field_global_image()}
               hint={m.settings_site_field_global_image_hint()}
+              error={
+                errors.site?.theme?.default?.background?.globalImage?.message
+              }
             >
               <Input
                 {...register("site.theme.default.background.globalImage")}
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.globalImage?.message,
+                )}
                 placeholder={m.settings_site_field_global_image_ph()}
               />
             </Field>
-            <Field label={m.settings_site_field_light_opacity()}>
+            <Field
+              label={m.settings_site_field_light_opacity()}
+              error={
+                errors.site?.theme?.default?.background?.light?.opacity?.message
+              }
+            >
               <Input
                 type="number"
                 step="0.01"
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.light?.opacity
+                    ?.message,
+                )}
                 {...register("site.theme.default.background.light.opacity", {
-                  valueAsNumber: true,
+                  setValueAs: (value) =>
+                    value === "" || value == null ? undefined : Number(value),
                 })}
               />
             </Field>
-            <Field label={m.settings_site_field_dark_opacity()}>
+            <Field
+              label={m.settings_site_field_dark_opacity()}
+              error={
+                errors.site?.theme?.default?.background?.dark?.opacity?.message
+              }
+            >
               <Input
                 type="number"
                 step="0.01"
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.dark?.opacity
+                    ?.message,
+                )}
                 {...register("site.theme.default.background.dark.opacity", {
-                  valueAsNumber: true,
+                  setValueAs: (value) =>
+                    value === "" || value == null ? undefined : Number(value),
                 })}
               />
             </Field>
-            <Field label={m.settings_site_field_backdrop_blur()}>
+            <Field
+              label={m.settings_site_field_backdrop_blur()}
+              error={
+                errors.site?.theme?.default?.background?.backdropBlur?.message
+              }
+            >
               <Input
                 type="number"
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.backdropBlur
+                    ?.message,
+                )}
                 {...register("site.theme.default.background.backdropBlur", {
-                  valueAsNumber: true,
+                  setValueAs: (value) =>
+                    value === "" || value == null ? undefined : Number(value),
                 })}
               />
             </Field>
-            <Field label={m.settings_site_field_transition_duration()}>
+            <Field
+              label={m.settings_site_field_transition_duration()}
+              error={
+                errors.site?.theme?.default?.background?.transitionDuration
+                  ?.message
+              }
+            >
               <Input
                 type="number"
+                className={getInputClassName(
+                  errors.site?.theme?.default?.background?.transitionDuration
+                    ?.message,
+                )}
                 {...register(
                   "site.theme.default.background.transitionDuration",
                   {
-                    valueAsNumber: true,
+                    setValueAs: (value) =>
+                      value === "" || value == null ? undefined : Number(value),
                   },
                 )}
               />
@@ -170,15 +252,25 @@ export function SiteSettingsSection() {
             <Field
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
+              error={errors.site?.theme?.fuwari?.homeBg?.message}
             >
               <Input
                 {...register("site.theme.fuwari.homeBg")}
+                className={getInputClassName(
+                  errors.site?.theme?.fuwari?.homeBg?.message,
+                )}
                 placeholder={m.settings_site_field_home_image_ph()}
               />
             </Field>
-            <Field label={m.settings_site_field_avatar()}>
+            <Field
+              label={m.settings_site_field_avatar()}
+              error={errors.site?.theme?.fuwari?.avatar?.message}
+            >
               <Input
                 {...register("site.theme.fuwari.avatar")}
+                className={getInputClassName(
+                  errors.site?.theme?.fuwari?.avatar?.message,
+                )}
                 placeholder={m.settings_site_field_avatar_ph()}
               />
             </Field>

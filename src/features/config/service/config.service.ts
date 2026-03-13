@@ -7,7 +7,7 @@ import {
   SystemConfigSchema,
 } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import { FullSiteConfigSchema } from "@/features/config/site-config";
+import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
 
 export function resolveSystemConfig(
   config: SystemConfig | null | undefined,

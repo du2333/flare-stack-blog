@@ -1,4 +1,4 @@
-import type { SiteConfig } from "@/features/config/site-config";
+import type { SiteConfig } from "@/features/config/site-config.schema";
 
 export const blogConfig = {
   title: "站点名称",

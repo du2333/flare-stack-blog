@@ -1,4 +1,4 @@
-import type { SiteConfig } from "@/features/config/site-config";
+import type { SiteConfig } from "@/features/config/site-config.schema";
 
 // if the theme doesn't have a preload image, return an empty array
 export function getThemePreloadImages(siteConfig: SiteConfig): Array<string> {

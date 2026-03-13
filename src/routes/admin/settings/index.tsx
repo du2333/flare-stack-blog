@@ -18,8 +18,8 @@ import { SectionSkeleton } from "@/features/config/components/settings-skeleton"
 import { SiteSettingsSection } from "@/features/config/components/site-settings-section";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
+  createSystemConfigFormSchema,
   DEFAULT_CONFIG,
-  SystemConfigSchema,
 } from "@/features/config/config.schema";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
@@ -47,7 +47,7 @@ function RouteComponent() {
   const { testEmailConnection } = useEmailConnection();
 
   const methods = useForm<SystemConfig>({
-    resolver: zodResolver(SystemConfigSchema),
+    resolver: zodResolver(createSystemConfigFormSchema(m)),
     defaultValues: DEFAULT_CONFIG,
   });
 

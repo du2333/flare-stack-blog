@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { blogConfig } from "@/blog.config";
 import {
+  createSiteConfigInputFormSchema,
   type SiteConfigInput,
   SiteConfigInputSchema,
-} from "@/features/config/site-config";
+} from "@/features/config/site-config.schema";
 import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
+import type { Messages } from "@/lib/i18n";
 
 export const SystemConfigSchema = z.object({
   email: z
@@ -37,11 +39,18 @@ export const SystemConfigSchema = z.object({
   site: SiteConfigInputSchema.optional(),
 });
 
+export const createSystemConfigFormSchema = (messages: Messages) =>
+  z.object({
+    email: SystemConfigSchema.shape.email,
+    notification: SystemConfigSchema.shape.notification,
+    site: createSiteConfigInputFormSchema(messages).optional(),
+  });
+
 export type SystemConfig = z.infer<typeof SystemConfigSchema>;
 export type {
   SiteConfig,
   SiteConfigInput,
-} from "@/features/config/site-config";
+} from "@/features/config/site-config.schema";
 
 export const DEFAULT_CONFIG: SystemConfig = {
   email: {
