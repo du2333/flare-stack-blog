@@ -73,3 +73,12 @@
 .admin-layout .gap-4 {
   gap: 1.25rem !important;
 }
+
+.admin-layout .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.admin-layout .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
