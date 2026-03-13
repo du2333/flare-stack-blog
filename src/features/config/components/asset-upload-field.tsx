@@ -13,6 +13,7 @@ interface AssetUploadFieldProps {
   accept: string;
   label: string;
   hint?: string;
+  readOnly?: boolean;
   error?: string;
 }
 
@@ -29,6 +30,7 @@ export function AssetUploadField({
   accept,
   label,
   hint,
+  readOnly,
   error,
 }: AssetUploadFieldProps) {
   const { register, setValue, watch } = useFormContext();
@@ -67,9 +69,13 @@ export function AssetUploadField({
 
   return (
     <label className="space-y-3">
-      <div className="space-y-1">
+      <div className="space-y-1 min-h-10 flex flex-col justify-end">
         <p className="text-sm font-medium text-foreground">{label}</p>
-        {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+        {hint ? (
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        ) : (
+          <div className="h-4" /> // Spacer for alignment
+        )}
       </div>
 
       <div className="flex gap-3 items-start">
@@ -77,6 +83,7 @@ export function AssetUploadField({
           <div className="flex gap-2">
             <Input
               {...register(name)}
+              readOnly={readOnly}
               className={
                 error
                   ? "border-destructive focus-visible:border-destructive"

@@ -1,5 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
@@ -37,9 +38,13 @@ function Field({
 }) {
   return (
     <label className="space-y-3">
-      <div className="space-y-1">
+      <div className="space-y-1 min-h-10 flex flex-col justify-end">
         <p className="text-sm font-medium text-foreground">{label}</p>
-        {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+        {hint ? (
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        ) : (
+          <div className="h-4" /> // Spacer for alignment
+        )}
       </div>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
@@ -59,8 +64,8 @@ export function SiteSettingsSection() {
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <SectionShell
-        title={m.settings_site_section_site_title()}
-        description={m.settings_site_section_site_desc()}
+        title={m.settings_site_section_basic_title()}
+        description={m.settings_site_section_basic_desc()}
       >
         <Field
           label={m.settings_site_field_title()}
@@ -88,12 +93,18 @@ export function SiteSettingsSection() {
           hint={m.settings_site_field_description_hint()}
           error={errors.site?.description?.message}
         >
-          <Input
+          <Textarea
             {...register("site.description")}
             className={getInputClassName(errors.site?.description?.message)}
             placeholder={m.settings_site_field_description_ph()}
           />
         </Field>
+      </SectionShell>
+
+      <SectionShell
+        title={m.settings_site_section_social_title()}
+        description={m.settings_site_section_social_desc()}
+      >
         <Field
           label={m.settings_site_field_github()}
           error={errors.site?.social?.github?.message}
@@ -114,18 +125,25 @@ export function SiteSettingsSection() {
             placeholder={m.settings_site_field_public_email_ph()}
           />
         </Field>
+      </SectionShell>
+
+      <SectionShell
+        title={m.settings_site_section_icons_title()}
+        description={m.settings_site_section_icons_desc()}
+      >
         <AssetUploadField
           name="site.icons.faviconSvg"
           assetPath="favicon/favicon.svg"
           accept=".svg"
+          readOnly
           label={m.settings_site_field_favicon_svg()}
-          hint={m.settings_site_field_favicon_svg_hint()}
           error={errors.site?.icons?.faviconSvg?.message}
         />
         <AssetUploadField
           name="site.icons.faviconIco"
           assetPath="favicon/favicon.ico"
           accept=".ico"
+          readOnly
           label={m.settings_site_field_favicon_ico()}
           error={errors.site?.icons?.faviconIco?.message}
         />
@@ -133,6 +151,7 @@ export function SiteSettingsSection() {
           name="site.icons.favicon96"
           assetPath="favicon/favicon-96x96.png"
           accept=".png"
+          readOnly
           label={m.settings_site_field_favicon_96()}
           error={errors.site?.icons?.favicon96?.message}
         />
@@ -140,6 +159,7 @@ export function SiteSettingsSection() {
           name="site.icons.appleTouchIcon"
           assetPath="favicon/apple-touch-icon.png"
           accept=".png"
+          readOnly
           label={m.settings_site_field_apple_touch_icon()}
           error={errors.site?.icons?.appleTouchIcon?.message}
         />
@@ -147,6 +167,7 @@ export function SiteSettingsSection() {
           name="site.icons.webApp192"
           assetPath="favicon/web-app-manifest-192x192.png"
           accept=".png,.webp"
+          readOnly
           label={m.settings_site_field_web_app_192()}
           error={errors.site?.icons?.webApp192?.message}
         />
@@ -154,6 +175,7 @@ export function SiteSettingsSection() {
           name="site.icons.webApp512"
           assetPath="favicon/web-app-manifest-512x512.png"
           accept=".png,.webp"
+          readOnly
           label={m.settings_site_field_web_app_512()}
           error={errors.site?.icons?.webApp512?.message}
         />
@@ -184,6 +206,7 @@ export function SiteSettingsSection() {
               name="site.theme.default.background.homeImage"
               assetPath="themes/default/home-image.webp"
               accept=".png,.webp,.jpg,.jpeg"
+              readOnly
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
               error={
@@ -194,6 +217,7 @@ export function SiteSettingsSection() {
               name="site.theme.default.background.globalImage"
               assetPath="themes/default/global-image.webp"
               accept=".png,.webp,.jpg,.jpeg"
+              readOnly
               label={m.settings_site_field_global_image()}
               hint={m.settings_site_field_global_image_hint()}
               error={
@@ -287,6 +311,7 @@ export function SiteSettingsSection() {
               name="site.theme.fuwari.homeBg"
               assetPath="themes/fuwari/home-bg.webp"
               accept=".png,.webp,.jpg,.jpeg"
+              readOnly
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
               error={errors.site?.theme?.fuwari?.homeBg?.message}
@@ -295,6 +320,7 @@ export function SiteSettingsSection() {
               name="site.theme.fuwari.avatar"
               assetPath="themes/fuwari/avatar.png"
               accept=".png,.webp,.jpg,.jpeg"
+              readOnly
               label={m.settings_site_field_avatar()}
               error={errors.site?.theme?.fuwari?.avatar?.message}
             />
