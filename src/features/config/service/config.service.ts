@@ -8,6 +8,7 @@ import {
 } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
+import * as Storage from "@/features/media/data/media.storage";
 
 export function resolveSystemConfig(
   config: SystemConfig | null | undefined,
@@ -53,6 +54,17 @@ export function resolveSiteConfig(
     social: {
       github: config?.site?.social?.github ?? blogConfig.social.github,
       email: config?.site?.social?.email ?? blogConfig.social.email,
+    },
+    icons: {
+      faviconSvg:
+        config?.site?.icons?.faviconSvg || blogConfig.icons.faviconSvg,
+      faviconIco:
+        config?.site?.icons?.faviconIco || blogConfig.icons.faviconIco,
+      favicon96: config?.site?.icons?.favicon96 || blogConfig.icons.favicon96,
+      appleTouchIcon:
+        config?.site?.icons?.appleTouchIcon || blogConfig.icons.appleTouchIcon,
+      webApp192: config?.site?.icons?.webApp192 || blogConfig.icons.webApp192,
+      webApp512: config?.site?.icons?.webApp512 || blogConfig.icons.webApp512,
     },
     theme: {
       default: {
@@ -112,4 +124,23 @@ export async function updateSystemConfig(
   await CacheService.deleteKey(context, CONFIG_CACHE_KEYS.system);
 
   return { success: true };
+}
+
+export async function uploadSiteAsset(
+  context: { env: Env },
+  input: { file: File; assetPath: string },
+): Promise<{ url: string }> {
+  const { url } = await Storage.putSiteAsset(
+    context.env,
+    input.file,
+    input.assetPath,
+  );
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const isFavicon = input.assetPath.startsWith("favicon/");
+  const finalUrl = isFavicon
+    ? `${url}?original=true&v=${timestamp}`
+    : `${url}?v=${timestamp}`;
+
+  return { url: finalUrl };
 }

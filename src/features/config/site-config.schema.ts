@@ -1,137 +1,200 @@
 import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
 
-function isAbsoluteUrl(value: string) {
-  return URL.canParse(value);
+function createSiteTextSchema(max: number) {
+  return z.string().trim().max(max);
 }
 
-function isSiteAssetRef(value: string) {
-  return value === "" || value.startsWith("/") || isAbsoluteUrl(value);
-}
-
-function createSiteTextSchema(max: number, messages?: Messages) {
+function createSiteTextFormSchema(max: number, messages: Messages) {
   return z
     .string()
     .trim()
-    .max(max, messages?.friend_link_validation_too_long({ max }));
+    .max(max, messages.friend_link_validation_too_long({ max }));
 }
 
-function createUrlSchema(messages?: Messages) {
+function createUrlSchema() {
+  return z.union([z.url(), z.literal("")]);
+}
+
+function createUrlFormSchema(messages: Messages) {
   return z.union([
-    z.string().url(messages?.friend_link_validation_invalid_url()),
+    z.url(messages.friend_link_validation_invalid_url()),
     z.literal(""),
   ]);
 }
 
-function createEmailSchema(messages?: Messages) {
+function createEmailSchema() {
+  return z.union([z.email(), z.literal("")]);
+}
+
+function createEmailFormSchema(messages: Messages) {
   return z.union([
-    z.string().email(messages?.friend_link_validation_invalid_email()),
+    z.email(messages.friend_link_validation_invalid_email()),
     z.literal(""),
   ]);
 }
 
-function createAssetRefSchema(messages?: Messages) {
-  return z.string().refine(isSiteAssetRef, {
-    message:
-      messages?.settings_site_validation_invalid_asset_ref() ??
-      "Please enter an absolute URL or a root-relative path",
+function createAssetRefSchema() {
+  return z.string().refine((value) => value === "" || value.startsWith("/"), {
+    message: "Please enter a root-relative path",
   });
 }
 
-function createOpacitySchema(messages?: Messages) {
-  return z
-    .number()
-    .min(0)
-    .max(1, {
-      message:
-        messages?.settings_site_validation_opacity_range() ??
-        "Value must be between 0 and 1",
-    });
+function createAssetRefFormSchema(messages: Messages) {
+  return z.string().refine((value) => value === "" || value.startsWith("/"), {
+    message: messages.settings_site_validation_invalid_asset_ref(),
+  });
 }
 
-function createBlurSchema(messages?: Messages) {
-  return z
-    .number()
-    .int()
-    .min(0)
-    .max(64, {
-      message:
-        messages?.settings_site_validation_blur_range() ??
-        "Value must be between 0 and 64",
-    });
+function createAssetPathSchema() {
+  return z.string().refine((value) => value.startsWith("/"), {
+    message: "Please enter a root-relative path",
+  });
 }
 
-function createTransitionDurationSchema(messages?: Messages) {
-  return z
-    .number()
-    .int()
-    .min(0)
-    .max(3000, {
-      message:
-        messages?.settings_site_validation_transition_range() ??
-        "Value must be between 0 and 3000",
-    });
+function createAssetPathFormSchema(messages: Messages) {
+  return z.string().refine((value) => value.startsWith("/"), {
+    message: messages.settings_site_validation_invalid_asset_path(),
+  });
 }
 
-function createDefaultThemeBackgroundSchema(messages?: Messages) {
+function createOptionalAssetPathSchema() {
+  return z.union([createAssetPathSchema(), z.literal("")]);
+}
+
+function createOptionalAssetPathFormSchema(messages: Messages) {
+  return z.union([createAssetPathFormSchema(messages), z.literal("")]);
+}
+
+function createOpacitySchema() {
+  return z.number().min(0).max(1, {
+    message: "Value must be between 0 and 1",
+  });
+}
+
+function createOpacityFormSchema(messages: Messages) {
+  return z.number().min(0).max(1, {
+    message: messages.settings_site_validation_opacity_range(),
+  });
+}
+
+function createBlurSchema() {
+  return z.number().int().min(0).max(64, {
+    message: "Value must be between 0 and 64",
+  });
+}
+
+function createBlurFormSchema(messages: Messages) {
+  return z.number().int().min(0).max(64, {
+    message: messages.settings_site_validation_blur_range(),
+  });
+}
+
+function createTransitionDurationSchema() {
+  return z.number().int().min(0).max(3000, {
+    message: "Value must be between 0 and 3000",
+  });
+}
+
+function createTransitionDurationFormSchema(messages: Messages) {
+  return z.number().int().min(0).max(3000, {
+    message: messages.settings_site_validation_transition_range(),
+  });
+}
+
+function createDefaultThemeBackgroundSchema() {
   return z.object({
-    homeImage: createAssetRefSchema(messages),
-    globalImage: createAssetRefSchema(messages),
+    homeImage: createAssetRefSchema(),
+    globalImage: createAssetRefSchema(),
     light: z.object({
-      opacity: createOpacitySchema(messages),
+      opacity: createOpacitySchema(),
     }),
     dark: z.object({
-      opacity: createOpacitySchema(messages),
+      opacity: createOpacitySchema(),
     }),
-    backdropBlur: createBlurSchema(messages),
-    transitionDuration: createTransitionDurationSchema(messages),
+    backdropBlur: createBlurSchema(),
+    transitionDuration: createTransitionDurationSchema(),
   });
 }
 
-function createDefaultThemeBackgroundInputSchema(messages?: Messages) {
+function createDefaultThemeBackgroundInputSchema() {
   return z.object({
-    homeImage: createAssetRefSchema(messages).optional(),
-    globalImage: createAssetRefSchema(messages).optional(),
+    homeImage: createAssetRefSchema().optional(),
+    globalImage: createAssetRefSchema().optional(),
     light: z
       .object({
-        opacity: createOpacitySchema(messages).optional(),
+        opacity: createOpacitySchema().optional(),
       })
       .optional(),
     dark: z
       .object({
-        opacity: createOpacitySchema(messages).optional(),
+        opacity: createOpacitySchema().optional(),
       })
       .optional(),
-    backdropBlur: createBlurSchema(messages).optional(),
-    transitionDuration: createTransitionDurationSchema(messages).optional(),
+    backdropBlur: createBlurSchema().optional(),
+    transitionDuration: createTransitionDurationSchema().optional(),
   });
 }
 
-function createDefaultThemeSiteConfigSchema(messages?: Messages) {
+function createDefaultThemeBackgroundInputFormSchema(messages: Messages) {
   return z.object({
-    navBarName: createSiteTextSchema(60, messages),
-    background: createDefaultThemeBackgroundSchema(messages).optional(),
+    homeImage: createAssetRefFormSchema(messages).optional(),
+    globalImage: createAssetRefFormSchema(messages).optional(),
+    light: z
+      .object({
+        opacity: createOpacityFormSchema(messages).optional(),
+      })
+      .optional(),
+    dark: z
+      .object({
+        opacity: createOpacityFormSchema(messages).optional(),
+      })
+      .optional(),
+    backdropBlur: createBlurFormSchema(messages).optional(),
+    transitionDuration: createTransitionDurationFormSchema(messages).optional(),
   });
 }
 
-function createDefaultThemeSiteConfigInputSchema(messages?: Messages) {
+function createDefaultThemeSiteConfigSchema() {
   return z.object({
-    navBarName: createSiteTextSchema(60, messages).optional(),
-    background: createDefaultThemeBackgroundInputSchema(messages).optional(),
+    navBarName: createSiteTextSchema(60),
+    background: createDefaultThemeBackgroundSchema().optional(),
   });
 }
 
-function createFuwariThemeSiteConfigSchema(messages?: Messages) {
+function createDefaultThemeSiteConfigInputSchema() {
   return z.object({
-    homeBg: createAssetRefSchema(messages),
-    avatar: createAssetRefSchema(messages),
+    navBarName: createSiteTextSchema(60).optional(),
+    background: createDefaultThemeBackgroundInputSchema().optional(),
   });
 }
 
-function createFuwariThemeSiteConfigInputSchema(messages?: Messages) {
+function createDefaultThemeSiteConfigInputFormSchema(messages: Messages) {
   return z.object({
-    homeBg: createAssetRefSchema(messages).optional(),
-    avatar: createAssetRefSchema(messages).optional(),
+    navBarName: createSiteTextFormSchema(60, messages).optional(),
+    background:
+      createDefaultThemeBackgroundInputFormSchema(messages).optional(),
+  });
+}
+
+function createFuwariThemeSiteConfigSchema() {
+  return z.object({
+    homeBg: createAssetRefSchema(),
+    avatar: createAssetRefSchema(),
+  });
+}
+
+function createFuwariThemeSiteConfigInputSchema() {
+  return z.object({
+    homeBg: createAssetRefSchema().optional(),
+    avatar: createAssetRefSchema().optional(),
+  });
+}
+
+function createFuwariThemeSiteConfigInputFormSchema(messages: Messages) {
+  return z.object({
+    homeBg: createAssetRefFormSchema(messages).optional(),
+    avatar: createAssetRefFormSchema(messages).optional(),
   });
 }
 
@@ -155,6 +218,14 @@ export const FullSiteConfigSchema = z.object({
     github: createUrlSchema(),
     email: createEmailSchema(),
   }),
+  icons: z.object({
+    faviconSvg: createAssetPathSchema(),
+    faviconIco: createAssetPathSchema(),
+    favicon96: createAssetPathSchema(),
+    appleTouchIcon: createAssetPathSchema(),
+    webApp192: createAssetPathSchema(),
+    webApp512: createAssetPathSchema(),
+  }),
   theme: z.object({
     default: defaultThemeSiteConfigSchema,
     fuwari: fuwariThemeSiteConfigSchema,
@@ -163,19 +234,30 @@ export const FullSiteConfigSchema = z.object({
 
 export function createSiteConfigInputFormSchema(messages: Messages) {
   return z.object({
-    title: createSiteTextSchema(120, messages).optional(),
-    author: createSiteTextSchema(80, messages).optional(),
-    description: createSiteTextSchema(300, messages).optional(),
+    title: createSiteTextFormSchema(120, messages).optional(),
+    author: createSiteTextFormSchema(80, messages).optional(),
+    description: createSiteTextFormSchema(300, messages).optional(),
     social: z
       .object({
-        github: createUrlSchema(messages).optional(),
-        email: createEmailSchema(messages).optional(),
+        github: createUrlFormSchema(messages).optional(),
+        email: createEmailFormSchema(messages).optional(),
+      })
+      .optional(),
+    icons: z
+      .object({
+        faviconSvg: createOptionalAssetPathFormSchema(messages).optional(),
+        faviconIco: createOptionalAssetPathFormSchema(messages).optional(),
+        favicon96: createOptionalAssetPathFormSchema(messages).optional(),
+        appleTouchIcon: createOptionalAssetPathFormSchema(messages).optional(),
+        webApp192: createOptionalAssetPathFormSchema(messages).optional(),
+        webApp512: createOptionalAssetPathFormSchema(messages).optional(),
       })
       .optional(),
     theme: z
       .object({
-        default: createDefaultThemeSiteConfigInputSchema(messages).optional(),
-        fuwari: createFuwariThemeSiteConfigInputSchema(messages).optional(),
+        default:
+          createDefaultThemeSiteConfigInputFormSchema(messages).optional(),
+        fuwari: createFuwariThemeSiteConfigInputFormSchema(messages).optional(),
       })
       .optional(),
   });
@@ -189,6 +271,16 @@ export const SiteConfigInputSchema = z.object({
     .object({
       github: createUrlSchema().optional(),
       email: createEmailSchema().optional(),
+    })
+    .optional(),
+  icons: z
+    .object({
+      faviconSvg: createOptionalAssetPathSchema().optional(),
+      faviconIco: createOptionalAssetPathSchema().optional(),
+      favicon96: createOptionalAssetPathSchema().optional(),
+      appleTouchIcon: createOptionalAssetPathSchema().optional(),
+      webApp192: createOptionalAssetPathSchema().optional(),
+      webApp512: createOptionalAssetPathSchema().optional(),
     })
     .optional(),
   theme: z

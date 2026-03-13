@@ -1,5 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 
@@ -113,6 +114,49 @@ export function SiteSettingsSection() {
             placeholder={m.settings_site_field_public_email_ph()}
           />
         </Field>
+        <AssetUploadField
+          name="site.icons.faviconSvg"
+          assetPath="favicon/favicon.svg"
+          accept=".svg"
+          label={m.settings_site_field_favicon_svg()}
+          hint={m.settings_site_field_favicon_svg_hint()}
+          error={errors.site?.icons?.faviconSvg?.message}
+        />
+        <AssetUploadField
+          name="site.icons.faviconIco"
+          assetPath="favicon/favicon.ico"
+          accept=".ico"
+          label={m.settings_site_field_favicon_ico()}
+          error={errors.site?.icons?.faviconIco?.message}
+        />
+        <AssetUploadField
+          name="site.icons.favicon96"
+          assetPath="favicon/favicon-96x96.png"
+          accept=".png"
+          label={m.settings_site_field_favicon_96()}
+          error={errors.site?.icons?.favicon96?.message}
+        />
+        <AssetUploadField
+          name="site.icons.appleTouchIcon"
+          assetPath="favicon/apple-touch-icon.png"
+          accept=".png"
+          label={m.settings_site_field_apple_touch_icon()}
+          error={errors.site?.icons?.appleTouchIcon?.message}
+        />
+        <AssetUploadField
+          name="site.icons.webApp192"
+          assetPath="favicon/web-app-manifest-192x192.png"
+          accept=".png,.webp"
+          label={m.settings_site_field_web_app_192()}
+          error={errors.site?.icons?.webApp192?.message}
+        />
+        <AssetUploadField
+          name="site.icons.webApp512"
+          assetPath="favicon/web-app-manifest-512x512.png"
+          accept=".png,.webp"
+          label={m.settings_site_field_web_app_512()}
+          error={errors.site?.icons?.webApp512?.message}
+        />
       </SectionShell>
 
       <SectionShell
@@ -136,36 +180,26 @@ export function SiteSettingsSection() {
                 placeholder={m.settings_site_field_navbar_name_ph()}
               />
             </Field>
-            <Field
+            <AssetUploadField
+              name="site.theme.default.background.homeImage"
+              assetPath="themes/default/home-image.webp"
+              accept=".png,.webp,.jpg,.jpeg"
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
               error={
                 errors.site?.theme?.default?.background?.homeImage?.message
               }
-            >
-              <Input
-                {...register("site.theme.default.background.homeImage")}
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.homeImage?.message,
-                )}
-                placeholder={m.settings_site_field_home_image_ph()}
-              />
-            </Field>
-            <Field
+            />
+            <AssetUploadField
+              name="site.theme.default.background.globalImage"
+              assetPath="themes/default/global-image.webp"
+              accept=".png,.webp,.jpg,.jpeg"
               label={m.settings_site_field_global_image()}
               hint={m.settings_site_field_global_image_hint()}
               error={
                 errors.site?.theme?.default?.background?.globalImage?.message
               }
-            >
-              <Input
-                {...register("site.theme.default.background.globalImage")}
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.globalImage?.message,
-                )}
-                placeholder={m.settings_site_field_global_image_ph()}
-              />
-            </Field>
+            />
             <Field
               label={m.settings_site_field_light_opacity()}
               error={
@@ -249,31 +283,21 @@ export function SiteSettingsSection() {
 
         {__THEME_NAME__ === "fuwari" ? (
           <>
-            <Field
+            <AssetUploadField
+              name="site.theme.fuwari.homeBg"
+              assetPath="themes/fuwari/home-bg.webp"
+              accept=".png,.webp,.jpg,.jpeg"
               label={m.settings_site_field_home_image()}
               hint={m.settings_site_field_home_image_hint()}
               error={errors.site?.theme?.fuwari?.homeBg?.message}
-            >
-              <Input
-                {...register("site.theme.fuwari.homeBg")}
-                className={getInputClassName(
-                  errors.site?.theme?.fuwari?.homeBg?.message,
-                )}
-                placeholder={m.settings_site_field_home_image_ph()}
-              />
-            </Field>
-            <Field
+            />
+            <AssetUploadField
+              name="site.theme.fuwari.avatar"
+              assetPath="themes/fuwari/avatar.png"
+              accept=".png,.webp,.jpg,.jpeg"
               label={m.settings_site_field_avatar()}
               error={errors.site?.theme?.fuwari?.avatar?.message}
-            >
-              <Input
-                {...register("site.theme.fuwari.avatar")}
-                className={getInputClassName(
-                  errors.site?.theme?.fuwari?.avatar?.message,
-                )}
-                placeholder={m.settings_site_field_avatar_ph()}
-              />
-            </Field>
+            />
           </>
         ) : null}
       </SectionShell>

@@ -9,6 +9,14 @@ export const blogConfig = {
     github: "https://github.com/example",
     email: "example@email.com",
   },
+  icons: {
+    faviconSvg: "/favicon.svg",
+    faviconIco: "/favicon.ico",
+    favicon96: "/favicon-96x96.png",
+    appleTouchIcon: "/apple-touch-icon.png",
+    webApp192: "/web-app-manifest-192x192.png",
+    webApp512: "/web-app-manifest-512x512.png",
+  },
   theme: {
     default: {
       navBarName: "导航栏名称",

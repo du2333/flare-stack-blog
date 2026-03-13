@@ -50,22 +50,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         {
           rel: "icon",
           type: "image/svg+xml",
-          href: "/favicon.svg",
+          href: loaderData?.siteConfig?.icons.faviconSvg,
         },
         {
           rel: "icon",
           type: "image/png",
-          href: "/favicon-96x96.png",
+          href: loaderData?.siteConfig?.icons.favicon96,
           sizes: "96x96",
         },
         {
           rel: "shortcut icon",
-          href: "/favicon.ico",
+          href: loaderData?.siteConfig?.icons.faviconIco,
         },
         {
           rel: "apple-touch-icon",
           type: "image/png",
-          href: "/apple-touch-icon.png",
+          href: loaderData?.siteConfig?.icons.appleTouchIcon,
           sizes: "180x180",
         },
         {
