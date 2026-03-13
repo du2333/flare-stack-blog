@@ -1,11 +1,12 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { Github, Mail, Rss, Terminal } from "lucide-react";
-import { blogConfig } from "@/blog.config";
 import type { HomePageProps } from "@/features/theme/contract/pages";
 import { PostItem } from "@/features/theme/themes/default/components/post-item";
 import { m } from "@/paraglide/messages";
 
 export function HomePage({ posts }: HomePageProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto px-6 md:px-0 py-12 md:py-20 space-y-20">
       {/* Intro Section */}
@@ -20,17 +21,17 @@ export function HomePage({ posts }: HomePageProps) {
             <p>
               {m.home_intro_prefix()}{" "}
               <span className="text-foreground font-medium">
-                {blogConfig.author}
+                {siteConfig.author}
               </span>
               {m.home_intro_separator()}
-              {blogConfig.description}
+              {siteConfig.description}
             </p>
           </div>
         </header>
 
         <div className="flex items-center gap-6 text-muted-foreground">
           <a
-            href={blogConfig.social.github}
+            href={siteConfig.social.github}
             target="_blank"
             rel="noreferrer"
             className="hover:text-foreground transition-colors"
@@ -48,7 +49,7 @@ export function HomePage({ posts }: HomePageProps) {
             <Rss size={20} strokeWidth={1.5} />
           </a>
           <a
-            href={`mailto:${blogConfig.social.email}`}
+            href={`mailto:${siteConfig.social.email}`}
             className="hover:text-foreground transition-colors"
             aria-label={m.send_email()}
           >

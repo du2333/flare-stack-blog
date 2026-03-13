@@ -1,9 +1,11 @@
-import { blogConfig } from "@/blog.config";
+import { useRouteContext } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { INITIAL_TAG_COUNT } from "./page";
 
 export function PostsPageSkeleton() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div className="w-full max-w-3xl mx-auto pb-20 px-6 md:px-0">
       {/* Header Section */}
@@ -12,7 +14,7 @@ export function PostsPageSkeleton() {
           {m.nav_posts()}
         </h1>
         <p className="max-w-xl text-base md:text-lg font-light text-muted-foreground leading-relaxed">
-          {blogConfig.description}
+          {siteConfig.description}
         </p>
       </header>
 

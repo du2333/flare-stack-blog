@@ -1,13 +1,18 @@
 import { and, desc, eq, lte } from "drizzle-orm";
 import { Feed } from "feed";
-import { blogConfig } from "@/blog.config";
+import * as ConfigService from "@/features/config/service/config.service";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { getDb } from "@/lib/db";
 import { PostsTable } from "@/lib/db/schema";
 import { serverEnv } from "@/lib/env/server.env";
 
-export async function buildFeed(env: Env) {
+export async function buildFeed(env: Env, executionCtx: ExecutionContext) {
   const db = getDb(env);
+  const siteConfig = await ConfigService.getSiteConfig({
+    env,
+    db,
+    executionCtx,
+  });
   const posts = await db
     .select({
       id: PostsTable.id,
@@ -31,15 +36,15 @@ export async function buildFeed(env: Env) {
   const year = new Date().getFullYear();
 
   const feed = new Feed({
-    title: blogConfig.title,
-    description: blogConfig.description,
+    title: siteConfig.title,
+    description: siteConfig.description,
     id: `https://${DOMAIN}/`,
     link: `https://${DOMAIN}/`,
     favicon: `https://${DOMAIN}/favicon.ico`,
-    copyright: `All rights reserved ${year}, ${blogConfig.author}`,
-    generator: blogConfig.title,
+    copyright: `All rights reserved ${year}, ${siteConfig.author}`,
+    generator: siteConfig.title,
     author: {
-      name: blogConfig.author,
+      name: siteConfig.author,
       email: ADMIN_EMAIL,
       link: `https://${DOMAIN}/`,
     },
@@ -54,7 +59,7 @@ export async function buildFeed(env: Env) {
       content: convertToPlainText(post.contentJson),
       author: [
         {
-          name: blogConfig.author,
+          name: siteConfig.author,
           email: ADMIN_EMAIL,
           link: `https://${DOMAIN}/`,
         },

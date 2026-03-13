@@ -350,24 +350,17 @@ export const blogConfig = {
   // ... 公共配置 ...
   theme: {
     fuwari: {
-      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.webp",
-      avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
+      homeBg: "/images/home-bg.webp",
+      avatar: "/images/avatar.png",
     },
     // "my-theme": { ... }
   },
 };
 ```
 
-### 环境变量命名规则
+### 覆盖方式
 
-使用 `VITE_<THEME_NAME>_<KEY>` 格式，例如：
-
-| 环境变量              | 说明                  | 默认值                 |
-| :-------------------- | :-------------------- | :--------------------- |
-| `VITE_FUWARI_HOME_BG` | Fuwari 首页背景图路径 | `/images/home-bg.webp` |
-| `VITE_FUWARI_AVATAR`  | Fuwari 侧边栏头像路径 | `/images/avatar.png`   |
-
-新增的环境变量需要同步添加到 `src/lib/env/client.env.ts` 的 Zod schema 中。
+`blog.config.ts` 是默认值来源。若你启用了后台站点配置，运行时会在服务端把数据库里的站点配置合并到这些默认值之上。
 
 ### 在组件中使用
 

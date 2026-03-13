@@ -4,18 +4,22 @@ import theme from "@theme";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import { getThemePreloadImages } from "@/features/theme/site-config.helpers";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
+  loader: ({ context }) => ({
+    preloadImages: getThemePreloadImages(context.siteConfig),
+  }),
   component: PublicLayout,
   headers: () => {
     return CACHE_CONTROL.public;
   },
-  head: () => ({
-    links: (theme.config.preloadImages ?? []).map((href) => ({
+  head: ({ loaderData }) => ({
+    links: (loaderData?.preloadImages ?? []).map((href) => ({
       rel: "preload" as const,
       as: "image",
       href,

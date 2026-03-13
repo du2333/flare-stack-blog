@@ -8,6 +8,7 @@ export const ROUTE_REGEXPS: Array<RegExp> = [
   /^\/feed\.json\/?$/,
   /^\/robots\.txt\/?$/,
   /^\/rss\.xml\/?$/,
+  /^\/site\.webmanifest\/?$/,
   /^\/sitemap\.xml\/?$/,
   /^\/admin\/posts\/?$/,
   /^\/forgot-password\/?$/,

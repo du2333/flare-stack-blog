@@ -1,6 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Hammer, Loader2, Mail, Webhook } from "lucide-react";
+import {
+  Check,
+  Hammer,
+  LayoutTemplate,
+  Loader2,
+  Mail,
+  Webhook,
+} from "lucide-react";
 import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -8,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MaintenanceSection } from "@/features/config/components/maintenance-section";
 import { SectionSkeleton } from "@/features/config/components/settings-skeleton";
+import { SiteSettingsSection } from "@/features/config/components/site-settings-section";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
   DEFAULT_CONFIG,
@@ -108,10 +116,20 @@ function RouteComponent() {
 
         {/* Main Content with Tabs */}
         <Tabs
-          defaultValue="email"
+          defaultValue="site"
           className="flex flex-col lg:grid lg:grid-cols-[220px_1fr] gap-10 lg:gap-16 items-start"
         >
           <TabsList className="flex flex-row lg:flex-col h-auto bg-transparent p-0 gap-1.5 lg:w-full overflow-x-auto lg:overflow-visible justify-start border-b lg:border-b-0 lg:border-r border-border/20 pb-4 lg:pb-0 lg:pr-6">
+            <TabsTrigger
+              value="site"
+              className="w-full lg:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-b-2 lg:border-b-0 lg:border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
+            >
+              <LayoutTemplate
+                size={14}
+                className="mr-3 shrink-0 opacity-40 group-data-[state=active]:opacity-100 group-data-[state=active]:text-foreground transition-opacity"
+              />
+              {m.settings_tab_site()}
+            </TabsTrigger>
             <TabsTrigger
               value="email"
               className="w-full lg:justify-start justify-center flex items-center px-4 py-3 rounded-none text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground data-[state=active]:bg-muted/30 data-[state=active]:text-foreground data-[state=active]:font-bold transition-all duration-300 border-b-2 lg:border-b-0 lg:border-l-2 border-transparent data-[state=active]:border-foreground shadow-none group"
@@ -145,6 +163,21 @@ function RouteComponent() {
           </TabsList>
 
           <div className="flex-1 min-w-0 space-y-12">
+            <TabsContent
+              value="site"
+              className="mt-0 space-y-10 animate-in fade-in slide-in-from-right-2 duration-500"
+            >
+              <div className="space-y-2 pb-6 border-b border-border/30">
+                <h2 className="text-2xl font-serif font-medium tracking-tight">
+                  {m.settings_site_title()}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {m.settings_site_desc()}
+                </p>
+              </div>
+              <SiteSettingsSection />
+            </TabsContent>
+
             <TabsContent
               value="email"
               className="mt-0 space-y-10 animate-in fade-in slide-in-from-right-2 duration-500"

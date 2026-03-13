@@ -6,8 +6,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { blogConfig } from "@/blog.config";
 import { ThemeProvider } from "@/components/common/theme-provider";
+import { siteConfigQuery } from "@/features/config/queries";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { clientEnv } from "@/lib/env/client.env";
 import { getLocale } from "@/paraglide/runtime";
@@ -18,8 +18,17 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => {
+  beforeLoad: async ({ context }) => {
+    const siteConfig =
+      await context.queryClient.ensureQueryData(siteConfigQuery);
+    return { siteConfig };
+  },
+  loader: async ({ context }) => {
+    return { siteConfig: context.siteConfig };
+  },
+  head: ({ loaderData }) => {
     const env = clientEnv();
+
     return {
       meta: [
         {
@@ -30,11 +39,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           content: "width=device-width, initial-scale=1",
         },
         {
-          title: blogConfig.title,
+          title: loaderData?.siteConfig?.title,
         },
         {
           name: "description",
-          content: blogConfig.description,
+          content: loaderData?.siteConfig?.description,
         },
       ],
       links: [

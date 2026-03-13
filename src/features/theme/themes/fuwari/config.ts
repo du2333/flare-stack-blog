@@ -1,4 +1,3 @@
-import { blogConfig } from "@/blog.config";
 import type { ThemeConfig } from "@/features/theme/contract/config";
 
 export const config: ThemeConfig = {
@@ -11,5 +10,4 @@ export const config: ThemeConfig = {
   post: {
     relatedPostsLimit: 4,
   },
-  preloadImages: [blogConfig.theme.fuwari.homeBg],
 };

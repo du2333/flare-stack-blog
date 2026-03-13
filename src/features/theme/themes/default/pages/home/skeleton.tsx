@@ -1,9 +1,11 @@
+import { useRouteContext } from "@tanstack/react-router";
 import { Github, Mail, Rss, Terminal } from "lucide-react";
-import { blogConfig } from "@/blog.config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 
 export function HomePageSkeleton() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto px-6 md:px-0 py-12 md:py-20 space-y-20">
       {/* Intro Section - Static Text Retained */}
@@ -18,10 +20,10 @@ export function HomePageSkeleton() {
             <p>
               {m.home_intro_prefix()}{" "}
               <span className="text-foreground font-medium">
-                {blogConfig.author}
+                {siteConfig.author}
               </span>
               {m.home_intro_separator()}
-              {blogConfig.description}
+              {siteConfig.description}
             </p>
           </div>
         </header>

@@ -1,4 +1,4 @@
-import { blogConfig } from "@/blog.config";
+import { useRouteContext } from "@tanstack/react-router";
 import type { NavOption } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
 
@@ -7,6 +7,7 @@ interface FooterProps {
 }
 
 export function Footer(_: FooterProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const currentYear = new Date().getFullYear();
 
   return (
@@ -16,7 +17,7 @@ export function Footer(_: FooterProps) {
         <div className="fuwari-text-50 text-sm text-center">
           {m.footer_copyright({
             year: currentYear.toString(),
-            author: blogConfig.author,
+            author: siteConfig.author,
           })}{" "}
           /{" "}
           <a

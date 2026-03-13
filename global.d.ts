@@ -1,10 +1,10 @@
-import type { DB as DBType } from "@/lib/db";
+import type { ThemeName, ThemeRouterConfig } from "@/features/theme/registry";
 import type {
   Auth as AuthType,
   Session as SessionType,
 } from "@/lib/auth/auth.server";
+import type { DB as DBType } from "@/lib/db";
 import type { QueueMessage } from "@/lib/queue/queue.schema";
-import type { ThemeRouterConfig } from "@/features/theme/registry";
 
 declare global {
   interface PostProcessWorkflowParams {
@@ -68,5 +68,6 @@ declare global {
   };
 
   const __APP_VERSION__: string;
+  const __THEME_NAME__: ThemeName;
   const __THEME_CONFIG__: ThemeRouterConfig;
 }

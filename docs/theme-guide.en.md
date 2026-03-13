@@ -350,24 +350,17 @@ export const blogConfig = {
   // ... common configs ...
   theme: {
     fuwari: {
-      homeBg: env.VITE_FUWARI_HOME_BG || "/images/home-bg.webp",
-      avatar: env.VITE_FUWARI_AVATAR || "/images/avatar.png",
+      homeBg: "/images/home-bg.webp",
+      avatar: "/images/avatar.png",
     },
     // "my-theme": { ... }
   },
 };
 ```
 
-### Environment Variable Naming Rules
+### Override Strategy
 
-Use the format `VITE_<THEME_NAME>_<KEY>`, for example:
-
-| Env Variable          | Description                 | Default Value          |
-| :-------------------- | :-------------------------- | :--------------------- |
-| `VITE_FUWARI_HOME_BG` | Fuwari home background path | `/images/home-bg.webp` |
-| `VITE_FUWARI_AVATAR`  | Fuwari sidebar avatar path  | `/images/avatar.png`   |
-
-Newly added environment variables must be synchronously added to the Zod schema in `src/lib/env/client.env.ts`.
+`blog.config.ts` is the fallback source. If admin-managed site settings are enabled, runtime site config is merged on the server over these defaults.
 
 ### Usage in Components
 

@@ -1,17 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { blogConfig } from "@/blog.config";
-
-const {
-  homeImage,
-  globalImage,
-  light,
-  dark,
-  backdropBlur,
-  transitionDuration,
-} = blogConfig.theme.default.background;
-
-const hasAnyImage = homeImage !== "" || globalImage !== "";
+import type { DefaultThemeBackground } from "@/features/theme/themes/default/site-config";
 
 const baseStyle: React.CSSProperties = {
   position: "fixed",
@@ -20,25 +9,24 @@ const baseStyle: React.CSSProperties = {
   zIndex: 0,
 };
 
-const imageStyle: React.CSSProperties = {
-  ...baseStyle,
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  filter: backdropBlur ? `blur(${backdropBlur}px)` : undefined,
-};
-
-export function BackgroundLayer() {
+export function BackgroundLayer({
+  background,
+}: {
+  background?: DefaultThemeBackground;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-
   const isHomepage = pathname === "/" || pathname === "";
+  const hasAnyImage = Boolean(
+    background &&
+      (background.homeImage !== "" || background.globalImage !== ""),
+  );
 
   // Directly set --scroll-progress CSS variable — no React re-renders on scroll
   useEffect(() => {
-    if (!hasAnyImage || !isHomepage) return;
+    if (!background || !hasAnyImage || !isHomepage) return;
 
     const handleScroll = () => {
       const progress = Math.min(window.scrollY / window.innerHeight, 1);
@@ -51,9 +39,25 @@ export function BackgroundLayer() {
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomepage]);
+  }, [background, hasAnyImage, isHomepage]);
 
-  if (!hasAnyImage) return null;
+  if (!background || !hasAnyImage) return null;
+
+  const {
+    homeImage,
+    globalImage,
+    light,
+    dark,
+    backdropBlur,
+    transitionDuration,
+  } = background;
+  const imageStyle: React.CSSProperties = {
+    ...baseStyle,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    filter: backdropBlur ? `blur(${backdropBlur}px)` : undefined,
+  };
 
   const transition = `opacity ${transitionDuration}ms ease`;
 

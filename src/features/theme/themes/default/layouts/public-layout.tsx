@@ -1,3 +1,4 @@
+import { useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackgroundLayer } from "../components/background-layer";
@@ -12,11 +13,12 @@ export function PublicLayout({
   isSessionLoading,
   logout,
 }: PublicLayoutProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <div className="default-theme min-h-screen flex flex-col">
-      <BackgroundLayer />
+      <BackgroundLayer background={siteConfig.theme.default.background} />
       <Navbar
         navOptions={navOptions}
         onMenuClick={() => setIsMenuOpen(true)}

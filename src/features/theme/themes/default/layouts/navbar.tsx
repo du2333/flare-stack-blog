@@ -1,7 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { blogConfig } from "@/blog.config";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
@@ -20,6 +19,7 @@ export function Navbar({
   navOptions,
   isLoading,
 }: NavbarProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function Navbar({
           {/* Left: Brand */}
           <Link to="/" className="group select-none">
             <span className="font-serif text-xl font-bold tracking-tighter text-foreground transition-colors group-hover:text-muted-foreground">
-              [ {blogConfig.name} ]
+              [ {siteConfig.theme.default.navBarName} ]
             </span>
           </Link>
 

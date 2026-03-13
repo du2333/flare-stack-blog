@@ -1,5 +1,5 @@
+import { useRouteContext } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { blogConfig } from "@/blog.config";
 import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { PostItem } from "@/features/theme/themes/default/components/post-item";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ export function PostsPage({
   isFetchingNextPage,
   fetchNextPage,
 }: PostsPageProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isExpanded, setIsExpanded] = useState(false);
   const hasMoreTags = tags.length > INITIAL_TAG_COUNT;
   const visibleTags = isExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
@@ -47,7 +48,7 @@ export function PostsPage({
           {m.nav_posts()}
         </h1>
         <p className="max-w-xl text-base md:text-lg font-light text-muted-foreground leading-relaxed">
-          {blogConfig.description}
+          {siteConfig.description}
         </p>
       </header>
 

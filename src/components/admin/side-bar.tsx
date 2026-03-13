@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { blogConfig } from "@/blog.config";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { AUTH_KEYS } from "@/features/auth/queries";
@@ -128,7 +127,7 @@ export function SideBar({
         <div className="h-20 flex items-center justify-between px-6 shrink-0 border-b border-border/30">
           <Link to="/admin" className="flex items-center gap-3 group">
             <span className="font-serif font-black text-xl tracking-tighter group-hover:opacity-80 transition-opacity">
-              [ {blogConfig.name} ]
+              [ Admin ]
             </span>
           </Link>
           <button

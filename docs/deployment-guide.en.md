@@ -118,17 +118,13 @@ In your GitHub repository, go to Settings -> Secrets and variables -> Actions, c
 | `UMAMI_USERNAME` | Umami Username (Self-hosted) |
 | `UMAMI_PASSWORD` | Umami Password (Self-hosted) |
 
-**D. Optional Build-time Personalization Config (Variables)**
+**D. Optional Build-time Frontend Variables**
 These variables usually go into the `Variables` tab. They start with `VITE_` and are injected into the client code.
 | Variable Name | Description |
 | :--- | :--- |
-| `VITE_BLOG_TITLE` | Blog Title |
-| `VITE_BLOG_NAME` | Short name displayed in the Navbar |
-| `VITE_BLOG_AUTHOR` | Author Name |
-| `VITE_BLOG_DESCRIPTION` | Description displayed on the homepage |
-| `VITE_BLOG_GITHUB` | GitHub Homepage Link |
-| `VITE_BLOG_EMAIL` | Contact Email |
 | `VITE_UMAMI_WEBSITE_ID` | Umami Website ID (Note: This is set as a Variable, not a Secret) |
+
+Site title, description, theme images, and other personalization now live in `src/blog.config.ts` and can later be overridden from the admin settings page.
 
 #### 2. Trigger Deployment
 
@@ -171,7 +167,7 @@ Locally or on the GitHub website, duplicate `wrangler.example.jsonc` and rename 
    - **Deploy command**: `bun run deploy`
 3. Add Environment Variables:
    - In the build configuration, add `BUN_VERSION`: `1.3.5`.
-   - Add all frontend variables starting with `VITE_` (like `VITE_BLOG_TITLE`).
+   - Add frontend variables only when needed, for example `VITE_UMAMI_WEBSITE_ID` or `VITE_TURNSTILE_SITE_KEY`.
 
 #### 3. Configure Runtime Variables
 

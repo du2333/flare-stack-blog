@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { blogConfig } from "@/blog.config";
+import * as ConfigService from "@/features/config/service/config.service";
+import { getDb } from "@/lib/db";
 
-function buildManifest() {
+function buildManifest(name: string) {
   return {
-    name: blogConfig.title,
-    short_name: blogConfig.name,
+    name,
+    short_name: name,
     icons: [
       {
         src: "/web-app-manifest-192x192.png",
@@ -28,13 +29,22 @@ function buildManifest() {
 export const Route = createFileRoute("/site.webmanifest")({
   server: {
     handlers: {
-      GET: async () => {
-        return new Response(JSON.stringify(buildManifest(), null, 2), {
-          headers: {
-            "Content-Type": "application/manifest+json; charset=utf-8",
-            "Cache-Control": "public, max-age=3600, s-maxage=3600",
-          },
+      GET: async ({ context }) => {
+        const site = await ConfigService.getSiteConfig({
+          env: context.env,
+          db: getDb(context.env),
+          executionCtx: context.executionCtx,
         });
+
+        return new Response(
+          JSON.stringify(buildManifest(site.title || "Blog"), null, 2),
+          {
+            headers: {
+              "Content-Type": "application/manifest+json; charset=utf-8",
+              "Cache-Control": "public, max-age=3600, s-maxage=3600",
+            },
+          },
+        );
       },
       HEAD: async () => {
         return new Response(null, {

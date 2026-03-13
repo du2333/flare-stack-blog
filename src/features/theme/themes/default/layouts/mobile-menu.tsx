@@ -1,6 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { LogOut, UserIcon, X } from "lucide-react";
-import { blogConfig } from "@/blog.config";
 import { Button } from "@/components/ui/button";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
@@ -20,6 +19,8 @@ export function MobileMenu({
   user,
   logout,
 }: MobileMenuProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div
       className={`fixed inset-0 z-100 transition-all duration-500 ease-in-out ${
@@ -44,7 +45,7 @@ export function MobileMenu({
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <span className="font-serif text-2xl font-bold tracking-tighter text-foreground">
-              [ {blogConfig.name} ]
+              [ {siteConfig.theme.default.navBarName} ]
             </span>
           </div>
           <Button

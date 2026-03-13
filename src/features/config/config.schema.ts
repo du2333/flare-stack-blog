@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { blogConfig } from "@/blog.config";
+import {
+  type SiteConfigInput,
+  SiteConfigInputSchema,
+} from "@/features/config/site-config";
 import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
 
 export const SystemConfigSchema = z.object({
@@ -29,9 +34,14 @@ export const SystemConfigSchema = z.object({
       webhooks: z.array(webhookEndpointSchema).optional(),
     })
     .optional(),
+  site: SiteConfigInputSchema.optional(),
 });
 
 export type SystemConfig = z.infer<typeof SystemConfigSchema>;
+export type {
+  SiteConfig,
+  SiteConfigInput,
+} from "@/features/config/site-config";
 
 export const DEFAULT_CONFIG: SystemConfig = {
   email: {
@@ -51,6 +61,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
     },
     webhooks: [],
   },
+  site: blogConfig satisfies SiteConfigInput,
 };
 
 export const CONFIG_CACHE_KEYS = {

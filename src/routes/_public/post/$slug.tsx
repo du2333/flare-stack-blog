@@ -2,8 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import theme from "@theme";
 import { z } from "zod";
-import { blogConfig } from "@/blog.config";
-import { siteDomainQuery } from "@/features/config/queries";
+import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
@@ -23,9 +22,10 @@ export const Route = createFileRoute("/_public/post/$slug")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
     // 1. Critical: Main post data - use serverFn (executes directly on server, no HTTP)
-    const [post, domain] = await Promise.all([
+    const [post, domain, siteConfig] = await Promise.all([
       context.queryClient.ensureQueryData(postBySlugQuery(params.slug)),
       context.queryClient.ensureQueryData(siteDomainQuery),
+      context.queryClient.ensureQueryData(siteConfigQuery),
     ]);
 
     // 2. Deferred: Related posts (prefetch only, don't await)
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
 
     return {
       post,
+      authorName: siteConfig.author,
       canonicalHref: buildCanonicalUrl(
         domain,
         `/post/${encodeURIComponent(post.slug)}`,
@@ -67,7 +68,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
             {
               type: "application/ld+json",
               children: buildArticleJsonLd({
-                authorName: blogConfig.author,
+                authorName: loaderData.authorName,
                 canonicalHref,
                 post,
               }),

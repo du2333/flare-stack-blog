@@ -213,14 +213,6 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                                                                              |
 | `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                                                                                |
 | `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                                                                          |
-| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                                                                                  |
-| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                                                                                |
-| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                                                                                  |
-| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                                                                                  |
-| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                                                                           |
-| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                                                                                  |
-| `VITE_FUWARI_HOME_BG`     | 构建时 | Fuwari 主题首页背景图路径，默认 `/images/home-bg.webp`                                                    |
-| `VITE_FUWARI_AVATAR`      | 构建时 | Fuwari 主题头像图片路径，默认 `/images/avatar.png`                                                        |
 
 ---
 

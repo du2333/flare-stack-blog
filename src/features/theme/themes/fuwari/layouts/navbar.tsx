@@ -1,7 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { Home, Menu, Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { blogConfig } from "@/blog.config";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
@@ -26,6 +25,7 @@ export function Navbar({
   isLoading,
   bannerHeightVh,
 }: NavbarProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function Navbar({
               className="text-(--fuwari-primary) mr-2 shrink-0"
             />
             <span className="text-(--fuwari-primary) text-base">
-              {blogConfig.title}
+              {siteConfig.title}
             </span>
           </Link>
 
