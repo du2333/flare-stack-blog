@@ -127,7 +127,7 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 
 #### 可用主题
 
-各个主题的配置项，请前往`src/blog.config.ts`里查看
+站点个性化配置（标题、描述、社交链接、favicon、默认主题背景图等）现在统一在后台“设置”页面维护。`src/blog.config.ts` 主要作为默认值与兜底配置；主题开发时，建议结合 [主题开发教程](./docs/theme-guide.md) 查看实际可用的运行时 `siteConfig`。
 
 <table>
   <tr>

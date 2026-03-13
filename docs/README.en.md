@@ -125,7 +125,7 @@ All user-facing pages and layouts in Flare Stack Blog are decoupled from busines
 
 #### Available Themes
 
-For the configuration parameters of each theme, please refer to `src/blog.config.ts`.
+Site personalization such as title, description, social links, favicon, and default-theme background assets is now managed from the admin **Settings** page. `src/blog.config.ts` mainly serves as seeded defaults and runtime fallback values; see the [Theme Development Guide](./theme-guide.en.md) for how themes should consume runtime `siteConfig`.
 
 <table>
   <tr>

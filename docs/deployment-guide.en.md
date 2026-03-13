@@ -124,7 +124,7 @@ These variables usually go into the `Variables` tab. They start with `VITE_` and
 | :--- | :--- |
 | `VITE_UMAMI_WEBSITE_ID` | Umami Website ID (Note: This is set as a Variable, not a Secret) |
 
-Site title, description, theme images, and other personalization now live in `src/blog.config.ts` and can later be overridden from the admin settings page.
+Site title, description, theme images, favicon assets, and other personalization are managed from the admin **Settings** page after you create and log into an admin account. `src/blog.config.ts` remains the seeded default/fallback source used before runtime overrides are saved.
 
 #### 2. Trigger Deployment
 
@@ -206,8 +206,8 @@ Go to the Cloudflare Turnstile page and create a Widget. Record the Site Key and
 
 ### 4. Blog Information & Favicon
 
-**Blog Identity**: Configured via `VITE_` environment variables injected during the build (see Option 1, Table D).
-**Favicon**: Use an online generator like [Real Favicon Generator](https://realfavicongenerator.net/). Extract the downloaded files and overwrite the contents into your repository's `public/` folder.
+**Blog Identity**: After your first admin login, open the admin **Settings** page to edit the site title, description, author, social links, and theme assets.
+**Favicon**: Generate favicon assets with a tool such as [Real Favicon Generator](https://realfavicongenerator.net/), then upload the generated files from the admin **Settings** page instead of replacing files in `public/`.
 
 ---
 
@@ -278,4 +278,4 @@ Change its status from "Published" to "Draft", and the "Publish" button will tur
 
 ### 6. How do I configure things like background images in certain themes?
 
-Go look into `src/blog.config.ts`, which lists all the configuration items supported by each theme.
+Use the admin **Settings** page for day-to-day site personalization. If you are developing or extending a theme, check `src/blog.config.ts` for seeded defaults and the site-config schema/theme guide for the runtime fields that can be overridden from admin.

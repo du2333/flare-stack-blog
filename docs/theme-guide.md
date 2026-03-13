@@ -326,7 +326,7 @@ export function renderReact(content: JSONContent) {
 
 | 可以 import        | 来源                                            | 说明                                |
 | :----------------- | :---------------------------------------------- | :---------------------------------- |
-| 博客配置           | `@/blog.config`                                 | 标题、作者、社交链接等              |
+| 博客默认配置       | `@/blog.config`                                 | 默认值与兜底配置，不建议在主题组件中直接读取运行时配置 |
 | 业务 Queries/Hooks | `@/features/*/queries/`、`@/features/*/hooks/`  | TanStack Query 查询工厂、业务 hooks |
 | Schema 类型        | `@/features/*/schema`                           | Zod schema 和 TypeScript 类型       |
 | Tiptap 编辑器配置  | `@/features/posts/editor/config`                | 文章编辑器的 extension 列表         |
@@ -338,7 +338,7 @@ export function renderReact(content: JSONContent) {
 
 ## 主题专属配置
 
-除了主题契约中的 `ThemeConfig`（`contract/config.ts` 中定义的数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。
+除了主题契约中的 `ThemeConfig`（`contract/config.ts` 中定义的数据获取参数）外，主题还可以在 `blogConfig` 中声明**专属配置项**，用于图片路径、颜色等需要用户自定义的内容。后台“设置”页保存的是运行时站点配置，`blog.config.ts` 则负责默认值与兜底值。
 
 ### 约定
 
@@ -360,18 +360,31 @@ export const blogConfig = {
 
 ### 覆盖方式
 
-`blog.config.ts` 是默认值来源。若你启用了后台站点配置，运行时会在服务端把数据库里的站点配置合并到这些默认值之上。
+`blog.config.ts` 是默认值来源。若你启用了后台站点配置，运行时会在服务端把数据库里的站点配置合并到这些默认值之上。因此：
+
+- 内容运营和站点个性化调整应通过后台“设置”页完成
+- 主题组件在运行时应优先读取 `siteConfig`
+- `blog.config.ts` 更适合作为主题开发时新增字段的初始默认值
 
 ### 在组件中使用
 
 ```tsx
-import { blogConfig } from "@/blog.config";
+import { useRouteContext } from "@tanstack/react-router";
 
-// 直接访问当前主题的配置
-<img src={blogConfig.theme.fuwari.homeBg} alt="" />;
+export function ProfileBackground() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
+  return <img src={siteConfig.theme.fuwari.homeBg} alt="" />;
+}
 ```
 
-> **为什么不放在 `ThemeConfig` 中？** `ThemeConfig` 是编译时契约的一部分，主要用于路由 loader 的数据获取参数（如分页大小）。而图片路径等部署级别的配置更适合通过环境变量注入，放在 `blogConfig` 中可以统一管理，也方便用户在 `.env` 文件中覆盖。
+如果你只是为主题新增一个可被后台覆盖的字段，应当：
+
+1. 在 `src/blog.config.ts` 中提供默认值
+2. 在站点配置 schema 中声明该字段
+3. 在主题组件里从运行时 `siteConfig` 读取它
+
+> **为什么不放在 `ThemeConfig` 中？** `ThemeConfig` 是编译时契约的一部分，主要用于路由 loader 的数据获取参数（如分页大小）。而图片路径、品牌文案这类站点个性化字段不属于路由数据获取参数；把它们放在 `blogConfig` 与站点配置 schema 中，既能提供默认值，也能让后台“设置”页在运行时覆盖这些值。
 
 ## 注意事项
 

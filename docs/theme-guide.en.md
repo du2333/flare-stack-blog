@@ -326,7 +326,7 @@ Themes are independent of one another, but they **can and should** reuse shared 
 
 | Can import             | Source                                         | Description                               |
 | :--------------------- | :--------------------------------------------- | :---------------------------------------- |
-| Blog Config            | `@/blog.config`                                | Titles, authors, social links, etc.       |
+| Blog Default Config    | `@/blog.config`                                | Seeded defaults and fallback values; avoid reading runtime config from it inside theme components |
 | Business Queries/Hooks | `@/features/*/queries/`, `@/features/*/hooks/` | TanStack Query factories, business hooks  |
 | Schema Types           | `@/features/*/schema`                          | Zod schemas and TypeScript types          |
 | Tiptap Editor Config   | `@/features/posts/editor/config`               | Extension list for the post editor        |
@@ -338,7 +338,7 @@ Themes are independent of one another, but they **can and should** reuse shared 
 
 ## Theme-Specific Configuration
 
-Besides the `ThemeConfig` in the theme contract (data fetch parameters defined in `contract/config.ts`), themes can also declare **exclusive configuration items** in `blogConfig`, used for things requiring user customization like image paths and colors.
+Besides the `ThemeConfig` in the theme contract (data fetch parameters defined in `contract/config.ts`), themes can also declare **exclusive configuration items** in `blogConfig`, used for things requiring user customization like image paths and colors. Admin-managed **Settings** store the runtime site configuration, while `blog.config.ts` provides seeded defaults and fallback values.
 
 ### Conventions
 
@@ -360,18 +360,31 @@ export const blogConfig = {
 
 ### Override Strategy
 
-`blog.config.ts` is the fallback source. If admin-managed site settings are enabled, runtime site config is merged on the server over these defaults.
+`blog.config.ts` is the fallback source. If admin-managed site settings are enabled, runtime site config is merged on the server over these defaults. In practice:
+
+- editors should update personalization from the admin **Settings** page
+- theme components should read runtime values from `siteConfig`
+- `blog.config.ts` is best used for initial defaults when introducing new theme fields
 
 ### Usage in Components
 
 ```tsx
-import { blogConfig } from "@/blog.config";
+import { useRouteContext } from "@tanstack/react-router";
 
-// Directly access the current theme's config
-<img src={blogConfig.theme.fuwari.homeBg} alt="" />;
+export function ProfileBackground() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
+  return <img src={siteConfig.theme.fuwari.homeBg} alt="" />;
+}
 ```
 
-> **Why not put it in `ThemeConfig`?** `ThemeConfig` is part of the compile-time contract, mainly used as data fetching parameters for route loaders (like page sizes). Things like image paths are deployment-level configs that are better injected via environment variables; putting them in `blogConfig` centralizes management and allows user overrides in the `.env` file.
+If you are adding a new theme field that can be overridden from admin settings:
+
+1. provide a default value in `src/blog.config.ts`
+2. declare the field in the site-config schema
+3. read it from runtime `siteConfig` inside the theme component
+
+> **Why not put it in `ThemeConfig`?** `ThemeConfig` is part of the compile-time contract and is mainly used for route-loader data parameters such as pagination sizes. Fields like image paths, brand labels, and other site-personalization values do not belong to route fetching parameters; placing them in `blogConfig` plus the site-config schema gives you sensible defaults while still allowing runtime overrides from the admin **Settings** page.
 
 ## Need to Know
 
