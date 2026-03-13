@@ -1,8 +1,17 @@
-import { useFormContext } from "react-hook-form";
+import { type FieldPath, useController, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import type { SystemConfig } from "@/features/config/config.schema";
+import {
+  DEFAULT_THEME_BLUR_MAX,
+  DEFAULT_THEME_BLUR_MIN,
+  DEFAULT_THEME_OPACITY_MAX,
+  DEFAULT_THEME_OPACITY_MIN,
+  DEFAULT_THEME_TRANSITION_MAX,
+  DEFAULT_THEME_TRANSITION_MIN,
+} from "@/features/config/site-config.schema";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 function SectionShell({
@@ -47,6 +56,92 @@ function Field({
         )}
       </div>
       {children}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </label>
+  );
+}
+
+function RangeField({
+  name,
+  label,
+  hint,
+  error,
+  min,
+  max,
+  step,
+  unit,
+  defaultValue,
+  formatValue,
+}: {
+  name: FieldPath<SystemConfig>;
+  label: string;
+  hint?: string;
+  error?: string;
+  min: number;
+  max: number;
+  step: number;
+  unit?: string;
+  defaultValue: number;
+  formatValue?: (value: number) => string;
+}) {
+  const { control } = useFormContext<SystemConfig>();
+  const { field } = useController({
+    control,
+    name,
+  });
+
+  const currentValue =
+    typeof field.value === "number" && !Number.isNaN(field.value)
+      ? field.value
+      : defaultValue;
+
+  return (
+    <label className="space-y-3">
+      <div className="space-y-1">
+        <div className="flex min-h-5 items-end">
+          <p className="text-sm font-medium text-foreground">{label}</p>
+        </div>
+        {hint ? (
+          <p className="min-h-10 text-xs leading-5 text-muted-foreground">
+            {hint}
+          </p>
+        ) : (
+          <div className="h-10" />
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+            {min}
+            {unit}
+            {" - "}
+            {max}
+            {unit}
+          </div>
+          <div className="min-w-18 border border-border/40 bg-muted/20 px-3 py-1 text-right text-xs font-mono text-foreground">
+            {formatValue
+              ? formatValue(currentValue)
+              : `${currentValue}${unit ?? ""}`}
+          </div>
+        </div>
+
+        <input
+          ref={field.ref}
+          type="range"
+          name={field.name}
+          min={min}
+          max={max}
+          step={step}
+          value={currentValue}
+          onBlur={field.onBlur}
+          onChange={(event) => field.onChange(Number(event.target.value))}
+          className={cn(
+            "h-2 w-full cursor-pointer appearance-none rounded-full bg-muted/50 accent-foreground",
+            error && "accent-destructive",
+          )}
+        />
+      </div>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </label>
   );
@@ -224,84 +319,59 @@ export function SiteSettingsSection() {
                 errors.site?.theme?.default?.background?.globalImage?.message
               }
             />
-            <Field
+            <RangeField
+              name="site.theme.default.background.light.opacity"
               label={m.settings_site_field_light_opacity()}
+              hint={m.settings_site_field_light_opacity_hint()}
+              min={DEFAULT_THEME_OPACITY_MIN}
+              max={DEFAULT_THEME_OPACITY_MAX}
+              step={0.01}
+              defaultValue={0.15}
+              formatValue={(value) => value.toFixed(2)}
               error={
                 errors.site?.theme?.default?.background?.light?.opacity?.message
               }
-            >
-              <Input
-                type="number"
-                step="0.01"
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.light?.opacity
-                    ?.message,
-                )}
-                {...register("site.theme.default.background.light.opacity", {
-                  setValueAs: (value) =>
-                    value === "" || value == null ? undefined : Number(value),
-                })}
-              />
-            </Field>
-            <Field
+            />
+            <RangeField
+              name="site.theme.default.background.dark.opacity"
               label={m.settings_site_field_dark_opacity()}
+              hint={m.settings_site_field_dark_opacity_hint()}
+              min={DEFAULT_THEME_OPACITY_MIN}
+              max={DEFAULT_THEME_OPACITY_MAX}
+              step={0.01}
+              defaultValue={0.1}
+              formatValue={(value) => value.toFixed(2)}
               error={
                 errors.site?.theme?.default?.background?.dark?.opacity?.message
               }
-            >
-              <Input
-                type="number"
-                step="0.01"
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.dark?.opacity
-                    ?.message,
-                )}
-                {...register("site.theme.default.background.dark.opacity", {
-                  setValueAs: (value) =>
-                    value === "" || value == null ? undefined : Number(value),
-                })}
-              />
-            </Field>
-            <Field
+            />
+            <RangeField
+              name="site.theme.default.background.backdropBlur"
               label={m.settings_site_field_backdrop_blur()}
+              hint={m.settings_site_field_backdrop_blur_hint()}
+              min={DEFAULT_THEME_BLUR_MIN}
+              max={DEFAULT_THEME_BLUR_MAX}
+              step={1}
+              unit="px"
+              defaultValue={8}
               error={
                 errors.site?.theme?.default?.background?.backdropBlur?.message
               }
-            >
-              <Input
-                type="number"
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.backdropBlur
-                    ?.message,
-                )}
-                {...register("site.theme.default.background.backdropBlur", {
-                  setValueAs: (value) =>
-                    value === "" || value == null ? undefined : Number(value),
-                })}
-              />
-            </Field>
-            <Field
+            />
+            <RangeField
+              name="site.theme.default.background.transitionDuration"
               label={m.settings_site_field_transition_duration()}
+              hint={m.settings_site_field_transition_duration_hint()}
+              min={DEFAULT_THEME_TRANSITION_MIN}
+              max={DEFAULT_THEME_TRANSITION_MAX}
+              step={50}
+              unit="ms"
+              defaultValue={600}
               error={
                 errors.site?.theme?.default?.background?.transitionDuration
                   ?.message
               }
-            >
-              <Input
-                type="number"
-                className={getInputClassName(
-                  errors.site?.theme?.default?.background?.transitionDuration
-                    ?.message,
-                )}
-                {...register(
-                  "site.theme.default.background.transitionDuration",
-                  {
-                    setValueAs: (value) =>
-                      value === "" || value == null ? undefined : Number(value),
-                  },
-                )}
-              />
-            </Field>
+            />
           </>
         ) : null}
 

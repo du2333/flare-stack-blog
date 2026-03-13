@@ -1,6 +1,13 @@
 import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
 
+export const DEFAULT_THEME_OPACITY_MIN = 0;
+export const DEFAULT_THEME_OPACITY_MAX = 0.4;
+export const DEFAULT_THEME_BLUR_MIN = 0;
+export const DEFAULT_THEME_BLUR_MAX = 32;
+export const DEFAULT_THEME_TRANSITION_MIN = 0;
+export const DEFAULT_THEME_TRANSITION_MAX = 1500;
+
 function createSiteTextSchema(max: number) {
   return z.string().trim().max(max);
 }
@@ -67,39 +74,61 @@ function createOptionalAssetPathFormSchema(messages: Messages) {
 }
 
 function createOpacitySchema() {
-  return z.number().min(0).max(1, {
-    message: "Value must be between 0 and 1",
-  });
+  return z
+    .number()
+    .min(DEFAULT_THEME_OPACITY_MIN)
+    .max(DEFAULT_THEME_OPACITY_MAX, {
+      message: `Value must be between ${DEFAULT_THEME_OPACITY_MIN} and ${DEFAULT_THEME_OPACITY_MAX}`,
+    });
 }
 
 function createOpacityFormSchema(messages: Messages) {
-  return z.number().min(0).max(1, {
-    message: messages.settings_site_validation_opacity_range(),
-  });
+  return z
+    .number()
+    .min(DEFAULT_THEME_OPACITY_MIN)
+    .max(DEFAULT_THEME_OPACITY_MAX, {
+      message: messages.settings_site_validation_opacity_range(),
+    });
 }
 
 function createBlurSchema() {
-  return z.number().int().min(0).max(64, {
-    message: "Value must be between 0 and 64",
-  });
+  return z
+    .number()
+    .int()
+    .min(DEFAULT_THEME_BLUR_MIN)
+    .max(DEFAULT_THEME_BLUR_MAX, {
+      message: `Value must be between ${DEFAULT_THEME_BLUR_MIN} and ${DEFAULT_THEME_BLUR_MAX}`,
+    });
 }
 
 function createBlurFormSchema(messages: Messages) {
-  return z.number().int().min(0).max(64, {
-    message: messages.settings_site_validation_blur_range(),
-  });
+  return z
+    .number()
+    .int()
+    .min(DEFAULT_THEME_BLUR_MIN)
+    .max(DEFAULT_THEME_BLUR_MAX, {
+      message: messages.settings_site_validation_blur_range(),
+    });
 }
 
 function createTransitionDurationSchema() {
-  return z.number().int().min(0).max(3000, {
-    message: "Value must be between 0 and 3000",
-  });
+  return z
+    .number()
+    .int()
+    .min(DEFAULT_THEME_TRANSITION_MIN)
+    .max(DEFAULT_THEME_TRANSITION_MAX, {
+      message: `Value must be between ${DEFAULT_THEME_TRANSITION_MIN} and ${DEFAULT_THEME_TRANSITION_MAX}`,
+    });
 }
 
 function createTransitionDurationFormSchema(messages: Messages) {
-  return z.number().int().min(0).max(3000, {
-    message: messages.settings_site_validation_transition_range(),
-  });
+  return z
+    .number()
+    .int()
+    .min(DEFAULT_THEME_TRANSITION_MIN)
+    .max(DEFAULT_THEME_TRANSITION_MAX, {
+      message: messages.settings_site_validation_transition_range(),
+    });
 }
 
 function createDefaultThemeBackgroundSchema() {

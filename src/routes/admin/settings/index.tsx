@@ -208,10 +208,7 @@ function RouteComponent() {
           </div>
 
           <div className="flex-1 min-w-0 space-y-12 pt-2 lg:pt-0">
-            <TabsContent
-              value="site"
-              className="mt-0 space-y-10"
-            >
+            <TabsContent value="site" className="mt-0 space-y-10">
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
                   {m.settings_site_title()}
@@ -223,10 +220,7 @@ function RouteComponent() {
               <SiteSettingsSection />
             </TabsContent>
 
-            <TabsContent
-              value="email"
-              className="mt-0 space-y-10"
-            >
+            <TabsContent value="email" className="mt-0 space-y-10">
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
                   {m.settings_email_title()}
@@ -238,10 +232,7 @@ function RouteComponent() {
               <EmailServiceSection testEmailConnection={testEmailConnection} />
             </TabsContent>
 
-            <TabsContent
-              value="webhook"
-              className="mt-0 space-y-10"
-            >
+            <TabsContent value="webhook" className="mt-0 space-y-10">
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
                   {m.settings_webhook_title()}
@@ -253,10 +244,7 @@ function RouteComponent() {
               <WebhookSettingsSection />
             </TabsContent>
 
-            <TabsContent
-              value="maintenance"
-              className="mt-0 space-y-10"
-            >
+            <TabsContent value="maintenance" className="mt-0 space-y-10">
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
                   {m.settings_maintenance_title()}
