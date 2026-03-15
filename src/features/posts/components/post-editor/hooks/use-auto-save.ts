@@ -73,6 +73,10 @@ export function useAutoSave({
   };
 
   const markSaved = (savedPost: PostEditorData) => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
     latestPostRef.current = savedPost;
     lastSavedSnapshot.current = toComparable(savedPost);
     setError(null);
