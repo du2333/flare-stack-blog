@@ -2,6 +2,7 @@ import { z } from "zod";
 import * as AiService from "@/features/ai/ai.service";
 import * as CacheService from "@/features/cache/cache.service";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
+import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import type {
   DeletePostInput,
@@ -380,6 +381,39 @@ export async function startPostProcessWorkflow(
   data: StartPostProcessInput,
 ) {
   let publishedAtISO: string | undefined;
+
+  if (data.status === "published") {
+    const post = await PostRepo.findPostById(context.db, data.id);
+    if (post) {
+      const snapshotHash = await calculatePostHash({
+        title: post.title,
+        contentJson: post.contentJson,
+        summary: post.summary,
+        tagIds: post.tags.map((tag) => tag.id),
+        slug: post.slug,
+        publishedAt: post.publishedAt,
+        readTimeInMinutes: post.readTimeInMinutes,
+      });
+
+      await PostRevisionRepo.insertPostRevision(context.db, {
+        postId: post.id,
+        reason: "publish",
+        snapshotHash,
+        snapshotJson: {
+          title: post.title,
+          summary: post.summary,
+          slug: post.slug,
+          status: post.status,
+          publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
+          readTimeInMinutes: post.readTimeInMinutes,
+          contentJson: post.contentJson,
+          tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort(
+            (a, b) => a - b,
+          ),
+        },
+      });
+    }
+  }
 
   // Check if we need to auto-set the published date
   if (data.status === "published") {
