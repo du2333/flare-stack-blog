@@ -159,3 +159,25 @@ export async function restorePostSnapshot(
   await db.batch(batchQueries);
   return await findPostById(db, data.postId);
 }
+
+export async function deletePostRevisions(
+  db: DB,
+  postId: number,
+  revisionIds: Array<number>,
+) {
+  if (revisionIds.length === 0) {
+    return [];
+  }
+
+  return await db
+    .delete(PostRevisionsTable)
+    .where(
+      and(
+        eq(PostRevisionsTable.postId, postId),
+        inArray(PostRevisionsTable.id, revisionIds),
+      ),
+    )
+    .returning({
+      id: PostRevisionsTable.id,
+    });
+}

@@ -1,5 +1,6 @@
 import { type LucideIcon, RotateCcw, Save, Send } from "lucide-react";
 import type {
+  deletePostRevisionsFn,
   getPostRevisionFn,
   listPostRevisionsFn,
 } from "@/features/posts/api/post-revisions.admin.api";
@@ -12,6 +13,9 @@ export type RevisionListItem = Awaited<
 
 export type RevisionDetail = NonNullable<
   Awaited<ReturnType<typeof getPostRevisionFn>>
+>;
+export type DeleteRevisionsResult = Awaited<
+  ReturnType<typeof deletePostRevisionsFn>
 >;
 
 export const HISTORY_POLL_WINDOW_MS = ms("20s");
@@ -77,6 +81,13 @@ export function getRestoreErrorMessage(reason: string) {
       return m.editor_history_error_revision_not_found();
     case "POST_REVISION_INVALID_SNAPSHOT":
       return m.editor_history_error_invalid_snapshot();
+    default:
+      return m.editor_action_unknown_error();
+  }
+}
+
+export function getDeleteErrorMessage(reason: string) {
+  switch (reason) {
     default:
       return m.editor_action_unknown_error();
   }

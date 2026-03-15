@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { MEDIA_KEYS } from "@/features/media/queries";
-import { restorePostRevisionFn } from "@/features/posts/api/post-revisions.admin.api";
+import {
+  deletePostRevisionsFn,
+  restorePostRevisionFn,
+} from "@/features/posts/api/post-revisions.admin.api";
 import {
   POSTS_KEYS,
   postRevisionDetailQuery,
@@ -18,6 +21,7 @@ import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
+  getDeleteErrorMessage,
   getRestoreErrorMessage,
   HISTORY_POLL_INTERVAL_MS,
   HISTORY_POLL_WINDOW_MS,
@@ -70,8 +74,15 @@ function HistoryPanelInternal({
   const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
     null,
   );
+  const [selectedRevisionIds, setSelectedRevisionIds] = useState<Array<number>>(
+    [],
+  );
   const [isMobilePreviewing, setIsMobilePreviewing] = useState(false);
   const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
+  const [deleteTargetRevisionIds, setDeleteTargetRevisionIds] = useState<
+    Array<number>
+  >([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isPollWindowActive, setIsPollWindowActive] = useState(false);
 
   const handleSelectRevision = (id: number) => {
@@ -104,6 +115,7 @@ function HistoryPanelInternal({
     if (!isOpen) {
       setIsPollWindowActive(false);
       setIsMobilePreviewing(false); // Reset mobile view when closed
+      setSelectedRevisionIds([]);
       return;
     }
 
@@ -127,6 +139,11 @@ function HistoryPanelInternal({
     if (!isOpen) return;
 
     const revisions = revisionsQuery.data ?? [];
+    const revisionIds = revisions.map((revision) => revision.id);
+    setSelectedRevisionIds((current) =>
+      current.filter((revisionId) => revisionIds.includes(revisionId)),
+    );
+
     if (revisions.length === 0) {
       setSelectedRevisionId(null);
       return;
@@ -139,6 +156,34 @@ function HistoryPanelInternal({
       setSelectedRevisionId(revisions[0]?.id ?? null);
     }
   }, [isOpen, revisionsQuery.data, selectedRevisionId]);
+
+  const handleToggleRevisionSelection = (
+    revisionId: number,
+    checked: boolean,
+  ) => {
+    setSelectedRevisionIds((current) => {
+      if (checked) {
+        return current.includes(revisionId)
+          ? current
+          : [...current, revisionId];
+      }
+
+      return current.filter((id) => id !== revisionId);
+    });
+  };
+
+  const handleToggleSelectAll = (checked: boolean) => {
+    const revisions = revisionsQuery.data ?? [];
+    setSelectedRevisionIds(
+      checked ? revisions.map((revision) => revision.id) : [],
+    );
+  };
+
+  const openDeleteConfirmation = (revisionIds: Array<number>) => {
+    if (revisionIds.length === 0) return;
+    setDeleteTargetRevisionIds([...new Set(revisionIds)]);
+    setIsDeleteConfirmOpen(true);
+  };
 
   const tagNames = useMemo(() => {
     if (!selectedRevision) return [];
@@ -189,6 +234,50 @@ function HistoryPanelInternal({
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (revisionIds: Array<number>) => {
+      const result = await deletePostRevisionsFn({
+        data: { postId, revisionIds },
+      });
+
+      if (!result.data) {
+        throw new Error("DELETE_FAILED");
+      }
+
+      return result.data;
+    },
+    onSuccess: async (result) => {
+      const deletedCurrentRevision =
+        selectedRevisionId != null &&
+        result.deletedIds.includes(selectedRevisionId);
+
+      if (deletedCurrentRevision) {
+        setSelectedRevisionId(null);
+        setIsMobilePreviewing(false);
+      }
+
+      await invalidatePostEditorQueries(queryClient, postId);
+
+      setSelectedRevisionIds((current) =>
+        current.filter((id) => !result.deletedIds.includes(id)),
+      );
+
+      toast.success(m.editor_history_toast_delete_success(), {
+        description: m.editor_history_toast_delete_success_desc({
+          count: String(result.deletedCount),
+        }),
+      });
+
+      setDeleteTargetRevisionIds([]);
+      setIsDeleteConfirmOpen(false);
+    },
+    onError: (error) => {
+      toast.error(m.editor_history_toast_delete_failed(), {
+        description: getDeleteErrorMessage(error.message),
+      });
+    },
+  });
+
   // Use established hook for exit animation lifecycle
   const shouldRender = useDelayUnmount(isOpen, 500);
 
@@ -208,6 +297,22 @@ function HistoryPanelInternal({
         })}
         confirmLabel={m.editor_history_restore_action()}
         isLoading={restoreMutation.isPending}
+      />
+      <ConfirmationModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => {
+          if (deleteMutation.isPending) return;
+          setIsDeleteConfirmOpen(false);
+          setDeleteTargetRevisionIds([]);
+        }}
+        onConfirm={() => deleteMutation.mutate(deleteTargetRevisionIds)}
+        title={m.editor_history_delete_title()}
+        message={m.editor_history_delete_message({
+          count: String(deleteTargetRevisionIds.length),
+        })}
+        confirmLabel={m.editor_history_delete_action()}
+        isLoading={deleteMutation.isPending}
+        isDanger
       />
 
       {/* Backdrop */}
@@ -263,7 +368,14 @@ function HistoryPanelInternal({
               revisions={revisionsQuery.data ?? []}
               isLoading={revisionsQuery.isLoading}
               selectedRevisionId={selectedRevisionId}
+              selectedRevisionIds={selectedRevisionIds}
+              isDeleting={deleteMutation.isPending}
               onSelect={handleSelectRevision}
+              onToggleSelection={handleToggleRevisionSelection}
+              onToggleSelectAll={handleToggleSelectAll}
+              onDeleteSelected={() =>
+                openDeleteConfirmation(selectedRevisionIds)
+              }
             />
           </div>
 
@@ -278,7 +390,13 @@ function HistoryPanelInternal({
               tagNames={tagNames}
               isLoading={selectedRevisionQuery.isLoading}
               isRestoring={restoreMutation.isPending}
+              isDeleting={deleteMutation.isPending}
               onRestore={() => setIsRestoreConfirmOpen(true)}
+              onDelete={() =>
+                selectedRevision
+                  ? openDeleteConfirmation([selectedRevision.id])
+                  : undefined
+              }
               onBack={() => setIsMobilePreviewing(false)}
             />
           </div>

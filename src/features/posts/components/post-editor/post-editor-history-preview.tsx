@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Loader2, RotateCcw, Trash2 } from "lucide-react";
 import { Editor } from "@/components/tiptap-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,9 @@ interface PostEditorHistoryPreviewProps {
   tagNames: Array<string>;
   isLoading: boolean;
   isRestoring: boolean;
+  isDeleting: boolean;
   onRestore: () => void;
+  onDelete: () => void;
   onBack?: () => void;
 }
 
@@ -26,7 +28,9 @@ export function PostEditorHistoryPreview({
   tagNames,
   isLoading,
   isRestoring,
+  isDeleting,
   onRestore,
+  onDelete,
   onBack,
 }: PostEditorHistoryPreviewProps) {
   return (
@@ -85,18 +89,36 @@ export function PostEditorHistoryPreview({
               </p>
             </div>
 
-            <Button
-              onClick={onRestore}
-              disabled={isRestoring}
-              className="rounded-none"
-            >
-              {isRestoring ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <RotateCcw size={14} />
-              )}
-              <span className="ml-2">{m.editor_history_restore_action()}</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={onDelete}
+                disabled={isDeleting || isRestoring}
+                className="rounded-none text-destructive hover:text-destructive"
+              >
+                {isDeleting ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Trash2 size={14} />
+                )}
+                <span className="ml-2">{m.editor_history_delete_action()}</span>
+              </Button>
+
+              <Button
+                onClick={onRestore}
+                disabled={isRestoring || isDeleting}
+                className="rounded-none"
+              >
+                {isRestoring ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <RotateCcw size={14} />
+                )}
+                <span className="ml-2">
+                  {m.editor_history_restore_action()}
+                </span>
+              </Button>
+            </div>
           </div>
 
           <div className="mb-8 grid gap-6 border-b border-border/20 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

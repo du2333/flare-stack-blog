@@ -4,6 +4,7 @@ import * as PostRepo from "@/features/posts/data/posts.data";
 import type {
   CreatePostRevisionInput,
   CreatePostRevisionResult,
+  DeletePostRevisionsInput,
   FindPostRevisionByIdInput,
   ListPostRevisionsInput,
   PostRevisionSnapshot,
@@ -244,5 +245,21 @@ export async function restorePostRevision(
     post: restoredPost,
     restored: true,
     revisionId: revision.id,
+  });
+}
+
+export async function deletePostRevisions(
+  context: DbContext,
+  data: DeletePostRevisionsInput,
+) {
+  const deletedRevisions = await PostRevisionRepo.deletePostRevisions(
+    context.db,
+    data.postId,
+    [...new Set(data.revisionIds)],
+  );
+
+  return ok({
+    deletedIds: deletedRevisions.map((revision) => revision.id),
+    deletedCount: deletedRevisions.length,
   });
 }

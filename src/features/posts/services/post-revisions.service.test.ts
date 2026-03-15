@@ -259,6 +259,89 @@ describe("PostRevisionService", () => {
     expect(revisions[0]?.id).toBe(revision.revision?.id);
   });
 
+  it("deletes multiple revisions for the current post only", async () => {
+    const { id: firstPostId } = await PostService.createEmptyPost(adminContext);
+    const { id: secondPostId } =
+      await PostService.createEmptyPost(adminContext);
+
+    await updatePost({
+      id: firstPostId,
+      data: {
+        title: "First post v1",
+        slug: "first-post-v1",
+      },
+    });
+    const firstRevision = unwrap(
+      await PostRevisionService.createPostRevision(adminContext, {
+        postId: firstPostId,
+        reason: "publish",
+      }),
+    );
+
+    await updatePost({
+      id: firstPostId,
+      data: {
+        title: "First post v2",
+        slug: "first-post-v2",
+      },
+    });
+    const secondRevision = unwrap(
+      await PostRevisionService.createPostRevision(adminContext, {
+        postId: firstPostId,
+        reason: "publish",
+      }),
+    );
+
+    await updatePost({
+      id: secondPostId,
+      data: {
+        title: "Second post v1",
+        slug: "second-post-v1",
+      },
+    });
+    const untouchedRevision = unwrap(
+      await PostRevisionService.createPostRevision(adminContext, {
+        postId: secondPostId,
+        reason: "publish",
+      }),
+    );
+
+    const result = unwrap(
+      await PostRevisionService.deletePostRevisions(adminContext, {
+        postId: firstPostId,
+        revisionIds: [
+          firstRevision.revision!.id,
+          secondRevision.revision!.id,
+          untouchedRevision.revision!.id,
+        ],
+      }),
+    );
+
+    expect(result.deletedCount).toBe(2);
+    expect(result.deletedIds.sort((a, b) => a - b)).toEqual(
+      [firstRevision.revision!.id, secondRevision.revision!.id].sort(
+        (a, b) => a - b,
+      ),
+    );
+
+    const firstPostRevisions = await PostRevisionService.listPostRevisions(
+      adminContext,
+      {
+        postId: firstPostId,
+      },
+    );
+    const secondPostRevisions = await PostRevisionService.listPostRevisions(
+      adminContext,
+      {
+        postId: secondPostId,
+      },
+    );
+
+    expect(firstPostRevisions).toHaveLength(0);
+    expect(secondPostRevisions).toHaveLength(1);
+    expect(secondPostRevisions[0]?.id).toBe(untouchedRevision.revision!.id);
+  });
+
   it("creates a publish revision when starting the publish workflow", async () => {
     const tag = unwrap(
       await TagService.createTag(adminContext, { name: "publish-tag" }),

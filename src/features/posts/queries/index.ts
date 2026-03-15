@@ -142,6 +142,7 @@ export function postRevisionListQuery(postId: number) {
 export function postRevisionDetailQuery(postId: number, revisionId: number) {
   return queryOptions({
     queryKey: POSTS_KEYS.revisionDetail(postId, revisionId),
-    queryFn: () => getPostRevisionFn({ data: { postId, revisionId } }),
+    queryFn: async () =>
+      (await getPostRevisionFn({ data: { postId, revisionId } })) ?? null,
   });
 }
