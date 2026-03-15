@@ -4,8 +4,8 @@ import {
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
-import * as PostRevisionService from "@/features/posts/post-revisions.service";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import * as TagService from "@/features/tags/tags.service";
 import { PostRevisionsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";

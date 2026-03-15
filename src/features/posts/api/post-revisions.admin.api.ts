@@ -3,8 +3,8 @@ import {
   FindPostRevisionByIdInputSchema,
   ListPostRevisionsInputSchema,
   RestorePostRevisionInputSchema,
-} from "@/features/posts/post-revisions.schema";
-import * as PostRevisionService from "@/features/posts/post-revisions.service";
+} from "@/features/posts/schema/post-revisions.schema";
+import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import { adminMiddleware } from "@/lib/middlewares";
 
 export const listPostRevisionsFn = createServerFn()

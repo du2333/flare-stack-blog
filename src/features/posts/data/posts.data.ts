@@ -15,7 +15,7 @@ import {
   buildPostOrderByClause,
   buildPostWhereClause,
 } from "@/features/posts/data/helper";
-import type { PostListItem } from "@/features/posts/posts.schema";
+import type { PostListItem } from "@/features/posts/schema/posts.schema";
 import type { PostStatus, Tag } from "@/lib/db/schema";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 

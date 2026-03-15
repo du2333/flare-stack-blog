@@ -4,7 +4,6 @@ import * as CacheService from "@/features/cache/cache.service";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
-import * as PostAutoSnapshotService from "@/features/posts/post-auto-snapshot.service";
 import type {
   DeletePostInput,
   FindPostByIdInput,
@@ -17,12 +16,14 @@ import type {
   PreviewSummaryInput,
   StartPostProcessInput,
   UpdatePostInput,
-} from "@/features/posts/posts.schema";
+} from "@/features/posts/schema/posts.schema";
 import {
   POSTS_CACHE_KEYS,
   PostListResponseSchema,
   PostWithTocSchema,
-} from "@/features/posts/posts.schema";
+} from "@/features/posts/schema/posts.schema";
+import { logPostAutoSnapshot } from "@/features/posts/services/post-auto-snapshot.logging";
+import * as PostAutoSnapshotService from "@/features/posts/services/post-auto-snapshot.service";
 import {
   convertToPlainText,
   highlightCodeBlocks,
@@ -329,6 +330,7 @@ export async function updatePost(
   context.executionCtx.waitUntil(
     PostAutoSnapshotService.enqueuePostAutoSnapshot(context, {
       postId: updatedPost.id,
+      source: "post_update",
     }),
   );
 
@@ -418,6 +420,12 @@ export async function startPostProcessWorkflow(
             (a, b) => a - b,
           ),
         },
+      });
+
+      logPostAutoSnapshot(context.env, "publish_revision_created", {
+        postId: post.id,
+        reason: "publish",
+        snapshotHash,
       });
     }
   }

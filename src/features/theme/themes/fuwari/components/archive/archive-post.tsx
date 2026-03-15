@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { PostItem } from "@/features/posts/posts.schema";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 
 interface ArchivePostProps {

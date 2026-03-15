@@ -1,4 +1,4 @@
-import type { PostItem } from "@/features/posts/posts.schema";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import type { TagWithCount } from "@/features/tags/tags.schema";
 
 export interface PostsPageProps {

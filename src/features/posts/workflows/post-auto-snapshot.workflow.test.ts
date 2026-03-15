@@ -6,11 +6,11 @@ import {
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as PostRevisionService from "@/features/posts/post-revisions.service";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { PostAutoSnapshotWorkflow } from "@/features/posts/workflows/post-auto-snapshot";
 import * as TagService from "@/features/tags/tags.service";
-import { ms, type Duration } from "@/lib/duration";
+import { type Duration, ms } from "@/lib/duration";
 import { unwrap } from "@/lib/errors";
 
 function toMsDurationLabel(duration: string): Duration {
@@ -133,9 +133,7 @@ describe("PostAutoSnapshotWorkflow", () => {
     });
   });
 
-  it(
-    "creates an auto revision after the quiet window",
-    async () => {
+  it("creates an auto revision after the quiet window", async () => {
     const tag = unwrap(
       await TagService.createTag(adminContext, { name: "auto-workflow-tag" }),
     );
@@ -177,9 +175,7 @@ describe("PostAutoSnapshotWorkflow", () => {
     );
     expect(revisions).toHaveLength(1);
     expect(revisions[0]?.reason).toBe("auto");
-    },
-    15000,
-  );
+  }, 15000);
 
   it("waits for the latest edit before creating an auto revision", async () => {
     vi.useFakeTimers();
@@ -237,9 +233,7 @@ describe("PostAutoSnapshotWorkflow", () => {
     expect(sleepCalls).toBeGreaterThan(1);
   });
 
-  it(
-    "skips creating a duplicate auto revision when nothing changed",
-    async () => {
+  it("skips creating a duplicate auto revision when nothing changed", async () => {
     const { id } = await PostService.createEmptyPost(adminContext);
 
     await updatePost({
@@ -271,7 +265,5 @@ describe("PostAutoSnapshotWorkflow", () => {
       },
     );
     expect(revisions).toHaveLength(1);
-    },
-    15000,
-  );
+  }, 15000);
 });

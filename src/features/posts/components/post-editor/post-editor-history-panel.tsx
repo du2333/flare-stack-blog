@@ -1,0 +1,258 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClientOnly } from "@tanstack/react-router";
+import { X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { MEDIA_KEYS } from "@/features/media/queries";
+import { restorePostRevisionFn } from "@/features/posts/api/post-revisions.admin.api";
+import {
+  POSTS_KEYS,
+  postRevisionDetailQuery,
+  postRevisionListQuery,
+} from "@/features/posts/queries";
+import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
+import { TAGS_KEYS } from "@/features/tags/queries";
+import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import {
+  getRestoreErrorMessage,
+  HISTORY_POLL_INTERVAL_MS,
+  HISTORY_POLL_WINDOW_MS,
+  type RevisionDetail,
+} from "./post-editor-history.shared";
+import { PostEditorHistoryList } from "./post-editor-history-list";
+import { PostEditorHistoryPreview } from "./post-editor-history-preview";
+
+interface PostEditorHistoryPanelProps {
+  postId: number;
+  isOpen: boolean;
+  onClose: () => void;
+  allTags: Array<{ id: number; name: string }>;
+  onRestoreApplied: (input: { snapshot: PostRevisionSnapshot }) => void;
+}
+
+function invalidatePostEditorQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  postId: number,
+) {
+  const queryKeys = [
+    POSTS_KEYS.detail(postId),
+    POSTS_KEYS.lists,
+    POSTS_KEYS.adminLists,
+    POSTS_KEYS.counts,
+    POSTS_KEYS.revisionList(postId),
+    POSTS_KEYS.revisionDetails,
+    TAGS_KEYS.postTags(postId),
+    TAGS_KEYS.admin,
+    MEDIA_KEYS.linked,
+  ] as const;
+
+  return Promise.all(
+    queryKeys.map((queryKey) =>
+      queryClient.invalidateQueries({
+        queryKey,
+      }),
+    ),
+  );
+}
+
+function HistoryPanelInternal({
+  postId,
+  isOpen,
+  onClose,
+  allTags,
+  onRestoreApplied,
+}: PostEditorHistoryPanelProps) {
+  const queryClient = useQueryClient();
+  const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
+    null,
+  );
+  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
+  const [isPollWindowActive, setIsPollWindowActive] = useState(false);
+
+  const revisionsQuery = useQuery({
+    ...postRevisionListQuery(postId),
+    enabled: isOpen,
+    refetchOnMount: "always",
+    refetchInterval:
+      isOpen && isPollWindowActive ? HISTORY_POLL_INTERVAL_MS : false,
+    refetchIntervalInBackground: false,
+  });
+
+  const selectedRevisionQuery = useQuery({
+    ...postRevisionDetailQuery(postId, selectedRevisionId ?? 0),
+    enabled: isOpen && selectedRevisionId != null,
+    refetchOnMount: "always",
+    refetchIntervalInBackground: false,
+  });
+
+  const selectedRevision: RevisionDetail | null =
+    selectedRevisionQuery.data ?? null;
+  const refetchRevisions = revisionsQuery.refetch;
+  const refetchSelectedRevision = selectedRevisionQuery.refetch;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsPollWindowActive(false);
+      return;
+    }
+
+    setIsPollWindowActive(true);
+    void refetchRevisions();
+    if (selectedRevisionId != null) {
+      void refetchSelectedRevision();
+    }
+
+    const timer = setTimeout(() => {
+      setIsPollWindowActive(false);
+    }, HISTORY_POLL_WINDOW_MS);
+
+    return () => {
+      clearTimeout(timer);
+      setIsPollWindowActive(false);
+    };
+  }, [isOpen, refetchRevisions, selectedRevisionId, refetchSelectedRevision]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const revisions = revisionsQuery.data ?? [];
+    if (revisions.length === 0) {
+      setSelectedRevisionId(null);
+      return;
+    }
+
+    const hasSelected = revisions.some(
+      (revision) => revision.id === selectedRevisionId,
+    );
+    if (!hasSelected) {
+      setSelectedRevisionId(revisions[0]?.id ?? null);
+    }
+  }, [isOpen, revisionsQuery.data, selectedRevisionId]);
+
+  const tagNames = useMemo(() => {
+    if (!selectedRevision) return [];
+    const tagMap = new Map(allTags.map((tag) => [tag.id, tag.name]));
+    return selectedRevision.snapshotJson.tagIds
+      .map((tagId) => tagMap.get(tagId))
+      .filter((tagName): tagName is string => Boolean(tagName));
+  }, [allTags, selectedRevision]);
+
+  const restoreMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedRevisionId) {
+        throw new Error("REVISION_NOT_SELECTED");
+      }
+
+      const result = await restorePostRevisionFn({
+        data: { postId, revisionId: selectedRevisionId },
+      });
+
+      if (result.error) {
+        throw new Error(result.error.reason);
+      }
+    },
+    onSuccess: async () => {
+      if (!selectedRevision) return;
+
+      onRestoreApplied({
+        snapshot: selectedRevision.snapshotJson,
+      });
+
+      await invalidatePostEditorQueries(queryClient, postId);
+
+      toast.success(m.editor_history_toast_restore_success(), {
+        description: m.editor_history_toast_restore_success_desc({
+          title:
+            selectedRevision.snapshotJson.title.trim() || m.common_untitled(),
+        }),
+      });
+
+      setIsRestoreConfirmOpen(false);
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(m.editor_history_toast_restore_failed(), {
+        description: getRestoreErrorMessage(error.message),
+      });
+    },
+  });
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <ConfirmationModal
+        isOpen={isRestoreConfirmOpen}
+        onClose={() => setIsRestoreConfirmOpen(false)}
+        onConfirm={() => restoreMutation.mutate()}
+        title={m.editor_history_restore_title()}
+        message={m.editor_history_restore_message({
+          time: selectedRevision
+            ? formatDate(selectedRevision.createdAt, { includeTime: true })
+            : "",
+        })}
+        confirmLabel={m.editor_history_restore_action()}
+        isLoading={restoreMutation.isPending}
+      />
+
+      <div
+        className="fixed inset-0 z-90 bg-background/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <aside className="fixed inset-y-0 right-0 z-91 flex w-full max-w-6xl flex-col border-l border-border/40 bg-background/95 shadow-2xl backdrop-blur md:max-w-5xl">
+        <div className="flex items-center justify-between border-b border-border/30 px-6 py-5">
+          <div className="space-y-1">
+            <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-muted-foreground/60">
+              {m.editor_history_eyebrow()}
+            </p>
+            <h2 className="text-2xl font-serif text-foreground">
+              {m.editor_history_title()}
+            </h2>
+            <p className="text-sm text-muted-foreground/70">
+              {m.editor_history_subtitle()}
+            </p>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="rounded-none text-muted-foreground hover:text-foreground"
+            aria-label={m.common_close()}
+          >
+            <X size={18} />
+          </Button>
+        </div>
+
+        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
+          <PostEditorHistoryList
+            revisions={revisionsQuery.data ?? []}
+            isLoading={revisionsQuery.isLoading}
+            selectedRevisionId={selectedRevisionId}
+            onSelect={setSelectedRevisionId}
+          />
+
+          <PostEditorHistoryPreview
+            revision={selectedRevision}
+            tagNames={tagNames}
+            isLoading={selectedRevisionQuery.isLoading}
+            isRestoring={restoreMutation.isPending}
+            onRestore={() => setIsRestoreConfirmOpen(true)}
+          />
+        </div>
+      </aside>
+    </>
+  );
+}
+
+export function PostEditorHistoryPanel(props: PostEditorHistoryPanelProps) {
+  return (
+    <ClientOnly>
+      <HistoryPanelInternal {...props} />
+    </ClientOnly>
+  );
+}

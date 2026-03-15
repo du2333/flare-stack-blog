@@ -1,8 +1,9 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { DEFAULT_AUTO_SNAPSHOT_QUIET_WINDOW_SECONDS } from "@/features/posts/post-auto-snapshot.service";
-import * as PostRevisionService from "@/features/posts/post-revisions.service";
+import { logPostAutoSnapshot } from "@/features/posts/services/post-auto-snapshot.logging";
+import { DEFAULT_AUTO_SNAPSHOT_QUIET_WINDOW_SECONDS } from "@/features/posts/services/post-auto-snapshot.service";
+import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import { getDb } from "@/lib/db";
 import { PostsTable } from "@/lib/db/schema";
 import { ms } from "@/lib/duration";
@@ -20,6 +21,12 @@ export class PostAutoSnapshotWorkflow extends WorkflowEntrypoint<Env, Params> {
         DEFAULT_AUTO_SNAPSHOT_QUIET_WINDOW_SECONDS,
     );
 
+    logPostAutoSnapshot(this.env, "workflow_started", {
+      postId: event.payload.postId,
+      quietWindowSeconds,
+      workflowInstanceId: event.instanceId,
+    });
+
     await this.waitForQuietWindow(
       step,
       event.payload.postId,
@@ -36,7 +43,22 @@ export class PostAutoSnapshotWorkflow extends WorkflowEntrypoint<Env, Params> {
         },
       );
 
-      if (result.error) return { created: false }
+      if (result.error) {
+        logPostAutoSnapshot(this.env, "workflow_create_revision_failed", {
+          postId: event.payload.postId,
+          workflowInstanceId: event.instanceId,
+          reason: result.error.reason,
+        });
+        return { created: false };
+      }
+
+      logPostAutoSnapshot(this.env, "workflow_create_revision_completed", {
+        postId: event.payload.postId,
+        workflowInstanceId: event.instanceId,
+        created: result.data.created,
+        skipReason: result.data.skipReason ?? null,
+        revisionId: result.data.revision?.id ?? null,
+      });
 
       return result.data;
     });
@@ -50,6 +72,11 @@ export class PostAutoSnapshotWorkflow extends WorkflowEntrypoint<Env, Params> {
     const quietWindowMs = ms(`${quietWindowSeconds}s`);
 
     while (true) {
+      logPostAutoSnapshot(this.env, "workflow_waiting_for_quiet_window", {
+        postId,
+        quietWindowSeconds,
+      });
+
       await step.sleep(
         "wait for editor quiet window",
         `${quietWindowSeconds} seconds`,
@@ -70,15 +97,39 @@ export class PostAutoSnapshotWorkflow extends WorkflowEntrypoint<Env, Params> {
       );
 
       if (!updatedAt) {
+        logPostAutoSnapshot(this.env, "workflow_post_missing_during_wait", {
+          postId,
+        });
         return;
       }
 
-      const msSinceLastUpdate = Date.now() - updatedAt.getTime();
+      const nowMs = Date.now();
+      const updatedAtMs = updatedAt.getTime();
+      const msSinceLastUpdate = nowMs - updatedAtMs;
       if (msSinceLastUpdate >= quietWindowMs) {
+        logPostAutoSnapshot(this.env, "workflow_quiet_window_satisfied", {
+          postId,
+          quietWindowSeconds,
+          quietWindowMs,
+          nowMs,
+          updatedAtIso: updatedAt.toISOString(),
+          updatedAtMs,
+          msSinceLastUpdate,
+        });
         return;
       }
 
       const remainingMs = quietWindowMs - msSinceLastUpdate;
+      logPostAutoSnapshot(this.env, "workflow_quiet_window_extended", {
+        postId,
+        quietWindowSeconds,
+        quietWindowMs,
+        nowMs,
+        updatedAtIso: updatedAt.toISOString(),
+        updatedAtMs,
+        msSinceLastUpdate,
+        remainingMs,
+      });
       await step.sleep("wait for additional quiet time", remainingMs);
     }
   }

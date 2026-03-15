@@ -8,7 +8,7 @@ import {
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as CacheService from "@/features/cache/cache.service";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import * as TagService from "@/features/tags/tags.service";
 import { PostsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";

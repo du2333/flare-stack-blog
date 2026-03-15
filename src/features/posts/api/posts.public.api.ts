@@ -3,8 +3,8 @@ import {
   FindPostBySlugInputSchema,
   FindRelatedPostsInputSchema,
   GetPostsCursorInputSchema,
-} from "@/features/posts/posts.schema";
-import * as PostService from "@/features/posts/posts.service";
+} from "@/features/posts/schema/posts.schema";
+import * as PostService from "@/features/posts/services/posts.service";
 import { dbMiddleware } from "@/lib/middlewares";
 
 export const getPostsCursorFn = createServerFn()

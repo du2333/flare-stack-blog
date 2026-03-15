@@ -14,6 +14,7 @@ interface UseAutoSaveReturn {
   setError: (error: string | null) => void;
   setSaveStatus: (status: SaveStatus) => void;
   isDirty: boolean;
+  markSaved: (post: PostEditorData) => void;
 }
 
 export function useAutoSave({
@@ -69,6 +70,14 @@ export function useAutoSave({
       prev.tagIds !== curr.tagIds ||
       prev.contentRef !== curr.contentRef
     );
+  };
+
+  const markSaved = (savedPost: PostEditorData) => {
+    latestPostRef.current = savedPost;
+    lastSavedSnapshot.current = toComparable(savedPost);
+    setError(null);
+    setSaveStatus("SYNCED");
+    setLastSaved(new Date());
   };
 
   // Track mount / unmount
@@ -158,5 +167,6 @@ export function useAutoSave({
     setError,
     setSaveStatus,
     isDirty: isDirty(toComparable(post)),
+    markSaved,
   };
 }

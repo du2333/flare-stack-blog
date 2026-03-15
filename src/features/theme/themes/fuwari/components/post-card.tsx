@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Calendar, ChevronRight, Tag } from "lucide-react";
-import type { PostItem } from "@/features/posts/posts.schema";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

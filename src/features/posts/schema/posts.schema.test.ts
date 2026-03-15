@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UpdatePostInputSchema } from "@/features/posts/posts.schema";
+import { UpdatePostInputSchema } from "@/features/posts/schema/posts.schema";
 
 describe("posts.schema", () => {
   it("strips publicContentJson from update input", () => {
