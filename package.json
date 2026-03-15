@@ -35,6 +35,9 @@
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it"
   },
   "dependencies": {
+    "@better-auth/core": "1.5.5",
+    "@better-auth/oauth-provider": "^1.5.5",
+    "@better-auth/utils": "0.3.1",
     "@hono/zod-validator": "^0.7.6",
     "@hookform/resolvers": "^5.2.2",
     "@noble/hashes": "^2.0.1",
@@ -68,7 +71,8 @@
     "@tiptap/starter-kit": "^3.20.0",
     "@tiptap/static-renderer": "^3.20.0",
     "ai": "^6.0.23",
-    "better-auth": "^1.4.6",
+    "better-auth": "1.5.5",
+    "better-call": "1.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.7",

@@ -1,0 +1,53 @@
+import { describe, expect, it } from "vitest";
+import { flattenScopeRequest } from "./oauth-provider.scope";
+import {
+  createOAuthPrincipal,
+  extractBearerToken,
+  getOAuthProtectedResource,
+  parseOAuthScopes,
+} from "./oauth-provider.service";
+
+describe("oauth-provider service", () => {
+  it("extracts bearer tokens from authorization headers", () => {
+    expect(extractBearerToken("Bearer token-123")).toBe("token-123");
+    expect(extractBearerToken("opaque-token")).toBe("opaque-token");
+    expect(extractBearerToken(undefined)).toBeNull();
+  });
+
+  it("filters unsupported scopes from scope claims", () => {
+    expect(parseOAuthScopes("openid posts:read posts:unknown")).toEqual([
+      "openid",
+      "posts:read",
+    ]);
+    expect(parseOAuthScopes(null)).toEqual([]);
+  });
+
+  it("flattens structured scope requests", () => {
+    expect(
+      flattenScopeRequest({
+        comments: ["write"],
+        posts: ["read", "write"],
+      }),
+    ).toEqual(["comments:write", "posts:read", "posts:write"]);
+  });
+
+  it("derives the protected resource from request url", () => {
+    expect(
+      getOAuthProtectedResource("https://blog.example.com/api/integrations/posts"),
+    ).toBe("https://blog.example.com");
+  });
+
+  it("builds an oauth principal from jwt payload", () => {
+    expect(
+      createOAuthPrincipal({
+        azp: "client_123",
+        scope: "posts:read email",
+        sub: "user_123",
+      }),
+    ).toMatchObject({
+      clientId: "client_123",
+      scopes: ["posts:read", "email"],
+      subject: "user_123",
+    });
+  });
+});
