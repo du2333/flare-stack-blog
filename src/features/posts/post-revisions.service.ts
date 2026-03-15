@@ -3,13 +3,19 @@ import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import type {
   CreatePostRevisionInput,
+  CreatePostRevisionResult,
   FindPostRevisionByIdInput,
   ListPostRevisionsInput,
   PostRevisionSnapshot,
   RestorePostRevisionInput,
 } from "@/features/posts/post-revisions.schema";
+import { PostRevisionSnapshotSchema } from "@/features/posts/post-revisions.schema";
 import { calculatePostHash } from "@/features/posts/utils/sync";
+import { ms } from "@/lib/duration";
 import { err, ok } from "@/lib/errors";
+
+const AUTO_SNAPSHOT_MIN_INTERVAL = "5m";
+const MAX_AUTO_REVISIONS_PER_POST = 30;
 
 function toRevisionSnapshot(
   post: Awaited<ReturnType<typeof PostRepo.findPostById>>,
@@ -84,15 +90,54 @@ export async function createPostRevision(
 
   const snapshot = toRevisionSnapshot(post);
   const snapshotHash = await hashSnapshot(snapshot);
+  const reason = data.reason ?? "auto";
+
+  if (reason === "auto") {
+    const [latestRevision, latestAutoRevision] = await Promise.all([
+      PostRevisionRepo.findLatestPostRevision(context.db, data.postId),
+      PostRevisionRepo.findLatestPostRevision(context.db, data.postId, {
+        reason: "auto",
+      }),
+    ]);
+
+    if (latestRevision?.snapshotHash === snapshotHash) {
+      return ok<CreatePostRevisionResult>({
+        created: false,
+        revision: latestRevision,
+        skipReason: "UNCHANGED",
+      });
+    }
+
+    if (
+      latestAutoRevision &&
+      Date.now() - latestAutoRevision.createdAt.getTime() <
+        ms(AUTO_SNAPSHOT_MIN_INTERVAL)
+    ) {
+      return ok<CreatePostRevisionResult>({
+        created: false,
+        revision: latestAutoRevision,
+        skipReason: "RATE_LIMITED",
+      });
+    }
+  }
 
   const revision = await PostRevisionRepo.insertPostRevision(context.db, {
     postId: data.postId,
-    reason: data.reason ?? "manual",
+    reason,
     snapshotJson: snapshot,
     snapshotHash,
   });
 
-  return ok(revision);
+  if (reason === "auto") {
+    await PostRevisionRepo.trimAutoRevisions(context.db, data.postId, {
+      keep: MAX_AUTO_REVISIONS_PER_POST,
+    });
+  }
+
+  return ok<CreatePostRevisionResult>({
+    created: true,
+    revision,
+  });
 }
 
 export async function restorePostRevision(
@@ -112,10 +157,18 @@ export async function restorePostRevision(
     return err({ reason: "POST_REVISION_NOT_FOUND" });
   }
 
+  const parsedSnapshot = PostRevisionSnapshotSchema.safeParse(
+    revision.snapshotJson,
+  );
+  if (!parsedSnapshot.success) {
+    return err({ reason: "POST_REVISION_INVALID_SNAPSHOT" });
+  }
+  const targetSnapshot = parsedSnapshot.data;
+
   const currentSnapshot = toRevisionSnapshot(post);
   const [currentHash, targetHash] = await Promise.all([
     hashSnapshot(currentSnapshot),
-    hashSnapshot(revision.snapshotJson),
+    hashSnapshot(targetSnapshot),
   ]);
 
   if (currentHash === targetHash) {
@@ -128,7 +181,7 @@ export async function restorePostRevision(
 
   const restoredPost = await PostRevisionRepo.restorePostSnapshot(context.db, {
     postId: data.postId,
-    snapshot: revision.snapshotJson,
+    snapshot: targetSnapshot,
     backupRevision: {
       reason: "restore_backup",
       snapshotJson: currentSnapshot,
@@ -141,12 +194,12 @@ export async function restorePostRevision(
     return err({ reason: "POST_NOT_FOUND" });
   }
 
-  if (revision.snapshotJson.contentJson !== undefined) {
+  if (targetSnapshot.contentJson !== undefined) {
     context.executionCtx.waitUntil(
       syncPostMedia(
         context.db,
         restoredPost.id,
-        revision.snapshotJson.contentJson,
+        targetSnapshot.contentJson,
       ),
     );
   }

@@ -258,6 +258,15 @@ export async function updatePost(
   return await findPostById(db, id);
 }
 
+export async function touchPostUpdatedAt(db: DB, id: number) {
+  await db
+    .update(PostsTable)
+    .set({
+      updatedAt: new Date(),
+    })
+    .where(eq(PostsTable.id, id));
+}
+
 export async function updatePublicContentSnapshot(
   db: DB,
   id: number,

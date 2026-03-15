@@ -4,6 +4,7 @@ import * as CacheService from "@/features/cache/cache.service";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
+import * as PostAutoSnapshotService from "@/features/posts/post-auto-snapshot.service";
 import type {
   DeletePostInput,
   FindPostByIdInput,
@@ -325,6 +326,12 @@ export async function updatePost(
     );
   }
 
+  context.executionCtx.waitUntil(
+    PostAutoSnapshotService.enqueuePostAutoSnapshot(context, {
+      postId: updatedPost.id,
+    }),
+  );
+
   return ok(updatedPost);
 }
 
@@ -453,9 +460,11 @@ export async function startPostProcessWorkflow(
 
   // If this is a future post, create a new scheduled publish workflow
   if (data.status === "published" && isFuture) {
-    await context.env.SCHEDULED_PUBLISH_WORKFLOW.create({
-      id: scheduledId,
-      params: { postId: data.id, publishedAt: publishedAtISO! },
-    });
+    await context.env.SCHEDULED_PUBLISH_WORKFLOW.createBatch([
+      {
+        id: scheduledId,
+        params: { postId: data.id, publishedAt: publishedAtISO! },
+      },
+    ]);
   }
 }

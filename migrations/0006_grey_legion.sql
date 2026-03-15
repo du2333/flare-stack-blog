@@ -1,7 +1,7 @@
 CREATE TABLE `post_revisions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`post_id` integer NOT NULL,
-	`reason` text DEFAULT 'manual' NOT NULL,
+	`reason` text DEFAULT 'auto' NOT NULL,
 	`snapshot_json` text NOT NULL,
 	`snapshot_hash` text NOT NULL,
 	`restored_from_revision_id` integer,

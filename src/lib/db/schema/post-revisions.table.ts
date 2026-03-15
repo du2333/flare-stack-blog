@@ -6,7 +6,7 @@ import type { PostStatus } from "./posts.table";
 import { PostsTable } from "./posts.table";
 
 export const POST_REVISION_REASONS = [
-  "manual",
+  "auto",
   "publish",
   "restore_backup",
 ] as const;
@@ -31,7 +31,7 @@ export const PostRevisionsTable = sqliteTable(
       .references(() => PostsTable.id, { onDelete: "cascade" }),
     reason: text("reason", { enum: POST_REVISION_REASONS })
       .notNull()
-      .default("manual"),
+      .default("auto"),
     snapshotJson: text("snapshot_json", { mode: "json" })
       .$type<PostRevisionSnapshot>()
       .notNull(),

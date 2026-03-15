@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import {
   type PostRevisionReason,
@@ -55,6 +55,54 @@ export async function insertPostRevision(
     .returning();
 
   return revision;
+}
+
+export async function findLatestPostRevision(
+  db: DB,
+  postId: number,
+  options: {
+    reason?: PostRevisionReason;
+  } = {},
+) {
+  return await db.query.PostRevisionsTable.findFirst({
+    where: and(
+      eq(PostRevisionsTable.postId, postId),
+      options.reason
+        ? eq(PostRevisionsTable.reason, options.reason)
+        : undefined,
+    ),
+    orderBy: [desc(PostRevisionsTable.createdAt), desc(PostRevisionsTable.id)],
+  });
+}
+
+export async function trimAutoRevisions(
+  db: DB,
+  postId: number,
+  options: {
+    keep: number;
+  },
+) {
+  const revisions = await db.query.PostRevisionsTable.findMany({
+    where: and(
+      eq(PostRevisionsTable.postId, postId),
+      eq(PostRevisionsTable.reason, "auto"),
+    ),
+    columns: {
+      id: true,
+    },
+    orderBy: [desc(PostRevisionsTable.createdAt), desc(PostRevisionsTable.id)],
+  });
+
+  const staleRevisionIds = revisions
+    .slice(options.keep)
+    .map((revision) => revision.id);
+  if (staleRevisionIds.length === 0) {
+    return;
+  }
+
+  await db
+    .delete(PostRevisionsTable)
+    .where(inArray(PostRevisionsTable.id, staleRevisionIds));
 }
 
 export async function restorePostSnapshot(

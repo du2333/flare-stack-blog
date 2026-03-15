@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import {
-  CreatePostRevisionInputSchema,
   FindPostRevisionByIdInputSchema,
   ListPostRevisionsInputSchema,
   RestorePostRevisionInputSchema,
@@ -20,15 +19,6 @@ export const getPostRevisionFn = createServerFn()
   .inputValidator(FindPostRevisionByIdInputSchema)
   .handler(({ data, context }) =>
     PostRevisionService.findPostRevisionById(context, data),
-  );
-
-export const createPostRevisionFn = createServerFn({
-  method: "POST",
-})
-  .middleware([adminMiddleware])
-  .inputValidator(CreatePostRevisionInputSchema)
-  .handler(({ data, context }) =>
-    PostRevisionService.createPostRevision(context, data),
   );
 
 export const restorePostRevisionFn = createServerFn({

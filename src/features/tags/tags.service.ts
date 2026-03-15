@@ -1,5 +1,7 @@
 import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
+import * as PostRepo from "@/features/posts/data/posts.data";
+import * as PostAutoSnapshotService from "@/features/posts/post-auto-snapshot.service";
 import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
 import * as TagRepo from "@/features/tags/data/tags.data";
 import type {
@@ -231,4 +233,8 @@ export async function deleteTag(
  */
 export async function setPostTags(context: DbContext, data: SetPostTagsInput) {
   await TagRepo.setPostTags(context.db, data.postId, data.tagIds);
+  await PostRepo.touchPostUpdatedAt(context.db, data.postId);
+  await PostAutoSnapshotService.enqueuePostAutoSnapshot(context, {
+    postId: data.postId,
+  });
 }

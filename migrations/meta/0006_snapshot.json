@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0a93fc0a-dafc-4215-b5e2-aa6822d21a6b",
+  "id": "58e180f7-4b29-4158-ba1e-ebcac4094f35",
   "prevId": "6bc20c79-2acf-4e14-a4d1-706b0868717f",
   "tables": {
     "account": {
@@ -938,7 +938,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'manual'"
+          "default": "'auto'"
         },
         "snapshot_json": {
           "name": "snapshot_json",

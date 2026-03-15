@@ -81,3 +81,8 @@ export type CreatePostRevisionInput = z.infer<
 export type RestorePostRevisionInput = z.infer<
   typeof RestorePostRevisionInputSchema
 >;
+export type CreatePostRevisionResult = {
+  created: boolean;
+  revision: z.infer<typeof PostRevisionSelectSchema> | null;
+  skipReason?: "UNCHANGED" | "RATE_LIMITED";
+};
