@@ -14,7 +14,8 @@ import {
 } from "@/features/posts/queries";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { TAGS_KEYS } from "@/features/tags/queries";
-import { formatDate } from "@/lib/utils";
+import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
   getRestoreErrorMessage,
@@ -69,8 +70,14 @@ function HistoryPanelInternal({
   const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
     null,
   );
+  const [isMobilePreviewing, setIsMobilePreviewing] = useState(false);
   const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
   const [isPollWindowActive, setIsPollWindowActive] = useState(false);
+
+  const handleSelectRevision = (id: number) => {
+    setSelectedRevisionId(id);
+    setIsMobilePreviewing(true);
+  };
 
   const revisionsQuery = useQuery({
     ...postRevisionListQuery(postId),
@@ -96,6 +103,7 @@ function HistoryPanelInternal({
   useEffect(() => {
     if (!isOpen) {
       setIsPollWindowActive(false);
+      setIsMobilePreviewing(false); // Reset mobile view when closed
       return;
     }
 
@@ -163,10 +171,11 @@ function HistoryPanelInternal({
 
       await invalidatePostEditorQueries(queryClient, postId);
 
+      const title =
+        selectedRevision.snapshotJson.title.trim() || m.common_untitled();
       toast.success(m.editor_history_toast_restore_success(), {
         description: m.editor_history_toast_restore_success_desc({
-          title:
-            selectedRevision.snapshotJson.title.trim() || m.common_untitled(),
+          title,
         }),
       });
 
@@ -180,7 +189,10 @@ function HistoryPanelInternal({
     },
   });
 
-  if (!isOpen) return null;
+  // Use established hook for exit animation lifecycle
+  const shouldRender = useDelayUnmount(isOpen, 500);
+
+  if (!shouldRender) return null;
 
   return (
     <>
@@ -198,12 +210,24 @@ function HistoryPanelInternal({
         isLoading={restoreMutation.isPending}
       />
 
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-90 bg-background/50 backdrop-blur-sm"
+        className={cn(
+          "fixed inset-0 z-90 bg-background/50 backdrop-blur-sm transition-all duration-500",
+          isOpen ? "opacity-100" : "opacity-0",
+        )}
         onClick={onClose}
       />
 
-      <aside className="fixed inset-y-0 right-0 z-91 flex w-full max-w-6xl flex-col border-l border-border/40 bg-background/95 shadow-2xl backdrop-blur md:max-w-5xl">
+      {/* Panel */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 right-0 z-91 flex w-full max-w-full flex-col border-l border-border/40 bg-background/95 shadow-2xl backdrop-blur lg:max-w-[85vw] duration-500",
+          isOpen
+            ? "animate-in fade-in slide-in-from-right"
+            : "animate-out fade-out slide-out-to-right fill-mode-forwards",
+        )}
+      >
         <div className="flex items-center justify-between border-b border-border/30 px-6 py-5">
           <div className="space-y-1">
             <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-muted-foreground/60">
@@ -228,21 +252,36 @@ function HistoryPanelInternal({
           </Button>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
-          <PostEditorHistoryList
-            revisions={revisionsQuery.data ?? []}
-            isLoading={revisionsQuery.isLoading}
-            selectedRevisionId={selectedRevisionId}
-            onSelect={setSelectedRevisionId}
-          />
+        <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col",
+              isMobilePreviewing ? "hidden lg:flex" : "flex",
+            )}
+          >
+            <PostEditorHistoryList
+              revisions={revisionsQuery.data ?? []}
+              isLoading={revisionsQuery.isLoading}
+              selectedRevisionId={selectedRevisionId}
+              onSelect={handleSelectRevision}
+            />
+          </div>
 
-          <PostEditorHistoryPreview
-            revision={selectedRevision}
-            tagNames={tagNames}
-            isLoading={selectedRevisionQuery.isLoading}
-            isRestoring={restoreMutation.isPending}
-            onRestore={() => setIsRestoreConfirmOpen(true)}
-          />
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col",
+              !isMobilePreviewing ? "hidden lg:flex" : "flex",
+            )}
+          >
+            <PostEditorHistoryPreview
+              revision={selectedRevision}
+              tagNames={tagNames}
+              isLoading={selectedRevisionQuery.isLoading}
+              isRestoring={restoreMutation.isPending}
+              onRestore={() => setIsRestoreConfirmOpen(true)}
+              onBack={() => setIsMobilePreviewing(false)}
+            />
+          </div>
         </div>
       </aside>
     </>

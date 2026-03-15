@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { cn, formatDate, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
+  getRevisionReasonColorClass,
+  getRevisionReasonIcon,
   getRevisionReasonLabel,
-  getRevisionReasonVariant,
   type RevisionListItem,
 } from "./post-editor-history.shared";
 
@@ -51,12 +52,21 @@ export function PostEditorHistoryList({
                 )}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <Badge
-                    variant={getRevisionReasonVariant(revision.reason)}
-                    className="shrink-0"
-                  >
-                    {getRevisionReasonLabel(revision.reason)}
-                  </Badge>
+                  {(() => {
+                    const ReasonIcon = getRevisionReasonIcon(revision.reason);
+                    return (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "shrink-0 gap-1 rounded-sm",
+                          getRevisionReasonColorClass(revision.reason),
+                        )}
+                      >
+                        <ReasonIcon size={12} />
+                        {getRevisionReasonLabel(revision.reason)}
+                      </Badge>
+                    );
+                  })()}
                   <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/55">
                     {formatTimeAgo(revision.createdAt)}
                   </span>

@@ -1,13 +1,14 @@
-import { Loader2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Loader2, RotateCcw } from "lucide-react";
 import { Editor } from "@/components/tiptap-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { extensions } from "@/features/posts/editor/config";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
+  getRevisionReasonColorClass,
+  getRevisionReasonIcon,
   getRevisionReasonLabel,
-  getRevisionReasonVariant,
   type RevisionDetail,
 } from "./post-editor-history.shared";
 
@@ -17,6 +18,7 @@ interface PostEditorHistoryPreviewProps {
   isLoading: boolean;
   isRestoring: boolean;
   onRestore: () => void;
+  onBack?: () => void;
 }
 
 export function PostEditorHistoryPreview({
@@ -25,6 +27,7 @@ export function PostEditorHistoryPreview({
   isLoading,
   isRestoring,
   onRestore,
+  onBack,
 }: PostEditorHistoryPreviewProps) {
   return (
     <div className="custom-scrollbar min-h-0 overflow-y-auto">
@@ -34,13 +37,37 @@ export function PostEditorHistoryPreview({
           {m.editor_history_loading()}
         </div>
       ) : revision ? (
-        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col p-6 md:p-8">
+        <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col p-6 md:p-8">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-6 w-fit text-muted-foreground lg:hidden"
+              onClick={onBack}
+            >
+              <ArrowLeft size={16} className="mr-2" />
+              {m.common_back()}
+            </Button>
+          )}
+
           <div className="mb-8 flex flex-wrap items-start justify-between gap-4 border-b border-border/30 pb-6">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge variant={getRevisionReasonVariant(revision.reason)}>
-                  {getRevisionReasonLabel(revision.reason)}
-                </Badge>
+                {(() => {
+                  const ReasonIcon = getRevisionReasonIcon(revision.reason);
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "gap-1.5 px-2 py-0.5 text-xs rounded-sm",
+                        getRevisionReasonColorClass(revision.reason),
+                      )}
+                    >
+                      <ReasonIcon size={14} />
+                      {getRevisionReasonLabel(revision.reason)}
+                    </Badge>
+                  );
+                })()}
                 <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground/55">
                   {formatDate(revision.createdAt, {
                     includeTime: true,

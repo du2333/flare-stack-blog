@@ -1,3 +1,4 @@
+import { type LucideIcon, RotateCcw, Save, Send } from "lucide-react";
 import type {
   getPostRevisionFn,
   listPostRevisionsFn,
@@ -37,6 +38,34 @@ export function getRevisionReasonVariant(reason: RevisionListItem["reason"]) {
     case "auto":
     default:
       return "secondary" as const;
+  }
+}
+
+export function getRevisionReasonIcon(
+  reason: RevisionListItem["reason"],
+): LucideIcon {
+  switch (reason) {
+    case "publish":
+      return Send;
+    case "restore_backup":
+      return RotateCcw;
+    case "auto":
+    default:
+      return Save;
+  }
+}
+
+export function getRevisionReasonColorClass(
+  reason: RevisionListItem["reason"],
+) {
+  switch (reason) {
+    case "publish":
+      return "border-green-500/30 bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:border-green-500/40 dark:bg-green-500/20 dark:text-green-400";
+    case "restore_backup":
+      return "border-amber-500/30 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-400";
+    case "auto":
+    default:
+      return "border-blue-500/30 bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-400";
   }
 }
 
