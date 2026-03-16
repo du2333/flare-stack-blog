@@ -10,7 +10,15 @@ import { createMcpServer } from "../service/mcp.server";
 const app = new Hono<{ Bindings: Env }>();
 
 app.use("*", baseMiddleware);
-app.use("*", oauthAccessTokenMiddleware());
+
+function createMethodNotAllowedResponse(allow: string) {
+  return new Response(null, {
+    status: 405,
+    headers: {
+      Allow: allow,
+    },
+  });
+}
 
 function getMcpAuthInfo(c: Context<{ Bindings: Env }>): AuthInfo {
   const principal = c.get("oauthPrincipal");
@@ -34,7 +42,9 @@ function isAllowedMcpOrigin(c: Context<{ Bindings: Env }>) {
   return origin === requestOrigin;
 }
 
-const route = app.all("/", async (c) => {
+const route = app
+  .get("/", () => createMethodNotAllowedResponse("POST"))
+  .post("/", oauthAccessTokenMiddleware(), async (c) => {
   if (!isAllowedMcpOrigin(c)) {
     return c.json(
       {
@@ -64,6 +74,6 @@ const route = app.all("/", async (c) => {
   return transport.handleRequest(c.req.raw, {
     authInfo: getMcpAuthInfo(c),
   });
-});
+  });
 
 export default route;
