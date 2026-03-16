@@ -13,7 +13,7 @@ export function getContext() {
     }),
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
-        if (mutation.meta?.skipGlobalErrorToast) {
+        if (mutation.options.onError) {
           return;
         }
 

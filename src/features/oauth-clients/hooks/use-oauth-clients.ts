@@ -16,9 +16,6 @@ export function useOAuthClients() {
 
   const renameMutation = useMutation({
     mutationFn: renameOAuthClientFn,
-    meta: {
-      skipGlobalErrorToast: true,
-    },
     onSuccess: invalidate,
     onError: (error) => {
       toast.error(
@@ -31,9 +28,6 @@ export function useOAuthClients() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteOAuthConnectionFn,
-    meta: {
-      skipGlobalErrorToast: true,
-    },
     onSuccess: invalidate,
     onError: (error) => {
       toast.error(
