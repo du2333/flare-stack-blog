@@ -1210,7 +1210,6 @@
   "oauth_consent_title": "Authorize Client Access",
   "oauth_consent_client": "Client: {client}",
   "oauth_consent_unknown_client": "unknown",
-  "oauth_consent_requested_scopes": "This client is requesting the following scopes:",
   "oauth_consent_no_scopes": "No scopes requested",
   "oauth_consent_choose_business_scopes": "Choose which business scopes to grant:",
   "oauth_consent_required_scopes_label": "Required Permissions",

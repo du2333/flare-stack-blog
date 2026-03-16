@@ -1203,7 +1203,6 @@
   "oauth_consent_title": "授权客户端访问",
   "oauth_consent_client": "客户端：{client}",
   "oauth_consent_unknown_client": "未知客户端",
-  "oauth_consent_requested_scopes": "这个客户端正在请求以下 scopes：",
   "oauth_consent_no_scopes": "未请求任何 scope",
   "oauth_consent_choose_business_scopes": "选择要授予的业务权限：",
   "oauth_consent_required_scopes_label": "必要权限",

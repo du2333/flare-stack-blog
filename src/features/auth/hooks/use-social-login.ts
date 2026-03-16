@@ -18,6 +18,11 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
 
   const [isLoading, setIsLoading] = useState(false);
   const previousLocation = usePreviousLocation();
+  const callbackURL = redirectTo
+    ? redirectTo.startsWith("http://") || redirectTo.startsWith("https://")
+      ? redirectTo
+      : `${window.location.origin}${redirectTo}`
+    : `${window.location.origin}${previousLocation}`;
 
   const handleGithubLogin = async () => {
     if (isLoading) return;
@@ -27,7 +32,7 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
     const { error } = await authClient.signIn.social({
       provider: "github",
       errorCallbackURL: `${window.location.origin}/login`,
-      callbackURL: `${window.location.origin}${redirectTo ?? previousLocation}`,
+      callbackURL,
       fetchOptions: {
         headers: { "X-Turnstile-Token": turnstileToken || "" },
       },

@@ -47,6 +47,19 @@ export function useLoginForm(options: UseLoginFormOptions) {
     resolver: standardSchemaResolver(loginSchema),
   });
 
+  const performRedirect = (target: string) => {
+    if (
+      target.startsWith("/api/") ||
+      target.startsWith("http://") ||
+      target.startsWith("https://")
+    ) {
+      window.location.assign(target);
+      return;
+    }
+
+    navigate({ to: target });
+  };
+
   const emailValue = form.watch("email");
   const latestResendStateRef = useRef({
     emailValue: "",
@@ -96,7 +109,7 @@ export function useLoginForm(options: UseLoginFormOptions) {
     setLoginStep("SUCCESS");
 
     setTimeout(() => {
-      navigate({ to: redirectTo ?? previousLocation });
+      performRedirect(redirectTo ?? previousLocation);
       toast.success(m.login_toast_success());
     }, 800);
   };

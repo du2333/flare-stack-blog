@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Check, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { sessionQuery } from "@/features/auth/queries";
 import { getOAuthClientMetadataFn } from "@/features/oauth-provider/api/oauth-provider.public.api";
 import { OAUTH_MANAGED_SCOPES } from "@/features/oauth-provider/oauth-provider.config";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,31 @@ const consentSearchSchema = z.object({
 
 export const Route = createFileRoute("/oauth/consent")({
   validateSearch: (search) => consentSearchSchema.parse(search),
+  beforeLoad: async ({ context, location }) => {
+    const session = await context.queryClient.ensureQueryData(sessionQuery);
+
+    if (!session) {
+      throw redirect({
+        to: "/login",
+        search: {
+          redirectTo: location.href,
+        },
+      });
+    }
+
+    if (session.user.role !== "admin") {
+      throw redirect({ to: "/" });
+    }
+
+    return { session };
+  },
+  head: () => ({
+    meta: [
+      {
+        title: m.oauth_consent_title(),
+      },
+    ],
+  }),
   component: RouteComponent,
 });
 
