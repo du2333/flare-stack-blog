@@ -1,11 +1,16 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { mcpPostsTools } from "../features/posts";
 import { mcpSearchTools } from "../features/search";
+import { mcpTagsTools } from "../features/tags";
 import type { McpToolContext } from "./mcp.types";
 import type { McpToolDefinition } from "./mcp-tool";
 import { registerMcpTool } from "./mcp-tool";
 
-const MCP_TOOLS: McpToolDefinition[] = [...mcpPostsTools, ...mcpSearchTools];
+const MCP_TOOLS: McpToolDefinition[] = [
+  ...mcpPostsTools,
+  ...mcpSearchTools,
+  ...mcpTagsTools,
+];
 
 export function registerMcpTools(server: McpServer, context: McpToolContext) {
   MCP_TOOLS.forEach((tool) => {
