@@ -1213,7 +1213,7 @@
   "oauth_consent_no_scopes": "No scopes requested",
   "oauth_consent_choose_business_scopes": "Choose which business scopes to grant:",
   "oauth_consent_required_scopes_label": "Required Permissions",
-  "oauth_consent_secured_by": "secured by flare stack oauth provider",
+  "oauth_consent_secured_by": "Secured by Flare Stack OAuth Provider",
   "oauth_consent_allow": "Allow",
   "oauth_consent_deny": "Deny",
   "oauth_consent_error_failed": "Consent failed",
