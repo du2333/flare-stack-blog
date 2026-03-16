@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 const consentSearchSchema = z.object({
   client_id: z.string().optional(),
+  oauth_query: z.string().optional(),
   scope: z.string().optional(),
 });
 
@@ -34,7 +35,10 @@ function RouteComponent() {
           "Content-Type": "application/json",
           accept: "application/json",
         },
-        body: JSON.stringify({ accept }),
+        body: JSON.stringify({
+          accept,
+          oauth_query: search.oauth_query,
+        }),
       });
 
       if (!response.ok) {

@@ -1,19 +1,15 @@
 import handler from "@tanstack/react-start/server-entry";
-import {
-  oauthProviderAuthServerMetadata,
-  oauthProviderOpenIdConfigMetadata,
-} from "@better-auth/oauth-provider";
 import { Hono } from "hono";
 import { proxy } from "hono/proxy";
 import { exportDownloadRoute } from "@/features/import-export/api/hono/download.route";
 import { handleImageRequest } from "@/features/media/service/media.service";
 import mcpRoute from "@/features/mcp/api/mcp.route";
+import oauthProviderRoute from "@/features/oauth-provider/api/oauth-provider.route";
 import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
 import postsListRoute from "@/features/posts/api/hono/posts.list.route";
 import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
 import searchRoute from "@/features/search/api/hono/search.route";
 import tagsRoute from "@/features/tags/api/hono/tags.list.route";
-import { getOAuthProtectedResourceMetadata } from "@/features/oauth-provider/service/oauth-provider.service";
 import { serverEnv } from "@/lib/env/server.env";
 import { createRateLimiterIdentifier } from "./helper";
 import {
@@ -42,6 +38,7 @@ const publicApi = new Hono<{ Bindings: Env }>()
 app.route("/api", publicApi);
 
 app.route("/mcp", mcpRoute);
+app.route("/", oauthProviderRoute);
 
 // Export type for RPC client
 export type PublicApiType = typeof publicApi;
@@ -96,28 +93,7 @@ app.get("/api/auth/*", baseMiddleware, (c) => {
   return auth.handler(c.req.raw);
 });
 
-app.get("/.well-known/oauth-authorization-server", baseMiddleware, (c) => {
-  const auth = c.get("auth");
-  return oauthProviderAuthServerMetadata(auth)(c.req.raw);
-});
-
-app.get("/.well-known/openid-configuration", baseMiddleware, (c) => {
-  const auth = c.get("auth");
-  return oauthProviderOpenIdConfigMetadata(auth)(c.req.raw);
-});
-
-app.get("/.well-known/jwks.json", baseMiddleware, (c) => {
-  const auth = c.get("auth");
-  return auth.handler(c.req.raw);
-});
-
-app.get("/.well-known/oauth-protected-resource", baseMiddleware, async (c) => {
-  const metadata = getOAuthProtectedResourceMetadata(c.env, c.req.url);
-  return c.json(metadata);
-});
-
-// 1. Protected auth endpoints (requires Turnstile)
-const protectedPaths = [
+const protectedAuthPaths = [
   "/api/auth/sign-in/email",
   "/api/auth/sign-up/email",
   "/api/auth/sign-in/social",
@@ -125,7 +101,7 @@ const protectedPaths = [
   "/api/auth/send-verification-email",
 ] as const;
 
-protectedPaths.forEach((path) => {
+protectedAuthPaths.forEach((path) => {
   app.post(
     path,
     baseMiddleware,
@@ -147,7 +123,6 @@ protectedPaths.forEach((path) => {
   );
 });
 
-// 2. Other auth POST endpoints (e.g. sign-out, change-password, reset-password etc.)
 app.post(
   "/api/auth/*",
   baseMiddleware,
