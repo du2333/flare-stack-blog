@@ -181,7 +181,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         <div className="w-full mx-auto py-20 px-6 md:px-12 grid grid-cols-1 xl:grid-cols-[1fr_240px] 2xl:grid-cols-[1fr_56rem_1fr] gap-12 items-start">
           <div className="hidden 2xl:block" />
           <div className="min-w-0 w-full max-w-4xl mx-auto 2xl:mx-0">
-            <div className="mb-6 flex justify-end">
+            <div className="mb-6 flex justify-end xl:hidden">
               <Button
                 variant="outline"
                 size="sm"
