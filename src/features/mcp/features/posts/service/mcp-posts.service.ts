@@ -1,5 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
+import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 import { jsonContentToMarkdown } from "@/features/import-export/utils/markdown-serializer";
+import type { UpdatePostInput } from "@/features/posts/schema/posts.schema";
 
 type DateLike = Date | string | null | undefined;
 
@@ -79,5 +81,55 @@ export function serializeMcpPostDetail(post: {
       : "",
     hasPublicCache: post.hasPublicCache,
     isSynced: post.isSynced,
+  };
+}
+
+type McpPostUpdateInput = {
+  id: number;
+  title?: string;
+  summary?: string | null;
+  slug?: string;
+  status?: "draft" | "published";
+  publishedAt?: string | null;
+  readTimeInMinutes?: number;
+  contentMarkdown?: string;
+};
+
+export async function toPostUpdateInput(
+  input: McpPostUpdateInput,
+): Promise<UpdatePostInput> {
+  const data: UpdatePostInput["data"] = {};
+
+  if (input.title !== undefined) {
+    data.title = input.title;
+  }
+
+  if (input.summary !== undefined) {
+    data.summary = input.summary;
+  }
+
+  if (input.slug !== undefined) {
+    data.slug = input.slug;
+  }
+
+  if (input.status !== undefined) {
+    data.status = input.status;
+  }
+
+  if (input.publishedAt !== undefined) {
+    data.publishedAt = input.publishedAt ? new Date(input.publishedAt) : null;
+  }
+
+  if (input.readTimeInMinutes !== undefined) {
+    data.readTimeInMinutes = input.readTimeInMinutes;
+  }
+
+  if (input.contentMarkdown !== undefined) {
+    data.contentJson = await markdownToJsonContent(input.contentMarkdown);
+  }
+
+  return {
+    id: input.id,
+    data,
   };
 }

@@ -57,3 +57,45 @@ export const McpPostDetailSchema = McpPostSummarySchema.extend({
 export const McpPostCreateDraftOutputSchema = z.object({
   id: z.number().describe("Numeric ID of the created draft."),
 });
+
+export const McpPostUpdateInputSchema = z
+  .object({
+    id: z.number().describe("Numeric post ID to update."),
+    title: z.string().optional().describe("Post title."),
+    summary: z.string().nullable().optional().describe("Post summary."),
+    slug: z.string().optional().describe("Post slug."),
+    status: z
+      .enum(POST_STATUSES)
+      .optional()
+      .describe("Post status. This only updates the draft/published flag."),
+    publishedAt: z.iso
+      .datetime()
+      .nullable()
+      .optional()
+      .describe("Publish timestamp as ISO-8601, or null to clear it."),
+    readTimeInMinutes: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe("Estimated reading time in minutes."),
+    contentMarkdown: z
+      .string()
+      .optional()
+      .describe(
+        "Full post body as markdown. Converted to editor JSON internally.",
+      ),
+  })
+  .refine(
+    (value) =>
+      value.title !== undefined ||
+      value.summary !== undefined ||
+      value.slug !== undefined ||
+      value.status !== undefined ||
+      value.publishedAt !== undefined ||
+      value.readTimeInMinutes !== undefined ||
+      value.contentMarkdown !== undefined,
+    {
+      message: "At least one field must be provided.",
+    },
+  );
