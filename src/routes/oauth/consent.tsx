@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Check, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,10 @@ function RouteComponent() {
     requestedManagedScopes,
   );
 
+  useEffect(() => {
+    setSelectedManagedScopes(requestedManagedScopes);
+  }, [requestedManagedScopes]);
+
   async function submitConsent(accept: boolean) {
     setIsPending(true);
     setError(null);
@@ -150,7 +154,7 @@ function RouteComponent() {
         <Card className="border-border/30 shadow-2xl shadow-foreground/5 bg-card/80 backdrop-blur-sm overflow-hidden rounded-2xl">
           <CardHeader className="space-y-8 pb-10 border-b border-border/10 bg-muted/5 p-10">
             <div className="flex justify-center">
-              <div className="h-24 w-24 rounded-3xl bg-foreground/[0.03] border border-foreground/10 flex items-center justify-center overflow-hidden shadow-inner">
+              <div className="h-24 w-24 rounded-3xl bg-foreground/3 border border-foreground/10 flex items-center justify-center overflow-hidden shadow-inner">
                 {clientIcon ? (
                   <img
                     src={clientIcon}
@@ -218,7 +222,7 @@ function RouteComponent() {
                         className={cn(
                           "group flex items-center justify-between gap-4 border p-5 transition-all cursor-pointer rounded-xl",
                           isSelected
-                            ? "bg-foreground/[0.03] border-foreground/30 shadow-sm"
+                            ? "bg-foreground/3 border-foreground/30 shadow-sm"
                             : "bg-transparent border-border/20 hover:border-border/40",
                         )}
                       >

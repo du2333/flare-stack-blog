@@ -25,10 +25,6 @@ function createOAuthErrorResponse(
   fallbackStatus: 401 | 403 = 401,
 ) {
   if (error instanceof APIError) {
-    Object.entries(error.headers).forEach(([key, value]) => {
-      c.header(key, value);
-    });
-
     const message =
       typeof error.body?.message === "string"
         ? error.body.message
