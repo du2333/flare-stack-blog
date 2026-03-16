@@ -58,6 +58,14 @@ export const McpPostCreateDraftOutputSchema = z.object({
   id: z.number().describe("Numeric ID of the created draft."),
 });
 
+export const McpPostDeleteOutputSchema = z.object({
+  deleted: z.literal(true).describe("Whether the post was deleted."),
+  id: z.number().describe("Numeric post ID."),
+  slug: z.string().describe("Slug of the deleted post."),
+  status: z.enum(POST_STATUSES).describe("Post status before deletion."),
+  title: z.string().describe("Title of the deleted post."),
+});
+
 export const McpPostUpdateInputSchema = z
   .object({
     id: z.number().describe("Numeric post ID to update."),
