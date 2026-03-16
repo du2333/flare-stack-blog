@@ -1,4 +1,5 @@
-import { convertToPlainText } from "@/features/posts/utils/content";
+import type { JSONContent } from "@tiptap/react";
+import { jsonContentToMarkdown } from "@/features/import-export/utils/markdown-serializer";
 
 type DateLike = Date | string | null | undefined;
 
@@ -73,9 +74,9 @@ export function serializeMcpPostDetail(post: {
 }) {
   return {
     ...serializeMcpPostListItem(post),
-    contentText: convertToPlainText(
-      post.contentJson as Parameters<typeof convertToPlainText>[0],
-    ),
+    contentMarkdown: post.contentJson
+      ? jsonContentToMarkdown(post.contentJson as JSONContent)
+      : "",
     hasPublicCache: post.hasPublicCache,
     isSynced: post.isSynced,
   };

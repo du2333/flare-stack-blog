@@ -42,7 +42,7 @@ export const McpPostByIdInputSchema = z.object({
 });
 
 export const McpPostDetailSchema = McpPostSummarySchema.extend({
-  contentText: z.string(),
+  contentMarkdown: z.string(),
   hasPublicCache: z.boolean(),
   isSynced: z.boolean(),
   tags: z.array(McpTagSchema).optional(),

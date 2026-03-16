@@ -14,7 +14,7 @@ const POSTS_GET_REQUIRED_SCOPES: OAuthScopeRequest = {
 export const postsGetTool = defineMcpTool({
   name: "posts_get",
   description:
-    "Get a single blog post by numeric ID, including plain-text body, tags, and sync metadata.",
+    "Get a single blog post by numeric ID, including markdown body, tags, and sync metadata.",
   requiredScopes: POSTS_GET_REQUIRED_SCOPES,
   inputSchema: McpPostByIdInputSchema,
   outputSchema: McpPostDetailSchema,
