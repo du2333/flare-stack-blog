@@ -45,35 +45,35 @@ function isAllowedMcpOrigin(c: Context<{ Bindings: Env }>) {
 const route = app
   .get("/", () => createMethodNotAllowedResponse("POST"))
   .post("/", oauthAccessTokenMiddleware(), async (c) => {
-  if (!isAllowedMcpOrigin(c)) {
-    return c.json(
-      {
-        code: "INVALID_ORIGIN",
-        message: "Invalid Origin header",
-      },
-      403,
+    if (!isAllowedMcpOrigin(c)) {
+      return c.json(
+        {
+          code: "INVALID_ORIGIN",
+          message: "Invalid Origin header",
+        },
+        403,
+      );
+    }
+
+    const server = await createMcpServer({
+      ...getServiceContext(c),
+      principal: c.get("oauthPrincipal"),
+    });
+
+    const { WebStandardStreamableHTTPServerTransport } = await import(
+      "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
     );
-  }
 
-  const server = await createMcpServer({
-    ...getServiceContext(c),
-    principal: c.get("oauthPrincipal"),
-  });
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      enableJsonResponse: true,
+      sessionIdGenerator: undefined,
+    });
 
-  const { WebStandardStreamableHTTPServerTransport } = await import(
-    "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
-  );
+    await server.connect(transport);
 
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    enableJsonResponse: true,
-    sessionIdGenerator: undefined,
-  });
-
-  await server.connect(transport);
-
-  return transport.handleRequest(c.req.raw, {
-    authInfo: getMcpAuthInfo(c),
-  });
+    return transport.handleRequest(c.req.raw, {
+      authInfo: getMcpAuthInfo(c),
+    });
   });
 
 export default route;
