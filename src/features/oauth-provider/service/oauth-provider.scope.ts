@@ -21,18 +21,14 @@ function toBlogScope<R extends OAuthBlogResource>(
   return `${resource}:${action}`;
 }
 
-export function flattenBlogScopeGroups(
-  scopeGroups: OAuthBlogScopeGroups | OAuthBlogScopeSelection,
-): OAuthBlogScope[] {
-  return typedEntries(scopeGroups).flatMap(([resource, actions]) =>
-    (actions ?? []).map((action) => toBlogScope(resource, action)),
-  );
-}
+export type OAuthBlogScopesInput =
+  | OAuthBlogScopeGroups
+  | OAuthBlogScopeSelection;
 
-export function flattenScopeRequest(
-  scopeRequest: OAuthBlogScopeSelection,
+export function flattenBlogScopes(
+  blogScopes: OAuthBlogScopesInput,
 ): OAuthBlogScope[] {
-  return typedEntries(scopeRequest).flatMap(([resource, actions]) =>
+  return typedEntries(blogScopes).flatMap(([resource, actions]) =>
     (actions ?? []).map((action) => toBlogScope(resource, action)),
   );
 }

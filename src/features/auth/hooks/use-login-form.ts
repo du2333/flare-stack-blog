@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth/auth-errors";
 import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
+import { normalizeRedirectUrl } from "./normalize-redirect-url";
 
 const createLoginSchema = (messages: Messages) =>
   z.object({
@@ -47,17 +48,24 @@ export function useLoginForm(options: UseLoginFormOptions) {
     resolver: standardSchemaResolver(loginSchema),
   });
 
-  const performRedirect = (target: string) => {
-    if (
-      target.startsWith("/api/") ||
-      target.startsWith("http://") ||
-      target.startsWith("https://")
-    ) {
+  const performRedirect = (
+    redirectTarget: string | undefined,
+    fallback: string,
+  ) => {
+    const target = normalizeRedirectUrl(redirectTarget, fallback);
+
+    if (target.startsWith("/api/")) {
       window.location.assign(target);
       return;
     }
 
-    navigate({ to: target });
+    if (target.startsWith(window.location.origin)) {
+      const url = new URL(target);
+      navigate({ to: `${url.pathname}${url.search}${url.hash}` });
+      return;
+    }
+
+    window.location.assign(target);
   };
 
   const emailValue = form.watch("email");
@@ -109,7 +117,7 @@ export function useLoginForm(options: UseLoginFormOptions) {
     setLoginStep("SUCCESS");
 
     setTimeout(() => {
-      performRedirect(redirectTo ?? previousLocation);
+      performRedirect(redirectTo, previousLocation);
       toast.success(m.login_toast_success());
     }, 800);
   };

@@ -13,7 +13,7 @@ import type {
   OAuthPrincipal,
   OAuthScopeRequest,
 } from "../schema/oauth-provider.schema";
-import { flattenScopeRequest } from "./oauth-provider.scope";
+import { flattenBlogScopes } from "./oauth-provider.scope";
 
 const OAUTH_SCOPE_SET = new Set<string>(OAUTH_PROVIDER_SCOPES);
 
@@ -22,7 +22,7 @@ export function normalizeRequiredScopes(
 ): OAuthScope[] {
   return Array.isArray(requiredScopes)
     ? requiredScopes
-    : flattenScopeRequest(requiredScopes);
+    : flattenBlogScopes(requiredScopes);
 }
 
 export function getMissingScopes(

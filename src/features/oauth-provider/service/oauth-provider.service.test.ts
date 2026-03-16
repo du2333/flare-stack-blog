@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flattenScopeRequest } from "./oauth-provider.scope";
+import { flattenBlogScopes } from "./oauth-provider.scope";
 import {
   createOAuthPrincipal,
   extractBearerToken,
@@ -25,7 +25,7 @@ describe("oauth-provider service", () => {
 
   it("flattens structured scope requests", () => {
     expect(
-      flattenScopeRequest({
+      flattenBlogScopes({
         comments: ["write"],
         posts: ["read", "write"],
       }),

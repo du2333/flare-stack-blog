@@ -1,6 +1,6 @@
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { jwt } from "better-auth/plugins";
-import { flattenBlogScopeGroups } from "./service/oauth-provider.scope";
+import { flattenBlogScopes } from "./service/oauth-provider.scope";
 
 export const OAUTH_PROVIDER_LOGIN_PAGE = "/login";
 export const OAUTH_PROVIDER_CONSENT_PAGE = "/oauth/consent";
@@ -35,9 +35,7 @@ export type OAuthBlogScopeSelection = Partial<{
 }>;
 
 export const OAUTH_STANDARD_SCOPES = [...OAUTH_STANDARD_SCOPE_VALUES];
-export const OAUTH_BLOG_SCOPES = flattenBlogScopeGroups(
-  OAUTH_BLOG_SCOPE_GROUPS,
-);
+export const OAUTH_BLOG_SCOPES = flattenBlogScopes(OAUTH_BLOG_SCOPE_GROUPS);
 export const OAUTH_MANAGED_SCOPES: OAuthBlogScope[] = [...OAUTH_BLOG_SCOPES];
 export const OAUTH_PROVIDER_SCOPES: OAuthScope[] = [
   ...OAUTH_STANDARD_SCOPE_VALUES,
@@ -53,7 +51,7 @@ export const OAUTH_DEFAULT_BLOG_SCOPE_SELECTION = {
 
 export const OAUTH_DEFAULT_CLIENT_SCOPES: OAuthScope[] = [
   ...OAUTH_STANDARD_SCOPE_VALUES,
-  ...flattenBlogScopeGroups(OAUTH_DEFAULT_BLOG_SCOPE_SELECTION),
+  ...flattenBlogScopes(OAUTH_DEFAULT_BLOG_SCOPE_SELECTION),
 ];
 
 export function getOAuthAuthorizationServerUrl(baseURL: string) {
