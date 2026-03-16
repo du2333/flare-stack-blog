@@ -1,10 +1,23 @@
-import { Trash2 } from "lucide-react";
+import { Check, Copy, Edit2, ExternalLink, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { OAUTH_MANAGED_SCOPES } from "@/features/oauth-provider/oauth-provider.config";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -22,6 +35,65 @@ function getManagedScopes(scopes: string[]) {
   );
 }
 
+function MCPEndpointCard({ endpoint }: { endpoint: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(endpoint);
+      setCopied(true);
+      toast.success(m.settings_mcp_toast_endpoint_copied?.() || "Copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy");
+    }
+  };
+
+  return (
+    <Card className="border-border/30 bg-muted/5">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">
+          {m.settings_mcp_endpoint_label()}
+        </CardTitle>
+        <CardDescription>
+          {m.settings_mcp_endpoint_desc?.() ||
+            "Use this endpoint to connect MCP clients to your blog."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="group relative flex items-center gap-2 rounded-none border border-border/20 bg-background/40 p-3">
+          <code className="flex-1 break-all font-mono text-xs text-muted-foreground">
+            {endpoint}
+          </code>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-none border border-border/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={copyToClipboard}
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-green-500" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-[10px] uppercase font-mono tracking-wider">
+                  {copied ? "Copied" : "Copy Endpoint"}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function OAuthConnectionCard({
   connection,
   onDelete,
@@ -31,117 +103,167 @@ function OAuthConnectionCard({
   onDelete: (consentId: string) => void;
   onRename: (input: RenameOAuthClientInput) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
   const [clientName, setClientName] = useState(connection.clientName ?? "");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const managedScopes = getManagedScopes(connection.scopes);
 
+  const handleRename = () => {
+    if (clientName.trim() === connection.clientName) {
+      setIsEditing(false);
+      return;
+    }
+    onRename({
+      clientId: connection.clientId,
+      clientName: clientName.trim(),
+    });
+    setIsEditing(false);
+  };
+
   return (
-    <div className="space-y-6 border border-border/20 bg-muted/5 p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <h4 className="text-lg font-serif text-foreground">
-              {connection.clientName || m.settings_mcp_connection_unnamed()}
-            </h4>
-            <p className="text-sm text-muted-foreground break-all">
-              {connection.clientId}
-            </p>
+    <Card className="group border-border/20 bg-card/40 hover:border-border/40 transition-colors">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 p-6">
+        <div className="space-y-1.5 flex-1 min-w-0 mr-4">
+          <div className="flex items-center gap-2">
+            {isEditing ? (
+              <div className="flex items-center gap-2 w-full max-w-sm">
+                <Input
+                  autoFocus
+                  value={clientName}
+                  className="h-8 text-lg font-serif"
+                  onChange={(e) => setClientName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRename();
+                    if (e.key === "Escape") {
+                      setClientName(connection.clientName ?? "");
+                      setIsEditing(false);
+                    }
+                  }}
+                />
+                <Button
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={handleRename}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => {
+                    setClientName(connection.clientName ?? "");
+                    setIsEditing(false);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <CardTitle className="truncate">
+                  {connection.clientName || m.settings_mcp_connection_unnamed()}
+                </CardTitle>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              </>
+            )}
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="rounded-none">
-              {connection.clientType ?? "web"}
-            </Badge>
-            <Badge variant="secondary" className="rounded-none">
-              {connection.public ? "public" : "confidential"}
-            </Badge>
-          </div>
-
-          <div className="space-y-1 text-sm text-muted-foreground">
-            <p>
-              {m.settings_mcp_connection_connected_at({
-                date: formatDate(connection.createdAt, { includeTime: true }),
-              })}
-            </p>
-            <p>
-              {m.settings_mcp_connection_updated_at({
-                date: formatDate(connection.updatedAt, { includeTime: true }),
-              })}
-            </p>
-          </div>
+          <CardDescription className="font-mono text-[10px] break-all pb-1 uppercase tracking-tight">
+            ID: {connection.clientId}
+          </CardDescription>
         </div>
 
         <Button
-          type="button"
           variant="destructive"
+          size="icon"
+          className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-none"
           onClick={() => setDeleteOpen(true)}
-          className="rounded-none text-[10px] font-mono uppercase tracking-[0.2em]"
         >
-          <Trash2 size={12} className="mr-2" />
-          {m.settings_mcp_connection_disconnect_btn()}
+          <Trash2 className="h-4 w-4" />
         </Button>
-      </div>
+      </CardHeader>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
-          {m.settings_mcp_connection_name_label()}
-        </label>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Input
-            value={clientName}
-            onChange={(event) => setClientName(event.target.value)}
-          />
-          <Button
-            type="button"
-            onClick={() =>
-              onRename({
-                clientId: connection.clientId,
-                clientName: clientName.trim(),
-              })
-            }
-            className="rounded-none text-[10px] font-mono uppercase tracking-[0.2em]"
-          >
-            {m.settings_mcp_connection_rename_btn()}
-          </Button>
-        </div>
-      </div>
+      <CardContent className="space-y-6 pt-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Timeline */}
+          <div className="space-y-2">
+            <h5 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              {m.settings_mcp_connection_timeline?.() || "Timeline"}
+            </h5>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {m.settings_mcp_connection_connected_label()}
+                </span>
+                <span className="font-mono text-muted-foreground/80">
+                  {formatDate(connection.createdAt, { includeTime: true })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {m.settings_mcp_connection_activity_label()}
+                </span>
+                <span className="font-mono text-muted-foreground/80">
+                  {formatDate(connection.updatedAt, { includeTime: true })}
+                </span>
+              </div>
+            </div>
+          </div>
 
-      {connection.redirectUris.length > 0 ? (
-        <div className="space-y-2">
-          <label className="text-sm font-medium">
-            {m.settings_mcp_connection_redirect_uris()}
-          </label>
-          <div className="space-y-2 border border-border/20 bg-background/40 p-4">
-            {connection.redirectUris.map((redirectUri) => (
-              <p
-                key={redirectUri}
-                className="break-all text-sm text-muted-foreground"
-              >
-                {redirectUri}
-              </p>
-            ))}
+          {/* Scopes */}
+          <div className="space-y-2">
+            <h5 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              {m.settings_mcp_connection_granted_scopes()}
+            </h5>
+            <div className="flex flex-wrap gap-1.5">
+              {managedScopes.length > 0 ? (
+                managedScopes.map((scope) => (
+                  <Badge
+                    key={scope}
+                    variant="outline"
+                    className="h-5 px-1.5 text-[9px] lowercase border-border/40 font-mono text-muted-foreground hover:bg-muted/50"
+                  >
+                    {scope}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-xs text-muted-foreground/60 italic">
+                  {m.settings_mcp_connection_no_business_scopes()}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      ) : null}
 
-      <div className="space-y-3">
-        <label className="text-sm font-medium">
-          {m.settings_mcp_connection_granted_scopes()}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {managedScopes.length > 0 ? (
-            managedScopes.map((scope) => (
-              <Badge key={scope} variant="secondary" className="rounded-none">
-                {scope}
-              </Badge>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {m.settings_mcp_connection_no_business_scopes()}
-            </p>
-          )}
-        </div>
-      </div>
+        {/* Redirect URIs */}
+        {connection.redirectUris.length > 0 && (
+          <div className="space-y-2">
+            <h5 className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              {m.settings_mcp_connection_redirect_uris()}
+            </h5>
+            <div className="space-y-1.5 overflow-hidden">
+              {connection.redirectUris.map((uri) => (
+                <div
+                  key={uri}
+                  className="flex items-center gap-2 text-xs text-muted-foreground group/uri"
+                >
+                  <ExternalLink className="h-3 w-3 shrink-0 opacity-40" />
+                  <span className="break-all font-mono opacity-80 group-hover/uri:opacity-100 transition-opacity">
+                    {uri}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
 
       <ConfirmationModal
         isOpen={deleteOpen}
@@ -157,7 +279,7 @@ function OAuthConnectionCard({
         confirmLabel={m.settings_mcp_connection_disconnect_btn()}
         isDanger
       />
-    </div>
+    </Card>
   );
 }
 
@@ -197,36 +319,37 @@ export function OAuthClientsSection() {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="overflow-hidden border border-border/30 bg-background/50 divide-y divide-border/20">
-        <div className="space-y-8 p-8">
-          <div className="space-y-2">
-            <h5 className="text-sm font-medium text-foreground">
-              {m.settings_mcp_connections_title()}
-            </h5>
-            <p className="text-sm text-muted-foreground">
-              {m.settings_mcp_connections_desc()}
-            </p>
-            <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="space-y-8">
+        {/* Configuration Card */}
+        <MCPEndpointCard endpoint={mcpEndpoint} />
+
+        {/* Header Section */}
+        <section className="space-y-2">
+          <h2 className="text-xl font-serif text-foreground tracking-tight">
+            {m.settings_mcp_connections_title()}
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            {m.settings_mcp_connections_desc()}
+          </p>
+          <div className="pt-2">
+            <Badge variant="secondary" className="px-3 py-1 font-mono">
               {connectionCountLabel}
-            </p>
+            </Badge>
           </div>
+        </section>
 
-          <div className="space-y-2 border border-border/20 bg-muted/5 p-6">
-            <p className="text-sm font-medium text-foreground">
-              {m.settings_mcp_endpoint_label()}
-            </p>
-            <p className="break-all font-mono text-xs text-muted-foreground">
-              {mcpEndpoint}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6 p-8">
+        {/* Connections List */}
+        <div className="space-y-4">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">
-              {m.settings_mcp_loading_connections()}
-            </p>
+            <div className="flex flex-col gap-4">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-48 w-full animate-pulse bg-muted/20"
+                />
+              ))}
+            </div>
           ) : connections.length > 0 ? (
             connections.map((connection) => (
               <OAuthConnectionCard
@@ -237,8 +360,11 @@ export function OAuthClientsSection() {
               />
             ))
           ) : (
-            <div className="border border-dashed border-border/30 bg-muted/5 p-6">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border/20 bg-muted/5">
+              <div className="h-12 w-12 rounded-full bg-muted/10 flex items-center justify-center mb-4 text-muted-foreground/20">
+                <ExternalLink className="h-6 w-6" />
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
                 {m.settings_mcp_empty_connections()}
               </p>
             </div>
