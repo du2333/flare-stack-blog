@@ -89,6 +89,15 @@ export const cacheMiddleware = createMiddleware(async (c, next) => {
   tryCacheResponse(c, cache);
 });
 
+const SHIELD_ALLOWED_PATHS = new Set([
+  "/atom.xml",
+  "/feed.json",
+  "/robots.txt",
+  "/rss.xml",
+  "/site.webmanifest",
+  "/sitemap.xml",
+]);
+
 interface RateLimitOptions {
   capacity: number;
   interval: Duration;
@@ -133,7 +142,7 @@ export const shieldMiddleware = createMiddleware(async (c, next) => {
     // 静态资源
     path.startsWith("/assets/") ||
     path.startsWith("/favicon") ||
-    path.startsWith("/site.webmanifest") ||
+    SHIELD_ALLOWED_PATHS.has(path) ||
     path.startsWith("/apple-touch-icon") ||
     path.startsWith("/web-app-manifest") ||
     // Server Function

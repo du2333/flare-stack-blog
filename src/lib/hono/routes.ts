@@ -9,6 +9,7 @@ import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
 import postsListRoute from "@/features/posts/api/hono/posts.list.route";
 import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
 import searchRoute from "@/features/search/api/hono/search.route";
+import siteDocumentsRoute from "@/features/site-documents/api/hono/site-documents.route";
 import tagsRoute from "@/features/tags/api/hono/tags.list.route";
 import { serverEnv } from "@/lib/env/server.env";
 import { createRateLimiterIdentifier } from "./helper";
@@ -38,6 +39,7 @@ const publicApi = new Hono<{ Bindings: Env }>()
 app.route("/api", publicApi);
 
 app.route("/mcp", mcpRoute);
+app.route("/", siteDocumentsRoute);
 app.route("/", oauthProviderRoute);
 
 // Export type for RPC client
