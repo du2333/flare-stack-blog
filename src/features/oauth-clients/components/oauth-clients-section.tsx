@@ -77,6 +77,7 @@ function MCPEndpointCard({ endpoint }: { endpoint: string }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
+                  type="button"
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 rounded-none border border-border/10 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -160,6 +161,7 @@ function OAuthConnectionCard({
                   }}
                 />
                 <Button
+                  type="button"
                   size="icon"
                   className="h-8 w-8 shrink-0"
                   onClick={handleRename}
@@ -167,6 +169,7 @@ function OAuthConnectionCard({
                   <Check className="h-4 w-4" />
                 </Button>
                 <Button
+                  type="button"
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 shrink-0"
@@ -184,6 +187,7 @@ function OAuthConnectionCard({
                   {connection.clientName || m.settings_mcp_connection_unnamed()}
                 </CardTitle>
                 <Button
+                  type="button"
                   size="icon"
                   variant="ghost"
                   className="h-6 w-6 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
@@ -200,6 +204,7 @@ function OAuthConnectionCard({
         </div>
 
         <Button
+          type="button"
           variant="destructive"
           size="icon"
           className="h-8 w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity rounded-lg sm:rounded-none"
