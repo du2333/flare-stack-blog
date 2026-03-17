@@ -12,7 +12,9 @@ export async function listMcpMedia(
 ) {
   const result = await MediaService.getMediaList(context, input);
   const keys = result.items.map((item) => item.key);
-  const linkedKeys = await MediaService.getLinkedMediaKeys(context, keys);
+  const linkedKeys = input.unusedOnly
+    ? []
+    : await MediaService.getLinkedMediaKeys(context, keys);
   const linkedKeySet = new Set(linkedKeys);
 
   return {
