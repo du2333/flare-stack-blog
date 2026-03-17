@@ -2,14 +2,18 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import type {
   GetPostsCountInput,
   GetPostsInput,
-} from "@/features/posts/posts.schema";
+} from "@/features/posts/schema/posts.schema";
 import {
   PostItemSchema,
   PostListResponseSchema,
   PostWithTocSchema,
-} from "@/features/posts/posts.schema";
+} from "@/features/posts/schema/posts.schema";
 import { apiClient } from "@/lib/api-client";
 import { isSSR } from "@/lib/utils";
+import {
+  getPostRevisionFn,
+  listPostRevisionsFn,
+} from "../api/post-revisions.admin.api";
 import { findPostByIdFn } from "../api/posts.admin.api";
 import {
   findPostBySlugFn,
@@ -26,6 +30,8 @@ export const POSTS_KEYS = {
   featured: ["posts", "featured"] as const,
   adminLists: ["posts", "admin-list"] as const,
   counts: ["posts", "count"] as const,
+  revisions: ["posts", "revisions"] as const,
+  revisionDetails: ["posts", "revision-detail"] as const,
 
   // Child keys (functions for specific queries)
   list: (filters?: { tagName?: string }) => ["posts", "list", filters] as const,
@@ -35,6 +41,9 @@ export const POSTS_KEYS = {
   adminList: (params: GetPostsInput) =>
     ["posts", "admin-list", params] as const,
   count: (params: GetPostsCountInput) => ["posts", "count", params] as const,
+  revisionList: (postId: number) => ["posts", "revisions", postId] as const,
+  revisionDetail: (postId: number, revisionId: number) =>
+    ["posts", "revision-detail", postId, revisionId] as const,
 };
 
 export function featuredPostsQuery(limit: number) {
@@ -120,5 +129,20 @@ export function relatedPostsQuery(slug: string, limit?: number) {
       if (!res.ok) throw new Error("Failed to fetch related posts");
       return PostItemSchema.array().parse(await res.json());
     },
+  });
+}
+
+export function postRevisionListQuery(postId: number) {
+  return queryOptions({
+    queryKey: POSTS_KEYS.revisionList(postId),
+    queryFn: () => listPostRevisionsFn({ data: { postId } }),
+  });
+}
+
+export function postRevisionDetailQuery(postId: number, revisionId: number) {
+  return queryOptions({
+    queryKey: POSTS_KEYS.revisionDetail(postId, revisionId),
+    queryFn: async () =>
+      (await getPostRevisionFn({ data: { postId, revisionId } })) ?? null,
   });
 }

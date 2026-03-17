@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { getServiceContext, setCacheHeaders } from "@/lib/hono/helper";
 import { baseMiddleware } from "@/lib/hono/middlewares";
 

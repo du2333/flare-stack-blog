@@ -43,6 +43,13 @@
       "when": 1773274477966,
       "tag": "0005_tricky_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1773543180283,
+      "tag": "0006_grey_legion",
+      "breakpoints": true
     }
   ]
 }

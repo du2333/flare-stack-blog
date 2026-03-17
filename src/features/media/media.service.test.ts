@@ -5,7 +5,7 @@ import {
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as PostMediaRepo from "@/features/posts/data/post-media.data";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { unwrap } from "@/lib/errors";
 import * as Storage from "./data/media.storage";
 import * as MediaService from "./service/media.service";

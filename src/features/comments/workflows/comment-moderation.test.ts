@@ -11,7 +11,7 @@ import * as AiService from "@/features/ai/ai.service";
 import * as CommentService from "@/features/comments/comments.service";
 import { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
 import * as WorkflowHelpers from "@/features/comments/workflows/helpers";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { unwrap } from "@/lib/errors";
 
 describe("CommentModerationWorkflow", () => {

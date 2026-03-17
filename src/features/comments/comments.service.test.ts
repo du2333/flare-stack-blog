@@ -11,7 +11,7 @@ import * as CommentService from "@/features/comments/comments.service";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import * as EmailData from "@/features/email/data/email.data";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { CommentsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";
 

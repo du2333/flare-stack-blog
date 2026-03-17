@@ -23,7 +23,7 @@ import {
 } from "@/features/media/utils/media.utils";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
 import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
 import * as TagRepo from "@/features/tags/data/tags.data";
 import { getDb } from "@/lib/db";

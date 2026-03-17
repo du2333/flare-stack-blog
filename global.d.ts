@@ -19,6 +19,11 @@ declare global {
     publishedAt: string;
   }
 
+  interface PostAutoSnapshotWorkflowParams {
+    postId: number;
+    quietWindowSeconds?: number;
+  }
+
   interface CommentModerationWorkflowParams {
     commentId: number;
   }
@@ -39,6 +44,7 @@ declare global {
 
   interface Env extends Cloudflare.Env {
     POST_PROCESS_WORKFLOW: Workflow<PostProcessWorkflowParams>;
+    POST_AUTO_SNAPSHOT_WORKFLOW: Workflow<PostAutoSnapshotWorkflowParams>;
     COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;

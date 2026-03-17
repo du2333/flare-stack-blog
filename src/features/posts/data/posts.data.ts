@@ -15,7 +15,7 @@ import {
   buildPostOrderByClause,
   buildPostWhereClause,
 } from "@/features/posts/data/helper";
-import type { PostListItem } from "@/features/posts/posts.schema";
+import type { PostListItem } from "@/features/posts/schema/posts.schema";
 import type { PostStatus, Tag } from "@/lib/db/schema";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 
@@ -256,6 +256,15 @@ export async function updatePost(
 ) {
   await db.update(PostsTable).set(data).where(eq(PostsTable.id, id));
   return await findPostById(db, id);
+}
+
+export async function touchPostUpdatedAt(db: DB, id: number) {
+  await db
+    .update(PostsTable)
+    .set({
+      updatedAt: new Date(),
+    })
+    .where(eq(PostsTable.id, id));
 }
 
 export async function updatePublicContentSnapshot(

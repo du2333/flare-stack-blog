@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useBlocker } from "@tanstack/react-router";
 import type { JSONContent, Editor as TiptapEditor } from "@tiptap/react";
+import { History, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Editor } from "@/components/tiptap-editor";
+import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
@@ -10,6 +12,7 @@ import { m } from "@/paraglide/messages";
 import { EditorTableOfContents } from "./editor-table-of-contents";
 import { useAutoSave, usePostActions } from "./hooks";
 import { PostEditorHeader } from "./post-editor-header";
+import { PostEditorHistoryPanel } from "./post-editor-history-panel";
 import { PostEditorMetadata } from "./post-editor-metadata";
 import { PostEditorStatusBar } from "./post-editor-status-bar";
 import type { PostEditorData, PostEditorProps } from "./types";
@@ -50,6 +53,10 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   const [editorInstance, setEditorInstance] = useState<TiptapEditor | null>(
     null,
   );
+  const [editorRenderKey, setEditorRenderKey] = useState(
+    `editor:${initialData.id}`,
+  );
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Fetch all tags for AI context and matching
   const { data: allTags = [] } = useQuery(tagsAdminQueryOptions());
@@ -60,7 +67,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     onSave,
   });
 
-  const { saveStatus, lastSaved, setError } = useAutoSaveReturn;
+  const { saveStatus, lastSaved, setError, markSaved } = useAutoSaveReturn;
 
   const { proceed, reset, status } = useBlocker({
     shouldBlockFn: () => saveStatus === "SAVING",
@@ -98,6 +105,44 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     setPost((prev) => ({ ...prev, ...updates }));
   }, []);
 
+  const handleRestoreApplied = useCallback(
+    ({
+      snapshot,
+    }: {
+      snapshot: {
+        title: string;
+        summary: string | null;
+        slug: string;
+        status: PostEditorData["status"];
+        publishedAt: string | null;
+        readTimeInMinutes: number;
+        contentJson: PostEditorData["contentJson"];
+        tagIds: Array<number>;
+      };
+    }) => {
+      const hasPublicCache = post.hasPublicCache;
+      const restoredPost: PostEditorData = {
+        title: snapshot.title,
+        summary: snapshot.summary ?? "",
+        slug: snapshot.slug,
+        status: snapshot.status,
+        readTimeInMinutes: snapshot.readTimeInMinutes,
+        contentJson: snapshot.contentJson,
+        publishedAt: snapshot.publishedAt
+          ? new Date(snapshot.publishedAt)
+          : null,
+        tagIds: snapshot.tagIds,
+        isSynced: snapshot.status === "draft" ? !hasPublicCache : false,
+        hasPublicCache,
+      };
+
+      setPost(restoredPost);
+      setEditorRenderKey(`editor:${initialData.id}:${Date.now()}`);
+      markSaved(restoredPost);
+    },
+    [initialData.id, markSaved, post.hasPublicCache],
+  );
+
   return (
     <div className="fixed inset-0 z-80 flex flex-col bg-background overflow-hidden">
       <ConfirmationModal
@@ -120,6 +165,14 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         onProcess={handleProcessData}
       />
 
+      <PostEditorHistoryPanel
+        postId={initialData.id}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        allTags={allTags}
+        onRestoreApplied={handleRestoreApplied}
+      />
+
       {/* Main Content Area (Only this scrolls) */}
       <div
         id="post-editor-scroll-container"
@@ -128,6 +181,18 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         <div className="w-full mx-auto py-20 px-6 md:px-12 grid grid-cols-1 xl:grid-cols-[1fr_240px] 2xl:grid-cols-[1fr_56rem_1fr] gap-12 items-start">
           <div className="hidden 2xl:block" />
           <div className="min-w-0 w-full max-w-4xl mx-auto 2xl:mx-0">
+            <div className="mb-6 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsHistoryOpen(true)}
+                className="rounded-none text-[10px] font-mono uppercase tracking-[0.18em]"
+              >
+                <History size={14} />
+                <span className="ml-2">{m.editor_history_open()}</span>
+              </Button>
+            </div>
+
             <PostEditorMetadata
               post={post}
               isGeneratingSlug={isGeneratingSlug}
@@ -144,9 +209,9 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
             {/* Editor Area */}
             <div className="min-h-[60vh] pb-32">
               <Editor
-                key={initialData.id}
+                key={editorRenderKey}
                 extensions={extensions}
-                content={initialData.contentJson ?? ""}
+                content={post.contentJson ?? ""}
                 onChange={handleContentChange}
                 onCreated={setEditorInstance}
               />
@@ -155,9 +220,34 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
 
           {/* Sidebar */}
           <aside className="hidden xl:block sticky top-20 h-full max-h-[calc(100vh-10rem)] w-60">
-            {editorInstance && (
-              <EditorTableOfContents editor={editorInstance} />
-            )}
+            <div className="space-y-6">
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(true)}
+                className="flex w-full items-center justify-between border border-border/30 px-4 py-3 text-left transition-colors hover:border-foreground/20 hover:bg-muted/30"
+              >
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/55">
+                    {m.editor_history_eyebrow()}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-foreground">
+                    {m.editor_history_title()}
+                  </p>
+                </div>
+                {saveStatus === "SAVING" ? (
+                  <Loader2
+                    size={14}
+                    className="animate-spin text-muted-foreground"
+                  />
+                ) : (
+                  <History size={16} className="text-muted-foreground" />
+                )}
+              </button>
+
+              {editorInstance && (
+                <EditorTableOfContents editor={editorInstance} />
+              )}
+            </div>
           </aside>
         </div>
       </div>

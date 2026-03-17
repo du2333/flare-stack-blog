@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { memo } from "react";
-import type { PostItem as PostItemType } from "@/features/posts/posts.schema";
+import type { PostItem as PostItemType } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 
 interface PostItemProps {
