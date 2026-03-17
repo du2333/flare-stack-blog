@@ -1,8 +1,10 @@
-import { and, desc, eq, lte } from "drizzle-orm";
 import * as ConfigService from "@/features/config/service/config.service";
+import {
+  getPublishedPostsForSitemapBatch,
+  type SitemapPostRow,
+} from "@/features/posts/data/posts.data";
 import { buildFeed } from "@/features/posts/utils/feed";
 import { getDb } from "@/lib/db";
-import { PostsTable } from "@/lib/db/schema";
 
 export const SITE_DOCUMENT_CACHE_CONTROL = {
   feed: "public, max-age=3600, s-maxage=3600",
@@ -48,22 +50,49 @@ export async function buildAtomXml(env: Env, executionCtx: ExecutionContext) {
   return feed.atom1();
 }
 
-export async function buildSitemapXml(env: Env) {
+const SITEMAP_BATCH_SIZE = 500;
+
+async function getAllPublishedPostsForSitemap(env: Env) {
   const db = getDb(env);
-  const posts = await db
-    .select({
-      slug: PostsTable.slug,
-      updatedAt: PostsTable.updatedAt,
-    })
-    .from(PostsTable)
-    .where(
-      and(
-        eq(PostsTable.status, "published"),
-        lte(PostsTable.publishedAt, new Date()),
-      ),
-    )
-    .orderBy(desc(PostsTable.updatedAt))
-    .limit(100);
+  const posts: Array<SitemapPostRow> = [];
+
+  let cursor: {
+    publishedAt: Date;
+    id: number;
+  } | null = null;
+
+  while (true) {
+    const batch = await getPublishedPostsForSitemapBatch(db, {
+      cursor: cursor ?? undefined,
+      limit: SITEMAP_BATCH_SIZE,
+    });
+
+    if (batch.length === 0) {
+      break;
+    }
+
+    posts.push(...batch);
+
+    const lastPost = batch[batch.length - 1];
+    if (!lastPost?.publishedAt) {
+      break;
+    }
+
+    cursor = {
+      publishedAt: lastPost.publishedAt,
+      id: lastPost.id,
+    };
+
+    if (batch.length < SITEMAP_BATCH_SIZE) {
+      break;
+    }
+  }
+
+  return posts;
+}
+
+export async function buildSitemapXml(env: Env) {
+  const posts = await getAllPublishedPostsForSitemap(env);
 
   const formatDate = (date: Date | null) => {
     if (!date) return new Date().toISOString();
