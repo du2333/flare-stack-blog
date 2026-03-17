@@ -1,10 +1,9 @@
 /**
  * 说说页面组件
  * 
- * 独立页面渲染 Memos 说说
+ * 独立页面渲染 Memos 说说，支持图片展示
  */
 
-import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import type { MemosPost } from "../schema";
 
@@ -60,8 +59,21 @@ const MemosItem = memo(({ memo }: { memo: MemosPost }) => {
     });
   };
 
-  // 处理内容，支持简单的换行
-  const contentLines = memo.content.split("\n");
+  // 处理内容，移除图片 URL 部分用于显示纯文本
+  const getContentWithoutImages = (content: string, images: string[]) => {
+    let text = content;
+    // 移除 Markdown 图片语法
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, "");
+    // 移除 HTML img 标签
+    text = text.replace(/<img[^>]+>/g, "");
+    // 移除图片 URL
+    for (const img of images) {
+      text = text.replace(img, "");
+    }
+    return text.trim();
+  };
+
+  const contentText = getContentWithoutImages(memo.content, memo.images);
 
   return (
     <article className="relative pl-8">
@@ -80,29 +92,46 @@ const MemosItem = memo(({ memo }: { memo: MemosPost }) => {
           )}
         </div>
 
-        {/* 内容 */}
-        <div className="text-base leading-relaxed text-foreground/90 space-y-2">
-          {contentLines.map((line, index) => {
-            // 处理标题
-            if (line.startsWith("# ")) {
-              return (
-                <h2 key={index} className="text-xl font-serif font-medium pt-2">
-                  {line.slice(2)}
-                </h2>
+        {/* 图片展示 */}
+        {memo.images.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pt-2">
+            {memo.images.map((img, index) => (
+              <div 
+                key={index} 
+                className="aspect-square overflow-hidden rounded-lg bg-muted"
+              >
+                <img
+                  src={img}
+                  alt={`图片 ${index + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 内容文本 */}
+        {contentText && (
+          <div className="text-base leading-relaxed text-foreground/90 space-y-2">
+            {contentText.split("\n").map((line, index) => {
+              // 处理标题
+              if (line.startsWith("# ")) {
+                return (
+                  <h2 key={index} className="text-xl font-serif font-medium pt-2">
+                    {line.slice(2)}
+                  </h2>
+                );
+              }
+              // 普通段落
+              return line ? (
+                <p key={index}>{line}</p>
+              ) : (
+                <br key={index} />
               );
-            }
-            // 处理代码块标记
-            if (line.startsWith("```")) {
-              return null;
-            }
-            // 普通段落
-            return line ? (
-              <p key={index}>{line}</p>
-            ) : (
-              <br key={index} />
-            );
-          })}
-        </div>
+            })}
+          </div>
+        )}
 
         {/* 标签 */}
         {memo.tags.length > 0 && (
