@@ -1,7 +1,7 @@
-import { alias } from "drizzle-orm/sqlite-core";
 import { and, count, desc, eq, like, sql } from "drizzle-orm";
-import type { CommentStatus } from "@/lib/db/schema";
+import { alias } from "drizzle-orm/sqlite-core";
 import { buildCommentWhereClause } from "@/features/comments/data/helper";
+import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable, PostsTable, user } from "@/lib/db/schema";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -174,6 +174,10 @@ export async function getRepliesByRootId(
 
       const replyToComment = await findCommentById(db, reply.replyToCommentId);
       if (!replyToComment) {
+        return { ...reply, replyTo: null };
+      }
+
+      if (!replyToComment.userId) {
         return { ...reply, replyTo: null };
       }
 
@@ -398,7 +402,12 @@ export async function getCommentAuthorWithEmail(db: DB, commentId: number) {
     .where(eq(CommentsTable.id, commentId))
     .limit(1);
 
-  if (result.length === 0 || !result[0].userEmail) {
+  if (
+    result.length === 0 ||
+    !result[0].userId ||
+    !result[0].userName ||
+    !result[0].userEmail
+  ) {
     return null;
   }
 

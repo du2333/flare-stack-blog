@@ -1,15 +1,16 @@
 import { Loader2, Sparkles } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
-import type { PostEditorData } from "./types";
-import { TagSelector } from "@/features/tags/components/tag-selector";
-import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import { TagSelector } from "@/features/tags/components/tag-selector";
 import { POST_STATUSES } from "@/lib/db/schema";
 import { toLocalDateString } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { PostEditorData } from "./types";
 
-const STATUS_LABELS: Record<PostEditorData["status"], string> = {
-  draft: "草稿",
-  published: "已发布",
+const STATUS_LABELS: Record<PostEditorData["status"], () => string> = {
+  draft: m.editor_status_draft,
+  published: m.editor_status_published,
 };
 
 interface PostEditorMetadataProps {
@@ -44,7 +45,7 @@ export function PostEditorMetadata({
           value={post.title}
           onChange={(e) => onPostChange({ title: e.target.value })}
           minRows={1}
-          placeholder="在此输入文章标题..."
+          placeholder={m.editor_title_placeholder()}
           className="w-full resize-none overflow-hidden border-none bg-transparent p-0 text-4xl font-medium leading-[1.2] tracking-tight text-foreground transition-all placeholder:text-muted-foreground/20 focus:outline-none md:text-6xl font-serif"
         />
       </div>
@@ -52,7 +53,7 @@ export function PostEditorMetadata({
       <div className="mb-16 grid grid-cols-1 gap-x-12 gap-y-8 border-t border-border/30 pt-8 md:grid-cols-3">
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            状态
+            {m.editor_meta_status()}
           </label>
           <div className="flex items-center gap-4">
             {POST_STATUSES.map((status) => (
@@ -68,7 +69,7 @@ export function PostEditorMetadata({
                   }
                 `}
               >
-                {STATUS_LABELS[status]}
+                {STATUS_LABELS[status]()}
               </button>
             ))}
           </div>
@@ -76,7 +77,7 @@ export function PostEditorMetadata({
 
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            发布时间
+            {m.editor_meta_published_at()}
           </label>
           <div className="text-xs font-mono">
             <DatePicker
@@ -97,7 +98,7 @@ export function PostEditorMetadata({
 
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            阅读时长
+            {m.editor_meta_read_time()}
           </label>
           <div className="group flex items-center gap-2">
             <Input
@@ -111,7 +112,7 @@ export function PostEditorMetadata({
               className="h-auto w-12 border-none bg-transparent p-0 px-0 text-xs font-mono text-foreground shadow-none focus-visible:ring-0"
             />
             <span className="text-[10px] font-mono text-muted-foreground">
-              分钟
+              {m.editor_meta_minutes()}
             </span>
             <button
               onClick={onCalculateReadTime}
@@ -129,7 +130,7 @@ export function PostEditorMetadata({
 
         <div className="col-span-1 space-y-3 md:col-span-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            链接 slug
+            {m.editor_meta_slug()}
           </label>
           <div className="group flex items-center gap-2">
             <span className="text-xs font-mono text-muted-foreground">
@@ -159,7 +160,7 @@ export function PostEditorMetadata({
         <div className="col-span-1 space-y-3 md:col-span-3">
           <div className="flex items-center justify-between">
             <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              标签
+              {m.editor_meta_tags()}
             </label>
             <button
               onClick={onGenerateTags}
@@ -171,7 +172,7 @@ export function PostEditorMetadata({
               ) : (
                 <Sparkles size={8} />
               )}
-              自动生成
+              {m.editor_meta_auto_generate()}
             </button>
           </div>
           <TagSelector
@@ -183,7 +184,7 @@ export function PostEditorMetadata({
         <div className="col-span-1 space-y-3 md:col-span-3">
           <div className="flex items-center justify-between">
             <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              摘要
+              {m.editor_meta_summary()}
             </label>
             <button
               onClick={onGenerateSummary}
@@ -195,13 +196,13 @@ export function PostEditorMetadata({
               ) : (
                 <Sparkles size={8} />
               )}
-              自动生成
+              {m.editor_meta_auto_generate()}
             </button>
           </div>
           <TextareaAutosize
             value={post.summary || ""}
             onChange={(e) => onPostChange({ summary: e.target.value })}
-            placeholder="简短的介绍..."
+            placeholder={m.editor_summary_placeholder()}
             className="w-full resize-none bg-transparent text-xs font-mono leading-relaxed text-foreground placeholder:text-muted-foreground/30 focus:outline-none"
           />
         </div>

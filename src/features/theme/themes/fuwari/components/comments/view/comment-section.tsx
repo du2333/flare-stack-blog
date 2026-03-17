@@ -1,17 +1,18 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Link, getRouteApi } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
-import { toast } from "sonner";
-import { FuwariCommentEditor } from "../editor/comment-editor";
-import FuwariConfirmationModal from "./confirmation-modal";
-import { FuwariCommentList } from "./comment-list";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { JSONContent } from "@tiptap/react";
-import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
-import { useComments } from "@/features/comments/hooks/use-comments";
-import { authClient } from "@/lib/auth/auth.client";
+import { LogIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useComments } from "@/features/comments/hooks/use-comments";
+import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
+import { authClient } from "@/lib/auth/auth.client";
+import { m } from "@/paraglide/messages";
+import { FuwariCommentEditor } from "../editor/comment-editor";
+import { FuwariCommentList } from "./comment-list";
+import FuwariConfirmationModal from "./confirmation-modal";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 
@@ -49,7 +50,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
 
   const requireTurnstile = () => {
     if (!turnstilePending) return false;
-    toast.error("请先完成人机验证");
+    toast.error(m.comments_turnstile_required());
     turnstileRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
@@ -137,7 +138,9 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold fuwari-text-90">{totalCount} 条评论</h2>
+      <h2 className="text-xl font-bold fuwari-text-90">
+        {m.comments_count({ count: totalCount })}
+      </h2>
 
       {/* Main Editor */}
       {session ? (
@@ -147,11 +150,13 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         />
       ) : (
         <div className="py-10 flex flex-col items-center justify-center gap-3 text-center">
-          <p className="text-sm fuwari-text-30">加入讨论</p>
+          <p className="text-sm fuwari-text-30">
+            {m.comments_join_discussion()}
+          </p>
           <Link to="/login">
             <button className="fuwari-btn-primary h-9 px-5 text-sm rounded-lg gap-2">
               <LogIn size={14} />
-              登录
+              {m.comments_login()}
             </button>
           </Link>
         </div>
@@ -185,7 +190,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
             disabled={isFetchingNextPage}
             className="fuwari-btn-regular h-10 px-6 text-sm rounded-lg disabled:opacity-50"
           >
-            {isFetchingNextPage ? "正在加载..." : "加载更多评论"}
+            {isFetchingNextPage ? m.comments_loading() : m.comments_load_more()}
           </button>
         </div>
       )}
@@ -195,9 +200,9 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         isOpen={!!commentToDelete}
         onClose={() => setCommentToDelete(null)}
         onConfirm={handleDelete}
-        title="删除评论"
-        message="您确定要删除这条评论吗？如果是您本人的评论，删除后将显示为「该评论已删除」。"
-        confirmLabel="确认删除"
+        title={m.comments_delete_title()}
+        message={m.comments_delete_desc()}
+        confirmLabel={m.comments_delete_confirm()}
         isDanger={true}
         isLoading={isDeleting}
       />

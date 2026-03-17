@@ -1,34 +1,37 @@
-import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint } from "cloudflare:workers";
+import * as CacheService from "@/features/cache/cache.service";
 import type {
   ExportManifest,
   PostFrontmatter,
   TaskProgress,
 } from "@/features/import-export/import-export.schema";
-import { getDb } from "@/lib/db";
-import * as PostRepo from "@/features/posts/data/posts.data";
-import * as CacheService from "@/features/cache/cache.service";
-import { getFromR2 } from "@/features/media/data/media.storage";
-import { extractAllImageKeys } from "@/features/posts/utils/content";
-import {
-  jsonContentToMarkdown,
-  makeExportImageRewriter,
-} from "@/features/import-export/utils/markdown-serializer";
-import { stringifyFrontmatter } from "@/features/import-export/utils/frontmatter";
-import { buildZip } from "@/features/import-export/utils/zip";
 import {
   EXPORT_MANIFEST_VERSION,
   IMPORT_EXPORT_CACHE_KEYS,
   IMPORT_EXPORT_R2_KEYS,
 } from "@/features/import-export/import-export.schema";
+import { stringifyFrontmatter } from "@/features/import-export/utils/frontmatter";
+import {
+  jsonContentToMarkdown,
+  makeExportImageRewriter,
+} from "@/features/import-export/utils/markdown-serializer";
+import { buildZip } from "@/features/import-export/utils/zip";
+import { getFromR2 } from "@/features/media/data/media.storage";
+import * as PostRepo from "@/features/posts/data/posts.data";
+import { extractAllImageKeys } from "@/features/posts/utils/content";
+import { getDb } from "@/lib/db";
+import { serverEnv } from "@/lib/env/server.env";
+import { m } from "@/paraglide/messages";
 
 export class ExportWorkflow extends WorkflowEntrypoint<
   Env,
   ExportWorkflowParams
 > {
   async run(event: WorkflowEvent<ExportWorkflowParams>, step: WorkflowStep) {
-    const { taskId, postIds, status } = event.payload;
+    const { taskId, postIds, status, locale: requestedLocale } = event.payload;
     const progressKey = IMPORT_EXPORT_CACHE_KEYS.exportProgress(taskId);
+    const locale = requestedLocale ?? serverEnv(this.env).LOCALE;
 
     console.log(JSON.stringify({ message: "export workflow started", taskId }));
 
@@ -58,7 +61,7 @@ export class ExportWorkflow extends WorkflowEntrypoint<
           completed: 0,
           current: "",
           errors: [],
-          warnings: ["没有找到可导出的文章"],
+          warnings: [m.import_export_export_warning_empty({}, { locale })],
         });
         return;
       }
@@ -126,12 +129,23 @@ export class ExportWorkflow extends WorkflowEntrypoint<
                   );
                 } else {
                   warnings.push(
-                    `图片 ${key} 在 R2 中未找到（文章: ${post.title}）`,
+                    m.import_export_export_warning_image_missing(
+                      { key, title: post.title },
+                      { locale },
+                    ),
                   );
                 }
               } catch (error) {
                 warnings.push(
-                  `下载图片 ${key} 失败（文章: ${post.title}）: ${error instanceof Error ? error.message : String(error)}`,
+                  m.import_export_export_warning_image_download_failed(
+                    {
+                      key,
+                      title: post.title,
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                    },
+                    { locale },
+                  ),
                 );
               }
             }
@@ -202,7 +216,10 @@ export class ExportWorkflow extends WorkflowEntrypoint<
             current: "",
             errors: [
               {
-                post: "上传 ZIP 失败",
+                post: m.import_export_export_error_zip_upload_label(
+                  {},
+                  { locale },
+                ),
                 reason: error instanceof Error ? error.message : String(error),
               },
             ],
@@ -257,7 +274,11 @@ export class ExportWorkflow extends WorkflowEntrypoint<
         completed: 0,
         current: "",
         errors: [],
-        warnings: [error instanceof Error ? error.message : "未知错误"],
+        warnings: [
+          error instanceof Error
+            ? error.message
+            : m.import_export_common_unknown_error({}, { locale }),
+        ],
       });
     }
   }

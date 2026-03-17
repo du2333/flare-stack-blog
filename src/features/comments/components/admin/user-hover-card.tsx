@@ -1,12 +1,13 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { getUserStatsFn } from "@/features/comments/api/comments.admin.api";
+import { COMMENTS_KEYS } from "@/features/comments/queries";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 // Query option for user stats
 const userStatsQuery = (userId: string) =>
@@ -68,34 +69,38 @@ export function UserHoverCard({ user, children }: UserHoverCardProps) {
           <div className="grid grid-cols-2 gap-x-8 gap-y-6">
             <div className="space-y-1">
               <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                加入时间
+                {m.comments_admin_user_joined_at()}
               </div>
               <p className="text-xs font-mono">
                 {isLoading || !stats
-                  ? "加载中"
+                  ? m.comments_loading()
                   : formatDate(stats.registeredAt).split(" ")[0]}
               </p>
             </div>
 
             <div className="space-y-1">
               <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                活跃度
+                {m.comments_admin_user_activity()}
               </div>
               <p className="text-xs font-mono">
-                {isLoading || !stats ? "..." : `${stats.totalComments} 条评论`}
+                {isLoading || !stats
+                  ? "..."
+                  : m.comments_count({ count: stats.totalComments })}
               </p>
             </div>
 
             <div className="col-span-2 space-y-1 pt-4 border-t border-border/50">
               <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-orange-600/80">
-                风险评估
+                {m.comments_admin_user_risk()}
               </div>
               <p className="text-xs font-mono text-orange-600">
                 {isLoading || !stats
                   ? "..."
                   : stats.rejectedComments === 0
-                    ? "良好 / 无违规"
-                    : `${stats.rejectedComments} 次违规记录`}
+                    ? m.comments_admin_user_risk_clear()
+                    : m.comments_admin_user_risk_flagged({
+                        count: stats.rejectedComments,
+                      })}
               </p>
             </div>
           </div>

@@ -1,24 +1,25 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown, Check, Hash, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import type { CreateTagInput } from "@/features/tags/tags.schema";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Input } from "@/components/ui/input";
 import {
   createTagFn,
   deleteTagFn,
   updateTagFn,
 } from "@/features/tags/api/tags.api";
-import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import {
   TAGS_KEYS,
   tagsWithCountAdminQueryOptions,
 } from "@/features/tags/queries";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Input } from "@/components/ui/input";
+import type { CreateTagInput } from "@/features/tags/tags.schema";
+import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function TagManager() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,14 +60,14 @@ export function TagManager() {
         const reason = result.error.reason;
         switch (reason) {
           case "TAG_NOT_FOUND":
-            toast.error("标签不存在");
+            toast.error(m.tag_manager_not_found());
             return;
           case "TAG_NAME_ALREADY_EXISTS":
-            toast.error("该标签名称已存在");
+            toast.error(m.tag_manager_name_exists());
             return;
           default: {
             reason satisfies never;
-            toast.error("未知错误");
+            toast.error(m.tag_manager_unknown_error());
             return;
           }
         }
@@ -74,7 +75,7 @@ export function TagManager() {
 
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setTagToEdit(null);
-      toast.success("标签已重命名");
+      toast.success(m.tag_manager_renamed());
     },
   });
 
@@ -84,13 +85,13 @@ export function TagManager() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("删除失败: 标签不存在");
+        toast.error(m.tag_manager_delete_fail());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setTagToDelete(null);
-      toast.success("标签已删除");
+      toast.success(m.tag_manager_deleted());
     },
   });
 
@@ -100,13 +101,13 @@ export function TagManager() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("该标签名称已存在");
+        toast.error(m.tag_manager_name_exists());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
       setIsCreating(false);
-      toast.success("标签已创建");
+      toast.success(m.tag_manager_created());
     },
   });
 
@@ -125,11 +126,11 @@ export function TagManager() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/30">
         <div className="space-y-1">
           <h1 className="text-3xl font-serif font-medium tracking-tight">
-            标签管理
+            {m.tag_manager_title()}
           </h1>
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-              TAXONOMY_MANAGEMENT
+              TAXONOMY MANAGEMENT
             </p>
           </div>
         </div>
@@ -143,7 +144,7 @@ export function TagManager() {
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="搜索标签..."
+              placeholder={m.tag_manager_search_placeholder()}
               className="pl-9 h-9 bg-transparent border-b border-border/50 rounded-none focus:border-foreground focus:ring-0 pr-0 transition-all font-mono text-xs"
             />
           </div>
@@ -153,7 +154,7 @@ export function TagManager() {
             className="h-9 px-4 text-[10px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90"
           >
             <Hash size={12} />
-            新建标签
+            {m.tag_manager_new_tag()}
           </Button>
         </div>
       </div>
@@ -161,16 +162,20 @@ export function TagManager() {
       {/* Stats/Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: "总标签数", value: tags.length, suffix: "" },
           {
-            label: "使用中",
-            value: tags.filter((t) => t.postCount > 0).length,
-            suffix: "个",
+            label: m.tag_manager_stat_total(),
+            value: tags.length,
+            suffix: m.tag_manager_stat_unit(),
           },
           {
-            label: "空置",
+            label: m.tag_manager_stat_active(),
+            value: tags.filter((t) => t.postCount > 0).length,
+            suffix: m.tag_manager_stat_unit(),
+          },
+          {
+            label: m.tag_manager_stat_empty(),
             value: tags.filter((t) => t.postCount === 0).length,
-            suffix: "个",
+            suffix: m.tag_manager_stat_unit(),
           },
         ].map((stat, i) => (
           <div
@@ -246,7 +251,8 @@ export function TagManager() {
                     </div>
                   )}
                   <div className="text-[10px] font-mono text-muted-foreground">
-                    CREATED: {new Date(tag.createdAt).toLocaleDateString()}
+                    {m.tag_manager_mobile_created()}{" "}
+                    {new Date(tag.createdAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
@@ -254,7 +260,7 @@ export function TagManager() {
                     {tag.postCount}
                   </span>
                   <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                    POSTS
+                    {m.tag_manager_mobile_posts()}
                   </span>
                 </div>
               </div>
@@ -266,7 +272,7 @@ export function TagManager() {
                   className="h-7 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
                   onClick={() => setTagToEdit({ id: tag.id, name: tag.name })}
                 >
-                  [ 编辑 ]
+                  [ {m.tag_manager_edit()} ]
                 </Button>
                 <Button
                   variant="ghost"
@@ -274,7 +280,7 @@ export function TagManager() {
                   className="h-7 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-red-500"
                   onClick={() => setTagToDelete({ id: tag.id, name: tag.name })}
                 >
-                  [ 删除 ]
+                  [ {m.tag_manager_delete()} ]
                 </Button>
               </div>
             </div>
@@ -282,7 +288,7 @@ export function TagManager() {
         ) : (
           <div className="p-8 text-center border border-border/30 bg-background text-muted-foreground">
             <span className="text-xs font-serif italic">
-              没有找到匹配的标签
+              {m.tag_manager_no_match()}
             </span>
           </div>
         )}
@@ -299,7 +305,7 @@ export function TagManager() {
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >
-                    标签名称
+                    {m.tag_manager_col_name()}
                     <ArrowUpDown
                       size={10}
                       className={cn(sortBy === "name" && "text-foreground")}
@@ -311,7 +317,7 @@ export function TagManager() {
                     onClick={() => toggleSort("postCount")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >
-                    文章数量
+                    {m.tag_manager_col_posts()}
                     <ArrowUpDown
                       size={10}
                       className={cn(
@@ -325,7 +331,7 @@ export function TagManager() {
                     onClick={() => toggleSort("createdAt")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >
-                    创建时间
+                    {m.tag_manager_col_created()}
                     <ArrowUpDown
                       size={10}
                       className={cn(
@@ -335,7 +341,7 @@ export function TagManager() {
                   </button>
                 </th>
                 <th className="px-6 py-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-normal text-right">
-                  操作
+                  {m.tag_manager_col_actions()}
                 </th>
               </tr>
             </thead>
@@ -405,7 +411,7 @@ export function TagManager() {
                             setTagToEdit({ id: tag.id, name: tag.name })
                           }
                         >
-                          [ 编辑 ]
+                          [ {m.tag_manager_edit()} ]
                         </Button>
                         <Button
                           variant="ghost"
@@ -415,7 +421,7 @@ export function TagManager() {
                             setTagToDelete({ id: tag.id, name: tag.name })
                           }
                         >
-                          [ 删除 ]
+                          [ {m.tag_manager_delete()} ]
                         </Button>
                       </div>
                     </td>
@@ -426,7 +432,7 @@ export function TagManager() {
                   <td colSpan={4} className="px-6 py-24 text-center space-y-4">
                     <Search size={24} className="opacity-20 mx-auto" />
                     <div className="text-muted-foreground font-serif text-sm italic">
-                      没有找到匹配的标签
+                      {m.tag_manager_no_match()}
                     </div>
                     <Button
                       variant="link"
@@ -434,7 +440,7 @@ export function TagManager() {
                       onClick={() => setSearchTerm("")}
                       className="text-[10px] uppercase tracking-widest h-auto p-0 text-muted-foreground hover:text-foreground"
                     >
-                      [ 清除搜索 ]
+                      [ {m.tag_manager_clear_search()} ]
                     </Button>
                   </td>
                 </tr>
@@ -450,9 +456,13 @@ export function TagManager() {
         onConfirm={() =>
           tagToDelete && deleteTagMutation.mutate(tagToDelete.id)
         }
-        title="删除标签"
-        message={`确定要删除标签 "${tagToDelete?.name}" 吗？此操作不可撤销。关联该标签的文章将不再显示该标签。`}
-        confirmLabel="确认删除"
+        title={m.tag_manager_delete_title()}
+        message={
+          tagToDelete
+            ? m.tag_manager_delete_desc({ tagName: tagToDelete.name })
+            : ""
+        }
+        confirmLabel={m.tag_manager_delete_confirm()}
         isLoading={deleteTagMutation.isPending}
       />
     </div>
@@ -490,13 +500,13 @@ function InlineTagCreateForm({
           {">"}
         </span>
         <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-          NEW_TAG:
+          {m.tag_manager_inline_new()}
         </span>
         <div className="flex-1">
           <input
             autoFocus
             {...register("name")}
-            placeholder="输入标签名称..."
+            placeholder={m.tag_manager_inline_placeholder()}
             className="w-full bg-transparent border-none outline-none font-mono text-sm"
           />
         </div>
@@ -508,7 +518,9 @@ function InlineTagCreateForm({
             disabled={isSubmitting || !name.trim()}
             className="h-8 text-[10px] uppercase font-mono tracking-widest hover:text-emerald-500 hover:bg-emerald-500/10 rounded-none"
           >
-            {isSubmitting ? "创建中..." : "[ 确认 ]"}
+            {isSubmitting
+              ? m.tag_manager_inline_creating()
+              : `[ ${m.tag_manager_inline_confirm()} ]`}
           </Button>
           <Button
             type="button"
@@ -517,7 +529,7 @@ function InlineTagCreateForm({
             onClick={onCancel}
             className="h-8 text-[10px] uppercase font-mono tracking-widest text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-none"
           >
-            [ 取消 ]
+            [ {m.tag_manager_inline_cancel()} ]
           </Button>
         </div>
       </div>

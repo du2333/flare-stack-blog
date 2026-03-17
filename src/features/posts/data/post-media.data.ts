@@ -1,8 +1,8 @@
-import { eq, inArray } from "drizzle-orm";
 import type { JSONContent } from "@tiptap/react";
+import { eq, inArray } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
-import { MediaTable, PostMediaTable, PostsTable } from "@/lib/db/schema";
 import { extractAllImageKeys } from "@/features/posts/utils/content";
+import { MediaTable, PostMediaTable, PostsTable } from "@/lib/db/schema";
 
 export async function syncPostMedia(
   db: DB,

@@ -1,12 +1,11 @@
+import { useLocation, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
-import { useLocation } from "@tanstack/react-router";
-import { Sidebar } from "../components/sidebar";
+import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackToTop } from "../components/control/back-to-top";
+import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
-import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
-import { blogConfig } from "@/blog.config";
 
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
@@ -20,6 +19,7 @@ export function PublicLayout({
   isSessionLoading,
   logout,
 }: PublicLayoutProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
@@ -54,7 +54,7 @@ export function PublicLayout({
         style={{ height: `${bannerHeightVh}vh` }}
       >
         <img
-          src={blogConfig.theme.fuwari.homeBg}
+          src={siteConfig.theme.fuwari.homeBg}
           alt="banner"
           fetchPriority="high"
           className="w-full h-full object-cover object-center"

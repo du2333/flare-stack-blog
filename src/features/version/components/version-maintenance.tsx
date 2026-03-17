@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { forceCheckUpdateFn } from "@/features/version/api/version.api";
 import { VERSION_KEYS } from "@/features/version/queries";
-import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 export function VersionMaintenance() {
   const queryClient = useQueryClient();
@@ -13,23 +14,27 @@ export function VersionMaintenance() {
     onSuccess: (result) => {
       queryClient.setQueryData(VERSION_KEYS.updateCheck, result);
       if (result.error) {
-        toast.error("检查失败", {
-          description: "无法连接到 GitHub API，请稍后重试。",
+        toast.error(m.settings_maintenance_version_toast_fail(), {
+          description: m.settings_maintenance_version_toast_fail_desc(),
         });
         return;
       }
       if (result.data.hasUpdate) {
-        toast.info("发现新版本", {
-          description: `${result.data.latestVersion} 已发布! 点击查看详情。`,
+        toast.info(m.settings_maintenance_version_toast_new(), {
+          description: m.settings_maintenance_version_toast_new_desc({
+            version: result.data.latestVersion,
+          }),
           action: {
-            label: "查看",
+            label: m.settings_maintenance_version_action_view(),
             onClick: () => window.open(result.data.releaseUrl, "_blank"),
           },
         });
         return;
       }
-      toast.success("系统已是最新", {
-        description: `当前版本 v${__APP_VERSION__} 为最新版本。`,
+      toast.success(m.settings_maintenance_version_toast_latest(), {
+        description: m.settings_maintenance_version_toast_latest_desc({
+          version: __APP_VERSION__,
+        }),
       });
     },
   });
@@ -37,16 +42,18 @@ export function VersionMaintenance() {
   return (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-sm bg-emerald-500/10 p-2">
-            <CheckCircle2 size={18} className="text-emerald-500" />
+        <div className="flex items-center gap-4">
+          <div className="rounded-sm bg-emerald-500/10 p-3">
+            <CheckCircle2 size={20} className="text-emerald-500" />
           </div>
           <div className="space-y-1">
             <h3 className="text-lg font-serif font-medium text-foreground tracking-tight">
-              版本检查
+              {m.settings_maintenance_version_title()}
             </h3>
             <p className="text-sm text-muted-foreground">
-              当前运行版本为 v{__APP_VERSION__}。
+              {m.settings_maintenance_version_desc({
+                version: __APP_VERSION__,
+              })}
             </p>
           </div>
         </div>
@@ -67,7 +74,9 @@ export function VersionMaintenance() {
               : "mr-3 group-hover:rotate-180 transition-transform duration-500"
           }
         />
-        {checkUpdateMutation.isPending ? "检查中..." : "检查更新"}
+        {checkUpdateMutation.isPending
+          ? m.settings_maintenance_version_checking()
+          : m.settings_maintenance_version_check_btn()}
       </Button>
     </div>
   );

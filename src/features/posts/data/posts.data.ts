@@ -4,6 +4,7 @@ import {
   desc,
   eq,
   inArray,
+  isNotNull,
   like,
   lt,
   ne,
@@ -11,15 +12,24 @@ import {
   sql,
 } from "drizzle-orm";
 import type { SortDirection, SortField } from "@/features/posts/data/helper";
-import type { PostStatus, Tag } from "@/lib/db/schema";
-import type { PostListItem } from "@/features/posts/posts.schema";
 import {
   buildPostOrderByClause,
   buildPostWhereClause,
 } from "@/features/posts/data/helper";
-import { PostTagsTable, PostsTable, TagsTable } from "@/lib/db/schema";
+import type { PostListItem } from "@/features/posts/schema/posts.schema";
+import type { PostStatus, Tag } from "@/lib/db/schema";
+import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 
 const DEFAULT_PAGE_SIZE = 12;
+const DEFAULT_SITEMAP_BATCH_SIZE = 500;
+
+export type SitemapPostRow = {
+  id: number;
+  slug: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  publishedAt: Date | null;
+};
 
 export async function insertPost(db: DB, data: typeof PostsTable.$inferInsert) {
   const [post] = await db.insert(PostsTable).values(data).returning();
@@ -202,6 +212,47 @@ export async function getPostsCursor(
   return { items, nextCursor };
 }
 
+export async function getPublishedPostsForSitemapBatch(
+  db: DB,
+  options: {
+    cursor?: {
+      publishedAt: Date;
+      id: number;
+    };
+    limit?: number;
+  } = {},
+): Promise<Array<SitemapPostRow>> {
+  const { cursor, limit = DEFAULT_SITEMAP_BATCH_SIZE } = options;
+
+  return await db
+    .select({
+      id: PostsTable.id,
+      slug: PostsTable.slug,
+      createdAt: PostsTable.createdAt,
+      updatedAt: PostsTable.updatedAt,
+      publishedAt: PostsTable.publishedAt,
+    })
+    .from(PostsTable)
+    .where(
+      and(
+        eq(PostsTable.status, "published"),
+        isNotNull(PostsTable.publishedAt),
+        sql`date(${PostsTable.publishedAt}, 'unixepoch') <= date('now')`,
+        cursor
+          ? or(
+              lt(PostsTable.publishedAt, cursor.publishedAt),
+              and(
+                eq(PostsTable.publishedAt, cursor.publishedAt),
+                lt(PostsTable.id, cursor.id),
+              ),
+            )
+          : undefined,
+      ),
+    )
+    .orderBy(desc(PostsTable.publishedAt), desc(PostsTable.id))
+    .limit(limit);
+}
+
 export async function findPostById(db: DB, id: number) {
   const post = await db.query.PostsTable.findFirst({
     where: eq(PostsTable.id, id),
@@ -255,6 +306,31 @@ export async function updatePost(
   data: Partial<Omit<typeof PostsTable.$inferInsert, "id" | "createdAt">>,
 ) {
   await db.update(PostsTable).set(data).where(eq(PostsTable.id, id));
+  return await findPostById(db, id);
+}
+
+export async function touchPostUpdatedAt(db: DB, id: number) {
+  await db
+    .update(PostsTable)
+    .set({
+      updatedAt: new Date(),
+    })
+    .where(eq(PostsTable.id, id));
+}
+
+export async function updatePublicContentSnapshot(
+  db: DB,
+  id: number,
+  publicContentJson: typeof PostsTable.$inferInsert.publicContentJson,
+) {
+  await db
+    .update(PostsTable)
+    .set({
+      publicContentJson,
+      // Snapshot rebuilds should not affect editorial ordering/history.
+      updatedAt: sql`${PostsTable.updatedAt}`,
+    })
+    .where(eq(PostsTable.id, id));
   return await findPostById(db, id);
 }
 

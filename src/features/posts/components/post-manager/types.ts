@@ -1,7 +1,7 @@
 import type { Post } from "@/lib/db/schema";
 
-/** Post without contentJson for list views */
-export type PostListItem = Omit<Post, "contentJson">;
+/** Post without contentJson fields for list views */
+export type PostListItem = Omit<Post, "contentJson" | "publicContentJson">;
 
 /** Status filter options for posts list */
 export const STATUS_FILTERS = ["ALL", "PUBLISHED", "DRAFT"] as const;

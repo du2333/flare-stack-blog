@@ -1,12 +1,14 @@
-import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import theme from "@theme";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import theme from "@theme";
 import { ErrorPage } from "@/components/common/error-page";
-import { CACHE_CONTROL } from "@/lib/constants";
 import { AUTH_KEYS, sessionQuery } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
+import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
+import { CACHE_CONTROL } from "@/lib/constants";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_user")({
   loader: async ({ context }) => {
@@ -20,31 +22,36 @@ export const Route = createFileRoute("/_user")({
   },
 });
 
-const navOptions = [
-  { label: "主页", to: "/" as const, id: "home" },
-  { label: "文章", to: "/posts" as const, id: "posts" },
-  { label: "友链", to: "/friend-links" as const, id: "friend-links" },
-];
-
 function UserLayout() {
   const { session } = Route.useLoaderData();
   const navigate = useNavigate();
   const { isPending: isSessionPending } = authClient.useSession();
   const queryClient = useQueryClient();
 
+  const navOptions = [
+    { label: m.nav_home(), to: "/" as const, id: "home" },
+    { label: m.nav_posts(), to: "/posts" as const, id: "posts" },
+    {
+      label: m.nav_friend_links(),
+      to: "/friend-links" as const,
+      id: "friend-links",
+    },
+  ];
+
   const logout = async () => {
     const { error } = await authClient.signOut();
     if (error) {
-      toast.error("会话终止失败, 请稍后重试。", {
-        description: error.message,
+      toast.error(m.auth_logout_failed(), {
+        description:
+          getLogoutAuthErrorMessage(error, m) ?? m.auth_logout_failed_desc(),
       });
       return;
     }
 
     queryClient.removeQueries({ queryKey: AUTH_KEYS.session });
 
-    toast.success("会话已终止", {
-      description: "你已安全退出当前会话。",
+    toast.success(m.auth_logout_success(), {
+      description: m.auth_logout_success_desc(),
     });
   };
 

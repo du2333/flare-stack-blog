@@ -1,6 +1,6 @@
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createdAt, id, updatedAt } from "./helper";
 import { user } from "./auth.table";
+import { createdAt, id, updatedAt } from "./helper";
 
 export const FRIEND_LINK_STATUSES = [
   "pending",

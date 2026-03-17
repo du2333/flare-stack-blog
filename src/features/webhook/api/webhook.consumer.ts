@@ -1,24 +1,71 @@
-import type { NotificationEvent } from "@/features/notification/notification.schema";
-import type { WebhookMessage } from "@/lib/queue/queue.schema";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
+import type { NotificationEvent } from "@/features/notification/notification.schema";
+import { serverEnv } from "@/lib/env/server.env";
+import type { Locale } from "@/lib/i18n";
+import type { WebhookMessage } from "@/lib/queue/queue.schema";
+import { m } from "@/paraglide/messages";
+import { baseLocale } from "@/paraglide/runtime";
 
-function createPlainTextMessage(event: NotificationEvent) {
+function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
   switch (event.type) {
     case "comment.admin_root_created":
-      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了评论：${event.data.commentPreview} ${event.data.commentUrl}`;
+      return m.email_webhook_comment_admin_root_message(
+        {
+          commentPreview: event.data.commentPreview,
+          commentUrl: event.data.commentUrl,
+          commenterName: event.data.commenterName,
+          postTitle: event.data.postTitle,
+        },
+        { locale },
+      );
     case "comment.admin_pending_review":
-      return `${event.data.commenterName} 在《${event.data.postTitle}》下发表了待审核评论：${event.data.commentPreview} ${event.data.reviewUrl}`;
+      return m.email_webhook_comment_admin_pending_message(
+        {
+          commentPreview: event.data.commentPreview,
+          commenterName: event.data.commenterName,
+          postTitle: event.data.postTitle,
+          reviewUrl: event.data.reviewUrl,
+        },
+        { locale },
+      );
     case "comment.reply_to_admin_published":
     case "comment.reply_to_user_published":
-      return `${event.data.replierName} 回复了《${event.data.postTitle}》下的评论：${event.data.replyPreview} ${event.data.commentUrl}`;
+      return m.email_webhook_comment_reply_message(
+        {
+          commentUrl: event.data.commentUrl,
+          postTitle: event.data.postTitle,
+          replierName: event.data.replierName,
+          replyPreview: event.data.replyPreview,
+        },
+        { locale },
+      );
     case "friend_link.submitted":
-      return `${event.data.submitterName} 提交了友链申请：${event.data.siteName}（${event.data.siteUrl}）`;
+      return m.email_webhook_friend_link_submitted_message(
+        {
+          siteName: event.data.siteName,
+          siteUrl: event.data.siteUrl,
+          submitterName: event.data.submitterName,
+        },
+        { locale },
+      );
     case "friend_link.approved":
-      return `${event.data.siteName} 的友链申请已通过审核。`;
+      return m.email_webhook_friend_link_approved_message(
+        { siteName: event.data.siteName },
+        { locale },
+      );
     case "friend_link.rejected":
       return event.data.rejectionReason
-        ? `${event.data.siteName} 的友链申请未通过：${event.data.rejectionReason}`
-        : `${event.data.siteName} 的友链申请未通过。`;
+        ? m.email_webhook_friend_link_rejected_message(
+            {
+              rejectionReason: event.data.rejectionReason,
+              siteName: event.data.siteName,
+            },
+            { locale },
+          )
+        : m.email_webhook_friend_link_rejected_message_no_reason(
+            { siteName: event.data.siteName },
+            { locale },
+          );
     default: {
       event satisfies never;
       throw new Error("Unknown notification event");
@@ -26,12 +73,12 @@ function createPlainTextMessage(event: NotificationEvent) {
   }
 }
 
-function createRenderedEmail(event: NotificationEvent) {
-  const email = createEmailMessageFromNotification(event);
+function createRenderedEmail(event: NotificationEvent, locale: Locale) {
+  const email = createEmailMessageFromNotification(event, locale);
 
   return {
     subject: email.subject,
-    message: createPlainTextMessage(event),
+    message: createPlainTextMessage(event, locale),
     html: email.html,
   };
 }
@@ -42,6 +89,7 @@ export function createWebhookBody(
   options?: {
     isTest?: boolean;
   },
+  locale: Locale = baseLocale,
 ) {
   return {
     id: messageId,
@@ -50,7 +98,7 @@ export function createWebhookBody(
     source: "flare-stack-blog",
     test: options?.isTest ?? false,
     data: event.data,
-    ...createRenderedEmail(event),
+    ...createRenderedEmail(event, locale),
   };
 }
 
@@ -75,13 +123,15 @@ async function signPayload(secret: string, payload: string, timestamp: string) {
 }
 
 export async function sendWebhookRequest(
+  context: { env: Env },
   data: WebhookMessage["data"],
   messageId: string,
   options?: {
     isTest?: boolean;
   },
 ): Promise<void> {
-  const body = createWebhookBody(messageId, data.event, options);
+  const locale = serverEnv(context.env).LOCALE;
+  const body = createWebhookBody(messageId, data.event, options, locale);
   const payload = JSON.stringify(body);
   const timestamp = body.timestamp;
   const signature = await signPayload(data.secret, payload, timestamp);
@@ -107,15 +157,23 @@ export async function sendWebhookRequest(
       // Ignored
     }
 
-    const errorMessage = `Webhook delivery failed: ${response.status} ${response.statusText}${errorDetail ? ` - ${errorDetail.slice(0, 1000)}` : ""}`;
+    const errorMessage = m.settings_webhook_delivery_failed(
+      {
+        detail: errorDetail.slice(0, 1000),
+        status: String(response.status),
+        statusText: response.statusText,
+      },
+      { locale },
+    );
 
     throw new Error(errorMessage);
   }
 }
 
 export async function handleWebhookMessage(
+  context: { env: Env },
   data: WebhookMessage["data"],
   messageId: string,
 ): Promise<void> {
-  await sendWebhookRequest(data, messageId);
+  await sendWebhookRequest(context, data, messageId);
 }

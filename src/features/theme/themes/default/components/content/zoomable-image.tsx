@@ -2,11 +2,13 @@ import { ClientOnly } from "@tanstack/react-router";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
-interface ZoomableImageProps extends Omit<
-  React.ImgHTMLAttributes<HTMLImageElement>,
-  "src" | "width" | "height"
-> {
+interface ZoomableImageProps
+  extends Omit<
+    React.ImgHTMLAttributes<HTMLImageElement>,
+    "src" | "width" | "height"
+  > {
   className?: string;
   showHint?: boolean;
   src?: string;
@@ -80,10 +82,10 @@ function Lightbox({
       >
         <div className="flex flex-col gap-1">
           <span className="text-xs font-mono font-medium text-foreground tracking-widest uppercase">
-            图片预览
+            {m.common_image_preview()}
           </span>
           <span className="text-[10px] font-mono text-muted-foreground tracking-wider opacity-60">
-            {alt || "Untitled"}
+            {alt || m.common_untitled()}
           </span>
         </div>
 
@@ -96,12 +98,12 @@ function Lightbox({
             className="group flex items-center gap-2"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
-              下载
+              {m.media_preview_btn_download()}
             </span>
           </a>
           <button onClick={onClose} className="group flex items-center gap-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
-              关闭
+              {m.common_close()}
             </span>
           </button>
         </div>
@@ -180,7 +182,7 @@ export default function ZoomableImage({
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/2 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
             <div className="bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/20 transform scale-95 group-hover:scale-100 transition-all duration-500">
               <span className="text-[10px] font-mono uppercase tracking-widest text-foreground/70">
-                点击查看大图
+                {m.common_view_full_image()}
               </span>
             </div>
           </div>

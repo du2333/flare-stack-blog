@@ -1,5 +1,6 @@
 import { Loader2, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 interface EmailTestToolbarProps {
   status: "IDLE" | "TESTING" | "SUCCESS" | "ERROR";
@@ -29,12 +30,12 @@ export function EmailTestToolbar({
           />
           <span className="text-sm font-serif font-medium text-foreground">
             {status === "SUCCESS"
-              ? "服务连接正常"
+              ? m.settings_email_test_status_success()
               : status === "ERROR"
-                ? "连接测试失败"
+                ? m.settings_email_test_status_error()
                 : status === "TESTING"
-                  ? "正在测试连接..."
-                  : "等待测试连接"}
+                  ? m.settings_email_test_status_testing()
+                  : m.settings_email_test_status_idle()}
           </span>
         </div>
 
@@ -42,8 +43,8 @@ export function EmailTestToolbar({
 
         <p className="hidden text-xs text-muted-foreground md:block">
           {status === "IDLE"
-            ? "填写完成后可发送测试邮件"
-            : `当前状态：${status}`}
+            ? m.settings_email_test_hint_idle()
+            : m.settings_email_test_hint_current({ status })}
         </p>
       </div>
 
@@ -61,7 +62,9 @@ export function EmailTestToolbar({
         ) : (
           <Wifi size={12} className="mr-3" />
         )}
-        {status === "TESTING" ? "测试中..." : "发送测试邮件"}
+        {status === "TESTING"
+          ? m.settings_email_test_btn_testing()
+          : m.settings_email_test_btn_send()}
       </Button>
     </div>
   );

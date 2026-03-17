@@ -4,8 +4,8 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { vi } from "vitest";
-import * as schema from "@/lib/db/schema";
 import { getDb } from "@/lib/db";
+import * as schema from "@/lib/db/schema";
 
 export function createTestDb() {
   return getDb(env);
@@ -91,7 +91,7 @@ export function createTestContext(
 ) {
   const context = {
     db: createTestDb(),
-    env: env,
+    env: { ...env },
     executionCtx: createMockExecutionCtx(),
     auth: createMockAuth(),
     ...overrides,
@@ -112,6 +112,18 @@ export function createTestContext(
     >,
   );
 
+  vi.spyOn(context.env.POST_AUTO_SNAPSHOT_WORKFLOW, "create").mockResolvedValue(
+    mockWorkflowInstance as unknown as Awaited<
+      ReturnType<Env["POST_AUTO_SNAPSHOT_WORKFLOW"]["create"]>
+    >,
+  );
+  vi.spyOn(
+    context.env.POST_AUTO_SNAPSHOT_WORKFLOW,
+    "createBatch",
+  ).mockResolvedValue([mockWorkflowInstance] as unknown as Awaited<
+    ReturnType<Env["POST_AUTO_SNAPSHOT_WORKFLOW"]["createBatch"]>
+  >);
+
   vi.spyOn(context.env.QUEUE, "send").mockResolvedValue();
 
   vi.spyOn(context.env.SCHEDULED_PUBLISH_WORKFLOW, "get").mockResolvedValue({
@@ -126,6 +138,12 @@ export function createTestContext(
       ReturnType<Env["SCHEDULED_PUBLISH_WORKFLOW"]["create"]>
     >,
   );
+  vi.spyOn(
+    context.env.SCHEDULED_PUBLISH_WORKFLOW,
+    "createBatch",
+  ).mockResolvedValue([mockWorkflowInstance] as unknown as Awaited<
+    ReturnType<Env["SCHEDULED_PUBLISH_WORKFLOW"]["createBatch"]>
+  >);
 
   return context;
 }

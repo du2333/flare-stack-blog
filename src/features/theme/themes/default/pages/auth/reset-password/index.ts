@@ -1,2 +1,2 @@
-export { ResetPasswordPage } from "./page";
 export { ResetPasswordForm } from "./form";
+export { ResetPasswordPage } from "./page";

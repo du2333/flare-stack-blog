@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { strToU8 } from "fflate";
+import { describe, expect, it } from "vitest";
 import {
   buildZip,
   listDirectories,

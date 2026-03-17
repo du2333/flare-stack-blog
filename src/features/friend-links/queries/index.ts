@@ -1,10 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
+import type { FriendLinkStatus } from "@/lib/db/schema";
 import { getAllFriendLinksFn } from "../api/friend-links.admin.api";
 import {
   getApprovedFriendLinksFn,
   getMyFriendLinksFn,
 } from "../api/friend-links.user.api";
-import type { FriendLinkStatus } from "@/lib/db/schema";
 
 export const FRIEND_LINKS_KEYS = {
   all: ["friend-links"] as const,
@@ -28,11 +28,7 @@ export function approvedFriendLinksQuery() {
 }
 
 export function allFriendLinksQuery(
-  options: {
-    offset?: number;
-    limit?: number;
-    status?: FriendLinkStatus;
-  } = {},
+  options: { offset?: number; limit?: number; status?: FriendLinkStatus } = {},
 ) {
   return queryOptions({
     queryKey: [...FRIEND_LINKS_KEYS.admin, options],

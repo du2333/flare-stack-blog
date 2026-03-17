@@ -1,5 +1,6 @@
 import { Check, Copy } from "lucide-react";
 import { memo, useState } from "react";
+import { m } from "@/paraglide/messages";
 
 // Map short codes to display labels
 const LANGUAGE_MAP: Record<string, string> = {
@@ -29,8 +30,6 @@ const LANGUAGE_MAP: Record<string, string> = {
   sh: "Shell",
   bash: "Bash",
   md: "Markdown",
-  text: "Plain Text",
-  txt: "Plain Text",
 };
 
 interface CodeBlockProps {
@@ -47,9 +46,12 @@ export const CodeBlock = memo(
     const [copied, setCopied] = useState(false);
 
     // Helper to get display label
-    const displayLanguage = language
-      ? LANGUAGE_MAP[language.toLowerCase()] || language
-      : "Plain Text";
+    const normalizedLanguage = language?.toLowerCase();
+    const displayLanguage = normalizedLanguage
+      ? normalizedLanguage === "text" || normalizedLanguage === "txt"
+        ? m.common_plain_text()
+        : LANGUAGE_MAP[normalizedLanguage] || language
+      : m.common_plain_text();
 
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
@@ -70,11 +72,12 @@ export const CodeBlock = memo(
 
             <button
               onClick={handleCopy}
+              aria-label={m.common_copy_code()}
               className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-all duration-300"
             >
               {copied ? (
                 <span className="animate-in fade-in slide-in-from-right-1 opacity-70">
-                  已复制
+                  {m.common_copied()}
                 </span>
               ) : null}
               <div className="p-0.5 opacity-60 group-hover/btn:opacity-100 transition-opacity">

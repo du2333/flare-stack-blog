@@ -14,7 +14,6 @@ export interface ImageUploadOptions {
 }
 
 declare module "@tiptap/core" {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   interface Commands<ReturnType> {
     imageUpload: {
       /**

@@ -1,18 +1,19 @@
 import { z } from "zod";
+import * as CacheService from "@/features/cache/cache.service";
 import type {
   DashboardRange,
   DashboardResponse,
 } from "@/features/dashboard/dashboard.schema";
-import { UmamiClient } from "@/features/dashboard/data/umami.client";
 import {
   ALL_RANGES,
   DASHBOARD_CACHE_KEYS,
   TrafficDataSchema,
 } from "@/features/dashboard/dashboard.schema";
 import * as DashboardRepo from "@/features/dashboard/data/dashboard.data";
+import { UmamiClient } from "@/features/dashboard/data/umami.client";
 import * as MediaRepo from "@/features/media/data/media.data";
-import * as CacheService from "@/features/cache/cache.service";
 import { serverEnv } from "@/lib/env/server.env";
+import { m } from "@/paraglide/messages";
 
 // Schema for single range data
 const MetricSchema = z.object({
@@ -261,20 +262,27 @@ export async function getDashboardStats(
       .filter((c) => c.posts !== null)
       .map((c) => ({
         type: "comment" as const,
-        text: `用户 ${c.user?.name || "Anonymous"} 在《${c.posts!.title}》下评论了`,
+        text: m.admin_overview_activity_comment({
+          userName: c.user?.name || m.admin_overview_activity_anonymous(),
+          postTitle: c.posts!.title,
+        }),
         time: c.comments.createdAt,
         link: `/post/${c.posts!.slug}?highlightCommentId=${c.comments.id}&rootId=${c.comments.rootId ?? c.comments.id}#comment-${c.comments.id}`,
         rootId: c.comments.rootId ?? c.comments.id,
       })),
     ...recentPosts.map((p) => ({
       type: "post" as const,
-      text: `文章《${p.title}》已发布`,
+      text: m.admin_overview_activity_post_published({
+        postTitle: p.title,
+      }),
       time: p.publishedAt,
       link: `/post/${p.slug}`,
     })),
     ...recentUsers.map((u) => ({
       type: "user" as const,
-      text: `新用户 ${u.name} 注册了`,
+      text: m.admin_overview_activity_user_registered({
+        userName: u.name,
+      }),
       time: u.createdAt,
     })),
   ]

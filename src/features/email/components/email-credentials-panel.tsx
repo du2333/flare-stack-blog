@@ -2,6 +2,7 @@ import { Eye, EyeOff, Globe, Lock } from "lucide-react";
 import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { m } from "@/paraglide/messages";
 
 interface EmailCredentialsPanelProps<TFieldValues extends FieldValues> {
   register: UseFormRegister<TFieldValues>;
@@ -30,7 +31,9 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
             <div className="rounded-sm bg-muted/40 p-2">
               <Lock size={16} className="text-muted-foreground" />
             </div>
-            <h5 className="text-sm font-medium text-foreground">API Key</h5>
+            <h5 className="text-sm font-medium text-foreground">
+              {m.settings_email_creds_api_key_label()}
+            </h5>
           </div>
         </div>
 
@@ -39,7 +42,7 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
             htmlFor="email-api-key"
             className="text-sm text-muted-foreground"
           >
-            Resend API Key
+            {m.settings_email_creds_api_key_label()}
           </label>
           <div className="relative group/input">
             <Input
@@ -48,7 +51,7 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
               {...register("email.apiKey" as FieldPath<TFieldValues>, {
                 onChange: onFieldChange,
               })}
-              placeholder="re_xxxxxxxxxxxxxx，留空则不启用邮件发送"
+              placeholder={m.settings_email_creds_api_key_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 pr-12 text-sm text-foreground transition-all focus-visible:border-border/60 focus-visible:ring-1 focus-visible:ring-foreground/10"
             />
             <Button
@@ -76,17 +79,21 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
           <div className="rounded-sm bg-muted/40 p-2">
             <Globe size={16} className="text-muted-foreground" />
           </div>
-          <h5 className="text-sm font-medium text-foreground">发信信息</h5>
+          <h5 className="text-sm font-medium text-foreground">
+            {m.settings_email_creds_info_title()}
+          </h5>
         </div>
 
         <div className="grid grid-cols-1 gap-x-16 gap-y-10 px-2 xl:grid-cols-2">
           <div className="space-y-4">
-            <label className="text-sm text-muted-foreground">发信名称</label>
+            <label className="text-sm text-muted-foreground">
+              {m.settings_email_creds_sender_name_label()}
+            </label>
             <Input
               {...register("email.senderName" as FieldPath<TFieldValues>, {
                 onChange: onFieldChange,
               })}
-              placeholder="例如：Chronicle Blog"
+              placeholder={m.settings_email_creds_sender_name_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm transition-all focus-visible:border-border/60 focus-visible:ring-1 focus-visible:ring-foreground/10"
             />
             {senderNameError && (
@@ -95,13 +102,15 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
           </div>
 
           <div className="space-y-4">
-            <label className="text-sm text-muted-foreground">发信邮箱</label>
+            <label className="text-sm text-muted-foreground">
+              {m.settings_email_creds_sender_addr_label()}
+            </label>
             <Input
               type="email"
               {...register("email.senderAddress" as FieldPath<TFieldValues>, {
                 onChange: onFieldChange,
               })}
-              placeholder="noreply@yourdomain.com"
+              placeholder={m.settings_email_creds_sender_addr_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm transition-all focus-visible:border-border/60 focus-visible:ring-1 focus-visible:ring-foreground/10"
             />
             {senderAddressError && (

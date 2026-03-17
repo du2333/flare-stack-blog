@@ -1,7 +1,7 @@
 import { Suspense } from "react";
+import { cn } from "@/lib/utils";
 import { Profile } from "./profile";
 import { Tags, TagsSkeleton } from "./tags";
-import { cn } from "@/lib/utils";
 
 export function Sidebar({ className }: { className?: string }) {
   return (

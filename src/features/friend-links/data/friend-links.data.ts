@@ -25,7 +25,7 @@ export async function getAllFriendLinks(
   db: DB,
   options: {
     offset?: number;
-    limit?: number;
+    limit?: number | null;
     status?: FriendLinkStatus;
   } = {},
 ) {
@@ -33,7 +33,7 @@ export async function getAllFriendLinks(
   const conditions = [];
   if (status) conditions.push(eq(FriendLinksTable.status, status));
 
-  const items = await db
+  const query = db
     .select({
       id: FriendLinksTable.id,
       siteName: FriendLinksTable.siteName,
@@ -55,9 +55,12 @@ export async function getAllFriendLinks(
     .from(FriendLinksTable)
     .leftJoin(user, eq(FriendLinksTable.userId, user.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(FriendLinksTable.createdAt))
-    .limit(Math.min(limit, 100))
-    .offset(offset);
+    .orderBy(desc(FriendLinksTable.createdAt));
+
+  const items =
+    limit == null
+      ? await query.offset(offset)
+      : await query.limit(Math.min(limit, 100)).offset(offset);
 
   return items;
 }

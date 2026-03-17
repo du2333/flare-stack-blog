@@ -1,6 +1,6 @@
-import { Toaster as Sonner } from "sonner";
 import type React from "react";
 import type { ToasterProps } from "sonner";
+import { Toaster as Sonner } from "sonner";
 
 const Toaster: React.FC<ToasterProps> = (props) => {
   return (

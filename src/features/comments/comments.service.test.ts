@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { eq } from "drizzle-orm";
 import {
   createAdminTestContext,
   createAuthTestContext,
@@ -6,11 +6,13 @@ import {
   createMockSession,
   seedUser,
 } from "tests/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as CommentService from "@/features/comments/comments.service";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import * as CommentService from "@/features/comments/comments.service";
 import * as EmailData from "@/features/email/data/email.data";
-import * as PostService from "@/features/posts/posts.service";
+import * as PostService from "@/features/posts/services/posts.service";
+import { CommentsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";
 
 describe("CommentService", () => {
@@ -717,6 +719,35 @@ describe("CommentService", () => {
       await CommentService.createComment(adminContext, {
         postId,
         content: createCommentContent("Admin reply"),
+        rootId: rootComment.id,
+        replyToCommentId: rootComment.id,
+      });
+
+      expect(adminContext.env.QUEUE.send).not.toHaveBeenCalled();
+    });
+
+    it("should skip reply notification when the replied user's account was deleted", async () => {
+      const rootComment = unwrap(
+        await CommentService.createComment(userContext, {
+          postId,
+          content: createCommentContent("User comment from deleted account"),
+        }),
+      );
+      await CommentService.moderateComment(adminContext, {
+        id: rootComment.id,
+        status: "published",
+      });
+
+      await adminContext.db
+        .update(CommentsTable)
+        .set({ userId: null })
+        .where(eq(CommentsTable.id, rootComment.id));
+
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+
+      await CommentService.createComment(adminContext, {
+        postId,
+        content: createCommentContent("Admin reply after account deletion"),
         rootId: rootComment.id,
         replyToCommentId: rootComment.id,
       });

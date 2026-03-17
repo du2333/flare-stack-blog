@@ -1,5 +1,5 @@
-import { create } from "@orama/orama";
 import type { Orama, Tokenizer } from "@orama/orama";
+import { create } from "@orama/orama";
 
 const segmenter = new Intl.Segmenter("zh-CN", { granularity: "word" });
 

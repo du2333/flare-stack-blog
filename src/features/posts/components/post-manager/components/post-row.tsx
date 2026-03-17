@@ -1,11 +1,11 @@
 import { ClientOnly, useNavigate } from "@tanstack/react-router";
 import { Edit3, MoreVertical, Trash2 } from "lucide-react";
-import type { PostListItem } from "../types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Dropdown from "@/components/ui/dropdown";
-
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { PostListItem } from "../types";
 
 interface PostRowProps {
   post: PostListItem;
@@ -43,7 +43,7 @@ export function PostRow({ post, onDelete }: PostRowProps) {
 
         {/* Summary */}
         <p className="text-xs text-muted-foreground truncate max-w-3xl font-mono opacity-70">
-          {post.summary || "无摘要"}
+          {post.summary || m.admin_posts_no_summary()}
         </p>
       </div>
 
@@ -58,7 +58,9 @@ export function PostRow({ post, onDelete }: PostRowProps) {
         <div className="md:col-span-2 flex flex-col items-start gap-1 md:justify-self-start">
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
             <span className="opacity-50">
-              {post.status === "published" ? "发布" : "修改"}
+              {post.status === "published"
+                ? m.admin_posts_time_published()
+                : m.admin_posts_time_modified()}
             </span>
             <ClientOnly fallback={<span>-</span>}>
               {post.status === "published"
@@ -78,7 +80,7 @@ export function PostRow({ post, onDelete }: PostRowProps) {
               handleEdit();
             }}
             className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-transparent rounded-none"
-            title="编辑"
+            title={m.admin_posts_action_edit()}
           >
             <Edit3 size={14} strokeWidth={1.5} />
           </Button>
@@ -86,7 +88,7 @@ export function PostRow({ post, onDelete }: PostRowProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-transparent rounded-none"
-            title="删除"
+            title={m.admin_posts_action_delete()}
             onClick={(e) => {
               e.stopPropagation();
               onDelete(post);
@@ -110,12 +112,12 @@ export function PostRow({ post, onDelete }: PostRowProps) {
             }
             items={[
               {
-                label: "编辑文章",
+                label: m.admin_posts_action_edit_post(),
                 icon: <Edit3 size={14} strokeWidth={1.5} />,
                 onClick: handleEdit,
               },
               {
-                label: "删除文章",
+                label: m.admin_posts_action_delete_post(),
                 icon: <Trash2 size={14} strokeWidth={1.5} />,
                 onClick: () => onDelete(post),
                 danger: true,
@@ -141,11 +143,13 @@ function StatusBadge({ status }: { status: string }) {
             : "text-amber-600 border-amber-500/30")
       }
     >
+      [{" "}
       {status === "published"
-        ? "[ 已发布 ]"
+        ? m.admin_posts_status_published()
         : status === "draft"
-          ? "[ 草稿 ]"
-          : "[ 待定 ]"}
+          ? m.admin_posts_status_draft()
+          : m.admin_posts_status_pending()}{" "}
+      ]
     </Badge>
   );
 }

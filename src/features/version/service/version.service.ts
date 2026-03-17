@@ -1,13 +1,13 @@
+import * as CacheService from "@/features/cache/cache.service";
 import type { UpdateCheckResult } from "@/features/version/version.schema";
-import type { Result } from "@/lib/errors";
 import {
   GitHubReleaseSchema,
   UpdateCheckResultSchema,
   VERSION_CACHE_KEYS,
 } from "@/features/version/version.schema";
-import { err, ok } from "@/lib/errors";
-import * as CacheService from "@/features/cache/cache.service";
 import { serverEnv } from "@/lib/env/server.env";
+import type { Result } from "@/lib/errors";
+import { err, ok } from "@/lib/errors";
 
 const GITHUB_REPO = "du2333/flare-stack-blog";
 
@@ -42,7 +42,10 @@ export async function checkForUpdate(
     );
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.statusText}`);
+      const body = await response.text().catch(() => "");
+      throw new Error(
+        `GitHub API error: ${response.status} ${response.statusText}${body ? ` - ${body.slice(0, 500)}` : ""}`,
+      );
     }
 
     const json = await response.json();

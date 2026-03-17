@@ -1,11 +1,11 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import type { CommentStatus } from "@/lib/db/schema";
+import { getAllCommentsFn } from "../api/comments.admin.api";
 import {
   getMyCommentsFn,
   getRepliesByRootIdFn,
   getRootCommentsByPostIdFn,
 } from "../api/comments.public.api";
-import { getAllCommentsFn } from "../api/comments.admin.api";
-import type { CommentStatus } from "@/lib/db/schema";
 
 export const COMMENTS_KEYS = {
   all: ["comments"] as const,
@@ -74,11 +74,7 @@ export function repliesByRootIdInfiniteQuery(
 }
 
 export function myCommentsQuery(
-  options: {
-    offset?: number;
-    limit?: number;
-    status?: CommentStatus;
-  } = {},
+  options: { offset?: number; limit?: number; status?: CommentStatus } = {},
 ) {
   return queryOptions({
     queryKey: [...COMMENTS_KEYS.mine, options],

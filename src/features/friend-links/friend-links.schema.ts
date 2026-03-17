@@ -1,6 +1,7 @@
-import { z } from "zod";
 import { createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 import { FriendLinksTable } from "@/lib/db/schema";
+import type { Messages } from "@/lib/i18n";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 
@@ -20,24 +21,69 @@ export const FriendLinkWithUserSchema = FriendLinkSelectSchema.extend({
 });
 
 // === User submission input ===
+
 export const SubmitFriendLinkInputSchema = z.object({
-  siteName: z.string().min(1, "站点名称不能为空").max(100, "站点名称最长100字"),
-  siteUrl: z.url("请输入有效的URL"),
-  description: z.string().max(300, "描述最长300字").optional(),
-  logoUrl: z.union([z.literal(""), z.url("请输入有效的Logo URL")]).optional(),
-  contactEmail: z.email("请输入有效的邮箱地址"),
+  siteName: z.string().min(1).max(100),
+  siteUrl: z.string().url(),
+  description: z.string().max(300).optional(),
+  logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
+  contactEmail: z.string().email(),
 });
 
+export const createSubmitFriendLinkSchema = (m: Messages) =>
+  z.object({
+    siteName: z
+      .string()
+      .min(1, m.friend_link_validation_required())
+      .max(100, m.friend_link_validation_too_long({ max: 100 })),
+    siteUrl: z.string().url(m.friend_link_validation_invalid_url()),
+    description: z
+      .string()
+      .max(300, m.friend_link_validation_too_long({ max: 300 }))
+      .optional(),
+    logoUrl: z
+      .union([
+        z.literal(""),
+        z.string().url(m.friend_link_validation_invalid_url()),
+      ])
+      .optional(),
+    contactEmail: z.string().email(m.friend_link_validation_invalid_email()),
+  });
+
 // === Admin create input (manual add) ===
+
 export const CreateFriendLinkInputSchema = z.object({
-  siteName: z.string().min(1, "站点名称不能为空").max(100, "站点名称最长100字"),
-  siteUrl: z.url("请输入有效的URL"),
-  description: z.string().max(300, "描述最长300字").optional(),
-  logoUrl: z.union([z.literal(""), z.url("请输入有效的Logo URL")]).optional(),
-  contactEmail: z
-    .union([z.literal(""), z.email("请输入有效的邮箱地址")])
-    .optional(),
+  siteName: z.string().min(1).max(100),
+  siteUrl: z.string().url(),
+  description: z.string().max(300).optional(),
+  logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
+  contactEmail: z.union([z.literal(""), z.string().email()]).optional(),
 });
+
+export const createCreateFriendLinkSchema = (m: Messages) =>
+  z.object({
+    siteName: z
+      .string()
+      .min(1, m.friend_link_validation_required())
+      .max(100, m.friend_link_validation_too_long({ max: 100 })),
+    siteUrl: z.string().url(m.friend_link_validation_invalid_url()),
+    description: z
+      .string()
+      .max(300, m.friend_link_validation_too_long({ max: 300 }))
+      .optional(),
+    logoUrl: z
+      .union([
+        z.literal(""),
+        z.string().url(m.friend_link_validation_invalid_url()),
+      ])
+      .optional(),
+    contactEmail: z
+      .union([
+        z.literal(""),
+        z.string().email(m.friend_link_validation_invalid_email()),
+      ])
+      .optional(),
+  });
 
 // === Admin inputs ===
 export const GetAllFriendLinksInputSchema = z.object({
@@ -52,23 +98,53 @@ export const ApproveFriendLinkInputSchema = z.object({
 
 export const RejectFriendLinkInputSchema = z.object({
   id: z.number(),
-  rejectionReason: z.string().max(500, "理由最长500字").optional(),
+  rejectionReason: z.string().max(500).optional(),
 });
+
+export const createRejectFriendLinkSchema = (m: Messages) =>
+  z.object({
+    id: z.number(),
+    rejectionReason: z
+      .string()
+      .max(500, m.friend_link_validation_too_long({ max: 500 }))
+      .optional(),
+  });
 
 export const UpdateFriendLinkInputSchema = z.object({
   id: z.number(),
-  siteName: z
-    .string()
-    .min(1, "站点名称不能为空")
-    .max(100, "站点名称最长100字")
-    .optional(),
-  siteUrl: z.url("请输入有效的URL").optional(),
-  description: z.string().max(300, "描述最长300字").optional(),
-  logoUrl: z.union([z.literal(""), z.url("请输入有效的Logo URL")]).optional(),
-  contactEmail: z
-    .union([z.literal(""), z.email("请输入有效的邮箱地址")])
-    .optional(),
+  siteName: z.string().min(1).max(100).optional(),
+  siteUrl: z.string().url().optional(),
+  description: z.string().max(300).optional(),
+  logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
+  contactEmail: z.union([z.literal(""), z.string().email()]).optional(),
 });
+
+export const createUpdateFriendLinkSchema = (m: Messages) =>
+  z.object({
+    id: z.number(),
+    siteName: z
+      .string()
+      .min(1, m.friend_link_validation_required())
+      .max(100, m.friend_link_validation_too_long({ max: 100 }))
+      .optional(),
+    siteUrl: z.string().url(m.friend_link_validation_invalid_url()).optional(),
+    description: z
+      .string()
+      .max(300, m.friend_link_validation_too_long({ max: 300 }))
+      .optional(),
+    logoUrl: z
+      .union([
+        z.literal(""),
+        z.string().url(m.friend_link_validation_invalid_url()),
+      ])
+      .optional(),
+    contactEmail: z
+      .union([
+        z.literal(""),
+        z.string().email(m.friend_link_validation_invalid_email()),
+      ])
+      .optional(),
+  });
 
 export const DeleteFriendLinkInputSchema = z.object({
   id: z.number(),

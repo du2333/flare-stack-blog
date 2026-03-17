@@ -2,8 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { tagsQueryOptions } from "@/features/tags/queries";
 import { Skeleton } from "@/components/ui/skeleton";
+import { tagsQueryOptions } from "@/features/tags/queries";
+import { m } from "@/paraglide/messages";
 
 export function TagsSkeleton() {
   return (
@@ -41,7 +42,7 @@ export function Tags() {
           className="absolute -left-4 top-[5.5px] w-1 h-4 rounded-md"
           style={{ backgroundColor: "var(--fuwari-primary)" }}
         />
-        标签
+        {m.tags_title()}
       </div>
 
       <div
@@ -73,11 +74,11 @@ export function Tags() {
           >
             {isExpanded ? (
               <>
-                收起 <ChevronUp size={16} />
+                {m.tags_collapse()} <ChevronUp size={16} />
               </>
             ) : (
               <>
-                展开更多 <ChevronDown size={16} />
+                {m.tags_expand()} <ChevronDown size={16} />
               </>
             )}
           </button>

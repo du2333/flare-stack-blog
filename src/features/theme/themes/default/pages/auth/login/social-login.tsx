@@ -1,5 +1,6 @@
 import { Github, Loader2 } from "lucide-react";
 import type { SocialLoginData } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 interface SocialLoginProps extends SocialLoginData {
   showDivider?: boolean;
@@ -17,7 +18,7 @@ export function SocialLogin({
         <div className="relative flex items-center">
           <div className="grow h-px bg-border/30"></div>
           <span className="shrink-0 mx-4 text-[9px] font-mono uppercase tracking-widest text-muted-foreground/40">
-            或者
+            {m.login_or()}
           </span>
           <div className="grow h-px bg-border/30"></div>
         </div>
@@ -44,15 +45,15 @@ export function SocialLogin({
 
         <span className="text-[10px] font-mono uppercase tracking-widest">
           {isLoading
-            ? "正在连接..."
+            ? m.login_social_connecting()
             : turnstilePending
-              ? "验证中..."
-              : "GitHub 登录"}
+              ? m.login_social_verifying()
+              : m.login_github()}
         </span>
       </button>
       {!showDivider && (
         <p className="text-[9px] font-mono text-muted-foreground/30 text-center">
-          Powered by GitHub OAuth
+          {m.login_powered_by_github()}
         </p>
       )}
     </div>

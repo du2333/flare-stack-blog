@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 
 export const emailMessageSchema = z.object({
   type: z.literal("EMAIL"),
@@ -29,11 +29,23 @@ export const webhookMessageSchema = z.object({
   }),
 });
 
+export const postAutoSnapshotMessageSchema = z.object({
+  type: z.literal("POST_AUTO_SNAPSHOT"),
+  data: z.object({
+    postId: z.number().int().positive(),
+    quietWindowSeconds: z.number().int().positive().optional(),
+  }),
+});
+
 export const queueMessageSchema = z.discriminatedUnion("type", [
   emailMessageSchema,
   webhookMessageSchema,
+  postAutoSnapshotMessageSchema,
 ]);
 
 export type QueueMessage = z.infer<typeof queueMessageSchema>;
 export type EmailMessage = z.infer<typeof emailMessageSchema>;
 export type WebhookMessage = z.infer<typeof webhookMessageSchema>;
+export type PostAutoSnapshotMessage = z.infer<
+  typeof postAutoSnapshotMessageSchema
+>;

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;
@@ -63,7 +64,7 @@ export function MobileMenu({
                 className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
               >
                 <Settings className="w-4 h-4 mr-3" />
-                管理后台
+                {m.profile_admin_dashboard_fuwari()}
               </Link>
             )}
           </nav>
@@ -97,7 +98,7 @@ export function MobileMenu({
                     onClick={onClose}
                     className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) truncate"
                   >
-                    查看资料
+                    {m.profile_title()}
                   </Link>
                 </div>
                 <button
@@ -106,7 +107,7 @@ export function MobileMenu({
                     onClose();
                   }}
                   className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-red-500 hover:text-red-600 transition-colors"
-                  aria-label="退出登录"
+                  aria-label={m.profile_logout_fuwari()}
                 >
                   <LogOut size={16} strokeWidth={1.5} />
                 </button>
@@ -120,7 +121,7 @@ export function MobileMenu({
                 className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) active:bg-(--fuwari-btn-regular-bg-active)"
               >
                 <UserIcon size={16} className="mr-2" strokeWidth={1.5} />
-                登录 / 注册
+                {m.nav_login_register()}
               </Link>
             </div>
           )}

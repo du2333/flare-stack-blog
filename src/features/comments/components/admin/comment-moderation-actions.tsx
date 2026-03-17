@@ -1,8 +1,9 @@
 import { Check, Loader2, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAdminComments } from "../../hooks/use-comments";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { m } from "@/paraglide/messages";
+import { useAdminComments } from "../../hooks/use-comments";
 
 interface CommentModerationActionsProps {
   commentId: number;
@@ -54,12 +55,12 @@ export const CommentModerationActions = ({
         className="h-6 w-auto px-2 text-[10px] font-mono text-muted-foreground hover:text-foreground rounded-none gap-1"
         disabled={isLoading}
         onClick={() => setIsOpen(!isOpen)}
-        title="更多操作"
+        title={m.comments_action_btn()}
       >
         {isLoading ? (
           <Loader2 size={12} className="animate-spin" />
         ) : (
-          <span>[ 操作 ]</span>
+          <span>[ {m.comments_action_btn()} ]</span>
         )}
       </Button>
 
@@ -71,7 +72,7 @@ export const CommentModerationActions = ({
                 onClick={() => handleStatusChange("published")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
-                <span>批准发布</span>
+                <span>{m.comments_action_approve()}</span>
                 <Check className="h-3 w-3 opacity-0 group-hover:opacity-100" />
               </button>
             )}
@@ -81,7 +82,7 @@ export const CommentModerationActions = ({
                 onClick={() => handleStatusChange("pending")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
-                <span>设为待审</span>
+                <span>{m.comments_action_pending()}</span>
                 <RotateCcw className="h-3 w-3 opacity-0 group-hover:opacity-100" />
               </button>
             )}
@@ -91,7 +92,7 @@ export const CommentModerationActions = ({
                 onClick={() => handleStatusChange("deleted")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-muted-foreground hover:text-red-500 group"
               >
-                <span>移入垃圾箱</span>
+                <span>{m.comments_action_trash()}</span>
                 <Trash2 className="h-3 w-3 opacity-0 group-hover:opacity-100" />
               </button>
             )}
@@ -106,7 +107,7 @@ export const CommentModerationActions = ({
             }}
             className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-red-500/10 text-red-500 transition-colors group"
           >
-            <span>永久销毁</span>
+            <span>{m.comments_action_destroy()}</span>
             <ShieldAlert className="h-3 w-3 opacity-0 group-hover:opacity-100" />
           </button>
         </div>
@@ -116,9 +117,9 @@ export const CommentModerationActions = ({
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDelete}
-        title="永久删除确认"
-        message="此操作将永久从数据库删除该评论，无法恢复！建议优先使用“移入垃圾箱”。"
-        confirmLabel="确认销毁"
+        title={m.comments_destroy_modal_title()}
+        message={m.comments_destroy_modal_desc()}
+        confirmLabel={m.comments_destroy_modal_confirm()}
         isDanger={true}
         isLoading={isAdminDeleting}
       />

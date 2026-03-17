@@ -1,14 +1,15 @@
+import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LANGUAGES } from "./languages";
-import type { NodeViewProps } from "@tiptap/react";
+import DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   getHighlighter,
   loadLanguage,
   themes as shikiThemes,
 } from "@/lib/shiki";
-import DropdownMenu from "@/components/ui/dropdown-menu";
+import { m } from "@/paraglide/messages";
+import { getLanguages } from "./languages";
 
 export function CodeBlockView({
   node,
@@ -18,6 +19,7 @@ export function CodeBlockView({
   const [copied, setCopied] = useState(false);
   const [themeStyles, setThemeStyles] = useState<React.CSSProperties>({});
   const language = node.attrs.language || "text";
+  const languages = getLanguages();
 
   useEffect(() => {
     let mounted = true;
@@ -68,7 +70,7 @@ export function CodeBlockView({
               <DropdownMenu
                 value={language}
                 onChange={(val) => updateAttributes({ language: val })}
-                options={LANGUAGES.map((lang) => ({
+                options={languages.map((lang) => ({
                   label: lang.label,
                   value: lang.value,
                 }))}
@@ -83,7 +85,7 @@ export function CodeBlockView({
           >
             {copied ? (
               <span className="animate-in fade-in slide-in-from-right-1 opacity-70">
-                已复制
+                {m.common_copied()}
               </span>
             ) : null}
             <div className="p-0.5 opacity-60 group-hover/btn:opacity-100 transition-opacity">

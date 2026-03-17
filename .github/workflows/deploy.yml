@@ -42,6 +42,9 @@ jobs:
       - name: Setup Wrangler Config
         run: cp wrangler.example.jsonc wrangler.jsonc
 
+      - name: Compile Paraglide Runtime
+        run: bun run i18n:compile
+
       - name: Run tests
         run: bun run test
 
@@ -113,20 +116,6 @@ jobs:
           echo "UMAMI_PASSWORD=${{ secrets.UMAMI_PASSWORD }}" >> $GITHUB_ENV
           echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}" >> $GITHUB_ENV
           echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_TITLE=${{ vars.VITE_BLOG_TITLE }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_NAME=${{ vars.VITE_BLOG_NAME }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_AUTHOR=${{ vars.VITE_BLOG_AUTHOR }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_DESCRIPTION=${{ vars.VITE_BLOG_DESCRIPTION }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_GITHUB=${{ vars.VITE_BLOG_GITHUB }}" >> $GITHUB_ENV
-          echo "VITE_BLOG_EMAIL=${{ vars.VITE_BLOG_EMAIL }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_HOME_IMAGE=${{ vars.VITE_DEFAULT_HOME_IMAGE }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_GLOBAL_IMAGE=${{ vars.VITE_DEFAULT_GLOBAL_IMAGE }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_LIGHT_OPACITY=${{ vars.VITE_DEFAULT_LIGHT_OPACITY }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_DARK_OPACITY=${{ vars.VITE_DEFAULT_DARK_OPACITY }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_BACKDROP_BLUR=${{ vars.VITE_DEFAULT_BACKDROP_BLUR }}" >> $GITHUB_ENV
-          echo "VITE_DEFAULT_TRANSITION_DURATION=${{ vars.VITE_DEFAULT_TRANSITION_DURATION }}" >> $GITHUB_ENV
-          echo "VITE_FUWARI_HOME_BG=${{ vars.VITE_FUWARI_HOME_BG }}" >> $GITHUB_ENV
-          echo "VITE_FUWARI_AVATAR=${{ vars.VITE_FUWARI_AVATAR }}" >> $GITHUB_ENV
           echo "THEME=${{ vars.THEME }}" >> $GITHUB_ENV
           echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> $GITHUB_ENV
 

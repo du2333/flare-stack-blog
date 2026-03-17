@@ -1,16 +1,35 @@
+<div align="center">
+
+中文 | [English](./docs/README.en.md)
+
 # Flare Stack Blog
 
-> **注意**：本项目专为 Cloudflare Workers 生态设计，深度集成 D1、R2、KV、Workflows 等服务，**仅支持部署在 Cloudflare Workers**。
+基于 **Cloudflare Workers** 的全栈现代化博客 CMS<br>
+深度集成 D1、R2、KV、Workflows 等 Serverless 服务
 
-[部署指南](#部署指南) | [本地开发](#本地开发) | [错误处理开发规范](./docs/error-handling-quickstart.md)
+[![License](https://img.shields.io/github/license/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/network/members)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react&style=flat-square)](https://react.dev)
+[![TanStack Start](https://img.shields.io/badge/TanStack%20Start-black?logo=tanstack&style=flat-square)](https://tanstack.com/start)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&style=flat-square)](https://tailwindcss.com)
+
+[部署指南](#部署指南) · [本地开发](#本地开发) · [开发规范](./docs/error-handling-quickstart.md)
+
+</div>
+
+---
+
+> **注意**：本项目专为 Cloudflare 生态设计，**仅支持**部署在 Cloudflare Workers。
 
 > 建了个 Telegram 群组，欢迎交流本项目相关问题 [Telegram 群](https://t.me/+vWuQYybv1kgxMDkx)
 
-基于 Cloudflare Workers 的现代化全栈博客 CMS。
+## 界面预览
 
-![首页](docs/assets/home.png)
-
-![管理后台](docs/assets/admin.png)
+<div align="center">
+  <img src="docs/assets/home.png" alt="首页预览" width="49%">
+  <img src="docs/assets/admin.png" alt="管理后台预览" width="49%">
+</div>
 
 ## 核心功能
 
@@ -108,7 +127,7 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 
 #### 可用主题
 
-各个主题的配置项，请前往`src/blog.config.ts`里查看
+站点个性化配置（标题、描述、社交链接、favicon、默认主题背景图等）现在统一在后台“设置”页面维护。`src/blog.config.ts` 主要作为默认值与兜底配置；主题开发时，建议结合 [主题开发教程](./docs/theme-guide.md) 查看实际可用的运行时 `siteConfig`。
 
 <table>
   <tr>
@@ -187,20 +206,13 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key                                                                  |
 | `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
 | `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |
+| `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
 | `CDN_DOMAIN`              | 运行时 | 独立 CDN 域名（如 `cdn.example.com`），purge 时优先使用；须为当前 Zone 下通过 SaaS CNAME 接入的自定义域名 |
 | `UMAMI_SRC`               | 运行时 | Umami 基础 URL（Cloud: `https://cloud.umami.is`）                                                         |
 | `UMAMI_API_KEY`           | 运行时 | Umami Cloud API key（仅 Cloud 版本）                                                                      |
 | `UMAMI_USERNAME`          | 运行时 | Umami 用户名（仅自部署版本）                                                                              |
 | `UMAMI_PASSWORD`          | 运行时 | Umami 密码（仅自部署版本）                                                                                |
 | `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID                                                                                          |
-| `VITE_BLOG_TITLE`         | 构建时 | 博客标题                                                                                                  |
-| `VITE_BLOG_NAME`          | 构建时 | 博客短名称                                                                                                |
-| `VITE_BLOG_AUTHOR`        | 构建时 | 作者名称                                                                                                  |
-| `VITE_BLOG_DESCRIPTION`   | 构建时 | 博客描述                                                                                                  |
-| `VITE_BLOG_GITHUB`        | 构建时 | GitHub 主页链接                                                                                           |
-| `VITE_BLOG_EMAIL`         | 构建时 | 联系邮箱                                                                                                  |
-| `VITE_FUWARI_HOME_BG`     | 构建时 | Fuwari 主题首页背景图路径，默认 `/images/home-bg.webp`                                                    |
-| `VITE_FUWARI_AVATAR`      | 构建时 | Fuwari 主题头像图片路径，默认 `/images/avatar.png`                                                        |
 
 ---
 
@@ -259,7 +271,20 @@ bun dev
 | :---------------- | :---------------------------------- |
 | `bun db:studio`   | 启动 Drizzle Studio（可视化数据库） |
 | `bun db:generate` | 生成迁移文件                        |
-| `bun db:migrate`  | 应用迁移到远程 D1                   |
+| `bun db:migrate`  | 安全应用远程 D1 迁移，校验失败自动回滚 |
+| `bun db:migrate:local` | 安全应用本地 D1 迁移，校验失败自动恢复 |
+| `bun db:migrate:unsafe` | 直接应用远程 D1 迁移，不做校验 |
+
+`bun db:migrate` / `bun db:migrate:local` 会复用 schema 中定义的状态常量，在迁移前后校验以下关键计数是否一致：
+
+- `posts`：总文章数，以及每个文章状态的数量
+- `comments`：总评论数、根评论数、子评论数，以及每个评论状态的数量
+
+安全脚本还会额外做这些事情：
+
+- 远程模式：默认只记录 D1 Time Travel bookmark，校验失败时自动执行 restore
+- 远程模式：如需额外保留 SQL 快照，可手动运行 `bun scripts/safe-d1-migrate/main.ts --remote --with-export`
+- 本地模式：快照 `.wrangler/state`（或你传入的 `--persist-to`），校验失败时自动恢复本地持久化目录
 
 ### 本地模拟 Cloudflare 资源
 
@@ -273,10 +298,10 @@ bun dev
 }
 ```
 
-> **注意**：本地模拟的数据不会同步到远程，适合初期开发和测试。本地数据库迁移使用：
+> **注意**：本地模拟的数据不会同步到远程，适合初期开发和测试。本地数据库迁移推荐使用：
 >
 > ```bash
-> wrangler d1 migrations apply DB
+> bun db:migrate:local
 > ```
 
 ## 贡献

@@ -1,14 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import {
   createAdminTestContext,
   createTestContext,
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
-import * as TagService from "@/features/tags/tags.service";
-import * as PostService from "@/features/posts/posts.service";
-import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
+import { beforeEach, describe, expect, it } from "vitest";
 import * as CacheService from "@/features/cache/cache.service";
+import * as PostService from "@/features/posts/services/posts.service";
+import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
+import * as TagService from "@/features/tags/tags.service";
 import { unwrap } from "@/lib/errors";
 
 describe("TagService", () => {

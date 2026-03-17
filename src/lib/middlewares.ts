@@ -3,10 +3,9 @@ import {
   getRequestHeader,
   getRequestHeaders,
 } from "@tanstack/react-start/server";
-import type { RateLimitOptions } from "@/lib/do/rate-limiter";
-import { getDb } from "@/lib/db";
 import { getAuth } from "@/lib/auth/auth.server";
-import { verifyTurnstileToken } from "@/lib/turnstile";
+import { getDb } from "@/lib/db";
+import type { RateLimitOptions } from "@/lib/do/rate-limiter";
 import { serverEnv } from "@/lib/env/server.env";
 import {
   createAuthError,
@@ -14,6 +13,7 @@ import {
   createRateLimitError,
   createTurnstileError,
 } from "@/lib/errors";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 /* ======================= Error Logging ====================== */
 
@@ -150,13 +150,13 @@ export const turnstileMiddleware = createMiddleware({ type: "function" })
 
     const token = getRequestHeader("X-Turnstile-Token");
     if (!token) {
-      throw createTurnstileError("缺少人机验证凭证");
+      throw createTurnstileError("MISSING_TOKEN");
     }
 
     const result = await verifyTurnstileToken({ secretKey, token });
 
     if (!result.success) {
-      throw createTurnstileError();
+      throw createTurnstileError("VERIFY_FAILED");
     }
 
     return next();

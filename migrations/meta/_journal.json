@@ -29,6 +29,34 @@
       "when": 1770449895500,
       "tag": "0003_zippy_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1773271285901,
+      "tag": "0004_slim_tinkerer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1773274477966,
+      "tag": "0005_tricky_scarlet_spider",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1773543180283,
+      "tag": "0006_grey_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1773620108271,
+      "tag": "0007_nervous_pepper_potts",
+      "breakpoints": true
     }
   ]
 }

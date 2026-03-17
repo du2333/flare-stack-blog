@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { SearchPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 export function SearchPage({
   query,
@@ -28,7 +29,7 @@ export function SearchPage({
             className="group-hover:-translate-x-1 transition-transform"
           />
           <span className="font-mono text-xs uppercase tracking-widest">
-            返回
+            {m.search_back()}
           </span>
         </button>
       </header>
@@ -37,7 +38,7 @@ export function SearchPage({
         <div className="relative flex items-center gap-4 border-b border-border/30 pb-4 focus-within:border-foreground transition-all">
           <div className="flex-1">
             <label className="block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1 opacity-50">
-              搜索文章
+              {m.search_input_label()}
             </label>
             <input
               ref={inputRef}
@@ -55,7 +56,7 @@ export function SearchPage({
         {query.trim() !== "" && !isSearching && results.length === 0 && (
           <div className="py-12 opacity-50">
             <p className="font-serif text-lg text-muted-foreground">
-              未找到相关文章 "{query}"
+              {m.search_no_results()} "{query}"
             </p>
           </div>
         )}

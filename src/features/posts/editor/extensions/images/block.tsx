@@ -1,7 +1,8 @@
+import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
-import type { NodeViewProps } from "@tiptap/react";
+import { m } from "@/paraglide/messages";
 
 export function ImageBlock({
   node,
@@ -46,7 +47,7 @@ export function ImageBlock({
               <div className="bg-background/90 border border-border px-4 py-2 flex items-center gap-3">
                 <Loader2 className="animate-spin" size={14} />
                 <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  上传中...
+                  {m.media_upload_status_uploading()}
                 </span>
               </div>
             </div>
@@ -60,7 +61,9 @@ export function ImageBlock({
           type="text"
           value={node.attrs.alt || ""}
           onChange={(e) => updateAttributes({ alt: e.target.value })}
-          placeholder={isUploading ? "..." : "图片说明..."}
+          placeholder={
+            isUploading ? "..." : m.editor_image_caption_placeholder()
+          }
           disabled={isUploading}
           className="bg-transparent text-center text-[11px] font-mono text-muted-foreground focus:text-foreground focus:outline-none w-full max-w-md placeholder:text-muted-foreground/30 transition-colors disabled:opacity-50"
         />

@@ -1,8 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import type { PostListItem } from "@/features/posts/posts.schema";
 import { POSTS_KEYS } from "@/features/posts/queries";
+import type { PostListItem } from "@/features/posts/schema/posts.schema";
+import { m } from "@/paraglide/messages";
 
 export function PostPageSkeleton() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export function PostPageSkeleton() {
           className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
         >
           <ArrowLeft size={12} />
-          <span>返回目录</span>
+          <span>{m.post_back_to_list()}</span>
         </button>
       </nav>
 

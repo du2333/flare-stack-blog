@@ -1,29 +1,33 @@
-import { EditorContent, useEditor } from "@tiptap/react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import InsertModal from "./ui/insert-modal";
-import EditorToolbar from "./ui/editor-toolbar";
-import { TableBubbleMenu } from "./ui/table-bubble-menu";
-import { FormulaModal } from "./ui/formula-modal";
-import {
-  addFormulaModalOpener,
-  removeFormulaModalOpener,
-  setActiveFormulaModalOpenerKey,
-} from "./formula-modal-store";
-import type { FormulaModalPayload } from "./formula-modal-store";
 import type {
   Extensions,
   JSONContent,
   Editor as TiptapEditor,
 } from "@tiptap/react";
-import type { ModalType } from "./ui/insert-modal";
-import type { FormulaMode } from "./ui/formula-modal";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
+import { cn } from "@/lib/utils";
+import type { FormulaModalPayload } from "./formula-modal-store";
+import {
+  addFormulaModalOpener,
+  removeFormulaModalOpener,
+  setActiveFormulaModalOpenerKey,
+} from "./formula-modal-store";
+import EditorToolbar from "./ui/editor-toolbar";
+import type { FormulaMode } from "./ui/formula-modal";
+import { FormulaModal } from "./ui/formula-modal";
+import type { ModalType } from "./ui/insert-modal";
+import InsertModal from "./ui/insert-modal";
+import { TableBubbleMenu } from "./ui/table-bubble-menu";
 
 interface EditorProps {
   content?: JSONContent | string;
   onChange?: (json: JSONContent) => void;
   onCreated?: (editor: TiptapEditor) => void;
   extensions: Extensions;
+  editable?: boolean;
+  className?: string;
+  contentClassName?: string;
 }
 
 export const Editor = memo(function Editor({
@@ -31,6 +35,9 @@ export const Editor = memo(function Editor({
   onChange,
   onCreated,
   extensions,
+  editable = true,
+  className,
+  contentClassName,
 }: EditorProps) {
   const formulaOpenerKeyRef = useRef(Symbol("formula-modal-opener"));
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
@@ -45,6 +52,7 @@ export const Editor = memo(function Editor({
   const editor = useEditor({
     extensions,
     content,
+    editable,
     onCreate: ({ editor: currentEditor }) => {
       onCreated?.(currentEditor);
     },
@@ -53,8 +61,11 @@ export const Editor = memo(function Editor({
     },
     editorProps: {
       attributes: {
-        class:
+        class: cn(
           "max-w-none focus:outline-none text-lg leading-relaxed min-h-[500px]",
+          !editable && "min-h-0 text-base leading-7",
+          contentClassName,
+        ),
       },
     },
     immediatelyRender: false,
@@ -81,6 +92,8 @@ export const Editor = memo(function Editor({
   }, []);
 
   useEffect(() => {
+    if (!editable) return;
+
     const opener = (payload: FormulaModalPayload) => {
       setFormulaPayload({
         mode: payload.type,
@@ -91,11 +104,12 @@ export const Editor = memo(function Editor({
     };
     addFormulaModalOpener(formulaOpenerKeyRef.current, opener);
     return () => removeFormulaModalOpener(formulaOpenerKeyRef.current);
-  }, []);
+  }, [editable]);
 
   const markActiveFormulaOpener = useCallback(() => {
+    if (!editable) return;
     setActiveFormulaModalOpenerKey(formulaOpenerKeyRef.current);
-  }, []);
+  }, [editable]);
 
   const handleFormulaApply = useCallback(
     (
@@ -167,16 +181,18 @@ export const Editor = memo(function Editor({
   };
 
   return (
-    <div className="flex flex-col relative group">
-      <EditorToolbar
-        editor={editor}
-        onLinkClick={openLinkModal}
-        onImageClick={openImageModal}
-        onFormulaInlineClick={() => openFormulaModal("inline")}
-        onFormulaBlockClick={() => openFormulaModal("block")}
-      />
+    <div className={cn("relative flex flex-col group", className)}>
+      {editable && (
+        <EditorToolbar
+          editor={editor}
+          onLinkClick={openLinkModal}
+          onImageClick={openImageModal}
+          onFormulaInlineClick={() => openFormulaModal("inline")}
+          onFormulaBlockClick={() => openFormulaModal("block")}
+        />
+      )}
 
-      <TableBubbleMenu editor={editor} />
+      {editable && <TableBubbleMenu editor={editor} />}
 
       <div
         className="relative min-h-125"
@@ -186,21 +202,25 @@ export const Editor = memo(function Editor({
         <EditorContent editor={editor} />
       </div>
 
-      <InsertModal
-        type={modalOpen}
-        initialUrl={modalInitialUrl}
-        onClose={() => setModalOpen(null)}
-        onSubmit={handleModalSubmit}
-      />
+      {editable && (
+        <InsertModal
+          type={modalOpen}
+          initialUrl={modalInitialUrl}
+          onClose={() => setModalOpen(null)}
+          onSubmit={handleModalSubmit}
+        />
+      )}
 
-      <FormulaModal
-        isOpen={formulaModalOpen}
-        mode={formulaPayload.mode}
-        initialLatex={formulaPayload.initialLatex}
-        editContext={formulaPayload.editContext}
-        onClose={() => setFormulaModalOpen(false)}
-        onApply={handleFormulaApply}
-      />
+      {editable && (
+        <FormulaModal
+          isOpen={formulaModalOpen}
+          mode={formulaPayload.mode}
+          initialLatex={formulaPayload.initialLatex}
+          editContext={formulaPayload.editContext}
+          onClose={() => setFormulaModalOpen(false)}
+          onApply={handleFormulaApply}
+        />
+      )}
     </div>
   );
 });

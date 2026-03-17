@@ -1,25 +1,28 @@
-import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint } from "cloudflare:workers";
+import * as CacheService from "@/features/cache/cache.service";
 import type {
   ImportReport,
   TaskProgress,
 } from "@/features/import-export/import-export.schema";
 import { IMPORT_EXPORT_CACHE_KEYS } from "@/features/import-export/import-export.schema";
 import { parseZip } from "@/features/import-export/utils/zip";
-import * as CacheService from "@/features/cache/cache.service";
 import {
   enumerateMarkdownPosts,
   enumerateNativePosts,
   importSinglePost,
 } from "@/features/import-export/workflows/import-helpers";
+import { serverEnv } from "@/lib/env/server.env";
+import { m } from "@/paraglide/messages";
 
 export class ImportWorkflow extends WorkflowEntrypoint<
   Env,
   ImportWorkflowParams
 > {
   async run(event: WorkflowEvent<ImportWorkflowParams>, step: WorkflowStep) {
-    const { taskId, r2Key, mode } = event.payload;
+    const { taskId, r2Key, mode, locale: requestedLocale } = event.payload;
     const progressKey = IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId);
+    const locale = requestedLocale ?? serverEnv(this.env).LOCALE;
 
     console.log(
       JSON.stringify({ message: "import workflow started", taskId, mode }),
@@ -32,7 +35,7 @@ export class ImportWorkflow extends WorkflowEntrypoint<
       // return binary data from steps. Instead, each step re-fetches the
       // ZIP from R2 when it needs the binary content.
       const postEntries = await step.do("enumerate posts", async () => {
-        const zipFiles = await this.fetchZipFiles(r2Key);
+        const zipFiles = await this.fetchZipFiles(r2Key, locale);
         if (mode === "native") {
           return enumerateNativePosts(zipFiles);
         }
@@ -54,7 +57,7 @@ export class ImportWorkflow extends WorkflowEntrypoint<
           completed: 0,
           current: "",
           errors: [],
-          warnings: ["ZIP 中没有找到可导入的文章"],
+          warnings: [m.import_export_import_warning_empty({}, { locale })],
           report: { succeeded: [], failed: [], warnings: [] },
         });
         return;
@@ -82,16 +85,20 @@ export class ImportWorkflow extends WorkflowEntrypoint<
             };
 
             try {
-              const zipFiles = await this.fetchZipFiles(r2Key);
+              const zipFiles = await this.fetchZipFiles(r2Key, locale);
               const result = await importSinglePost(
                 this.env,
                 zipFiles,
                 entry,
                 mode,
+                locale,
               );
               if (result.skipped) {
                 stepReport.warnings.push(
-                  `[${result.title}] 已存在相同 slug，跳过导入`,
+                  m.import_export_import_warning_slug_skipped(
+                    { title: result.title },
+                    { locale },
+                  ),
                 );
               } else {
                 stepReport.succeeded.push({
@@ -100,7 +107,12 @@ export class ImportWorkflow extends WorkflowEntrypoint<
                 });
               }
               for (const w of result.warnings) {
-                stepReport.warnings.push(`[${result.title}] ${w}`);
+                stepReport.warnings.push(
+                  m.import_export_import_warning_scoped(
+                    { title: result.title, warning: w },
+                    { locale },
+                  ),
+                );
               }
             } catch (error) {
               const reason =
@@ -191,17 +203,22 @@ export class ImportWorkflow extends WorkflowEntrypoint<
         completed: 0,
         current: "",
         errors: [],
-        warnings: [error instanceof Error ? error.message : "未知错误"],
+        warnings: [
+          error instanceof Error
+            ? error.message
+            : m.import_export_common_unknown_error({}, { locale }),
+        ],
       });
     }
   }
 
   private async fetchZipFiles(
     r2Key: string,
+    locale: "zh" | "en",
   ): Promise<Record<string, Uint8Array>> {
     const r2Object = await this.env.R2.get(r2Key);
     if (!r2Object) {
-      throw new Error("ZIP 文件未找到");
+      throw new Error(m.import_export_import_error_zip_missing({}, { locale }));
     }
     const arrayBuffer = await r2Object.arrayBuffer();
     return parseZip(new Uint8Array(arrayBuffer));

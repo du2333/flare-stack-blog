@@ -1,7 +1,7 @@
 import { CacheMaintenance } from "@/features/cache/components/cache-maintenance";
+import { BackupRestoreSection } from "@/features/import-export/components/backup-restore-section";
 import { SearchMaintenance } from "@/features/search/components/search-maintenance";
 import { VersionMaintenance } from "@/features/version/components/version-maintenance";
-import { BackupRestoreSection } from "@/features/import-export/components/backup-restore-section";
 
 export function MaintenanceSection() {
   return (
@@ -10,7 +10,7 @@ export function MaintenanceSection() {
         <VersionMaintenance />
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
         <SearchMaintenance />
         <CacheMaintenance />
       </div>

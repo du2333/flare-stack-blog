@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
+import { PostManager } from "@/features/posts/components/post-manager";
 import type {
   SortDirection,
   SortField,
   StatusFilter,
 } from "@/features/posts/components/post-manager/types";
-import { PostManager } from "@/features/posts/components/post-manager";
 import {
   SORT_DIRECTIONS,
   SORT_FIELDS,

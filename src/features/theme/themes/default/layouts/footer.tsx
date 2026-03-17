@@ -1,22 +1,27 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import type { NavOption } from "@/features/theme/contract/layouts";
-import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
 
 interface FooterProps {
   navOptions: Array<NavOption>;
 }
 
 export function Footer({ navOptions }: FooterProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <footer className="border-t border-border/40 bg-background/50 py-16 mt-32">
       <div className="max-w-3xl mx-auto px-6 md:px-0 flex flex-col md:flex-row justify-between items-center gap-8">
         {/* Brand / Copyright */}
         <div className="flex flex-col items-center md:items-start gap-2">
           <span className="font-serif text-lg font-bold tracking-tighter text-foreground">
-            [ {blogConfig.name} ]
+            [ {siteConfig.theme.default.navBarName} ]
           </span>
           <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
-            © {new Date().getFullYear()} {blogConfig.author}.
+            {m.footer_copyright({
+              year: new Date().getFullYear().toString(),
+              author: siteConfig.author,
+            })}
           </span>
         </div>
 
@@ -32,7 +37,7 @@ export function Footer({ navOptions }: FooterProps) {
             </Link>
           ))}
           <a
-            href={blogConfig.social.github}
+            href={siteConfig.social.github}
             target="_blank"
             rel="noreferrer"
             className="hover:text-foreground transition-colors"
@@ -40,7 +45,7 @@ export function Footer({ navOptions }: FooterProps) {
             Github
           </a>
           <a
-            href={`mailto:${blogConfig.social.email}`}
+            href={`mailto:${siteConfig.social.email}`}
             className="hover:text-foreground transition-colors"
           >
             Email

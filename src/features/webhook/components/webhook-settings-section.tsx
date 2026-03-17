@@ -2,14 +2,15 @@ import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { SystemConfig } from "@/features/config/config.schema";
+import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import { m } from "@/paraglide/messages";
 import { WebhookDocPanel } from "./webhook-doc-panel";
 import { WebhookEndpointCard } from "./webhook-endpoint-card";
 import { createWebhookEndpoint } from "./webhook-settings.helpers";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
-import type { SystemConfig } from "@/features/config/config.schema";
-import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 
 export function WebhookSettingsSection() {
   const [visibleSecrets, setVisibleSecrets] = useState<Record<number, boolean>>(
@@ -73,12 +74,14 @@ export function WebhookSettingsSection() {
           endpoint,
         },
       });
-      toast.success("测试请求已发送");
+      toast.success(m.settings_webhook_toast_test_sent());
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(`测试请求发送失败: ${error.message}`);
+        toast.error(
+          m.settings_webhook_toast_test_fail_msg({ message: error.message }),
+        );
       } else {
-        toast.error("测试请求发送失败");
+        toast.error(m.settings_webhook_toast_test_fail());
       }
     }
   };
@@ -96,10 +99,13 @@ export function WebhookSettingsSection() {
               </div>
               <div className="space-y-1">
                 <h5 className="text-sm font-medium text-foreground">
-                  Webhook 端点
+                  {m.settings_webhook_endpoints_title()}
                 </h5>
                 <p className="text-sm text-muted-foreground">
-                  已启用 {enabledCount} 个，共 {fields.length} 个
+                  {m.settings_webhook_endpoints_summary({
+                    enabledCount,
+                    totalCount: fields.length,
+                  })}
                 </p>
               </div>
             </div>
@@ -111,7 +117,7 @@ export function WebhookSettingsSection() {
               className="h-10 px-6 rounded-none text-[10px] font-mono uppercase tracking-[0.2em]"
             >
               <Plus size={12} className="mr-3" />
-              添加端点
+              {m.settings_webhook_btn_add()}
             </Button>
           </div>
 
@@ -128,10 +134,10 @@ export function WebhookSettingsSection() {
             />
             <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
-                开启管理员 Webhook 此渠道通知
+                {m.settings_webhook_global_enable_label()}
               </p>
               <p className="text-sm text-muted-foreground break-all">
-                全局开关。关闭后，不再向所有端点发送相关事件；开启后，下方可单独启停各端点。
+                {m.settings_webhook_global_enable_desc()}
               </p>
             </div>
           </label>
@@ -139,10 +145,10 @@ export function WebhookSettingsSection() {
           {fields.length === 0 ? (
             <div className="border border-dashed border-border/40 bg-muted/5 p-10 text-center">
               <p className="text-sm font-serif text-foreground">
-                暂无 Webhook 端点
+                {m.settings_webhook_empty_title()}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                新增一个端点后，管理员通知就可以转发到外部平台。
+                {m.settings_webhook_empty_desc()}
               </p>
             </div>
           ) : (

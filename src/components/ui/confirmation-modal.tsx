@@ -1,7 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
-import { createPortal } from "react-dom";
 import type React from "react";
+import { createPortal } from "react-dom";
+import { m } from "@/paraglide/messages";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmLabel = "确定",
+  confirmLabel = m.common_confirm(),
   isDanger = false,
   isLoading = false,
 }) => {
@@ -54,7 +55,11 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
                 isDanger ? "text-destructive" : "text-muted-foreground/60"
               }`}
             >
-              [ {isDanger ? "DANGER" : "CONFIRM"} ]
+              [
+              {isDanger
+                ? ` ${m.common_modal_state_danger()} `
+                : ` ${m.common_modal_state_confirm()} `}
+              ]
             </p>
             <h2 className="text-2xl font-serif font-medium text-foreground">
               {title}
@@ -77,7 +82,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
 
           {isDanger && (
             <div className="mt-6 p-3 border-l-2 border-destructive/50 text-[11px] font-mono uppercase tracking-widest text-destructive/70">
-              此操作无法撤销
+              {m.common_irreversible()}
             </div>
           )}
         </div>
@@ -89,7 +94,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
             disabled={isLoading}
             className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors disabled:opacity-50"
           >
-            取消
+            {m.common_cancel()}
           </button>
           <button
             onClick={() => onConfirm()}
@@ -105,7 +110,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
             `}
           >
             {isLoading && <Loader2 size={12} className="animate-spin" />}
-            <span>{isLoading ? "处理中..." : confirmLabel}</span>
+            <span>{isLoading ? m.common_processing() : confirmLabel}</span>
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { id, updatedAt } from "./helper";
 import type { SystemConfig } from "@/features/config/config.schema";
+import { id, updatedAt } from "./helper";
 
 export const SystemConfigTable = sqliteTable("system_config", {
   id,

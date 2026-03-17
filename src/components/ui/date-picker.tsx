@@ -3,8 +3,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 interface DatePickerProps {
   value: string;
@@ -23,8 +25,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
   // Parse initial value or default to today
   const initialDate = value ? new Date(value) : new Date();
   const [viewDate, setViewDate] = useState(initialDate);
+  const locale = getLocale();
+  const localeTag = locale === "zh" ? "zh-CN" : "en-US";
 
-  const daysOfWeek = ["日", "一", "二", "三", "四", "五", "六"];
+  const daysOfWeek = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(localeTag, { weekday: "narrow" }).format(
+      new Date(Date.UTC(2024, 0, 7 + index)),
+    ),
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -142,7 +150,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           strokeWidth={1.5}
         />
         <span className={value ? "opacity-100" : "opacity-40"}>
-          {value || "选择日期"}
+          {value || m.common_select_date()}
         </span>
       </div>
 
@@ -151,7 +159,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-serif font-medium text-foreground">
-              {viewDate.toLocaleString("zh-CN", {
+              {viewDate.toLocaleString(localeTag, {
                 month: "long",
                 year: "numeric",
               })}

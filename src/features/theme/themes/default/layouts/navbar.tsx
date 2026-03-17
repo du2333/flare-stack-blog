@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import { blogConfig } from "@/blog.config";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
+import { LanguageSwitcher } from "./language-switcher";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
@@ -12,13 +13,13 @@ interface NavbarProps {
   isLoading?: boolean;
   user?: UserInfo;
 }
-
 export function Navbar({
   onMenuClick,
   user,
   navOptions,
   isLoading,
 }: NavbarProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function Navbar({
           {/* Left: Brand */}
           <Link to="/" className="group select-none">
             <span className="font-serif text-xl font-bold tracking-tighter text-foreground transition-colors group-hover:text-muted-foreground">
-              [ {blogConfig.name} ]
+              [ {siteConfig.theme.default.navBarName} ]
             </span>
           </Link>
 
@@ -66,9 +67,11 @@ export function Navbar({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <ThemeToggle />
+              <LanguageSwitcher className="text-muted-foreground hover:text-foreground h-8 w-8" />
               <Link
                 to="/search"
                 className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center transition-colors"
+                aria-label={m.nav_search()}
               >
                 <Search
                   size={16}
@@ -113,7 +116,7 @@ export function Navbar({
                         to="/login"
                         className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        Login
+                        {m.nav_login()}
                       </Link>
                     )}
                   </div>
@@ -123,7 +126,7 @@ export function Navbar({
               <button
                 className="w-8 h-8 flex flex-col items-center justify-center gap-1.5 group lg:hidden"
                 onClick={onMenuClick}
-                aria-label="打开菜单"
+                aria-label={m.common_open_menu()}
                 type="button"
               >
                 <div className="w-5 h-px bg-foreground transition-all group-hover:w-3"></div>

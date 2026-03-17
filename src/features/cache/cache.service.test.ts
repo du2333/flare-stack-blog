@@ -1,6 +1,6 @@
+import { createTestContext, waitForBackgroundTasks } from "tests/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { createTestContext, waitForBackgroundTasks } from "tests/test-utils";
 import * as CacheService from "./cache.service";
 import { serializeKey } from "./cache.utils";
 import type { CacheNamespace } from "./types";

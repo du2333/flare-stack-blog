@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testRequest } from "tests/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { app } from "@/lib/hono";
 
@@ -34,7 +34,11 @@ describe("Hono Integration Test", () => {
 
     const res = await testRequest(app, url, reqInit);
     expect(res.status).toBe(429);
-    expect(await res.json()).toEqual({ message: "Too Many Requests" });
+    expect(await res.json()).toEqual({
+      code: "RATE_LIMITED",
+      message: "Too Many Requests",
+      retryAfterMs: expect.any(Number),
+    });
     expect(res.headers.get("Retry-After")).toBeDefined();
   });
 

@@ -3,19 +3,27 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "@/lib/auth/auth.client";
+import { getPasswordAuthErrorMessage } from "@/lib/auth/auth-errors";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "需要当前密码"),
-    newPassword: z.string().min(8, "新密码至少 8 位"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "两次输入的密码不一致",
-    path: ["confirmPassword"],
-  });
+const createPasswordSchema = (messages: Messages) =>
+  z
+    .object({
+      currentPassword: z
+        .string()
+        .min(1, messages.profile_validation_current_password_required()),
+      newPassword: z
+        .string()
+        .min(8, messages.profile_validation_new_password_min()),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: messages.profile_validation_password_mismatch(),
+      path: ["confirmPassword"],
+    });
 
-type PasswordSchema = z.infer<typeof passwordSchema>;
+type PasswordSchema = z.infer<ReturnType<typeof createPasswordSchema>>;
 
 export function usePasswordForm() {
   const {
@@ -24,7 +32,7 @@ export function usePasswordForm() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<PasswordSchema>({
-    resolver: standardSchemaResolver(passwordSchema),
+    resolver: standardSchemaResolver(createPasswordSchema(m)),
   });
 
   const onSubmit = async (data: PasswordSchema) => {
@@ -34,10 +42,15 @@ export function usePasswordForm() {
       revokeOtherSessions: true,
     });
     if (error) {
-      toast.error("更新失败", { description: error.message });
+      toast.error(m.profile_toast_update_failed(), {
+        description:
+          getPasswordAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+      });
       return;
     }
-    toast.success("密码已更新", { description: "你的安全设置已同步。" });
+    toast.success(m.profile_toast_password_updated(), {
+      description: m.profile_toast_security_synced(),
+    });
     reset();
   };
 

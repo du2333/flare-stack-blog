@@ -1,10 +1,10 @@
+import type { search } from "@orama/orama";
 import {
   FUZZY_MAX_DISTANCE,
   SCAN_LIMIT,
   SNIPPET_CONTEXT,
   SNIPPET_SLICE,
 } from "../service/search.service";
-import type { search } from "@orama/orama";
 
 type OramaHit = Awaited<ReturnType<typeof search>>["hits"][number];
 

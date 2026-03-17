@@ -1,6 +1,7 @@
-import { memo, useLayoutEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Copy } from "lucide-react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 // Map short codes to display labels
 const LANGUAGE_MAP: Record<string, string> = {
@@ -30,8 +31,6 @@ const LANGUAGE_MAP: Record<string, string> = {
   sh: "sh",
   bash: "bash",
   md: "Markdown",
-  text: "text",
-  txt: "text",
 };
 
 interface CodeBlockProps {
@@ -65,9 +64,12 @@ export const CodeBlock = memo(
     }, [html]);
 
     // Helper to get display label (following expressive-code language badge logic)
-    const displayLanguage = language
-      ? LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase()
-      : "text";
+    const normalizedLanguage = language?.toLowerCase();
+    const displayLanguage = normalizedLanguage
+      ? normalizedLanguage === "text" || normalizedLanguage === "txt"
+        ? m.common_plain_text()
+        : LANGUAGE_MAP[normalizedLanguage] || normalizedLanguage
+      : m.common_plain_text();
 
     const handleCopy = () => {
       navigator.clipboard.writeText(code);
@@ -93,7 +95,7 @@ export const CodeBlock = memo(
           {/* Custom Copy Button (Expressive Code Style) */}
           <button
             onClick={handleCopy}
-            aria-label="Copy code"
+            aria-label={m.common_copy_code()}
             className={cn(
               "absolute z-20 right-2 top-2 w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-300",
               "bg-transparent border border-transparent text-gray-400 opacity-0 group-hover:opacity-100",
@@ -160,7 +162,7 @@ export const CodeBlock = memo(
                 className="pointer-events-auto flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-black/50 hover:text-black/70 dark:text-white/50 dark:hover:text-white/70 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-[0.98] backdrop-blur-md"
               >
                 <ChevronDown size={16} />
-                <span>显示更多</span>
+                <span>{m.common_show_more()}</span>
               </button>
             </div>
           )}

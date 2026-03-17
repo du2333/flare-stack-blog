@@ -1,4 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { isSSR } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 import {
   getTagsAdminFn,
   getTagsByPostIdFn,
@@ -6,8 +9,6 @@ import {
   getTagsWithCountAdminFn,
 } from "../api/tags.api";
 import type { GetTagsInput } from "../tags.schema";
-import { apiClient } from "@/lib/api-client";
-import { isSSR } from "@/lib/utils";
 
 export const TAGS_KEYS = {
   all: ["tags"] as const,
@@ -32,7 +33,7 @@ export const tagsQueryOptions = queryOptions({
       return await getTagsFn();
     }
     const res = await apiClient.tags.$get();
-    if (!res.ok) throw new Error("Failed to fetch tags");
+    if (!res.ok) throw new Error(m.tag_selector_load_fail());
     return res.json();
   },
 });

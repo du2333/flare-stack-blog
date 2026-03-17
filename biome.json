@@ -1,0 +1,95 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "biome.json",
+      "package.json",
+      "*.js",
+      "*.mjs",
+      "*.cjs",
+      "*.ts",
+      "*.tsx",
+      ".vscode/settings.json",
+      "scripts/**/*",
+      "src/**/*",
+      "tests/**/*",
+      "!src/paraglide",
+      "!src/routeTree.gen.ts",
+      "!worker-configuration.d.ts",
+      "!migrations/**/*"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": "off",
+      "security": "off",
+      "complexity": {
+        "noImportantStyles": "off",
+        "noUselessFragments": "off",
+        "noUselessSwitchCase": "off",
+        "useLiteralKeys": "off",
+        "useOptionalChain": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": "off",
+        "useExhaustiveDependencies": "off",
+        "useParseIntRadix": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "useTemplate": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        "noAssignInExpressions": "off",
+        "noCommentText": "off",
+        "noExplicitAny": "error",
+        "noGlobalIsNan": "off",
+        "noImplicitAnyLet": "off",
+        "noTemplateCurlyInString": "off",
+        "useIterableCallbackReturn": "off",
+        "useAwait": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentStyle": "space",
+      "indentWidth": 2
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
+}

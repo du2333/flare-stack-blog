@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Home, LogIn } from "lucide-react";
-import { PublicLayout } from "./public-layout";
 import type { UserLayoutProps } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
+import { PublicLayout } from "./public-layout";
 
 export function UserLayout({
   isAuthenticated,
@@ -31,12 +32,12 @@ export function UserLayout({
             </div>
 
             <h1 className="text-2xl font-bold fuwari-text-90 mb-3 transition-colors">
-              需要登录
+              {m.auth_layout_login_required()}
             </h1>
             <p className="text-(--fuwari-btn-content) mb-8 transition-colors leading-relaxed">
-              您需要登录后才能访问此页面内容。
+              {m.auth_layout_login_required_desc()}
               <br />
-              请登录以继续。
+              {m.auth_layout_login_required_desc2()}
             </p>
 
             <div className="flex flex-col gap-3">
@@ -45,14 +46,14 @@ export function UserLayout({
                 className="fuwari-btn-primary rounded-xl w-full py-3 flex items-center justify-center gap-2 font-bold active:scale-95 transition-all"
               >
                 <LogIn className="w-4 h-4" />
-                前往登录
+                {m.auth_layout_go_to_login()}
               </Link>
               <Link
                 to="/"
                 className="fuwari-btn-regular rounded-xl w-full py-3 flex items-center justify-center gap-2 font-medium active:scale-95 transition-all"
               >
                 <Home className="w-4 h-4" />
-                返回首页
+                {m.auth_layout_back_home()}
               </Link>
             </div>
           </div>

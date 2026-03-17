@@ -2,14 +2,15 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUp, Pencil, Share2, Sparkles } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CommentSection } from "../../components/comments/view/comment-section";
-import TableOfContents from "./components/table-of-contents";
-import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
+import { Button } from "@/components/ui/button";
 import type { PostPageProps } from "@/features/theme/contract/pages";
 import { ContentRenderer } from "@/features/theme/themes/default/components/content/content-renderer";
-import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
 import { authClient } from "@/lib/auth/auth.client";
+import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { CommentSection } from "../../components/comments/view/comment-section";
+import { RelatedPosts, RelatedPostsSkeleton } from "./components/related-posts";
+import TableOfContents from "./components/table-of-contents";
 
 export function PostPage({ post }: PostPageProps) {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function PostPage({ post }: PostPageProps) {
           className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
         >
           <ArrowLeft size={12} />
-          <span>返回目录</span>
+          <span>{m.post_back_to_list()}</span>
         </button>
         {session?.user.role === "admin" && (
           <Link
@@ -42,7 +43,7 @@ export function PostPage({ post }: PostPageProps) {
             className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
           >
             <Pencil size={12} />
-            <span>编辑文章</span>
+            <span>{m.post_edit()}</span>
           </Link>
         )}
       </nav>
@@ -53,20 +54,20 @@ export function PostPage({ post }: PostPageProps) {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground/60 tracking-wider">
               <span className="flex items-center gap-1.5">
-                发布于:{" "}
+                {m.post_published_at()}:{" "}
                 <ClientOnly fallback={<span>-</span>}>
                   {formatDate(post.publishedAt)}
                 </ClientOnly>
               </span>
               <span className="opacity-30">/</span>
               <span className="flex items-center gap-1.5">
-                最后更新:{" "}
+                {m.post_last_updated()}:{" "}
                 <ClientOnly fallback={<span>-</span>}>
                   {formatDate(post.updatedAt)}
                 </ClientOnly>
               </span>
               <span className="opacity-30">/</span>
-              <span>{post.readTimeInMinutes} 分钟</span>
+              <span>{m.read_time({ count: post.readTimeInMinutes })}</span>
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
@@ -100,7 +101,7 @@ export function PostPage({ post }: PostPageProps) {
             <div className="bg-muted/30 rounded-lg p-6 space-y-3 border border-border/40">
               <div className="flex items-center gap-2 text-muted-foreground/80 font-medium text-sm uppercase tracking-widest">
                 <Sparkles className="w-4 h-4" />
-                <span>摘要</span>
+                <span>{m.post_summary_title()}</span>
               </div>
               <p className="text-lg leading-relaxed text-muted-foreground font-serif">
                 {post.summary}
@@ -123,7 +124,7 @@ export function PostPage({ post }: PostPageProps) {
 
             <footer className="mt-24 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground/60 tracking-widest uppercase">
-                <span>正文结束</span>
+                <span>{m.post_end_notice()}</span>
               </div>
               <Button
                 variant="ghost"
@@ -131,19 +132,19 @@ export function PostPage({ post }: PostPageProps) {
                   navigator.clipboard
                     .writeText(window.location.href)
                     .then(() => {
-                      toast.success("链接已复制", {
-                        description: "文章链接已复制到剪贴板",
+                      toast.success(m.post_share_success(), {
+                        description: m.post_share_success_desc(),
                       });
                     })
                     .catch(() => {
-                      toast.error("复制失败", {
-                        description: "无法访问剪贴板，请手动复制链接",
+                      toast.error(m.post_share_error(), {
+                        description: m.post_share_error_desc(),
                       });
                     });
                 }}
                 className="group h-auto p-0 flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-muted-foreground hover:text-foreground transition-colors bg-transparent hover:bg-transparent"
               >
-                <span>分享</span>
+                <span>{m.post_share()}</span>
                 <Share2
                   size={12}
                   strokeWidth={1.5}
@@ -184,7 +185,7 @@ export function PostPage({ post }: PostPageProps) {
             className="text-muted-foreground/60 group-hover:text-foreground group-hover:-translate-y-1 transition-all duration-300"
           />
           <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-foreground transition-colors duration-300">
-            顶部
+            {m.post_back_to_top()}
           </span>
         </button>
       </div>

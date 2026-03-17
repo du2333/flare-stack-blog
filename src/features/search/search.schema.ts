@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { JSONContent } from "@tiptap/react";
+import { NullableJsonContentSchema } from "@/features/posts/schema/json-content.schema";
 
 export const SearchQuerySchema = z.object({
   q: z.string().min(1),
@@ -12,7 +12,7 @@ export const UpsertSearchDocSchema = z.object({
   slug: z.string().min(1),
   title: z.string().min(1),
   summary: z.string().nullable().optional(),
-  contentJson: z.custom<JSONContent>().nullable().optional(),
+  contentJson: NullableJsonContentSchema.optional(),
   tags: z.array(z.string()).optional(),
 });
 

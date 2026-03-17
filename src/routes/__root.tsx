@@ -1,25 +1,36 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import type { QueryClient } from "@tanstack/react-query";
 import {
+  createRootRouteWithContext,
   HeadContent,
   Scripts,
-  createRootRouteWithContext,
+  useRouteContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import type { QueryClient } from "@tanstack/react-query";
+import theme from "@theme";
 import { ThemeProvider } from "@/components/common/theme-provider";
-
+import { siteConfigQuery } from "@/features/config/queries";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import appCss from "@/styles.css?url";
-import { blogConfig } from "@/blog.config";
 import { clientEnv } from "@/lib/env/client.env";
+import { getLocale } from "@/paraglide/runtime";
+import appCss from "@/styles.css?url";
 
 interface MyRouterContext {
   queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => {
+  beforeLoad: async ({ context }) => {
+    const siteConfig =
+      await context.queryClient.ensureQueryData(siteConfigQuery);
+    return { siteConfig };
+  },
+  loader: async ({ context }) => {
+    return { siteConfig: context.siteConfig };
+  },
+  head: ({ loaderData }) => {
     const env = clientEnv();
+
     return {
       meta: [
         {
@@ -30,33 +41,33 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           content: "width=device-width, initial-scale=1",
         },
         {
-          title: blogConfig.title,
+          title: loaderData?.siteConfig?.title,
         },
         {
           name: "description",
-          content: blogConfig.description,
+          content: loaderData?.siteConfig?.description,
         },
       ],
       links: [
         {
           rel: "icon",
           type: "image/svg+xml",
-          href: "/favicon.svg",
+          href: loaderData?.siteConfig?.icons.faviconSvg,
         },
         {
           rel: "icon",
           type: "image/png",
-          href: "/favicon-96x96.png",
+          href: loaderData?.siteConfig?.icons.favicon96,
           sizes: "96x96",
         },
         {
           rel: "shortcut icon",
-          href: "/favicon.ico",
+          href: loaderData?.siteConfig?.icons.faviconIco,
         },
         {
           rel: "apple-touch-icon",
           type: "image/png",
-          href: "/apple-touch-icon.png",
+          href: loaderData?.siteConfig?.icons.appleTouchIcon,
           sizes: "180x180",
         },
         {
@@ -72,6 +83,18 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           type: "application/rss+xml",
           title: "RSS Feed",
           href: "/rss.xml",
+        },
+        {
+          rel: "alternate",
+          type: "application/atom+xml",
+          title: "Atom Feed",
+          href: "/atom.xml",
+        },
+        {
+          rel: "alternate",
+          type: "application/feed+json",
+          title: "JSON Feed",
+          href: "/feed.json",
         },
       ],
       scripts: env.VITE_UMAMI_WEBSITE_ID
@@ -89,8 +112,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const locale = getLocale();
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      style={theme.getDocumentStyle?.(siteConfig)}
+    >
       <head>
         <HeadContent />
       </head>

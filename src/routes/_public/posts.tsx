@@ -3,14 +3,14 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import theme from "@theme";
 import { useMemo } from "react";
 import { z } from "zod";
-import theme from "@theme";
+import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
 import { postsInfiniteQueryOptions } from "@/features/posts/queries";
-import { siteDomainQuery } from "@/features/config/queries";
-import { blogConfig } from "@/blog.config";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
+import { m } from "@/paraglide/messages";
 
 const { postsPerPage } = theme.config.posts;
 
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_public/posts")({
   pendingComponent: PostsSkeleton,
   loaderDeps: ({ search: { tagName } }) => ({ tagName }),
   loader: async ({ context, deps }) => {
-    const [, , domain] = await Promise.all([
+    const [, , domain, siteConfig] = await Promise.all([
       context.queryClient.prefetchInfiniteQuery(
         postsInfiniteQueryOptions({
           tagName: deps.tagName,
@@ -31,10 +31,12 @@ export const Route = createFileRoute("/_public/posts")({
       ),
       context.queryClient.prefetchQuery(tagsQueryOptions),
       context.queryClient.ensureQueryData(siteDomainQuery),
+      context.queryClient.ensureQueryData(siteConfigQuery),
     ]);
 
     return {
-      title: "全部文章",
+      title: m.posts_title(),
+      description: siteConfig.description,
       canonicalHref: buildCanonicalUrl(domain, "/posts", {
         tagName: deps.tagName,
       }),
@@ -47,7 +49,7 @@ export const Route = createFileRoute("/_public/posts")({
       },
       {
         name: "description",
-        content: blogConfig.description,
+        content: loaderData?.description,
       },
     ],
     links: [canonicalLink(loaderData?.canonicalHref ?? "/posts")],

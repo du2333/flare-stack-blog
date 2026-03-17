@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { JSONContent } from "@tiptap/react";
+import { describe, expect, it } from "vitest";
 import {
   extractMarkdownImages,
   rewriteImagePaths,

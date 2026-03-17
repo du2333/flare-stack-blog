@@ -1,13 +1,14 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
+import type React from "react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
-import type { UploadItem } from "../types";
-import type React from "react";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FILE_SIZE,
 } from "@/features/media/media.schema";
+import { m } from "@/paraglide/messages";
+import type { UploadItem } from "../types";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -72,10 +73,10 @@ function UploadModalInternal({
         <div className="px-6 pt-8 pb-4 flex items-start justify-between shrink-0">
           <div className="space-y-2">
             <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60">
-              [ UPLOAD ]
+              [ {m.media_upload_modal_tag()} ]
             </p>
             <h2 className="text-2xl font-serif font-medium text-foreground">
-              上传文件
+              {m.media_upload_modal_title()}
             </h2>
           </div>
           <button
@@ -114,10 +115,12 @@ function UploadModalInternal({
           >
             <div className="text-center space-y-2">
               <p className="text-xs font-mono uppercase tracking-widest text-foreground">
-                {isDragging ? "松开此处以上传" : "点击或拖拽文件至此"}
+                {isDragging
+                  ? m.media_upload_drop_release()
+                  : m.media_upload_drop_here()}
               </p>
               <p className="text-xs font-mono text-muted-foreground/60">
-                支持 JPEG/JPG/PNG/WEBP/GIF (最大 {maxSizeMb}MB)
+                {m.media_upload_support_format({ maxSizeMb })}
               </p>
             </div>
           </div>
@@ -127,7 +130,7 @@ function UploadModalInternal({
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-border/30 pb-2">
                 <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60">
-                  上传队列 [{queue.length}]
+                  {m.media_upload_queue({ count: queue.length })}
                 </span>
               </div>
 
@@ -178,12 +181,12 @@ function UploadModalInternal({
                           }`}
                         >
                           {item.status === "COMPLETE"
-                            ? "完成"
+                            ? m.media_upload_status_complete()
                             : item.status === "ERROR"
-                              ? "失败"
+                              ? m.media_upload_status_error()
                               : item.status === "UPLOADING"
-                                ? "上传中"
-                                : "等待中"}
+                                ? m.media_upload_status_uploading()
+                                : m.media_upload_status_waiting()}
                         </span>
                       </div>
                       {item.log && (
@@ -201,14 +204,13 @@ function UploadModalInternal({
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-6 pb-6 pt-4 flex justify-end gap-3 shrink-0">
           {queue.length > 0 && !isAllComplete && (
             <button
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              后台上传
+              {m.media_upload_btn_background()}
             </button>
           )}
 
@@ -224,14 +226,16 @@ function UploadModalInternal({
                 }
               `}
             >
-              {hasErrors ? "确认 (含错误)" : "完成"}
+              {hasErrors
+                ? m.media_upload_btn_confirm_errors()
+                : m.media_upload_btn_complete()}
             </button>
           ) : (
             <button
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              取消
+              {m.media_upload_btn_cancel()}
             </button>
           )}
         </div>

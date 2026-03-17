@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { FuwariCommentEditor } from "../editor/comment-editor";
-import { FuwariCommentItem } from "./comment-item";
-import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import type { JSONContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
+import { m } from "@/paraglide/messages";
+import { FuwariCommentEditor } from "../editor/comment-editor";
+import { FuwariCommentItem } from "./comment-item";
 
 type RootCommentWithUser = RootCommentWithReplyCount;
 
@@ -59,7 +60,7 @@ export const FuwariCommentList = ({
   if (rootComments.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-sm fuwari-text-30">暂无评论，成为第一个评论的人吧</p>
+        <p className="text-sm fuwari-text-30">{m.comments_list_empty()}</p>
       </div>
     );
   }
@@ -137,7 +138,11 @@ function RootCommentWithReplies({
         comment={root}
         onReply={() => {
           if (onReply) {
-            onReply(root.id, root.id, root.user?.name || "未知用户");
+            onReply(
+              root.id,
+              root.id,
+              root.user?.name || m.comments_item_unknown_user(),
+            );
           }
         }}
         onDelete={onDelete}
@@ -179,7 +184,9 @@ function RootCommentWithReplies({
               }`}
             />
             <span className="text-xs fuwari-text-50 group-hover:text-(--fuwari-primary) transition-colors">
-              {isExpanded ? "收起回复" : `展开 ${root.replyCount} 条回复`}
+              {isExpanded
+                ? m.comments_list_collapse_replies()
+                : m.comments_list_expand_replies({ count: root.replyCount })}
             </span>
           </button>
 
@@ -201,7 +208,7 @@ function RootCommentWithReplies({
                             reply.id,
                             reply.replyTo?.name ||
                               reply.user?.name ||
-                              "未知用户",
+                              m.comments_item_unknown_user(),
                           );
                         }
                       }}
@@ -237,7 +244,9 @@ function RootCommentWithReplies({
                   disabled={isFetchingNextPage}
                   className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) transition-colors font-medium py-2 disabled:opacity-50"
                 >
-                  {isFetchingNextPage ? "加载中..." : "加载更多回复"}
+                  {isFetchingNextPage
+                    ? m.comments_loading()
+                    : m.comments_list_load_more_replies()}
                 </button>
               )}
             </div>
@@ -263,7 +272,9 @@ function ReplyForm({
   return (
     <div>
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-xs fuwari-text-50">回复</span>
+        <span className="text-xs fuwari-text-50">
+          {m.comments_item_reply()}
+        </span>
         <span className="text-sm font-medium text-(--fuwari-primary)">
           @{userName}
         </span>
@@ -273,7 +284,7 @@ function ReplyForm({
         isSubmitting={isSubmitting}
         autoFocus
         onCancel={onCancel}
-        submitLabel="发表回复"
+        submitLabel={m.comments_editor_submit_reply()}
       />
     </div>
   );
@@ -290,11 +301,11 @@ function LoginToReplyPrompt({
   return (
     <div className="flex items-center gap-4 py-3 px-4 rounded-(--fuwari-radius-large) bg-(--fuwari-input-bg)">
       <span className="text-sm fuwari-text-50 flex-1">
-        登录以回复 <span className="text-(--fuwari-primary)">@{userName}</span>
+        {m.comments_list_login_to_reply({ userName: userName })}
       </span>
       <Link to="/login">
         <button className="fuwari-btn-primary h-8 px-4 text-sm rounded-lg">
-          登录
+          {m.comments_login()}
         </button>
       </Link>
       {onCancel && (
@@ -302,7 +313,7 @@ function LoginToReplyPrompt({
           onClick={onCancel}
           className="text-sm fuwari-text-50 hover:fuwari-text-75 transition-colors"
         >
-          取消
+          {m.comments_editor_cancel()}
         </button>
       )}
     </div>

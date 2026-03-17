@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { createAdminTestContext, seedUser } from "tests/test-utils";
 import { remove } from "@orama/orama";
-import * as SearchService from "./service/search.service";
-import { PostTagsTable, PostsTable, TagsTable } from "@/lib/db/schema";
+import { createAdminTestContext, seedUser } from "tests/test-utils";
+import { describe, expect, it } from "vitest";
 import { getOramaDb, persistOramaDb } from "@/features/search/model/store";
+import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
+import * as SearchService from "./service/search.service";
 
 describe("SearchService", () => {
   it("should upsert and search for a document", async () => {

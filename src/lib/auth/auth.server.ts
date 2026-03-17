@@ -1,10 +1,13 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
+import { renderToStaticMarkup } from "react-dom/server";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
-import { authConfig } from "@/lib/auth/auth.config";
+import { createAuthConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 async function checkEmailRateLimit(
   env: Env,
@@ -26,6 +29,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
     ADMIN_EMAIL,
+    LOCALE,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
   } = serverEnv(env);
@@ -38,8 +42,16 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     return env.PASSWORD_HASHER.get(id);
   }
 
+  function getAuthEmailLocale(): Locale {
+    try {
+      return getLocale();
+    } catch {
+      return LOCALE;
+    }
+  }
+
   return betterAuth({
-    ...authConfig,
+    ...createAuthConfig(BETTER_AUTH_URL),
     socialProviders: {
       github: {
         clientId: GITHUB_CLIENT_ID,
@@ -63,15 +75,16 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
         );
         if (!allowed) return;
 
+        const locale = getAuthEmailLocale();
         const emailHtml = renderToStaticMarkup(
-          AuthEmail({ type: "reset-password", url }),
+          AuthEmail({ locale, type: "reset-password", url }),
         );
 
         await env.QUEUE.send({
           type: "EMAIL",
           data: {
             to: user.email,
-            subject: "重置密码",
+            subject: m.email_auth_reset_subject({}, { locale }),
             html: emailHtml,
           },
         });
@@ -87,15 +100,16 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
         );
         if (!allowed) return;
 
+        const locale = getAuthEmailLocale();
         const emailHtml = renderToStaticMarkup(
-          AuthEmail({ type: "verification", url }),
+          AuthEmail({ locale, type: "verification", url }),
         );
 
         await env.QUEUE.send({
           type: "EMAIL",
           data: {
             to: user.email,
-            subject: "验证您的邮箱",
+            subject: m.email_auth_verification_subject({}, { locale }),
             html: emailHtml,
           },
         });

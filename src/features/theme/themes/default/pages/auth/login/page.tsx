@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import type { LoginPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 import { LoginForm } from "./form";
 import { SocialLogin } from "./social-login";
-import type { LoginPageProps } from "@/features/theme/contract/pages";
 
 export function LoginPage({
   isEmailConfigured,
@@ -13,14 +14,14 @@ export function LoginPage({
     <div className="space-y-12">
       <header className="text-center space-y-3">
         <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground/60">
-          [ {isEmailConfigured ? "LOGIN" : "AUTH"} ]
+          [ {isEmailConfigured ? m.login_label() : m.login_auth_label()} ]
         </p>
         <h1 className="text-2xl font-serif font-medium tracking-tight">
-          {isEmailConfigured ? "登录" : "身份验证"}
+          {isEmailConfigured ? m.login_title() : m.login_auth_title()}
         </h1>
         {!isEmailConfigured && (
           <p className="text-[10px] font-mono text-muted-foreground/40 tracking-wider">
-            仅支持第三方提供商
+            {m.login_only_third_party()}
           </p>
         )}
       </header>
@@ -42,12 +43,12 @@ export function LoginPage({
         {isEmailConfigured && (
           <div className="text-center pt-8">
             <p className="text-[10px] font-mono text-muted-foreground/50 tracking-wider">
-              没有账户?{" "}
+              {m.login_no_account()}{" "}
               <Link
                 to="/register"
                 className="text-foreground hover:opacity-70 transition-opacity ml-1"
               >
-                [ 立即注册 ]
+                [ {m.login_register_now()} ]
               </Link>
             </p>
           </div>

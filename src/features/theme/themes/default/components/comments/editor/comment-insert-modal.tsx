@@ -1,9 +1,10 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type React from "react";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { m } from "@/paraglide/messages";
 
 export type ModalType = "LINK" | "IMAGE" | null;
 
@@ -71,11 +72,12 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             }
        `}
       >
-        {/* Header */}
         <div className="flex justify-between items-center px-8 py-6 border-b border-border/10">
           <div className="flex items-center gap-3">
             <span className="text-xs font-mono text-foreground tracking-widest uppercase">
-              {activeType === "LINK" ? "[ 插入链接 ]" : "[ 插入图片 ]"}
+              {activeType === "LINK"
+                ? m.comments_editor_modal_link_title()
+                : m.comments_editor_modal_image_title()}
             </span>
           </div>
           <button
@@ -91,7 +93,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           {/* URL Input */}
           <div className="space-y-3 group">
             <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest group-focus-within:text-foreground transition-colors">
-              {activeType === "IMAGE" ? "图片地址 (URL)" : "目标链接地址"}
+              {activeType === "IMAGE"
+                ? m.comments_editor_modal_image_label()
+                : m.comments_editor_modal_link_label()}
             </label>
             <input
               type="url"
@@ -114,7 +118,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             onClick={onClose}
             className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           >
-            取消
+            {m.comments_editor_modal_cancel()}
           </button>
           <button
             type="button"
@@ -127,8 +131,8 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             className="text-[10px] font-mono font-bold uppercase tracking-widest text-foreground hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {activeType === "LINK" && !inputUrl.trim() && initialUrl.trim()
-              ? "[ 移除 ]"
-              : "[ 确认 ]"}
+              ? m.comments_editor_modal_remove_link()
+              : m.comments_editor_modal_confirm()}
           </button>
         </div>
       </div>

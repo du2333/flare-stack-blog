@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import * as VersionService from "../service/version.service";
 import { adminMiddleware } from "@/lib/middlewares";
+import * as VersionService from "../service/version.service";
 
 export const checkUpdateFn = createServerFn()
   .middleware([adminMiddleware])

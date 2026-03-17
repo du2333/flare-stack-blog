@@ -1,9 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { config } from "../../../config";
+import { Skeleton } from "@/components/ui/skeleton";
 import { relatedPostsQuery } from "@/features/posts/queries";
 import { formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { m } from "@/paraglide/messages";
+import { config } from "../../../config";
 
 interface RelatedPostsProps {
   slug: string;
@@ -19,9 +20,13 @@ export function RelatedPosts({ slug }: RelatedPostsProps) {
       className="fuwari-card-base p-6 fuwari-onload-animation"
       style={{ animationDelay: "300ms" }}
     >
-      <h2 className="text-xl font-bold mb-4 fuwari-text-90">相关文章</h2>
+      <h2 className="text-xl font-bold mb-4 fuwari-text-90">
+        {m.post_fuwari_related_posts()}
+      </h2>
       {posts.length === 0 ? (
-        <p className="fuwari-text-30 text-sm">暂无相关文章</p>
+        <p className="fuwari-text-30 text-sm">
+          {m.post_fuwari_no_related_posts()}
+        </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 transition">
           {posts.map((post) => (
@@ -38,7 +43,7 @@ export function RelatedPosts({ slug }: RelatedPostsProps) {
               <div className="flex items-center gap-3 fuwari-text-50 text-xs">
                 <span>{formatDate(post.publishedAt)}</span>
                 <span className="w-1 h-1 rounded-full bg-black/20 dark:bg-white/20" />
-                <span>{post.readTimeInMinutes} 分钟</span>
+                <span>{m.read_time({ count: post.readTimeInMinutes })}</span>
               </div>
             </Link>
           ))}

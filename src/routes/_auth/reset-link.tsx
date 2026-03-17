@@ -1,7 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { z } from "zod";
 import theme from "@theme";
+import { z } from "zod";
 import { useResetPasswordForm } from "@/features/auth/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_auth/reset-link")({
   validateSearch: z.object({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_auth/reset-link")({
   head: () => ({
     meta: [
       {
-        title: "重置密码",
+        title: m.reset_password_title(),
       },
     ],
   }),

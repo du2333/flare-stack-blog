@@ -1,7 +1,8 @@
 import { Loader2 } from "lucide-react";
-import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
 import { Turnstile } from "@/components/common/turnstile";
 import { Input } from "@/components/ui/input";
+import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 interface FriendLinkSubmitFormProps {
   form: FriendLinkSubmitFormData;
@@ -21,12 +22,12 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
       <div className="space-y-6">
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-            站点名称 *
+            {m.friend_link_field_site_name()} *
           </label>
           <Input
             {...register("siteName")}
             className={inputClassName}
-            placeholder="例：我的无敌博客"
+            placeholder={m.friend_link_placeholder_site_name_default()}
           />
           {errors.siteName && (
             <span className="text-[10px] text-destructive font-mono">
@@ -37,12 +38,12 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
 
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-            站点地址 *
+            {m.friend_link_field_site_url()} *
           </label>
           <Input
             {...register("siteUrl")}
             className={monoInputClassName}
-            placeholder="https://..."
+            placeholder={m.friend_link_placeholder_site_url()}
           />
           {errors.siteUrl && (
             <span className="text-[10px] text-destructive font-mono">
@@ -53,12 +54,12 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
 
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-            站点简介
+            {m.friend_link_field_description_default()}
           </label>
           <Input
             {...register("description")}
             className={inputClassName}
-            placeholder="简要介绍你的站点"
+            placeholder={m.friend_link_placeholder_description_default()}
           />
           {errors.description && (
             <span className="text-[10px] text-destructive font-mono">
@@ -69,12 +70,12 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
 
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-            Logo 地址
+            {m.friend_link_field_logo_url_default()}
           </label>
           <Input
             {...register("logoUrl")}
             className={monoInputClassName}
-            placeholder="https://..."
+            placeholder={m.friend_link_placeholder_site_url()}
           />
           {errors.logoUrl && (
             <span className="text-[10px] text-destructive font-mono">
@@ -85,12 +86,12 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
 
         <div className="space-y-2 group">
           <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-            联系邮箱 *
+            {m.friend_link_field_contact_email()} *
           </label>
           <Input
             {...register("contactEmail")}
             className={monoInputClassName}
-            placeholder="用于接收审核结果通知"
+            placeholder={m.friend_link_placeholder_contact_email_default()}
           />
           {errors.contactEmail && (
             <span className="text-[10px] text-destructive font-mono">
@@ -108,10 +109,11 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <Loader2 size={12} className="animate-spin" /> 提交中...
+              <Loader2 size={12} className="animate-spin" />{" "}
+              {m.friend_link_submitting()}
             </span>
           ) : (
-            "[ 提交申请 ]"
+            m.friend_link_submit_button_default()
           )}
         </button>
       </div>

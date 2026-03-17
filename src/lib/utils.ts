@@ -1,6 +1,8 @@
+import type { ClassValue } from "clsx";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { ClassValue } from "clsx";
+
+import { m } from "@/paraglide/messages";
 
 export const isSSR = typeof window === "undefined";
 
@@ -14,16 +16,22 @@ export function formatDate(
 ) {
   if (!date) return "";
   const d = new Date(date);
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    ...(options.includeTime && {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-  }).format(d);
+  if (options.includeTime) {
+    return m.format_datetime({ date: d });
+  }
+  return m.format_date({ date: d });
+}
+
+export function formatTime(date: Date | undefined | null | string | number) {
+  if (!date) return "";
+  return m.format_time({ date: new Date(date) });
+}
+
+export function formatMonthDayTime(
+  date: Date | undefined | null | string | number,
+) {
+  if (!date) return "";
+  return m.format_month_day_time({ date: new Date(date) });
 }
 
 export function formatTimeAgo(date: Date | null | string) {
@@ -33,13 +41,13 @@ export function formatTimeAgo(date: Date | null | string) {
     (now.getTime() - new Date(date).getTime()) / 1000,
   );
 
-  if (diffInSeconds < 60) return "刚刚";
+  if (diffInSeconds < 60) return m.time_ago_just_now();
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} 分钟前`;
+  if (diffInMinutes < 60) return m.time_ago_minutes({ count: diffInMinutes });
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} 小时前`;
+  if (diffInHours < 24) return m.time_ago_hours({ count: diffInHours });
   const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} 天前`;
+  return m.time_ago_days({ count: diffInDays });
 }
 
 export function toLocalDateString(date: Date): string {

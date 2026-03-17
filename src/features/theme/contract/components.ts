@@ -1,3 +1,10 @@
+import type { SiteConfig } from "@/features/config/site-config.schema";
+import type { ThemeConfig } from "./config";
+import type {
+  AuthLayoutProps,
+  PublicLayoutProps,
+  UserLayoutProps,
+} from "./layouts";
 import type {
   ForgotPasswordPageProps,
   FriendLinksPageProps,
@@ -12,12 +19,6 @@ import type {
   SubmitFriendLinkPageProps,
   VerifyEmailPageProps,
 } from "./pages";
-import type {
-  AuthLayoutProps,
-  PublicLayoutProps,
-  UserLayoutProps,
-} from "./layouts";
-import type { ThemeConfig } from "./config";
 
 /**
  * 主题契约 — 组件接口
@@ -28,6 +29,10 @@ import type { ThemeConfig } from "./config";
 export interface ThemeComponents {
   /** 主题静态配置（数据获取参数等） */
   config: ThemeConfig;
+  /** 注入到 document 根节点的主题变量 */
+  getDocumentStyle?: (
+    siteConfig: SiteConfig,
+  ) => React.CSSProperties | undefined;
   /** 公共布局（Navbar + MobileMenu + Footer 的组合） */
   PublicLayout: React.ComponentType<PublicLayoutProps>;
   /** 主页渲染组件 */

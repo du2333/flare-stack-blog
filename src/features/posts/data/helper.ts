@@ -1,5 +1,5 @@
-import { and, asc, desc, eq, like, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { and, asc, desc, eq, like, sql } from "drizzle-orm";
 import type { PostStatus } from "@/lib/db/schema";
 import { PostsTable } from "@/lib/db/schema";
 
@@ -20,7 +20,12 @@ export function buildPostWhereClause(options: {
   // For public pages, also filter by publishedAt
   if (options.publicOnly) {
     whereClauses.push(eq(PostsTable.status, "published"));
-    whereClauses.push(lte(PostsTable.publishedAt, new Date()));
+    // Compare date portions only (ignore time-of-day) to avoid timezone issues.
+    // publishedAt is stored as Unix seconds; date('now') returns today's UTC date.
+    // This matches the isFuturePublishDate() string-based date comparison used in scheduling.
+    whereClauses.push(
+      sql`date(${PostsTable.publishedAt}, 'unixepoch') <= date('now')`,
+    );
   }
 
   // Search by title

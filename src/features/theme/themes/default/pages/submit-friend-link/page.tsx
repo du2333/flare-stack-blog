@@ -1,23 +1,22 @@
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Terminal } from "lucide-react";
-import { FriendLinkSubmitForm } from "./form";
-import type { SubmitFriendLinkPageProps } from "@/features/theme/contract/pages";
+import type { SubmitFriendLinkPageProps } from "@/features/theme/contract/pages/friend-links";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { FriendLinkSubmitForm } from "./form";
 
-export function SubmitFriendLinkPage({
-  myLinks,
-  form,
-}: SubmitFriendLinkPageProps) {
+export function SubmitFriendLinkPage(props: SubmitFriendLinkPageProps) {
+  const { myLinks, form } = props;
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto px-6 md:px-0 py-12 md:py-20 space-y-20">
       <header className="space-y-8">
         <div className="flex justify-between items-start">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-foreground">
-              友情链接
+              {m.friend_links_title()}
             </h1>
             <div className="space-y-4 max-w-2xl text-base md:text-lg text-muted-foreground font-light leading-relaxed">
-              <p>提交你的站点信息，审核通过后将展示在友链页面。</p>
+              <p>{m.friend_link_submit_desc()}</p>
             </div>
           </div>
 
@@ -37,7 +36,7 @@ export function SubmitFriendLinkPage({
 
       <section className="space-y-8">
         <h3 className="text-lg font-serif font-medium text-foreground">
-          提交申请
+          {m.friend_link_submit_form_title()}
         </h3>
         <FriendLinkSubmitForm form={form} />
       </section>
@@ -48,7 +47,7 @@ export function SubmitFriendLinkPage({
 
           <section className="space-y-8">
             <h3 className="text-lg font-serif font-medium text-foreground">
-              我的申请
+              {m.friend_link_my_submissions()}
             </h3>
             <div className="space-y-4">
               {myLinks.map((link) => (
@@ -74,7 +73,8 @@ export function SubmitFriendLinkPage({
                     </a>
                     {link.rejectionReason && (
                       <p className="text-[11px] text-orange-500 font-mono">
-                        拒绝理由: {link.rejectionReason}
+                        {m.friend_link_rejection_reason()}:{" "}
+                        {link.rejectionReason}
                       </p>
                     )}
                   </div>
@@ -93,9 +93,9 @@ export function SubmitFriendLinkPage({
 
 function FriendLinkStatusBadge({ status }: { status: string }) {
   const labels: Record<string, string> = {
-    approved: "已通过",
-    pending: "审核中",
-    rejected: "未通过",
+    approved: m.friend_link_status_approved(),
+    pending: m.friend_link_status_pending(),
+    rejected: m.friend_link_status_rejected(),
   };
 
   const styles: Record<string, string> = {

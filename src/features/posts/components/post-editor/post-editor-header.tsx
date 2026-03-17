@@ -1,6 +1,7 @@
-import type { PostEditorData } from "./types";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
+import type { PostEditorData } from "./types";
 
 interface PostEditorHeaderProps {
   post: PostEditorData;
@@ -19,6 +20,21 @@ export function PostEditorHeader({
   onPreview,
   onProcess,
 }: PostEditorHeaderProps) {
+  const getProcessButtonColor = () => {
+    if (processState === "SUCCESS") return "text-emerald-500";
+    if (post.status === "draft" && post.hasPublicCache)
+      return "text-orange-500";
+    return "text-foreground hover:text-foreground/80";
+  };
+
+  const getProcessButtonText = () => {
+    if (processState === "PROCESSING") return m.editor_header_processing();
+    if (processState === "SUCCESS") return m.editor_header_success();
+    if (post.status === "draft" && post.hasPublicCache)
+      return m.editor_header_unpublish();
+    return m.editor_header_publish();
+  };
+
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/30 bg-background px-6">
       <div className="min-w-0 flex-1 overflow-hidden">
@@ -31,11 +47,15 @@ export function PostEditorHeader({
             variant="ghost"
             onClick={onPreview}
             disabled={!post.hasPublicCache}
-            title={!post.hasPublicCache ? "前台暂无此文章" : "预览前台文章"}
+            title={
+              !post.hasPublicCache
+                ? m.editor_header_preview_unavailable()
+                : m.editor_header_preview()
+            }
             className="h-8 rounded-none px-2 text-[10px] font-mono text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground disabled:opacity-30"
           >
             <span className="mr-2 opacity-50">[</span>
-            预览
+            {m.editor_header_preview_btn()}
             <span className="ml-2 opacity-50">]</span>
           </Button>
 
@@ -52,23 +72,11 @@ export function PostEditorHeader({
             variant="ghost"
             className={`
               h-8 rounded-none px-2 text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent
-              ${
-                processState === "SUCCESS"
-                  ? "text-emerald-500"
-                  : post.status === "draft" && post.hasPublicCache
-                    ? "text-orange-500"
-                    : "text-foreground hover:text-foreground/80"
-              }
+              ${getProcessButtonColor()}
             `}
           >
             <span className="mr-2 opacity-50">[</span>
-            {processState === "PROCESSING"
-              ? "处理中..."
-              : processState === "SUCCESS"
-                ? "成功"
-                : post.status === "draft" && post.hasPublicCache
-                  ? "下架"
-                  : "发布"}
+            {getProcessButtonText()}
             <span className="ml-2 opacity-50">]</span>
           </Button>
         </div>

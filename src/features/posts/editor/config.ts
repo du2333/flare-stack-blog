@@ -1,14 +1,18 @@
-import { toast } from "sonner";
 import FileHandler from "@tiptap/extension-file-handler";
 import Mathematics from "@tiptap/extension-mathematics";
 import Placeholder from "@tiptap/extension-placeholder";
-import StarterKit from "@tiptap/starter-kit";
 import TableOfContents from "@tiptap/extension-table-of-contents";
 import type { Editor as TiptapEditor } from "@tiptap/react";
-import type { ImageUploadResult } from "@/features/posts/editor/extensions/upload-image";
-import { TableBlockExtension } from "@/features/posts/editor/extensions/table";
+import StarterKit from "@tiptap/starter-kit";
+import { toast } from "sonner";
+import {
+  getActiveFormulaModalOpenerKey,
+  openFormulaModalForEdit,
+} from "@/components/tiptap-editor/formula-modal-store";
+import { uploadImageFn } from "@/features/media/api/media.api";
 import { CodeBlockExtension } from "@/features/posts/editor/extensions/code-block";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
+import { TableBlockExtension } from "@/features/posts/editor/extensions/table";
 import { BlockQuoteExtension } from "@/features/posts/editor/extensions/typography/block-quote";
 import { HeadingExtension } from "@/features/posts/editor/extensions/typography/heading";
 import {
@@ -16,13 +20,10 @@ import {
   ListItemExtension,
   OrderedListExtension,
 } from "@/features/posts/editor/extensions/typography/list";
+import type { ImageUploadResult } from "@/features/posts/editor/extensions/upload-image";
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
-import { uploadImageFn } from "@/features/media/api/media.api";
 import { slugify } from "@/features/posts/utils/content";
-import {
-  getActiveFormulaModalOpenerKey,
-  openFormulaModalForEdit,
-} from "@/components/tiptap-editor/formula-modal-store";
+import { m } from "@/paraglide/messages";
 
 const ALLOWED_IMAGE_MIME_TYPES = [
   "image/png",
@@ -57,10 +58,10 @@ async function handleImageUpload(file: File): Promise<ImageUploadResult> {
 
   const result = await uploadImageFn({ data: formData });
   if (result.error) {
-    throw new Error("图片入库失败，请重试");
+    throw new Error(m.media_upload_error_db());
   }
-  toast.success("图片上传成功", {
-    description: `${file.name} 已归档保存`,
+  toast.success(m.media_upload_success({ name: file.name }), {
+    description: m.editor_image_upload_success_desc({ name: file.name }),
   });
 
   return {
@@ -157,8 +158,8 @@ export const extensions = [
   ImageUpload.configure({
     onUpload: handleImageUpload,
     onError: (error) => {
-      toast.error("图片上传失败", {
-        description: error.message,
+      toast.error(m.editor_image_upload_failed(), {
+        description: error.message || m.editor_action_unknown_error(),
       });
     },
   }),
@@ -168,7 +169,7 @@ export const extensions = [
     onPaste: handleFilePaste,
   }),
   Placeholder.configure({
-    placeholder: "开始记录...",
+    placeholder: m.editor_content_placeholder(),
     emptyEditorClass: "is-editor-empty",
   }),
   TableOfContents.configure({

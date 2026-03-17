@@ -1,9 +1,10 @@
 import { ArrowUpDown, Filter, Search, X } from "lucide-react";
-import { STATUS_FILTERS } from "../types";
-import type { SortDirection, SortField, StatusFilter } from "../types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Dropdown from "@/components/ui/dropdown";
+import { Input } from "@/components/ui/input";
+import { m } from "@/paraglide/messages";
+import type { SortDirection, SortField, StatusFilter } from "../types";
+import { STATUS_FILTERS } from "../types";
 
 interface PostsToolbarProps {
   searchTerm: string;
@@ -43,7 +44,7 @@ export function PostsToolbar({
         />
         <Input
           type="text"
-          placeholder="搜索文章..."
+          placeholder={m.admin_posts_search_placeholder()}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-9 pr-9 h-10 bg-transparent border-border/30 hover:border-foreground/50 focus:border-foreground transition-all rounded-none font-sans text-sm shadow-none focus-visible:ring-0"
@@ -85,9 +86,9 @@ export function PostsToolbar({
               <span className="uppercase tracking-widest font-mono">
                 {
                   {
-                    ALL: "状态",
-                    PUBLISHED: "已发布",
-                    DRAFT: "草稿",
+                    ALL: m.admin_posts_filter_status(),
+                    PUBLISHED: m.admin_posts_filter_published(),
+                    DRAFT: m.admin_posts_filter_draft(),
                   }[status]
                 }
               </span>
@@ -95,9 +96,9 @@ export function PostsToolbar({
           }
           items={STATUS_FILTERS.map((s) => ({
             label: {
-              ALL: "全部",
-              PUBLISHED: "已发布",
-              DRAFT: "草稿",
+              ALL: m.admin_posts_filter_all(),
+              PUBLISHED: m.admin_posts_filter_published(),
+              DRAFT: m.admin_posts_filter_draft(),
             }[s],
             onClick: () => onStatusChange(s),
             isActive: status === s,
@@ -124,19 +125,21 @@ export function PostsToolbar({
             >
               <ArrowUpDown size={14} strokeWidth={1.5} />
               <span className="uppercase tracking-widest font-mono">
-                {sortBy === "publishedAt" ? "发布时间" : "修改时间"}
+                {sortBy === "publishedAt"
+                  ? m.admin_posts_sort_published()
+                  : m.admin_posts_sort_updated()}
               </span>
             </Button>
           }
           items={[
             {
-              label: "最近发布",
+              label: m.admin_posts_sort_recent_pub(),
               onClick: () =>
                 onSortUpdate({ sortBy: "publishedAt", dir: "DESC" }),
               isActive: sortBy === "publishedAt" && sortDir === "DESC",
             },
             {
-              label: "最近修改",
+              label: m.admin_posts_sort_recent_upd(),
               onClick: () => onSortUpdate({ sortBy: "updatedAt", dir: "DESC" }),
               isActive: sortBy === "updatedAt" && sortDir === "DESC",
             },
@@ -155,7 +158,7 @@ export function PostsToolbar({
             size="icon"
             onClick={onResetFilters}
             className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-none"
-            title="重置"
+            title={m.admin_posts_clear_filters()}
           >
             <X size={16} strokeWidth={1.5} />
           </Button>

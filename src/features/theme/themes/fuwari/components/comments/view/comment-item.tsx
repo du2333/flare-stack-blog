@@ -1,8 +1,9 @@
 import { memo, useMemo } from "react";
-import { ExpandableContent } from "./expandable-content";
 import type { CommentWithUser } from "@/features/comments/comments.schema";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn, formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { ExpandableContent } from "./expandable-content";
 
 interface CommentItemProps {
   comment: CommentWithUser;
@@ -35,7 +36,9 @@ export const FuwariCommentItem = memo(
     const renderedContent = useMemo(() => {
       if (comment.status === "deleted") {
         return (
-          <p className="text-sm italic fuwari-text-30 py-1">该评论已被删除</p>
+          <p className="text-sm italic fuwari-text-30 py-1">
+            {m.comments_item_deleted_content()}
+          </p>
         );
       }
       return (
@@ -68,12 +71,12 @@ export const FuwariCommentItem = memo(
             ) : comment.user?.image ? (
               <img
                 src={comment.user.image}
-                alt={comment.user.name}
+                alt={comment.user.name ?? m.comments_item_anonymous()}
                 className="w-full h-full object-cover"
               />
             ) : (
               <span className="text-sm font-medium fuwari-text-50">
-                {comment.user?.name.slice(0, 1) || "?"}
+                {comment.user?.name?.slice(0, 1) || "?"}
               </span>
             )}
           </div>
@@ -85,21 +88,23 @@ export const FuwariCommentItem = memo(
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium fuwari-text-75">
                 {comment.status === "deleted"
-                  ? "已删除"
-                  : comment.user?.name || "匿名用户"}
+                  ? m.comments_item_deleted_author()
+                  : comment.user?.name || m.comments_item_anonymous()}
               </span>
               {isBlogger && comment.status !== "deleted" && (
                 <span className="text-[10px] font-medium text-(--fuwari-primary) border border-(--fuwari-primary)/30 px-1.5 py-0.5 rounded-md leading-none">
-                  博主
+                  {m.comments_item_blogger()}
                 </span>
               )}
 
               {isReply && replyToName && (
                 <span className="text-xs fuwari-text-30">
-                  回复{" "}
-                  <span className="text-(--fuwari-primary)">
-                    @{comment.status === "deleted" ? "未知" : replyToName}
-                  </span>
+                  {m.comments_item_reply_to({
+                    name:
+                      comment.status === "deleted"
+                        ? m.comments_item_unknown()
+                        : replyToName,
+                  })}
                 </span>
               )}
             </div>
@@ -115,11 +120,15 @@ export const FuwariCommentItem = memo(
               <button
                 onClick={() => {
                   const rootId = comment.rootId ?? comment.id;
-                  onReply?.(rootId, comment.id, comment.user?.name || "用户");
+                  onReply?.(
+                    rootId,
+                    comment.id,
+                    comment.user?.name || m.comments_item_unknown_user(),
+                  );
                 }}
                 className="text-xs fuwari-text-30 hover:text-(--fuwari-primary) transition-colors font-medium"
               >
-                回复
+                {m.comments_item_reply()}
               </button>
 
               {(isAuthor || isAdmin) && (
@@ -127,7 +136,7 @@ export const FuwariCommentItem = memo(
                   onClick={() => onDelete?.(comment.id)}
                   className="text-xs fuwari-text-30 hover:text-red-500 transition-colors font-medium"
                 >
-                  删除
+                  {m.comments_item_delete()}
                 </button>
               )}
             </div>

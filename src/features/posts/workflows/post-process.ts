@@ -1,16 +1,18 @@
-import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint } from "cloudflare:workers";
 import * as CacheService from "@/features/cache/cache.service";
-import * as PostService from "@/features/posts/posts.service";
-import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
-import { getDb } from "@/lib/db";
-import * as SearchService from "@/features/search/service/search.service";
+import * as PostRepo from "@/features/posts/data/posts.data";
+import { POSTS_CACHE_KEYS } from "@/features/posts/schema/posts.schema";
+import * as PostService from "@/features/posts/services/posts.service";
+import { highlightCodeBlocks } from "@/features/posts/utils/content";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import {
   fetchPost,
   invalidatePostCaches,
   upsertPostSearchIndex,
 } from "@/features/posts/workflows/helpers";
+import * as SearchService from "@/features/search/service/search.service";
+import { getDb } from "@/lib/db";
 
 interface Params {
   postId: number;
@@ -39,7 +41,8 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     const { post: initialPost, shouldSkip } = await step.do(
       "check sync status",
       async () => {
-        const p = await fetchPost(this.env, postId);
+        const db = getDb(this.env);
+        const p = await PostRepo.findPostById(db, postId);
         if (!p) return { post: null, shouldSkip: true };
 
         const newHash = await calculatePostHash({
@@ -55,10 +58,11 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
           { env: this.env },
           POSTS_CACHE_KEYS.syncHash(postId),
         );
+        const needsPublicContentBuild = !!p.contentJson && !p.publicContentJson;
 
-        if (newHash === oldHash) {
+        if (newHash === oldHash && !needsPublicContentBuild) {
           console.log(
-            `[Workflow] Content for post ${postId} unchanged. Skipping.`,
+            JSON.stringify({ message: "Content unchanged, skipping", postId }),
           );
           return { post: p, shouldSkip: true };
         }
@@ -93,7 +97,20 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     );
     if (!updatedPost) return;
 
-    // 3. Update search index (skip for future posts — ScheduledPublishWorkflow handles it)
+    // 3. Persist the highlighted public snapshot used by SSR/read paths.
+    await step.do("build public content", async () => {
+      const db = getDb(this.env);
+      const post = await PostRepo.findPostById(db, postId);
+      if (!post) return;
+
+      const publicContentJson = post.contentJson
+        ? await highlightCodeBlocks(post.contentJson)
+        : null;
+
+      await PostRepo.updatePublicContentSnapshot(db, postId, publicContentJson);
+    });
+
+    // 4. Update search index (skip for future posts — ScheduledPublishWorkflow handles it)
     const isFuturePost = !!event.payload.isFuturePost;
 
     if (!isFuturePost) {
@@ -102,12 +119,12 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
       });
     }
 
-    // 4. Invalidate caches
+    // 5. Invalidate caches
     await step.do("invalidate caches", async () => {
       await invalidatePostCaches(this.env, updatedPost.slug);
     });
 
-    // 5. Update sync hash in KV
+    // 6. Update sync hash in KV
     await step.do("update sync hash", async () => {
       const p = await fetchPost(this.env, postId);
       if (!p) return;

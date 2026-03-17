@@ -1,24 +1,27 @@
-import { INITIAL_TAG_COUNT } from "./page";
+import { useRouteContext } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
-import { blogConfig } from "@/blog.config";
+import { m } from "@/paraglide/messages";
+import { INITIAL_TAG_COUNT } from "./page";
 
 export function PostsPageSkeleton() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div className="w-full max-w-3xl mx-auto pb-20 px-6 md:px-0">
       {/* Header Section */}
       <header className="py-12 md:py-20 space-y-6">
         <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-foreground">
-          文章
+          {m.nav_posts()}
         </h1>
         <p className="max-w-xl text-base md:text-lg font-light text-muted-foreground leading-relaxed">
-          {blogConfig.description}
+          {siteConfig.description}
         </p>
       </header>
 
       {/* Tag Filters Skeleton */}
       <div className="mb-12 space-y-4">
         <div className="flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/50">
-          <span>// 分类_筛选</span>
+          <span>{m.posts_tags_filter()}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">

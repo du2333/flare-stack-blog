@@ -1,14 +1,15 @@
-import { ClientOnly } from "@tanstack/react-router";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
+import type { ComponentProps } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
-import type { ComponentProps } from "react";
-import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
-import { CreateFriendLinkInputSchema } from "@/features/friend-links/friend-links.schema";
-import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
+import { createCreateFriendLinkSchema } from "@/features/friend-links/friend-links.schema";
+import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
+import { m } from "@/paraglide/messages";
 
 interface AddFriendLinkModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ const AddFriendLinkModalInternal = ({
 }: AddFriendLinkModalProps) => {
   const { create, isCreating } = useAdminFriendLinks();
   const form = useForm<CreateFriendLinkInput>({
-    resolver: standardSchemaResolver(CreateFriendLinkInputSchema),
+    resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
       siteName: "",
       siteUrl: "",
@@ -80,38 +81,40 @@ const AddFriendLinkModalInternal = ({
         >
           <X size={16} strokeWidth={1.5} />
         </button>
-        <h3 className="text-xl font-serif font-medium mb-6">添加友链</h3>
+        <h3 className="text-xl font-serif font-medium mb-6">
+          {m.friend_links_add_modal_title()}
+        </h3>
         <p className="text-sm text-muted-foreground mb-6">
-          手动添加的友链将直接设为已通过状态。
+          {m.friend_links_add_modal_desc()}
         </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <ModalFormField
-            label="站点名称 *"
-            placeholder="例：我的博客"
+            label={m.friend_links_form_site_name()}
+            placeholder={m.friend_links_form_site_name_ph()}
             error={errors.siteName?.message}
             inputProps={register("siteName")}
           />
           <ModalFormField
-            label="站点地址 *"
-            placeholder="https://..."
+            label={m.friend_links_form_site_url()}
+            placeholder={m.friend_links_form_site_url_ph()}
             error={errors.siteUrl?.message}
             inputProps={register("siteUrl")}
           />
           <ModalFormField
-            label="站点简介"
-            placeholder="简要介绍该站点"
+            label={m.friend_links_form_desc()}
+            placeholder={m.friend_links_form_desc_ph()}
             error={errors.description?.message}
             inputProps={register("description")}
           />
           <ModalFormField
-            label="Logo 地址"
-            placeholder="https://..."
+            label={m.friend_links_form_logo()}
+            placeholder={m.friend_links_form_logo_ph()}
             error={errors.logoUrl?.message}
             inputProps={register("logoUrl")}
           />
           <ModalFormField
-            label="联系邮箱"
-            placeholder="可选"
+            label={m.friend_links_form_email()}
+            placeholder={m.friend_links_form_email_ph()}
             error={errors.contactEmail?.message}
             inputProps={register("contactEmail")}
           />
@@ -122,7 +125,7 @@ const AddFriendLinkModalInternal = ({
               onClick={handleClose}
               className="font-mono text-xs uppercase tracking-widest rounded-none"
             >
-              取消
+              {m.friend_links_batch_cancel()}
             </Button>
             <Button
               type="submit"
@@ -132,7 +135,7 @@ const AddFriendLinkModalInternal = ({
               {isCreating ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
-                "添加"
+                m.friend_links_add_modal_submit()
               )}
             </Button>
           </div>

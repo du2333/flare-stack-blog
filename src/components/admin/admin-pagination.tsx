@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 interface AdminPaginationProps {
   currentPage: number;
@@ -63,7 +64,11 @@ export function AdminPagination({
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-8 border-t border-border/30 mt-8">
       <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-        第 {startItem} - {endItem} 条 / 共 {totalItems} 条
+        {m.admin_pagination_info({
+          startItem,
+          endItem,
+          totalItems,
+        })}
       </div>
 
       <div className="flex items-center gap-2">

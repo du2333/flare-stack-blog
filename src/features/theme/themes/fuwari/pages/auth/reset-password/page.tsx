@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Loader2 } from "lucide-react";
 import type { ResetPasswordPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 export function ResetPasswordPage({
   resetPasswordForm,
@@ -17,17 +18,17 @@ export function ResetPasswordPage({
         </div>
         <div className="space-y-3">
           <h3 className="text-2xl font-bold fuwari-text-90 tracking-tight">
-            无法重置密码
+            {m.reset_password_error_missing_token()}
           </h3>
           <p className="text-sm font-medium fuwari-text-50 leading-relaxed max-w-xs mx-auto">
-            缺少必需的授权令牌，请重新获取链接。
+            {m.reset_password_error_missing_token_desc()}
           </p>
         </div>
         <Link
           to="/login"
           className="w-full py-3.5 rounded-xl fuwari-btn-regular font-bold text-sm transition-all active:scale-[0.98] mt-4"
         >
-          返回登录
+          {m.forgot_password_back_to_login()}
         </Link>
       </div>
     );
@@ -41,7 +42,7 @@ export function ResetPasswordPage({
         </div>
         <div className="space-y-3">
           <h3 className="text-2xl font-bold fuwari-text-90 tracking-tight">
-            重置链接无效或已过期
+            {m.reset_password_error_expired_title()}
           </h3>
           <p className="text-sm font-medium fuwari-text-50 leading-relaxed max-w-xs mx-auto">
             {error}
@@ -51,7 +52,7 @@ export function ResetPasswordPage({
           to="/forgot-password"
           className="w-full py-3.5 rounded-xl fuwari-btn-primary font-bold text-sm transition-all active:scale-[0.98] mt-4"
         >
-          重新请求链接
+          {m.reset_password_request_new_link()}
         </Link>
       </div>
     );
@@ -61,9 +62,11 @@ export function ResetPasswordPage({
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold fuwari-text-90">重置密码</h1>
+        <h1 className="text-2xl font-bold fuwari-text-90">
+          {m.reset_password_title()}
+        </h1>
         <p className="text-sm font-medium fuwari-text-50">
-          您的身份已验证。请在下方输入新密码以完成重置
+          {m.reset_password_header_desc()}
         </p>
       </div>
 
@@ -72,13 +75,13 @@ export function ResetPasswordPage({
           {/* New Password Field */}
           <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
             <label htmlFor="new-password" className="text-sm font-bold ml-1">
-              新密码
+              {m.reset_password_new_password()}
             </label>
             <input
               id="new-password"
               type="password"
               {...register("password")}
-              placeholder="••••••••"
+              placeholder={m.login_password_placeholder()}
               disabled={isSubmitting}
               className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
@@ -95,13 +98,13 @@ export function ResetPasswordPage({
               htmlFor="confirm-password"
               className="text-sm font-bold ml-1"
             >
-              确认新密码
+              {m.reset_password_confirm_new_password()}
             </label>
             <input
               id="confirm-password"
               type="password"
               {...register("confirmPassword")}
-              placeholder="••••••••"
+              placeholder={m.login_password_placeholder()}
               disabled={isSubmitting}
               className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
@@ -120,10 +123,10 @@ export function ResetPasswordPage({
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" size={16} />
-                <span>更新中...</span>
+                <span>{m.reset_password_submitting()}</span>
               </>
             ) : (
-              <span>更新密码</span>
+              <span>{m.reset_password_submit()}</span>
             )}
           </button>
         </form>

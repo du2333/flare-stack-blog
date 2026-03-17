@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { m } from "@/paraglide/messages";
 import { parseRequestError } from "./request-errors";
 
 export function handleServerError(error: unknown): void {
@@ -7,35 +8,43 @@ export function handleServerError(error: unknown): void {
 
   switch (code) {
     case "UNAUTHENTICATED": {
-      toast.error("未登录", {
-        description: "请先登录",
+      toast.error(m.request_error_unauthenticated_title(), {
+        description: m.request_error_unauthenticated_desc(),
       });
       break;
     }
     case "PERMISSION_DENIED": {
-      toast.error("权限不足", {
-        description: "当前操作仅管理员可执行",
+      toast.error(m.request_error_permission_denied_title(), {
+        description: m.request_error_permission_denied_desc(),
       });
       break;
     }
     case "RATE_LIMITED": {
       const seconds = Math.max(1, Math.ceil(parsed.retryAfterMs / 1000));
-      toast.warning("请求过于频繁", {
-        description: `请 ${seconds} 秒后重试`,
+      toast.warning(m.request_error_rate_limited_title(), {
+        description: m.request_error_rate_limited_desc({
+          seconds: String(seconds),
+        }),
       });
       break;
     }
     case "TURNSTILE_FAILED": {
-      toast.error("人机验证失败", {
-        description: parsed.message,
+      const description =
+        parsed.detail === "MISSING_TOKEN"
+          ? m.request_error_turnstile_missing_token_desc()
+          : m.request_error_turnstile_failed_desc();
+
+      toast.error(m.request_error_turnstile_failed_title(), {
+        description,
       });
       break;
     }
-    case "UNKNOWN":
-      toast.error("请求失败", {
-        description: "发生了未预期的错误，请稍后重试",
+    case "UNKNOWN": {
+      toast.error(m.request_error_unknown_title(), {
+        description: parsed.message || m.request_error_unknown_desc(),
       });
       break;
+    }
     default:
       code satisfies never;
   }

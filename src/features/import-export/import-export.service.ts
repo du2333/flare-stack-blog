@@ -1,3 +1,4 @@
+import * as CacheService from "@/features/cache/cache.service";
 import type {
   StartExportInput,
   TaskProgress,
@@ -8,20 +9,31 @@ import {
   IMPORT_EXPORT_R2_KEYS,
   TaskProgressSchema,
 } from "@/features/import-export/import-export.schema";
-import * as CacheService from "@/features/cache/cache.service";
+import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
+
+function getRequestLocaleOrDefault(env: Env) {
+  try {
+    return getLocale();
+  } catch {
+    return serverEnv(env).LOCALE;
+  }
+}
 
 export async function startExport(
   context: BaseContext,
   input: StartExportInput,
 ) {
   const taskId = crypto.randomUUID();
+  const locale = getRequestLocaleOrDefault(context.env);
 
   const initialProgress: TaskProgress = {
     status: "pending",
     total: 0,
     completed: 0,
-    current: "准备导出...",
+    current: m.import_export_progress_export_pending({}, { locale }),
     errors: [],
     warnings: [],
   };
@@ -39,6 +51,7 @@ export async function startExport(
         taskId,
         postIds: input.postIds,
         status: input.status,
+        locale,
       },
     });
   } catch (error) {
@@ -65,6 +78,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
 
   const taskId = crypto.randomUUID();
   const r2Key = IMPORT_EXPORT_R2_KEYS.importZip(taskId);
+  const locale = getRequestLocaleOrDefault(context.env);
 
   // 1. Build ZIP data + detect mode (before uploading to R2)
   let zipData: Uint8Array;
@@ -130,7 +144,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
     status: "pending",
     total: 0,
     completed: 0,
-    current: "准备导入...",
+    current: m.import_export_progress_import_pending({}, { locale }),
     errors: [],
     warnings: [],
   };
@@ -144,7 +158,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
 
   try {
     await context.env.IMPORT_WORKFLOW.create({
-      params: { taskId, r2Key, mode },
+      params: { taskId, r2Key, mode, locale },
     });
   } catch (error) {
     console.error(

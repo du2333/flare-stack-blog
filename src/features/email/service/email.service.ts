@@ -1,28 +1,29 @@
-import type { EmailUnsubscribeType } from "@/lib/db/schema";
-import type { TestEmailConnectionInput } from "@/features/email/email.schema";
-import * as EmailData from "@/features/email/data/email.data";
 import * as ConfigService from "@/features/config/service/config.service";
+import * as EmailData from "@/features/email/data/email.data";
+import type { TestEmailConnectionInput } from "@/features/email/email.schema";
 import {
   createEmailClient,
   verifyUnsubscribeToken,
 } from "@/features/email/email.utils";
-import { err, ok } from "@/lib/errors";
+import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
+import { err, ok } from "@/lib/errors";
+import { m } from "@/paraglide/messages";
 
 export async function testEmailConnection(
   context: DbContext,
   data: TestEmailConnectionInput,
 ) {
   try {
-    const { ADMIN_EMAIL } = serverEnv(context.env);
+    const { ADMIN_EMAIL, LOCALE } = serverEnv(context.env);
     const { apiKey, senderAddress, senderName } = data;
     const resend = createEmailClient({ apiKey });
 
     const result = await resend.emails.send({
       from: senderName ? `${senderName} <${senderAddress}>` : senderAddress,
       to: ADMIN_EMAIL, // 发送给自己进行测试
-      subject: "测试连接 - Test Connection",
-      html: "<p>这是一个测试邮件</p>",
+      subject: m.settings_email_test_mail_subject({}, { locale: LOCALE }),
+      html: `<p>${m.settings_email_test_mail_body({}, { locale: LOCALE })}</p>`,
     });
 
     if (result.error) {
@@ -31,7 +32,11 @@ export async function testEmailConnection(
 
     return ok({ success: true });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知错误";
+    const locale = serverEnv(context.env).LOCALE;
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : m.settings_email_unknown_error({}, { locale });
     return err({ reason: "SEND_FAILED", message: errorMessage });
   }
 }
@@ -166,9 +171,13 @@ export async function sendEmail(
       return err({ reason: "SEND_FAILED", message: result.error.message });
     }
   } catch (error) {
+    const locale = serverEnv(context.env).LOCALE;
     return err({
       reason: "SEND_FAILED",
-      message: error instanceof Error ? error.message : "未知错误",
+      message:
+        error instanceof Error
+          ? error.message
+          : m.settings_email_unknown_error({}, { locale }),
     });
   }
 
