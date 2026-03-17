@@ -10,7 +10,6 @@ export const OAuthScopeRequestSchema = z.object({
     .optional(),
   media: z.array(z.enum(OAUTH_BLOG_SCOPE_GROUPS.media)).optional(),
   posts: z.array(z.enum(OAUTH_BLOG_SCOPE_GROUPS.posts)).optional(),
-  settings: z.array(z.enum(OAUTH_BLOG_SCOPE_GROUPS.settings)).optional(),
 });
 
 export type OAuthScopeRequest = z.infer<typeof OAuthScopeRequestSchema>;
