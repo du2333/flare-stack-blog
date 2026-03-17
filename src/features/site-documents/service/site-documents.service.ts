@@ -94,8 +94,12 @@ async function getAllPublishedPostsForSitemap(env: Env) {
 export async function buildSitemapXml(env: Env) {
   const posts = await getAllPublishedPostsForSitemap(env);
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return new Date().toISOString();
+  const formatDate = (
+    primaryDate: Date | null,
+    fallbacks: Array<Date | null> = [],
+  ) => {
+    const date = [primaryDate, ...fallbacks].find((value) => value != null);
+    if (!date) return null;
     return new Date(date).toISOString();
   };
 
@@ -117,15 +121,20 @@ export async function buildSitemapXml(env: Env) {
     <priority>0.8</priority>
   </url>
   ${posts
-    .map(
-      (post) => `
+    .map((post) => {
+      const lastModifiedAt = formatDate(post.updatedAt, [
+        post.publishedAt,
+        post.createdAt,
+      ]);
+
+      return `
   <url>
     <loc>https://${env.DOMAIN}/post/${encodeURIComponent(post.slug)}</loc>
-    <lastmod>${formatDate(post.updatedAt)}</lastmod>
+    ${lastModifiedAt ? `<lastmod>${lastModifiedAt}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-  </url>`,
-    )
+  </url>`;
+    })
     .join("")}
 </urlset>`;
 }

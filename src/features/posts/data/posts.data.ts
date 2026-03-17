@@ -26,6 +26,7 @@ const DEFAULT_SITEMAP_BATCH_SIZE = 500;
 export type SitemapPostRow = {
   id: number;
   slug: string;
+  createdAt: Date | null;
   updatedAt: Date | null;
   publishedAt: Date | null;
 };
@@ -227,6 +228,7 @@ export async function getPublishedPostsForSitemapBatch(
     .select({
       id: PostsTable.id,
       slug: PostsTable.slug,
+      createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
       publishedAt: PostsTable.publishedAt,
     })
