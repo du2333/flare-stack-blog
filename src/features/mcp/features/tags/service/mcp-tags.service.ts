@@ -1,10 +1,5 @@
 import * as TagService from "@/features/tags/tags.service";
-
-type DateLike = Date | string;
-
-function toIsoString(value: DateLike) {
-  return value instanceof Date ? value.toISOString() : value;
-}
+import { serializeMcpDate } from "../../../service/mcp-serialize";
 
 export function serializeMcpTag(tag: {
   createdAt: Date | string;
@@ -12,7 +7,7 @@ export function serializeMcpTag(tag: {
   name: string;
 }) {
   return {
-    createdAt: toIsoString(tag.createdAt),
+    createdAt: serializeMcpDate(tag.createdAt),
     id: tag.id,
     name: tag.name,
   };

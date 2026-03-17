@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { mcpCommentsTools } from "../features/comments";
 import { mcpPostsTools } from "../features/posts";
 import { mcpSearchTools } from "../features/search";
 import { mcpTagsTools } from "../features/tags";
@@ -7,6 +8,7 @@ import type { McpToolDefinition } from "./mcp-tool";
 import { registerMcpTool } from "./mcp-tool";
 
 const MCP_TOOLS: McpToolDefinition[] = [
+  ...mcpCommentsTools,
   ...mcpPostsTools,
   ...mcpSearchTools,
   ...mcpTagsTools,

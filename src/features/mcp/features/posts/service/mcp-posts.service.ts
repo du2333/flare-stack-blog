@@ -2,16 +2,7 @@ import type { JSONContent } from "@tiptap/react";
 import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 import { jsonContentToMarkdown } from "@/features/import-export/utils/markdown-serializer";
 import type { UpdatePostInput } from "@/features/posts/schema/posts.schema";
-
-type DateLike = Date | string | null | undefined;
-
-function toIsoString(value: DateLike) {
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  return value ?? null;
-}
+import { serializeMcpDate } from "../../../service/mcp-serialize";
 
 function serializeTag(tag: {
   createdAt: Date | string;
@@ -19,7 +10,7 @@ function serializeTag(tag: {
   name: string;
 }) {
   return {
-    createdAt: toIsoString(tag.createdAt)!,
+    createdAt: serializeMcpDate(tag.createdAt)!,
     id: tag.id,
     name: tag.name,
   };
@@ -42,16 +33,16 @@ export function serializeMcpPostListItem(post: {
   updatedAt: Date | string;
 }) {
   return {
-    createdAt: toIsoString(post.createdAt)!,
+    createdAt: serializeMcpDate(post.createdAt)!,
     id: post.id,
-    publishedAt: toIsoString(post.publishedAt),
+    publishedAt: serializeMcpDate(post.publishedAt),
     readTimeInMinutes: post.readTimeInMinutes,
     slug: post.slug,
     status: post.status,
     summary: post.summary,
     tags: post.tags?.map(serializeTag),
     title: post.title,
-    updatedAt: toIsoString(post.updatedAt)!,
+    updatedAt: serializeMcpDate(post.updatedAt)!,
   };
 }
 
