@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Check, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,28 +69,36 @@ function RouteComponent() {
     enabled: !!clientId,
   });
 
-  const requestedScopes = (search.scope ?? "")
-    .split(" ")
-    .map((scope) => scope.trim())
-    .filter(Boolean);
-
-  const requestedManagedScopes = requestedScopes.filter((scope) =>
-    OAUTH_MANAGED_SCOPES.includes(
-      scope as (typeof OAUTH_MANAGED_SCOPES)[number],
-    ),
+  const requestedScopes = useMemo(
+    () =>
+      (search.scope ?? "")
+        .split(" ")
+        .map((scope) => scope.trim())
+        .filter(Boolean),
+    [search.scope],
   );
 
-  const requiredSystemScopes = requestedScopes.filter(
-    (scope) => !requestedManagedScopes.includes(scope),
+  const requestedManagedScopes = useMemo(
+    () =>
+      requestedScopes.filter((scope) =>
+        OAUTH_MANAGED_SCOPES.includes(
+          scope as (typeof OAUTH_MANAGED_SCOPES)[number],
+        ),
+      ),
+    [requestedScopes],
+  );
+
+  const requiredSystemScopes = useMemo(
+    () =>
+      requestedScopes.filter(
+        (scope) => !requestedManagedScopes.includes(scope),
+      ),
+    [requestedScopes, requestedManagedScopes],
   );
 
   const [selectedManagedScopes, setSelectedManagedScopes] = useState(
-    requestedManagedScopes,
+    () => requestedManagedScopes,
   );
-
-  useEffect(() => {
-    setSelectedManagedScopes(requestedManagedScopes);
-  }, [requestedManagedScopes]);
 
   async function submitConsent(accept: boolean) {
     setIsPending(true);
