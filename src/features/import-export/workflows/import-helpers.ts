@@ -23,6 +23,7 @@ import {
 } from "@/features/media/utils/media.utils";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
+import { NullableJsonContentSchema } from "@/features/posts/schema/json-content.schema";
 import * as PostService from "@/features/posts/services/posts.service";
 import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
 import * as TagRepo from "@/features/tags/data/tags.data";
@@ -109,7 +110,14 @@ export async function importSinglePost(
       `${entry.prefix}/content.json`,
     );
     if (rawJson) {
-      contentJson = rawJson;
+      const parsed = NullableJsonContentSchema.safeParse(rawJson);
+      if (parsed.success) {
+        contentJson = parsed.data;
+      } else {
+        warnings.push(
+          m.import_export_import_warning_content_json_invalid({}, { locale }),
+        );
+      }
     }
 
     const mdContent = readTextFile(zipFiles, `${entry.prefix}/index.md`);

@@ -1,15 +1,26 @@
 import type { BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins";
+import {
+  createOAuthJwtPlugin,
+  createOAuthProviderPlugin,
+} from "@/features/oauth-provider/oauth-provider.config";
 
-export const authConfig = {
-  emailAndPassword: {
-    enabled: true,
-  },
-  session: {
-    cookieCache: {
+export function createAuthConfig(baseURL: string) {
+  return {
+    emailAndPassword: {
       enabled: true,
-      maxAge: 5 * 60,
     },
-  },
-  plugins: [admin()],
-} satisfies BetterAuthOptions;
+    session: {
+      storeSessionInDatabase: true,
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60,
+      },
+    },
+    plugins: [
+      admin(),
+      createOAuthJwtPlugin(baseURL),
+      createOAuthProviderPlugin(baseURL),
+    ],
+  } satisfies BetterAuthOptions;
+}

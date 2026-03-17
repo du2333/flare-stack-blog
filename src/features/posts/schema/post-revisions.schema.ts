@@ -1,4 +1,3 @@
-import type { JSONContent } from "@tiptap/react";
 import {
   createInsertSchema,
   createSelectSchema,
@@ -10,6 +9,7 @@ import {
   POST_STATUSES,
   PostRevisionsTable,
 } from "@/lib/db/schema";
+import { NullableJsonContentSchema } from "./json-content.schema";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 
@@ -20,7 +20,7 @@ export const PostRevisionSnapshotSchema = z.object({
   status: z.enum(POST_STATUSES),
   publishedAt: z.string().nullable(),
   readTimeInMinutes: z.number().int().min(1),
-  contentJson: z.custom<JSONContent | null>(),
+  contentJson: NullableJsonContentSchema,
   tagIds: z.array(z.number().int()),
 });
 

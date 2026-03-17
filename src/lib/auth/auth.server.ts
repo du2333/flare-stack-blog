@@ -2,7 +2,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
-import { authConfig } from "@/lib/auth/auth.config";
+import { createAuthConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
 import type { Locale } from "@/lib/i18n";
@@ -51,7 +51,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
   }
 
   return betterAuth({
-    ...authConfig,
+    ...createAuthConfig(BETTER_AUTH_URL),
     socialProviders: {
       github: {
         clientId: GITHUB_CLIENT_ID,

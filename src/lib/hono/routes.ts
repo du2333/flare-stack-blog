@@ -2,11 +2,14 @@ import handler from "@tanstack/react-start/server-entry";
 import { Hono } from "hono";
 import { proxy } from "hono/proxy";
 import { exportDownloadRoute } from "@/features/import-export/api/hono/download.route";
+import mcpRoute from "@/features/mcp/api/mcp.route";
 import { handleImageRequest } from "@/features/media/service/media.service";
+import oauthProviderRoute from "@/features/oauth-provider/api/oauth-provider.route";
 import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
 import postsListRoute from "@/features/posts/api/hono/posts.list.route";
 import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
 import searchRoute from "@/features/search/api/hono/search.route";
+import siteDocumentsRoute from "@/features/site-documents/api/hono/site-documents.route";
 import tagsRoute from "@/features/tags/api/hono/tags.list.route";
 import { serverEnv } from "@/lib/env/server.env";
 import { createRateLimiterIdentifier } from "./helper";
@@ -34,6 +37,10 @@ const publicApi = new Hono<{ Bindings: Env }>()
 
 // Mount public API
 app.route("/api", publicApi);
+
+app.route("/mcp", mcpRoute);
+app.route("/", siteDocumentsRoute);
+app.route("/", oauthProviderRoute);
 
 // Export type for RPC client
 export type PublicApiType = typeof publicApi;
@@ -88,8 +95,7 @@ app.get("/api/auth/*", baseMiddleware, (c) => {
   return auth.handler(c.req.raw);
 });
 
-// 1. Protected auth endpoints (requires Turnstile)
-const protectedPaths = [
+const protectedAuthPaths = [
   "/api/auth/sign-in/email",
   "/api/auth/sign-up/email",
   "/api/auth/sign-in/social",
@@ -97,7 +103,7 @@ const protectedPaths = [
   "/api/auth/send-verification-email",
 ] as const;
 
-protectedPaths.forEach((path) => {
+protectedAuthPaths.forEach((path) => {
   app.post(
     path,
     baseMiddleware,
@@ -119,7 +125,6 @@ protectedPaths.forEach((path) => {
   );
 });
 
-// 2. Other auth POST endpoints (e.g. sign-out, change-password, reset-password etc.)
 app.post(
   "/api/auth/*",
   baseMiddleware,

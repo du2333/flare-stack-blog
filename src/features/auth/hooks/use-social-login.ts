@@ -4,6 +4,7 @@ import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { getSocialLoginAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { m } from "@/paraglide/messages";
+import { normalizeRedirectUrl } from "./normalize-redirect-url";
 
 export interface UseSocialLoginOptions {
   turnstileToken: string | null;
@@ -18,6 +19,7 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
 
   const [isLoading, setIsLoading] = useState(false);
   const previousLocation = usePreviousLocation();
+  const callbackURL = normalizeRedirectUrl(redirectTo, previousLocation);
 
   const handleGithubLogin = async () => {
     if (isLoading) return;
@@ -27,7 +29,7 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
     const { error } = await authClient.signIn.social({
       provider: "github",
       errorCallbackURL: `${window.location.origin}/login`,
-      callbackURL: `${window.location.origin}${redirectTo ?? previousLocation}`,
+      callbackURL,
       fetchOptions: {
         headers: { "X-Turnstile-Token": turnstileToken || "" },
       },
