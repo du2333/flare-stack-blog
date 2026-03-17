@@ -46,13 +46,32 @@ function createCachedHeaders(etag: string) {
   });
 }
 
+function createCachedResponseHeaders(response: Response, etag: string) {
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", OAUTH_PROVIDER_CACHE_CONTROL);
+  headers.set("Content-Type", "application/json; charset=UTF-8");
+  headers.set("ETag", etag);
+  headers.delete("Content-Length");
+  return headers;
+}
+
 async function jsonWithConditionalCache(
   c: Context<{ Bindings: Env }>,
   body: unknown,
+  responseInit?: Pick<Response, "headers" | "status" | "statusText">,
 ) {
   const serializedBody = JSON.stringify(body);
   const etag = await createEtag(serializedBody);
-  const headers = createCachedHeaders(etag);
+  const headers = responseInit
+    ? createCachedResponseHeaders(
+        new Response(null, {
+          headers: responseInit.headers,
+          status: responseInit.status,
+          statusText: responseInit.statusText,
+        }),
+        etag,
+      )
+    : createCachedHeaders(etag);
 
   if (isEtagMatch(c.req.header("if-none-match"), etag)) {
     return new Response(null, {
@@ -62,6 +81,8 @@ async function jsonWithConditionalCache(
   }
 
   return new Response(serializedBody, {
+    status: responseInit?.status ?? 200,
+    statusText: responseInit?.statusText,
     headers,
   });
 }
@@ -70,7 +91,41 @@ async function forwardJsonWithConditionalCache(
   c: Context<{ Bindings: Env }>,
   response: Response,
 ) {
-  return jsonWithConditionalCache(c, await response.json());
+  const contentType = response.headers.get("content-type") ?? "";
+  const isSuccessfulJsonResponse =
+    response.status === 200 && contentType.includes("application/json");
+
+  if (!isSuccessfulJsonResponse) {
+    return response;
+  }
+
+  const responseBody = await response.clone().text();
+
+  if (!responseBody) {
+    return response;
+  }
+
+  try {
+    return jsonWithConditionalCache(c, JSON.parse(responseBody), response);
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "oauth provider metadata cache parse failed",
+        error: "invalid_json",
+        request: {
+          method: c.req.method,
+          url: c.req.url,
+        },
+        response: {
+          status: response.status,
+          contentType,
+          body: responseBody,
+        },
+        cause: error instanceof Error ? error.message : String(error),
+      }),
+    );
+    return response;
+  }
 }
 
 app.get(
