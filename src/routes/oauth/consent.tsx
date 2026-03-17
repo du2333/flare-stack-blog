@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Check, Shield, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +66,9 @@ export const Route = createFileRoute("/oauth/consent")({
 function RouteComponent() {
   const search = Route.useSearch();
   const [isPending, setIsPending] = useState(false);
+  const [completedRedirectUrl, setCompletedRedirectUrl] = useState<
+    string | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const clientId = search.client_id ?? "";
@@ -102,6 +112,7 @@ function RouteComponent() {
 
   async function submitConsent(accept: boolean) {
     setIsPending(true);
+    setCompletedRedirectUrl(null);
     setError(null);
 
     try {
@@ -142,6 +153,10 @@ function RouteComponent() {
       }
 
       window.location.assign(redirectUrl);
+      window.setTimeout(() => {
+        setIsPending(false);
+        setCompletedRedirectUrl(redirectUrl);
+      }, 1200);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : m.oauth_consent_error_failed(),
@@ -155,6 +170,7 @@ function RouteComponent() {
     search.client_id ||
     m.oauth_consent_unknown_client();
   const clientIcon = clientMetadata?.clientIcon;
+  const isCompleted = completedRedirectUrl !== null;
 
   return (
     <div className="min-h-screen bg-background/50 flex flex-col items-center justify-center p-6 sm:p-10">
@@ -189,8 +205,24 @@ function RouteComponent() {
           </CardHeader>
 
           <CardContent className="space-y-10 p-10">
+            {isCompleted && (
+              <div className="space-y-5 rounded-2xl border border-foreground/15 bg-foreground/3 p-6 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-foreground/15 bg-background">
+                  <Check className="h-5 w-5 text-foreground/80" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-base font-medium">
+                    {m.oauth_consent_success_title()}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {m.oauth_consent_success_desc()}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* System Scopes (Required) */}
-            {requiredSystemScopes.length > 0 && (
+            {!isCompleted && requiredSystemScopes.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Shield className="h-4 w-4 text-muted-foreground/60" />
@@ -213,7 +245,7 @@ function RouteComponent() {
             )}
 
             {/* Managed Scopes (Selectable) */}
-            {requestedManagedScopes.length > 0 ? (
+            {!isCompleted && requestedManagedScopes.length > 0 ? (
               <div className="space-y-5">
                 <div className="flex items-center gap-3">
                   <ShieldAlert className="h-4 w-4 text-muted-foreground/60" />
@@ -256,6 +288,7 @@ function RouteComponent() {
                 </div>
               </div>
             ) : (
+              !isCompleted &&
               requestedScopes.length === 0 && (
                 <div className="py-12 text-center border border-dashed border-border/20 bg-muted/5 rounded-2xl">
                   <p className="text-sm text-muted-foreground/60 italic font-mono">
@@ -276,29 +309,44 @@ function RouteComponent() {
           </CardContent>
 
           <CardFooter className="p-10 pt-0 flex flex-col sm:flex-row gap-4">
-            <Button
-              className="flex-1 h-14 rounded-xl font-mono text-xs uppercase tracking-[0.25em] group shadow-lg shadow-foreground/5"
-              disabled={isPending}
-              onClick={() => submitConsent(true)}
-            >
-              {isPending ? (
-                m.common_processing()
-              ) : (
-                <>
-                  {m.oauth_consent_allow()}
-                  <Check className="ml-2.5 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                </>
-              )}
-            </Button>
-            <Button
-              className="flex-1 h-14 rounded-xl font-mono text-xs uppercase tracking-[0.25em] group"
-              disabled={isPending}
-              onClick={() => submitConsent(false)}
-              variant="outline"
-            >
-              {m.oauth_consent_deny()}
-              <X className="ml-2.5 h-4 w-4 group-hover:scale-110 transition-transform" />
-            </Button>
+            {isCompleted && completedRedirectUrl ? (
+              <Button
+                type="button"
+                className="flex-1 h-14 rounded-xl font-mono text-xs uppercase tracking-[0.25em] group shadow-lg shadow-foreground/5"
+                onClick={() => window.location.assign(completedRedirectUrl)}
+              >
+                {m.oauth_consent_open_client()}
+                <ExternalLink className="ml-2.5 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  className="flex-1 h-14 rounded-xl font-mono text-xs uppercase tracking-[0.25em] group shadow-lg shadow-foreground/5"
+                  disabled={isPending}
+                  onClick={() => submitConsent(true)}
+                >
+                  {isPending ? (
+                    m.common_processing()
+                  ) : (
+                    <>
+                      {m.oauth_consent_allow()}
+                      <Check className="ml-2.5 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1 h-14 rounded-xl font-mono text-xs uppercase tracking-[0.25em] group"
+                  disabled={isPending}
+                  onClick={() => submitConsent(false)}
+                  variant="outline"
+                >
+                  {m.oauth_consent_deny()}
+                  <X className="ml-2.5 h-4 w-4 group-hover:scale-110 transition-transform" />
+                </Button>
+              </>
+            )}
           </CardFooter>
         </Card>
 
