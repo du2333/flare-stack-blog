@@ -27,7 +27,7 @@ export function serializeMcpFriendLink(friendLink: {
     rejectionReason: friendLink.rejectionReason,
     userId: friendLink.userId,
     userName: friendLink.user?.name ?? null,
-    createdAt: serializeMcpDate(friendLink.createdAt)!,
-    updatedAt: serializeMcpDate(friendLink.updatedAt)!,
+    createdAt: serializeMcpDate(friendLink.createdAt),
+    updatedAt: serializeMcpDate(friendLink.updatedAt),
   };
 }

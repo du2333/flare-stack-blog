@@ -25,7 +25,7 @@ export async function listMcpMedia(
       sizeInBytes: item.sizeInBytes,
       width: item.width ?? null,
       height: item.height ?? null,
-      createdAt: serializeMcpDate(item.createdAt)!,
+      createdAt: serializeMcpDate(item.createdAt),
       inUse: linkedKeySet.has(item.key),
     })),
     nextCursor: result.nextCursor,

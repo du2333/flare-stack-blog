@@ -10,7 +10,7 @@ function serializeTag(tag: {
   name: string;
 }) {
   return {
-    createdAt: serializeMcpDate(tag.createdAt)!,
+    createdAt: serializeMcpDate(tag.createdAt),
     id: tag.id,
     name: tag.name,
   };
@@ -33,7 +33,7 @@ export function serializeMcpPostListItem(post: {
   updatedAt: Date | string;
 }) {
   return {
-    createdAt: serializeMcpDate(post.createdAt)!,
+    createdAt: serializeMcpDate(post.createdAt),
     id: post.id,
     publishedAt: serializeMcpDate(post.publishedAt),
     readTimeInMinutes: post.readTimeInMinutes,
@@ -42,7 +42,7 @@ export function serializeMcpPostListItem(post: {
     summary: post.summary,
     tags: post.tags?.map(serializeTag),
     title: post.title,
-    updatedAt: serializeMcpDate(post.updatedAt)!,
+    updatedAt: serializeMcpDate(post.updatedAt),
   };
 }
 
