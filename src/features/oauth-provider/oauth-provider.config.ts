@@ -18,6 +18,7 @@ export const OAUTH_BLOG_SCOPE_GROUPS = {
   comments: ["read", "write"],
   media: ["read", "write"],
   settings: ["read", "write"],
+  "friend-links": ["read", "write"],
 } as const;
 
 export type OAuthStandardScope = (typeof OAUTH_STANDARD_SCOPE_VALUES)[number];
@@ -47,6 +48,7 @@ export const OAUTH_DEFAULT_BLOG_SCOPE_SELECTION = {
   comments: ["read", "write"],
   media: ["read", "write"],
   settings: ["read", "write"],
+  "friend-links": ["read", "write"],
 } as const satisfies OAuthBlogScopeSelection;
 
 export const OAUTH_DEFAULT_CLIENT_SCOPES: OAuthScope[] = [
