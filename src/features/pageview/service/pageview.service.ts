@@ -1,6 +1,7 @@
 import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
 import * as PageviewRepo from "@/features/pageview/data/pageview.data";
+import { PAGEVIEW_CACHE_KEYS } from "@/features/pageview/pageview.schema";
 
 const PopularPostsSchema = z.array(
   z.object({
@@ -9,8 +10,6 @@ const PopularPostsSchema = z.array(
     views: z.number(),
   }),
 );
-
-const POPULAR_CACHE_KEY = ["homepage", "popular"] as const;
 
 export async function getPopularPosts(
   context: DbContext & { executionCtx: ExecutionContext },
@@ -21,7 +20,7 @@ export async function getPopularPosts(
 
   return CacheService.get(
     context,
-    POPULAR_CACHE_KEY,
+    PAGEVIEW_CACHE_KEYS.popular,
     PopularPostsSchema,
     () => PageviewRepo.getTopPosts(context.db, thirtyDaysAgo, now, 5),
     { ttl: "3h" },
