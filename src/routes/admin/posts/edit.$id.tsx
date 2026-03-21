@@ -55,12 +55,12 @@ function EditPost() {
     mutationFn: (pinned: boolean) =>
       togglePinPostFn({ data: { id: postId, pinned } }),
     onSuccess: (_data, pinned) => {
-      toast.success(pinned ? "文章已置顶" : "已取消置顶");
+      toast.success(pinned ? m.editor_pin_success() : m.editor_unpin_success());
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.pinned });
       queryClient.invalidateQueries({ queryKey: POSTS_KEYS.detail(postId) });
     },
     onError: () => {
-      toast.error("置顶操作失败");
+      toast.error(m.editor_pin_error());
     },
   });
 

@@ -82,7 +82,7 @@ export function PostEditorMetadata({
         {post.status === "published" && onTogglePin && (
           <div className="space-y-3">
             <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              置顶文章
+              {m.editor_meta_pin()}
             </label>
             <div>
               <button
@@ -104,7 +104,7 @@ export function PostEditorMetadata({
                 ) : (
                   <PinOff size={12} />
                 )}
-                {post.pinnedAt ? "已置顶" : "未置顶"}
+                {post.pinnedAt ? m.editor_meta_pinned() : m.editor_meta_unpinned()}
               </button>
             </div>
           </div>
