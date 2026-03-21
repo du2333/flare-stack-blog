@@ -1,14 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, ChevronRight, Pin, Tag } from "lucide-react";
+import { Calendar, ChevronRight, Eye, Pin, Tag } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 interface PinnedPostCardProps {
   post: PostItem;
+  views?: number;
+  isLoadingViews?: boolean;
 }
 
-export function PinnedPostCard({ post }: PinnedPostCardProps) {
+export function PinnedPostCard({
+  post,
+  views,
+  isLoadingViews,
+}: PinnedPostCardProps) {
   const tagNames = (post.tags ?? []).map((t) => t.name);
 
   return (
@@ -75,9 +82,24 @@ export function PinnedPostCard({ post }: PinnedPostCardProps) {
           {post.summary ?? ""}
         </div>
 
-        {/* Read time */}
-        <div className="text-sm fuwari-text-30 flex gap-4">
+        {/* Read time and Views */}
+        <div className="text-sm fuwari-text-30 flex items-center gap-4">
           <span>{m.read_time({ count: post.readTimeInMinutes })}</span>
+          {isLoadingViews ? (
+            <div className="flex items-center gap-1.5 fuwari-text-50">
+              <Eye size={16} className="text-(--fuwari-primary)" />
+              <Skeleton className="h-4 w-8 rounded bg-black/10 dark:bg-white/10" />
+            </div>
+          ) : (
+            views !== undefined && (
+              <div className="flex items-center gap-1.5 fuwari-text-50">
+                <Eye size={16} className="text-(--fuwari-primary)" />
+                <span className="font-medium text-sm">
+                  {views.toLocaleString()}
+                </span>
+              </div>
+            )
+          )}
         </div>
       </div>
 

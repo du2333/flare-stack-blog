@@ -1,13 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Eye } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 
 interface PopularPostCardProps {
   post: PostItem;
   views?: number;
+  isLoadingViews?: boolean;
 }
 
-export function PopularPostCard({ post, views }: PopularPostCardProps) {
+export function PopularPostCard({
+  post,
+  views,
+  isLoadingViews,
+}: PopularPostCardProps) {
   return (
     <div className="fuwari-card-base flex flex-col w-full h-full rounded-(--fuwari-radius-large) overflow-hidden relative transition-all hover:scale-[1.02] hover:shadow-md hover:bg-(--fuwari-card-bg-hover)">
       <div className="p-5 flex flex-col h-full relative">
@@ -20,11 +26,18 @@ export function PopularPostCard({ post, views }: PopularPostCardProps) {
         </Link>
 
         <div className="mt-auto flex items-center justify-between pt-2">
-          {views != null && (
+          {isLoadingViews ? (
+            <div className="flex items-center gap-1.5 fuwari-text-50 text-sm font-medium">
+              <Eye size={16} className="text-(--fuwari-primary)" />
+              <Skeleton className="h-4 w-8 rounded bg-black/10 dark:bg-white/10" />
+            </div>
+          ) : views != null ? (
             <div className="flex items-center gap-1.5 fuwari-text-50 text-sm font-medium">
               <Eye size={16} className="text-(--fuwari-primary)" />
               <span>{views.toLocaleString()}</span>
             </div>
+          ) : (
+            <div className="w-1" />
           )}
 
           <Link

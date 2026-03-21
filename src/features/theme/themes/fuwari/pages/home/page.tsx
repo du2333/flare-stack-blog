@@ -12,10 +12,15 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
   const delayOffset = 50;
 
   const allSlugs = useMemo(
-    () => [...(popularPosts ?? []).map((p) => p.slug)],
-    [popularPosts],
+    () => [
+      ...(pinnedPosts ?? []).map((p) => p.slug),
+      ...(popularPosts ?? []).map((p) => p.slug),
+      ...posts.map((p) => p.slug),
+    ],
+    [pinnedPosts, popularPosts, posts],
   );
-  const { data: viewCounts } = useViewCounts(allSlugs);
+  const { data: viewCounts, isPending: isPendingViewCounts } =
+    useViewCounts(allSlugs);
 
   return (
     <div className="flex flex-col gap-10 md:gap-14">
@@ -30,7 +35,11 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
                   animationDelay: `calc(var(--fuwari-content-delay) + ${i * delayOffset}ms)`,
                 }}
               >
-                <PinnedPostCard post={post} />
+                <PinnedPostCard
+                  post={post}
+                  views={viewCounts?.[post.slug]}
+                  isLoadingViews={isPendingViewCounts}
+                />
               </div>
             ))}
           </div>
@@ -56,7 +65,11 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
                   animationDelay: `calc(var(--fuwari-content-delay) + ${(i + (pinnedPosts?.length || 0)) * delayOffset}ms)`,
                 }}
               >
-                <PopularPostCard post={post} views={viewCounts?.[post.slug]} />
+                <PopularPostCard
+                  post={post}
+                  views={viewCounts?.[post.slug]}
+                  isLoadingViews={isPendingViewCounts}
+                />
               </div>
             ))}
           </div>
@@ -80,7 +93,11 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
                 animationDelay: `calc(var(--fuwari-content-delay) + ${(i + (pinnedPosts?.length || 0) + (popularPosts?.length || 0)) * delayOffset}ms)`,
               }}
             >
-              <PostCard post={post} />
+              <PostCard
+                post={post}
+                views={viewCounts?.[post.slug]}
+                isLoadingViews={isPendingViewCounts}
+              />
               <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/15 last:border-t-0 md:hidden" />
             </div>
           ))}
