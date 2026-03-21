@@ -6,12 +6,10 @@ import {
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Activity,
-  ArrowRight,
   Database,
   Eye,
   FileText,
   MessageSquare,
-  MousePointerClick,
   RefreshCw,
   Users,
 } from "lucide-react";
@@ -65,7 +63,7 @@ function DashboardOverview() {
   const navigate = useNavigate({ from: Route.fullPath });
   const queryClient = useQueryClient();
   const { data, isFetching } = useSuspenseQuery(dashboardStatsQuery);
-  const { stats, activities, trafficByRange, umamiUrl } = data;
+  const { stats, activities, trafficByRange } = data;
 
   // 检查版本更新
   useVersionCheck();
@@ -201,27 +199,11 @@ function DashboardOverview() {
             <h2 className="text-sm font-mono uppercase tracking-widest text-muted-foreground">
               {m.admin_overview_traffic_title()}
             </h2>
-            {umamiUrl && (
-              <a
-                href={umamiUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-mono text-muted-foreground/60 hover:text-foreground flex items-center gap-1 transition-colors uppercase tracking-widest"
-              >
-                {m.admin_overview_open_analytics()} <ArrowRight size={10} />
-              </a>
-            )}
           </div>
 
           {/* Metrics Row */}
           {overview && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <MetricItem
-                label={m.admin_overview_metric_visitors()}
-                value={overview.visitors.value}
-                prev={overview.visitors.prev}
-                icon={<Users size={12} />}
-              />
+            <div className="grid grid-cols-2 gap-4">
               <MetricItem
                 label={m.admin_overview_metric_page_views()}
                 value={overview.pageViews.value}
@@ -229,39 +211,17 @@ function DashboardOverview() {
                 icon={<Eye size={12} />}
               />
               <MetricItem
-                label={m.admin_overview_metric_visits()}
-                value={overview.visits.value}
-                prev={overview.visits.prev}
-                icon={<MousePointerClick size={12} />}
-              />
-              <MetricItem
-                label={m.admin_overview_metric_bounce_rate()}
-                value={overview.bounces.value}
-                prev={overview.bounces.prev}
-                total={overview.visits.value}
-                format="percent"
-                icon={<Activity size={12} />}
+                label={m.admin_overview_metric_visitors()}
+                value={overview.visitors.value}
+                prev={overview.visitors.prev}
+                icon={<Users size={12} />}
               />
             </div>
           )}
 
           {/* Chart Area */}
           <div className="h-75 w-full border border-border/30 bg-background p-6">
-            {!umamiUrl ? (
-              <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3">
-                <div className="bg-muted/20 p-4 rounded-full">
-                  <Activity className="opacity-40" size={24} />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-sm font-mono text-foreground">
-                    {m.admin_overview_analytics_unconfigured()}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-mono">
-                    {m.admin_overview_analytics_unconfigured_desc()}
-                  </p>
-                </div>
-              </div>
-            ) : traffic && traffic.length > 0 ? (
+            {traffic && traffic.length > 0 ? (
               <TrafficChart data={traffic} />
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
@@ -287,17 +247,17 @@ function DashboardOverview() {
                   <div key={i} className="group">
                     <div className="flex justify-between items-baseline mb-1">
                       <div className="text-xs text-foreground/80 font-medium truncate max-w-45 group-hover:text-foreground transition-colors">
-                        {page.x}
+                        {page.slug}
                       </div>
                       <div className="text-[10px] font-mono text-muted-foreground">
-                        {page.y}
+                        {page.views}
                       </div>
                     </div>
                     <div className="w-full bg-muted/20 h-0.5 rounded-full overflow-hidden">
                       <div
                         className="bg-foreground/40 h-full"
                         style={{
-                          width: `${(page.y / Math.max(...topPages.map((p) => p.y))) * 100}%`,
+                          width: `${(page.views / Math.max(...topPages.map((p) => p.views))) * 100}%`,
                         }}
                       />
                     </div>
