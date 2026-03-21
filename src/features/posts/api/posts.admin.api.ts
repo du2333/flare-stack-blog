@@ -8,6 +8,7 @@ import {
   GetPostsInputSchema,
   PreviewSummaryInputSchema,
   StartPostProcessInputSchema,
+  TogglePinPostInputSchema,
   UpdatePostInputSchema,
 } from "@/features/posts/schema/posts.schema";
 import * as PostService from "@/features/posts/services/posts.service";
@@ -73,3 +74,8 @@ export const startPostProcessWorkflowFn = createServerFn()
   .handler(({ data, context }) =>
     PostService.startPostProcessWorkflow(context, data),
   );
+
+export const togglePinPostFn = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(TogglePinPostInputSchema)
+  .handler(({ data, context }) => PostService.togglePin(context, data));

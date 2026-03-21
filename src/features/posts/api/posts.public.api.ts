@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import * as PageviewService from "@/features/pageview/service/pageview.service";
 import {
   FindPostBySlugInputSchema,
   FindRelatedPostsInputSchema,
@@ -27,3 +28,11 @@ export const getRelatedPostsFn = createServerFn()
   .handler(async ({ data, context }) => {
     return await PostService.getRelatedPosts(context, data);
   });
+
+export const getPinnedPostsFn = createServerFn()
+  .middleware([dbMiddleware])
+  .handler(({ context }) => PostService.getPinnedPosts(context));
+
+export const getPopularPostsFn = createServerFn()
+  .middleware([dbMiddleware])
+  .handler(({ context }) => PageviewService.getPopularPosts(context));
