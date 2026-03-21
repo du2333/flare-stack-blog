@@ -6,8 +6,8 @@
  */
 export interface ThemeConfig {
   home: {
-    /** 首页展示的文章数量 */
-    featuredPostsLimit: number;
+    /** 首页最近更新的文章数量 */
+    recentPostsLimit: number;
     /** 首页热门文章数量 */
     popularPostsLimit: number;
   };

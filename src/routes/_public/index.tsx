@@ -3,20 +3,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
 import { siteDomainQuery } from "@/features/config/queries";
 import {
-  featuredPostsQuery,
   pinnedPostsQuery,
   popularPostsQuery,
+  recentPostsQuery,
 } from "@/features/posts/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 
-const { featuredPostsLimit, popularPostsLimit } = theme.config.home;
+const { recentPostsLimit, popularPostsLimit } = theme.config.home;
 
 export const Route = createFileRoute("/_public/")({
   loader: async ({ context }) => {
     const [, domain] = await Promise.all([
-      context.queryClient.ensureQueryData(
-        featuredPostsQuery(featuredPostsLimit),
-      ),
+      context.queryClient.ensureQueryData(recentPostsQuery(recentPostsLimit)),
       context.queryClient.ensureQueryData(siteDomainQuery),
       context.queryClient.ensureQueryData(pinnedPostsQuery),
       context.queryClient.ensureQueryData(popularPostsQuery(popularPostsLimit)),
@@ -34,9 +32,7 @@ export const Route = createFileRoute("/_public/")({
 });
 
 function HomeRoute() {
-  const { data: posts } = useSuspenseQuery(
-    featuredPostsQuery(featuredPostsLimit),
-  );
+  const { data: posts } = useSuspenseQuery(recentPostsQuery(recentPostsLimit));
   const { data: pinnedPosts } = useSuspenseQuery(pinnedPostsQuery);
   const { data: popularPosts } = useSuspenseQuery(
     popularPostsQuery(popularPostsLimit),

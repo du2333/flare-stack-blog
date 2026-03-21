@@ -182,7 +182,7 @@ export function ProfilePage(_props: ProfilePageProps) {
 
 export const config: ThemeConfig = {
   home: {
-    featuredPostsLimit: 4,
+    recentPostsLimit: 4,
     popularPostsLimit: 5,
   },
   posts: {

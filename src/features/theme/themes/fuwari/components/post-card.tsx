@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, ChevronRight, Eye, Pin, Tag } from "lucide-react";
+import { Calendar, ChevronRight, Clock, Eye, Pin, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
@@ -110,7 +110,10 @@ export function PostCard({
 
         {/* Read time and Views */}
         <div className="text-sm fuwari-text-30 flex items-center gap-4">
-          <span>{m.read_time({ count: post.readTimeInMinutes })}</span>
+          <span className="flex items-center gap-1.5">
+            <Clock size={16} />
+            {m.read_time({ count: post.readTimeInMinutes })}
+          </span>
           {isLoadingViews ? (
             <div className="flex items-center gap-1.5 fuwari-text-50">
               <Eye size={16} className="text-(--fuwari-primary)" />

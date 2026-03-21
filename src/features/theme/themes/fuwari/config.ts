@@ -2,7 +2,7 @@ import type { ThemeConfig } from "@/features/theme/contract/config";
 
 export const config: ThemeConfig = {
   home: {
-    featuredPostsLimit: 5,
+    recentPostsLimit: 5,
     popularPostsLimit: 3,
   },
   posts: {

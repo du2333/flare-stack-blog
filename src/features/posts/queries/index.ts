@@ -30,7 +30,7 @@ export const POSTS_KEYS = {
   pinned: ["posts", "pinned"] as const,
   lists: ["posts", "list"] as const,
   details: ["posts", "detail"] as const,
-  featured: ["posts", "featured"] as const,
+  recent: ["posts", "recent"] as const,
   adminLists: ["posts", "admin-list"] as const,
   counts: ["posts", "count"] as const,
   revisions: ["posts", "revisions"] as const,
@@ -49,9 +49,9 @@ export const POSTS_KEYS = {
     ["posts", "revision-detail", postId, revisionId] as const,
 };
 
-export function featuredPostsQuery(limit: number) {
+export function recentPostsQuery(limit: number) {
   return queryOptions({
-    queryKey: [...POSTS_KEYS.featured, limit],
+    queryKey: [...POSTS_KEYS.recent, limit],
     queryFn: async () => {
       if (isSSR) {
         const result = await getPostsCursorFn({ data: { limit } });

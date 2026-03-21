@@ -16,7 +16,7 @@ export function PostPageSkeleton() {
     .map(([, data]) => data)
     .filter(Boolean)
     .flatMap((data) => {
-      // Handle regular arrays (e.g. from featuredPostsQuery)
+      // Handle regular arrays (e.g. from recentPostsQuery)
       if (Array.isArray(data)) {
         return data as Array<PostListItem>;
       }
