@@ -106,12 +106,13 @@ export async function getPostsCursor(
     limit?: number;
     publicOnly?: boolean;
     tagName?: string;
+    excludePinned?: boolean;
   } = {},
 ): Promise<{
   items: Array<PostListItem>;
   nextCursor: number | null;
 }> {
-  const { cursor, limit = DEFAULT_PAGE_SIZE, publicOnly, tagName } = options;
+  const { cursor, limit = DEFAULT_PAGE_SIZE, publicOnly, tagName, excludePinned } = options;
 
   // Build base conditions from helper
   const baseConditions = buildPostWhereClause({ publicOnly });
@@ -146,6 +147,10 @@ export async function getPostsCursor(
 
   if (tagName) {
     conditions.push(eq(TagsTable.name, tagName));
+  }
+
+  if (excludePinned) {
+    conditions.push(sql`${PostsTable.pinnedAt} IS NULL`);
   }
 
   let query = db
@@ -271,6 +276,38 @@ export async function findPostById(db: DB, id: number) {
   const tags = post.postTags.map((pt) => pt.tag);
   const { postTags, ...rest } = post;
   return { ...rest, tags };
+}
+
+export async function findPinnedPosts(db: DB) {
+  const posts = await db.query.PostsTable.findMany({
+    where: and(
+      eq(PostsTable.status, "published"),
+      isNotNull(PostsTable.pinnedAt),
+    ),
+    orderBy: [desc(PostsTable.pinnedAt)],
+    columns: {
+      id: true,
+      title: true,
+      summary: true,
+      readTimeInMinutes: true,
+      slug: true,
+      status: true,
+      publishedAt: true,
+      pinnedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    with: {
+      postTags: {
+        with: { tag: true },
+      },
+    },
+  });
+
+  return posts.map((p) => ({
+    ...p,
+    tags: p.postTags.map((pt) => pt.tag),
+  }));
 }
 
 export async function findPostBySlug(
