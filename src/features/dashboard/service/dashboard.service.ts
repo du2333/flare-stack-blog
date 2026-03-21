@@ -49,7 +49,7 @@ async function fetchTrafficDataForRange(
     PageviewRepo.getStats(db, startAt, endAt),
     PageviewRepo.getStats(db, prevStartAt, startAt),
     PageviewRepo.getTrafficTrend(db, startAt, endAt, unit),
-    PageviewRepo.getTopPosts(db, startAt, endAt, 5),
+    PageviewRepo.getTopPages(db, startAt, endAt, 5),
   ]);
 
   return {

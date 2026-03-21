@@ -318,6 +318,39 @@ export async function findPinnedPosts(db: DB) {
   }));
 }
 
+export async function findPostsBySlugs(db: DB, slugs: string[]) {
+  if (slugs.length === 0) return [];
+
+  const posts = await db.query.PostsTable.findMany({
+    where: and(
+      eq(PostsTable.status, "published"),
+      inArray(PostsTable.slug, slugs),
+    ),
+    columns: {
+      id: true,
+      title: true,
+      summary: true,
+      readTimeInMinutes: true,
+      slug: true,
+      status: true,
+      publishedAt: true,
+      pinnedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    with: {
+      postTags: {
+        with: { tag: true },
+      },
+    },
+  });
+
+  return posts.map((p) => ({
+    ...p,
+    tags: p.postTags.map((pt) => pt.tag),
+  }));
+}
+
 export async function findPostBySlug(
   db: DB,
   slug: string,

@@ -71,18 +71,17 @@ export async function getTrafficTrend(
 }
 
 /**
- * 获取热门文章（按 PV 排序）
+ * 获取热门文章（按 PV 排序，返回 slug + views）
  */
-export async function getTopPosts(
+export async function getTopPages(
   db: DB,
   startAt: Date,
   endAt: Date,
   limit = 5,
-): Promise<Array<{ slug: string; title: string; views: number }>> {
-  const rows = await db
+): Promise<Array<{ slug: string; views: number }>> {
+  return db
     .select({
       slug: PostsTable.slug,
-      title: PostsTable.title,
       views: count().as("views"),
     })
     .from(PageViewsTable)
@@ -96,8 +95,6 @@ export async function getTopPosts(
     .groupBy(PostsTable.slug)
     .orderBy(sql`views DESC`)
     .limit(limit);
-
-  return rows.map((r) => ({ slug: r.slug, title: r.title, views: r.views }));
 }
 
 /**

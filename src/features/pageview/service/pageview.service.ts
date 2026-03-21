@@ -1,18 +1,11 @@
-import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
 import * as PageviewRepo from "@/features/pageview/data/pageview.data";
 import {
   PAGEVIEW_CACHE_KEYS,
   ViewCountsSchema,
 } from "@/features/pageview/pageview.schema";
-
-const PopularPostsSchema = z.array(
-  z.object({
-    slug: z.string(),
-    title: z.string(),
-    views: z.number(),
-  }),
-);
+import * as PostRepo from "@/features/posts/data/posts.data";
+import { PostItemSchema } from "@/features/posts/schema/posts.schema";
 
 export async function getPopularPosts(
   context: DbContext & { executionCtx: ExecutionContext },
@@ -24,8 +17,26 @@ export async function getPopularPosts(
   return CacheService.get(
     context,
     PAGEVIEW_CACHE_KEYS.popular,
-    PopularPostsSchema,
-    () => PageviewRepo.getTopPosts(context.db, thirtyDaysAgo, now, 5),
+    PostItemSchema.array(),
+    async () => {
+      const topPages = await PageviewRepo.getTopPages(
+        context.db,
+        thirtyDaysAgo,
+        now,
+        5,
+      );
+      if (topPages.length === 0) return [];
+
+      const slugs = topPages.map((p) => p.slug);
+      const posts = await PostRepo.findPostsBySlugs(context.db, slugs);
+
+      // Preserve popularity order
+      const bySlug = new Map(posts.map((p) => [p.slug, p]));
+      return slugs.flatMap((slug) => {
+        const post = bySlug.get(slug);
+        return post ? [post] : [];
+      });
+    },
     { ttl: "3h" },
   );
 }
