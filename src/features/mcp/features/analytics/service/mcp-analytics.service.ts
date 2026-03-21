@@ -18,8 +18,8 @@ export async function getAnalyticsOverview(
           lastUpdated: serializeMcpDate(new Date(rangeData.lastUpdated)),
           overview: rangeData.overview ?? null,
           topPages: (rangeData.topPages ?? []).map((page) => ({
-            path: page.x,
-            views: page.y,
+            path: page.slug,
+            views: page.views,
           })),
           traffic: rangeData.traffic.map((point) => ({
             date: serializeMcpDate(new Date(point.date)),
@@ -37,6 +37,5 @@ export async function getAnalyticsOverview(
       type: activity.type,
     })),
     siteStats: dashboard.stats,
-    umamiUrl: dashboard.umamiUrl ?? null,
   };
 }

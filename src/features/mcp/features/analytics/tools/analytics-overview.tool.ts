@@ -13,7 +13,7 @@ const ANALYTICS_OVERVIEW_REQUIRED_SCOPES: OAuthScopeRequest = {
 export const analyticsOverviewTool = defineMcpTool({
   name: "analytics_overview",
   description:
-    "Get a high-level overview of blog operations and optional Umami analytics.",
+    "Get a high-level overview of blog operations and traffic analytics.",
   requiredScopes: ANALYTICS_OVERVIEW_REQUIRED_SCOPES,
   inputSchema: McpAnalyticsOverviewInputSchema,
   outputSchema: McpAnalyticsOverviewOutputSchema,

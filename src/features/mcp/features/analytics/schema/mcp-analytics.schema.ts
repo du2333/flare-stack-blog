@@ -45,11 +45,8 @@ export const McpAnalyticsDataSchema = z.object({
   lastUpdated: z.iso.datetime().describe("Analytics snapshot update time."),
   overview: z
     .object({
-      bounces: McpAnalyticsMetricSchema.describe("Bounce metric."),
       pageViews: McpAnalyticsMetricSchema.describe("Page view metric."),
-      totalTime: McpAnalyticsMetricSchema.describe("Total time metric."),
-      visits: McpAnalyticsMetricSchema.describe("Visit metric."),
-      visitors: McpAnalyticsMetricSchema.describe("Visitor metric."),
+      visitors: McpAnalyticsMetricSchema.describe("Unique visitor metric."),
     })
     .nullable()
     .describe("High-level analytics metrics for the selected range."),
@@ -63,15 +60,14 @@ export const McpAnalyticsDataSchema = z.object({
 
 export const McpAnalyticsOverviewOutputSchema = z.object({
   analytics: McpAnalyticsDataSchema.nullable().describe(
-    "Analytics details, or null if Umami is unavailable.",
+    "Analytics details, or null if no data available.",
   ),
   analyticsEnabled: z
     .boolean()
-    .describe("Whether Umami analytics data is available."),
+    .describe("Whether analytics data is available."),
   range: z.enum(MCP_ANALYTICS_RANGES).describe("Selected analytics range."),
   recentActivities: z
     .array(McpAnalyticsActivitySchema)
     .describe("Recent blog activity feed."),
   siteStats: McpAnalyticsSiteStatsSchema.describe("Core blog stats."),
-  umamiUrl: z.string().nullable().describe("Optional Umami dashboard URL."),
 });
