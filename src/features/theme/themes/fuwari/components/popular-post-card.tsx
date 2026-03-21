@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Eye } from "lucide-react";
+import { ChevronRight, Eye, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 
@@ -14,18 +14,34 @@ export function PopularPostCard({
   views,
   isLoadingViews,
 }: PopularPostCardProps) {
+  const tagNames = (post.tags ?? []).map((t) => t.name);
+
   return (
     <div className="fuwari-card-base flex flex-col w-full h-full rounded-(--fuwari-radius-large) overflow-hidden relative transition-all hover:scale-[1.02] hover:shadow-md hover:bg-(--fuwari-card-bg-hover)">
       <div className="p-5 flex flex-col h-full relative">
+        {/* Primary Tag */}
+        {tagNames.length > 0 && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-(--fuwari-primary) mb-2">
+            <Tag size={14} />
+            <span className="line-clamp-1">{tagNames[0]}</span>
+          </div>
+        )}
+
+        {/* Title */}
         <Link
           to="/post/$slug"
           params={{ slug: post.slug }}
-          className="transition group w-full font-bold mb-3 text-lg md:text-xl fuwari-text-90 hover:text-(--fuwari-primary) active:text-(--fuwari-primary) line-clamp-2"
+          className="transition group w-full font-bold mb-2 text-lg md:text-xl fuwari-text-90 hover:text-(--fuwari-primary) active:text-(--fuwari-primary) line-clamp-2"
         >
           {post.title}
         </Link>
 
-        <div className="mt-auto flex items-center justify-between pt-2">
+        {/* Summary */}
+        <div className="text-sm fuwari-text-50 line-clamp-2 mb-4 leading-relaxed">
+          {post.summary ?? ""}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between pt-2 border-t border-dashed border-black/5 dark:border-white/5">
           {isLoadingViews ? (
             <div className="flex items-center gap-1.5 fuwari-text-50 text-sm font-medium">
               <Eye size={16} className="text-(--fuwari-primary)" />
