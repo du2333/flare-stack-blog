@@ -21,7 +21,11 @@ export const CachedAllRangesSchema = z.record(
 
 export type TrafficRangeData = z.infer<typeof TrafficRangeDataSchema>;
 
+export const ViewCountsSchema = z.record(z.string(), z.number());
+
 export const PAGEVIEW_CACHE_KEYS = {
   traffic: ["dashboard", "traffic"] as const,
   popular: ["homepage", "popular"] as const,
+  viewCounts: (slugs: string[]) =>
+    ["pageview", "counts", ...[...slugs].sort()] as const,
 } as const;

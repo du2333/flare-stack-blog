@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
+import * as PageviewService from "@/features/pageview/service/pageview.service";
 import { sha256 } from "@/features/pageview/utils/hash";
 import { serverEnv } from "@/lib/env/server.env";
 import { dbMiddleware } from "@/lib/middlewares";
@@ -22,3 +23,10 @@ export const recordPageViewFn = createServerFn()
       }),
     );
   });
+
+export const getViewCountsFn = createServerFn()
+  .middleware([dbMiddleware])
+  .inputValidator(z.object({ slugs: z.array(z.string()).max(50) }))
+  .handler(({ data, context }) =>
+    PageviewService.getViewCounts(context, data.slugs),
+  );

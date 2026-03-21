@@ -1,7 +1,10 @@
 import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
 import * as PageviewRepo from "@/features/pageview/data/pageview.data";
-import { PAGEVIEW_CACHE_KEYS } from "@/features/pageview/pageview.schema";
+import {
+  PAGEVIEW_CACHE_KEYS,
+  ViewCountsSchema,
+} from "@/features/pageview/pageview.schema";
 
 const PopularPostsSchema = z.array(
   z.object({
@@ -24,5 +27,20 @@ export async function getPopularPosts(
     PopularPostsSchema,
     () => PageviewRepo.getTopPosts(context.db, thirtyDaysAgo, now, 5),
     { ttl: "3h" },
+  );
+}
+
+export async function getViewCounts(
+  context: DbContext & { executionCtx: ExecutionContext },
+  slugs: string[],
+) {
+  if (slugs.length === 0) return {};
+
+  return CacheService.get(
+    context,
+    PAGEVIEW_CACHE_KEYS.viewCounts(slugs),
+    ViewCountsSchema,
+    () => PageviewRepo.getViewCountsBySlugs(context.db, slugs),
+    { ttl: "5m" },
   );
 }

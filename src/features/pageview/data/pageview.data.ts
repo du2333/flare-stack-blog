@@ -1,4 +1,13 @@
-import { and, count, countDistinct, eq, gte, lt, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  countDistinct,
+  eq,
+  gte,
+  inArray,
+  lt,
+  sql,
+} from "drizzle-orm";
 import type { DB } from "@/lib/db";
 import { PageViewsTable, PostsTable } from "@/lib/db/schema";
 
@@ -89,4 +98,26 @@ export async function getTopPosts(
     .limit(limit);
 
   return rows.map((r) => ({ slug: r.slug, title: r.title, views: r.views }));
+}
+
+/**
+ * 批量获取文章的总浏览量
+ */
+export async function getViewCountsBySlugs(
+  db: DB,
+  slugs: string[],
+): Promise<Record<string, number>> {
+  if (slugs.length === 0) return {};
+
+  const rows = await db
+    .select({
+      slug: PostsTable.slug,
+      views: count().as("views"),
+    })
+    .from(PageViewsTable)
+    .innerJoin(PostsTable, eq(PageViewsTable.postId, PostsTable.id))
+    .where(inArray(PostsTable.slug, slugs))
+    .groupBy(PostsTable.slug);
+
+  return Object.fromEntries(rows.map((r) => [r.slug, r.views]));
 }
