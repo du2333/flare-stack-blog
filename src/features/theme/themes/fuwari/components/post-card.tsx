@@ -109,24 +109,22 @@ export function PostCard({
         </div>
 
         {/* Read time and Views */}
-        <div className="text-sm fuwari-text-30 flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <Clock size={16} />
+        <div className="text-sm fuwari-text-50 flex items-center gap-4 [&_svg]:shrink-0">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock size={14} />
             {m.read_time({ count: post.readTimeInMinutes })}
           </span>
           {isLoadingViews ? (
-            <div className="flex items-center gap-1.5 fuwari-text-50">
-              <Eye size={16} className="text-(--fuwari-primary)" />
-              <Skeleton className="h-4 w-8 rounded bg-black/10 dark:bg-white/10" />
-            </div>
+            <span className="inline-flex items-center gap-1.5">
+              <Eye size={15} />
+              <Skeleton className="h-3.5 w-8 rounded bg-black/10 dark:bg-white/10" />
+            </span>
           ) : (
             views !== undefined && (
-              <div className="flex items-center gap-1.5 fuwari-text-50">
-                <Eye size={16} className="text-(--fuwari-primary)" />
-                <span className="font-medium text-sm">
-                  {views.toLocaleString()}
-                </span>
-              </div>
+              <span className="inline-flex items-center gap-1.5">
+                <Eye size={15} />
+                {views.toLocaleString()}
+              </span>
             )
           )}
         </div>
