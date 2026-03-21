@@ -9,6 +9,7 @@ import { PostItemSchema } from "@/features/posts/schema/posts.schema";
 
 export async function getPopularPosts(
   context: DbContext & { executionCtx: ExecutionContext },
+  limit = 5,
 ) {
   const now = new Date();
   const thirtyDaysAgo = new Date(now);
@@ -16,14 +17,14 @@ export async function getPopularPosts(
 
   return CacheService.get(
     context,
-    PAGEVIEW_CACHE_KEYS.popular,
+    [...PAGEVIEW_CACHE_KEYS.popular, limit],
     PostItemSchema.array(),
     async () => {
       const topPages = await PageviewRepo.getTopPages(
         context.db,
         thirtyDaysAgo,
         now,
-        5,
+        limit,
       );
       if (topPages.length === 0) return [];
 

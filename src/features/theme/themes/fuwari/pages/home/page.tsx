@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useViewCounts } from "@/features/pageview/queries";
 import type { HomePageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
-import { PinnedPostCard } from "../../components/pinned-post-card";
 import { PopularPostCard } from "../../components/popular-post-card";
 import { PostCard } from "../../components/post-card";
 
@@ -35,8 +34,9 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
                   animationDelay: `calc(var(--fuwari-content-delay) + ${i * delayOffset}ms)`,
                 }}
               >
-                <PinnedPostCard
+                <PostCard
                   post={post}
+                  pinned
                   views={viewCounts?.[post.slug]}
                   isLoadingViews={isPendingViewCounts}
                 />

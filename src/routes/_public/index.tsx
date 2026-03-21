@@ -9,7 +9,7 @@ import {
 } from "@/features/posts/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 
-const { featuredPostsLimit } = theme.config.home;
+const { featuredPostsLimit, popularPostsLimit } = theme.config.home;
 
 export const Route = createFileRoute("/_public/")({
   loader: async ({ context }) => {
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_public/")({
       ),
       context.queryClient.ensureQueryData(siteDomainQuery),
       context.queryClient.ensureQueryData(pinnedPostsQuery),
-      context.queryClient.ensureQueryData(popularPostsQuery),
+      context.queryClient.ensureQueryData(popularPostsQuery(popularPostsLimit)),
     ]);
 
     return {
@@ -38,7 +38,9 @@ function HomeRoute() {
     featuredPostsQuery(featuredPostsLimit),
   );
   const { data: pinnedPosts } = useSuspenseQuery(pinnedPostsQuery);
-  const { data: popularPosts } = useSuspenseQuery(popularPostsQuery);
+  const { data: popularPosts } = useSuspenseQuery(
+    popularPostsQuery(popularPostsLimit),
+  );
 
   return (
     <theme.HomePage

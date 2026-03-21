@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import * as PageviewService from "@/features/pageview/service/pageview.service";
 import {
   FindPostBySlugInputSchema,
@@ -35,4 +36,9 @@ export const getPinnedPostsFn = createServerFn()
 
 export const getPopularPostsFn = createServerFn()
   .middleware([dbMiddleware])
-  .handler(({ context }) => PageviewService.getPopularPosts(context));
+  .inputValidator(
+    z.object({ limit: z.number().int().min(1).max(20).optional() }),
+  )
+  .handler(({ data, context }) =>
+    PageviewService.getPopularPosts(context, data.limit),
+  );

@@ -155,7 +155,9 @@ export const pinnedPostsQuery = queryOptions({
   queryFn: () => getPinnedPostsFn(),
 });
 
-export const popularPostsQuery = queryOptions({
-  queryKey: ["popular-posts"],
-  queryFn: () => getPopularPostsFn(),
-});
+export function popularPostsQuery(limit?: number) {
+  return queryOptions({
+    queryKey: ["popular-posts", limit],
+    queryFn: () => getPopularPostsFn({ data: { limit } }),
+  });
+}
