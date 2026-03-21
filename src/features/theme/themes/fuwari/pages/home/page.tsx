@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Flame, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { useViewCounts } from "@/features/pageview/queries";
 import type { HomePageProps } from "@/features/theme/contract/pages";
@@ -49,12 +49,6 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
       {/* 2. Popular Posts Gallery */}
       {popularPosts && popularPosts.length > 0 && (
         <section className="fuwari-onload-animation">
-          <div className="flex items-center gap-2 mb-4 ml-2 md:ml-0">
-            <Flame className="text-orange-500" size={24} />
-            <h2 className="text-xl font-bold fuwari-text-80 flex-1">
-              {m.home_popular_posts()}
-            </h2>
-          </div>
           {/* Use snap scrolling for mobile to save vertical space, and grid for desktop */}
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 hide-scrollbar px-2 -mx-2 md:mx-0 md:px-0">
             {popularPosts.map((post, i) => (
@@ -69,6 +63,7 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
                   post={post}
                   views={viewCounts?.[post.slug]}
                   isLoadingViews={isPendingViewCounts}
+                  rank={i + 1}
                 />
               </div>
             ))}
@@ -78,9 +73,9 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
 
       {/* 3. Recent Updates Feed */}
       <section className="fuwari-onload-animation">
-        <div className="flex items-center gap-2 mb-4 ml-2 md:ml-0">
+        <div className="fuwari-card-base px-5 py-4 mb-4 rounded-(--fuwari-radius-large) flex items-center gap-2.5">
           <Sparkles className="text-blue-500" size={24} />
-          <h2 className="text-xl font-bold fuwari-text-80 flex-1">
+          <h2 className="text-xl font-bold fuwari-text-80 m-0">
             {m.home_recent_updates()}
           </h2>
         </div>

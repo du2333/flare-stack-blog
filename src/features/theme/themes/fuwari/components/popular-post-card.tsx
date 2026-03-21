@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Eye, Tag } from "lucide-react";
+import { ChevronRight, Eye, Flame, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 
@@ -7,25 +7,38 @@ interface PopularPostCardProps {
   post: PostItem;
   views?: number;
   isLoadingViews?: boolean;
+  rank?: number;
 }
 
 export function PopularPostCard({
   post,
   views,
   isLoadingViews,
+  rank,
 }: PopularPostCardProps) {
   const tagNames = (post.tags ?? []).map((t) => t.name);
 
   return (
-    <div className="fuwari-card-base flex flex-col w-full h-full rounded-(--fuwari-radius-large) overflow-hidden relative transition-all hover:scale-[1.02] hover:shadow-md hover:bg-(--fuwari-card-bg-hover)">
+    <div className="fuwari-card-base flex flex-col w-full h-full rounded-(--fuwari-radius-large) overflow-hidden relative transition-all hover:scale-[1.02] hover:shadow-md">
       <div className="p-5 flex flex-col h-full relative">
-        {/* Primary Tag */}
-        {tagNames.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-(--fuwari-primary) mb-2">
-            <Tag size={14} />
-            <span className="line-clamp-1">{tagNames[0]}</span>
-          </div>
-        )}
+        {/* Header Row: Primary Tag & Rank Badge */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          {tagNames.length > 0 ? (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-(--fuwari-primary) shrink-0">
+              <Tag size={13} strokeWidth={2.5} />
+              <span className="line-clamp-1">{tagNames[0]}</span>
+            </div>
+          ) : (
+            <div />
+          )}
+
+          {rank !== undefined && (
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full shrink-0">
+              <Flame size={12} strokeWidth={2.5} className="-mt-px" />
+              <span>TOP {rank}</span>
+            </div>
+          )}
+        </div>
 
         {/* Title */}
         <Link
