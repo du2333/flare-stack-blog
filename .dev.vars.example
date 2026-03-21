@@ -26,6 +26,8 @@ DOMAIN=blog.example.com
 # UMAMI_SRC=https://cloud.umami.is
 
 # --- 浏览量统计 ---
+# 用于生成匿名访客标识的固定 salt（SHA-256(IP + UA + salt)），任意非空字符串
+# 生成建议：openssl rand -hex 16
 PAGEVIEW_SALT=your-random-salt-string
 
 # --- Turnstile 人机验证 ---
