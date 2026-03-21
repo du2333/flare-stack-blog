@@ -257,7 +257,7 @@ function DashboardOverview() {
                       <div
                         className="bg-foreground/40 h-full"
                         style={{
-                          width: `${(page.views / Math.max(...topPages.map((p) => p.views))) * 100}%`,
+                          width: `${(page.views / Math.max(...topPages.map((p) => p.views), 1)) * 100}%`,
                         }}
                       />
                     </div>

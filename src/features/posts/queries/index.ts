@@ -31,6 +31,7 @@ export const POSTS_KEYS = {
   lists: ["posts", "list"] as const,
   details: ["posts", "detail"] as const,
   recent: ["posts", "recent"] as const,
+  popular: ["posts", "popular"] as const,
   adminLists: ["posts", "admin-list"] as const,
   counts: ["posts", "count"] as const,
   revisions: ["posts", "revisions"] as const,
@@ -157,7 +158,7 @@ export const pinnedPostsQuery = queryOptions({
 
 export function popularPostsQuery(limit?: number) {
   return queryOptions({
-    queryKey: ["popular-posts", limit],
+    queryKey: [...POSTS_KEYS.popular, limit],
     queryFn: () => getPopularPostsFn({ data: { limit } }),
   });
 }

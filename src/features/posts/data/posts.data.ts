@@ -289,7 +289,7 @@ export async function findPostById(db: DB, id: number) {
 export async function findPinnedPosts(db: DB) {
   const posts = await db.query.PostsTable.findMany({
     where: and(
-      eq(PostsTable.status, "published"),
+      buildPostWhereClause({ publicOnly: true }),
       isNotNull(PostsTable.pinnedAt),
     ),
     orderBy: [desc(PostsTable.pinnedAt)],
@@ -323,7 +323,7 @@ export async function findPostsBySlugs(db: DB, slugs: string[]) {
 
   const posts = await db.query.PostsTable.findMany({
     where: and(
-      eq(PostsTable.status, "published"),
+      buildPostWhereClause({ publicOnly: true }),
       inArray(PostsTable.slug, slugs),
     ),
     columns: {
