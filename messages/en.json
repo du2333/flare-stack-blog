@@ -96,6 +96,15 @@
       }
     }
   ],
+  "post_views_count": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "{formattedCountEn} view",
+        "count=*": "{formattedCountEn} views"
+      }
+    }
+  ],
   "format_date": [
     {
       "declarations": ["input date", "local formattedDateEn = date: datetime year=numeric month=2-digit day=2-digit"],

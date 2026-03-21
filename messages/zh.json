@@ -93,6 +93,14 @@
       }
     }
   ],
+  "post_views_count": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "{formattedCountZh} 次浏览"
+      }
+    }
+  ],
   "format_date": [
     {
       "declarations": ["input date", "local formattedDateZh = date: datetime year=numeric month=long day=numeric"],
