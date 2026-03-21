@@ -111,10 +111,8 @@ jobs:
           echo "DOMAIN=${{ secrets.DOMAIN }}" >> $GITHUB_ENV
           echo "CDN_DOMAIN=${{ secrets.CDN_DOMAIN }}" >> $GITHUB_ENV
           echo "UMAMI_SRC=${{ secrets.UMAMI_SRC }}" >> $GITHUB_ENV
-          echo "UMAMI_API_KEY=${{ secrets.UMAMI_API_KEY }}" >> $GITHUB_ENV
-          echo "UMAMI_USERNAME=${{ secrets.UMAMI_USERNAME }}" >> $GITHUB_ENV
-          echo "UMAMI_PASSWORD=${{ secrets.UMAMI_PASSWORD }}" >> $GITHUB_ENV
           echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}" >> $GITHUB_ENV
+          echo "PAGEVIEW_SALT=${{ secrets.PAGEVIEW_SALT }}" >> $GITHUB_ENV
           echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
           echo "THEME=${{ vars.THEME }}" >> $GITHUB_ENV
           echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> $GITHUB_ENV
@@ -142,9 +140,7 @@ jobs:
             "CDN_DOMAIN": "$CDN_DOMAIN",
             "VITE_UMAMI_WEBSITE_ID": "$VITE_UMAMI_WEBSITE_ID",
             "UMAMI_SRC": "$UMAMI_SRC",
-            "UMAMI_API_KEY": "$UMAMI_API_KEY",
-            "UMAMI_USERNAME": "$UMAMI_USERNAME",
-            "UMAMI_PASSWORD": "$UMAMI_PASSWORD",
+            "PAGEVIEW_SALT": "$PAGEVIEW_SALT",
             "TURNSTILE_SECRET_KEY": "$TURNSTILE_SECRET_KEY",
             "GITHUB_TOKEN": "$GITHUB_TOKEN"
           }
