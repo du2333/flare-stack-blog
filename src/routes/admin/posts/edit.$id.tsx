@@ -1,7 +1,11 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { MEDIA_KEYS } from "@/features/media/queries";
-import { updatePostFn as adminUpdatePostFn } from "@/features/posts/api/posts.admin.api";
+import {
+  updatePostFn as adminUpdatePostFn,
+  togglePinPostFn,
+} from "@/features/posts/api/posts.admin.api";
 import { PostEditor } from "@/features/posts/components/post-editor";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
@@ -47,6 +51,19 @@ function EditPost() {
   const { data: post } = useQuery(postByIdQuery(postId));
   const { data: tags } = useQuery(tagsByPostIdQueryOptions(postId));
 
+  const togglePinMutation = useMutation({
+    mutationFn: (pinned: boolean) =>
+      togglePinPostFn({ data: { id: postId, pinned } }),
+    onSuccess: (_data, pinned) => {
+      toast.success(pinned ? "文章已置顶" : "已取消置顶");
+      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.pinned });
+      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.detail(postId) });
+    },
+    onError: () => {
+      toast.error("置顶操作失败");
+    },
+  });
+
   if (!post || !tags) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
@@ -72,6 +89,7 @@ function EditPost() {
     contentJson: post.contentJson,
     publishedAt: post.publishedAt,
     tagIds: tags.map((t) => t.id),
+    pinnedAt: post.pinnedAt,
     isSynced: post.isSynced,
     hasPublicCache: post.hasPublicCache,
   };
@@ -120,5 +138,12 @@ function EditPost() {
     });
   };
 
-  return <PostEditor initialData={initialData} onSave={handleSave} />;
+  return (
+    <PostEditor
+      initialData={initialData}
+      onSave={handleSave}
+      onTogglePin={(pinned) => togglePinMutation.mutate(pinned)}
+      isTogglingPin={togglePinMutation.isPending}
+    />
+  );
 }

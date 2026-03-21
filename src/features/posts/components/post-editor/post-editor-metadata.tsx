@@ -1,4 +1,4 @@
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Pin, PinOff, Sparkles } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ interface PostEditorMetadataProps {
   onCalculateReadTime: () => void;
   onGenerateSummary: () => void;
   onGenerateTags: () => void;
+  onTogglePin?: (pinned: boolean) => void;
+  isTogglingPin?: boolean;
 }
 
 export function PostEditorMetadata({
@@ -37,6 +39,8 @@ export function PostEditorMetadata({
   onCalculateReadTime,
   onGenerateSummary,
   onGenerateTags,
+  onTogglePin,
+  isTogglingPin,
 }: PostEditorMetadataProps) {
   return (
     <>
@@ -74,6 +78,37 @@ export function PostEditorMetadata({
             ))}
           </div>
         </div>
+
+        {post.status === "published" && onTogglePin && (
+          <div className="space-y-3">
+            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+              置顶文章
+            </label>
+            <div>
+              <button
+                onClick={() => onTogglePin(!post.pinnedAt)}
+                disabled={isTogglingPin}
+                className={`
+                  flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider transition-colors
+                  ${
+                    post.pinnedAt
+                      ? "border-b border-foreground font-bold text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }
+                `}
+              >
+                {isTogglingPin ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : post.pinnedAt ? (
+                  <Pin size={12} />
+                ) : (
+                  <PinOff size={12} />
+                )}
+                {post.pinnedAt ? "已置顶" : "未置顶"}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
