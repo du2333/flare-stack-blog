@@ -22,7 +22,7 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
     useViewCounts(allSlugs);
 
   return (
-    <div className="flex flex-col gap-10 md:gap-14">
+    <div className="flex flex-col gap-6 md:gap-8">
       {/* 1. Pinned Posts Spotlight */}
       {pinnedPosts && pinnedPosts.length > 0 && (
         <section className="fuwari-onload-animation">
