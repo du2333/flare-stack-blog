@@ -37,10 +37,19 @@ export const postAutoSnapshotMessageSchema = z.object({
   }),
 });
 
+export const pageviewMessageSchema = z.object({
+  type: z.literal("PAGEVIEW"),
+  data: z.object({
+    postId: z.number().int().positive(),
+    visitorHash: z.string(),
+  }),
+});
+
 export const queueMessageSchema = z.discriminatedUnion("type", [
   emailMessageSchema,
   webhookMessageSchema,
   postAutoSnapshotMessageSchema,
+  pageviewMessageSchema,
 ]);
 
 export type QueueMessage = z.infer<typeof queueMessageSchema>;
@@ -49,3 +58,4 @@ export type WebhookMessage = z.infer<typeof webhookMessageSchema>;
 export type PostAutoSnapshotMessage = z.infer<
   typeof postAutoSnapshotMessageSchema
 >;
+export type PageviewMessage = z.infer<typeof pageviewMessageSchema>;
