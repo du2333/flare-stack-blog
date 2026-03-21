@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import theme from "@theme";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
+import { recordPageViewFn } from "@/features/pageview/api/pageview.api";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
@@ -34,6 +35,9 @@ export const Route = createFileRoute("/_public/post/$slug")({
     );
 
     if (!post) throw notFound();
+
+    // Fire-and-forget: record pageview
+    void recordPageViewFn({ data: { postId: post.id } });
 
     return {
       post,
