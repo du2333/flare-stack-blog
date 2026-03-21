@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import * as AiService from "@/features/ai/ai.service";
 import * as CacheService from "@/features/cache/cache.service";
@@ -15,10 +16,12 @@ import type {
   GetPostsInput,
   PreviewSummaryInput,
   StartPostProcessInput,
+  TogglePinPostInput,
   UpdatePostInput,
 } from "@/features/posts/schema/posts.schema";
 import {
   POSTS_CACHE_KEYS,
+  PostItemSchema,
   PostListResponseSchema,
   PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
@@ -43,6 +46,31 @@ function stripPublicContentJson<T extends { publicContentJson?: unknown }>(
   return rest;
 }
 
+export async function getPinnedPosts(
+  context: DbContext & { executionCtx: ExecutionContext },
+) {
+  const version = await CacheService.getVersion(context, "posts:list");
+  return CacheService.get(
+    context,
+    POSTS_CACHE_KEYS.pinned(version),
+    PostItemSchema.array(),
+    () => PostRepo.findPinnedPosts(context.db),
+    { ttl: "7d" },
+  );
+}
+
+export async function togglePin(
+  context: DbContext & { executionCtx: ExecutionContext },
+  input: TogglePinPostInput,
+) {
+  await context.db
+    .update(PostsTable)
+    .set({ pinnedAt: input.pinned ? new Date() : null })
+    .where(eq(PostsTable.id, input.id));
+
+  await CacheService.invalidateSiteCache(context);
+}
+
 export async function getPostsCursor(
   context: DbContext & { executionCtx: ExecutionContext },
   data: GetPostsCursorInput,
@@ -53,6 +81,7 @@ export async function getPostsCursor(
       limit: data.limit,
       publicOnly: true,
       tagName: data.tagName,
+      excludePinned: data.excludePinned,
     });
 
   const version = await CacheService.getVersion(context, "posts:list");
