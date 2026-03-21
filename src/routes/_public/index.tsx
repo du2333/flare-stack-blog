@@ -2,7 +2,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
 import { siteDomainQuery } from "@/features/config/queries";
-import { featuredPostsQuery } from "@/features/posts/queries";
+import {
+  featuredPostsQuery,
+  pinnedPostsQuery,
+  popularPostsQuery,
+} from "@/features/posts/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 
 const { featuredPostsLimit } = theme.config.home;
@@ -14,6 +18,8 @@ export const Route = createFileRoute("/_public/")({
         featuredPostsQuery(featuredPostsLimit),
       ),
       context.queryClient.ensureQueryData(siteDomainQuery),
+      context.queryClient.ensureQueryData(pinnedPostsQuery),
+      context.queryClient.ensureQueryData(popularPostsQuery),
     ]);
 
     return {
@@ -31,7 +37,16 @@ function HomeRoute() {
   const { data: posts } = useSuspenseQuery(
     featuredPostsQuery(featuredPostsLimit),
   );
-  return <theme.HomePage posts={posts} />;
+  const { data: pinnedPosts } = useSuspenseQuery(pinnedPostsQuery);
+  const { data: popularPosts } = useSuspenseQuery(popularPostsQuery);
+
+  return (
+    <theme.HomePage
+      posts={posts}
+      pinnedPosts={pinnedPosts}
+      popularPosts={popularPosts}
+    />
+  );
 }
 
 function HomePageSkeleton() {
