@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import * as CacheService from "@/features/cache/cache.service";
-import { DASHBOARD_CACHE_KEYS } from "@/features/dashboard/dashboard.schema";
 import * as DashboardService from "@/features/dashboard/service/dashboard.service";
+import { PAGEVIEW_CACHE_KEYS } from "@/features/pageview/pageview.schema";
 import { adminMiddleware } from "@/lib/middlewares";
 
 export const getDashboardStatsFn = createServerFn()
@@ -11,6 +11,6 @@ export const getDashboardStatsFn = createServerFn()
 export const refreshDashboardCacheFn = createServerFn()
   .middleware([adminMiddleware])
   .handler(async ({ context }) => {
-    await CacheService.deleteKey(context, DASHBOARD_CACHE_KEYS.umamiStats);
+    await CacheService.deleteKey(context, PAGEVIEW_CACHE_KEYS.traffic);
     return DashboardService.getDashboardStats(context);
   });
