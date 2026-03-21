@@ -319,6 +319,7 @@ export async function findPostById(
       tagIds: post.tags.map((t) => t.id),
       slug: post.slug,
       publishedAt: post.publishedAt,
+      pinnedAt: post.pinnedAt,
       readTimeInMinutes: post.readTimeInMinutes,
     });
     isSynced = dbHash === kvHash;
@@ -416,6 +417,7 @@ export async function startPostProcessWorkflow(
         tagIds: post.tags.map((tag) => tag.id),
         slug: post.slug,
         publishedAt: post.publishedAt,
+        pinnedAt: post.pinnedAt,
         readTimeInMinutes: post.readTimeInMinutes,
       });
 

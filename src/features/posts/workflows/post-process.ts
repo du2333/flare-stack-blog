@@ -52,6 +52,7 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
           tagIds: p.tags.map((t) => t.id),
           slug: p.slug,
           publishedAt: p.publishedAt,
+          pinnedAt: p.pinnedAt,
           readTimeInMinutes: p.readTimeInMinutes,
         });
         const oldHash = await CacheService.getRaw(
@@ -136,6 +137,7 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
         tagIds: p.tags.map((t) => t.id),
         slug: p.slug,
         publishedAt: p.publishedAt,
+        pinnedAt: p.pinnedAt,
         readTimeInMinutes: p.readTimeInMinutes,
       });
       await CacheService.set(
