@@ -71,6 +71,13 @@
       "when": 1774066164394,
       "tag": "0009_light_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1774071685152,
+      "tag": "0010_romantic_roland_deschain",
+      "breakpoints": true
     }
   ]
 }

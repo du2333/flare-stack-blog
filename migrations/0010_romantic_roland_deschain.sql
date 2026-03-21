@@ -1,0 +1,1 @@
+ALTER TABLE `posts` ADD `pinned_at` integer;
