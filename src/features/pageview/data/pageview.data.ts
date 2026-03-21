@@ -69,10 +69,11 @@ export async function getTopPosts(
   startAt: Date,
   endAt: Date,
   limit = 5,
-): Promise<Array<{ slug: string; views: number }>> {
+): Promise<Array<{ slug: string; title: string; views: number }>> {
   const rows = await db
     .select({
       slug: PostsTable.slug,
+      title: PostsTable.title,
       views: count().as("views"),
     })
     .from(PageViewsTable)
@@ -87,5 +88,5 @@ export async function getTopPosts(
     .orderBy(sql`views DESC`)
     .limit(limit);
 
-  return rows.map((r) => ({ slug: r.slug, views: r.views }));
+  return rows.map((r) => ({ slug: r.slug, title: r.title, views: r.views }));
 }
