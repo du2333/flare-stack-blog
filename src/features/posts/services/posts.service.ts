@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import * as AiService from "@/features/ai/ai.service";
 import * as CacheService from "@/features/cache/cache.service";
@@ -16,7 +15,6 @@ import type {
   GetPostsInput,
   PreviewSummaryInput,
   StartPostProcessInput,
-  TogglePinPostInput,
   UpdatePostInput,
 } from "@/features/posts/schema/posts.schema";
 import {
@@ -36,7 +34,6 @@ import { isFuturePublishDate } from "@/features/posts/utils/date";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
 import * as SearchService from "@/features/search/service/search.service";
-import { PostsTable } from "@/lib/db/schema";
 import { err, ok } from "@/lib/errors";
 import { purgePostCDNCache } from "@/lib/invalidate";
 
@@ -58,18 +55,6 @@ export async function getPinnedPosts(
     () => PostRepo.findPinnedPosts(context.db),
     { ttl: "7d" },
   );
-}
-
-export async function togglePin(
-  context: DbContext & { executionCtx: ExecutionContext },
-  input: TogglePinPostInput,
-) {
-  await context.db
-    .update(PostsTable)
-    .set({ pinnedAt: input.pinned ? new Date() : null })
-    .where(eq(PostsTable.id, input.id));
-
-  await CacheService.invalidateSiteCache(context);
 }
 
 export async function getPostsCursor(

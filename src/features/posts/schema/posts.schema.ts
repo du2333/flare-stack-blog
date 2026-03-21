@@ -100,13 +100,6 @@ export const UpdatePostInputSchema = z.object({
 
 export const DeletePostInputSchema = z.object({ id: z.number() });
 
-export const TogglePinPostInputSchema = z.object({
-  id: z.number(),
-  pinned: z.boolean(),
-});
-
-export type TogglePinPostInput = z.infer<typeof TogglePinPostInputSchema>;
-
 export const PreviewSummaryInputSchema = PostSelectSchema.pick({
   contentJson: true,
 });

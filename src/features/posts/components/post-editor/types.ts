@@ -18,8 +18,6 @@ export interface PostEditorData {
 export interface PostEditorProps {
   initialData: PostEditorData & { id: number };
   onSave: (data: PostEditorData) => Promise<void>;
-  onTogglePin?: (pinned: boolean) => void;
-  isTogglingPin?: boolean;
 }
 
 export type SaveStatus = "SYNCED" | "SAVING" | "PENDING" | "ERROR";

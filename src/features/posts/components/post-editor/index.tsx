@@ -18,12 +18,7 @@ import { PostEditorMetadata } from "./post-editor-metadata";
 import { PostEditorStatusBar } from "./post-editor-status-bar";
 import type { PostEditorData, PostEditorProps } from "./types";
 
-export function PostEditor({
-  initialData,
-  onSave,
-  onTogglePin,
-  isTogglingPin,
-}: PostEditorProps) {
+export function PostEditor({ initialData, onSave }: PostEditorProps) {
   // Initialize post state from initialData (always provided)
   const [post, setPost] = useState<PostEditorData>(() => ({
     title: initialData.title,
@@ -236,8 +231,6 @@ export function PostEditor({
               onCalculateReadTime={handleCalculateReadTime}
               onGenerateSummary={handleGenerateSummary}
               onGenerateTags={handleGenerateTags}
-              onTogglePin={onTogglePin}
-              isTogglingPin={isTogglingPin}
             />
 
             {/* Editor Area */}

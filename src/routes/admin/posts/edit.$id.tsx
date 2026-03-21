@@ -1,11 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { toast } from "sonner";
 import { MEDIA_KEYS } from "@/features/media/queries";
-import {
-  updatePostFn as adminUpdatePostFn,
-  togglePinPostFn,
-} from "@/features/posts/api/posts.admin.api";
+import { updatePostFn as adminUpdatePostFn } from "@/features/posts/api/posts.admin.api";
 import { PostEditor } from "@/features/posts/components/post-editor";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
@@ -50,19 +46,6 @@ function EditPost() {
   // Since loader ensures data is in cache, these will have initial data immediately.
   const { data: post } = useQuery(postByIdQuery(postId));
   const { data: tags } = useQuery(tagsByPostIdQueryOptions(postId));
-
-  const togglePinMutation = useMutation({
-    mutationFn: (pinned: boolean) =>
-      togglePinPostFn({ data: { id: postId, pinned } }),
-    onSuccess: (_data, pinned) => {
-      toast.success(pinned ? m.editor_pin_success() : m.editor_unpin_success());
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.pinned });
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.detail(postId) });
-    },
-    onError: () => {
-      toast.error(m.editor_pin_error());
-    },
-  });
 
   if (!post || !tags) {
     return (
@@ -138,12 +121,5 @@ function EditPost() {
     });
   };
 
-  return (
-    <PostEditor
-      initialData={initialData}
-      onSave={handleSave}
-      onTogglePin={(pinned) => togglePinMutation.mutate(pinned)}
-      isTogglingPin={togglePinMutation.isPending}
-    />
-  );
+  return <PostEditor initialData={initialData} onSave={handleSave} />;
 }

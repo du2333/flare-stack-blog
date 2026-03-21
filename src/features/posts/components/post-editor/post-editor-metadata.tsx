@@ -24,8 +24,6 @@ interface PostEditorMetadataProps {
   onCalculateReadTime: () => void;
   onGenerateSummary: () => void;
   onGenerateTags: () => void;
-  onTogglePin?: (pinned: boolean) => void;
-  isTogglingPin?: boolean;
 }
 
 export function PostEditorMetadata({
@@ -39,8 +37,6 @@ export function PostEditorMetadata({
   onCalculateReadTime,
   onGenerateSummary,
   onGenerateTags,
-  onTogglePin,
-  isTogglingPin,
 }: PostEditorMetadataProps) {
   return (
     <>
@@ -79,15 +75,18 @@ export function PostEditorMetadata({
           </div>
         </div>
 
-        {post.status === "published" && onTogglePin && (
+        {post.status === "published" && (
           <div className="space-y-3">
             <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
               {m.editor_meta_pin()}
             </label>
             <div>
               <button
-                onClick={() => onTogglePin(!post.pinnedAt)}
-                disabled={isTogglingPin}
+                onClick={() =>
+                  onPostChange({
+                    pinnedAt: post.pinnedAt ? null : new Date(),
+                  })
+                }
                 className={`
                   flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider transition-colors
                   ${
@@ -97,14 +96,10 @@ export function PostEditorMetadata({
                   }
                 `}
               >
-                {isTogglingPin ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : post.pinnedAt ? (
-                  <Pin size={12} />
-                ) : (
-                  <PinOff size={12} />
-                )}
-                {post.pinnedAt ? m.editor_meta_pinned() : m.editor_meta_unpinned()}
+                {post.pinnedAt ? <Pin size={12} /> : <PinOff size={12} />}
+                {post.pinnedAt
+                  ? m.editor_meta_pinned()
+                  : m.editor_meta_unpinned()}
               </button>
             </div>
           </div>
