@@ -67,6 +67,7 @@ export async function getPosts(
       slug: PostsTable.slug,
       status: PostsTable.status,
       publishedAt: PostsTable.publishedAt,
+      pinnedAt: PostsTable.pinnedAt,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
     })
@@ -112,7 +113,13 @@ export async function getPostsCursor(
   items: Array<PostListItem>;
   nextCursor: number | null;
 }> {
-  const { cursor, limit = DEFAULT_PAGE_SIZE, publicOnly, tagName, excludePinned } = options;
+  const {
+    cursor,
+    limit = DEFAULT_PAGE_SIZE,
+    publicOnly,
+    tagName,
+    excludePinned,
+  } = options;
 
   // Build base conditions from helper
   const baseConditions = buildPostWhereClause({ publicOnly });
@@ -162,6 +169,7 @@ export async function getPostsCursor(
       slug: PostsTable.slug,
       status: PostsTable.status,
       publishedAt: PostsTable.publishedAt,
+      pinnedAt: PostsTable.pinnedAt,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
     })
