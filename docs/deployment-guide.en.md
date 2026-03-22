@@ -245,7 +245,7 @@ Since this is a full-stack project, there are two types of variables:
 
 ### 3. How do I configure analytics?
 
-The system has built-in pageview statistics (using Cloudflare Queue + D1). Set `PAGEVIEW_SALT` to enable anonymous visitor tracking. The admin dashboard shows traffic overview, and the homepage displays popular posts.
+The system has built-in pageview statistics (using Cloudflare Queue + D1). The admin dashboard shows traffic overview, and the homepage displays popular posts. Optionally set `PAGEVIEW_SALT` to strengthen visitor hash anonymization.
 
 Optionally, you can also use Umami for client-side tracking by setting `UMAMI_SRC` and `VITE_UMAMI_WEBSITE_ID`:
 
