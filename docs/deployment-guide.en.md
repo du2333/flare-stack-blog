@@ -109,20 +109,18 @@ In your GitHub repository, go to Settings -> Secrets and variables -> Actions, c
 | `CLOUDFLARE_PURGE_API_TOKEN` | The CDN Purge Token from Phase 1, Step 5A |
 | `DOMAIN` | Your blog domain (e.g., `blog.example.com`) |
 
-**C. Optional Runtime Analytics Configuration (Secrets)**
+**C. Optional Runtime Configuration (Secrets)**
 | Variable Name | Description |
 | :--- | :--- |
 | `GH_TOKEN` | Used to check for version updates. To avoid GitHub API rate limits (since multiple Workers share IPs), configure a [Fine-grained Personal Access Token](https://github.com/settings/personal-access-tokens/new) with default permissions. |
-| `UMAMI_SRC` | Umami instance URL |
-| `UMAMI_API_KEY` | Umami API Key (Umami Cloud) |
-| `UMAMI_USERNAME` | Umami Username (Self-hosted) |
-| `UMAMI_PASSWORD` | Umami Password (Self-hosted) |
+| `PAGEVIEW_SALT` | Salt for anonymizing pageview visitor hashes. Generate with `openssl rand -hex 16`. |
+| `UMAMI_SRC` | Umami client-side tracking proxy URL (e.g., `https://cloud.umami.is`) |
 
 **D. Optional Build-time Frontend Variables**
 These variables usually go into the `Variables` tab. They start with `VITE_` and are injected into the client code.
 | Variable Name | Description |
 | :--- | :--- |
-| `VITE_UMAMI_WEBSITE_ID` | Umami Website ID (Note: This is set as a Variable, not a Secret) |
+| `VITE_UMAMI_WEBSITE_ID` | Umami Website ID for client-side tracking (Note: This is set as a Variable, not a Secret) |
 
 Site title, description, theme images, favicon assets, and other personalization are managed from the admin **Settings** page after you create and log into an admin account. `src/blog.config.ts` remains the seeded default/fallback source used before runtime overrides are saved.
 
@@ -245,28 +243,16 @@ Since this is a full-stack project, there are two types of variables:
 - **Runtime variables**: Read by the server code during execution. These are used in server-side logic dynamically.
   In Option 1 (GitHub Actions), you just put everything into your GitHub Secrets/Variables and the pipeline sorts them. In Option 2 (Cloudflare Dashboard), you put Build variables in Settings -> Build -> Variables, and Runtime variables in Settings -> Variables and Secrets.
 
-### 3. How do I configure Umami?
+### 3. How do I configure analytics?
 
-**Umami Cloud Example**:
+The system has built-in pageview statistics (using Cloudflare Queue + D1). Set `PAGEVIEW_SALT` to enable anonymous visitor tracking. The admin dashboard shows traffic overview, and the homepage displays popular posts.
+
+Optionally, you can also use Umami for client-side tracking by setting `UMAMI_SRC` and `VITE_UMAMI_WEBSITE_ID`:
 
 ```bash
 UMAMI_SRC=https://cloud.umami.is
-UMAMI_API_KEY=your-cloud-api-key
 VITE_UMAMI_WEBSITE_ID=your-website-id
-# Do not set UMAMI_USERNAME and UMAMI_PASSWORD
 ```
-
-**Self-hosted Umami Example**:
-
-```bash
-UMAMI_SRC=https://umami.yourdomain.com
-UMAMI_USERNAME=your-username
-UMAMI_PASSWORD=your-password
-VITE_UMAMI_WEBSITE_ID=your-website-id
-# Do not set UMAMI_API_KEY
-```
-
-_The system detects if `UMAMI_API_KEY` is present to automatically determine between Cloud or Self-hosted modes._
 
 ### 4. I published a post, why isn't it showing on the frontend?
 
