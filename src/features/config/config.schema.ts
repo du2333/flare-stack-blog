@@ -8,12 +8,51 @@ import {
 import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
 import type { Messages } from "@/lib/i18n";
 
+export const EMAIL_PROVIDERS = [
+  "resend",
+  "postmark",
+  "mailgun",
+  "sendgrid",
+  "mandrill",
+] as const;
+export type EmailProvider = (typeof EMAIL_PROVIDERS)[number];
+
+const emailProviderConfigSchema = z.object({
+  apiKey: z.string().optional(),
+});
+
+const emailPostmarkConfigSchema = z.object({
+  apiKey: z.string().optional(),
+  serverId: z.number().optional(),
+});
+
+const emailMailgunConfigSchema = z.object({
+  apiKey: z.string().optional(),
+  domain: z.string().optional(),
+});
+
+const emailSendgridConfigSchema = z.object({
+  apiKey: z.string().optional(),
+});
+
+const emailMandrillConfigSchema = z.object({
+  apiKey: z.string().optional(),
+});
+
 export const SystemConfigSchema = z.object({
   email: z
     .object({
-      apiKey: z.string().optional(),
+      provider: z
+        .enum(EMAIL_PROVIDERS)
+        .default("resend")
+        .optional(),
       senderName: z.string().optional(),
       senderAddress: z.union([z.email(), z.literal("")]).optional(),
+      resend: emailProviderConfigSchema.optional(),
+      postmark: emailPostmarkConfigSchema.optional(),
+      mailgun: emailMailgunConfigSchema.optional(),
+      sendgrid: emailSendgridConfigSchema.optional(),
+      mandrill: emailMandrillConfigSchema.optional(),
     })
     .optional(),
   notification: z
@@ -54,9 +93,14 @@ export type {
 
 export const DEFAULT_CONFIG: SystemConfig = {
   email: {
-    apiKey: "",
+    provider: "resend",
     senderName: "",
     senderAddress: "",
+    resend: { apiKey: "" },
+    postmark: { apiKey: "", serverId: undefined },
+    mailgun: { apiKey: "", domain: "" },
+    sendgrid: { apiKey: "" },
+    mandrill: { apiKey: "" },
   },
   notification: {
     admin: {
