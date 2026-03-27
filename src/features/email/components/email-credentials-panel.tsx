@@ -3,13 +3,17 @@ import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { m } from "@/paraglide/messages";
+import type { EmailProvider } from "@/features/config/config.schema";
 
 interface EmailCredentialsPanelProps<TFieldValues extends FieldValues> {
   register: UseFormRegister<TFieldValues>;
   showKey: boolean;
+  provider: EmailProvider;
   senderNameError?: string;
   senderAddressError?: string;
   apiKeyError?: string;
+  domainError?: string;
+  serverIdError?: string;
   onToggleKeyVisibility: () => void;
   onFieldChange: () => void;
 }
@@ -17,14 +21,18 @@ interface EmailCredentialsPanelProps<TFieldValues extends FieldValues> {
 export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
   register,
   showKey,
+  provider,
   senderNameError,
   senderAddressError,
   apiKeyError,
+  domainError,
+  serverIdError,
   onToggleKeyVisibility,
   onFieldChange,
 }: EmailCredentialsPanelProps<TFieldValues>) {
   return (
     <>
+      {/* API Key — 所有 provider 都需要 */}
       <div className="space-y-8 p-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -48,7 +56,7 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
             <Input
               id="email-api-key"
               type={showKey ? "text" : "password"}
-              {...register("email.apiKey" as FieldPath<TFieldValues>, {
+              {...register(`email.${provider}.apiKey` as FieldPath<TFieldValues>, {
                 onChange: onFieldChange,
               })}
               placeholder={m.settings_email_creds_api_key_ph()}
@@ -72,8 +80,49 @@ export function EmailCredentialsPanel<TFieldValues extends FieldValues>({
             <p className="text-xs text-red-500">! {apiKeyError}</p>
           )}
         </div>
+
+        {/* Postmark 专属：Server ID */}
+        {provider === "postmark" && (
+          <div className="max-w-2xl space-y-4 px-2">
+            <label className="text-sm text-muted-foreground">
+              Server ID
+            </label>
+            <Input
+              type="number"
+              {...register(`email.postmark.serverId` as FieldPath<TFieldValues>, {
+                onChange: onFieldChange,
+                valueAsNumber: true,
+              })}
+              placeholder="1234"
+              className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm transition-all focus-visible:border-border/60 focus-visible:ring-1 focus-visible:ring-foreground/10"
+            />
+            {serverIdError && (
+              <p className="text-xs text-red-500">! {serverIdError}</p>
+            )}
+          </div>
+        )}
+
+        {/* Mailgun 专属：Domain */}
+        {provider === "mailgun" && (
+          <div className="max-w-2xl space-y-4 px-2">
+            <label className="text-sm text-muted-foreground">
+              Domain
+            </label>
+            <Input
+              {...register(`email.mailgun.domain` as FieldPath<TFieldValues>, {
+                onChange: onFieldChange,
+              })}
+              placeholder="mg.yourdomain.com"
+              className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm transition-all focus-visible:border-border/60 focus-visible:ring-1 focus-visible:ring-foreground/10"
+            />
+            {domainError && (
+              <p className="text-xs text-red-500">! {domainError}</p>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* 发件人信息 */}
       <div className="space-y-8 p-8">
         <div className="flex items-center gap-4">
           <div className="rounded-sm bg-muted/40 p-2">
