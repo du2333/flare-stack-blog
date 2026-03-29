@@ -119,8 +119,10 @@ jobs:
 
       - name: Inject Resource IDs
         run: |
-          ROUTE="${{ vars.ROUTE }}"
+          ROUTE="${ROUTE:-${{ vars.ROUTE }}}"
+          ZONE_NAME="${ZONE_NAME:-${{ vars.ZONE_NAME }}}"
           export ROUTE
+          export ZONE_NAME
           bun run wrangler:prepare
 
       - name: Generate Secrets JSON
