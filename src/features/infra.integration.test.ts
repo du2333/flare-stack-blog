@@ -437,5 +437,50 @@ describe("Infra Integration", () => {
 
       expect(purgeSiteCDNCacheSpy).not.toHaveBeenCalled();
     });
+
+    it("migrates legacy Resend config to SMTP fields when reading", async () => {
+      await ConfigRepo.upsertSystemConfig(context.db, {
+        ...DEFAULT_CONFIG,
+        email: {
+          apiKey: "re_legacy_key",
+          senderName: "Legacy Sender",
+          senderAddress: "legacy@example.com",
+        },
+      });
+
+      const config = await ConfigService.getSystemConfig(context);
+
+      expect(config.email).toEqual({
+        host: "smtp.resend.com",
+        port: 465,
+        username: "resend",
+        password: "re_legacy_key",
+        senderName: "Legacy Sender",
+        senderAddress: "legacy@example.com",
+      });
+    });
+
+    it("stores the normalized SMTP config without legacy apiKey field", async () => {
+      await ConfigService.updateSystemConfig(context, {
+        ...DEFAULT_CONFIG,
+        email: {
+          apiKey: "re_legacy_key",
+          senderName: "Legacy Sender",
+          senderAddress: "legacy@example.com",
+        },
+      });
+
+      const stored = await ConfigRepo.getSystemConfig(context.db);
+
+      expect(stored?.email).toEqual({
+        host: "smtp.resend.com",
+        port: 465,
+        username: "resend",
+        password: "re_legacy_key",
+        senderName: "Legacy Sender",
+        senderAddress: "legacy@example.com",
+      });
+      expect(stored?.email).not.toHaveProperty("apiKey");
+    });
   });
 });

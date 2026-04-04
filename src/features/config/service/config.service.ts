@@ -12,16 +12,35 @@ import type { SocialLink } from "@/features/config/utils/social-platforms";
 import * as Storage from "@/features/media/data/media.storage";
 import { purgeSiteCDNCache } from "@/lib/invalidate";
 
+const DEFAULT_SMTP_PORT = 465;
+const RESEND_SMTP_HOST = "smtp.resend.com";
+const RESEND_SMTP_USERNAME = "resend";
+
+function resolveEmailConfig(config: SystemConfig | null | undefined) {
+  const email = config?.email;
+  const legacyApiKey = email?.apiKey?.trim() || "";
+  const password = email?.password?.trim() || legacyApiKey;
+  const host = email?.host?.trim() || (legacyApiKey ? RESEND_SMTP_HOST : "");
+  const username =
+    email?.username?.trim() || (legacyApiKey ? RESEND_SMTP_USERNAME : "");
+
+  return {
+    host,
+    port: email?.port ?? DEFAULT_SMTP_PORT,
+    username,
+    password,
+    senderName: email?.senderName ?? "",
+    senderAddress: email?.senderAddress ?? "",
+  };
+}
+
 export function resolveSystemConfig(
   config: SystemConfig | null | undefined,
 ): SystemConfig {
   return {
     ...DEFAULT_CONFIG,
     ...config,
-    email: {
-      ...DEFAULT_CONFIG.email,
-      ...config?.email,
-    },
+    email: resolveEmailConfig(config),
     notification: {
       ...DEFAULT_CONFIG.notification,
       ...config?.notification,

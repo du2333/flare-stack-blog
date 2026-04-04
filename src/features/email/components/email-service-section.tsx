@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 import type { SystemConfig } from "@/features/config/config.schema";
 import type { Result } from "@/lib/errors";
+import { m } from "@/paraglide/messages";
 import { EmailCredentialsPanel } from "./email-credentials-panel";
 import { EmailDocPanel } from "./email-doc-panel";
 import { EmailNotificationScope } from "./email-notification-scope";
@@ -12,7 +14,10 @@ type ConnectionStatus = "IDLE" | "TESTING" | "SUCCESS" | "ERROR";
 interface EmailSectionProps {
   testEmailConnection: (options: {
     data: {
-      apiKey: string;
+      host: string;
+      port: number;
+      username: string;
+      password: string;
       senderAddress: string;
       senderName?: string;
     };
@@ -24,7 +29,7 @@ interface EmailSectionProps {
 export function EmailServiceSection({
   testEmailConnection,
 }: EmailSectionProps) {
-  const [showKey, setShowKey] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<ConnectionStatus>("IDLE");
 
   const {
@@ -37,9 +42,11 @@ export function EmailServiceSection({
   const emailConfig = watch("email");
   const adminEmailEnabled = watch("notification.admin.channels.email") ?? true;
   const userEmailEnabled = watch("notification.user.emailEnabled") ?? true;
-  // Check if configured: need apiKey and senderAddress
   const isConfigured =
-    !!emailConfig?.apiKey?.trim() && !!emailConfig.senderAddress?.trim();
+    !!emailConfig?.host?.trim() &&
+    !!emailConfig?.username?.trim() &&
+    !!emailConfig?.password?.trim() &&
+    !!emailConfig?.senderAddress?.trim();
 
   const handleTest = async () => {
     if (!isConfigured) return;
@@ -48,7 +55,10 @@ export function EmailServiceSection({
     try {
       const result = await testEmailConnection({
         data: {
-          apiKey: emailConfig?.apiKey || "",
+          host: emailConfig?.host || "",
+          port: emailConfig?.port || 465,
+          username: emailConfig?.username || "",
+          password: emailConfig?.password || "",
           senderAddress: emailConfig?.senderAddress || "",
           senderName: emailConfig?.senderName,
         },
@@ -58,9 +68,18 @@ export function EmailServiceSection({
         setStatus("SUCCESS");
       } else {
         setStatus("ERROR");
+        toast.error(m.settings_email_test_status_error(), {
+          description: result.error.message,
+        });
       }
-    } catch {
+    } catch (error) {
       setStatus("ERROR");
+      toast.error(m.settings_email_test_status_error(), {
+        description:
+          error instanceof Error
+            ? error.message
+            : m.settings_email_unknown_error(),
+      });
     }
   };
 
@@ -90,11 +109,14 @@ export function EmailServiceSection({
 
         <EmailCredentialsPanel<SystemConfig>
           register={register}
-          showKey={showKey}
-          apiKeyError={errors.email?.apiKey?.message}
+          showPassword={showPassword}
+          hostError={errors.email?.host?.message}
+          portError={errors.email?.port?.message}
+          usernameError={errors.email?.username?.message}
+          passwordError={errors.email?.password?.message}
           senderNameError={errors.email?.senderName?.message}
           senderAddressError={errors.email?.senderAddress?.message}
-          onToggleKeyVisibility={() => setShowKey((prev) => !prev)}
+          onTogglePasswordVisibility={() => setShowPassword((prev) => !prev)}
           onFieldChange={() => setStatus("IDLE")}
         />
 
