@@ -460,6 +460,50 @@ describe("Infra Integration", () => {
       });
     });
 
+    it("normalizes legacy cached email config on cache hit", async () => {
+      await context.env.KV.put(
+        "system",
+        JSON.stringify({
+          ...DEFAULT_CONFIG,
+          email: {
+            apiKey: "re_cached_key",
+            senderName: "Cached Sender",
+            senderAddress: "cached@example.com",
+          },
+        }),
+      );
+
+      const config = await ConfigService.getSystemConfig(context);
+
+      expect(config.email).toEqual({
+        host: "smtp.resend.com",
+        port: 465,
+        username: "resend",
+        password: "re_cached_key",
+        senderName: "Cached Sender",
+        senderAddress: "cached@example.com",
+      });
+
+      await waitForBackgroundTasks(context.executionCtx);
+
+      const cached = await context.env.KV.get("system", "json");
+      expect(cached).toMatchObject({
+        email: {
+          host: "smtp.resend.com",
+          port: 465,
+          username: "resend",
+          password: "re_cached_key",
+          senderName: "Cached Sender",
+          senderAddress: "cached@example.com",
+        },
+      });
+      expect(cached).not.toMatchObject({
+        email: expect.objectContaining({
+          apiKey: expect.anything(),
+        }),
+      });
+    });
+
     it("stores the normalized SMTP config without legacy apiKey field", async () => {
       await ConfigService.updateSystemConfig(context, {
         ...DEFAULT_CONFIG,

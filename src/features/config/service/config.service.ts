@@ -149,13 +149,28 @@ function hasSiteConfigChanged(
 export async function getSystemConfig(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  return await CacheService.get(
+  const config = await CacheService.get(
     context,
     CONFIG_CACHE_KEYS.system,
     SystemConfigSchema,
     async () =>
       resolveSystemConfig(await ConfigRepo.getSystemConfig(context.db)),
   );
+
+  const normalizedConfig = resolveSystemConfig(config);
+
+  if (JSON.stringify(config) !== JSON.stringify(normalizedConfig)) {
+    context.executionCtx.waitUntil(
+      CacheService.set(
+        context,
+        CONFIG_CACHE_KEYS.system,
+        JSON.stringify(normalizedConfig),
+        { ttl: "1h" },
+      ),
+    );
+  }
+
+  return normalizedConfig;
 }
 
 export async function getSiteConfig(
