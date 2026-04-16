@@ -7,18 +7,20 @@ export async function calculatePostHash(post: {
   tagIds: Array<number>;
   slug: string;
   publishedAt: Date | string | null;
+  pinnedAt?: Date | string | null;
   readTimeInMinutes: number;
 }): Promise<string> {
+  const toISOOrNull = (d: Date | string | null) =>
+    d instanceof Date ? d.toISOString() : d;
+
   const stateToHash = {
     title: post.title,
     contentJson: post.contentJson,
     summary: post.summary,
     tagIds: [...post.tagIds].sort(),
     slug: post.slug,
-    publishedAt:
-      post.publishedAt instanceof Date
-        ? post.publishedAt.toISOString()
-        : post.publishedAt,
+    publishedAt: toISOOrNull(post.publishedAt),
+    pinnedAt: toISOOrNull(post.pinnedAt ?? null),
     readTimeInMinutes: post.readTimeInMinutes,
   };
 

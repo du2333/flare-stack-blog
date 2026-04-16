@@ -1,30 +1,34 @@
-import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import {
+  assertMediaKey,
   GetMediaListInputSchema,
+  MediaKeyInputSchema,
+  parseUploadMediaInput,
   UpdateMediaNameInputSchema,
   UploadMediaInputSchema,
 } from "@/features/media/media.schema";
 import * as MediaService from "@/features/media/service/media.service";
 import { adminMiddleware } from "@/lib/middlewares";
+import { m } from "@/paraglide/messages";
 
 export const uploadImageFn = createServerFn({
   method: "POST",
 })
   .middleware([adminMiddleware])
   .inputValidator(UploadMediaInputSchema)
-  .handler(({ data: file, context }) => MediaService.upload(context, file));
+  .handler(({ data, context }) =>
+    MediaService.upload(context, parseUploadMediaInput(data, m)),
+  );
 
 export const deleteImageFn = createServerFn({
   method: "POST",
 })
   .middleware([adminMiddleware])
-  .inputValidator(
-    z.object({
-      key: z.string().min(1, "Image key is required"),
-    }),
-  )
-  .handler(({ data, context }) => MediaService.deleteImage(context, data.key));
+  .inputValidator(MediaKeyInputSchema)
+  .handler(({ data, context }) =>
+    MediaService.deleteImage(context, assertMediaKey(data.key, m)),
+  );
 
 export const getMediaFn = createServerFn()
   .middleware([adminMiddleware])
@@ -33,13 +37,9 @@ export const getMediaFn = createServerFn()
 
 export const getLinkedPostsFn = createServerFn()
   .middleware([adminMiddleware])
-  .inputValidator(
-    z.object({
-      key: z.string().min(1, "Image key is required"),
-    }),
-  )
+  .inputValidator(MediaKeyInputSchema)
   .handler(({ data, context }) =>
-    MediaService.getLinkedPosts(context, data.key),
+    MediaService.getLinkedPosts(context, assertMediaKey(data.key, m)),
   );
 
 export const getLinkedMediaKeysFn = createServerFn()

@@ -1,3 +1,5 @@
+中文 | [English](./error-handling-quickstart.en.md)
+
 # 错误处理与 Result 模式快速上手
 
 这份文档用于统一项目中的错误处理方式，帮助贡献者快速判断「该返回 `Result` 还是直接 `throw`」。

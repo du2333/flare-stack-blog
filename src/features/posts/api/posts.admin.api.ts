@@ -9,8 +9,8 @@ import {
   PreviewSummaryInputSchema,
   StartPostProcessInputSchema,
   UpdatePostInputSchema,
-} from "@/features/posts/posts.schema";
-import * as PostService from "@/features/posts/posts.service";
+} from "@/features/posts/schema/posts.schema";
+import * as PostService from "@/features/posts/services/posts.service";
 import { adminMiddleware } from "@/lib/middlewares";
 
 export const generateSlugFn = createServerFn()

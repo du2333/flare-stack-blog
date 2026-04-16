@@ -1,5 +1,7 @@
+import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
 import clsx from "clsx";
+import type { LucideIcon } from "lucide-react";
 import {
   Bold,
   Code,
@@ -11,9 +13,8 @@ import {
   Underline as UnderlineIcon,
   Undo,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
-import type { LucideIcon } from "lucide-react";
 import type React from "react";
+import { m } from "@/paraglide/messages";
 
 interface CommentEditorToolbarProps {
   editor: Editor;
@@ -75,31 +76,31 @@ const CommentEditorToolbar: React.FC<CommentEditorToolbarProps> = ({
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={isBold}
         icon={Bold}
-        label="Bold"
+        label={m.comments_editor_toolbar_bold()}
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={isItalic}
         icon={Italic}
-        label="Italic"
+        label={m.comments_editor_toolbar_italic()}
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleUnderline().run()}
         isActive={isUnderline}
         icon={UnderlineIcon}
-        label="Underline"
+        label={m.comments_editor_toolbar_underline()}
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         isActive={isStrike}
         icon={Strikethrough}
-        label="Strike"
+        label={m.comments_editor_toolbar_strike()}
       />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleCode().run()}
         isActive={isCode}
         icon={Code}
-        label="Code"
+        label={m.comments_editor_toolbar_code()}
       />
 
       <div className="h-4 w-px bg-border/20 mx-1"></div>
@@ -109,25 +110,25 @@ const CommentEditorToolbar: React.FC<CommentEditorToolbarProps> = ({
         onClick={onLinkClick}
         isActive={isLink}
         icon={LinkIcon}
-        label="Link"
+        label={m.comments_editor_toolbar_link()}
       />
       <ToolbarButton
         onClick={onImageClick}
         isActive={false}
         icon={ImageIcon}
-        label="Image"
+        label={m.comments_editor_toolbar_image()}
       />
 
       <div className="ml-auto flex gap-0.5">
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
           icon={Undo}
-          label="Undo"
+          label={m.comments_editor_toolbar_undo()}
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().redo().run()}
           icon={Redo}
-          label="Redo"
+          label={m.comments_editor_toolbar_redo()}
         />
       </div>
     </div>

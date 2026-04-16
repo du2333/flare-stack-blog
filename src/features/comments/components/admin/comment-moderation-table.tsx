@@ -1,20 +1,20 @@
-import { Link, RouteApi } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi, Link } from "@tanstack/react-router";
+import type { JSONContent } from "@tiptap/react";
 import { AlertTriangle, Loader2, MessageSquareOff } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { COMMENTS_KEYS, allCommentsQuery } from "../../queries";
-import { useAdminComments } from "../../hooks/use-comments";
-
-import { CommentModerationActions } from "./comment-moderation-actions";
-import { UserHoverCard } from "./user-hover-card";
-import type { JSONContent } from "@tiptap/react";
-import type { CommentStatus } from "@/lib/db/schema";
-import { ExpandableContent } from "@/features/theme/themes/default/components/comments/view/expandable-content";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AdminPagination } from "@/components/admin/admin-pagination";
+import { ExpandableContent } from "@/features/theme/themes/default/components/comments/view/expandable-content";
+import type { CommentStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { useAdminComments } from "../../hooks/use-comments";
+import { allCommentsQuery, COMMENTS_KEYS } from "../../queries";
+import { CommentModerationActions } from "./comment-moderation-actions";
+import { UserHoverCard } from "./user-hover-card";
 
 interface CommentModerationTableProps {
   status?: CommentStatus;
@@ -24,7 +24,7 @@ interface CommentModerationTableProps {
 }
 
 const PAGE_SIZE = 20;
-const routeApi = new RouteApi({ id: "/admin/comments/" });
+const routeApi = getRouteApi("/admin/comments/");
 
 export const CommentModerationTable = ({
   status,
@@ -37,7 +37,6 @@ export const CommentModerationTable = ({
     data: response,
     isLoading,
     isError,
-    error,
   } = useQuery(
     allCommentsQuery({
       status,
@@ -74,18 +73,20 @@ export const CommentModerationTable = ({
 
   const handleBatchApprove = async () => {
     if (selectedIds.size === 0) return;
-    const toastId = toast.loading(`正在批准 ${selectedIds.size} 条评论...`);
+    const toastId = toast.loading(
+      m.comments_batch_approve_loading({ count: selectedIds.size }),
+    );
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
           moderateAsync({ data: { id, status: "published" } }),
         ),
       );
-      toast.success("批量批准完成", { id: toastId });
+      toast.success(m.comments_batch_approve_success(), { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
     } catch (caughtError) {
-      toast.error("部分操作失败", {
+      toast.error(m.comments_batch_partial_fail(), {
         id: toastId,
       });
     }
@@ -94,7 +95,7 @@ export const CommentModerationTable = ({
   const handleBatchTrash = async () => {
     if (selectedIds.size === 0) return;
     const toastId = toast.loading(
-      `正在移入垃圾箱 ${selectedIds.size} 条评论...`,
+      m.comments_batch_trash_loading({ count: selectedIds.size }),
     );
     try {
       await Promise.all(
@@ -102,11 +103,11 @@ export const CommentModerationTable = ({
           moderateAsync({ data: { id, status: "deleted" } }),
         ),
       );
-      toast.success("已移入垃圾箱", { id: toastId });
+      toast.success(m.comments_batch_trash_success(), { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
     } catch (caughtError) {
-      toast.error("部分操作失败", {
+      toast.error(m.comments_batch_partial_fail(), {
         id: toastId,
       });
     }
@@ -124,7 +125,7 @@ export const CommentModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <AlertTriangle size={40} strokeWidth={1} className="opacity-30" />
-        <p>{error.message}</p>
+        <p>{m.comments_admin_load_fail()}</p>
       </div>
     );
   }
@@ -133,7 +134,7 @@ export const CommentModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <MessageSquareOff size={40} strokeWidth={1} className="opacity-20" />
-        <p>未找到匹配的评论</p>
+        <p>{m.comments_empty()}</p>
       </div>
     );
   }
@@ -149,13 +150,13 @@ export const CommentModerationTable = ({
         <div className="sticky top-4 z-40 flex items-center justify-between p-4 bg-background border border-border/30 shadow-none animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="flex items-center gap-6">
             <span className="text-[10px] font-mono font-medium uppercase tracking-[0.2em]">
-              已选 / {selectedIds.size}
+              {m.comments_batch_selected({ count: selectedIds.size })}
             </span>
             <button
               onClick={() => setSelectedIds(new Set())}
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
-              [ 取消 ]
+              [ {m.comments_batch_cancel()} ]
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -164,7 +165,7 @@ export const CommentModerationTable = ({
               onClick={handleBatchApprove}
               className="h-8 px-4 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-all font-mono text-[10px] uppercase tracking-widest"
             >
-              [ 批量批准 ]
+              [ {m.comments_batch_approve()} ]
             </Button>
             <Button
               size="sm"
@@ -172,7 +173,7 @@ export const CommentModerationTable = ({
               onClick={handleBatchTrash}
               className="h-8 px-4 rounded-none border-border/50 hover:bg-red-500/10 hover:text-red-500 transition-all font-mono text-[10px] uppercase tracking-widest"
             >
-              [ 移入垃圾箱 ]
+              [ {m.comments_batch_trash()} ]
             </Button>
           </div>
         </div>
@@ -188,17 +189,17 @@ export const CommentModerationTable = ({
           />
         </div>
         <div className="col-span-2 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          作者
+          {m.comments_th_author()}
         </div>
         <div className="col-span-1"></div>
         <div className="col-span-5 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          内容 / 上下文
+          {m.comments_th_content()}
         </div>
         <div className="col-span-1 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          状态
+          {m.comments_th_status()}
         </div>
         <div className="col-span-2 text-right text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          操作
+          {m.comments_th_actions()}
         </div>
       </div>
 
@@ -224,36 +225,53 @@ export const CommentModerationTable = ({
 
               {/* Author Info */}
               <div className="col-span-2 space-y-3">
-                <UserHoverCard
-                  user={{
-                    id: comment.userId,
-                    name: comment.user?.name || "Unknown",
-                    image: comment.user?.image || null,
-                  }}
-                >
-                  <div className="flex items-center gap-3 cursor-pointer group/user overflow-hidden">
+                {comment.userId && comment.user ? (
+                  <UserHoverCard
+                    user={{
+                      id: comment.userId,
+                      name: comment.user.name,
+                      image: comment.user.image || null,
+                    }}
+                  >
+                    <div className="flex items-center gap-3 cursor-pointer group/user overflow-hidden">
+                      <div className="w-8 h-8 rounded-none bg-muted/20 flex items-center justify-center border border-border/30 shrink-0">
+                        {comment.user.image ? (
+                          <img
+                            src={comment.user.image}
+                            className="w-full h-full object-cover"
+                            alt={comment.user.name}
+                          />
+                        ) : (
+                          <span className="text-[10px] font-mono">
+                            {comment.user.name.slice(0, 1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="text-xs font-serif font-medium truncate group-hover/user:text-foreground transition-colors">
+                          {comment.user.name}
+                        </div>
+                        <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                          {formatDate(comment.createdAt).split(" ")[0]}
+                        </div>
+                      </div>
+                    </div>
+                  </UserHoverCard>
+                ) : (
+                  <div className="flex items-center gap-3 overflow-hidden">
                     <div className="w-8 h-8 rounded-none bg-muted/20 flex items-center justify-center border border-border/30 shrink-0">
-                      {comment.user?.image ? (
-                        <img
-                          src={comment.user.image}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-[10px] font-mono">
-                          {comment.user?.name.slice(0, 1)}
-                        </span>
-                      )}
+                      <span className="text-[10px] font-mono">?</span>
                     </div>
                     <div className="min-w-0 space-y-0.5">
-                      <div className="text-xs font-serif font-medium truncate group-hover/user:text-foreground transition-colors">
-                        {comment.user?.name}
+                      <div className="text-xs font-serif font-medium truncate text-muted-foreground">
+                        {m.comments_item_unknown_user()}
                       </div>
                       <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
                         {formatDate(comment.createdAt).split(" ")[0]}
                       </div>
                     </div>
                   </div>
-                </UserHoverCard>
+                )}
               </div>
 
               <div className="col-span-1"></div>
@@ -282,7 +300,7 @@ export const CommentModerationTable = ({
                       className="text-[10px] font-mono text-muted-foreground hover:text-foreground transition-all flex items-center gap-2 group/post"
                     >
                       <span className="opacity-30 group-hover/post:opacity-100 transition-opacity">
-                        跳至评论 /
+                        {m.comments_jump_to()}
                       </span>
                       <span className="truncate max-w-50">
                         {comment.post.title}
@@ -291,14 +309,18 @@ export const CommentModerationTable = ({
                   )}
                   {comment.replyToUser && (
                     <div className="text-[10px] font-mono text-muted-foreground flex items-center gap-2">
-                      <span className="opacity-30">回复 /</span>
+                      <span className="opacity-30">
+                        {m.comments_reply_to()}
+                      </span>
                       <span>@{comment.replyToUser.name}</span>
                     </div>
                   )}
                   {comment.aiReason && (
                     <div className="text-[10px] font-mono text-orange-500 flex items-center gap-2 px-2 py-0.5 border border-orange-500/20 bg-orange-500/5 self-start">
                       <AlertTriangle size={10} />
-                      <span>AI_FLAG: {comment.aiReason}</span>
+                      <span>
+                        {m.comments_ai_flag({ reason: comment.aiReason })}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -371,13 +393,13 @@ export const CommentModerationTable = ({
                     }}
                     className="truncate hover:text-foreground transition-colors"
                   >
-                    <span className="opacity-40">跳至评论 / </span>
+                    <span className="opacity-40">{m.comments_jump_to()}</span>
                     {comment.post.title}
                   </Link>
                 )}
                 {comment.replyToUser && (
                   <div>
-                    <span className="opacity-40">回复 / </span>@
+                    <span className="opacity-40">{m.comments_reply_to()}</span>@
                     {comment.replyToUser.name}
                   </div>
                 )}
@@ -421,10 +443,10 @@ export const CommentModerationTable = ({
 
 const StatusBadge = ({ status }: { status: string }) => {
   const labels: Record<string, string> = {
-    published: "已发布",
-    pending: "待审核",
-    verifying: "验证中",
-    deleted: "已删除",
+    published: m.comments_status_published(),
+    pending: m.comments_status_pending(),
+    verifying: m.comments_status_verifying(),
+    deleted: m.comments_status_deleted(),
   };
 
   const styles: Record<string, string> = {

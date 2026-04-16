@@ -1,6 +1,17 @@
-import { Hono } from "hono";
 import handler from "@tanstack/react-start/server-entry";
+import type { Context } from "hono";
+import { Hono } from "hono";
 import { proxy } from "hono/proxy";
+import { exportDownloadRoute } from "@/features/import-export/api/hono/download.route";
+import { handleImageRequest } from "@/features/media/service/media.service";
+import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
+import postsListRoute from "@/features/posts/api/hono/posts.list.route";
+import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
+import searchRoute from "@/features/search/api/hono/search.route";
+import siteDocumentsRoute from "@/features/site-documents/api/hono/site-documents.route";
+import tagsRoute from "@/features/tags/api/hono/tags.list.route";
+import { serverEnv } from "@/lib/env/server.env";
+import { createRateLimiterIdentifier } from "./helper";
 import {
   baseMiddleware,
   cacheMiddleware,
@@ -8,19 +19,15 @@ import {
   shieldMiddleware,
   turnstileMiddleware,
 } from "./middlewares";
-import { createRateLimiterIdentifier } from "./helper";
-import { handleImageRequest } from "@/features/media/service/media.service";
-import { serverEnv } from "@/lib/env/server.env";
-import postsListRoute from "@/features/posts/api/hono/posts.list.route";
-import postsDetailRoute from "@/features/posts/api/hono/posts.detail.route";
-import postsRelatedRoute from "@/features/posts/api/hono/posts.related.route";
-import tagsRoute from "@/features/tags/api/hono/tags.list.route";
-import searchRoute from "@/features/search/api/hono/search.route";
-import { exportDownloadRoute } from "@/features/import-export/api/hono/download.route";
 
 export const app = new Hono<{ Bindings: Env }>();
 
 app.get("*", cacheMiddleware);
+
+async function forwardAuthRequest(c: Context<{ Bindings: Env }>) {
+  const auth = c.get("auth");
+  return auth.handler(c.req.raw);
+}
 
 /* ================================ Public API ================================ */
 
@@ -34,6 +41,8 @@ const publicApi = new Hono<{ Bindings: Env }>()
 
 // Mount public API
 app.route("/api", publicApi);
+
+app.route("/", siteDocumentsRoute);
 
 // Export type for RPC client
 export type PublicApiType = typeof publicApi;
@@ -83,21 +92,16 @@ app.get("/images/:key{.+}", async (c) => {
   }
 });
 
-app.get("/api/auth/*", baseMiddleware, (c) => {
-  const auth = c.get("auth");
-  return auth.handler(c.req.raw);
-});
+app.get("/api/auth/*", baseMiddleware, forwardAuthRequest);
 
-// 1. Protected auth endpoints (requires Turnstile)
-const protectedPaths = [
+const protectedAuthPaths = [
   "/api/auth/sign-in/email",
   "/api/auth/sign-up/email",
-  "/api/auth/sign-in/social",
   "/api/auth/request-password-reset",
   "/api/auth/send-verification-email",
 ] as const;
 
-protectedPaths.forEach((path) => {
+protectedAuthPaths.forEach((path) => {
   app.post(
     path,
     baseMiddleware,
@@ -112,14 +116,10 @@ protectedPaths.forEach((path) => {
       interval: "1h",
       identifier: (c) => `hourly:${createRateLimiterIdentifier(c)}`,
     }),
-    (c) => {
-      const auth = c.get("auth");
-      return auth.handler(c.req.raw);
-    },
+    forwardAuthRequest,
   );
 });
 
-// 2. Other auth POST endpoints (e.g. sign-out, change-password, reset-password etc.)
 app.post(
   "/api/auth/*",
   baseMiddleware,
@@ -128,10 +128,7 @@ app.post(
     interval: "1m",
     identifier: createRateLimiterIdentifier,
   }),
-  (c) => {
-    const auth = c.get("auth");
-    return auth.handler(c.req.raw);
-  },
+  forwardAuthRequest,
 );
 
 // Admin export download route

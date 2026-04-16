@@ -1,12 +1,13 @@
-import { useCallback, useState } from "react";
-import { Loader2, Send } from "lucide-react";
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
-import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
-import { FuwariInsertModal } from "./comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
-import type { ModalType } from "./comment-insert-modal";
-import { commentExtensions } from "@/features/comments/components/editor/config";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { Loader2, Send } from "lucide-react";
+import { useCallback, useState } from "react";
+import { getCommentExtensions } from "@/features/comments/components/editor/config";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
+import { m } from "@/paraglide/messages";
+import FuwariCommentEditorToolbar from "./comment-editor-toolbar";
+import type { ModalType } from "./comment-insert-modal";
+import { FuwariInsertModal } from "./comment-insert-modal";
 
 interface CommentEditorProps {
   onSubmit: (content: JSONContent) => Promise<void>;
@@ -21,13 +22,15 @@ export const FuwariCommentEditor = ({
   isSubmitting,
   autoFocus,
   onCancel,
-  submitLabel = "发表评论",
+  submitLabel,
 }: CommentEditorProps) => {
+  const actualSubmitLabel = submitLabel || m.comments_editor_submit();
+
   const [modalType, setModalType] = useState<ModalType>(null);
   const [modalInitialUrl, setModalInitialUrl] = useState("");
 
   const editor = useEditor({
-    extensions: commentExtensions,
+    extensions: getCommentExtensions(),
     content: "",
     autofocus: autoFocus ? "end" : false,
     editorProps: {
@@ -81,14 +84,16 @@ export const FuwariCommentEditor = ({
       <EditorContent editor={editor} className="min-h-25 w-full px-4 py-3" />
 
       <div className="flex items-center justify-between px-4 pb-3 pt-2 border-t border-black/5 dark:border-white/5">
-        <span className="fuwari-text-30 text-xs">支持 Markdown</span>
+        <span className="fuwari-text-30 text-xs">
+          {m.comments_editor_support_markdown()}
+        </span>
         <div className="flex items-center gap-3">
           {onCancel && (
             <button
               onClick={onCancel}
               className="fuwari-text-50 text-sm hover:fuwari-text-75 transition-colors"
             >
-              取消
+              {m.comments_editor_cancel()}
             </button>
           )}
           <button
@@ -96,7 +101,7 @@ export const FuwariCommentEditor = ({
             onClick={handleSubmit}
             className="fuwari-btn-primary h-8 px-4 text-sm rounded-lg gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <span>{submitLabel}</span>
+            <span>{actualSubmitLabel}</span>
             {isSubmitting ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (

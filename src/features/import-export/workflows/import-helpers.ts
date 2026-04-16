@@ -1,22 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
 import type { PostEntry } from "@/features/import-export/import-export.schema";
-import { getDb } from "@/lib/db";
-import {
-  generateKey,
-  getContentTypeFromKey,
-} from "@/features/media/utils/media.utils";
-import * as PostRepo from "@/features/posts/data/posts.data";
-import * as TagRepo from "@/features/tags/data/tags.data";
-import * as MediaRepo from "@/features/media/data/media.data";
-import { syncPostMedia } from "@/features/posts/data/post-media.data";
-import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
-import * as PostService from "@/features/posts/posts.service";
-import {
-  listDirectories,
-  listFiles,
-  readJsonFile,
-  readTextFile,
-} from "@/features/import-export/utils/zip";
 import {
   normalizeFrontmatter,
   parseFrontmatter,
@@ -27,7 +10,27 @@ import {
   rewriteMarkdownImagePaths,
 } from "@/features/import-export/utils/image-rewriter";
 import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
+import {
+  listDirectories,
+  listFiles,
+  readJsonFile,
+  readTextFile,
+} from "@/features/import-export/utils/zip";
+import * as MediaRepo from "@/features/media/data/media.data";
+import {
+  generateKey,
+  getContentTypeFromKey,
+} from "@/features/media/utils/media.utils";
+import { syncPostMedia } from "@/features/posts/data/post-media.data";
+import * as PostRepo from "@/features/posts/data/posts.data";
+import { NullableJsonContentSchema } from "@/features/posts/schema/json-content.schema";
+import * as PostService from "@/features/posts/services/posts.service";
+import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
+import * as TagRepo from "@/features/tags/data/tags.data";
+import { getDb } from "@/lib/db";
 import { PostTagsTable } from "@/lib/db/schema";
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 // --- Enumerate posts (pure — no env dependency) ---
 
@@ -86,6 +89,7 @@ export async function importSinglePost(
   zipFiles: Record<string, Uint8Array>,
   entry: PostEntry,
   mode: "native" | "markdown",
+  locale: Locale = "zh",
 ): Promise<{
   title: string;
   slug: string;
@@ -106,7 +110,14 @@ export async function importSinglePost(
       `${entry.prefix}/content.json`,
     );
     if (rawJson) {
-      contentJson = rawJson;
+      const parsed = NullableJsonContentSchema.safeParse(rawJson);
+      if (parsed.success) {
+        contentJson = parsed.data;
+      } else {
+        warnings.push(
+          m.import_export_import_warning_content_json_invalid({}, { locale }),
+        );
+      }
     }
 
     const mdContent = readTextFile(zipFiles, `${entry.prefix}/index.md`);
@@ -119,7 +130,12 @@ export async function importSinglePost(
           contentJson = await markdownToJsonContent(content);
         } catch (error) {
           warnings.push(
-            `Markdown 转换失败: ${error instanceof Error ? error.message : String(error)}`,
+            m.import_export_import_warning_markdown_convert_failed(
+              {
+                error: error instanceof Error ? error.message : String(error),
+              },
+              { locale },
+            ),
           );
         }
       }
@@ -139,6 +155,7 @@ export async function importSinglePost(
           zipFiles,
           content,
           mdDir,
+          locale,
         );
         warnings.push(...imageResult.warnings);
 
@@ -148,7 +165,12 @@ export async function importSinglePost(
           );
         } catch (error) {
           warnings.push(
-            `Markdown 转换失败: ${error instanceof Error ? error.message : String(error)}`,
+            m.import_export_import_warning_markdown_convert_failed(
+              {
+                error: error instanceof Error ? error.message : String(error),
+              },
+              { locale },
+            ),
           );
         }
       }
@@ -157,7 +179,9 @@ export async function importSinglePost(
 
   const normalized = normalizeFrontmatter(metadata);
   if (!normalized) {
-    throw new Error("无法解析文章元数据或元数据不符合规范");
+    throw new Error(
+      m.import_export_import_error_invalid_metadata({}, { locale }),
+    );
   }
   const title = normalized.title || entry.dir || "Untitled";
 
@@ -172,7 +196,7 @@ export async function importSinglePost(
 
   // 3. Upload images and rewrite paths (native mode only — markdown mode handles images pre-conversion)
   if (contentJson && mode === "native") {
-    const imageResult = await uploadImages(env, zipFiles, entry);
+    const imageResult = await uploadImages(env, zipFiles, entry, locale);
     warnings.push(...imageResult.warnings);
     if (imageResult.rewriteMap.size > 0) {
       contentJson = rewriteImagePaths(contentJson, imageResult.rewriteMap);
@@ -242,6 +266,7 @@ export async function uploadImages(
   env: Env,
   zipFiles: Record<string, Uint8Array>,
   entry: PostEntry,
+  locale: Locale,
 ): Promise<{ rewriteMap: Map<string, string>; warnings: Array<string> }> {
   const rewriteMap = new Map<string, string>();
   const warnings: Array<string> = [];
@@ -282,7 +307,12 @@ export async function uploadImages(
           error: error instanceof Error ? error.message : String(error),
         }),
       );
-      warnings.push(`图片上传失败: ${oldKey}`);
+      warnings.push(
+        m.import_export_import_warning_image_upload_failed(
+          { name: oldKey },
+          { locale },
+        ),
+      );
     }
   }
 
@@ -320,6 +350,7 @@ async function uploadMarkdownImages(
   zipFiles: Record<string, Uint8Array>,
   markdown: string,
   mdDir: string,
+  locale: Locale,
 ): Promise<{ rewrittenMarkdown: string; warnings: Array<string> }> {
   const warnings: Array<string> = [];
 
@@ -336,7 +367,12 @@ async function uploadMarkdownImages(
     const resolvedPath = resolveRelativePath(mdDir, img.original);
 
     if (!(resolvedPath in zipFiles)) {
-      warnings.push(`图片未在 ZIP 中找到: ${img.original}`);
+      warnings.push(
+        m.import_export_import_warning_image_missing(
+          { name: img.original },
+          { locale },
+        ),
+      );
       continue;
     }
 
@@ -371,7 +407,12 @@ async function uploadMarkdownImages(
           error: error instanceof Error ? error.message : String(error),
         }),
       );
-      warnings.push(`图片上传失败: ${img.original}`);
+      warnings.push(
+        m.import_export_import_warning_image_upload_failed(
+          { name: img.original },
+          { locale },
+        ),
+      );
     }
   }
 

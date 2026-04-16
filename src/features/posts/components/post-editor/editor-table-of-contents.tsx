@@ -1,9 +1,10 @@
+import type { Editor } from "@tiptap/react";
 import { AlignLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Editor } from "@tiptap/react";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
-import { cn } from "@/lib/utils";
 import { useActiveTOC } from "@/hooks/use-active-toc";
+import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function EditorTableOfContents({ editor }: { editor: Editor }) {
   const [items, setItems] = useState<Array<TableOfContentsItem>>([]);
@@ -36,10 +37,11 @@ export function EditorTableOfContents({ editor }: { editor: Editor }) {
   if (items.length === 0) return null;
 
   const handleItemClick = (id: string) => {
-    const element = editor.view.dom.querySelector(`[id="${id}"]`);
+    const document = editor.view.dom.ownerDocument;
+    const element = document.getElementById(id);
 
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    if (element && editor.view.dom.contains(element)) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -48,7 +50,7 @@ export function EditorTableOfContents({ editor }: { editor: Editor }) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-8 text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
         <AlignLeft size={12} />
-        <span>目录索引</span>
+        <span>{m.editor_toc_title()}</span>
       </div>
 
       {/* Root List Container */}

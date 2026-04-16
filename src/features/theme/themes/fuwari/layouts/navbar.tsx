@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { Home, Menu, Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import { blogConfig } from "@/blog.config";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
+import { LanguageSwitcher } from "./language-switcher";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
@@ -24,6 +25,7 @@ export function Navbar({
   isLoading,
   bannerHeightVh,
 }: NavbarProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function Navbar({
               className="text-(--fuwari-primary) mr-2 shrink-0"
             />
             <span className="text-(--fuwari-primary) text-base">
-              {blogConfig.title}
+              {siteConfig.title}
             </span>
           </Link>
 
@@ -96,7 +98,7 @@ export function Navbar({
             <Link
               to="/search"
               className="hidden lg:flex items-center h-11 mr-2 rounded-lg bg-black/4 hover:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-95 group w-52"
-              aria-label="搜索"
+              aria-label={m.nav_search()}
             >
               <Search
                 size={18}
@@ -104,17 +106,18 @@ export function Navbar({
                 strokeWidth={1.25}
               />
               <span className="ml-2 text-black/50 dark:text-white/50 text-sm bg-transparent outline-none truncate">
-                搜索
+                {m.nav_search()}
               </span>
             </Link>
             <Link
               to="/search"
               className="lg:hidden fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
-              aria-label="搜索"
+              aria-label={m.nav_search()}
             >
               <Search size={18} strokeWidth={1.25} />
             </Link>
             <ThemeToggle className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary) p-0! bg-transparent! [&_svg]:w-4.5! [&_svg]:h-4.5! [&_div]:w-auto! [&_div]:h-auto!" />
+            <LanguageSwitcher className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary) p-0! bg-transparent! [&_svg]:w-4.5! [&_svg]:h-4.5!" />
             <div className="hidden md:flex items-center">
               {isLoading ? (
                 <Skeleton className="w-9 h-9 rounded-lg" />
@@ -143,7 +146,7 @@ export function Navbar({
                 <Link
                   to="/login"
                   className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
-                  aria-label="登录"
+                  aria-label={m.nav_login()}
                 >
                   <UserIcon size={18} strokeWidth={1.25} />
                 </Link>
@@ -152,7 +155,7 @@ export function Navbar({
             <button
               className="fuwari-expand-animation rounded-lg w-11 h-11 flex items-center justify-center active:scale-90 md:hidden fuwari-text-75 hover:text-(--fuwari-primary)"
               onClick={onMenuClick}
-              aria-label="打开菜单"
+              aria-label={m.common_open_menu()}
               type="button"
             >
               <Menu size={18} strokeWidth={1.25} />

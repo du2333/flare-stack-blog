@@ -35,7 +35,7 @@ function generate() {
     new Set(rawPaths.map((p) => (p === "/" ? "/" : p.replace(/\/$/, "")))),
   );
 
-  // 3. 构建正则表达式代码字符串
+  // 3. 构建正则表达式字面量代码字符串
   const regexDefinitions = uniquePaths.map((p) => {
     let patternStr = "";
 
@@ -53,9 +53,11 @@ function generate() {
       patternStr = `^${pattern}/?$`;
     }
 
-    // 【关键修复】：使用 JSON.stringify 自动生成带双引号且正确转义的字符串字面量
-    // 比如：内存里的 ^robots\.txt/?$ -> 变成源码字符串 "^robots\\.txt/?$"
-    return `new RegExp(${JSON.stringify(patternStr)})`;
+    const literalPattern = patternStr
+      .replace(/\//g, "\\/")
+      .replace(/\[\^\\\/\]\+/g, "[^/]+");
+
+    return `/${literalPattern}/`;
   });
 
   // 4. 生成最终文件内容

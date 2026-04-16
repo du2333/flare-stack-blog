@@ -1,4 +1,9 @@
 import { z } from "zod";
+import * as CacheService from "@/features/cache/cache.service";
+import * as PostRepo from "@/features/posts/data/posts.data";
+import { POSTS_CACHE_KEYS } from "@/features/posts/schema/posts.schema";
+import * as PostAutoSnapshotService from "@/features/posts/services/post-auto-snapshot.service";
+import * as TagRepo from "@/features/tags/data/tags.data";
 import type {
   CreateTagInput,
   DeleteTagInput,
@@ -9,16 +14,12 @@ import type {
   TagWithCount,
   UpdateTagInput,
 } from "@/features/tags/tags.schema";
-
 import {
   TAGS_CACHE_KEYS,
   TagWithCountSchema,
 } from "@/features/tags/tags.schema";
-import { POSTS_CACHE_KEYS } from "@/features/posts/posts.schema";
-import * as TagRepo from "@/features/tags/data/tags.data";
-import * as CacheService from "@/features/cache/cache.service";
-import { purgeCDNCache } from "@/lib/invalidate";
 import { err, ok } from "@/lib/errors";
+import { purgeCDNCache } from "@/lib/invalidate";
 
 /**
  * Get all tags (cached)
@@ -232,4 +233,9 @@ export async function deleteTag(
  */
 export async function setPostTags(context: DbContext, data: SetPostTagsInput) {
   await TagRepo.setPostTags(context.db, data.postId, data.tagIds);
+  await PostRepo.touchPostUpdatedAt(context.db, data.postId);
+  await PostAutoSnapshotService.enqueuePostAutoSnapshot(context, {
+    postId: data.postId,
+    source: "tag_update",
+  });
 }

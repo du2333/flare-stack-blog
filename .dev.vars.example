@@ -21,20 +21,14 @@ DOMAIN=blog.example.com
 # 可选：若使用独立 CDN 域名，设置后 purge 时优先使用此域名
 # CDN_DOMAIN=cdn.example.com
 
-# --- Umami 统计（可选） ---
-# Umami Cloud: 设置 UMAMI_SRC=https://cloud.umami.is 并提供 UMAMI_API_KEY
-# 自部署: 设置 UMAMI_SRC 为你的实例 URL 并提供 USERNAME/PASSWORD
+# --- Umami 客户端统计（可选，仅用于前端埋点脚本代理） ---
+# VITE_UMAMI_WEBSITE_ID=your-umami-website-id
+# UMAMI_SRC=https://cloud.umami.is
 
-VITE_UMAMI_WEBSITE_ID=your-umami-website-id
-
-# Umami Cloud 配置:
-UMAMI_SRC=https://cloud.umami.is
-UMAMI_API_KEY=your-cloud-api-key
-
-# 自部署 Umami 配置（如果使用自部署，请取消注释并注释掉上面的 Cloud 配置）:
-# UMAMI_SRC=https://umami.example.com
-# UMAMI_USERNAME=your-username
-# UMAMI_PASSWORD=your-password
+# --- 浏览量统计 ---
+# 用于生成匿名访客标识的固定 salt（SHA-256(IP + UA + salt)），任意非空字符串
+# 生成建议：openssl rand -hex 16
+PAGEVIEW_SALT=your-random-salt-string
 
 # --- Turnstile 人机验证 ---
 # 测试key见：https://developers.cloudflare.com/turnstile/troubleshooting/testing/

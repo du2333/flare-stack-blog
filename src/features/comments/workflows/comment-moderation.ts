@@ -1,17 +1,18 @@
-import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
-import * as CommentService from "@/features/comments/comments.service";
+import { WorkflowEntrypoint } from "cloudflare:workers";
 import * as AiService from "@/features/ai/ai.service";
+import * as CommentService from "@/features/comments/comments.service";
 import * as CommentRepo from "@/features/comments/data/comments.data";
-import * as PostService from "@/features/posts/posts.service";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
-import { getDb } from "@/lib/db";
-import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
+import * as PostService from "@/features/posts/services/posts.service";
 import {
   buildContentPreview,
   convertToPlainText,
 } from "@/features/posts/utils/content";
+import { getDb } from "@/lib/db";
+import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
+import { m } from "@/paraglide/messages";
 
 interface Params {
   commentId: number;
@@ -20,6 +21,7 @@ interface Params {
 export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
   async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
     const { commentId } = event.payload;
+    const locale = serverEnv(this.env).LOCALE;
 
     // Step 1: Fetch the comment
     const comment = await step.do("fetch comment", async () => {
@@ -109,7 +111,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
           { db, env: this.env },
           commentId,
           "pending",
-          "评论内容为空，需人工审核",
+          m.comments_moderation_reason_empty_pending({}, { locale }),
         );
       });
       return;
@@ -129,7 +131,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
         if (isNotInProduction(this.env)) {
           return {
             safe: true,
-            reason: "开发环境，自动通过",
+            reason: m.comments_moderation_reason_dev_approved({}, { locale }),
           };
         }
         try {
@@ -160,7 +162,7 @@ export class CommentModerationWorkflow extends WorkflowEntrypoint<Env, Params> {
           );
           return {
             safe: false,
-            reason: "AI 审核服务暂时不可用，等待人工审核",
+            reason: m.comments_moderation_reason_ai_unavailable({}, { locale }),
           };
         }
       },

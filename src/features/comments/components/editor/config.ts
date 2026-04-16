@@ -1,8 +1,9 @@
-import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import StarterKit from "@tiptap/starter-kit";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
+import { m } from "@/paraglide/messages";
 
-export const commentExtensions = [
+export const getCommentExtensions = () => [
   StarterKit.configure({
     orderedList: false,
     bulletList: false,
@@ -44,7 +45,7 @@ export const commentExtensions = [
     },
   }),
   Placeholder.configure({
-    placeholder: "友善的评论是交流的起点...",
+    placeholder: m.comments_editor_placeholder(),
     emptyEditorClass: "is-editor-empty",
   }),
 ];

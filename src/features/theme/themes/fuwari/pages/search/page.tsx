@@ -1,6 +1,7 @@
 import { ArrowLeft, Keyboard, Loader2, Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { SearchPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 export function SearchPage({
   query,
@@ -28,7 +29,7 @@ export function SearchPage({
         <button
           onClick={onBack}
           className="group flex items-center justify-center w-10 h-10 rounded-xl bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) transition-colors shrink-0"
-          title="返回"
+          title={m.search_back()}
         >
           <ArrowLeft
             size={18}
@@ -43,7 +44,7 @@ export function SearchPage({
             type="text"
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
-            placeholder="搜索文章..."
+            placeholder={m.search_placeholder()}
             className="w-full pl-12 pr-12 py-3 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all fuwari-text-90 text-lg md:text-xl placeholder:text-black/30 dark:placeholder:text-white/30"
           />
           {isSearching && (
@@ -65,10 +66,10 @@ export function SearchPage({
               <Keyboard size={32} strokeWidth={1.5} />
             </div>
             <h3 className="text-xl font-bold fuwari-text-75 mb-3">
-              探索海量内容
+              {m.search_fuwari_intro_title()}
             </h3>
             <p className="text-sm fuwari-text-50 max-w-sm">
-              在上方输入关键词开始搜索，支持全文检索。您可以搜索文章标题、摘要、标签或正文内容。
+              {m.search_fuwari_intro_desc()}
             </p>
           </div>
         )}
@@ -82,10 +83,10 @@ export function SearchPage({
               <Search size={24} strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-bold fuwari-text-75 mb-2">
-              未找到结果
+              {m.search_no_results()}
             </h3>
             <p className="text-sm fuwari-text-50">
-              抱歉，没有找到关于 "{query}" 的相关内容，请尝试其他关键词。
+              {m.search_no_results_with_query({ query })}
             </p>
           </div>
         )}

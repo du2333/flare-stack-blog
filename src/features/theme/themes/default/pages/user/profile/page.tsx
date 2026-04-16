@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2, Terminal } from "lucide-react";
-import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { ProfilePageProps } from "@/features/theme/contract/pages";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function ProfilePage({
   user,
@@ -19,10 +20,10 @@ export function ProfilePage({
         <div className="flex justify-between items-start">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight text-foreground flex items-center gap-4">
-              个人设置
+              {m.profile_settings()}
             </h1>
             <div className="space-y-4 max-w-2xl text-base md:text-lg text-muted-foreground font-light leading-relaxed">
-              <p>管理你的个人信息与偏好设置。</p>
+              <p>{m.profile_settings_desc()}</p>
             </div>
           </div>
 
@@ -32,7 +33,7 @@ export function ProfilePage({
               className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
             >
               <Terminal size={14} />
-              cd /home
+              {m.profile_back_home()}
             </Link>
           </div>
         </div>
@@ -65,7 +66,9 @@ export function ProfilePage({
           </h2>
           <div className="flex flex-col gap-1 text-xs font-mono text-muted-foreground/60 tracking-widest">
             <span className="uppercase">
-              {user.role === "admin" ? "管理员" : "读者"}
+              {user.role === "admin"
+                ? m.profile_role_admin()
+                : m.profile_role_reader()}
             </span>
             <span>{user.email}</span>
           </div>
@@ -77,14 +80,14 @@ export function ProfilePage({
         {/* Basic Info */}
         <section className="space-y-8">
           <h3 className="text-lg font-serif font-medium text-foreground">
-            基本资料
+            {m.profile_basic_info()}
           </h3>
 
           <form onSubmit={profileForm.handleSubmit} className="space-y-8">
             <div className="space-y-6">
               <div className="space-y-2 group">
                 <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                  昵称
+                  {m.profile_name()}
                 </label>
                 <Input
                   {...profileForm.register("name")}
@@ -99,7 +102,7 @@ export function ProfilePage({
 
               <div className="space-y-2 group">
                 <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                  头像链接
+                  {m.profile_avatar_url()}
                 </label>
                 <Input
                   {...profileForm.register("image")}
@@ -123,10 +126,11 @@ export function ProfilePage({
               >
                 {profileForm.isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 size={12} className="animate-spin" /> 保存中...
+                    <Loader2 size={12} className="animate-spin" />{" "}
+                    {m.profile_saving()}
                   </span>
                 ) : (
-                  "[ 保存更改 ]"
+                  `[ ${m.profile_save_changes()} ]`
                 )}
               </Button>
             </div>
@@ -138,15 +142,15 @@ export function ProfilePage({
         {notification.available && (
           <section className="space-y-8">
             <h3 className="text-lg font-serif font-medium text-foreground">
-              偏好设置
+              {m.profile_preferences()}
             </h3>
             <div className="flex items-center justify-between py-2 border-b border-border/40">
               <div className="space-y-1">
                 <span className="text-sm font-sans text-foreground">
-                  邮件通知
+                  {m.profile_email_notify()}
                 </span>
                 <span className="text-[10px] font-mono text-muted-foreground block">
-                  当收到回复时通知我
+                  {m.profile_email_notify_desc()}
                 </span>
               </div>
               <Button
@@ -161,7 +165,9 @@ export function ProfilePage({
                     : "border-border text-muted-foreground hover:border-foreground/50",
                 )}
               >
-                {notification.enabled ? "已开启" : "已关闭"}
+                {notification.enabled
+                  ? m.profile_notify_enabled()
+                  : m.profile_notify_disabled()}
               </Button>
             </div>
           </section>
@@ -173,12 +179,12 @@ export function ProfilePage({
             <div className="w-full h-px bg-border/40" />
             <section className="space-y-8">
               <h3 className="text-lg font-serif font-medium text-foreground">
-                安全设置
+                {m.profile_security_settings()}
               </h3>
               <form onSubmit={passwordForm.handleSubmit} className="space-y-6">
                 <div className="space-y-2 group">
                   <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                    当前密码
+                    {m.profile_current_password()}
                   </label>
                   <Input
                     type="password"
@@ -194,7 +200,7 @@ export function ProfilePage({
 
                 <div className="space-y-2 group">
                   <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                    新密码
+                    {m.profile_new_password()}
                   </label>
                   <Input
                     type="password"
@@ -210,7 +216,7 @@ export function ProfilePage({
 
                 <div className="space-y-2 group">
                   <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
-                    确认密码
+                    {m.profile_confirm_password()}
                   </label>
                   <Input
                     type="password"
@@ -233,10 +239,11 @@ export function ProfilePage({
                   >
                     {passwordForm.isSubmitting ? (
                       <span className="flex items-center gap-2">
-                        <Loader2 size={12} className="animate-spin" /> 更新中...
+                        <Loader2 size={12} className="animate-spin" />{" "}
+                        {m.profile_updating()}
                       </span>
                     ) : (
-                      "[ 更新密码 ]"
+                      `[ ${m.profile_update_password()} ]`
                     )}
                   </Button>
                 </div>
@@ -254,7 +261,7 @@ export function ProfilePage({
               to="/admin"
               className="font-mono text-xs text-foreground/60 hover:text-foreground transition-colors uppercase tracking-wider flex items-center gap-2"
             >
-              <span>[ 进入管理后台 ]</span>
+              <span>[ {m.profile_admin_dashboard()} ]</span>
             </Link>
           )}
           <Button
@@ -262,7 +269,7 @@ export function ProfilePage({
             onClick={logout}
             className="font-mono text-xs text-destructive/60 hover:text-destructive hover:bg-transparent p-0 h-auto transition-colors tracking-widest"
           >
-            [ 退出登录 ]
+            [ {m.profile_logout()} ]
           </Button>
         </section>
       </div>

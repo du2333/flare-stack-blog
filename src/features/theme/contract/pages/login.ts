@@ -12,16 +12,12 @@ export interface LoginFormData {
   handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   loginStep: "IDLE" | "VERIFYING" | "SUCCESS";
   isSubmitting: boolean;
-  isUnverifiedEmail: boolean;
-  rootError: string | undefined;
-  handleResendVerification: () => Promise<void>;
   turnstileProps: TurnstileProps;
   turnstilePending: boolean;
 }
 
 export interface SocialLoginData {
   isLoading: boolean;
-  turnstilePending: boolean;
   handleGithubLogin: () => Promise<void>;
 }
 

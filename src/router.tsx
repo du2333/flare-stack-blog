@@ -1,10 +1,10 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { NotFound } from "@/components/common/not-found";
 import { ErrorPage } from "./components/common/error-page";
 import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
-import { NotFound } from "@/components/common/not-found";
 
 // Create a new router instance
 export function getRouter() {

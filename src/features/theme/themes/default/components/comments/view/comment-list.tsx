@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { CommentItem } from "./comment-item";
-import { CommentReplyForm } from "./comment-reply-form";
-import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import type { JSONContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
-import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
+import { CommentItem } from "./comment-item";
+import { CommentReplyForm } from "./comment-reply-form";
 
 // Alias for local use
 type RootCommentWithUser = RootCommentWithReplyCount;
@@ -62,7 +63,7 @@ export const CommentList = ({
     return (
       <div className="py-20 text-center border-y border-border/30">
         <p className="text-[11px] uppercase tracking-[0.3em] font-mono text-muted-foreground">
-          暂无评论，成为第一个评论的人吧
+          {m.comments_list_empty()}
         </p>
       </div>
     );
@@ -141,7 +142,11 @@ function RootCommentWithReplies({
         comment={root}
         onReply={() => {
           if (onReply) {
-            onReply(root.id, root.id, root.user?.name || "未知用户");
+            onReply(
+              root.id,
+              root.id,
+              root.user?.name || m.comments_item_unknown_user(),
+            );
           }
         }}
         onDelete={onDelete}
@@ -164,7 +169,9 @@ function RootCommentWithReplies({
           ) : (
             <div className="flex items-center gap-4 py-4 bg-muted/5 rounded-sm px-4">
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex-1">
-                登录以回复 @{replyTarget.userName}
+                {m.comments_list_login_to_reply({
+                  userName: replyTarget.userName,
+                })}
               </span>
               <Link to="/login">
                 <Button
@@ -172,14 +179,14 @@ function RootCommentWithReplies({
                   size="sm"
                   className="h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all"
                 >
-                  登录
+                  {m.comments_login()}
                 </Button>
               </Link>
               <button
                 onClick={onCancelReply}
                 className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50 hover:text-foreground transition-colors"
               >
-                取消
+                {m.comments_editor_cancel()}
               </button>
             </div>
           )}
@@ -196,7 +203,9 @@ function RootCommentWithReplies({
               className={`h-px bg-border/40 transition-all duration-300 ${isExpanded ? "w-12 bg-foreground/40" : "w-8 group-hover:w-12 group-hover:bg-foreground/40"}`}
             />
             <span className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest group-hover:text-foreground transition-colors">
-              {isExpanded ? "收起回复" : `展开 ${root.replyCount} 条回复`}
+              {isExpanded
+                ? m.comments_list_collapse_replies()
+                : m.comments_list_expand_replies({ count: root.replyCount })}
             </span>
           </button>
 
@@ -218,7 +227,7 @@ function RootCommentWithReplies({
                             reply.id,
                             reply.replyTo?.name ||
                               reply.user?.name ||
-                              "未知用户",
+                              m.comments_item_unknown_user(),
                           );
                         }
                       }}
@@ -240,7 +249,9 @@ function RootCommentWithReplies({
                         ) : (
                           <div className="flex items-center gap-4 py-4 bg-muted/5 rounded-sm px-4">
                             <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex-1">
-                              登录以回复 @{replyTarget.userName}
+                              {m.comments_list_login_to_reply({
+                                userName: replyTarget.userName,
+                              })}
                             </span>
                             <Link to="/login">
                               <Button
@@ -248,14 +259,14 @@ function RootCommentWithReplies({
                                 size="sm"
                                 className="h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all"
                               >
-                                登录
+                                {m.comments_login()}
                               </Button>
                             </Link>
                             <button
                               onClick={onCancelReply}
                               className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50 hover:text-foreground transition-colors"
                             >
-                              取消
+                              {m.comments_editor_cancel()}
                             </button>
                           </div>
                         )}
@@ -273,7 +284,9 @@ function RootCommentWithReplies({
                   disabled={isFetchingNextPage}
                   className="h-7 px-0 text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-foreground bg-transparent hover:bg-transparent mt-2"
                 >
-                  {isFetchingNextPage ? "加载中..." : "加载更多回复"}
+                  {isFetchingNextPage
+                    ? m.comments_loading()
+                    : m.comments_list_load_more_replies()}
                 </Button>
               )}
             </div>

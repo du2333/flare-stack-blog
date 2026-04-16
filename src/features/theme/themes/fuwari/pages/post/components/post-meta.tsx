@@ -1,7 +1,8 @@
-import { Calendar, Edit, Tag } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import type { PostItem } from "@/features/posts/posts.schema";
+import { Calendar, Edit, Tag } from "lucide-react";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { cn, formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface PostMetaProps {
   post: PostItem;
@@ -70,7 +71,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
             ))
           ) : (
             <span className="transition fuwari-text-50 text-sm font-medium">
-              无标签
+              {m.post_no_tags()}
             </span>
           )}
         </div>

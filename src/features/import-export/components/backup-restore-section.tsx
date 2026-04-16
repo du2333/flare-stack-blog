@@ -15,14 +15,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 import {
   useExportProgress,
   useImportProgress,
   useStartExport,
   useUploadForImport,
 } from "@/features/import-export/queries/import-export.queries";
-import { getExportDownloadUrl } from "@/features/import-export/import-export.service";
 import { ms } from "@/lib/duration";
+import { m } from "@/paraglide/messages";
 
 const EXPORT_TOAST_ID = "export-progress";
 const IMPORT_TOAST_ID = "import-progress";
@@ -44,7 +45,7 @@ function ImportToastResult({
     return (
       <div className="flex items-center gap-2 text-muted-foreground py-1">
         <Info size={14} />
-        <span>没有找到可导入的内容</span>
+        <span>{m.settings_restore_result_empty()}</span>
       </div>
     );
   }
@@ -55,7 +56,11 @@ function ImportToastResult({
         <div className="border-l-2 border-emerald-500 pl-3.5 py-0.5 space-y-1.5">
           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-wider">
             <CheckCircle2 size={13} strokeWidth={2.5} />
-            <span>成功导入 {succeeded.length} 篇</span>
+            <span>
+              {m.settings_restore_result_success_count({
+                count: succeeded.length,
+              })}
+            </span>
           </div>
           <ul className="grid gap-1">
             {succeeded.slice(0, 3).map((p) => (
@@ -71,7 +76,9 @@ function ImportToastResult({
             ))}
             {succeeded.length > 3 && (
               <li className="text-[10px] text-muted-foreground/40 italic font-medium">
-                + 其余 {succeeded.length - 3} 篇文章
+                {m.settings_restore_result_success_others({
+                  count: succeeded.length - 3,
+                })}
               </li>
             )}
           </ul>
@@ -82,7 +89,9 @@ function ImportToastResult({
         <div className="border-l-2 border-red-500 pl-3.5 py-0.5 space-y-1.5">
           <div className="flex items-center gap-1.5 text-red-500 font-semibold text-xs uppercase tracking-wider">
             <XCircle size={13} strokeWidth={2.5} />
-            <span>失败 {failed.length} 篇</span>
+            <span>
+              {m.settings_restore_result_failed_count({ count: failed.length })}
+            </span>
           </div>
           <ul className="grid gap-1">
             {failed.slice(0, 3).map((p) => (
@@ -98,7 +107,9 @@ function ImportToastResult({
             ))}
             {failed.length > 3 && (
               <li className="text-[10px] text-muted-foreground/40 italic font-medium">
-                + 其余 {failed.length - 3} 篇
+                {m.settings_restore_result_failed_others({
+                  count: failed.length - 3,
+                })}
               </li>
             )}
           </ul>
@@ -109,7 +120,11 @@ function ImportToastResult({
         <div className="border-l-2 border-amber-500 pl-3.5 py-0.5 space-y-1.5">
           <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500 font-semibold text-xs uppercase tracking-wider">
             <AlertTriangle size={13} strokeWidth={2.5} />
-            <span>提示 {warnings.length} 条</span>
+            <span>
+              {m.settings_restore_result_warning_count({
+                count: warnings.length,
+              })}
+            </span>
           </div>
           <ul className="grid gap-1">
             {warnings.slice(0, 3).map((w, i) => (
@@ -122,7 +137,9 @@ function ImportToastResult({
             ))}
             {warnings.length > 3 && (
               <li className="text-[10px] text-muted-foreground/40 italic font-medium">
-                + 其余 {warnings.length - 3} 条提醒
+                {m.settings_restore_result_warning_others({
+                  count: warnings.length - 3,
+                })}
               </li>
             )}
           </ul>
@@ -134,7 +151,7 @@ function ImportToastResult({
           <div className="flex items-start gap-2 text-muted-foreground/60 leading-snug">
             <Info size={12} className="shrink-0 mt-0.5" />
             <p className="text-[10px] italic">
-              建议重置系统缓存以确保最新内容在首页立即生效。
+              {m.settings_restore_result_cache_hint()}
             </p>
           </div>
         </div>
@@ -165,13 +182,18 @@ export function BackupRestoreSection() {
           if (result.error) {
             const reason = result.error.reason;
             switch (reason) {
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               case "WORKFLOW_CREATE_FAILED":
-                toast.error("启动失败", { description: "启动导出任务失败" });
+                toast.error(m.settings_maintenance_backup_toast_start_fail(), {
+                  description:
+                    m.settings_maintenance_backup_toast_start_fail_desc(),
+                });
                 return;
               default: {
                 reason satisfies never;
-                toast.error("启动失败", { description: "未知错误" });
+                toast.error(m.settings_maintenance_backup_toast_start_fail(), {
+                  description:
+                    m.settings_maintenance_backup_toast_unknown_error(),
+                });
                 return;
               }
             }
@@ -193,10 +215,10 @@ export function BackupRestoreSection() {
           // KV eventual consistency: keep polling
           return;
         case "INVALID_PROGRESS_DATA":
-          toast.error("导出失败", {
+          toast.error(m.settings_maintenance_backup_toast_failed(), {
             id: EXPORT_TOAST_ID,
             duration: ms("10s"),
-            description: "导出进度数据异常，请重试",
+            description: m.settings_maintenance_backup_toast_progress_error(),
           });
           setExportTaskId(null);
           return;
@@ -211,22 +233,24 @@ export function BackupRestoreSection() {
 
     if (status === "completed") {
       const currentTaskId = exportTaskId;
-      toast.success("导出完成", {
+      toast.success(m.settings_maintenance_backup_toast_success(), {
         id: EXPORT_TOAST_ID,
         duration: ms("10s"),
-        description: `共 ${total} 篇文章已打包完成`,
+        description: m.settings_maintenance_backup_toast_success_desc({
+          total,
+        }),
         action: {
-          label: "下载",
+          label: m.settings_maintenance_backup_action_download(),
           onClick: () =>
             window.open(getExportDownloadUrl(currentTaskId), "_blank"),
         },
       });
       setExportTaskId(null);
     } else if (status === "failed") {
-      toast.error("导出失败", {
+      toast.error(m.settings_maintenance_backup_toast_failed(), {
         id: EXPORT_TOAST_ID,
         duration: ms("10s"),
-        description: "任务异常中断，请重试",
+        description: m.settings_maintenance_backup_toast_failed_desc(),
       });
       setExportTaskId(null);
     }
@@ -262,17 +286,29 @@ export function BackupRestoreSection() {
           const reason = result.error.reason;
           switch (reason) {
             case "NO_FILES":
-              toast.error("上传失败", { description: "缺少文件" });
+              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
+                description:
+                  m.settings_maintenance_restore_toast_upload_no_files(),
+              });
               return;
             case "UPLOAD_FAILED":
-              toast.error("上传失败", { description: "上传文件失败，请重试" });
+              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
+                description:
+                  m.settings_maintenance_restore_toast_upload_failed_desc(),
+              });
               return;
             case "WORKFLOW_CREATE_FAILED":
-              toast.error("上传失败", { description: "启动导入任务失败" });
+              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
+                description:
+                  m.settings_maintenance_restore_toast_start_fail_desc(),
+              });
               return;
             default: {
               reason satisfies never;
-              toast.error("上传失败", { description: "未知错误" });
+              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
+                description:
+                  m.settings_maintenance_restore_toast_unknown_error(),
+              });
               return;
             }
           }
@@ -295,10 +331,10 @@ export function BackupRestoreSection() {
           // KV eventual consistency: keep polling
           return;
         case "INVALID_PROGRESS_DATA":
-          toast.error("导入失败", {
+          toast.error(m.settings_maintenance_restore_toast_failed(), {
             id: IMPORT_TOAST_ID,
             duration: ms("10s"),
-            description: "导入进度数据异常，请重试",
+            description: m.settings_maintenance_restore_toast_progress_error(),
           });
           setImportTaskId(null);
           return;
@@ -316,23 +352,26 @@ export function BackupRestoreSection() {
       const failed = report?.failed ?? [];
       const warnings = report?.warnings ?? [];
 
-      (failed.length > 0 ? toast.warning : toast.success)("导入完成", {
-        id: IMPORT_TOAST_ID,
-        duration: ms("10s"),
-        description: (
-          <ImportToastResult
-            succeeded={succeeded}
-            failed={failed}
-            warnings={warnings}
-          />
-        ),
-      });
+      (failed.length > 0 ? toast.warning : toast.success)(
+        m.settings_maintenance_restore_toast_success(),
+        {
+          id: IMPORT_TOAST_ID,
+          duration: ms("10s"),
+          description: (
+            <ImportToastResult
+              succeeded={succeeded}
+              failed={failed}
+              warnings={warnings}
+            />
+          ),
+        },
+      );
       setImportTaskId(null);
     } else if (status === "failed") {
-      toast.error("导入失败", {
+      toast.error(m.settings_maintenance_restore_toast_failed(), {
         id: IMPORT_TOAST_ID,
         duration: ms("10s"),
-        description: "任务异常中断，请检查文件格式后重试",
+        description: m.settings_maintenance_restore_toast_failed_desc(),
       });
       setImportTaskId(null);
     }
@@ -348,16 +387,16 @@ export function BackupRestoreSection() {
             </div>
             <div className="space-y-1">
               <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
-                全站备份导出
+                {m.settings_maintenance_backup_title()}
               </h4>
               <p className="text-sm text-muted-foreground">
-                打包文章、评论、标签和媒体文件。
+                {m.settings_maintenance_backup_desc_short()}
               </p>
             </div>
           </div>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            将当前系统中所有的文章内容、标签映射、评论记录以及管理的媒体文件完整打包并加密。建议在每次重大内容更新或系统版本升级前执行。
+            {m.settings_maintenance_backup_desc_long()}
           </p>
 
           <div className="space-y-6 pt-4">
@@ -373,7 +412,9 @@ export function BackupRestoreSection() {
                 ) : (
                   <Database size={14} />
                 )}
-                {isExporting ? "正在打包数据" : "开始备份"}
+                {isExporting
+                  ? m.settings_maintenance_backup_btn_loading()
+                  : m.settings_maintenance_backup_btn()}
               </Button>
             </div>
           </div>
@@ -387,7 +428,7 @@ export function BackupRestoreSection() {
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <h4 className="text-lg font-serif font-medium text-foreground tracking-tight">
-                  备份数据恢复
+                  {m.settings_maintenance_restore_title()}
                 </h4>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -401,39 +442,29 @@ export function BackupRestoreSection() {
                   <TooltipContent className="w-80 space-y-3 whitespace-normal p-4 font-sans leading-relaxed tracking-normal normal-case">
                     <div className="space-y-3">
                       <p className="border-b border-border/20 pb-1 text-xs font-bold">
-                        支持格式与导入规范
+                        {m.settings_restore_tooltip_title()}
                       </p>
                       <ul className="list-disc space-y-2 pl-4 text-[10px] text-muted-foreground/90">
-                        <li>
-                          直接上传{" "}
-                          <code className="bg-muted px-1 text-[9px]">.md</code>{" "}
-                          文件，外链图片保持原样
-                        </li>
-                        <li>
-                          上传带图片的{" "}
-                          <code className="bg-muted px-1 text-[9px]">.zip</code>{" "}
-                          文件，Markdown 里的相对路径只要能对应到 ZIP
-                          中的文件即可
-                        </li>
-                        <li>多篇文章可以放在同一个 ZIP 中一起导入</li>
-                        <li>兼容 Hugo、Hexo、Jekyll 的 frontmatter 字段</li>
+                        <li>{m.settings_restore_tooltip_md()}</li>
+                        <li>{m.settings_restore_tooltip_zip()}</li>
+                        <li>{m.settings_restore_tooltip_multiple()}</li>
+                        <li>{m.settings_restore_tooltip_compat()}</li>
                       </ul>
                       <div className="border-t border-border/10 pt-2 text-[9px] italic text-amber-500/80">
-                        系统执行增量合并，检测到相同 slug 的文章会自动跳过。
+                        {m.settings_restore_tooltip_note()}
                       </div>
                     </div>
                   </TooltipContent>
                 </Tooltip>
               </div>
               <p className="text-sm text-muted-foreground">
-                导入系统备份包或 Markdown 文件。
+                {m.settings_maintenance_restore_desc_short()}
               </p>
             </div>
           </div>
 
           <div className="text-sm text-muted-foreground leading-relaxed">
-            支持上传本系统导出的 `.zip` 备份包，或外部 Markdown
-            文件进行内容迁移。增量合并，且能够兼容 Hugo / Hexo 等主流框架。
+            {m.settings_maintenance_restore_desc_long()}
           </div>
 
           <div className="space-y-6 pt-4">
@@ -458,7 +489,9 @@ export function BackupRestoreSection() {
                 ) : (
                   <Upload size={14} />
                 )}
-                {isImporting ? "正在导入" : "导入数据"}
+                {isImporting
+                  ? m.settings_maintenance_restore_btn_loading()
+                  : m.settings_maintenance_restore_btn()}
               </Button>
             </div>
           </div>

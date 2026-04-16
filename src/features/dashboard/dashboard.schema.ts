@@ -37,19 +37,21 @@ export const DashboardResponseSchema = z.object({
           .object({
             visitors: MetricSchema,
             pageViews: MetricSchema,
-            visits: MetricSchema,
-            bounces: MetricSchema,
-            totalTime: MetricSchema,
           })
           .optional(),
         topPages: z
-          .array(z.object({ x: z.string(), y: z.number() }))
+          .array(
+            z.object({
+              slug: z.string(),
+              title: z.string(),
+              views: z.number(),
+            }),
+          )
           .optional(),
         lastUpdated: z.number(),
       }),
     )
     .optional(),
-  umamiUrl: z.string().optional(),
 });
 
 export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
@@ -59,7 +61,3 @@ export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
 export type DashboardRange = "24h" | "7d" | "30d" | "90d";
 
 export const ALL_RANGES: Array<DashboardRange> = ["24h", "7d", "30d", "90d"];
-
-export const DASHBOARD_CACHE_KEYS = {
-  umamiStats: ["dashboard", "umami"] as const,
-} as const;

@@ -1,23 +1,31 @@
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { EmailLayout } from "./EmailLayout";
 
 interface ReplyNotificationEmailProps {
+  commentUrl: string;
+  locale: Locale;
   postTitle: string;
   replierName: string;
   replyPreview: string;
-  commentUrl: string;
   unsubscribeUrl: string;
 }
 
 export const ReplyNotificationEmail = ({
+  commentUrl,
+  locale,
   postTitle,
   replierName,
   replyPreview,
-  commentUrl,
   unsubscribeUrl,
 }: ReplyNotificationEmailProps) => {
   return (
     <EmailLayout
-      previewText={`${replierName} 回复了您在《${postTitle}》下的评论`}
+      locale={locale}
+      previewText={m.email_comment_reply_preview(
+        { replierName, postTitle },
+        { locale },
+      )}
     >
       <h1
         style={{
@@ -29,10 +37,10 @@ export const ReplyNotificationEmail = ({
           lineHeight: "1.4",
         }}
       >
-        收到新的回复
+        {m.email_comment_reply_title({}, { locale })}
       </h1>
       <p style={{ fontSize: "14px", color: "#444", lineHeight: "1.6" }}>
-        <strong>{replierName}</strong> 回复了您的评论：
+        {m.email_comment_reply_intro({ replierName }, { locale })}
       </p>
       <blockquote
         style={{
@@ -60,7 +68,7 @@ export const ReplyNotificationEmail = ({
             letterSpacing: "0.05em",
           }}
         >
-          查看完整回复
+          {m.email_comment_reply_action({}, { locale })}
         </a>
       </div>
       <div
@@ -70,7 +78,7 @@ export const ReplyNotificationEmail = ({
         }}
       >
         <p style={{ fontSize: "12px", color: "#999", margin: "0" }}>
-          不想再接收此类通知？
+          {m.email_comment_reply_unsubscribe_hint({}, { locale })}
           <a
             href={unsubscribeUrl}
             style={{
@@ -79,7 +87,7 @@ export const ReplyNotificationEmail = ({
               marginLeft: "4px",
             }}
           >
-            一键退订
+            {m.email_comment_reply_unsubscribe_action({}, { locale })}
           </a>
         </p>
       </div>

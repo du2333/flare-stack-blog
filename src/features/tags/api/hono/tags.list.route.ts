@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { baseMiddleware } from "@/lib/hono/middlewares";
-import { getServiceContext, setCacheHeaders } from "@/lib/hono/helper";
 import * as TagService from "@/features/tags/tags.service";
+import { getServiceContext, setCacheHeaders } from "@/lib/hono/helper";
+import { baseMiddleware } from "@/lib/hono/middlewares";
 
 const app = new Hono<{ Bindings: Env }>();
 

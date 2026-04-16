@@ -1,14 +1,21 @@
 import type { ReactNode } from "react";
 import { blogConfig } from "@/blog.config";
+import type { Locale } from "@/lib/i18n";
 
 interface EmailLayoutProps {
   children: ReactNode;
+  locale?: Locale;
   previewText?: string;
 }
 
-export const EmailLayout = ({ children, previewText }: EmailLayoutProps) => {
+export const EmailLayout = ({
+  children,
+  locale,
+  previewText,
+}: EmailLayoutProps) => {
   return (
     <div
+      lang={locale}
       style={{
         backgroundColor: "#ffffff",
         fontFamily:

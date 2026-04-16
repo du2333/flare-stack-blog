@@ -1,5 +1,5 @@
-import { load, save } from "@orama/orama";
 import type { RawData } from "@orama/orama";
+import { load, save } from "@orama/orama";
 import type { MyOramaDB } from "@/features/search/model/schema";
 import { createMyDb } from "@/features/search/model/schema";
 

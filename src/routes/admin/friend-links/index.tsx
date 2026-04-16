@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import type { FriendLinkStatus } from "@/lib/db/schema";
-import { FriendLinkModerationTable } from "@/features/friend-links/components/admin/friend-link-moderation-table";
-import { AddFriendLinkModal } from "@/features/friend-links/components/admin/add-friend-link-modal";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { AddFriendLinkModal } from "@/features/friend-links/components/admin/add-friend-link-modal";
+import { FriendLinkModerationTable } from "@/features/friend-links/components/admin/friend-link-moderation-table";
+import type { FriendLinkStatus } from "@/lib/db/schema";
+import { m } from "@/paraglide/messages";
 
 const searchSchema = z.object({
   status: z
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/admin/friend-links/")({
   component: FriendLinksAdminPage,
   loader: () => {
     return {
-      title: "友链管理",
+      title: m.friend_links_admin_title(),
     };
   },
   head: ({ loaderData }) => ({
@@ -53,10 +54,10 @@ function FriendLinksAdminPage() {
     status === "ALL" ? undefined : status;
 
   const tabs = [
-    { key: "pending", label: "待审核" },
-    { key: "approved", label: "已通过" },
-    { key: "rejected", label: "已拒绝" },
-    { key: "ALL", label: "全部记录" },
+    { key: "pending", label: m.friend_links_tab_pending() },
+    { key: "approved", label: m.friend_links_tab_approved() },
+    { key: "rejected", label: m.friend_links_tab_rejected() },
+    { key: "ALL", label: m.friend_links_tab_all() },
   ];
 
   return (
@@ -65,11 +66,11 @@ function FriendLinksAdminPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-border/30 pb-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
-            友链管理
+            {m.friend_links_admin_title()}
           </h1>
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
-              FRIEND_LINKS_MANAGEMENT
+              {m.friend_links_admin_tag()}
             </p>
           </div>
         </div>
@@ -79,7 +80,7 @@ function FriendLinksAdminPage() {
           className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-[10px] uppercase tracking-widest h-9 px-4"
         >
           <Plus size={14} className="mr-2" />
-          添加友链
+          {m.friend_links_add_btn()}
         </Button>
       </div>
 

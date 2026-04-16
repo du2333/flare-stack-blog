@@ -6,6 +6,7 @@ import {
 import theme from "@theme";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { useRegisterForm } from "@/features/auth/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_auth/register")({
   beforeLoad: ({ context }) => {
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_auth/register")({
   head: () => ({
     meta: [
       {
-        title: "注册",
+        title: m.register_title(),
       },
     ],
   }),

@@ -1,10 +1,11 @@
 import { ClientOnly } from "@tanstack/react-router";
+import katex from "katex";
 import { Sigma, SquareFunction, X } from "lucide-react";
+import type React from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import katex from "katex";
-import type React from "react";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { m } from "@/paraglide/messages";
 
 export type FormulaMode = "inline" | "block";
 
@@ -141,7 +142,9 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                   FORMULA
                 </span>
                 <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase truncate">
-                  {editContext ? "编辑公式" : "插入公式"}
+                  {editContext
+                    ? m.editor_formula_edit()
+                    : m.editor_formula_insert()}
                 </span>
               </div>
             </div>
@@ -155,7 +158,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                 }`}
               >
-                行内
+                {m.editor_formula_inline()}
               </button>
               <button
                 type="button"
@@ -166,7 +169,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                 }`}
               >
-                块级
+                {m.editor_formula_block()}
               </button>
             </div>
           </div>
@@ -188,14 +191,14 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               ref={inputRef}
               value={latex}
               onChange={(e) => setLatex(e.target.value)}
-              placeholder="输入 LaTeX，如 x^2 + y^2 = z^2"
+              placeholder={m.editor_formula_placeholder()}
               className="w-full min-h-25 sm:min-h-30 p-3 sm:p-4 font-mono text-base bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
               spellCheck={false}
             />
           </div>
           <div className="flex flex-col min-w-0 shrink-0 md:flex-1 md:border-l md:border-border/50 md:pl-6">
             <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
-              预览
+              {m.editor_formula_preview()}
             </label>
             <div
               className={`min-h-20 sm:min-h-30 p-3 sm:p-4 border border-border flex items-center justify-center overflow-auto ${
@@ -213,7 +216,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                 />
               ) : (
                 <p className="text-sm font-mono text-muted-foreground/50">
-                  输入 LaTeX 查看预览
+                  {m.editor_formula_preview_empty()}
                 </p>
               )}
             </div>
@@ -222,14 +225,14 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
 
         <div className="flex items-center justify-end gap-0 border-t border-border/50 shrink-0">
           <span className="hidden sm:inline px-4 text-xs font-mono text-muted-foreground/60">
-            Ctrl+Enter 应用 · Esc 取消
+            {m.editor_formula_shortcut()}
           </span>
           <button
             type="button"
             onClick={onClose}
             className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50 active:bg-muted/20"
           >
-            [ 取消 ]
+            [ {m.editor_formula_cancel()} ]
           </button>
           <button
             type="button"
@@ -237,7 +240,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
             disabled={!latex.trim()}
             className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground active:bg-foreground/90"
           >
-            [ 应用 ]
+            [ {m.editor_formula_apply()} ]
           </button>
         </div>
       </div>

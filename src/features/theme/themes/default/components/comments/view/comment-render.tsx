@@ -1,12 +1,12 @@
-import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
-import { ImageDisplay } from "../../content/image-display";
 import type { JSONContent } from "@tiptap/react";
-import { commentExtensions } from "@/features/comments/components/editor/config";
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
+import { getCommentExtensions } from "@/features/comments/components/editor/config";
+import { ImageDisplay } from "../../content/image-display";
 
 export function renderCommentReact(content: JSONContent | null) {
   if (!content) return null;
   return renderToReactElement({
-    extensions: commentExtensions,
+    extensions: getCommentExtensions(),
     content,
     options: {
       nodeMapping: {

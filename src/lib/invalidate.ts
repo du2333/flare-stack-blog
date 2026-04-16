@@ -5,6 +5,18 @@ interface PurgeOptions {
   prefixes?: Array<string>; // 前缀匹配的URL
 }
 
+interface CloudflareApiMessage {
+  code?: number;
+  message?: string;
+}
+
+// Cloudflare purge response envelope:
+// https://developers.cloudflare.com/api/resources/cache/subresources/cache/methods/purge/
+interface CloudflarePurgeResponse {
+  success?: boolean;
+  errors?: Array<CloudflareApiMessage>;
+}
+
 export async function purgeCDNCache(env: Env, options: PurgeOptions) {
   const { CLOUDFLARE_ZONE_ID, CLOUDFLARE_PURGE_API_TOKEN, DOMAIN, CDN_DOMAIN } =
     serverEnv(env);
@@ -54,16 +66,33 @@ export async function purgeCDNCache(env: Env, options: PurgeOptions) {
     },
   );
 
-  if (!response.ok) {
-    const errorText = await response.text();
+  const responseText = await response.text();
+  let responseData: CloudflarePurgeResponse | null = null;
+
+  if (responseText) {
+    try {
+      responseData = JSON.parse(responseText) as CloudflarePurgeResponse;
+    } catch {
+      responseData = null;
+    }
+  }
+
+  const apiErrorMessage =
+    responseData?.errors
+      ?.map((error) => error.message?.trim())
+      .filter(Boolean)
+      .join("; ") || responseText;
+
+  if (!response.ok || responseData?.success === false) {
     console.error(
       JSON.stringify({
         message: "cloudflare purge api failed",
         status: response.status,
-        error: errorText,
+        error: apiErrorMessage,
+        success: responseData?.success,
       }),
     );
-    throw new Error(`Cloudflare Purge API failed: ${errorText}`);
+    throw new Error(`Cloudflare Purge API failed: ${apiErrorMessage}`);
   }
 }
 

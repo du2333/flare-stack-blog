@@ -1,6 +1,7 @@
 import { CheckSquare, Filter, Search, Square, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { m } from "@/paraglide/messages";
 
 interface MediaToolbarProps {
   searchQuery: string;
@@ -35,7 +36,7 @@ export function MediaToolbar({
           />
           <Input
             type="text"
-            placeholder="检索媒体文件..."
+            placeholder={m.media_search_placeholder()}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-9 pr-9 h-10 bg-transparent border-border/30 hover:border-foreground/50 focus:border-foreground transition-all rounded-none font-sans text-sm shadow-none focus-visible:ring-0"
@@ -66,7 +67,7 @@ export function MediaToolbar({
         >
           <Filter size={14} strokeWidth={1.5} />
           <span className="text-[11px] uppercase tracking-widest font-mono">
-            只显示未引用
+            {m.media_filter_unused()}
           </span>
         </Button>
       </div>
@@ -88,8 +89,8 @@ export function MediaToolbar({
             <Square size={14} strokeWidth={1.5} />
           )}
           {selectedCount > 0 && selectedCount === totalCount
-            ? "[ 取消全选 ]"
-            : "[ 全选 ]"}
+            ? `[ ${m.media_deselect_all()} ]`
+            : `[ ${m.media_select_all()} ]`}
         </Button>
 
         {selectedCount > 0 && (
@@ -99,7 +100,8 @@ export function MediaToolbar({
             onClick={onDelete}
             className="h-10 px-4 text-[11px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 text-red-500 hover:text-red-600 hover:bg-red-500/10 animate-in fade-in slide-in-from-left-2 duration-300"
           >
-            <Trash2 size={14} strokeWidth={1.5} />[ 删除选中 ({selectedCount}) ]
+            <Trash2 size={14} strokeWidth={1.5} />[{" "}
+            {m.media_delete_selected({ count: selectedCount })} ]
           </Button>
         )}
       </div>

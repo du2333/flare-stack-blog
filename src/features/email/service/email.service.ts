@@ -1,37 +1,103 @@
-import type { EmailUnsubscribeType } from "@/lib/db/schema";
-import type { TestEmailConnectionInput } from "@/features/email/email.schema";
-import * as EmailData from "@/features/email/data/email.data";
+import { type AuthType, WorkerMailer } from "worker-mailer";
 import * as ConfigService from "@/features/config/service/config.service";
-import {
-  createEmailClient,
-  verifyUnsubscribeToken,
-} from "@/features/email/email.utils";
-import { err, ok } from "@/lib/errors";
+import * as EmailData from "@/features/email/data/email.data";
+import type { TestEmailConnectionInput } from "@/features/email/email.schema";
+import { verifyUnsubscribeToken } from "@/features/email/email.utils";
+import type { EmailUnsubscribeType } from "@/lib/db/schema";
 import { isNotInProduction, serverEnv } from "@/lib/env/server.env";
+import { err, ok } from "@/lib/errors";
+import { m } from "@/paraglide/messages";
+
+type ConfiguredEmailConfig = {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  senderAddress: string;
+  senderName?: string;
+};
+
+function resolveTransportSecurity(port: number) {
+  return {
+    secure: port === 465,
+    startTls: port !== 465,
+  };
+}
+
+function getSmtpAuthTypes(): AuthType[] {
+  return ["plain", "login", "cram-md5"];
+}
+
+function isEmailConfigured(
+  email:
+    | {
+        host?: string;
+        port?: number;
+        username?: string;
+        password?: string;
+        senderAddress?: string;
+        senderName?: string;
+      }
+    | null
+    | undefined,
+): email is ConfiguredEmailConfig {
+  return !!(
+    email?.host?.trim() &&
+    email.port &&
+    email.username?.trim() &&
+    email.password?.trim() &&
+    email.senderAddress?.trim()
+  );
+}
 
 export async function testEmailConnection(
   context: DbContext,
   data: TestEmailConnectionInput,
 ) {
   try {
-    const { ADMIN_EMAIL } = serverEnv(context.env);
-    const { apiKey, senderAddress, senderName } = data;
-    const resend = createEmailClient({ apiKey });
+    const { ADMIN_EMAIL, LOCALE } = serverEnv(context.env);
+    const { host, password, port, senderAddress, senderName, username } = data;
+    const security = resolveTransportSecurity(port);
 
-    const result = await resend.emails.send({
-      from: senderName ? `${senderName} <${senderAddress}>` : senderAddress,
-      to: ADMIN_EMAIL, // 发送给自己进行测试
-      subject: "测试连接 - Test Connection",
-      html: "<p>这是一个测试邮件</p>",
-    });
-
-    if (result.error) {
-      return err({ reason: "SEND_FAILED", message: result.error.message });
-    }
+    await WorkerMailer.send(
+      {
+        host,
+        port,
+        authType: getSmtpAuthTypes(),
+        credentials: {
+          username,
+          password,
+        },
+        ...security,
+      },
+      {
+        from: {
+          name: senderName,
+          email: senderAddress,
+        },
+        to: ADMIN_EMAIL,
+        subject: m.settings_email_test_mail_subject({}, { locale: LOCALE }),
+        html: `<p>${m.settings_email_test_mail_body({}, { locale: LOCALE })}</p>`,
+      },
+    );
 
     return ok({ success: true });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知错误";
+    const locale = serverEnv(context.env).LOCALE;
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : m.settings_email_unknown_error({}, { locale });
+    console.error(
+      JSON.stringify({
+        message: "email test connection failed",
+        host: data.host,
+        port: data.port,
+        username: data.username,
+        senderAddress: data.senderAddress,
+        error: errorMessage,
+      }),
+    );
     return err({ reason: "SEND_FAILED", message: errorMessage });
   }
 }
@@ -139,36 +205,55 @@ export async function sendEmail(
   const config = await ConfigService.getSystemConfig(context);
   const email = config?.email;
 
-  if (!email?.apiKey || !email.senderAddress) {
+  if (!isEmailConfigured(email)) {
     console.warn(`[EMAIL_SERVICE] 未配置邮件服务，跳过发送至: ${options.to}`);
     return err({ reason: "EMAIL_DISABLED" });
   }
 
   try {
-    const resend = createEmailClient({ apiKey: email.apiKey });
+    const security = resolveTransportSecurity(email.port);
 
-    const result = await resend.emails.send(
+    await WorkerMailer.send(
       {
-        from: email.senderName
-          ? `${email.senderName} <${email.senderAddress}>`
-          : email.senderAddress,
+        host: email.host,
+        port: email.port,
+        authType: getSmtpAuthTypes(),
+        credentials: {
+          username: email.username,
+          password: email.password,
+        },
+        ...security,
+      },
+      {
+        from: {
+          name: email.senderName,
+          email: email.senderAddress,
+        },
         to: options.to,
         subject: options.subject,
         html: options.html,
         headers: options.headers,
       },
-      {
-        idempotencyKey: options.idempotencyKey,
-      },
     );
-
-    if (result.error) {
-      return err({ reason: "SEND_FAILED", message: result.error.message });
-    }
   } catch (error) {
+    const locale = serverEnv(context.env).LOCALE;
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : m.settings_email_unknown_error({}, { locale });
+    console.error(
+      JSON.stringify({
+        message: "email send failed",
+        host: email.host,
+        port: email.port,
+        to: options.to,
+        subject: options.subject,
+        error: errorMessage,
+      }),
+    );
     return err({
       reason: "SEND_FAILED",
-      message: error instanceof Error ? error.message : "未知错误",
+      message: errorMessage,
     });
   }
 

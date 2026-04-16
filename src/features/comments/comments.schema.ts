@@ -1,11 +1,11 @@
-import { z } from "zod";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-zod";
+import { z } from "zod";
+import { JsonContentSchema } from "@/features/posts/schema/json-content.schema";
 import type { CommentStatus } from "@/lib/db/schema";
-import type { JSONContent } from "@tiptap/react";
 import { CommentsTable } from "@/lib/db/schema";
 
 // Date fields need to accept both Date objects and ISO strings (for JSON serialization)
@@ -20,8 +20,8 @@ export const CommentUpdateSchema = createUpdateSchema(CommentsTable);
 
 // User info schema for joined queries
 export const CommentUserSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().nullable(),
+  name: z.string().nullable(),
   image: z.string().nullable(),
   role: z.string().nullable(),
 });
@@ -76,8 +76,8 @@ export const GetRepliesByRootIdInputSchema = z.object({
 export const ReplyWithUserAndReplyToSchema = CommentWithUserSchema.extend({
   replyTo: z
     .object({
-      id: z.string(),
-      name: z.string(),
+      id: z.string().nullable(),
+      name: z.string().nullable(),
     })
     .nullable(),
 });
@@ -99,14 +99,14 @@ export const GetRootCommentsResponseSchema = z.object({
 // Authed User API Schemas
 export const CreateCommentInputSchema = z.object({
   postId: z.number(),
-  content: z.custom<JSONContent>(),
+  content: JsonContentSchema,
   rootId: z.number().optional(),
   replyToCommentId: z.number().optional(),
 });
 
 export const UpdateCommentInputSchema = z.object({
   id: z.number(),
-  content: z.custom<JSONContent>(),
+  content: JsonContentSchema,
 });
 
 export const DeleteCommentInputSchema = z.object({

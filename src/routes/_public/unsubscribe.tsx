@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import { unsubscribeByTokenFn } from "@/features/email/api/email.api";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { EMAIL_KEYS } from "@/features/email/queries";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
+import { m } from "@/paraglide/messages";
 
 const unsubscribeSearchSchema = z
   .object({
@@ -20,6 +20,13 @@ export const Route = createFileRoute("/_public/unsubscribe")({
   ssr: false,
   validateSearch: unsubscribeSearchSchema,
   component: UnsubscribePage,
+  head: () => ({
+    meta: [
+      {
+        title: m.unsubscribe_title(),
+      },
+    ],
+  }),
 });
 
 function UnsubscribePage() {
@@ -49,44 +56,50 @@ function UnsubscribePage() {
           <div className="space-y-6">
             <AlertCircle className="w-16 h-16 mx-auto text-muted-foreground" />
             <div className="space-y-2">
-              <h1 className="text-2xl font-serif">无效的退订链接</h1>
+              <h1 className="text-2xl font-serif">
+                {m.unsubscribe_invalid_title()}
+              </h1>
               <p className="text-muted-foreground">
-                退订链接不完整或已失效。请点击邮件底部的完整链接，或在个人资料中管理您的订阅。
+                {m.unsubscribe_invalid_desc()}
               </p>
             </div>
             <Button asChild variant="outline" className="rounded-none">
-              <a href="/">返回首页</a>
+              <a href="/">{m.unsubscribe_back_home()}</a>
             </Button>
           </div>
         ) : isLoading ? (
           <div className="space-y-4">
             <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
-            <h1 className="text-2xl font-serif">正在处理退订请求...</h1>
+            <h1 className="text-2xl font-serif">{m.unsubscribe_loading()}</h1>
           </div>
         ) : hasFailed ? (
           <div className="space-y-6">
             <AlertCircle className="w-16 h-16 mx-auto text-red-500" />
             <div className="space-y-2">
-              <h1 className="text-2xl font-serif text-red-500">退订失败</h1>
+              <h1 className="text-2xl font-serif text-red-500">
+                {m.unsubscribe_failed_title()}
+              </h1>
               <p className="text-muted-foreground">
-                退订请求失败。链接可能已过期或签名无效。
+                {m.unsubscribe_failed_desc()}
               </p>
             </div>
             <Button asChild variant="outline" className="rounded-none">
-              <a href="/">返回首页</a>
+              <a href="/">{m.unsubscribe_back_home()}</a>
             </Button>
           </div>
         ) : (
           <div className="space-y-6">
             <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
             <div className="space-y-2">
-              <h1 className="text-2xl font-serif">退订成功</h1>
+              <h1 className="text-2xl font-serif">
+                {m.unsubscribe_success_title()}
+              </h1>
               <p className="text-muted-foreground">
-                您已成功退订此类通知邮件。如有需要，您可以在个人中心随时恢复订阅。
+                {m.unsubscribe_success_desc()}
               </p>
             </div>
             <Button asChild className="rounded-none px-8">
-              <a href="/">返回首页</a>
+              <a href="/">{m.unsubscribe_back_home()}</a>
             </Button>
           </div>
         )}

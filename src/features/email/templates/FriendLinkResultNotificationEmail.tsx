@@ -1,21 +1,30 @@
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { EmailLayout } from "./EmailLayout";
 
 interface FriendLinkResultNotificationEmailProps {
-  siteName: string;
   approved: boolean;
-  rejectionReason?: string;
   blogUrl?: string;
+  locale: Locale;
+  rejectionReason?: string;
+  siteName: string;
 }
 
 export const FriendLinkResultNotificationEmail = ({
-  siteName,
   approved,
-  rejectionReason,
   blogUrl,
+  locale,
+  rejectionReason,
+  siteName,
 }: FriendLinkResultNotificationEmailProps) => {
   return (
     <EmailLayout
-      previewText={`您的友链申请（${siteName}）${approved ? "已通过" : "未通过"}`}
+      locale={locale}
+      previewText={
+        approved
+          ? m.email_friend_link_approved_preview({ siteName }, { locale })
+          : m.email_friend_link_rejected_preview({ siteName }, { locale })
+      }
     >
       <h1
         style={{
@@ -27,12 +36,12 @@ export const FriendLinkResultNotificationEmail = ({
           lineHeight: "1.4",
         }}
       >
-        友链审核结果
+        {m.email_friend_link_result_title({}, { locale })}
       </h1>
       {approved ? (
         <>
           <p style={{ fontSize: "14px", color: "#444", lineHeight: "1.6" }}>
-            恭喜！您的站点 <strong>{siteName}</strong> 的友链申请已通过审核。
+            {m.email_friend_link_approved_body({ siteName }, { locale })}
           </p>
           {blogUrl && (
             <div style={{ marginTop: "32px" }}>
@@ -48,7 +57,7 @@ export const FriendLinkResultNotificationEmail = ({
                   letterSpacing: "0.05em",
                 }}
               >
-                访问博客
+                {m.email_friend_link_approved_action({}, { locale })}
               </a>
             </div>
           )}
@@ -56,7 +65,7 @@ export const FriendLinkResultNotificationEmail = ({
       ) : (
         <>
           <p style={{ fontSize: "14px", color: "#444", lineHeight: "1.6" }}>
-            很抱歉，您的站点 <strong>{siteName}</strong> 的友链申请未通过审核。
+            {m.email_friend_link_rejected_body({ siteName }, { locale })}
           </p>
           {rejectionReason && (
             <blockquote
@@ -81,7 +90,7 @@ export const FriendLinkResultNotificationEmail = ({
               marginTop: "24px",
             }}
           >
-            如有疑问，欢迎重新提交申请。
+            {m.email_friend_link_rejected_followup({}, { locale })}
           </p>
         </>
       )}

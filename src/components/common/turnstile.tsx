@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { clientEnv } from "@/lib/env/client.env";
 
 const TURNSTILE_SCRIPT_URL =

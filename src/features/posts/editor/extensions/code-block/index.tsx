@@ -1,5 +1,5 @@
-import { ReactNodeViewRenderer } from "@tiptap/react";
 import CodeBlock from "@tiptap/extension-code-block";
+import { ReactNodeViewRenderer } from "@tiptap/react";
 import { CodeBlockView } from "./code-block-view";
 import { createShikiPlugin } from "./shiki-plugin";
 
@@ -31,6 +31,10 @@ export const CodeBlockExtension = CodeBlock.extend({
   addKeyboardShortcuts() {
     return {
       Tab: () => {
+        if (!this.editor.isActive(this.name)) {
+          return false;
+        }
+
         return this.editor.commands.insertContent("  ");
       },
     };

@@ -1,8 +1,8 @@
-import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import type { EditorState, Transaction } from "@tiptap/pm/state";
-import type { EditorView } from "@tiptap/pm/view";
 import type { Node as ProsemirrorNode } from "@tiptap/pm/model";
+import type { EditorState, Transaction } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { getHighlighter, themes } from "@/lib/shiki";
 
 const shikiPluginKey = new PluginKey("shiki");

@@ -1,5 +1,9 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { formatBytes } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 import {
   MediaGrid,
   MediaPreviewModal,
@@ -8,9 +12,6 @@ import {
 } from "./components";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import type { MediaAsset } from "./types";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { formatBytes } from "@/lib/utils";
 
 export function MediaLibrary() {
   // Logic Hooks
@@ -63,12 +64,14 @@ export function MediaLibrary() {
       <div className="flex justify-between items-end animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both border-b border-border/30 pb-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-serif font-medium tracking-tight">
-            媒体库
+            {m.media_title()}
           </h1>
           <div className="flex items-center gap-2">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-              ASSETS / {mediaItems.length} 个文件 /{" "}
-              {formatBytes(totalMediaSize ?? 0)} 已使用
+              {m.media_stats_assets({
+                count: mediaItems.length,
+                size: formatBytes(totalMediaSize ?? 0),
+              })}
             </p>
           </div>
         </div>
@@ -77,7 +80,7 @@ export function MediaLibrary() {
           className="h-10 px-6 text-[11px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90 transition-all border border-foreground"
         >
           <Plus size={14} />
-          上传文件
+          {m.media_upload_btn()}
         </Button>
       </div>
 
@@ -142,9 +145,11 @@ export function MediaLibrary() {
         isOpen={!!deleteTarget}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title="确认删除"
-        message={`您确定要永久删除这 ${deleteTarget?.length ?? 0} 个媒体资产吗？此操作无法撤销。`}
-        confirmLabel="确认删除"
+        title={m.media_delete_confirm_title()}
+        message={m.media_delete_confirm_desc({
+          count: deleteTarget?.length ?? 0,
+        })}
+        confirmLabel={m.media_delete_confirm_btn()}
         isDanger={true}
         isLoading={isDeleting}
       />

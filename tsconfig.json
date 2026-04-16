@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "noEmit": true,
     "verbatimModuleSyntax": false,
+    "allowJs": true,
     /* Linting */
     "skipLibCheck": true,
     "noUncheckedSideEffectImports": true
@@ -27,7 +28,6 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "eslint.config.mjs",
     "./worker-configuration.d.ts",
     ".release-it.ts"
   ]

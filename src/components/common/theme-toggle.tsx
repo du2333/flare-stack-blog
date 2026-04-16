@@ -4,12 +4,19 @@ import { flushSync } from "react-dom";
 import type { UserTheme } from "@/components/common/theme-provider";
 import { useTheme } from "@/components/common/theme-provider";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 const themes: Array<UserTheme> = ["light", "dark", "system"];
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { userTheme, setTheme } = useTheme();
   const ref = React.useRef<HTMLButtonElement>(null);
+  const themeLabel =
+    userTheme === "light"
+      ? m.theme_light()
+      : userTheme === "dark"
+        ? m.theme_dark()
+        : m.theme_system();
 
   const toggleTheme = async () => {
     const currentIndex = themes.indexOf(userTheme);
@@ -20,7 +27,6 @@ export function ThemeToggle({ className }: { className?: string }) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!ref.current || !document.startViewTransition || isReducedMotion) {
       setTheme(nextTheme);
       return;
@@ -71,7 +77,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         "p-2 text-muted-foreground hover:text-foreground transition-colors duration-300",
         className,
       )}
-      title={`Theme: ${userTheme}`}
+      title={m.theme_toggle_title({ theme: themeLabel })}
+      aria-label={m.theme_toggle_title({ theme: themeLabel })}
     >
       <div className="relative flex items-center justify-center w-4 h-4">
         {/* Light Mode Icon */}

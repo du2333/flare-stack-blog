@@ -1,13 +1,14 @@
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
-import { useCallback, useState } from "react";
-import { Loader2, Send } from "lucide-react";
-import CommentEditorToolbar from "../editor/comment-editor-toolbar";
-import InsertModal from "../editor/comment-insert-modal";
 import type { JSONContent } from "@tiptap/react";
-import type { ModalType } from "../editor/comment-insert-modal";
-import { commentExtensions } from "@/features/comments/components/editor/config";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { Loader2, Send } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getCommentExtensions } from "@/features/comments/components/editor/config";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
+import { m } from "@/paraglide/messages";
+import CommentEditorToolbar from "../editor/comment-editor-toolbar";
+import type { ModalType } from "../editor/comment-insert-modal";
+import InsertModal from "../editor/comment-insert-modal";
 
 interface CommentEditorProps {
   onSubmit: (content: JSONContent) => Promise<void>;
@@ -22,13 +23,15 @@ export const CommentEditor = ({
   isSubmitting,
   autoFocus,
   onCancel,
-  submitLabel = "发表评论",
+  submitLabel,
 }: CommentEditorProps) => {
+  const actualSubmitLabel = submitLabel || m.comments_editor_submit();
+
   const [modalType, setModalType] = useState<ModalType>(null);
   const [modalInitialUrl, setModalInitialUrl] = useState("");
 
   const editor = useEditor({
-    extensions: commentExtensions,
+    extensions: getCommentExtensions(),
     content: "",
     autofocus: autoFocus ? "end" : false,
     editorProps: {
@@ -83,7 +86,7 @@ export const CommentEditor = ({
 
       <div className="flex items-center justify-between px-4 pb-2 pt-2 border-t border-border/10">
         <div className="text-[10px] font-mono text-muted-foreground/30 tracking-widest pl-2">
-          支持 Markdown
+          {m.comments_editor_support_markdown()}
         </div>
         <div className="flex items-center gap-4">
           {onCancel && (
@@ -91,7 +94,7 @@ export const CommentEditor = ({
               onClick={onCancel}
               className="text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              取消
+              {m.comments_editor_cancel()}
             </button>
           )}
           <Button
@@ -101,7 +104,7 @@ export const CommentEditor = ({
             variant="ghost"
             className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest hover:bg-transparent hover:text-foreground p-0 flex items-center gap-2 group/btn"
           >
-            <span>{submitLabel}</span>
+            <span>{actualSubmitLabel}</span>
             {isSubmitting ? (
               <Loader2 size={12} className="animate-spin" />
             ) : (

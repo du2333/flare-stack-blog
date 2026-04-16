@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
 import type { JSONContent } from "@tiptap/react";
+import { describe, expect, it } from "vitest";
+import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 import {
   jsonContentToMarkdown,
   makeExportImageRewriter,
 } from "@/features/import-export/utils/markdown-serializer";
-import { markdownToJsonContent } from "@/features/import-export/utils/markdown-parser";
 
 function doc(...content: Array<JSONContent>): JSONContent {
   return { type: "doc", content };

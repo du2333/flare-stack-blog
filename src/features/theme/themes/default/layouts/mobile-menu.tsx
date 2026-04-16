@@ -1,8 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 import { LogOut, UserIcon, X } from "lucide-react";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { Button } from "@/components/ui/button";
-import { blogConfig } from "@/blog.config";
+import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;
@@ -19,6 +19,8 @@ export function MobileMenu({
   user,
   logout,
 }: MobileMenuProps) {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+
   return (
     <div
       className={`fixed inset-0 z-100 transition-all duration-500 ease-in-out ${
@@ -43,7 +45,7 @@ export function MobileMenu({
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <span className="font-serif text-2xl font-bold tracking-tighter text-foreground">
-              [ {blogConfig.name} ]
+              [ {siteConfig.theme.default.navBarName} ]
             </span>
           </div>
           <Button
@@ -117,7 +119,7 @@ export function MobileMenu({
                 &gt;_
               </span>
               <span className="text-3xl md:text-5xl font-bold tracking-tight text-muted-foreground group-hover:text-foreground transition-colors">
-                管理
+                {m.profile_admin_dashboard()}
               </span>
             </Link>
           )}
@@ -156,7 +158,7 @@ export function MobileMenu({
                     onClick={onClose}
                     className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground text-left"
                   >
-                    个人资料
+                    {m.profile_title()}
                   </Link>
                 </div>
               </div>
@@ -177,7 +179,7 @@ export function MobileMenu({
               onClick={onClose}
               className="group flex items-center gap-2 font-mono text-xl md:text-2xl text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span>$ login</span>
+              <span>$ {m.nav_login()}</span>
               <span className="w-2.5 h-5 bg-foreground opacity-0 group-hover:opacity-100 animate-pulse transition-opacity" />
             </Link>
           )}

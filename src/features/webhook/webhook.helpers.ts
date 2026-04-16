@@ -1,5 +1,7 @@
 import type { NotificationEvent } from "@/features/notification/notification.schema";
 import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 export type WebhookTranslationKey =
   | "admin_email"
@@ -19,24 +21,48 @@ export type WebhookTranslationKey =
   | "subject"
   | "message";
 
-export const WEBHOOK_EXAMPLE_LABELS: Record<WebhookTranslationKey, string> = {
-  admin_email: "admin@example.com",
-  post_title: "欢迎使用通知系统",
-  commenter_name: "测试用户",
-  comment_preview: "这是一条用于校验 Webhook 链路的测试评论。",
-  review_url: "https://example.com/admin/comments",
-  comment_url: "https://example.com/posts/welcome#comments",
-  unsubscribe_url: "https://example.com/unsubscribe?token=test",
-  replier_name: "测试用户",
-  reply_preview: "这是一条用于检查回复通知的测试内容。",
-  site_name: "测试站点",
-  site_url: "https://example.com",
-  description: "这是一个用于测试 Webhook 通知的示例友链申请。",
-  submitter_name: "测试用户",
-  friend_link_review_url: "https://example.com/admin/friend-links",
-  subject: "[新评论] 欢迎使用通知系统",
-  message: "测试用户在《欢迎使用通知系统》下发表了评论：这是一条示例评论。",
-};
+export function getWebhookExampleLabel(
+  key: WebhookTranslationKey,
+  options?: { locale?: Locale },
+): string {
+  switch (key) {
+    case "admin_email":
+      return "admin@example.com";
+    case "post_title":
+      return m.webhook_example_post_title({}, options);
+    case "commenter_name":
+      return m.webhook_example_commenter_name({}, options);
+    case "comment_preview":
+      return m.webhook_example_comment_preview({}, options);
+    case "review_url":
+      return "https://example.com/admin/comments";
+    case "comment_url":
+      return "https://example.com/posts/welcome#comments";
+    case "unsubscribe_url":
+      return "https://example.com/unsubscribe?token=test";
+    case "replier_name":
+      return m.webhook_example_replier_name({}, options);
+    case "reply_preview":
+      return m.webhook_example_reply_preview({}, options);
+    case "site_name":
+      return m.webhook_example_site_name({}, options);
+    case "site_url":
+      return "https://example.com";
+    case "description":
+      return m.webhook_example_description({}, options);
+    case "submitter_name":
+      return m.webhook_example_submitter_name({}, options);
+    case "friend_link_review_url":
+      return "https://example.com/admin/friend-links";
+    case "subject":
+      return m.webhook_example_subject({}, options);
+    case "message":
+      return m.webhook_example_message({}, options);
+    default:
+      key satisfies never;
+      throw new Error("Unknown webhook translation key");
+  }
+}
 
 export function createNotificationExampleEvent(
   eventType: NotificationWebhookEventType,

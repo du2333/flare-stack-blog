@@ -1,9 +1,9 @@
 import type { ThemeConfig } from "@/features/theme/contract/config";
-import { blogConfig } from "@/blog.config";
 
 export const config: ThemeConfig = {
   home: {
-    featuredPostsLimit: 5,
+    recentPostsLimit: 5,
+    popularPostsLimit: 3,
   },
   posts: {
     postsPerPage: 24,
@@ -11,5 +11,4 @@ export const config: ThemeConfig = {
   post: {
     relatedPostsLimit: 4,
   },
-  preloadImages: [blogConfig.theme.fuwari.homeBg],
 };

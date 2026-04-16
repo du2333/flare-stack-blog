@@ -6,8 +6,10 @@
  */
 export interface ThemeConfig {
   home: {
-    /** 首页展示的文章数量 */
-    featuredPostsLimit: number;
+    /** 首页最近更新的文章数量 */
+    recentPostsLimit: number;
+    /** 首页热门文章数量 */
+    popularPostsLimit: number;
   };
   posts: {
     /** 文章列表页每次加载的文章数量 */
@@ -17,6 +19,4 @@ export interface ThemeConfig {
     /** 文章详情页显示的相关文章数量 */
     relatedPostsLimit: number;
   };
-  /** 需要在公共布局中 preload 的图片（用于 LCP 优化） */
-  preloadImages?: Array<string>;
 }

@@ -1,19 +1,20 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Link, getRouteApi } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
-import { toast } from "sonner";
-import { CommentList } from "./comment-list";
-import { CommentEditor } from "./comment-editor";
-import { CommentSectionSkeleton } from "./comment-section-skeleton";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import type { JSONContent } from "@tiptap/react";
+import { LogIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { Button } from "@/components/ui/button";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useComments } from "@/features/comments/hooks/use-comments";
 import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
-import { Button } from "@/components/ui/button";
-import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { CommentEditor } from "./comment-editor";
+import { CommentList } from "./comment-list";
+import { CommentSectionSkeleton } from "./comment-section-skeleton";
 
 const routeApi = getRouteApi("/_public/post/$slug");
 
@@ -52,7 +53,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
 
   const requireTurnstile = () => {
     if (!turnstilePending) return false;
-    toast.error("请先完成人机验证");
+    toast.error(m.comments_turnstile_required());
     turnstileRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
@@ -157,7 +158,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
       <header className="flex items-center justify-between">
         <div className="space-y-2">
           <p className="text-xl font-serif font-medium text-foreground">
-            {totalCount} 条评论
+            {m.comments_count({ count: totalCount })}
           </p>
         </div>
       </header>
@@ -173,7 +174,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
       ) : (
         <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
           <p className="text-xs font-mono text-muted-foreground/60 tracking-wider">
-            加入讨论
+            {m.comments_join_discussion()}
           </p>
           <Link to="/login">
             <Button
@@ -181,7 +182,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
               className="h-10 px-6 text-[10px] uppercase tracking-[0.25em] font-bold border-border/40 bg-transparent hover:bg-foreground hover:text-background transition-all"
             >
               <LogIn size={12} className="mr-2.5 opacity-70" />
-              登录
+              {m.comments_login()}
             </Button>
           </Link>
         </div>
@@ -216,7 +217,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
             disabled={isFetchingNextPage}
             className="px-8 py-5 text-[10px] uppercase tracking-[0.2em] font-bold border-border hover:bg-foreground hover:text-background transition-all"
           >
-            {isFetchingNextPage ? "正在加载..." : "加载更多评论"}
+            {isFetchingNextPage ? m.comments_loading() : m.comments_load_more()}
           </Button>
         </div>
       )}
@@ -226,9 +227,9 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
         isOpen={!!commentToDelete}
         onClose={() => setCommentToDelete(null)}
         onConfirm={handleDelete}
-        title="删除评论"
-        message="您确定要删除这条评论吗？如果是您本人的评论，删除后将显示为「该评论已删除」。"
-        confirmLabel="确认删除"
+        title={m.comments_delete_title()}
+        message={m.comments_delete_desc()}
+        confirmLabel={m.comments_delete_confirm()}
         isDanger={true}
         isLoading={isDeleting}
       />

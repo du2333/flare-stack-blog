@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getLinkedPostsFn } from "@/features/media/api/media.api";
+import type { MediaAsset } from "@/features/media/components/media-library/types";
+import { MEDIA_KEYS } from "@/features/media/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { m } from "@/paraglide/messages";
 
 interface MediaPreviewModalProps {
   asset: MediaAsset | null;
@@ -79,13 +80,13 @@ export function MediaPreviewModal({
 
     // Safety check for linked posts handled by parent, but good to have visual feedback
     if (linkedPosts.length > 0) {
-      toast.error("无法删除", {
-        description: "此资源被文章引用，请先移除引用。",
+      toast.error(m.media_preview_delete_fail(), {
+        description: m.media_preview_delete_fail_desc(),
       });
       return;
     }
 
-    if (!confirm("确定要永久删除此文件吗？")) return;
+    if (!confirm(m.media_preview_delete_confirm())) return;
 
     setIsDeleting(true);
     try {
@@ -105,12 +106,12 @@ export function MediaPreviewModal({
         : `${window.location.origin}${activeAsset.url}`;
 
       await navigator.clipboard.writeText(absoluteUrl);
-      toast.success("链接已复制", {
-        description: "图片地址已复制到剪贴板",
+      toast.success(m.media_preview_copy_success(), {
+        description: m.media_preview_copy_success_desc(),
       });
     } catch (err) {
-      toast.error("复制失败", {
-        description: "无法访问剪贴板",
+      toast.error(m.media_preview_copy_fail(), {
+        description: m.media_preview_copy_fail_desc(),
       });
     }
   };
@@ -166,7 +167,7 @@ export function MediaPreviewModal({
         {/* --- Image Viewport (Left/Top) --- */}
         <div className="h-[40vh] md:h-auto md:w-2/3 bg-muted/5 relative flex items-center justify-center overflow-hidden p-8 md:p-12 border-b md:border-b-0 md:border-r border-border/30">
           <div className="absolute top-4 left-4 text-xs font-mono text-muted-foreground uppercase tracking-widest z-20">
-            预览模式
+            {m.media_preview_mode()}
           </div>
           <img
             src={activeAsset.url}
@@ -180,7 +181,7 @@ export function MediaPreviewModal({
           {/* Header */}
           <div className="p-6 md:p-8 border-b border-border/30">
             <div className="text-xs font-mono text-muted-foreground uppercase tracking-[0.3em] mb-4">
-              资产详情
+              {m.media_preview_details()}
             </div>
 
             {isEditing ? (
@@ -237,7 +238,7 @@ export function MediaPreviewModal({
             <div className="grid grid-cols-2 gap-y-6 gap-x-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                  <HardDrive size={10} /> 大小
+                  <HardDrive size={10} /> {m.media_preview_size()}
                 </div>
                 <div className="text-sm font-mono font-medium">
                   {formatBytes(activeAsset.sizeInBytes)}
@@ -246,7 +247,7 @@ export function MediaPreviewModal({
 
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                  <FileText size={10} /> 格式
+                  <FileText size={10} /> {m.media_preview_format()}
                 </div>
                 <div className="text-sm font-mono font-medium uppercase">
                   {activeAsset.mimeType.split("/")[1]}
@@ -255,18 +256,18 @@ export function MediaPreviewModal({
 
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                  <Layout size={10} /> 尺寸
+                  <Layout size={10} /> {m.media_preview_dimensions()}
                 </div>
                 <div className="text-sm font-mono font-medium uppercase">
                   {activeAsset.width && activeAsset.height
                     ? `${activeAsset.width} × ${activeAsset.height}`
-                    : "未知"}
+                    : m.media_grid_unknown_size()}
                 </div>
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                  <Calendar size={10} /> 创建时间
+                  <Calendar size={10} /> {m.media_preview_created()}
                 </div>
                 <div className="text-sm font-mono font-medium uppercase">
                   {new Date(activeAsset.createdAt).toLocaleDateString()}
@@ -277,11 +278,12 @@ export function MediaPreviewModal({
             {/* Linked Posts Section */}
             <div className="pt-6 border-t border-border/30">
               <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-widest mb-4">
-                <Link2 size={10} /> 引用 ({linkedPosts.length})
+                <Link2 size={10} />{" "}
+                {m.media_preview_linked({ count: linkedPosts.length })}
               </div>
               {linkedPosts.length === 0 ? (
                 <div className="text-xs font-mono text-muted-foreground uppercase tracking-wider pl-4 border-l border-border/30">
-                  未找到引用
+                  {m.media_preview_no_links()}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -310,7 +312,7 @@ export function MediaPreviewModal({
 
             <div className="space-y-2 pt-6 border-t border-border/30">
               <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                资产键
+                {m.media_preview_asset_key()}
               </div>
               <div className="p-3 bg-muted/10 text-sm font-mono text-muted-foreground break-all rounded-none leading-relaxed select-all border border-border/30">
                 {activeAsset.key}
@@ -320,7 +322,7 @@ export function MediaPreviewModal({
 
           {/* Actions */}
           <div className="p-6 md:p-8 border-t border-border/30 bg-background flex flex-col gap-3">
-            <div className="flex gap-3">
+            <div className="flex flex-col xl:flex-row gap-3">
               <a
                 href={`${activeAsset.url}?original=true`}
                 download={activeAsset.fileName}
@@ -328,20 +330,20 @@ export function MediaPreviewModal({
                 rel="noreferrer"
                 className={cn(
                   buttonVariants({ variant: "outline" }),
-                  "flex-1 h-10 text-xs uppercase tracking-[0.2em] font-medium hover:bg-foreground hover:text-background transition-all rounded-none gap-2 flex items-center justify-center whitespace-nowrap border-foreground/20",
+                  "flex-1 h-10 text-xs uppercase tracking-widest font-medium hover:bg-foreground hover:text-background transition-all rounded-none gap-2 flex items-center justify-center whitespace-nowrap border-foreground/20",
                 )}
               >
                 <Download size={12} className="shrink-0" />
-                <span>[ 下载 ]</span>
+                <span>[ {m.media_preview_btn_download()} ]</span>
               </a>
 
               <Button
                 variant="outline"
                 onClick={handleCopyLink}
-                className="flex-1 h-10 text-xs uppercase tracking-[0.2em] font-medium hover:bg-foreground hover:text-background transition-all rounded-none gap-2 border-foreground/20"
+                className="flex-1 h-10 text-xs uppercase tracking-widest font-medium hover:bg-foreground hover:text-background transition-all rounded-none gap-2 border-foreground/20"
               >
                 <Copy size={12} className="shrink-0" />
-                <span>[ 复制链接 ]</span>
+                <span>[ {m.media_preview_btn_copy()} ]</span>
               </Button>
             </div>
 
@@ -349,14 +351,14 @@ export function MediaPreviewModal({
               variant="ghost"
               onClick={handleDelete}
               disabled={isDeleting || linkedPosts.length > 0}
-              className="w-full h-10 text-xs uppercase tracking-[0.2em] font-medium text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all rounded-none gap-2"
+              className="w-full h-10 text-xs uppercase tracking-widest font-medium text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all rounded-none gap-2"
             >
               {isDeleting ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
                 <Trash2 size={12} />
               )}
-              <span>[ 永久删除 ]</span>
+              <span>[ {m.media_preview_btn_delete()} ]</span>
             </Button>
           </div>
         </div>

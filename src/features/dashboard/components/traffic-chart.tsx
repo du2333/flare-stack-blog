@@ -1,5 +1,7 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import type { TrafficData } from "@/features/dashboard/dashboard.schema";
+import { formatMonthDayTime } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 export function TrafficChart({ data }: { data: Array<TrafficData> }) {
   return (
@@ -28,19 +30,14 @@ export function TrafficChart({ data }: { data: Array<TrafficData> }) {
                 return (
                   <div className="bg-background border border-border/50 p-3 text-xs shadow-none">
                     <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">
-                      {new Date(point.date).toLocaleDateString("zh-CN", {
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatMonthDayTime(point.date)}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-serif font-medium text-foreground">
                         {point.views}
                       </span>
                       <span className="text-[9px] text-muted-foreground">
-                        浏览量
+                        {m.admin_overview_chart_views()}
                       </span>
                     </div>
                   </div>

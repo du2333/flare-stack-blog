@@ -89,12 +89,14 @@ export async function markdownToJsonContent(
 
   const { default: StarterKit } = await import("@tiptap/starter-kit");
   const { default: ImageExt } = await import("@tiptap/extension-image");
-  const { default: Mathematics } =
-    await import("@tiptap/extension-mathematics");
+  const { default: Mathematics } = await import(
+    "@tiptap/extension-mathematics"
+  );
   const { Table } = await import("@tiptap/extension-table");
   const { default: TableRow } = await import("@tiptap/extension-table-row");
-  const { default: TableHeader } =
-    await import("@tiptap/extension-table-header");
+  const { default: TableHeader } = await import(
+    "@tiptap/extension-table-header"
+  );
   const { default: TableCell } = await import("@tiptap/extension-table-cell");
 
   const schema = getSchema([

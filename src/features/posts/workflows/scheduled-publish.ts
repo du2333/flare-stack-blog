@@ -1,5 +1,5 @@
-import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint } from "cloudflare:workers";
 import { toUTCMidnight } from "@/features/posts/utils/date";
 import {
   fetchPost,

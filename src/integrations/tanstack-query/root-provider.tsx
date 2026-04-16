@@ -9,14 +9,37 @@ import { handleServerError } from "@/lib/errors";
 export function getContext() {
   const queryClient = new QueryClient({
     queryCache: new QueryCache({
-      onError: handleServerError,
+      onError: (error, query) => {
+        console.error(
+          "[QueryCache error]",
+          JSON.stringify({
+            queryKey: query.queryKey,
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          }),
+        );
+        handleServerError(error);
+      },
     }),
     mutationCache: new MutationCache({
-      onError: handleServerError,
+      onError: (error, _variables, _context, mutation) => {
+        console.error(
+          "[MutationCache error]",
+          JSON.stringify({
+            mutationKey: mutation.options.mutationKey,
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          }),
+        );
+        if (mutation.options.onError) {
+          return;
+        }
+
+        handleServerError(error);
+      },
     }),
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false,
         staleTime: 60 * 1000,
       },
     },

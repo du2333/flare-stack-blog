@@ -1,22 +1,32 @@
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { EmailLayout } from "./EmailLayout";
 
 interface FriendLinkAdminNotificationEmailProps {
+  description: string;
+  locale: Locale;
+  reviewUrl: string;
   siteName: string;
   siteUrl: string;
-  description: string;
   submitterName: string;
-  reviewUrl: string;
 }
 
 export const FriendLinkAdminNotificationEmail = ({
+  description,
+  locale,
+  reviewUrl,
   siteName,
   siteUrl,
-  description,
   submitterName,
-  reviewUrl,
 }: FriendLinkAdminNotificationEmailProps) => {
   return (
-    <EmailLayout previewText={`${submitterName} 提交了友链申请：${siteName}`}>
+    <EmailLayout
+      locale={locale}
+      previewText={m.email_friend_link_submitted_preview(
+        { submitterName, siteName },
+        { locale },
+      )}
+    >
       <h1
         style={{
           fontFamily: '"Playfair Display", "Georgia", serif',
@@ -27,10 +37,10 @@ export const FriendLinkAdminNotificationEmail = ({
           lineHeight: "1.4",
         }}
       >
-        新友链申请
+        {m.email_friend_link_submitted_title({}, { locale })}
       </h1>
       <p style={{ fontSize: "14px", color: "#444", lineHeight: "1.6" }}>
-        <strong>{submitterName}</strong> 提交了友链申请：
+        {m.email_friend_link_submitted_intro({ submitterName }, { locale })}
       </p>
       <div
         style={{
@@ -43,18 +53,24 @@ export const FriendLinkAdminNotificationEmail = ({
         }}
       >
         <p style={{ margin: "4px 0" }}>
-          <strong>站点名称：</strong>
+          <strong>
+            {m.email_friend_link_submitted_site_name({}, { locale })}
+          </strong>
           {siteName}
         </p>
         <p style={{ margin: "4px 0" }}>
-          <strong>站点地址：</strong>
+          <strong>
+            {m.email_friend_link_submitted_site_url({}, { locale })}
+          </strong>
           <a href={siteUrl} style={{ color: "#1a1a1a" }}>
             {siteUrl}
           </a>
         </p>
         {description && (
           <p style={{ margin: "4px 0" }}>
-            <strong>简介：</strong>
+            <strong>
+              {m.email_friend_link_submitted_description({}, { locale })}
+            </strong>
             {description}
           </p>
         )}
@@ -72,7 +88,7 @@ export const FriendLinkAdminNotificationEmail = ({
             letterSpacing: "0.05em",
           }}
         >
-          前往审核
+          {m.email_friend_link_submitted_action({}, { locale })}
         </a>
       </div>
     </EmailLayout>

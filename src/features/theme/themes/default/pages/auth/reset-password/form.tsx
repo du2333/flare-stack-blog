@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
-import type { ResetPasswordFormData } from "@/features/theme/contract/pages";
 import { Input } from "@/components/ui/input";
+import type { ResetPasswordFormData } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 interface ResetPasswordFormProps {
   form: ResetPasswordFormData;
@@ -12,7 +13,7 @@ export function ResetPasswordForm({ form }: ResetPasswordFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <p className="text-sm text-muted-foreground/60 font-light leading-relaxed">
-        您的身份已验证。请在下方输入新密码以完成重置。
+        {m.reset_password_header_desc()}
       </p>
 
       <div className="space-y-6">
@@ -21,14 +22,14 @@ export function ResetPasswordForm({ form }: ResetPasswordFormProps) {
             htmlFor="new-password"
             className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
           >
-            新密码
+            {m.reset_password_new_password()}
           </label>
           <Input
             type="password"
             id="new-password"
             {...register("password")}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
-            placeholder="••••••••"
+            placeholder={m.login_password_placeholder()}
           />
           {errors.password && (
             <span className="text-[9px] font-mono text-destructive uppercase tracking-widest mt-1 block">
@@ -42,14 +43,14 @@ export function ResetPasswordForm({ form }: ResetPasswordFormProps) {
             htmlFor="confirm-password"
             className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
           >
-            确认新密码
+            {m.reset_password_confirm_new_password()}
           </label>
           <Input
             type="password"
             id="confirm-password"
             {...register("confirmPassword")}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
-            placeholder="••••••••"
+            placeholder={m.login_password_placeholder()}
           />
           {errors.confirmPassword && (
             <span className="text-[9px] font-mono text-destructive uppercase tracking-widest mt-1 block">
@@ -67,7 +68,7 @@ export function ResetPasswordForm({ form }: ResetPasswordFormProps) {
         {isSubmitting ? (
           <Loader2 className="animate-spin" size={14} />
         ) : (
-          <span>更新密码</span>
+          <span>{m.reset_password_submit()}</span>
         )}
       </button>
     </form>

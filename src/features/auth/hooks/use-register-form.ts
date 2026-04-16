@@ -5,23 +5,30 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AUTH_KEYS } from "@/features/auth/queries";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
-import { AUTH_KEYS } from "@/features/auth/queries";
+import { getRegisterAuthErrorMessage } from "@/lib/auth/auth-errors";
+import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
-const registerSchema = z
-  .object({
-    name: z.string().min(2, "昵称至少 2 位").max(20, "昵称最多 20 位"),
-    email: z.email("无效的邮箱格式"),
-    password: z.string().min(8, "密码至少 8 位"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "密码输入不一致",
-    path: ["confirmPassword"],
-  });
+const createRegisterSchema = (messages: Messages) =>
+  z
+    .object({
+      name: z
+        .string()
+        .min(2, messages.register_validation_name_min())
+        .max(20, messages.register_validation_name_max()),
+      email: z.email(messages.register_validation_email_invalid()),
+      password: z.string().min(8, messages.register_validation_password_min()),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: messages.register_validation_password_mismatch(),
+      path: ["confirmPassword"],
+    });
 
-type RegisterSchema = z.infer<typeof registerSchema>;
+type RegisterSchema = z.infer<ReturnType<typeof createRegisterSchema>>;
 
 export interface UseRegisterFormOptions {
   turnstileToken: string | null;
@@ -42,6 +49,7 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
   const navigate = useNavigate();
   const previousLocation = usePreviousLocation();
   const queryClient = useQueryClient();
+  const registerSchema = createRegisterSchema(m);
 
   const form = useForm<RegisterSchema>({
     resolver: standardSchemaResolver(registerSchema),
@@ -61,13 +69,10 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
     resetTurnstile();
 
     if (error) {
-      if (error.message?.includes("Turnstile")) {
-        toast.error("人机验证失败", { description: "请等待验证完成后重试" });
-      } else {
-        toast.error("注册失败", {
-          description: error.message || "服务器连接异常，请稍后重试。",
-        });
-      }
+      toast.error(m.register_toast_failed(), {
+        description:
+          getRegisterAuthErrorMessage(error, m) ?? m.register_error_default(),
+      });
       return;
     }
 
@@ -75,11 +80,13 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
 
     if (isEmailConfigured) {
       setIsSuccess(true);
-      toast.success("账号已创建", {
-        description: "验证邮件已发送，请检查您的收件箱。",
+      toast.success(m.register_toast_created(), {
+        description: m.register_toast_verification_sent(),
       });
     } else {
-      toast.success("注册成功", { description: "账号已激活。" });
+      toast.success(m.register_toast_success(), {
+        description: m.register_toast_activated(),
+      });
       navigate({ to: previousLocation });
     }
   };

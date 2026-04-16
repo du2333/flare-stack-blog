@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { RegisterForm } from "./form";
 import type { RegisterPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
+import { RegisterForm } from "./form";
 
 export function RegisterPage({
   registerForm,
@@ -11,20 +12,20 @@ export function RegisterPage({
       <div className="text-center space-y-8 animate-in fade-in duration-500">
         <div className="space-y-4">
           <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60">
-            [ EMAIL_SENT ]
+            [ {m.register_success_label()} ]
           </p>
           <h3 className="text-xl font-serif font-medium tracking-tight">
-            验证您的邮箱
+            {m.register_success_title()}
           </h3>
           <p className="text-sm text-muted-foreground/70 font-light leading-relaxed">
-            一封验证邮件已发送至您的邮箱。请点击邮件中的链接以激活账户。
+            {m.register_success_desc()}
           </p>
         </div>
         <Link
           to="/login"
           className="block w-full py-4 border border-border/40 text-[10px] font-mono uppercase tracking-[0.3em] hover:border-foreground transition-all text-center"
         >
-          返回登录
+          {m.register_back_to_login()}
         </Link>
       </div>
     );
@@ -34,9 +35,11 @@ export function RegisterPage({
     <div className="space-y-12">
       <header className="text-center space-y-3">
         <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-muted-foreground/60">
-          [ REGISTER ]
+          [ {m.register_label()} ]
         </p>
-        <h1 className="text-2xl font-serif font-medium tracking-tight">注册</h1>
+        <h1 className="text-2xl font-serif font-medium tracking-tight">
+          {m.register_title()}
+        </h1>
       </header>
 
       <div className="space-y-10">
@@ -46,12 +49,12 @@ export function RegisterPage({
 
         <div className="text-center pt-4">
           <p className="text-[10px] font-mono text-muted-foreground/50 tracking-wider">
-            已有账户?{" "}
+            {m.register_have_account()}{" "}
             <Link
               to="/login"
               className="text-foreground hover:opacity-70 transition-opacity ml-1"
             >
-              [ 前往登录 ]
+              [ {m.register_go_to_login()} ]
             </Link>
           </p>
         </div>

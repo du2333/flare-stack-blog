@@ -1,7 +1,7 @@
-import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/react";
+import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
+import { getCommentExtensions } from "@/features/comments/components/editor/config";
 import { ImageDisplay } from "@/features/theme/themes/fuwari/components/content/image-display";
-import { commentExtensions } from "@/features/comments/components/editor/config";
 
 /**
  * Fuwari comment renderer — uses commentExtensions with Fuwari's ImageDisplay.
@@ -10,7 +10,7 @@ import { commentExtensions } from "@/features/comments/components/editor/config"
 export function renderCommentReact(content: JSONContent | null) {
   if (!content) return null;
   return renderToReactElement({
-    extensions: commentExtensions,
+    extensions: getCommentExtensions(),
     content,
     options: {
       nodeMapping: {

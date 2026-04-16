@@ -1,22 +1,28 @@
+import * as MediaRepo from "@/features/media/data/media.data";
+import * as Storage from "@/features/media/data/media.storage";
 import type {
   GetMediaListInput,
   UpdateMediaNameInput,
 } from "@/features/media/media.schema";
-import * as Storage from "@/features/media/data/media.storage";
-import * as MediaRepo from "@/features/media/data/media.data";
-import * as PostMediaRepo from "@/features/posts/data/post-media.data";
+import { getImageDimensions } from "@/features/media/utils/image-dimensions";
 import {
   buildTransformOptions,
   getContentTypeFromKey,
 } from "@/features/media/utils/media.utils";
+import * as PostMediaRepo from "@/features/posts/data/post-media.data";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { err, ok } from "@/lib/errors";
 
 export async function upload(
   context: DbContext & { executionCtx: ExecutionContext },
-  input: { file: File; width?: number; height?: number },
+  input: { file: File },
 ) {
-  const { file, width, height } = input;
+  const { file } = input;
+
+  const dimensions = getImageDimensions(await file.arrayBuffer());
+  const width = dimensions?.width;
+  const height = dimensions?.height;
+
   const uploaded = await Storage.putToR2(context.env, file);
 
   try {

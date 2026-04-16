@@ -1,9 +1,10 @@
 import { Check, Film, Image as ImageIcon } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import { useLongPress } from "../hooks";
-import type { MediaAsset } from "../types";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { useLongPress } from "../hooks";
+import type { MediaAsset } from "../types";
 
 interface MediaGridProps {
   media: Array<MediaAsset>;
@@ -104,7 +105,7 @@ const MediaCard = memo(
         {/* Linked Indicator */}
         {isLinked && (
           <div className="absolute top-0 right-0 z-20 px-2 py-1 bg-emerald-500 text-white text-[9px] font-mono tracking-wider uppercase">
-            已引用
+            {m.media_grid_linked()}
           </div>
         )}
 
@@ -194,14 +195,14 @@ export function MediaGrid({
         <ImageIcon size={32} strokeWidth={1} className="opacity-20" />
         <div className="text-center font-mono text-xs">
           <span className="uppercase tracking-widest block mb-2">
-            未找到媒体资产
+            {m.media_grid_empty()}
           </span>
           {onRefetch && (
             <button
               onClick={onRefetch}
               className="text-[10px] uppercase tracking-widest font-bold hover:underline opacity-50 hover:opacity-100"
             >
-              [ 刷新列表 ]
+              [ {m.media_grid_refresh()} ]
             </button>
           )}
         </div>
@@ -243,14 +244,14 @@ export function MediaGrid({
           <div className="flex flex-col items-center gap-4">
             <div className="w-8 h-8 rounded-none border-2 border-t-foreground border-r-transparent border-b-transparent border-l-transparent animate-spin" />
             <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground animate-pulse">
-              加载资产中...
+              {m.media_grid_loading()}
             </span>
           </div>
         ) : !hasMore && media.length > 0 ? (
           <div className="flex items-center gap-2 opacity-50">
             <div className="h-px w-12 bg-border" />
             <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              已加载全部
+              {m.media_grid_end()}
             </span>
             <div className="h-px w-12 bg-border" />
           </div>

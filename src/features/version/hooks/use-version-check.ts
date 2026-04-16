@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { updateCheckQuery } from "../queries";
 import { ms } from "@/lib/duration";
+import { m } from "@/paraglide/messages";
+import { updateCheckQuery } from "../queries";
 
 export function useVersionCheck() {
   const { data: updateData } = useQuery(updateCheckQuery);
@@ -20,14 +21,16 @@ export function useVersionCheck() {
       ignoredVersion !== data.latestVersion &&
       (!lastToastTime || now - parseInt(lastToastTime) > ONE_DAY)
     ) {
-      toast("发现新版本", {
-        description: `${data.latestVersion} 已发布。`,
+      toast(m.version_toast_available(), {
+        description: m.version_toast_available_desc({
+          version: data.latestVersion,
+        }),
         action: {
-          label: "查看",
+          label: m.version_action_view(),
           onClick: () => window.open(data.releaseUrl, "_blank"),
         },
         cancel: {
-          label: "忽略",
+          label: m.version_action_ignore(),
           onClick: () =>
             localStorage.setItem("ignored_version", data.latestVersion),
         },

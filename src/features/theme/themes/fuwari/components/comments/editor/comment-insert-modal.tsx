@@ -1,9 +1,10 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import type React from "react";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { m } from "@/paraglide/messages";
 
 export type ModalType = "LINK" | "IMAGE" | null;
 
@@ -69,7 +70,9 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold fuwari-text-90">
-            {activeType === "LINK" ? "插入链接" : "插入图片"}
+            {activeType === "LINK"
+              ? m.comments_editor_modal_link_title()
+              : m.comments_editor_modal_image_title()}
           </h2>
           <button
             onClick={onClose}
@@ -83,7 +86,9 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
         <form onSubmit={handleSubmit} className="px-6 pb-4 flex flex-col gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium fuwari-text-75 ml-1">
-              {activeType === "IMAGE" ? "图片链接" : "链接地址"}
+              {activeType === "IMAGE"
+                ? m.comments_editor_modal_image_label()
+                : m.comments_editor_modal_link_label()}
             </label>
             <input
               type="url"
@@ -97,8 +102,8 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
 
           <p className="text-xs fuwari-text-30 px-1">
             {activeType === "LINK"
-              ? "输入您想要指向的 URL 地址。"
-              : "输入图片的网络地址。"}
+              ? m.comments_editor_modal_link_desc()
+              : m.comments_editor_modal_image_desc()}
           </p>
         </form>
 
@@ -106,9 +111,10 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
         <div className="px-6 pb-6 flex justify-end gap-3 mt-2">
           <button
             onClick={onClose}
+            type="button"
             className="h-10 px-4 text-sm fuwari-text-50 hover:fuwari-text-75 transition-colors font-medium"
           >
-            取消
+            {m.comments_editor_modal_cancel()}
           </button>
           <button
             onClick={() => handleSubmit()}
@@ -120,8 +126,8 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
             className="fuwari-btn-primary h-10 px-6 text-sm rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {activeType === "LINK" && !inputUrl.trim() && initialUrl.trim()
-              ? "移除链接"
-              : "确认提交"}
+              ? m.comments_editor_modal_remove_link()
+              : m.comments_editor_modal_confirm()}
           </button>
         </div>
       </div>

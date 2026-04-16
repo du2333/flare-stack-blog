@@ -1,10 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { z } from "zod";
 import theme from "@theme";
-import { blogConfig } from "@/blog.config";
+import { useEffect } from "react";
+import { z } from "zod";
+import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
+import { recordPageViewFn } from "@/features/pageview/api/pageview.api";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
-import { siteDomainQuery } from "@/features/config/queries";
 import {
   buildArticleJsonLd,
   buildCanonicalUrl,
@@ -23,9 +24,10 @@ export const Route = createFileRoute("/_public/post/$slug")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
     // 1. Critical: Main post data - use serverFn (executes directly on server, no HTTP)
-    const [post, domain] = await Promise.all([
+    const [post, domain, siteConfig] = await Promise.all([
       context.queryClient.ensureQueryData(postBySlugQuery(params.slug)),
       context.queryClient.ensureQueryData(siteDomainQuery),
+      context.queryClient.ensureQueryData(siteConfigQuery),
     ]);
 
     // 2. Deferred: Related posts (prefetch only, don't await)
@@ -37,6 +39,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
 
     return {
       post,
+      authorName: siteConfig.author,
       canonicalHref: buildCanonicalUrl(
         domain,
         `/post/${encodeURIComponent(post.slug)}`,
@@ -67,7 +70,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
             {
               type: "application/ld+json",
               children: buildArticleJsonLd({
-                authorName: blogConfig.author,
+                authorName: loaderData.authorName,
                 canonicalHref,
                 post,
               }),
@@ -81,9 +84,20 @@ export const Route = createFileRoute("/_public/post/$slug")({
 });
 
 function RouteComponent() {
-  const { data: post } = useSuspenseQuery(
-    postBySlugQuery(Route.useParams().slug),
-  );
+  const { slug } = Route.useParams();
+  const { data: post } = useSuspenseQuery(postBySlugQuery(slug));
+
+  useEffect(() => {
+    if (!post?.id) return;
+    try {
+      const key = `pv:${post.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Safari private mode / storage disabled — record anyway
+    }
+    void recordPageViewFn({ data: { postId: post.id } });
+  }, [post?.id]);
 
   if (!post) throw notFound();
 

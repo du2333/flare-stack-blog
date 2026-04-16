@@ -1,10 +1,10 @@
-import { useNavigate } from "@tanstack/react-router";
 import {
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -12,12 +12,13 @@ import {
   updateMediaNameFn,
 } from "@/features/media/api/media.api";
 import {
-  MEDIA_KEYS,
   linkedMediaKeysQuery,
+  MEDIA_KEYS,
   mediaInfiniteQueryOptions,
   totalMediaSizeQuery,
 } from "@/features/media/queries";
 import { useDebounce } from "@/hooks/use-debounce";
+import { m } from "@/paraglide/messages";
 import { Route } from "@/routes/admin/media";
 
 export function useMediaLibrary() {
@@ -65,7 +66,10 @@ export function useMediaLibrary() {
   }, [data]);
 
   // Get all visible media keys
-  const mediaKeys = useMemo(() => mediaItems.map((m) => m.key), [mediaItems]);
+  const mediaKeys = useMemo(
+    () => mediaItems.map((item) => item.key),
+    [mediaItems],
+  );
 
   const { data: linkedKeysData } = useQuery({
     ...linkedMediaKeysQuery(mediaKeys),
@@ -117,19 +121,23 @@ export function useMediaLibrary() {
 
       if (result.error) {
         if (deletedKeys.length > 0) {
-          toast.warning("部分删除成功", {
-            description: `已删除 ${deletedKeys.length} 个项目，部分资源正在被文章使用，无法删除。`,
+          toast.warning(m.media_toast_partial_delete(), {
+            description: m.media_toast_partial_delete_desc({
+              count: deletedKeys.length,
+            }),
           });
         } else {
-          toast.warning("删除失败", {
-            description: "资源正在被文章使用，无法删除",
+          toast.warning(m.media_toast_delete_fail(), {
+            description: m.media_toast_delete_fail_desc(),
           });
         }
         return;
       }
 
-      toast.success("资源已永久删除", {
-        description: `${deletedKeys.length} 个项目已从存储中永久删除。`,
+      toast.success(m.media_toast_delete_success(), {
+        description: m.media_toast_delete_success_desc({
+          count: deletedKeys.length,
+        }),
       });
     },
     onSettled: () => {
@@ -143,8 +151,8 @@ export function useMediaLibrary() {
       updateMediaNameFn(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
-      toast.success("资源元数据已更新", {
-        description: `元数据更改已保存。`,
+      toast.success(m.media_toast_metadata_updated(), {
+        description: m.media_toast_metadata_updated_desc(),
       });
     },
   });
@@ -173,7 +181,7 @@ export function useMediaLibrary() {
     if (selectedKeys.size === mediaItems.length) {
       setSelectedKeys(new Set());
     } else {
-      setSelectedKeys(new Set(mediaItems.map((m) => m.key)));
+      setSelectedKeys(new Set(mediaItems.map((item) => item.key)));
     }
   };
 
@@ -185,8 +193,10 @@ export function useMediaLibrary() {
 
     // 如果选中了任何受保护资源，只显示 toast 警告，不弹出确认框
     if (blockedKeys.length > 0) {
-      toast.warning("无法删除受保护的资源", {
-        description: `${blockedKeys.length} 个项目正在被文章使用。请先取消选择这些项目。`,
+      toast.warning(m.media_toast_protected_delete(), {
+        description: m.media_toast_protected_delete_desc({
+          count: blockedKeys.length,
+        }),
       });
       return [];
     }

@@ -10,7 +10,7 @@ interface SendReplyNotificationParams {
     id: number;
     rootId: number | null;
     replyToCommentId: number | null;
-    userId: string;
+    userId: string | null;
     content: JSONContent | null;
   };
   post: {
@@ -45,7 +45,7 @@ export async function sendReplyNotification(
   }
 
   // Don't notify if replying to own comment
-  if (replyToAuthor.id === comment.userId) {
+  if (comment.userId && replyToAuthor.id === comment.userId) {
     console.log(
       JSON.stringify({ message: "reply notification skipped, self-reply" }),
     );

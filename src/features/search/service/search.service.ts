@@ -1,22 +1,22 @@
 import { insert, search as oramaSearch, remove } from "@orama/orama";
 import { and, eq, lte } from "drizzle-orm";
+import { convertToPlainText } from "@/features/posts/utils/content";
+import { createMyDb } from "@/features/search/model/schema";
+import {
+  getOramaDb,
+  getOramaMeta,
+  persistOramaDb,
+} from "@/features/search/model/store";
 import type {
   DeleteSearchDocInput,
   SearchQueryInput,
   UpsertSearchDocInput,
 } from "@/features/search/search.schema";
 import {
-  getOramaDb,
-  getOramaMeta,
-  persistOramaDb,
-} from "@/features/search/model/store";
-import { convertToPlainText } from "@/features/posts/utils/content";
-import { createMyDb } from "@/features/search/model/schema";
-import { PostsTable } from "@/lib/db/schema";
-import {
   buildSnippet,
   getMatchedTerms,
 } from "@/features/search/utils/search.utils";
+import { PostsTable } from "@/lib/db/schema";
 
 export const CONTENT_SLICE = 10000;
 export const SNIPPET_SLICE = 200;

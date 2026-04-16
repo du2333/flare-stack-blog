@@ -1,21 +1,40 @@
+import type { Locale } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import { EmailLayout } from "./EmailLayout";
 
 interface AdminNotificationEmailProps {
-  postTitle: string;
-  commenterName: string;
   commentPreview: string;
   commentUrl: string;
+  commenterName: string;
+  locale: Locale;
+  mode: "new" | "pending";
+  postTitle: string;
 }
 
 export const AdminNotificationEmail = ({
-  postTitle,
-  commenterName,
   commentPreview,
   commentUrl,
+  commenterName,
+  locale,
+  mode,
+  postTitle,
 }: AdminNotificationEmailProps) => {
+  const isPending = mode === "pending";
+
   return (
     <EmailLayout
-      previewText={`${commenterName} 在《${postTitle}》下发表了评论`}
+      locale={locale}
+      previewText={
+        isPending
+          ? m.email_comment_admin_pending_preview(
+              { commenterName, postTitle },
+              { locale },
+            )
+          : m.email_comment_admin_root_preview(
+              { commenterName, postTitle },
+              { locale },
+            )
+      }
     >
       <h1
         style={{
@@ -27,10 +46,20 @@ export const AdminNotificationEmail = ({
           lineHeight: "1.4",
         }}
       >
-        新评论提醒
+        {isPending
+          ? m.email_comment_admin_pending_title({}, { locale })
+          : m.email_comment_admin_root_title({}, { locale })}
       </h1>
       <p style={{ fontSize: "14px", color: "#444", lineHeight: "1.6" }}>
-        <strong>{commenterName}</strong> 在《{postTitle}》下发表了评论：
+        {isPending
+          ? m.email_comment_admin_pending_intro(
+              { commenterName, postTitle },
+              { locale },
+            )
+          : m.email_comment_admin_root_intro(
+              { commenterName, postTitle },
+              { locale },
+            )}
       </p>
       <blockquote
         style={{
@@ -58,7 +87,9 @@ export const AdminNotificationEmail = ({
             letterSpacing: "0.05em",
           }}
         >
-          查看评论
+          {isPending
+            ? m.email_comment_admin_pending_action({}, { locale })
+            : m.email_comment_admin_root_action({}, { locale })}
         </a>
       </div>
     </EmailLayout>

@@ -182,7 +182,8 @@ export function ProfilePage(_props: ProfilePageProps) {
 
 export const config: ThemeConfig = {
   home: {
-    featuredPostsLimit: 4,
+    recentPostsLimit: 4,
+    popularPostsLimit: 5,
   },
   posts: {
     postsPerPage: 12,
@@ -215,6 +216,7 @@ import { VerifyEmailPage } from "./pages/auth/verify-email";
 import { ProfilePage } from "./pages/user/profile";
 import { config } from "./config";
 import Toaster from "@/components/ui/toaster";
+import type { SiteConfig } from "@/features/config/site-config.schema";
 import type { ThemeComponents } from "@/features/theme/contract/components";
 
 /**
@@ -223,6 +225,7 @@ import type { ThemeComponents } from "@/features/theme/contract/components";
  */
 export default {
   config,
+  getDocumentStyle: (_siteConfig: SiteConfig) => undefined,
   HomePage,
   HomePageSkeleton,
   PostsPage,

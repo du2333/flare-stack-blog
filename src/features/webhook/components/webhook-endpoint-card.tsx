@@ -1,11 +1,12 @@
 import { Eye, EyeOff, KeyRound, Loader2, Send, Trash2 } from "lucide-react";
-import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
 import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
-import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
+import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
+import { m } from "@/paraglide/messages";
+import { WEBHOOK_EVENT_LABELS } from "./webhook-settings.helpers";
 
 interface WebhookEndpointCardProps<TFieldValues extends FieldValues> {
   index: number;
@@ -56,10 +57,12 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
       <div className="flex flex-col gap-4 border-b border-border/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">
-            端点 {String(index + 1).padStart(2, "0")}
+            {m.settings_webhook_endpoint_label({
+              index: String(index + 1).padStart(2, "0"),
+            })}
           </p>
           <p className="text-base font-serif text-foreground">
-            {endpoint.name.trim() || "未命名端点"}
+            {endpoint.name.trim() || m.settings_webhook_endpoint_unnamed()}
           </p>
         </div>
 
@@ -76,14 +79,14 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
             ) : (
               <Send size={12} className="mr-2" />
             )}
-            发送测试
+            {m.settings_webhook_endpoint_btn_test()}
           </Button>
           <label className="flex items-center gap-3 text-xs text-muted-foreground">
             <Checkbox
               checked={endpoint.enabled}
               onCheckedChange={onToggleEnabled}
             />
-            启用
+            {m.settings_webhook_endpoint_enable_label()}
           </label>
 
           <Button
@@ -101,12 +104,14 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
       <div className="space-y-8 p-6">
         <div className="grid grid-cols-1 gap-x-12 gap-y-8 xl:grid-cols-2">
           <div className="space-y-3">
-            <label className="text-sm text-muted-foreground">名称</label>
+            <label className="text-sm text-muted-foreground">
+              {m.settings_webhook_endpoint_field_name()}
+            </label>
             <Input
               {...register(
                 `notification.webhooks.${index}.name` as FieldPath<TFieldValues>,
               )}
-              placeholder="例如：Telegram Bot Relay"
+              placeholder={m.settings_webhook_endpoint_field_name_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm"
             />
             {fieldError?.name?.message && (
@@ -117,12 +122,14 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm text-muted-foreground">URL</label>
+            <label className="text-sm text-muted-foreground">
+              {m.settings_webhook_endpoint_field_url()}
+            </label>
             <Input
               {...register(
                 `notification.webhooks.${index}.url` as FieldPath<TFieldValues>,
               )}
-              placeholder="https://hooks.example.com/notify"
+              placeholder={m.settings_webhook_endpoint_field_url_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm"
             />
             {fieldError?.url?.message && (
@@ -132,14 +139,16 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
         </div>
 
         <div className="max-w-2xl space-y-3">
-          <label className="text-sm text-muted-foreground">签名密钥</label>
+          <label className="text-sm text-muted-foreground">
+            {m.settings_webhook_endpoint_field_secret()}
+          </label>
           <div className="relative">
             <Input
               type={visibleSecret ? "text" : "password"}
               {...register(
                 `notification.webhooks.${index}.secret` as FieldPath<TFieldValues>,
               )}
-              placeholder="用于生成 X-Flare-Signature"
+              placeholder={m.settings_webhook_endpoint_field_secret_ph()}
               className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 pr-12 text-sm"
             />
             <Button
@@ -155,9 +164,7 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <KeyRound size={12} className="shrink-0" />
             <p className="leading-5">
-              如需校验来源，可使用该密钥验证
-              <code className="mx-1">X-Flare-Signature</code>
-              请求头。
+              {m.settings_webhook_endpoint_field_secret_hint()}
             </p>
           </div>
           {fieldError?.secret?.message && (
@@ -169,9 +176,11 @@ export function WebhookEndpointCard<TFieldValues extends FieldValues>({
 
         <div className="space-y-5">
           <div className="space-y-1">
-            <h6 className="text-sm font-medium text-foreground">通知事件</h6>
+            <h6 className="text-sm font-medium text-foreground">
+              {m.settings_webhook_events_title()}
+            </h6>
             <p className="text-sm text-muted-foreground">
-              勾选后，相关管理员通知会发送到这个端点。
+              {m.settings_webhook_events_desc()}
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gt, lte, ne, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
-import { PostTagsTable, PostsTable, TagsTable } from "@/lib/db/schema";
+import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 
 /**
  * Get all tags, optionally sorted

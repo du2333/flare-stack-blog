@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import type { ForgotPasswordFormData } from "@/features/theme/contract/pages";
 import { Input } from "@/components/ui/input";
+import type { ForgotPasswordFormData } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
 
 interface ForgotPasswordFormProps {
   form: ForgotPasswordFormData;
@@ -14,7 +15,7 @@ export function ForgotPasswordForm({ form }: ForgotPasswordFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <p className="text-sm text-muted-foreground/60 font-light leading-relaxed">
-        请输入您的注册邮箱，我们将向您发送重置密码的链接。
+        {m.forgot_password_header_desc()}
       </p>
 
       <div className="space-y-6">
@@ -23,14 +24,14 @@ export function ForgotPasswordForm({ form }: ForgotPasswordFormProps) {
             htmlFor="email"
             className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
           >
-            注册邮箱
+            {m.forgot_password_email_label()}
           </label>
           <Input
             id="email"
             type="email"
             {...register("email")}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
-            placeholder="example@mail.com"
+            placeholder={m.login_email_placeholder()}
           />
           {errors.email && (
             <span className="text-[9px] font-mono text-destructive uppercase tracking-widest mt-1 block">
@@ -49,7 +50,7 @@ export function ForgotPasswordForm({ form }: ForgotPasswordFormProps) {
           {isSubmitting ? (
             <Loader2 className="animate-spin" size={14} />
           ) : (
-            <span>发送重置链接</span>
+            <span>{m.forgot_password_submit()}</span>
           )}
         </button>
 
@@ -57,7 +58,7 @@ export function ForgotPasswordForm({ form }: ForgotPasswordFormProps) {
           to="/login"
           className="block w-full text-center text-[9px] font-mono text-muted-foreground/50 hover:text-foreground transition-colors"
         >
-          [ ← 返回登录 ]
+          [ ← {m.register_back_to_login()} ]
         </Link>
       </div>
     </form>

@@ -14,6 +14,7 @@ interface UseAutoSaveReturn {
   setError: (error: string | null) => void;
   setSaveStatus: (status: SaveStatus) => void;
   isDirty: boolean;
+  markSaved: (post: PostEditorData) => void;
 }
 
 export function useAutoSave({
@@ -38,6 +39,7 @@ export function useAutoSave({
     status: string;
     readTimeInMinutes: number;
     publishedAt: number | null;
+    pinnedAt: number | null;
     tagIds: string; // Serialize for easy comparison
     contentRef: PostEditorData["contentJson"];
   } | null>(null);
@@ -52,6 +54,7 @@ export function useAutoSave({
     status: p.status,
     readTimeInMinutes: p.readTimeInMinutes,
     publishedAt: p.publishedAt ? p.publishedAt.valueOf() : null,
+    pinnedAt: p.pinnedAt ? p.pinnedAt.valueOf() : null,
     tagIds: [...p.tagIds].sort().join(","),
     contentRef: p.contentJson,
   });
@@ -66,9 +69,22 @@ export function useAutoSave({
       prev.status !== curr.status ||
       prev.readTimeInMinutes !== curr.readTimeInMinutes ||
       prev.publishedAt !== curr.publishedAt ||
+      prev.pinnedAt !== curr.pinnedAt ||
       prev.tagIds !== curr.tagIds ||
       prev.contentRef !== curr.contentRef
     );
+  };
+
+  const markSaved = (savedPost: PostEditorData) => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    latestPostRef.current = savedPost;
+    lastSavedSnapshot.current = toComparable(savedPost);
+    setError(null);
+    setSaveStatus("SYNCED");
+    setLastSaved(new Date());
   };
 
   // Track mount / unmount
@@ -158,5 +174,6 @@ export function useAutoSave({
     setError,
     setSaveStatus,
     isDirty: isDirty(toComparable(post)),
+    markSaved,
   };
 }

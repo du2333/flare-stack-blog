@@ -1,4 +1,6 @@
+import type { Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowDownToLine,
   ArrowLeftToLine,
@@ -9,10 +11,9 @@ import {
   Table as TableIcon,
   Trash2,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
-import type { LucideIcon } from "lucide-react";
 import type React from "react";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 interface TableBubbleMenuProps {
   editor: Editor | null;
@@ -79,17 +80,17 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
         <MenuButton
           onClick={() => editor.chain().focus().addColumnBefore().run()}
           icon={ArrowLeftToLine}
-          label="左侧插列"
+          label={m.editor_table_add_col_before()}
         />
         <MenuButton
           onClick={() => editor.chain().focus().addColumnAfter().run()}
           icon={ArrowRightToLine}
-          label="右侧插列"
+          label={m.editor_table_add_col_after()}
         />
         <MenuButton
           onClick={() => editor.chain().focus().deleteColumn().run()}
           icon={Columns}
-          label="删除列"
+          label={m.editor_table_delete_col()}
           isDestructive
         />
       </div>
@@ -101,17 +102,17 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
         <MenuButton
           onClick={() => editor.chain().focus().addRowBefore().run()}
           icon={ArrowUpToLine}
-          label="上方插行"
+          label={m.editor_table_add_row_before()}
         />
         <MenuButton
           onClick={() => editor.chain().focus().addRowAfter().run()}
           icon={ArrowDownToLine}
-          label="下方插行"
+          label={m.editor_table_add_row_after()}
         />
         <MenuButton
           onClick={() => editor.chain().focus().deleteRow().run()}
           icon={Rows}
-          label="删除行"
+          label={m.editor_table_delete_row()}
           isDestructive
         />
       </div>
@@ -124,13 +125,13 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
           onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
           isActive={editor.isActive("tableHeader")}
           icon={TableIcon}
-          label="表头列"
+          label={m.editor_table_toggle_header_col()}
         />
         <MenuButton
           onClick={() => editor.chain().focus().toggleHeaderRow().run()}
           disabled={!editor.can().toggleHeaderRow()}
           icon={TableIcon}
-          label="表头行"
+          label={m.editor_table_toggle_header_row()}
         />
       </div>
 
@@ -140,7 +141,7 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
       <MenuButton
         onClick={() => editor.chain().focus().deleteTable().run()}
         icon={Trash2}
-        label="删除表格"
+        label={m.editor_table_delete_table()}
         isDestructive
       />
     </BubbleMenu>

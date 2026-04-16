@@ -73,3 +73,30 @@
 .admin-layout .gap-4 {
   gap: 1.25rem !important;
 }
+
+.admin-layout .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.admin-layout .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Post editor list styles: keep list behavior from official TipTap extensions,
+   but style the admin editor explicitly instead of encoding classes into content. */
+.admin-layout .ProseMirror ul {
+  list-style-type: disc;
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+}
+
+.admin-layout .ProseMirror ol {
+  list-style-type: decimal;
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+}
+
+.admin-layout .ProseMirror li {
+  margin: 0.25rem 0;
+}

@@ -1,6 +1,6 @@
-import { RouteApi } from "@tanstack/react-router";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
 import {
   Check,
   ExternalLink,
@@ -13,18 +13,18 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { FRIEND_LINKS_KEYS, allFriendLinksQuery } from "../../queries";
-import { useAdminFriendLinks } from "../../hooks/use-friend-links";
-import { CreateFriendLinkInputSchema } from "../../friend-links.schema";
-import type { CreateFriendLinkInput } from "../../friend-links.schema";
-
-import type { FriendLinkStatus } from "@/lib/db/schema";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { AdminPagination } from "@/components/admin/admin-pagination";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Input } from "@/components/ui/input";
+import type { FriendLinkStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import type { CreateFriendLinkInput } from "../../friend-links.schema";
+import { createCreateFriendLinkSchema } from "../../friend-links.schema";
+import { useAdminFriendLinks } from "../../hooks/use-friend-links";
+import { allFriendLinksQuery, FRIEND_LINKS_KEYS } from "../../queries";
 
 interface FriendLinkModerationTableProps {
   status?: FriendLinkStatus;
@@ -32,7 +32,7 @@ interface FriendLinkModerationTableProps {
 }
 
 const PAGE_SIZE = 20;
-const routeApi = new RouteApi({ id: "/admin/friend-links/" });
+const routeApi = getRouteApi("/admin/friend-links/");
 
 export const FriendLinkModerationTable = ({
   status,
@@ -43,7 +43,6 @@ export const FriendLinkModerationTable = ({
     data: response,
     isLoading,
     isError,
-    error,
   } = useQuery(
     allFriendLinksQuery({
       status,
@@ -77,16 +76,18 @@ export const FriendLinkModerationTable = ({
 
   const handleBatchApprove = async () => {
     if (selectedIds.size === 0) return;
-    const toastId = toast.loading(`正在批准 ${selectedIds.size} 条友链...`);
+    const toastId = toast.loading(
+      m.friend_links_batch_approve_loading({ count: selectedIds.size }),
+    );
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) => approveAsync({ data: { id } })),
       );
-      toast.success("批量批准完成", { id: toastId });
+      toast.success(m.friend_links_batch_approve_success(), { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
     } catch (caughtError) {
-      toast.error("部分操作失败", {
+      toast.error(m.friend_links_batch_partial_fail(), {
         id: toastId,
       });
     }
@@ -94,16 +95,18 @@ export const FriendLinkModerationTable = ({
 
   const handleBatchReject = async () => {
     if (selectedIds.size === 0) return;
-    const toastId = toast.loading(`正在拒绝 ${selectedIds.size} 条友链...`);
+    const toastId = toast.loading(
+      m.friend_links_batch_reject_loading({ count: selectedIds.size }),
+    );
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) => rejectAsync({ data: { id } })),
       );
-      toast.success("批量拒绝完成", { id: toastId });
+      toast.success(m.friend_links_batch_reject_success(), { id: toastId });
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
     } catch (caughtError) {
-      toast.error("部分操作失败", {
+      toast.error(m.friend_links_batch_partial_fail(), {
         id: toastId,
       });
     }
@@ -121,7 +124,7 @@ export const FriendLinkModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <ShieldAlert size={40} strokeWidth={1} className="opacity-30" />
-        <p>{error.message}</p>
+        <p>{m.friend_links_admin_load_fail()}</p>
       </div>
     );
   }
@@ -130,7 +133,7 @@ export const FriendLinkModerationTable = ({
     return (
       <div className="py-24 flex flex-col items-center justify-center text-muted-foreground font-serif italic gap-4 border-t border-border">
         <Link2Off size={40} strokeWidth={1} className="opacity-20" />
-        <p>暂无友链记录</p>
+        <p>{m.friend_links_empty()}</p>
       </div>
     );
   }
@@ -146,13 +149,13 @@ export const FriendLinkModerationTable = ({
         <div className="sticky top-4 z-40 flex items-center justify-between p-4 bg-background border border-border/30 shadow-none animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="flex items-center gap-6">
             <span className="text-[10px] font-mono font-medium uppercase tracking-[0.2em]">
-              已选 / {selectedIds.size}
+              {m.friend_links_batch_selected({ count: selectedIds.size })}
             </span>
             <button
               onClick={() => setSelectedIds(new Set())}
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
-              [ 取消 ]
+              [ {m.friend_links_batch_cancel()} ]
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -161,7 +164,7 @@ export const FriendLinkModerationTable = ({
               onClick={handleBatchApprove}
               className="h-8 px-4 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-all font-mono text-[10px] uppercase tracking-widest"
             >
-              [ 批量批准 ]
+              [ {m.friend_links_batch_approve()} ]
             </Button>
             <Button
               size="sm"
@@ -169,7 +172,7 @@ export const FriendLinkModerationTable = ({
               onClick={handleBatchReject}
               className="h-8 px-4 rounded-none border-border/50 hover:bg-red-500/10 hover:text-red-500 transition-all font-mono text-[10px] uppercase tracking-widest"
             >
-              [ 批量拒绝 ]
+              [ {m.friend_links_batch_reject()} ]
             </Button>
           </div>
         </div>
@@ -185,19 +188,19 @@ export const FriendLinkModerationTable = ({
           />
         </div>
         <div className="col-span-2 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          提交者
+          {m.friend_links_th_submitter()}
         </div>
         <div className="col-span-3 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          站点信息
+          {m.friend_links_th_site_info()}
         </div>
         <div className="col-span-3 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          详情
+          {m.friend_links_th_details()}
         </div>
         <div className="col-span-1 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          状态
+          {m.friend_links_th_status()}
         </div>
         <div className="col-span-2 text-right text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
-          操作
+          {m.friend_links_th_actions()}
         </div>
       </div>
 
@@ -238,7 +241,7 @@ export const FriendLinkModerationTable = ({
                   </div>
                   <div className="min-w-0 space-y-0.5">
                     <div className="text-xs font-serif font-medium truncate">
-                      {item.user?.name || "管理员添加"}
+                      {item.user?.name || m.friend_links_admin_added()}
                     </div>
                     <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
                       {formatDate(item.createdAt).split(" ")[0]}
@@ -288,7 +291,11 @@ export const FriendLinkModerationTable = ({
                 )}
                 {item.rejectionReason && (
                   <div className="text-[10px] font-mono text-orange-500 flex items-center gap-1">
-                    <span>拒绝理由: {item.rejectionReason}</span>
+                    <span>
+                      {m.friend_links_reject_reason_prefix({
+                        reason: item.rejectionReason,
+                      })}
+                    </span>
                   </div>
                 )}
               </div>
@@ -332,7 +339,7 @@ export const FriendLinkModerationTable = ({
                     </div>
                     <div>
                       <div className="text-xs font-bold font-serif tracking-tight">
-                        {item.user?.name || "管理员添加"}
+                        {item.user?.name || m.friend_links_admin_added()}
                       </div>
                       <div className="text-[9px] font-mono text-muted-foreground uppercase">
                         {formatDate(item.createdAt).split(" ")[0]}
@@ -374,7 +381,9 @@ export const FriendLinkModerationTable = ({
                 {item.contactEmail && <div>{item.contactEmail}</div>}
                 {item.rejectionReason && (
                   <div className="text-orange-500">
-                    拒绝理由: {item.rejectionReason}
+                    {m.friend_links_reject_reason_prefix({
+                      reason: item.rejectionReason,
+                    })}
                   </div>
                 )}
               </div>
@@ -414,9 +423,9 @@ export const FriendLinkModerationTable = ({
 
 const StatusBadge = ({ status }: { status: string }) => {
   const labels: Record<string, string> = {
-    approved: "已通过",
-    pending: "待审核",
-    rejected: "已拒绝",
+    approved: m.friend_links_tab_approved(),
+    pending: m.friend_links_tab_pending(),
+    rejected: m.friend_links_tab_rejected(),
   };
 
   const styles: Record<string, string> = {
@@ -500,12 +509,12 @@ const FriendLinkActions = ({
         className="h-6 w-auto px-2 text-[10px] font-mono text-muted-foreground hover:text-foreground rounded-none gap-1"
         disabled={isLoading}
         onClick={() => setIsOpen(!isOpen)}
-        title="更多操作"
+        title={m.friend_links_action_btn()}
       >
         {isLoading ? (
           <Loader2 size={12} className="animate-spin" />
         ) : (
-          <span>[ 操作 ]</span>
+          <span>[ {m.friend_links_action_btn()} ]</span>
         )}
       </Button>
 
@@ -517,7 +526,7 @@ const FriendLinkActions = ({
                 onClick={handleApprove}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
-                <span>批准</span>
+                <span>{m.friend_links_action_approve()}</span>
                 <Check className="h-3 w-3 opacity-0 group-hover:opacity-100" />
               </button>
             )}
@@ -530,7 +539,7 @@ const FriendLinkActions = ({
                 }}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-muted-foreground hover:text-red-500 group"
               >
-                <span>拒绝</span>
+                <span>{m.friend_links_action_reject()}</span>
                 <X className="h-3 w-3 opacity-0 group-hover:opacity-100" />
               </button>
             )}
@@ -542,7 +551,7 @@ const FriendLinkActions = ({
               }}
               className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
             >
-              <span>编辑</span>
+              <span>{m.friend_links_action_edit()}</span>
               <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-100" />
             </button>
           </div>
@@ -556,7 +565,7 @@ const FriendLinkActions = ({
             }}
             className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-red-500/10 text-red-500 transition-colors group"
           >
-            <span>永久销毁</span>
+            <span>{m.friend_links_action_destroy()}</span>
             <ShieldAlert className="h-3 w-3 opacity-0 group-hover:opacity-100" />
           </button>
         </div>
@@ -566,9 +575,9 @@ const FriendLinkActions = ({
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDelete}
-        title="永久删除确认"
-        message="此操作将永久从数据库删除该友链，无法恢复！"
-        confirmLabel="确认销毁"
+        title={m.friend_links_destroy_modal_title()}
+        message={m.friend_links_destroy_modal_desc()}
+        confirmLabel={m.friend_links_destroy_modal_confirm()}
         isDanger={true}
         isLoading={isAdminDeleting}
       />
@@ -626,18 +635,20 @@ const RejectModal = ({
         onClick={onClose}
       />
       <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
-        <h3 className="text-lg font-serif font-medium mb-6">拒绝友链</h3>
+        <h3 className="text-lg font-serif font-medium mb-6">
+          {m.friend_links_reject_modal_title()}
+        </h3>
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-              拒绝理由（可选）
+              {m.friend_links_reject_modal_label()}
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full bg-transparent border border-border/50 px-3 py-2 text-sm font-sans focus:border-foreground focus:outline-none transition-colors resize-none"
               rows={3}
-              placeholder="请输入拒绝理由..."
+              placeholder={m.friend_links_reject_modal_placeholder()}
               maxLength={500}
             />
           </div>
@@ -647,7 +658,7 @@ const RejectModal = ({
               onClick={onClose}
               className="font-mono text-[10px] uppercase tracking-widest rounded-none"
             >
-              取消
+              {m.friend_links_batch_cancel()}
             </Button>
             <Button
               onClick={() => onConfirm(reason || undefined)}
@@ -657,7 +668,7 @@ const RejectModal = ({
               {isLoading ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
-                "确认拒绝"
+                m.friend_links_reject_modal_confirm()
               )}
             </Button>
           </div>
@@ -695,7 +706,7 @@ const EditModal = ({
   };
 }) => {
   const form = useForm<CreateFriendLinkInput>({
-    resolver: standardSchemaResolver(CreateFriendLinkInputSchema),
+    resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
       siteName: initialData.siteName,
       siteUrl: initialData.siteUrl,
@@ -738,30 +749,32 @@ const EditModal = ({
         onClick={handleClose}
       />
       <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
-        <h3 className="text-lg font-serif font-medium mb-6">编辑友链</h3>
+        <h3 className="text-lg font-serif font-medium mb-6">
+          {m.friend_links_edit_modal_title()}
+        </h3>
         <form onSubmit={handleSubmit(handleConfirm)} className="space-y-4">
           <FormField
-            label="站点名称"
+            label={m.friend_links_form_site_name()}
             error={errors.siteName?.message}
             inputProps={register("siteName")}
           />
           <FormField
-            label="站点地址"
+            label={m.friend_links_form_site_url()}
             error={errors.siteUrl?.message}
             inputProps={register("siteUrl")}
           />
           <FormField
-            label="站点简介"
+            label={m.friend_links_form_desc()}
             error={errors.description?.message}
             inputProps={register("description")}
           />
           <FormField
-            label="Logo 地址"
+            label={m.friend_links_form_logo()}
             error={errors.logoUrl?.message}
             inputProps={register("logoUrl")}
           />
           <FormField
-            label="联系邮箱"
+            label={m.friend_links_form_email()}
             error={errors.contactEmail?.message}
             inputProps={register("contactEmail")}
           />
@@ -772,7 +785,7 @@ const EditModal = ({
               onClick={handleClose}
               className="font-mono text-[10px] uppercase tracking-widest rounded-none"
             >
-              取消
+              {m.friend_links_batch_cancel()}
             </Button>
             <Button
               type="submit"
@@ -782,7 +795,7 @@ const EditModal = ({
               {isLoading ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
-                "保存"
+                m.friend_links_edit_modal_save()
               )}
             </Button>
           </div>

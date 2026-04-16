@@ -1,6 +1,6 @@
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { ArchivePost } from "./archive-post";
 import { ArchiveYear } from "./archive-year";
-import type { PostItem } from "@/features/posts/posts.schema";
 
 interface ArchivePanelProps {
   posts: Array<PostItem>;

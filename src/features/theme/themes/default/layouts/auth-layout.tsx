@@ -1,4 +1,5 @@
 import type { AuthLayoutProps } from "@/features/theme/contract/layouts";
+import { m } from "@/paraglide/messages";
 
 export function AuthLayout({ onBack, children }: AuthLayoutProps) {
   return (
@@ -9,7 +10,7 @@ export function AuthLayout({ onBack, children }: AuthLayoutProps) {
           type="button"
           className="text-[10px] font-mono text-muted-foreground/60 hover:text-foreground transition-colors"
         >
-          [ ← 返回 ]
+          [ ← {m.auth_layout_back_home()} ]
         </button>
       </header>
 

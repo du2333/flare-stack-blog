@@ -4,13 +4,14 @@ import theme from "@theme";
 import { useFriendLinkSubmitForm } from "@/features/friend-links/hooks/use-friend-link-submit-form";
 import { myFriendLinksQuery } from "@/features/friend-links/queries";
 import { authClient } from "@/lib/auth/auth.client";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_user/submit-friend-link")({
   ssr: false,
   component: SubmitFriendLinkRoute,
   loader: async () => {
     return {
-      title: "友情链接",
+      title: m.friend_link_submit_title(),
     };
   },
   head: ({ loaderData }) => ({

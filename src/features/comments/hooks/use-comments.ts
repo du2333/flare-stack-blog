@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createCommentFn, deleteCommentFn } from "../api/comments.public.api";
+import { COMMENTS_KEYS } from "@/features/comments/queries";
+import { m } from "@/paraglide/messages";
 import {
   adminDeleteCommentFn,
   moderateCommentFn,
 } from "../api/comments.admin.api";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
+import { createCommentFn, deleteCommentFn } from "../api/comments.public.api";
 
 export function useComments(postId?: number) {
   const queryClient = useQueryClient();
@@ -20,17 +21,17 @@ export function useComments(postId?: number) {
         switch (reason) {
           case "ROOT_COMMENT_NOT_FOUND":
           case "REPLY_TO_COMMENT_NOT_FOUND":
-            toast.error("该评论已被删除，请刷新页面");
+            toast.error(m.comments_toast_deleted_refresh());
             return;
           case "INVALID_ROOT_ID":
           case "ROOT_COMMENT_POST_MISMATCH":
           case "REPLY_TO_COMMENT_ROOT_MISMATCH":
           case "ROOT_COMMENT_CANNOT_HAVE_REPLY_TO":
-            toast.error("评论结构异常，请刷新页面重试");
+            toast.error(m.comments_toast_structure_error());
             return;
           default: {
             reason satisfies never;
-            toast.error("未知错误");
+            toast.error(m.comments_toast_unknown_error());
             return;
           }
         }
@@ -69,14 +70,14 @@ export function useComments(postId?: number) {
         const reason = result.error.reason;
         switch (reason) {
           case "COMMENT_NOT_FOUND":
-            toast.error("删除失败: 评论不存在或已删除");
+            toast.error(m.comments_toast_delete_not_found());
             return;
           case "PERMISSION_DENIED":
-            toast.error("删除失败: 无权限删除该评论");
+            toast.error(m.comments_toast_delete_denied());
             return;
           default: {
             reason satisfies never;
-            toast.error("删除失败: 未知错误");
+            toast.error(m.comments_toast_delete_error());
             return;
           }
         }
@@ -103,7 +104,7 @@ export function useComments(postId?: number) {
         queryKey: COMMENTS_KEYS.mine,
         exact: false,
       });
-      toast.success("评论已删除");
+      toast.success(m.comments_toast_delete_success());
     },
   });
 
@@ -124,14 +125,14 @@ export function useAdminComments() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("操作失败: 评论不存在");
+        toast.error(m.comments_toast_moderate_not_found());
         return;
       }
 
       // Invalidate all comment related queries to be safe since moderation
       // affects visibility in both admin and public views
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
-      toast.success("审核操作成功");
+      toast.success(m.comments_toast_moderate_success());
     },
   });
 
@@ -141,12 +142,12 @@ export function useAdminComments() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("删除失败: 评论不存在");
+        toast.error(m.comments_toast_destroy_not_found());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
-      toast.success("评论已永久删除");
+      toast.success(m.comments_toast_destroy_success());
     },
   });
 

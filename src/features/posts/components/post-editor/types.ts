@@ -9,6 +9,7 @@ export interface PostEditorData {
   readTimeInMinutes: number;
   contentJson: JSONContent | null;
   publishedAt: Date | null;
+  pinnedAt: Date | null;
   tagIds: Array<number>;
   isSynced: boolean;
   hasPublicCache: boolean;
@@ -29,6 +30,7 @@ export const defaultPostData: PostEditorData = {
   readTimeInMinutes: 1,
   contentJson: null,
   publishedAt: null,
+  pinnedAt: null,
   tagIds: [],
   isSynced: true,
   hasPublicCache: false,

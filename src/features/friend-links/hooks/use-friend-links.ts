@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { submitFriendLinkFn } from "../api/friend-links.user.api";
+import { m } from "@/paraglide/messages";
 import {
   approveFriendLinkFn,
   createFriendLinkFn,
@@ -8,6 +8,7 @@ import {
   rejectFriendLinkFn,
   updateFriendLinkFn,
 } from "../api/friend-links.admin.api";
+import { submitFriendLinkFn } from "../api/friend-links.user.api";
 import { FRIEND_LINKS_KEYS } from "../queries";
 
 export function useFriendLinks() {
@@ -19,13 +20,13 @@ export function useFriendLinks() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("该站点URL已提交过申请");
+        toast.error(m.friend_links_toast_submit_duplicate());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.mine });
-      toast.success("友链申请已提交", {
-        description: "管理员审核后将通过邮件通知您。",
+      toast.success(m.friend_links_toast_submit_success(), {
+        description: m.friend_links_toast_submit_success_desc(),
       });
     },
   });
@@ -45,7 +46,7 @@ export function useAdminFriendLinks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-      toast.success("友链已添加");
+      toast.success(m.friend_links_toast_create_success());
     },
   });
 
@@ -55,12 +56,12 @@ export function useAdminFriendLinks() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("更新失败: 友链不存在");
+        toast.error(m.friend_links_toast_update_not_found());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-      toast.success("友链已更新");
+      toast.success(m.friend_links_toast_update_success());
     },
   });
 
@@ -70,12 +71,12 @@ export function useAdminFriendLinks() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("操作失败: 友链不存在");
+        toast.error(m.friend_links_toast_approve_not_found());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-      toast.success("友链已批准");
+      toast.success(m.friend_links_toast_approve_success());
     },
   });
 
@@ -85,12 +86,12 @@ export function useAdminFriendLinks() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("操作失败: 友链不存在");
+        toast.error(m.friend_links_toast_reject_not_found());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-      toast.success("友链已拒绝");
+      toast.success(m.friend_links_toast_reject_success());
     },
   });
 
@@ -100,12 +101,12 @@ export function useAdminFriendLinks() {
     },
     onSuccess: (result) => {
       if (result.error) {
-        toast.error("删除失败: 友链不存在");
+        toast.error(m.friend_links_toast_delete_not_found());
         return;
       }
 
       queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
-      toast.success("友链已永久删除");
+      toast.success(m.friend_links_toast_delete_success());
     },
   });
 

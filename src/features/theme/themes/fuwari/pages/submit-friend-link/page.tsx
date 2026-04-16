@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   CheckCircle2,
   Clock,
@@ -6,12 +7,12 @@ import {
   PlusCircle,
   XCircle,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Turnstile } from "@/components/common/turnstile";
 import type {
   MyFriendLink,
   SubmitFriendLinkPageProps,
 } from "@/features/theme/contract/pages";
-import { Turnstile } from "@/components/common/turnstile";
+import { m } from "@/paraglide/messages";
 
 function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
   switch (status) {
@@ -19,14 +20,14 @@ function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">
           <CheckCircle2 className="w-3.5 h-3.5" />
-          已通过
+          {m.friend_link_status_approved()}
         </span>
       );
     case "rejected":
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-medium">
           <XCircle className="w-3.5 h-3.5" />
-          已拒绝
+          {m.friend_link_status_rejected_fuwari()}
         </span>
       );
     case "pending":
@@ -34,7 +35,7 @@ function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
       return (
         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-medium">
           <Clock className="w-3.5 h-3.5" />
-          审核中
+          {m.friend_link_status_pending()}
         </span>
       );
   }
@@ -52,17 +53,17 @@ export function SubmitFriendLinkPage({
         style={{ animationDelay: "150ms" }}
       >
         <h1 className="text-3xl font-bold fuwari-text-90 mb-4 z-10 transition-colors">
-          申请友链
+          {m.friend_link_submit_title()}
         </h1>
         <p className="fuwari-text-50 text-center max-w-xl z-10 transition-colors">
-          只需填写下列表单即可申请加入友情链接。请确保您的网站可以正常访问且包含有价值的内容。
+          {m.friend_link_submit_desc()}
         </p>
         <Link
           to="/friend-links"
           className="mt-6 z-10 flex items-center gap-2 text-sm text-(--fuwari-primary) hover:underline transition-all"
         >
           <LinkIcon className="w-4 h-4" />
-          返回友情链接列表
+          {m.friend_link_back_to_list()}
         </Link>
       </div>
 
@@ -74,7 +75,7 @@ export function SubmitFriendLinkPage({
         >
           <h2 className="text-xl font-bold fuwari-text-90 mb-6 flex items-center gap-2 transition-colors">
             <PlusCircle className="w-5 h-5 text-(--fuwari-primary)" />
-            提交新链接
+            {m.friend_link_submit_form_title()}
           </h2>
 
           <form onSubmit={form.handleSubmit} className="space-y-5">
@@ -83,13 +84,14 @@ export function SubmitFriendLinkPage({
                 htmlFor="siteName"
                 className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
               >
-                站点名称 <span className="text-red-500">*</span>
+                {m.friend_link_field_site_name()}{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 id="siteName"
                 {...form.register("siteName")}
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
-                placeholder="例如：Fuwari Blog"
+                placeholder={m.friend_link_placeholder_site_name_fuwari()}
               />
               {form.errors.siteName && (
                 <p className="mt-1.5 text-sm text-red-500">
@@ -100,13 +102,14 @@ export function SubmitFriendLinkPage({
 
             <div>
               <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                站点链接 <span className="text-red-500">*</span>
+                {m.friend_link_field_site_url_fuwari()}{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("siteUrl")}
                 type="url"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
-                placeholder="例如：https://example.com"
+                placeholder={m.friend_link_placeholder_site_url_fuwari()}
               />
               {form.errors.siteUrl && (
                 <p className="mt-1.5 text-sm text-red-500">
@@ -117,12 +120,12 @@ export function SubmitFriendLinkPage({
 
             <div>
               <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                站点描述
+                {m.friend_link_field_description()}
               </label>
               <input
                 {...form.register("description")}
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
-                placeholder="一句话介绍您的网站"
+                placeholder={m.friend_link_placeholder_description_fuwari()}
               />
               {form.errors.description && (
                 <p className="mt-1.5 text-sm text-red-500">
@@ -133,13 +136,13 @@ export function SubmitFriendLinkPage({
 
             <div>
               <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                Logo 链接
+                {m.friend_link_field_logo_url()}
               </label>
               <input
                 {...form.register("logoUrl")}
                 type="url"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
-                placeholder="例如：https://example.com/logo.png"
+                placeholder={m.friend_link_placeholder_logo_url_fuwari()}
               />
               {form.errors.logoUrl && (
                 <p className="mt-1.5 text-sm text-red-500">
@@ -150,13 +153,14 @@ export function SubmitFriendLinkPage({
 
             <div>
               <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                联系邮箱 <span className="text-red-500">*</span>
+                {m.friend_link_field_contact_email()}{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("contactEmail")}
                 type="email"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
-                placeholder="用于接收审核结果"
+                placeholder={m.friend_link_placeholder_contact_email_fuwari()}
               />
               {form.errors.contactEmail && (
                 <p className="mt-1.5 text-sm text-red-500">
@@ -178,7 +182,7 @@ export function SubmitFriendLinkPage({
                 {form.isSubmitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  "提交申请"
+                  m.friend_link_submit_form_title()
                 )}
               </button>
             </div>
@@ -191,7 +195,7 @@ export function SubmitFriendLinkPage({
           style={{ animationDelay: "450ms" }}
         >
           <h2 className="text-xl font-bold fuwari-text-90 mb-6 transition-colors">
-            我的申请记录
+            {m.friend_link_my_submissions()}
           </h2>
 
           <div className="space-y-4">
@@ -219,20 +223,23 @@ export function SubmitFriendLinkPage({
                   {link.status === "rejected" && link.rejectionReason && (
                     <div className="mt-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                       <p className="text-xs text-red-600 dark:text-red-400">
-                        <span className="font-bold">拒绝原因：</span>
+                        <span className="font-bold">
+                          {m.friend_link_rejection_reason_fuwari()}
+                        </span>
                         {link.rejectionReason}
                       </p>
                     </div>
                   )}
 
                   <div className="text-[10px] fuwari-text-30 text-right mt-2 transition-colors">
-                    提交于 {new Date(link.createdAt).toLocaleDateString()}
+                    {m.friend_link_submitted_at()}{" "}
+                    {new Date(link.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               ))
             ) : (
               <div className="py-12 text-center fuwari-text-30 transition-colors">
-                <p className="text-sm">暂无申请记录</p>
+                <p className="text-sm">{m.friend_link_no_submissions()}</p>
               </div>
             )}
           </div>

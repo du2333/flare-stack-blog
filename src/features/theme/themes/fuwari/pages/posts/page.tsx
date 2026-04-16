@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { ArchivePanel } from "../../components/archive/archive-panel";
-import type { PostsPageProps } from "@/features/theme/contract/pages";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { PostsPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
+import { ArchivePanel } from "../../components/archive/archive-panel";
 
 export function PostsPage({
   posts,
@@ -62,12 +63,12 @@ export function PostsPage({
         ) : posts.length > 0 ? (
           <div className="flex items-center gap-4 text-black/20 dark:text-white/20 mt-4">
             <span className="h-px w-12 bg-current" />
-            <span className="text-sm font-bold italic">到底啦</span>
+            <span className="text-sm font-bold italic">{m.posts_end()}</span>
             <span className="h-px w-12 bg-current" />
           </div>
         ) : (
           <div className="fuwari-card-base w-full px-8 py-12 text-center text-sm fuwari-text-50">
-            暂无文章
+            {m.posts_no_posts()}
           </div>
         )}
       </div>

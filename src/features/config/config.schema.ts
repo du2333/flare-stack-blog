@@ -1,10 +1,21 @@
 import { z } from "zod";
+import { blogConfig } from "@/blog.config";
+import {
+  createSiteConfigInputFormSchema,
+  type SiteConfigInput,
+  SiteConfigInputSchema,
+} from "@/features/config/site-config.schema";
 import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
+import type { Messages } from "@/lib/i18n";
 
 export const SystemConfigSchema = z.object({
   email: z
     .object({
       apiKey: z.string().optional(),
+      host: z.string().optional(),
+      port: z.number().int().positive().optional(),
+      username: z.string().optional(),
+      password: z.string().optional(),
       senderName: z.string().optional(),
       senderAddress: z.union([z.email(), z.literal("")]).optional(),
     })
@@ -29,13 +40,28 @@ export const SystemConfigSchema = z.object({
       webhooks: z.array(webhookEndpointSchema).optional(),
     })
     .optional(),
+  site: SiteConfigInputSchema.optional(),
 });
 
+export const createSystemConfigFormSchema = (messages: Messages) =>
+  z.object({
+    email: SystemConfigSchema.shape.email,
+    notification: SystemConfigSchema.shape.notification,
+    site: createSiteConfigInputFormSchema(messages).optional(),
+  });
+
 export type SystemConfig = z.infer<typeof SystemConfigSchema>;
+export type {
+  SiteConfig,
+  SiteConfigInput,
+} from "@/features/config/site-config.schema";
 
 export const DEFAULT_CONFIG: SystemConfig = {
   email: {
-    apiKey: "",
+    host: "",
+    port: 465,
+    username: "",
+    password: "",
     senderName: "",
     senderAddress: "",
   },
@@ -51,6 +77,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
     },
     webhooks: [],
   },
+  site: blogConfig satisfies SiteConfigInput,
 };
 
 export const CONFIG_CACHE_KEYS = {

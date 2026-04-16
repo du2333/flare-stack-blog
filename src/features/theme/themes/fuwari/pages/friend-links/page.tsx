@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { FriendCard } from "./components/friend-card";
 import type { FriendLinksPageProps } from "@/features/theme/contract/pages";
+import { m } from "@/paraglide/messages";
+import { FriendCard } from "./components/friend-card";
 
 export function FriendLinksPage({ links }: FriendLinksPageProps) {
   return (
@@ -11,16 +12,16 @@ export function FriendLinksPage({ links }: FriendLinksPageProps) {
         style={{ animationDelay: "150ms" }}
       >
         <h1 className="text-3xl md:text-4xl font-bold fuwari-text-90 mb-4 z-10 transition-colors">
-          友情链接
+          {m.friend_links_title()}
         </h1>
         <p className="fuwari-text-50 text-center max-w-xl z-10 transition-colors">
-          海内存知己，天涯若比邻。如果你也喜欢折腾，欢迎在这里留下脚印。
+          {m.friend_links_fuwari_desc()}
         </p>
         <Link
           to="/submit-friend-link"
           className="mt-6 z-10 fuwari-onload-animation fuwari-btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 active:scale-95 transition-all"
         >
-          申请友链
+          {m.friend_links_fuwari_apply()}
         </Link>
       </div>
 
@@ -42,7 +43,7 @@ export function FriendLinksPage({ links }: FriendLinksPageProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 fuwari-text-30 transition-colors">
-            <p className="text-lg">暂无友情链接记录 🍃</p>
+            <p className="text-lg">{m.friend_links_fuwari_no_links()}</p>
           </div>
         )}
       </div>
