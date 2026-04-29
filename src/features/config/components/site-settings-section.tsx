@@ -14,6 +14,7 @@ function ThemeSettingsContent() {
     case "default":
       return <DefaultThemeSettings />;
     case "fuwari":
+    case "amazing":
       return <FuwariThemeSettings />;
     default: {
       __THEME_NAME__ satisfies never;

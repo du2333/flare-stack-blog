@@ -1,0 +1,1 @@
+export { SubmitFriendLinkPage } from "./page";
