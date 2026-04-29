@@ -1,0 +1,344 @@
+/* ============================================
+   Amazing Theme — Animation Keyframes
+   15+ hero animations for an immersive blog
+   ============================================ */
+
+/* ① Page entrance — Ripple circle expand */
+@keyframes amazing-ripple-in {
+  0% {
+    clip-path: circle(0% at 50% 40%);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150% at 50% 40%);
+    opacity: 1;
+  }
+}
+
+/* ② Fade up with spring overshoot */
+@keyframes amazing-fade-up {
+  0% {
+    transform: translateY(3rem);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(-0.3rem);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ③ Slide in from left */
+@keyframes amazing-slide-in-left {
+  0% {
+    transform: translateX(-4rem) scale(0.95);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(0.3rem) scale(1.01);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ④ Slide in from right */
+@keyframes amazing-slide-in-right {
+  0% {
+    transform: translateX(4rem) scale(0.95);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-0.3rem) scale(1.01);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ⑤ Scale bounce entrance */
+@keyframes amazing-scale-bounce {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ⑥ Glow pulse for accent elements */
+@keyframes amazing-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(var(--amazing-primary-rgb), 0.3);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(var(--amazing-primary-rgb), 0.6),
+      0 0 48px rgba(var(--amazing-accent-rgb), 0.2);
+  }
+}
+
+/* ⑦ Aurora gradient shift for auth backgrounds */
+@keyframes amazing-aurora-shift {
+  0% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+    filter: hue-rotate(30deg);
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+}
+
+/* ⑧ Float hover — gentle up-down */
+@keyframes amazing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ⑨ Shimmer sweep for loading / highlight */
+@keyframes amazing-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ⑩ Tilt entrance from perspective */
+@keyframes amazing-tilt-in {
+  0% {
+    transform: perspective(600px) rotateY(-8deg) translateX(-2rem);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(600px) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ⑪ Continuous hue rotation for avatar ring */
+@keyframes amazing-rotate-hue {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ⑫ Conic gradient border spin */
+@keyframes amazing-border-spin {
+  0% {
+    --border-angle: 0deg;
+  }
+  100% {
+    --border-angle: 360deg;
+  }
+}
+
+/* ⑬ Rocket launch for back-to-top */
+@keyframes amazing-rocket-launch {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(4px) scale(0.95);
+  }
+  100% {
+    transform: translateY(-12px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* ⑭ Arrow bounce for back-to-top hover */
+@keyframes amazing-arrow-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ⑮ Card flip for friend links */
+@keyframes amazing-card-flip {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(180deg);
+  }
+}
+
+/* ⑯ Wave underline animation */
+@keyframes amazing-wave-underline {
+  0% {
+    background-size: 0% 2px;
+  }
+  100% {
+    background-size: 100% 2px;
+  }
+}
+
+/* ⑰ Breathe — gentle scale pulse for links */
+@keyframes amazing-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ⑱ Stagger fade for list items (used via IntersectionObserver) */
+@keyframes amazing-stagger-fade {
+  0% {
+    transform: translateY(2rem) scale(0.97);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* ⑲ Parallax drift for background elements */
+@keyframes amazing-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(10px, -15px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-5px, 10px) rotate(-1deg);
+  }
+  75% {
+    transform: translate(15px, 5px) rotate(0.5deg);
+  }
+}
+
+/* ⑳ Typewriter cursor blink */
+@keyframes amazing-blink {
+  0%,
+  50% {
+    border-color: currentColor;
+  }
+  51%,
+  100% {
+    border-color: transparent;
+  }
+}
+
+/* ㉑ Entrance for search overlay - circle clip expand */
+@keyframes amazing-search-expand {
+  0% {
+    clip-path: circle(0% at var(--origin-x, 90%) var(--origin-y, 2rem));
+    opacity: 0.5;
+  }
+  100% {
+    clip-path: circle(150% at var(--origin-x, 90%) var(--origin-y, 2rem));
+    opacity: 1;
+  }
+}
+
+/* ㉒ Exit for search overlay */
+@keyframes amazing-search-collapse {
+  0% {
+    clip-path: circle(150% at var(--origin-x, 90%) var(--origin-y, 2rem));
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(0% at var(--origin-x, 90%) var(--origin-y, 2rem));
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Utility classes for animations
+   ============================================ */
+
+.amazing-animate-in {
+  opacity: 0;
+  animation: amazing-stagger-fade var(--amazing-enter-duration, 600ms)
+    var(--amazing-spring) forwards;
+}
+
+.amazing-ripple-enter {
+  animation: amazing-ripple-in 800ms var(--amazing-smooth) forwards;
+}
+
+.amazing-float-hover:hover {
+  animation: amazing-float 3s ease-in-out infinite;
+}
+
+.amazing-glow {
+  animation: amazing-glow-pulse 3s ease-in-out infinite;
+}
+
+.amazing-shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(var(--amazing-primary-rgb), 0.08) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: amazing-shimmer 2s linear infinite;
+}
+
+/* Reduced motion: disable all non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  .amazing-animate-in,
+  .amazing-ripple-enter,
+  .amazing-float-hover:hover,
+  .amazing-glow,
+  .amazing-shimmer-bg,
+  .fuwari-onload-animation {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

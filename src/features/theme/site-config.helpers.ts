@@ -4,6 +4,7 @@ import type { SiteConfig } from "@/features/config/site-config.schema";
 export function getThemePreloadImages(siteConfig: SiteConfig): Array<string> {
   switch (__THEME_NAME__) {
     case "fuwari":
+    case "amazing":
       return siteConfig.theme.fuwari.homeBg
         ? [siteConfig.theme.fuwari.homeBg]
         : [];

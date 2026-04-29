@@ -1,0 +1,99 @@
+/* ============================================
+   Amazing Theme — Magnetic Liquid Cursor
+   ============================================ */
+
+/* Hide default cursor on desktop when our custom cursor is active */
+.amazing-custom-cursor-active {
+  cursor: none !important;
+}
+
+.amazing-custom-cursor-active *,
+.amazing-custom-cursor-active a,
+.amazing-custom-cursor-active button,
+.amazing-custom-cursor-active [role="button"],
+.amazing-custom-cursor-active input,
+.amazing-custom-cursor-active textarea,
+.amazing-custom-cursor-active select {
+  cursor: none !important;
+}
+
+/* Outer ring — the "magnetic" follower */
+.amazing-cursor-outer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--amazing-cursor-size, 40px);
+  height: var(--amazing-cursor-size, 40px);
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--amazing-primary-rgb), 0.6);
+  pointer-events: none;
+  z-index: 99999;
+  mix-blend-mode: difference;
+  transition:
+    width 0.35s var(--amazing-spring),
+    height 0.35s var(--amazing-spring),
+    border-color 0.3s,
+    background-color 0.3s;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.amazing-cursor-outer.is-hovering {
+  width: var(--amazing-cursor-size-hover, 64px);
+  height: var(--amazing-cursor-size-hover, 64px);
+  background-color: rgba(var(--amazing-primary-rgb), 0.08);
+  border-color: rgba(var(--amazing-primary-rgb), 0.9);
+}
+
+.amazing-cursor-outer.is-clicking {
+  width: calc(var(--amazing-cursor-size-hover, 64px) * 0.85);
+  height: calc(var(--amazing-cursor-size-hover, 64px) * 0.85);
+  background-color: rgba(var(--amazing-primary-rgb), 0.15);
+}
+
+/* Inner dot — precise position */
+.amazing-cursor-inner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgb(var(--amazing-primary-rgb));
+  pointer-events: none;
+  z-index: 99999;
+  mix-blend-mode: difference;
+  transition:
+    width 0.2s,
+    height 0.2s,
+    opacity 0.2s;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.amazing-cursor-inner.is-hovering {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+/* Hide on mobile / touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .amazing-cursor-outer,
+  .amazing-cursor-inner {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amazing-cursor-outer,
+  .amazing-cursor-inner {
+    display: none !important;
+  }
+  .amazing-custom-cursor-active {
+    cursor: auto !important;
+  }
+  .amazing-custom-cursor-active * {
+    cursor: auto !important;
+  }
+}

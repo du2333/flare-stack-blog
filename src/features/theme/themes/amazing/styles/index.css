@@ -1,0 +1,441 @@
+/* ============================================
+   Theme: Amazing — Premium Immersive Blog Theme
+   Variables, base styles, components, animations
+   ============================================ */
+@import "tailwindcss";
+@import "@/styles/shared.css";
+@import "./markdown.css";
+@import "./animations.css";
+@import "./cursor.css";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  :root {
+    /* ---- Layout ---- */
+    --fuwari-radius-large: 1rem;
+    --fuwari-content-delay: 150ms;
+    --fuwari-hue: 250;
+    --fuwari-page-width: 75rem;
+    --fuwari-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+
+    /* ---- Amazing brand tokens ---- */
+    --amazing-primary-rgb: 99, 102, 241; /* indigo-500 */
+    --amazing-accent-rgb: 168, 85, 247; /* purple-500 */
+    --amazing-glow-color: rgba(99, 102, 241, 0.35);
+    --amazing-card-bg-rgb: 255, 255, 255;
+
+    /* ---- Animation timing ---- */
+    --amazing-enter-duration: 600ms;
+    --amazing-enter-stagger: 80ms;
+    --amazing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --amazing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ---- 3D effects ---- */
+    --amazing-perspective: 1000px;
+    --amazing-tilt-max: 15deg;
+
+    /* ---- Cursor ---- */
+    --amazing-cursor-size: 40px;
+    --amazing-cursor-size-hover: 64px;
+
+    /* ---- Light mode colors (fuwari compat) ---- */
+    --fuwari-primary: oklch(0.7 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.65 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.6 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.95 0.01 var(--fuwari-hue));
+    --fuwari-card-bg: white;
+    --fuwari-btn-content: oklch(0.55 0.12 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.85 0.08 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.98 0.01 var(--fuwari-hue));
+    --fuwari-enter-btn-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-enter-btn-bg-hover: var(--fuwari-btn-regular-bg-hover);
+    --fuwari-enter-btn-bg-active: var(--fuwari-btn-regular-bg-active);
+    --fuwari-meta-divider: rgba(0, 0, 0, 0.2);
+    --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(0, 0, 0, 0.07);
+    --fuwari-input-border: rgba(0, 0, 0, 0.1);
+    --fuwari-toc-btn-hover: oklch(0.926 0.015 var(--fuwari-hue));
+    --fuwari-toc-btn-active: oklch(0.9 0.015 var(--fuwari-hue));
+  }
+
+  .dark {
+    --amazing-primary-rgb: 129, 140, 248; /* indigo-400 */
+    --amazing-accent-rgb: 192, 132, 252; /* purple-400 */
+    --amazing-glow-color: rgba(129, 140, 248, 0.35);
+    --amazing-card-bg-rgb: 30, 30, 46;
+
+    --fuwari-primary: oklch(0.75 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.8 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.85 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.16 0.014 var(--fuwari-hue));
+    --fuwari-card-bg: oklch(0.23 0.015 var(--fuwari-hue));
+    --fuwari-btn-content: oklch(0.75 0.1 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.33 0.035 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.38 0.04 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.43 0.045 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.3 0.035 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.27 0.025 var(--fuwari-hue));
+    --fuwari-meta-divider: rgba(255, 255, 255, 0.2);
+    --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(255, 255, 255, 0.05);
+    --fuwari-input-border: rgba(255, 255, 255, 0.1);
+    --fuwari-toc-btn-hover: oklch(0.22 0.02 var(--fuwari-hue));
+    --fuwari-toc-btn-active: oklch(0.25 0.02 var(--fuwari-hue));
+  }
+}
+
+@layer components {
+  /* ---- Card base ---- */
+  .fuwari-card-base {
+    border-radius: var(--fuwari-radius-large);
+    overflow: hidden;
+    background-color: var(--fuwari-card-bg);
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      box-shadow 0.3s,
+      transform 0.3s;
+  }
+
+  /* ---- Button styles ---- */
+  .fuwari-btn-regular {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .fuwari-btn-regular:hover {
+    background-color: var(--fuwari-btn-regular-bg-hover);
+  }
+  .fuwari-btn-regular:active {
+    background-color: var(--fuwari-btn-regular-bg-active);
+  }
+  .dark .fuwari-btn-regular {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .fuwari-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-primary);
+    color: white;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      opacity 0.2s,
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .fuwari-btn-primary:hover {
+    background-color: var(--fuwari-primary-hover);
+    box-shadow: 0 4px 20px rgba(var(--amazing-primary-rgb), 0.3);
+  }
+  .fuwari-btn-primary:active {
+    background-color: var(--fuwari-primary-active);
+  }
+  .fuwari-btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .dark .fuwari-btn-primary {
+    color: rgb(0 0 0 / 0.75);
+  }
+
+  /* ---- Text opacity classes ---- */
+  .fuwari-text-90 {
+    color: rgb(0 0 0 / 0.9);
+  }
+  .dark .fuwari-text-90 {
+    color: rgb(255 255 255 / 0.9);
+  }
+
+  .fuwari-text-75 {
+    color: rgb(0 0 0 / 0.75);
+  }
+  .dark .fuwari-text-75 {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .fuwari-text-50 {
+    color: rgb(0 0 0 / 0.5);
+  }
+  .dark .fuwari-text-50 {
+    color: rgb(255 255 255 / 0.5);
+  }
+
+  .fuwari-text-30 {
+    color: rgb(0 0 0 / 0.3);
+  }
+  .dark .fuwari-text-30 {
+    color: rgb(255 255 255 / 0.3);
+  }
+
+  /* ---- Meta icon ---- */
+  .fuwari-meta-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+    margin-right: 0.5rem;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  /* ---- Expand animation (hover scale-up bg) ---- */
+  .fuwari-expand-animation {
+    position: relative;
+    z-index: 0;
+  }
+  .fuwari-expand-animation::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    scale: 0.85;
+    z-index: -1;
+    transition:
+      scale 0.2s ease-out,
+      background-color 0.2s;
+  }
+  .fuwari-expand-animation:hover::before {
+    scale: 1;
+    background-color: var(--fuwari-btn-plain-bg-hover);
+  }
+  .fuwari-expand-animation:active::before {
+    background-color: var(--fuwari-btn-plain-bg-active);
+  }
+
+  /* ---- Timeline dash ---- */
+  .fuwari-timeline-dash {
+    position: relative;
+  }
+  .fuwari-timeline-dash::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+  }
+  .dark .fuwari-timeline-dash::before {
+    border-left: 2px dashed rgba(255, 255, 255, 0.1);
+  }
+
+  /* ---- Code folding ---- */
+  .fuwari-code-folding-wrapper {
+    @apply relative transition-[max-height] duration-500 ease-in-out overflow-x-auto overflow-y-hidden;
+  }
+
+  .fuwari-code-mask {
+    @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
+    background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
+    z-index: 10;
+  }
+
+  /* ---- TOC scrollbar ---- */
+  .fuwari-toc-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  }
+  .dark .fuwari-toc-scrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+  .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  .dark .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: none;
+  }
+  .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  .dark .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .dark .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* ---- Amazing 3D card ---- */
+  .amazing-3d-card {
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out;
+    will-change: transform;
+  }
+  .amazing-3d-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--highlight-x, 50%) var(--highlight-y, 50%),
+      rgba(255, 255, 255, 0.15),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .amazing-3d-card:hover::before {
+    opacity: 1;
+  }
+
+  /* ---- Amazing glass navbar ---- */
+  .amazing-navbar-glass {
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+    background: radial-gradient(
+        600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(var(--amazing-primary-rgb), 0.08),
+        transparent 40%
+      ),
+      rgba(var(--amazing-card-bg-rgb), 0.72);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    border-bottom: 1px solid rgba(var(--amazing-primary-rgb), 0.06);
+    transition:
+      background 0.2s,
+      border-color 0.2s,
+      box-shadow 0.3s;
+  }
+  .amazing-navbar-glass:hover {
+    border-bottom-color: rgba(var(--amazing-primary-rgb), 0.12);
+  }
+
+  /* ---- Avatar glow ring ---- */
+  .amazing-avatar-ring {
+    position: relative;
+  }
+  .amazing-avatar-ring::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      rgb(var(--amazing-primary-rgb)),
+      rgb(var(--amazing-accent-rgb)),
+      rgb(var(--amazing-primary-rgb))
+    );
+    z-index: -1;
+    animation: amazing-rotate-hue 6s linear infinite;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  .amazing-avatar-ring:hover::before {
+    opacity: 1;
+    animation-duration: 2s;
+  }
+
+  /* ---- Search overlay ---- */
+  .amazing-search-overlay {
+    animation: amazing-search-expand 500ms var(--amazing-smooth) forwards;
+  }
+  .amazing-search-overlay.is-closing {
+    animation: amazing-search-collapse 400ms var(--amazing-smooth) forwards;
+  }
+}
+
+/* ---- Onload entrance animation ---- */
+@keyframes fuwari-fade-in-up {
+  0% {
+    transform: translateY(2rem);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.fuwari-onload-animation {
+  opacity: 0;
+  animation: fuwari-fade-in-up 500ms var(--amazing-spring) forwards;
+}
+
+/* ---- Text selection ---- */
+::selection {
+  background-color: var(--fuwari-selection-bg);
+  color: inherit;
+}
+
+/* ---- Custom Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-width: 3px;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-width: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255, 255, 255, 0.6);
+}
