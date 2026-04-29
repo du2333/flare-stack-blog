@@ -3,7 +3,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import {
   Activity,
   Database,
@@ -45,6 +45,15 @@ export const Route = createFileRoute("/admin/")({
   component: DashboardOverview,
   pendingComponent: DashboardSkeleton,
   validateSearch: (search) => SearchSchema.parse(search),
+  beforeLoad: ({ context }) => {
+    const session = context.session;
+    if (session?.user.role !== "superadmin") {
+      throw redirect({
+        to: "/admin/posts",
+        // preserve query params if necessary, but usually just redirect
+      });
+    }
+  },
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(dashboardStatsQuery);
     return { title: m.admin_overview_title() };

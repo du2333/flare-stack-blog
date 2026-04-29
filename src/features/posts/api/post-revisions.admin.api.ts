@@ -6,17 +6,17 @@ import {
   RestorePostRevisionInputSchema,
 } from "@/features/posts/schema/post-revisions.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
-import { adminMiddleware } from "@/lib/middlewares";
+import { contentAdminMiddleware } from "@/lib/middlewares";
 
 export const listPostRevisionsFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(ListPostRevisionsInputSchema)
   .handler(({ data, context }) =>
     PostRevisionService.listPostRevisions(context, data),
   );
 
 export const getPostRevisionFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(FindPostRevisionByIdInputSchema)
   .handler(({ data, context }) =>
     PostRevisionService.findPostRevisionById(context, data),
@@ -25,7 +25,7 @@ export const getPostRevisionFn = createServerFn()
 export const restorePostRevisionFn = createServerFn({
   method: "POST",
 })
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(RestorePostRevisionInputSchema)
   .handler(({ data, context }) =>
     PostRevisionService.restorePostRevision(context, data),
@@ -34,7 +34,7 @@ export const restorePostRevisionFn = createServerFn({
 export const deletePostRevisionsFn = createServerFn({
   method: "POST",
 })
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(DeletePostRevisionsInputSchema)
   .handler(({ data, context }) =>
     PostRevisionService.deletePostRevisions(context, data),

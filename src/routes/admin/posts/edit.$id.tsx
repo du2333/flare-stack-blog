@@ -66,6 +66,7 @@ function EditPost() {
     id: post.id,
     title: post.title,
     summary: post.summary ?? "",
+    authorName: post.authorName ?? null,
     slug: post.slug,
     status: post.status,
     readTimeInMinutes: post.readTimeInMinutes,

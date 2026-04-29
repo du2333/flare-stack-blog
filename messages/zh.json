@@ -1462,5 +1462,28 @@
   "email_webhook_friend_link_submitted_message": "{submitterName} 提交了友链申请：{siteName}（{siteUrl}）",
   "email_webhook_friend_link_approved_message": "{siteName} 的友链申请已通过审核。",
   "email_webhook_friend_link_rejected_message": "{siteName} 的友链申请未通过：{rejectionReason}",
-  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} 的友链申请未通过。"
+  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} 的友链申请未通过。",
+  "admin_sidebar_role_superadmin": "超级管理员",
+  "admin_sidebar_users": "用户管理",
+  "admin_users_title": "用户管理",
+  "admin_users_heading": "用户管理",
+  "admin_users_total": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=*": "共 {count} 位用户"
+      }
+    }
+  ],
+  "admin_users_search_placeholder": "搜索用户...",
+  "admin_users_filter_all": "全部",
+  "admin_users_filter_admin": "管理员",
+  "admin_users_filter_user": "普通用户",
+  "admin_users_no_match": "未找到匹配的用户",
+  "admin_users_action_promote": "升级",
+  "admin_users_action_demote": "降级",
+  "admin_users_toast_role_updated": "用户角色已更新",
+  "admin_users_toast_not_found": "操作失败：用户不存在",
+  "admin_users_toast_cannot_modify_superadmin": "操作失败：无法修改超级管理员角色",
+  "post_author": "作者"
 }

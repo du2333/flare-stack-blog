@@ -9,13 +9,13 @@ import {
   UploadMediaInputSchema,
 } from "@/features/media/media.schema";
 import * as MediaService from "@/features/media/service/media.service";
-import { adminMiddleware } from "@/lib/middlewares";
+import { contentAdminMiddleware } from "@/lib/middlewares";
 import { m } from "@/paraglide/messages";
 
 export const uploadImageFn = createServerFn({
   method: "POST",
 })
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(UploadMediaInputSchema)
   .handler(({ data, context }) =>
     MediaService.upload(context, parseUploadMediaInput(data, m)),
@@ -24,26 +24,26 @@ export const uploadImageFn = createServerFn({
 export const deleteImageFn = createServerFn({
   method: "POST",
 })
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(MediaKeyInputSchema)
   .handler(({ data, context }) =>
     MediaService.deleteImage(context, assertMediaKey(data.key, m)),
   );
 
 export const getMediaFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(GetMediaListInputSchema)
   .handler(({ data, context }) => MediaService.getMediaList(context, data));
 
 export const getLinkedPostsFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(MediaKeyInputSchema)
   .handler(({ data, context }) =>
     MediaService.getLinkedPosts(context, assertMediaKey(data.key, m)),
   );
 
 export const getLinkedMediaKeysFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(
     z.object({
       keys: z.array(z.string()),
@@ -54,12 +54,12 @@ export const getLinkedMediaKeysFn = createServerFn()
   );
 
 export const getTotalMediaSizeFn = createServerFn()
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .handler(({ context }) => MediaService.getTotalMediaSize(context));
 
 export const updateMediaNameFn = createServerFn({
   method: "POST",
 })
-  .middleware([adminMiddleware])
+  .middleware([contentAdminMiddleware])
   .inputValidator(UpdateMediaNameInputSchema)
   .handler(({ data, context }) => MediaService.updateMediaName(context, data));

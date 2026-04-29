@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Tag,
   User,
+  UsersRound,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -26,6 +27,8 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   exact: boolean;
+  /** If set, only show this item for these roles */
+  roles?: Array<"admin" | "superadmin">;
 }
 
 export function SideBar({
@@ -66,12 +69,14 @@ export function SideBar({
     navigate({ to: "/login" });
   };
 
-  const navItems = [
+
+  const allNavItems: Array<NavItem> = [
     {
       path: "/admin",
       icon: LayoutDashboard,
       label: m.admin_sidebar_dashboard(),
       exact: true,
+      roles: ["superadmin"],
     },
     {
       path: "/admin/posts",
@@ -96,14 +101,27 @@ export function SideBar({
       icon: MessageSquare,
       label: m.admin_sidebar_comments(),
       exact: false,
+      roles: ["superadmin"],
     },
     {
       path: "/admin/friend-links",
       icon: Link2,
       label: m.admin_sidebar_friend_links(),
       exact: false,
+      roles: ["superadmin"],
     },
-  ] satisfies Array<NavItem>;
+    {
+      path: "/admin/users",
+      icon: UsersRound,
+      label: m.admin_sidebar_users(),
+      exact: false,
+      roles: ["superadmin"],
+    },
+  ];
+
+  const navItems = allNavItems.filter(
+    (item) => !item.roles || item.roles.includes(user?.role as "admin" | "superadmin"),
+  );
 
   return (
     <>
@@ -199,9 +217,11 @@ export function SideBar({
                   {user?.name || m.admin_sidebar_admin_fallback()}
                 </span>
                 <span className="text-[8px] text-muted-foreground font-mono">
-                  {user?.role === "admin"
-                    ? m.admin_sidebar_role_admin()
-                    : m.admin_sidebar_role_user()}
+                  {user?.role === "superadmin"
+                    ? m.admin_sidebar_role_superadmin()
+                    : user?.role === "admin"
+                      ? m.admin_sidebar_role_admin()
+                      : m.admin_sidebar_role_user()}
                 </span>
               </div>
             </div>

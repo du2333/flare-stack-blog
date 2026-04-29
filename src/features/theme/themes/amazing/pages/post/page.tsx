@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Clock, FileText, Pencil } from "lucide-react";
 import { Suspense } from "react";
 import type { PostPageProps } from "@/features/theme/contract/pages";
-import { FuwariCommentSection } from "@/features/theme/themes/fuwari/components/comments/view/comment-section";
+import { FuwariCommentSection } from "@/features/theme/themes/amazing/components/comments/view/comment-section";
 import { ContentRenderer } from "@/features/theme/themes/fuwari/components/content/content-renderer";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
@@ -79,7 +79,7 @@ export function PostPage({ post }: PostPageProps) {
               {m.read_time({ count: post.readTimeInMinutes })}
             </div>
           </div>
-          {session?.user.role === "admin" && (
+          {(session?.user.role === "admin" || session?.user.role === "superadmin") && (
             <Link
               to="/admin/posts/edit/$id"
               params={{ id: String(post.id) }}
@@ -178,7 +178,10 @@ export function PostPage({ post }: PostPageProps) {
           animationTimingFunction: "var(--amazing-spring)",
         }}
       >
-        <FuwariCommentSection postId={post.id} />
+        <FuwariCommentSection
+          postId={post.id}
+          postAuthorName={post.authorName}
+        />
       </div>
     </div>
   );

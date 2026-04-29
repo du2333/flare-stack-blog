@@ -1470,5 +1470,29 @@
   "email_webhook_friend_link_submitted_message": "{submitterName} submitted a friend link request: {siteName} ({siteUrl})",
   "email_webhook_friend_link_approved_message": "{siteName} friend link request was approved.",
   "email_webhook_friend_link_rejected_message": "{siteName} friend link request was rejected: {rejectionReason}",
-  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} friend link request was rejected."
+  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} friend link request was rejected.",
+  "admin_sidebar_role_superadmin": "Super Admin",
+  "admin_sidebar_users": "Users",
+  "admin_users_title": "User Management",
+  "admin_users_heading": "User Management",
+  "admin_users_total": [
+    {
+      "declarations": ["input count"],
+      "match": {
+        "count=1": "{count} user total",
+        "count=*": "{count} users total"
+      }
+    }
+  ],
+  "admin_users_search_placeholder": "Search users...",
+  "admin_users_filter_all": "All",
+  "admin_users_filter_admin": "Admin",
+  "admin_users_filter_user": "User",
+  "admin_users_no_match": "No users found",
+  "admin_users_action_promote": "Promote",
+  "admin_users_action_demote": "Demote",
+  "admin_users_toast_role_updated": "User role updated",
+  "admin_users_toast_not_found": "Action failed: User not found",
+  "admin_users_toast_cannot_modify_superadmin": "Action failed: Cannot modify super admin",
+  "post_author": "Author"
 }

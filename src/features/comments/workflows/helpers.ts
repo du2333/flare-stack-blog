@@ -88,7 +88,7 @@ export async function sendReplyNotification(
       { db: context.db, env: context.env, executionCtx: context.executionCtx },
       {
         type:
-          replyToAuthor.role === "admin"
+          replyToAuthor.role === "admin" || replyToAuthor.role === "superadmin"
             ? "comment.reply_to_admin_published"
             : "comment.reply_to_user_published",
         data: {

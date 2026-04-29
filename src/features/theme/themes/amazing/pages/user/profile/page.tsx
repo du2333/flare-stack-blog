@@ -47,9 +47,11 @@ export function ProfilePage({
           <span>{user.email}</span>
           <span className="w-1 h-1 rounded-full bg-(--fuwari-meta-divider)" />
           <span className="uppercase tracking-wider text-xs px-2 py-0.5 rounded-md bg-(--fuwari-btn-regular-bg)">
-            {user.role === "admin"
-              ? m.profile_role_admin()
-              : m.profile_role_reader()}
+            {user.role === "superadmin"
+              ? m.admin_sidebar_role_superadmin()
+              : user.role === "admin"
+                ? m.profile_role_admin()
+                : m.profile_role_reader()}
           </span>
         </div>
       </div>
@@ -245,7 +247,7 @@ export function ProfilePage({
               {m.profile_actions()}
             </h3>
 
-            {user.role === "admin" && (
+            {(user.role === "admin" || user.role === "superadmin") && (
               <Link
                 to="/admin"
                 className="w-full fuwari-btn-regular py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm active:scale-95 transition-all"

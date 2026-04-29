@@ -158,6 +158,25 @@ export function PostEditorMetadata({
           </div>
         </div>
 
+        <div className="space-y-3">
+          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            Author
+          </label>
+          <div className="group flex items-center gap-2">
+            <Input
+              type="text"
+              value={post.authorName || ""}
+              onChange={(e) =>
+                onPostChange({
+                  authorName: e.target.value,
+                })
+              }
+              placeholder="Author name"
+              className="h-auto flex-1 border-none bg-transparent p-0 px-0 text-xs font-mono text-foreground shadow-none placeholder:text-muted-foreground/30 focus-visible:ring-0"
+            />
+          </div>
+        </div>
+
         <div className="col-span-1 space-y-3 md:col-span-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
             {m.editor_meta_slug()}

@@ -1,5 +1,5 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { Calendar, Edit, Tag } from "lucide-react";
+import { Calendar, Edit, Tag, User } from "lucide-react";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -23,6 +23,18 @@ export function PostMeta({ post, className }: PostMetaProps) {
         className,
       )}
     >
+      {/* Author */}
+      {post.authorName && (
+        <div className="flex items-center">
+          <div className="fuwari-meta-icon">
+            <User strokeWidth={1.5} size={20} />
+          </div>
+          <span className="text-sm font-medium fuwari-text-50">
+            {post.authorName}
+          </span>
+        </div>
+      )}
+
       {/* Publish date */}
       <div className="flex items-center">
         <div className="fuwari-meta-icon">

@@ -23,6 +23,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   const [post, setPost] = useState<PostEditorData>(() => ({
     title: initialData.title,
     summary: initialData.summary,
+    authorName: initialData.authorName,
     slug: initialData.slug,
     status: initialData.status,
     readTimeInMinutes: initialData.readTimeInMinutes,
@@ -126,6 +127,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
       const restoredPost: PostEditorData = {
         title: snapshot.title,
         summary: snapshot.summary ?? "",
+        authorName: post.authorName, // Snapshot doesn't track authorName currently
         slug: snapshot.slug,
         status: snapshot.status,
         readTimeInMinutes: snapshot.readTimeInMinutes,

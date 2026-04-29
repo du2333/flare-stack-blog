@@ -14,6 +14,7 @@ interface CommentItemProps {
   replyToName?: string | null;
   highlightCommentId?: number;
   className?: string;
+  postAuthorName?: string | null;
 }
 
 export const FuwariCommentItem = memo(
@@ -25,14 +26,15 @@ export const FuwariCommentItem = memo(
     replyToName,
     highlightCommentId,
     className,
+    postAuthorName,
   }: CommentItemProps) => {
     const isHighlighted = highlightCommentId === comment.id;
 
     const { data: session } = authClient.useSession();
 
     const isAuthor = session?.user.id === comment.userId;
-    const isAdmin = session?.user.role === "admin";
-    const isBlogger = comment.user?.role === "admin";
+    const isAdmin = session?.user.role === "admin" || session?.user.role === "superadmin";
+    const isBlogger = Boolean(postAuthorName && comment.user?.name === postAuthorName);
 
     const renderedContent = useMemo(() => {
       if (comment.status === "deleted") {

@@ -14,6 +14,7 @@ type RootCommentWithUser = RootCommentWithReplyCount;
 interface CommentListProps {
   rootComments: Array<RootCommentWithUser>;
   postId: number;
+  postAuthorName?: string | null;
   onReply?: (rootId: number, commentId: number, userName: string) => void;
   onDelete?: (commentId: number) => void;
   replyTarget?: { rootId: number; commentId: number; userName: string } | null;
@@ -27,6 +28,7 @@ interface CommentListProps {
 export const FuwariCommentList = ({
   rootComments,
   postId,
+  postAuthorName,
   onReply,
   onDelete,
   replyTarget,
@@ -72,6 +74,7 @@ export const FuwariCommentList = ({
           key={root.id}
           root={root}
           postId={postId}
+          postAuthorName={postAuthorName}
           isExpanded={expandedRoots.has(root.id)}
           onToggleExpand={() => toggleExpand(root.id)}
           onReply={onReply}
@@ -91,6 +94,7 @@ export const FuwariCommentList = ({
 interface RootCommentWithRepliesProps {
   root: RootCommentWithUser;
   postId: number;
+  postAuthorName?: string | null;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onReply?: (rootId: number, commentId: number, userName: string) => void;
@@ -106,6 +110,7 @@ interface RootCommentWithRepliesProps {
 function RootCommentWithReplies({
   root,
   postId,
+  postAuthorName,
   isExpanded,
   onToggleExpand,
   onReply,
@@ -136,6 +141,7 @@ function RootCommentWithReplies({
     <div>
       <FuwariCommentItem
         comment={root}
+        postAuthorName={postAuthorName}
         onReply={() => {
           if (onReply) {
             onReply(
@@ -201,6 +207,7 @@ function RootCommentWithReplies({
                   <div key={reply.id}>
                     <FuwariCommentItem
                       comment={reply}
+                      postAuthorName={postAuthorName}
                       onReply={() => {
                         if (onReply) {
                           onReply(

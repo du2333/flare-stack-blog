@@ -18,9 +18,10 @@ const routeApi = getRouteApi("/_public/post/$slug");
 
 interface FuwariCommentSectionProps {
   postId: number;
+  postAuthorName?: string | null;
 }
 
-export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
+export function FuwariCommentSection({ postId, postAuthorName }: FuwariCommentSectionProps) {
   const { data: session } = authClient.useSession();
   const { rootId, highlightCommentId } = routeApi.useSearch();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -170,6 +171,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
       <FuwariCommentList
         rootComments={rootComments}
         postId={postId}
+        postAuthorName={postAuthorName}
         onReply={(rootIdArg, commentId, userName) =>
           setReplyTarget({ rootId: rootIdArg, commentId, userName })
         }

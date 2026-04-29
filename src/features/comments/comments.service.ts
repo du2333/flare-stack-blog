@@ -128,7 +128,8 @@ export async function createComment(
     }
   }
 
-  const isAdmin = context.session.user.role === "admin";
+  const userRole = context.session.user.role;
+  const isAdmin = userRole === "admin" || userRole === "superadmin";
 
   const comment = await CommentRepo.insertComment(context.db, {
     postId: data.postId,
@@ -202,7 +203,7 @@ export async function deleteComment(
 
   // Only allow deleting own comments (unless admin)
   const userRole = context.session.user.role;
-  if (comment.userId !== context.session.user.id && userRole !== "admin") {
+  if (comment.userId !== context.session.user.id && userRole !== "admin" && userRole !== "superadmin") {
     return err({ reason: "PERMISSION_DENIED" });
   }
 

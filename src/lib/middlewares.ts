@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-start/server";
 import { getAuth } from "@/lib/auth/auth.server";
 import { getDb } from "@/lib/db";
+import { user as userTable } from "@/lib/db/schema";
 import type { RateLimitOptions } from "@/lib/do/rate-limiter";
 import { serverEnv } from "@/lib/env/server.env";
 import {
@@ -14,6 +15,7 @@ import {
   createTurnstileError,
 } from "@/lib/errors";
 import { verifyTurnstileToken } from "@/lib/turnstile";
+import { eq } from "drizzle-orm";
 
 /* ======================= Error Logging ====================== */
 
@@ -65,6 +67,18 @@ export const sessionMiddleware = createMiddleware({ type: "function" })
       headers: getRequestHeaders(),
     });
 
+    if (
+      session &&
+      session.user.role !== "superadmin" &&
+      session.user.email.toLowerCase() === serverEnv(context.env).ADMIN_EMAIL?.toLowerCase()
+    ) {
+      await context.db
+        .update(userTable)
+        .set({ role: "superadmin" })
+        .where(eq(userTable.id, session.user.id));
+      session.user.role = "superadmin";
+    }
+
     return next({
       context: {
         auth,
@@ -82,6 +96,21 @@ export const authMiddleware = createMiddleware({ type: "function" })
       throw createAuthError();
     }
 
+    // Auto-upgrade: If user email matches ADMIN_EMAIL but role is still "admin",
+    // upgrade to "superadmin" in the database (one-time migration).
+    if (
+      session.user.role === "admin" &&
+      session.user.email === serverEnv(context.env).ADMIN_EMAIL
+    ) {
+      const { user: userTable } = await import("@/lib/db/schema");
+      const { eq } = await import("drizzle-orm");
+      await context.db
+        .update(userTable)
+        .set({ role: "superadmin" })
+        .where(eq(userTable.id, session.user.id));
+      session.user.role = "superadmin";
+    }
+
     return next({
       context: {
         session,
@@ -89,12 +118,16 @@ export const authMiddleware = createMiddleware({ type: "function" })
     });
   });
 
-export const adminMiddleware = createMiddleware({ type: "function" })
+/**
+ * Super Admin middleware — only superadmin role.
+ * Used for: dashboard overview, comments, friend-links, settings, user management, webhooks, etc.
+ */
+export const superAdminMiddleware = createMiddleware({ type: "function" })
   .middleware([authMiddleware])
   .server(async ({ context, next }) => {
     const session = context.session;
 
-    if (session.user.role !== "admin") {
+    if (session.user.role !== "superadmin") {
       throw createPermissionError();
     }
 
@@ -104,6 +137,33 @@ export const adminMiddleware = createMiddleware({ type: "function" })
       },
     });
   });
+
+/**
+ * Content Admin middleware — admin or superadmin role.
+ * Used for: posts, tags, media management.
+ */
+export const contentAdminMiddleware = createMiddleware({ type: "function" })
+  .middleware([authMiddleware])
+  .server(async ({ context, next }) => {
+    const session = context.session;
+    const role = session.user.role;
+
+    if (role !== "admin" && role !== "superadmin") {
+      throw createPermissionError();
+    }
+
+    return next({
+      context: {
+        session,
+      },
+    });
+  });
+
+/**
+ * @deprecated Use `superAdminMiddleware` or `contentAdminMiddleware` instead.
+ * Kept as alias to superAdminMiddleware for backward compatibility during migration.
+ */
+export const adminMiddleware = superAdminMiddleware;
 
 /* ======================= Rate Limiting ====================== */
 export const createRateLimitMiddleware = (

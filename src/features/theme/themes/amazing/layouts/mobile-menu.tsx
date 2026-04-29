@@ -74,7 +74,7 @@ export function MobileMenu({
               </Link>
             ))}
 
-            {user?.role === "admin" && (
+            {(user?.role === "admin" || user?.role === "superadmin") && (
               <Link
                 to="/admin"
                 onClick={onClose}

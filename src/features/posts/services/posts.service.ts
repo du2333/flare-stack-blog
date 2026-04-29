@@ -239,13 +239,16 @@ export async function generateSlug(
   return { slug: `${baseSlug}-${maxSuffix + 1}` };
 }
 
-export async function createEmptyPost(context: DbContext) {
+export async function createEmptyPost(
+  context: DbContext & { session?: { user?: { name?: string } } | null },
+) {
   const { slug } = await generateSlug(context, { title: "" });
 
   const post = await PostRepo.insertPost(context.db, {
     title: "",
     slug,
     summary: "",
+    authorName: context.session?.user?.name || "Blogger",
     status: "draft",
     readTimeInMinutes: 1,
     contentJson: null,

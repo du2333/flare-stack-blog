@@ -154,7 +154,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
         create: {
           before: async (user) => {
             if (user.email === ADMIN_EMAIL) {
-              return { data: { ...user, role: "admin" } };
+              return { data: { ...user, role: "superadmin" } };
             }
             return { data: user };
           },
