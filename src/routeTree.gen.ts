@@ -19,9 +19,13 @@ import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
 import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
 import { Route as UserProfileRouteImport } from './routes/_user/profile'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
 import { Route as PublicPostsRouteImport } from './routes/_public/posts'
 import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
+import { Route as PublicContactRouteImport } from './routes/_public/contact'
+import { Route as PublicAboutRouteImport } from './routes/_public/about'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
@@ -85,9 +89,19 @@ const PublicUnsubscribeRoute = PublicUnsubscribeRouteImport.update({
   path: '/unsubscribe',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicSearchRoute = PublicSearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicPostsRoute = PublicPostsRouteImport.update({
@@ -98,6 +112,16 @@ const PublicPostsRoute = PublicPostsRouteImport.update({
 const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
   id: '/friend-links',
   path: '/friend-links',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicAboutRoute = PublicAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
@@ -184,9 +208,13 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
+  '/about': typeof PublicAboutRoute
+  '/contact': typeof PublicContactRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
+  '/privacy': typeof PublicPrivacyRoute
   '/search': typeof PublicSearchRoute
+  '/terms': typeof PublicTermsRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
@@ -209,9 +237,13 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-link': typeof AuthResetLinkRoute
   '/verify-email': typeof AuthVerifyEmailRoute
+  '/about': typeof PublicAboutRoute
+  '/contact': typeof PublicContactRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
+  '/privacy': typeof PublicPrivacyRoute
   '/search': typeof PublicSearchRoute
+  '/terms': typeof PublicTermsRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
@@ -240,9 +272,13 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/_auth/reset-link': typeof AuthResetLinkRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
+  '/_public/about': typeof PublicAboutRoute
+  '/_public/contact': typeof PublicContactRoute
   '/_public/friend-links': typeof PublicFriendLinksRoute
   '/_public/posts': typeof PublicPostsRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
   '/_public/search': typeof PublicSearchRoute
+  '/_public/terms': typeof PublicTermsRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/_user/profile': typeof UserProfileRoute
   '/_user/submit-friend-link': typeof UserSubmitFriendLinkRoute
@@ -269,9 +305,13 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-link'
     | '/verify-email'
+    | '/about'
+    | '/contact'
     | '/friend-links'
     | '/posts'
+    | '/privacy'
     | '/search'
+    | '/terms'
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
@@ -294,9 +334,13 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-link'
     | '/verify-email'
+    | '/about'
+    | '/contact'
     | '/friend-links'
     | '/posts'
+    | '/privacy'
     | '/search'
+    | '/terms'
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
@@ -324,9 +368,13 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/_auth/reset-link'
     | '/_auth/verify-email'
+    | '/_public/about'
+    | '/_public/contact'
     | '/_public/friend-links'
     | '/_public/posts'
+    | '/_public/privacy'
     | '/_public/search'
+    | '/_public/terms'
     | '/_public/unsubscribe'
     | '/_user/profile'
     | '/_user/submit-friend-link'
@@ -424,11 +472,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicUnsubscribeRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/search': {
       id: '/_public/search'
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof PublicSearchRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/posts': {
@@ -443,6 +505,20 @@ declare module '@tanstack/react-router' {
       path: '/friend-links'
       fullPath: '/friend-links'
       preLoaderRoute: typeof PublicFriendLinksRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/about': {
+      id: '/_public/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof PublicAboutRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_auth/verify-email': {
@@ -574,18 +650,26 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface PublicRouteRouteChildren {
+  PublicAboutRoute: typeof PublicAboutRoute
+  PublicContactRoute: typeof PublicContactRoute
   PublicFriendLinksRoute: typeof PublicFriendLinksRoute
   PublicPostsRoute: typeof PublicPostsRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
   PublicSearchRoute: typeof PublicSearchRoute
+  PublicTermsRoute: typeof PublicTermsRoute
   PublicUnsubscribeRoute: typeof PublicUnsubscribeRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicPostSlugRoute: typeof PublicPostSlugRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicAboutRoute: PublicAboutRoute,
+  PublicContactRoute: PublicContactRoute,
   PublicFriendLinksRoute: PublicFriendLinksRoute,
   PublicPostsRoute: PublicPostsRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
   PublicSearchRoute: PublicSearchRoute,
+  PublicTermsRoute: PublicTermsRoute,
   PublicUnsubscribeRoute: PublicUnsubscribeRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicPostSlugRoute: PublicPostSlugRoute,

@@ -11,6 +11,10 @@ import { LoginPage } from "./pages/auth/login";
 import { RegisterPage } from "./pages/auth/register";
 import { ResetPasswordPage } from "./pages/auth/reset-password";
 import { VerifyEmailPage } from "./pages/auth/verify-email";
+import { AboutPage } from "./pages/about";
+import { ContactPage } from "./pages/contact";
+import { PrivacyPage } from "./pages/privacy";
+import { TermsPage } from "./pages/terms";
 import { FriendLinksPage, FriendLinksPageSkeleton } from "./pages/friend-links";
 import { HomePage, HomePageSkeleton } from "./pages/home";
 import { PostPage, PostPageSkeleton } from "./pages/post";
@@ -35,6 +39,10 @@ export default {
   PublicLayout,
   AuthLayout,
   UserLayout,
+  AboutPage,
+  ContactPage,
+  PrivacyPage,
+  TermsPage,
   FriendLinksPage,
   FriendLinksPageSkeleton,
   SearchPage,

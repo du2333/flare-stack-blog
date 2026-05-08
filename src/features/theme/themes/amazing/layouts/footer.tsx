@@ -38,6 +38,27 @@ export function Footer(_: FooterProps) {
           </ClientOnly>{" "}
           /{" "}
           <a
+            href="/about"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium text-(--fuwari-primary) hover:text-(--fuwari-primary-hover) transition-colors"
+          >
+            {m.nav_about()}
+          </a>{" "}
+          /{" "}
+          <a
+            href="/privacy"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium text-(--fuwari-primary) hover:text-(--fuwari-primary-hover) transition-colors"
+          >
+            {m.nav_privacy()}
+          </a>{" "}
+          /{" "}
+          <a
+            href="/terms"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium text-(--fuwari-primary) hover:text-(--fuwari-primary-hover) transition-colors"
+          >
+            {m.nav_terms()}
+          </a>{" "}
+          /{" "}
+          <a
             href="/rss.xml"
             target="_blank"
             rel="noreferrer"

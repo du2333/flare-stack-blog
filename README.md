@@ -219,6 +219,7 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID（客户端埋点）                                                                            |
 | `GOOGLE_CLIENT_ID`        | 运行时 | Google OAuth Client ID（可选，启用 Google 登录）                                                          |
 | `GOOGLE_CLIENT_SECRET`    | 运行时 | Google OAuth Client Secret（可选，启用 Google 登录）                                                      |
+| `ADSENSE_PUBLISHER_ID`    | 运行时 | Google AdSense 发布商 ID（如 `pub-1234567890`），配置后自动生成 `/ads.txt`                                |
 
 ---
 

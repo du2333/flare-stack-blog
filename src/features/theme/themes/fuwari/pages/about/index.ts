@@ -1,0 +1,1 @@
+export { AboutPage } from "./page";

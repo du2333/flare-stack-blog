@@ -90,6 +90,7 @@ export const cacheMiddleware = createMiddleware(async (c, next) => {
 });
 
 const SHIELD_ALLOWED_PATHS = new Set([
+  "/ads.txt",
   "/atom.xml",
   "/feed.json",
   "/robots.txt",

@@ -64,6 +64,7 @@ export const Route = createFileRoute("/oauth/consent")({
       {
         title: m.oauth_consent_title(),
       },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: RouteComponent,

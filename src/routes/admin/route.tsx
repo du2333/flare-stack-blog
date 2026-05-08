@@ -39,6 +39,7 @@ export const Route = createFileRoute("/admin")({
       {
         title: loaderData?.title,
       },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   headers: () => {

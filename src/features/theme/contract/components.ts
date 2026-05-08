@@ -6,17 +6,21 @@ import type {
   UserLayoutProps,
 } from "./layouts";
 import type {
+  AboutPageProps,
+  ContactPageProps,
   ForgotPasswordPageProps,
   FriendLinksPageProps,
   HomePageProps,
   LoginPageProps,
   PostPageProps,
   PostsPageProps,
+  PrivacyPageProps,
   ProfilePageProps,
   RegisterPageProps,
   ResetPasswordPageProps,
   SearchPageProps,
   SubmitFriendLinkPageProps,
+  TermsPageProps,
   VerifyEmailPageProps,
 } from "./pages";
 
@@ -49,6 +53,15 @@ export interface ThemeComponents {
   PostPage: React.ComponentType<PostPageProps>;
   /** 文章详情页骨架屏 */
   PostPageSkeleton: React.ComponentType;
+
+  /** 关于本站页组件 */
+  AboutPage: React.ComponentType<AboutPageProps>;
+  /** 联系我们页组件 */
+  ContactPage: React.ComponentType<ContactPageProps>;
+  /** 隐私政策页组件 */
+  PrivacyPage: React.ComponentType<PrivacyPageProps>;
+  /** 服务条款页组件 */
+  TermsPage: React.ComponentType<TermsPageProps>;
 
   /** 友链列表页组件 */
   FriendLinksPage: React.ComponentType<FriendLinksPageProps>;

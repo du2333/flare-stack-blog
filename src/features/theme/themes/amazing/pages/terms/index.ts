@@ -1,0 +1,1 @@
+export { TermsPage } from "./page";

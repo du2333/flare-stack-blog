@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_public/unsubscribe")({
       {
         title: m.unsubscribe_title(),
       },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
 });

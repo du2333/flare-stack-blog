@@ -85,6 +85,7 @@ jobs:
           echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> $GITHUB_ENV
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $GITHUB_ENV
           echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "ADSENSE_PUBLISHER_ID=${{ secrets.ADSENSE_PUBLISHER_ID }}" >> $GITHUB_ENV
 
       - name: Inject Resource IDs
         run: |
@@ -113,7 +114,8 @@ jobs:
             "TURNSTILE_SECRET_KEY": "$TURNSTILE_SECRET_KEY",
             "GITHUB_TOKEN": "$GITHUB_TOKEN",
             "GOOGLE_CLIENT_ID": "$GOOGLE_CLIENT_ID",
-            "GOOGLE_CLIENT_SECRET": "$GOOGLE_CLIENT_SECRET"
+            "GOOGLE_CLIENT_SECRET": "$GOOGLE_CLIENT_SECRET",
+            "ADSENSE_PUBLISHER_ID": "$ADSENSE_PUBLISHER_ID"
           }
           EOF
 

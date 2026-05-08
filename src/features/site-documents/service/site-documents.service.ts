@@ -7,6 +7,7 @@ import { buildFeed } from "@/features/posts/utils/feed";
 import { getDb } from "@/lib/db";
 
 export const SITE_DOCUMENT_CACHE_CONTROL = {
+  ads: "public, max-age=86400, s-maxage=86400",
   feed: "public, max-age=3600, s-maxage=3600",
   manifest: "public, max-age=3600, s-maxage=3600",
   robots: "public, max-age=86400, s-maxage=86400",
@@ -116,6 +117,26 @@ export async function buildSitemapXml(env: Env) {
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://${env.DOMAIN}/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://${env.DOMAIN}/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://${env.DOMAIN}/privacy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://${env.DOMAIN}/terms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://${env.DOMAIN}/friend-links</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -154,6 +175,12 @@ Disallow: /oauth/consent
 Disallow: /profile
 Disallow: /submit-friend-link
 Sitemap: https://${env.DOMAIN}/sitemap.xml`;
+}
+
+export function buildAdsTxt(env: Env) {
+  const publisherId = env.ADSENSE_PUBLISHER_ID;
+  if (!publisherId) return "";
+  return `google.com, ${publisherId}, DIRECT, f08c47fec0942fa0`;
 }
 
 export async function buildWebManifest(

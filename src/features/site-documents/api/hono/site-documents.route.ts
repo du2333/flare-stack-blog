@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import {
+  buildAdsTxt,
   buildAtomXml,
   buildFeedJson,
   buildRobotsTxt,
@@ -116,6 +117,12 @@ const derivedAsyncDocumentRoutes = [
 ] satisfies AsyncDocumentRouteDefinition[];
 
 const syncDocumentRoutes = [
+  {
+    path: "/ads.txt",
+    contentType: "text/plain; charset=utf-8",
+    cacheControl: SITE_DOCUMENT_CACHE_CONTROL.ads,
+    build: buildAdsTxt,
+  },
   {
     path: "/robots.txt",
     contentType: "text/plain; charset=utf-8",

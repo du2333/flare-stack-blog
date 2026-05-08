@@ -18,6 +18,7 @@ declare namespace Cloudflare {
 		CLOUDFLARE_ZONE_ID: string;
 		CLOUDFLARE_PURGE_API_TOKEN: string;
 		DOMAIN: string;
+		ADSENSE_PUBLISHER_ID?: string;
 		VITE_UMAMI_WEBSITE_ID: string;
 		UMAMI_SRC: string;
 		PAGEVIEW_SALT: string;

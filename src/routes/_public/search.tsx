@@ -28,6 +28,7 @@ export const Route = createFileRoute("/_public/search")({
         {
           title: loaderData?.title,
         },
+        { name: "robots", content: "noindex, nofollow" },
       ],
     };
   },

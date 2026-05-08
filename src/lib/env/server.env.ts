@@ -32,6 +32,7 @@ const serverEnvSchema = z.object({
   GITHUB_TOKEN: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  ADSENSE_PUBLISHER_ID: z.string().optional(),
 });
 
 export function serverEnv(env: Env) {

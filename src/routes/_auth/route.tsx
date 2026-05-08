@@ -17,6 +17,9 @@ export const Route = createFileRoute("/_auth")({
     return { session, isEmailConfigured };
   },
   component: RouteComponent,
+  head: () => ({
+    meta: [{ name: "robots", content: "noindex, nofollow" }],
+  }),
   headers: () => {
     return CACHE_CONTROL.private;
   },
