@@ -1,3 +1,14 @@
+import { MCP_API_KEY_HEADER } from "../constants";
+
+const MCP_CORS_ALLOWED_HEADERS = [
+  "Content-Type",
+  "Accept",
+  "Authorization",
+  MCP_API_KEY_HEADER,
+  "mcp-session-id",
+  "MCP-Protocol-Version",
+].join(", ");
+
 function getRequestOrigin(request: Request) {
   return new URL(request.url).origin;
 }
@@ -61,4 +72,16 @@ export function createInvalidOriginResponse() {
       status: 403,
     },
   );
+}
+
+export function createMcpPreflightResponse() {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Headers": MCP_CORS_ALLOWED_HEADERS,
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Expose-Headers": "mcp-session-id",
+      "Access-Control-Max-Age": "86400",
+    },
+    status: 204,
+  });
 }

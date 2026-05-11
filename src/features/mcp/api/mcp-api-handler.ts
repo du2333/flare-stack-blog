@@ -2,10 +2,12 @@ import { WorkerEntrypoint } from "cloudflare:workers";
 import { createMcpHandler } from "agents/mcp";
 import { createOAuthPrincipalFromProps } from "@/features/oauth-provider/service/oauth-provider.service";
 import { getDb } from "@/lib/db";
+import { MCP_API_ROUTE } from "../constants";
 import { createMcpServer } from "../service/mcp.server";
 import {
   applyMcpOriginPolicy,
   createInvalidOriginResponse,
+  createMcpPreflightResponse,
   isAllowedMcpOrigin,
 } from "../utils/mcp-origin";
 
@@ -20,6 +22,10 @@ export class McpApiHandler extends WorkerEntrypoint<Env> {
   async fetch(request: Request) {
     if (!isAllowedMcpOrigin(request)) {
       return createInvalidOriginResponse();
+    }
+
+    if (request.method === "OPTIONS") {
+      return applyMcpOriginPolicy(request, createMcpPreflightResponse());
     }
 
     const executionCtx = this.ctx as ExecutionContext;
@@ -38,7 +44,7 @@ export class McpApiHandler extends WorkerEntrypoint<Env> {
         authContext: {
           props: authProps,
         },
-        route: "/mcp",
+        route: MCP_API_ROUTE,
       },
     )(request, this.env, executionCtx);
 

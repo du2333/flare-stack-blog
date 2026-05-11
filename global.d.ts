@@ -50,6 +50,7 @@ declare global {
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
     IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
+    MCP_API_KEY?: string;
     OAUTH_PROVIDER?: OAuthHelpers;
     QUEUE: Queue<QueueMessage>;
   }

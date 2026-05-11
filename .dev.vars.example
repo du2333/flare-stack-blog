@@ -38,3 +38,8 @@ PAGEVIEW_SALT=your-random-salt-string
 # 未认证请求限流 60 次/小时/IP，Cloudflare Workers 共享 IP 容易触发限流
 # 创建无权限的 Fine-grained token: https://github.com/settings/personal-access-tokens
 # GITHUB_TOKEN=your-github-token
+
+# --- MCP API Key（可选，用于不支持 OAuth 的 MCP 客户端） ---
+# 客户端请求头：X-MCP-API-Key: your-mcp-api-key
+# 生成建议：openssl rand -hex 32
+# MCP_API_KEY=your-mcp-api-key
