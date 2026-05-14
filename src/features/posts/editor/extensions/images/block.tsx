@@ -11,6 +11,11 @@ export function ImageBlock({
 }: NodeViewProps) {
   const src = node.attrs.src;
   const isUploading = useMemo(() => src?.startsWith("blob:"), [src]);
+  const isPortrait = !!(
+    node.attrs.width &&
+    node.attrs.height &&
+    node.attrs.height > node.attrs.width
+  );
 
   return (
     <NodeViewWrapper className="my-12 relative image-node-view">
@@ -25,10 +30,14 @@ export function ImageBlock({
         `}
       >
         <div
-          className="relative bg-muted/20 overflow-hidden"
+          className={`relative bg-muted/20 overflow-hidden ${
+            isPortrait
+              ? "flex items-center justify-center max-h-[70vh]"
+              : "max-h-[80vh]"
+          }`}
           style={{
             aspectRatio:
-              node.attrs.width && node.attrs.height
+              !isPortrait && node.attrs.width && node.attrs.height
                 ? `${node.attrs.width} / ${node.attrs.height}`
                 : "auto",
           }}
@@ -36,7 +45,11 @@ export function ImageBlock({
           <img
             src={src}
             alt={node.attrs.alt}
-            className={`w-full h-auto max-h-[80vh] object-contain mx-auto transition-opacity duration-300 ${
+            className={`${
+              isPortrait
+                ? "h-auto w-auto max-h-[70vh] max-w-full mx-auto block"
+                : "w-full h-auto max-h-[80vh] object-contain mx-auto"
+            } transition-opacity duration-300 ${
               isUploading ? "opacity-50 grayscale" : "opacity-100"
             }`}
           />

@@ -182,6 +182,8 @@ export default function ZoomableImage({
   const [thumbRect, setThumbRect] = useState<DOMRect | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const isPortrait = !!(width && height && height > width);
+
   if (!src) return null;
 
   const handleOpen = () => {
@@ -194,7 +196,11 @@ export default function ZoomableImage({
   return (
     <>
       <div
-        className="w-full h-auto cursor-zoom-in group select-none overflow-hidden m-0 p-0 rounded-xl"
+        className={`cursor-zoom-in group select-none overflow-hidden m-0 p-0 rounded-xl ${
+          isPortrait
+            ? "flex items-center justify-center w-full max-h-[70vh]"
+            : "w-full h-auto"
+        }`}
         onClick={handleOpen}
       >
         <img
@@ -205,8 +211,11 @@ export default function ZoomableImage({
           height={height}
           loading="lazy"
           className={cn(
-            "w-full h-auto block transition-all duration-500 will-change-transform m-0 p-0",
             className,
+            "transition-all duration-500 will-change-transform m-0 p-0",
+            isPortrait
+              ? "h-auto w-auto max-h-[70vh] max-w-full mx-auto block"
+              : "w-full h-auto block max-h-[80vh] object-contain",
           )}
           {...props}
         />

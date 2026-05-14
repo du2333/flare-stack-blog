@@ -147,17 +147,23 @@ export default function ZoomableImage({
     }
   }, []);
 
+  const isPortrait = !!(width && height && height > width);
+
   if (!src) return null;
 
   return (
     <>
       <div
         className={cn(
-          "relative group cursor-zoom-in block w-full overflow-hidden bg-muted/20",
+          "relative group cursor-zoom-in block overflow-hidden bg-muted/20",
+          isPortrait
+            ? "flex items-center justify-center w-full max-h-[70vh]"
+            : "w-full max-h-[80vh]",
           !isLoaded && "animate-pulse",
         )}
         style={{
-          aspectRatio: width && height ? `${width} / ${height}` : "auto",
+          aspectRatio:
+            !isPortrait && width && height ? `${width} / ${height}` : "auto",
         }}
         onClick={() => setIsOpen(true)}
       >
@@ -171,7 +177,8 @@ export default function ZoomableImage({
           onError={() => setIsLoaded(true)}
           className={cn(
             className,
-            "block transition-all duration-500",
+            "transition-all duration-500",
+            isPortrait && "h-auto w-auto max-h-[70vh] max-w-full mx-auto block",
             isLoaded ? "opacity-100" : "opacity-0",
           )}
           {...props}
