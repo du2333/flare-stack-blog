@@ -19,9 +19,6 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    env:
-      # hashicorp/vault-action@v4 does not have a Node 24 release yet.
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
