@@ -171,6 +171,7 @@ const AdminPostsEditIdRoute = AdminPostsEditIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof PublicIndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
@@ -185,18 +186,18 @@ export interface FileRoutesByFullPath {
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/oauth/consent': typeof OauthConsentRoute
-  '/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
-  '/admin/comments': typeof AdminCommentsIndexRoute
-  '/admin/friend-links': typeof AdminFriendLinksIndexRoute
-  '/admin/media': typeof AdminMediaIndexRoute
+  '/admin/comments/': typeof AdminCommentsIndexRoute
+  '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
+  '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
-  '/admin/settings': typeof AdminSettingsIndexRoute
-  '/admin/tags': typeof AdminTagsIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/tags/': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof PublicIndexRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -209,7 +210,6 @@ export interface FileRoutesByTo {
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/oauth/consent': typeof OauthConsentRoute
-  '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
@@ -253,6 +253,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/admin'
     | '/admin/posts'
     | '/forgot-password'
@@ -267,18 +268,18 @@ export interface FileRouteTypes {
     | '/profile'
     | '/submit-friend-link'
     | '/oauth/consent'
-    | '/'
     | '/admin/'
     | '/post/$slug'
-    | '/admin/comments'
-    | '/admin/friend-links'
-    | '/admin/media'
+    | '/admin/comments/'
+    | '/admin/friend-links/'
+    | '/admin/media/'
     | '/admin/posts/'
-    | '/admin/settings'
-    | '/admin/tags'
+    | '/admin/settings/'
+    | '/admin/tags/'
     | '/admin/posts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -291,7 +292,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/submit-friend-link'
     | '/oauth/consent'
-    | '/'
     | '/admin'
     | '/post/$slug'
     | '/admin/comments'
@@ -352,21 +352,21 @@ declare module '@tanstack/react-router' {
     '/_user': {
       id: '/_user'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof UserRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public': {
       id: '/_public'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
       id: '/_auth'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -478,14 +478,14 @@ declare module '@tanstack/react-router' {
     '/admin/tags/': {
       id: '/admin/tags/'
       path: '/tags'
-      fullPath: '/admin/tags'
+      fullPath: '/admin/tags/'
       preLoaderRoute: typeof AdminTagsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/settings/': {
       id: '/admin/settings/'
       path: '/settings'
-      fullPath: '/admin/settings'
+      fullPath: '/admin/settings/'
       preLoaderRoute: typeof AdminSettingsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
@@ -499,21 +499,21 @@ declare module '@tanstack/react-router' {
     '/admin/media/': {
       id: '/admin/media/'
       path: '/media'
-      fullPath: '/admin/media'
+      fullPath: '/admin/media/'
       preLoaderRoute: typeof AdminMediaIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/friend-links/': {
       id: '/admin/friend-links/'
       path: '/friend-links'
-      fullPath: '/admin/friend-links'
+      fullPath: '/admin/friend-links/'
       preLoaderRoute: typeof AdminFriendLinksIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/comments/': {
       id: '/admin/comments/'
       path: '/comments'
-      fullPath: '/admin/comments'
+      fullPath: '/admin/comments/'
       preLoaderRoute: typeof AdminCommentsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
