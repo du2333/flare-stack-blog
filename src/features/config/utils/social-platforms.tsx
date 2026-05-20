@@ -1,4 +1,5 @@
-import { Github, Mail, Rss, Twitter } from "lucide-react";
+import { Mail, Rss } from "lucide-react";
+import { GithubIcon, XIcon } from "@/components/common/brand-icon";
 
 export const SOCIAL_PLATFORM_KEYS = [
   "github",
@@ -86,8 +87,8 @@ export const SOCIAL_PLATFORMS: Record<
   Exclude<SocialPlatform, "custom">,
   PlatformMeta
 > = {
-  github: { icon: Github, label: "GitHub" },
-  twitter: { icon: Twitter, label: "Twitter / X" },
+  github: { icon: GithubIcon, label: "GitHub" },
+  twitter: { icon: XIcon, label: "Twitter / X" },
   discord: { icon: DiscordIcon, label: "Discord" },
   bilibili: { icon: BilibiliIcon, label: "Bilibili" },
   email: { icon: Mail, label: "Email" },

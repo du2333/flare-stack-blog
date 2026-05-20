@@ -3,6 +3,7 @@
 
 // Pre-compiled Regexes for maximum performance on Cloudflare Workers
 export const ROUTE_REGEXPS: Array<RegExp> = [
+  /^\/$/,
   /^\/admin\/?$/,
   /^\/admin\/posts\/?$/,
   /^\/forgot-password\/?$/,
@@ -17,7 +18,6 @@ export const ROUTE_REGEXPS: Array<RegExp> = [
   /^\/profile\/?$/,
   /^\/submit-friend-link\/?$/,
   /^\/oauth\/consent\/?$/,
-  /^\/$/,
   /^\/post\/[^/]+\/?$/,
   /^\/admin\/comments\/?$/,
   /^\/admin\/friend-links\/?$/,

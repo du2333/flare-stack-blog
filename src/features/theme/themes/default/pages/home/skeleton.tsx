@@ -1,5 +1,6 @@
 import { useRouteContext } from "@tanstack/react-router";
-import { Github, Mail, Rss, Terminal } from "lucide-react";
+import { Mail, Rss, Terminal } from "lucide-react";
+import { GithubIcon } from "@/components/common/brand-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 
@@ -29,7 +30,7 @@ export function HomePageSkeleton() {
         </header>
 
         <div className="flex items-center gap-6 text-muted-foreground opacity-50 pointer-events-none">
-          <Github size={20} strokeWidth={1.5} />
+          <GithubIcon size={20} strokeWidth={1.5} />
           <Rss size={20} strokeWidth={1.5} />
           <Mail size={20} strokeWidth={1.5} />
         </div>

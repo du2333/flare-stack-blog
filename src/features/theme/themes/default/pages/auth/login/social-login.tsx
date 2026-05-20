@@ -1,4 +1,5 @@
-import { Github, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { GithubIcon } from "@/components/common/brand-icon";
 import type { SocialLoginData } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
@@ -39,7 +40,7 @@ export function SocialLogin({
             className={`${showDivider ? "text-muted-foreground" : "text-background"} animate-spin`}
           />
         ) : (
-          <Github size={14} strokeWidth={1.5} />
+          <GithubIcon size={14} strokeWidth={1.5} />
         )}
 
         <span className="text-[10px] font-mono uppercase tracking-widest">

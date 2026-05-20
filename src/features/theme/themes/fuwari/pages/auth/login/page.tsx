@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Github, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { GithubIcon } from "@/components/common/brand-icon";
 import type { LoginPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
@@ -131,7 +132,7 @@ export function LoginPage({
           {socialIsLoading ? (
             <Loader2 size={16} className="animate-spin opacity-70" />
           ) : (
-            <Github size={16} />
+            <GithubIcon size={16} />
           )}
 
           <span className="tracking-wide">
