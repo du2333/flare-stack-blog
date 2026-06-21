@@ -10,14 +10,14 @@
   "keep_vars": true,
   "routes": [
     {
-      "pattern": "DOMAIN_PLACEHOLDER",
+      "pattern": "blog.tutorial.cc.cd",
       "custom_domain": true
     }
   ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_id": "D1_DATABASE_ID",
+      "database_id": "my-flare-stack-blog",
       "migrations_dir": "migrations",
       "remote": true
     }
@@ -32,12 +32,12 @@
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "KV_NAMESPACE_ID",
+      "id": "my-flare-stack-blog",
       "remote": true
     },
     {
       "binding": "OAUTH_KV",
-      "id": "KV_NAMESPACE_ID",
+      "id": "my-flare-stack-blog",
       "remote": true
     }
   ],
