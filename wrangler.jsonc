@@ -10,7 +10,7 @@
   "keep_vars": true,
   "routes": [
     {
-      "pattern": "blog.tutorial.cc.cd",
+      "pattern": "tutorial.cc.cd",
       "custom_domain": true
     }
   ],
