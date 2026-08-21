@@ -4,6 +4,7 @@
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+    "resolveJsonModule": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {

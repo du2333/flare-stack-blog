@@ -49,6 +49,12 @@ export const PostWithTocSchema = PostSelectSchema.extend({
   ),
 }).nullable();
 
+export const AdminPostSchema = PostSelectSchema.extend({
+  tags: z.array(TagSelectSchema).optional(),
+  isSynced: z.boolean(),
+  hasPublicCache: z.boolean(),
+}).nullable();
+
 export function normalizePostTagName(
   tagName: string | undefined,
 ): string | undefined {

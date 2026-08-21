@@ -8,7 +8,10 @@ import {
   GetPostsCountInputSchema,
   GetPostsCursorInputSchema,
   GetPostsInputSchema,
+  AdminPostSchema,
+  PostItemSchema,
   PostListResponseSchema,
+  PostWithTocSchema,
   PreviewSummaryInputSchema,
   StartPostProcessInputSchema,
   UpdatePostInputSchema,
@@ -17,6 +20,8 @@ import {
   DeletePostRevisionsInputSchema,
   FindPostRevisionByIdInputSchema,
   ListPostRevisionsInputSchema,
+  PostRevisionListItemSchema,
+  PostRevisionSelectSchema,
   RestorePostRevisionInputSchema,
 } from "@/features/posts/schema/post-revisions.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
@@ -53,6 +58,7 @@ const bySlug = publicProcedure
     tags: ["Posts"],
   })
   .input(FindPostBySlugInputSchema)
+  .output(PostWithTocSchema)
   .handler(({ context, input }) => PostService.findPostBySlug(context, input));
 
 const related = publicProcedure
@@ -63,6 +69,7 @@ const related = publicProcedure
     tags: ["Posts"],
   })
   .input(FindRelatedPostsInputSchema)
+  .output(z.array(PostItemSchema))
   .handler(({ context, input }) => PostService.getRelatedPosts(context, input));
 
 const pinned = publicProcedure
@@ -72,6 +79,7 @@ const pinned = publicProcedure
     summary: "List pinned published posts",
     tags: ["Posts"],
   })
+  .output(z.array(PostItemSchema))
   .handler(({ context }) => PostService.getPinnedPosts(context));
 
 const popular = publicProcedure
@@ -82,6 +90,7 @@ const popular = publicProcedure
     tags: ["Posts"],
   })
   .input(z.object({ limit: z.number().int().min(1).max(20).optional() }))
+  .output(z.array(PostItemSchema))
   .handler(({ context, input }) =>
     PageviewService.getPopularPosts(context, input.limit),
   );
@@ -115,6 +124,7 @@ const adminGet = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(FindPostByIdInputSchema)
+  .output(AdminPostSchema)
   .handler(({ context, input }) => PostService.findPostById(context, input));
 
 const generateSlug = adminProcedure
@@ -200,6 +210,7 @@ const listRevisions = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(ListPostRevisionsInputSchema)
+  .output(z.array(PostRevisionListItemSchema))
   .handler(({ context, input }) =>
     PostRevisionService.listPostRevisions(context, input),
   );
@@ -212,8 +223,10 @@ const getRevision = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(FindPostRevisionByIdInputSchema)
-  .handler(({ context, input }) =>
-    PostRevisionService.findPostRevisionById(context, input),
+  .output(PostRevisionSelectSchema.nullable())
+  .handler(
+    async ({ context, input }) =>
+      (await PostRevisionService.findPostRevisionById(context, input)) ?? null,
   );
 
 const restoreRevision = adminProcedure

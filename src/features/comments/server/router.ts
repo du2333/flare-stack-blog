@@ -1,13 +1,19 @@
 import {
+  CommentSelectSchema,
   CreateCommentInputSchema,
   DeleteCommentInputSchema,
   GetAllCommentsInputSchema,
   GetCommentsByPostIdInputSchema,
+  GetCommentsResponseSchema,
   GetMyCommentsInputSchema,
   GetRepliesByRootIdInputSchema,
+  GetRepliesResponseSchema,
+  GetRootCommentsResponseSchema,
   GetUserStatsInputSchema,
   ModerateCommentInputSchema,
+  UserStatsSchema,
 } from "@/features/comments/comments.schema";
+import { z } from "zod";
 import * as CommentService from "@/features/comments/comments.service";
 import {
   adminProcedure,
@@ -48,6 +54,7 @@ const roots = optionalSessionProcedure
     tags: ["Comments"],
   })
   .input(GetCommentsByPostIdInputSchema)
+  .output(GetRootCommentsResponseSchema)
   .handler(({ context, input }) =>
     CommentService.getRootCommentsByPostId(context, {
       ...input,
@@ -63,6 +70,7 @@ const replies = optionalSessionProcedure
     tags: ["Comments"],
   })
   .input(GetRepliesByRootIdInputSchema)
+  .output(GetRepliesResponseSchema)
   .handler(({ context, input }) =>
     CommentService.getRepliesByRootId(context, {
       ...input,
@@ -133,6 +141,7 @@ const mine = authProcedure
     tags: ["Comments"],
   })
   .input(GetMyCommentsInputSchema)
+  .output(z.array(CommentSelectSchema))
   .handler(({ context, input }) =>
     CommentService.getMyComments(context, input),
   );
@@ -145,6 +154,7 @@ const adminList = adminProcedure
     tags: ["Admin Comments"],
   })
   .input(GetAllCommentsInputSchema)
+  .output(GetCommentsResponseSchema)
   .handler(({ context, input }) =>
     CommentService.getAllComments(context, input),
   );
@@ -194,6 +204,7 @@ const userStats = adminProcedure
     tags: ["Admin Comments"],
   })
   .input(GetUserStatsInputSchema)
+  .output(UserStatsSchema)
   .handler(({ context, input }) =>
     CommentService.getUserCommentStats(context, input.userId),
   );

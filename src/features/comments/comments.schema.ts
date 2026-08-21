@@ -47,7 +47,7 @@ export const CommentWithUserSchema = CommentSelectSchema.extend({
 export const UserStatsSchema = z.object({
   totalComments: z.number(),
   rejectedComments: z.number(),
-  registeredAt: z.date(),
+  registeredAt: coercedDate,
 });
 
 export const GetUserStatsInputSchema = z.object({

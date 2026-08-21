@@ -1,4 +1,4 @@
-import { type AuthType, WorkerMailer } from "worker-mailer";
+import type { AuthType } from "worker-mailer";
 import * as ConfigService from "@/features/config/service/config.service";
 import * as EmailData from "@/features/email/data/email.data";
 import type { TestEmailConnectionInput } from "@/features/email/email.schema";
@@ -59,6 +59,7 @@ export async function testEmailConnection(
     const { host, password, port, senderAddress, senderName, username } = data;
     const security = resolveTransportSecurity(port);
 
+    const { WorkerMailer } = await import("worker-mailer");
     await WorkerMailer.send(
       {
         host,
@@ -213,6 +214,7 @@ export async function sendEmail(
   try {
     const security = resolveTransportSecurity(email.port);
 
+    const { WorkerMailer } = await import("worker-mailer");
     await WorkerMailer.send(
       {
         host: email.host,

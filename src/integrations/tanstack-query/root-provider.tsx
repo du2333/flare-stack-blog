@@ -5,6 +5,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { handleServerError } from "@/lib/errors";
+import { reviveQueryDates } from "./revive-dates";
 
 export function getContext() {
   const queryClient = new QueryClient({
@@ -41,6 +42,9 @@ export function getContext() {
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
+      },
+      hydrate: {
+        deserializeData: reviveQueryDates,
       },
     },
   });

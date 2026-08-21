@@ -1,0 +1,1148 @@
+{
+  "posts": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts",
+          "summary": "List published posts",
+          "tags": [
+            "Posts"
+          ]
+        }
+      }
+    },
+    "bySlug": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/{slug}",
+          "summary": "Get a published post by slug",
+          "tags": [
+            "Posts"
+          ]
+        }
+      }
+    },
+    "related": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/{slug}/related",
+          "summary": "List related published posts",
+          "tags": [
+            "Posts"
+          ]
+        }
+      }
+    },
+    "pinned": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/pinned",
+          "summary": "List pinned published posts",
+          "tags": [
+            "Posts"
+          ]
+        }
+      }
+    },
+    "popular": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/popular",
+          "summary": "List popular published posts",
+          "tags": [
+            "Posts"
+          ]
+        }
+      }
+    },
+    "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts",
+            "summary": "List posts for admin",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "count": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts/count",
+            "summary": "Count posts for admin",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "get": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts/{id}",
+            "summary": "Get a post by id",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "generateSlug": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts/slug",
+            "summary": "Generate a post slug",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/posts",
+            "summary": "Create an empty draft post",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/posts/{id}",
+            "summary": "Update a post",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/posts/{id}",
+            "summary": "Delete a post",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "previewSummary": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/posts/preview-summary",
+            "summary": "Preview a post summary",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "process": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/posts/{id}/process",
+            "summary": "Start post processing workflow",
+            "tags": [
+              "Admin Posts"
+            ]
+          }
+        }
+      },
+      "revisions": {
+        "list": {
+          "~orpc": {
+            "errorMap": {},
+            "meta": {},
+            "route": {
+              "method": "GET",
+              "path": "/admin/posts/{postId}/revisions",
+              "summary": "List post revisions",
+              "tags": [
+                "Admin Posts"
+              ]
+            }
+          }
+        },
+        "get": {
+          "~orpc": {
+            "errorMap": {},
+            "meta": {},
+            "route": {
+              "method": "GET",
+              "path": "/admin/posts/{postId}/revisions/{revisionId}",
+              "summary": "Get a post revision",
+              "tags": [
+                "Admin Posts"
+              ]
+            }
+          }
+        },
+        "restore": {
+          "~orpc": {
+            "errorMap": {},
+            "meta": {},
+            "route": {
+              "method": "POST",
+              "path": "/admin/posts/{postId}/revisions/{revisionId}/restore",
+              "summary": "Restore a post revision",
+              "tags": [
+                "Admin Posts"
+              ]
+            }
+          }
+        },
+        "remove": {
+          "~orpc": {
+            "errorMap": {},
+            "meta": {},
+            "route": {
+              "method": "DELETE",
+              "path": "/admin/posts/{postId}/revisions",
+              "summary": "Delete post revisions",
+              "tags": [
+                "Admin Posts"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/tags",
+          "summary": "List public tags",
+          "tags": [
+            "Tags"
+          ]
+        }
+      }
+    },
+    "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/tags",
+            "summary": "List tags for admin",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "listWithCount": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/tags/with-count",
+            "summary": "List tags with post counts",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/tags",
+            "summary": "Create a tag",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/tags/{id}",
+            "summary": "Update a tag",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/tags/{id}",
+            "summary": "Delete a tag",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "setPostTags": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PUT",
+            "path": "/admin/posts/{postId}/tags",
+            "summary": "Set tags on a post",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "byPostId": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts/{postId}/tags",
+            "summary": "List tags for a post",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      },
+      "generate": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/tags/generate",
+            "summary": "Generate tags with AI",
+            "tags": [
+              "Admin Tags"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "comments": {
+    "roots": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/{postId}/comments",
+          "summary": "List root comments on a post",
+          "tags": [
+            "Comments"
+          ]
+        }
+      }
+    },
+    "replies": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/{postId}/comments/{rootId}/replies",
+          "summary": "List replies in a comment thread",
+          "tags": [
+            "Comments"
+          ]
+        }
+      }
+    },
+    "create": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/posts/{postId}/comments",
+          "summary": "Create a comment",
+          "tags": [
+            "Comments"
+          ]
+        }
+      }
+    },
+    "remove": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "DELETE",
+          "path": "/comments/{id}",
+          "summary": "Delete own comment",
+          "tags": [
+            "Comments"
+          ]
+        }
+      }
+    },
+    "mine": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/me/comments",
+          "summary": "List the current user's comments",
+          "tags": [
+            "Comments"
+          ]
+        }
+      }
+    },
+    "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/comments",
+            "summary": "List comments for admin",
+            "tags": [
+              "Admin Comments"
+            ]
+          }
+        }
+      },
+      "moderate": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/comments/{id}",
+            "summary": "Moderate a comment",
+            "tags": [
+              "Admin Comments"
+            ]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/comments/{id}",
+            "summary": "Hard-delete a comment",
+            "tags": [
+              "Admin Comments"
+            ]
+          }
+        }
+      },
+      "userStats": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/users/{userId}/stats",
+            "summary": "Get comment stats for a user",
+            "tags": [
+              "Admin Comments"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "media": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/media",
+          "summary": "List media",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "upload": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/media",
+          "summary": "Upload an image",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "remove": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "DELETE",
+          "path": "/admin/media/{key}",
+          "summary": "Delete media",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "linkedPosts": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/media/{key}/posts",
+          "summary": "List posts linked to media",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "linkedKeys": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/media/linked-keys",
+          "summary": "Resolve which media keys are linked",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "totalSize": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/media/size",
+          "summary": "Get total media size",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    },
+    "updateName": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PATCH",
+          "path": "/admin/media/{key}",
+          "summary": "Rename media",
+          "tags": [
+            "Admin Media"
+          ]
+        }
+      }
+    }
+  },
+  "config": {
+    "siteConfig": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/site/config",
+          "summary": "Get public site config",
+          "tags": [
+            "Site"
+          ]
+        }
+      }
+    },
+    "siteDomain": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/site/domain",
+          "summary": "Get the public site domain",
+          "tags": [
+            "Site"
+          ]
+        }
+      }
+    },
+    "admin": {
+      "get": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/config",
+            "summary": "Get system config",
+            "tags": [
+              "Admin Config"
+            ]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/config",
+            "summary": "Update system config",
+            "tags": [
+              "Admin Config"
+            ]
+          }
+        }
+      },
+      "uploadAsset": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/config/assets",
+            "summary": "Upload a site asset",
+            "tags": [
+              "Admin Config"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "friendLinks": {
+    "listApproved": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/friend-links",
+          "summary": "List approved friend links",
+          "tags": [
+            "Friend Links"
+          ]
+        }
+      }
+    },
+    "submit": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/friend-links",
+          "summary": "Submit a friend link",
+          "tags": [
+            "Friend Links"
+          ]
+        }
+      }
+    },
+    "mine": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/me/friend-links",
+          "summary": "List the current user's friend links",
+          "tags": [
+            "Friend Links"
+          ]
+        }
+      }
+    },
+    "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/friend-links",
+            "summary": "List friend links for admin",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/friend-links",
+            "summary": "Create a friend link",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/friend-links/{id}",
+            "summary": "Update a friend link",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      },
+      "approve": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/friend-links/{id}/approve",
+            "summary": "Approve a friend link",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      },
+      "reject": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/friend-links/{id}/reject",
+            "summary": "Reject a friend link",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/friend-links/{id}",
+            "summary": "Delete a friend link",
+            "tags": [
+              "Admin Friend Links"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "email": {
+    "configured": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/email/configured",
+          "summary": "Whether email is configured",
+          "tags": [
+            "Email"
+          ]
+        }
+      }
+    },
+    "unsubscribe": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/email/unsubscribe",
+          "summary": "Unsubscribe from email notifications",
+          "tags": [
+            "Email"
+          ]
+        }
+      }
+    },
+    "replyStatus": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/me/notifications/reply",
+          "summary": "Get reply notification status",
+          "tags": [
+            "Email"
+          ]
+        }
+      }
+    },
+    "availability": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/me/notifications/availability",
+          "summary": "Get notification availability",
+          "tags": [
+            "Email"
+          ]
+        }
+      }
+    },
+    "toggleReply": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "PATCH",
+          "path": "/me/notifications/reply",
+          "summary": "Toggle reply notifications",
+          "tags": [
+            "Email"
+          ]
+        }
+      }
+    },
+    "testConnection": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/email/test",
+          "summary": "Send a test email",
+          "tags": [
+            "Admin Email"
+          ]
+        }
+      }
+    },
+    "hasPassword": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/me/has-password",
+          "summary": "Whether the current user has a password",
+          "tags": [
+            "Auth"
+          ]
+        }
+      }
+    }
+  },
+  "search": {
+    "search": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/search",
+          "summary": "Search published posts",
+          "tags": [
+            "Search"
+          ]
+        }
+      }
+    },
+    "version": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/search/version",
+          "summary": "Get search index version",
+          "tags": [
+            "Search"
+          ]
+        }
+      }
+    },
+    "rebuild": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/search/rebuild",
+          "summary": "Rebuild the search index",
+          "tags": [
+            "Admin Search"
+          ]
+        }
+      }
+    }
+  },
+  "pageviews": {
+    "record": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/pageviews",
+          "summary": "Record a post page view",
+          "tags": [
+            "Pageviews"
+          ]
+        }
+      }
+    },
+    "counts": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/pageviews",
+          "summary": "Get view counts by slug",
+          "tags": [
+            "Pageviews"
+          ]
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "stats": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/dashboard",
+          "summary": "Get dashboard stats",
+          "tags": [
+            "Admin Dashboard"
+          ]
+        }
+      }
+    },
+    "refresh": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/dashboard/refresh",
+          "summary": "Refresh dashboard traffic cache",
+          "tags": [
+            "Admin Dashboard"
+          ]
+        }
+      }
+    }
+  },
+  "cache": {
+    "invalidate": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/cache/invalidate",
+          "summary": "Invalidate the public cache",
+          "tags": [
+            "Admin Cache"
+          ]
+        }
+      }
+    }
+  },
+  "importExport": {
+    "startExport": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/export",
+          "summary": "Start an export task",
+          "tags": [
+            "Admin Import Export"
+          ]
+        }
+      }
+    },
+    "exportProgress": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/export/{taskId}",
+          "summary": "Get export task progress",
+          "tags": [
+            "Admin Import Export"
+          ]
+        }
+      }
+    },
+    "startImport": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/import",
+          "summary": "Upload files and start an import task",
+          "tags": [
+            "Admin Import Export"
+          ]
+        }
+      }
+    },
+    "importProgress": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/import/{taskId}",
+          "summary": "Get import task progress",
+          "tags": [
+            "Admin Import Export"
+          ]
+        }
+      }
+    }
+  },
+  "version": {
+    "check": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/version",
+          "summary": "Check for application updates",
+          "tags": [
+            "Admin Version"
+          ]
+        }
+      }
+    },
+    "forceCheck": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/version/check",
+          "summary": "Force-check for application updates",
+          "tags": [
+            "Admin Version"
+          ]
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "test": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/webhooks/test",
+          "summary": "Send a test webhook",
+          "tags": [
+            "Admin Webhooks"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -230,7 +230,7 @@ export const CommentModerationTable = ({
                   <UserHoverCard
                     user={{
                       id: comment.userId,
-                      name: comment.user.name,
+                      name: comment.user.name ?? "",
                       image: comment.user.image || null,
                     }}
                   >
@@ -240,11 +240,11 @@ export const CommentModerationTable = ({
                           <img
                             src={comment.user.image}
                             className="w-full h-full object-cover"
-                            alt={comment.user.name}
+                            alt={comment.user.name ?? undefined}
                           />
                         ) : (
                           <span className="text-[10px] font-mono">
-                            {comment.user.name.slice(0, 1)}
+                            {comment.user.name?.slice(0, 1)}
                           </span>
                         )}
                       </div>
@@ -359,7 +359,7 @@ export const CommentModerationTable = ({
                         />
                       ) : (
                         <span className="text-[10px] font-mono">
-                          {comment.user?.name.slice(0, 1)}
+                          {comment.user?.name?.slice(0, 1)}
                         </span>
                       )}
                     </div>

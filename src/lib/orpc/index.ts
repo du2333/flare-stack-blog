@@ -1,39 +1,21 @@
 import { createORPCClient } from "@orpc/client";
 import type { ContractRouterClient } from "@orpc/contract";
-import { ResponseValidationPlugin } from "@orpc/contract/plugins";
 import { OpenAPILink } from "@orpc/openapi-client/fetch";
-import { createRouterClient } from "@orpc/server";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import {
-  createIsomorphicFn,
-  getGlobalStartContext,
-} from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
-import { createApiContext } from "./create-context";
-import { router } from "./router";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { reviveQueryDates } from "@/integrations/tanstack-query/revive-dates";
+import { contract } from "./contract";
+import type { AppRouter } from "./router";
+import { createServerORPCClient } from "./server-client";
 
-type AppORPCClient = ContractRouterClient<typeof router>;
+type AppORPCClient = ContractRouterClient<AppRouter>;
 
 const getORPCClient = createIsomorphicFn()
-  .server(() =>
-    createRouterClient(router, {
-      context: () => {
-        const context = getGlobalStartContext();
-        if (!context) {
-          throw new Error("No global start context found");
-        }
-        return createApiContext(
-          getRequestHeaders(),
-          context.env,
-          context.executionCtx,
-        );
-      },
-    }),
-  )
+  .server(() => createServerORPCClient())
   .client((): AppORPCClient => {
-    const link = new OpenAPILink(router, {
+    const link = new OpenAPILink(contract, {
       url: `${window.location.origin}/api`,
-      plugins: [new ResponseValidationPlugin(router)],
+      interceptors: [async (options) => reviveQueryDates(await options.next())],
       headers: async () => {
         const { getTurnstileToken } =
           await import("@/components/common/turnstile");

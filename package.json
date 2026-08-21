@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "vite build",
+    "build": "bun run orpc:contract && vite build",
     "deploy": "bun db:migrate && wrangler deploy",
     "serve": "vite preview",
     "test": "vitest run",
@@ -19,7 +19,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
-    "typecheck": "./node_modules/typescript/bin/tsc --noEmit",
+    "orpc:contract": "bun scripts/generate-orpc-contract.ts",
+    "typecheck": "bun run orpc:contract && ./node_modules/typescript/bin/tsc --noEmit",
     "check": "oxlint && oxfmt --check && bun typecheck",
     "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "i18n:verify": "bun scripts/verify-translations.ts",

@@ -29,3 +29,5 @@ export const router = {
   version: versionRouter,
   webhooks: webhookRouter,
 };
+
+export type AppRouter = typeof router;

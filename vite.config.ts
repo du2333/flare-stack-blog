@@ -12,6 +12,14 @@ import packageJson from "./package.json";
 
 import { themeNames, themes } from "./src/features/theme/registry";
 
+const tanstackSolidDevtools = [
+  "@tanstack/react-devtools",
+  "@tanstack/devtools",
+  "@tanstack/devtools-ui",
+  "solid-js",
+  "solid-js/web",
+] as const;
+
 const buildEnvSchema = z.object({
   THEME: z.enum(themeNames).catch("default"),
 });
@@ -32,6 +40,14 @@ const config = defineConfig(({ mode }) => {
           __dirname,
           `src/features/theme/themes/${buildEnv.THEME}`,
         ),
+      },
+    },
+    optimizeDeps: {
+      exclude: [...tanstackSolidDevtools],
+    },
+    ssr: {
+      optimizeDeps: {
+        exclude: [...tanstackSolidDevtools],
       },
     },
     plugins: [
