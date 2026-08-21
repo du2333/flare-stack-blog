@@ -49,7 +49,7 @@ jobs:
         run: bun run i18n:compile
 
       - name: Type Check
-        run: bun tsc --noEmit
+        run: bun typecheck
 
       - name: Run Node Tests
         run: bun run test:node
