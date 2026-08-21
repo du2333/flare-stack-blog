@@ -12,7 +12,7 @@
       "@theme/*": ["./src/features/theme/themes/default/*"],
       "tests/*": ["./tests/*"]
     },
-    "types": ["vite/client", "@cloudflare/vitest-pool-workers/types"],
+    "types": ["vite/client", "@cloudflare/vitest-plugin/types"],
     "allowImportingTsExtensions": true,
     "strict": true,
     "noFallthroughCasesInSwitch": true,
