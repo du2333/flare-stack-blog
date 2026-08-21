@@ -1,6 +1,6 @@
 # Flare Stack Blog
 
-Flare Stack Blog is a Cloudflare Workers-native blog CMS for publishing posts, managing site content, and exposing admin/MCP capabilities around that content.
+Flare Stack Blog is a Cloudflare Workers-native blog CMS for publishing posts and managing site content.
 
 ## Language
 
@@ -68,10 +68,6 @@ _Avoid_: System settings
 The boundary that lets public blog pages change presentation without changing routing or content-management logic.
 _Avoid_: Skin, template, CSS theme
 
-**MCP Server**:
-The OAuth-protected interface that lets external AI clients manage Flare Stack Blog content and **Traffic Metrics** through structured tools.
-_Avoid_: Agent API, admin API
-
 **Import/Export Task**:
 An asynchronous workflow that moves **Posts** and related content into or out of the CMS while reporting progress.
 _Avoid_: Backup job, migration
@@ -108,14 +104,6 @@ _Avoid_: AI review
 Public-site viewing data used for dashboard traffic charts, view counts, top pages, and popular posts.
 _Avoid_: Analytics, Pageview
 
-**OAuth Client**:
-An external application authorized to access Flare Stack Blog capabilities through the OAuth provider.
-_Avoid_: App integration
-
-**OAuth Scope**:
-A permission string that limits which blog resources an **OAuth Client** can read or write.
-_Avoid_: Role
-
 **Webhook Endpoint**:
 A configured external URL that receives selected admin **Notification Events**.
 _Avoid_: Webhook, callback URL
@@ -137,7 +125,6 @@ _Avoid_: Webhook, callback URL
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
 - A **Theme Contract** consumes **Site Config** when rendering public blog pages.
-- The **MCP Server** can manage **Posts**, **Comments**, **Tags**, **Media**, **Friend Links**, search, and **Traffic Metrics** through structured tools.
 - An **Import/Export Task** can include **Posts** and related content.
 - An **Import/Export Task** can preserve **Post** content, frontmatter, and related **Media** depending on the import/export format.
 - A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.
@@ -148,8 +135,6 @@ _Avoid_: Webhook, callback URL
 - A **Scheduled Publish** becomes a **Published Post** at its planned publish time.
 - **AI Moderation** processes **Verifying Comments**.
 - **Traffic Metrics** can rank **Published Posts** as popular posts.
-- An **OAuth Client** receives one or more **OAuth Scopes**.
-- The **MCP Server** relies on **OAuth Scopes** to limit external client capabilities.
 - A **Webhook Endpoint** receives selected admin **Notification Events**.
 
 ## Example dialogue
