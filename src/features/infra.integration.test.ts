@@ -7,7 +7,6 @@ import type { CacheNamespace } from "@/features/cache/types";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import * as ConfigService from "@/features/config/service/config.service";
-import * as Invalidate from "@/lib/invalidate";
 
 describe("Infra Integration", () => {
   describe("CacheService", () => {
@@ -458,11 +457,7 @@ describe("Infra Integration", () => {
       vi.restoreAllMocks();
     });
 
-    it("purges site CDN cache when site settings change", async () => {
-      const purgeSiteCDNCacheSpy = vi
-        .spyOn(Invalidate, "purgeSiteCDNCache")
-        .mockResolvedValue();
-
+    it("persists updated site settings", async () => {
       await ConfigService.updateSystemConfig(context, {
         ...DEFAULT_CONFIG,
         site: {
@@ -471,24 +466,8 @@ describe("Infra Integration", () => {
         },
       });
 
-      expect(purgeSiteCDNCacheSpy).toHaveBeenCalledOnce();
-      expect(purgeSiteCDNCacheSpy).toHaveBeenCalledWith(context.env);
-    });
-
-    it("does not purge site CDN cache when only non-site settings change", async () => {
-      const purgeSiteCDNCacheSpy = vi
-        .spyOn(Invalidate, "purgeSiteCDNCache")
-        .mockResolvedValue();
-
-      await ConfigService.updateSystemConfig(context, {
-        ...DEFAULT_CONFIG,
-        email: {
-          ...DEFAULT_CONFIG.email,
-          senderName: "Updated Sender",
-        },
-      });
-
-      expect(purgeSiteCDNCacheSpy).not.toHaveBeenCalled();
+      const config = await ConfigService.getSystemConfig(context);
+      expect(config.site?.title).toBe("Updated Site Title");
     });
 
     it("migrates legacy Resend config to SMTP fields when reading", async () => {

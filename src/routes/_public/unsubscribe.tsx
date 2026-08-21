@@ -3,8 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { unsubscribeByTokenFn } from "@/features/email/api/email.api";
-import { EMAIL_KEYS } from "@/features/email/queries";
+import { unsubscribeQuery } from "@/features/email/queries";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { m } from "@/paraglide/messages";
 
@@ -33,21 +32,17 @@ function UnsubscribePage() {
   const { userId, type, token } = Route.useSearch();
   const hasValidParams = !!(userId && type && token);
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: EMAIL_KEYS.unsubscribe({
-      userId: userId!,
-      type: type!,
-      token: token!,
-    }),
-    queryFn: () =>
-      unsubscribeByTokenFn({
-        data: { userId: userId!, type: type!, token: token! },
-      }),
-    retry: false,
-    enabled: hasValidParams,
-  });
-  const hasBusinessError = !!data?.error;
-  const hasFailed = !!error || hasBusinessError;
+  const { error, isLoading } = useQuery(
+    unsubscribeQuery(
+      {
+        userId: userId!,
+        type: type!,
+        token: token!,
+      },
+      hasValidParams,
+    ),
+  );
+  const hasFailed = !!error;
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">

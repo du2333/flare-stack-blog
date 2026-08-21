@@ -12,7 +12,8 @@ import type { CommentStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { useAdminComments } from "../../hooks/use-comments";
-import { allCommentsQuery, COMMENTS_KEYS } from "../../queries";
+import { orpc } from "@/lib/orpc";
+import { allCommentsQuery } from "../../queries";
 import { CommentModerationActions } from "./comment-moderation-actions";
 import { UserHoverCard } from "./user-hover-card";
 
@@ -79,12 +80,12 @@ export const CommentModerationTable = ({
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
-          moderateAsync({ data: { id, status: "published" } }),
+          moderateAsync({ id, status: "published" }),
         ),
       );
       toast.success(m.comments_batch_approve_success(), { id: toastId });
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
     } catch (caughtError) {
       toast.error(m.comments_batch_partial_fail(), {
         id: toastId,
@@ -100,12 +101,12 @@ export const CommentModerationTable = ({
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
-          moderateAsync({ data: { id, status: "deleted" } }),
+          moderateAsync({ id, status: "deleted" }),
         ),
       );
       toast.success(m.comments_batch_trash_success(), { id: toastId });
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
     } catch (caughtError) {
       toast.error(m.comments_batch_partial_fail(), {
         id: toastId,

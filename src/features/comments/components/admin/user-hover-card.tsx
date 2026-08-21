@@ -1,21 +1,12 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { getUserStatsFn } from "@/features/comments/api/comments.admin.api";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
+import { userCommentStatsQuery } from "@/features/comments/queries";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-
-// Query option for user stats
-const userStatsQuery = (userId: string) =>
-  queryOptions({
-    queryKey: COMMENTS_KEYS.userStats(userId),
-    queryFn: () => getUserStatsFn({ data: { userId } }),
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
-  });
 
 interface UserHoverCardProps {
   user: {
@@ -28,7 +19,7 @@ interface UserHoverCardProps {
 
 export function UserHoverCard({ user, children }: UserHoverCardProps) {
   const { data: stats, isLoading } = useQuery({
-    ...userStatsQuery(user.id),
+    ...userCommentStatsQuery(user.id),
     enabled: !!user.id,
   });
 

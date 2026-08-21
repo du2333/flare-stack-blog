@@ -4,7 +4,7 @@ import theme from "@theme";
 import { useEffect } from "react";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
-import { recordPageViewFn } from "@/features/pageview/api/pageview.api";
+import { orpcClient } from "@/lib/orpc";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
@@ -96,7 +96,7 @@ function RouteComponent() {
     } catch {
       // Safari private mode / storage disabled — record anyway
     }
-    void recordPageViewFn({ data: { postId: post.id } });
+    void orpcClient.pageviews.record({ postId: post.id });
   }, [post?.id]);
 
   if (!post) throw notFound();

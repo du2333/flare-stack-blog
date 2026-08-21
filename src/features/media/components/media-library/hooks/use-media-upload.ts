@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { uploadImageFn } from "@/features/media/api/media.api";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { UploadItem } from "../types";
@@ -26,11 +25,7 @@ export function useMediaUpload() {
 
   // Upload mutation
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("image", file);
-      return await uploadImageFn({ data: formData });
-    },
+    mutationFn: async (file: File) => orpcClient.media.upload({ image: file }),
   });
 
   // Process upload queue
@@ -77,29 +72,7 @@ export function useMediaUpload() {
       );
 
       try {
-        const result = await uploadMutation.mutateAsync(item.file);
-        if (result.error) {
-          if (isMountedRef.current) {
-            const message = m.media_upload_error_db();
-
-            setQueue((prev) =>
-              prev.map((q, i) =>
-                i === waitingIndex
-                  ? {
-                      ...q,
-                      status: "ERROR",
-                      progress: 0,
-                      log: m.media_upload_log_error({ message }),
-                    }
-                  : q,
-              ),
-            );
-            toast.error(m.media_upload_fail({ name: item.name }), {
-              description: message,
-            });
-          }
-          return;
-        }
+        await uploadMutation.mutateAsync(item.file);
 
         if (isMountedRef.current) {
           setQueue((prev) =>
@@ -116,7 +89,7 @@ export function useMediaUpload() {
           );
 
           toast.success(m.media_upload_success({ name: item.name }));
-          queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
+          queryClient.invalidateQueries({ queryKey: orpc.media.key() });
         }
       } catch (error) {
         if (isMountedRef.current) {

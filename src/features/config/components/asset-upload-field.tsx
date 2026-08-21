@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { uploadSiteAssetFn } from "@/features/config/api/config.api";
+import { orpcClient } from "@/lib/orpc";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -47,10 +47,10 @@ export function AssetUploadField({
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("assetPath", assetPath);
-      return uploadSiteAssetFn({ data: formData });
+      return orpcClient.config.admin.uploadAsset({
+        file,
+        assetPath,
+      });
     },
     onSuccess: (result) => {
       setValue(name, result.url, { shouldDirty: true });

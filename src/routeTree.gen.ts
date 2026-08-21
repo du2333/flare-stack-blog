@@ -9,109 +9,101 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as UserRouteRouteImport } from './routes/_user/route'
-import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as PublicIndexRouteImport } from './routes/_public/index'
-import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
-import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
-import { Route as UserProfileRouteImport } from './routes/_user/profile'
-import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
-import { Route as PublicSearchRouteImport } from './routes/_public/search'
-import { Route as PublicPostsRouteImport } from './routes/_public/posts'
-import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
-import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
-import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
-import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
-import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as UserRouteRouteImport } from './routes/_user/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
+import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
+import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanifest'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StatsDotjsRouteImport } from './routes/stats[.]js'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
+import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
+import { Route as PublicPostsRouteImport } from './routes/_public/posts'
+import { Route as PublicSearchRouteImport } from './routes/_public/search'
+import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
+import { Route as UserProfileRouteImport } from './routes/_user/profile'
+import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminPostsRouteRouteImport } from './routes/admin/posts/route'
-import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
-import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
-import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
-import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
-import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
-import { Route as AdminCommentsIndexRouteImport } from './routes/admin/comments/index'
+import { Route as ApiSplatRouteImport } from './routes/api.$'
+import { Route as ApiAuthRouteImport } from './routes/api.auth'
+import { Route as ApiSendRouteImport } from './routes/api.send'
+import { Route as ImagesSplatRouteImport } from './routes/images.$'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
+import { Route as AdminCommentsIndexRouteImport } from './routes/admin/comments/index'
+import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
+import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
+import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
+import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
+import { Route as ApiAdminExportDownloadTaskIdRouteImport } from './routes/api.admin.export.download.$taskId'
 
-const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UserRouteRoute = UserRouteRouteImport.update({
-  id: '/_user',
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRouteRoute = AuthRouteRouteImport.update({
-  id: '/_auth',
+const UserRouteRoute = UserRouteRouteImport.update({
+  id: '/_user',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const OauthConsentRoute = OauthConsentRouteImport.update({
-  id: '/oauth/consent',
-  path: '/oauth/consent',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserSubmitFriendLinkRoute = UserSubmitFriendLinkRouteImport.update({
-  id: '/submit-friend-link',
-  path: '/submit-friend-link',
-  getParentRoute: () => UserRouteRoute,
+const AtomDotxmlRoute = AtomDotxmlRouteImport.update({
+  id: '/atom.xml',
+  path: '/atom.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const UserProfileRoute = UserProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => UserRouteRoute,
+const FeedDotjsonRoute = FeedDotjsonRouteImport.update({
+  id: '/feed.json',
+  path: '/feed.json',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicUnsubscribeRoute = PublicUnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
-  getParentRoute: () => PublicRouteRoute,
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicSearchRoute = PublicSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => PublicRouteRoute,
+const RssDotxmlRoute = RssDotxmlRouteImport.update({
+  id: '/rss.xml',
+  path: '/rss.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicPostsRoute = PublicPostsRouteImport.update({
-  id: '/posts',
-  path: '/posts',
-  getParentRoute: () => PublicRouteRoute,
+const SiteDotwebmanifestRoute = SiteDotwebmanifestRouteImport.update({
+  id: '/site.webmanifest',
+  path: '/site.webmanifest',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
-  id: '/friend-links',
-  path: '/friend-links',
-  getParentRoute: () => PublicRouteRoute,
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
-  id: '/verify-email',
-  path: '/verify-email',
-  getParentRoute: () => AuthRouteRoute,
+const StatsDotjsRoute = StatsDotjsRouteImport.update({
+  id: '/stats.js',
+  path: '/stats.js',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthResetLinkRoute = AuthResetLinkRouteImport.update({
-  id: '/reset-link',
-  path: '/reset-link',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -119,34 +111,94 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthResetLinkRoute = AuthResetLinkRouteImport.update({
+  id: '/reset-link',
+  path: '/reset-link',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
+  id: '/friend-links',
+  path: '/friend-links',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPostsRoute = PublicPostsRouteImport.update({
+  id: '/posts',
+  path: '/posts',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicSearchRoute = PublicSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicUnsubscribeRoute = PublicUnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const UserProfileRoute = UserProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const UserSubmitFriendLinkRoute = UserSubmitFriendLinkRouteImport.update({
+  id: '/submit-friend-link',
+  path: '/submit-friend-link',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPostsRouteRoute = AdminPostsRouteRouteImport.update({
   id: '/posts',
   path: '/posts',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminTagsIndexRoute = AdminTagsIndexRouteImport.update({
-  id: '/tags/',
-  path: '/tags/',
-  getParentRoute: () => AdminRouteRoute,
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => AdminRouteRoute,
+const ApiAuthRoute = ApiAuthRouteImport.update({
+  id: '/api/auth',
+  path: '/api/auth',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminPostsRouteRoute,
+const ApiSendRoute = ApiSendRouteImport.update({
+  id: '/api/send',
+  path: '/api/send',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
-  id: '/media/',
-  path: '/media/',
+const ImagesSplatRoute = ImagesSplatRouteImport.update({
+  id: '/images/$',
+  path: '/images/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicPostSlugRoute = PublicPostSlugRouteImport.update({
+  id: '/post/$slug',
+  path: '/post/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const AdminCommentsIndexRoute = AdminCommentsIndexRouteImport.update({
+  id: '/comments/',
+  path: '/comments/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminFriendLinksIndexRoute = AdminFriendLinksIndexRouteImport.update({
@@ -154,25 +206,53 @@ const AdminFriendLinksIndexRoute = AdminFriendLinksIndexRouteImport.update({
   path: '/friend-links/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminCommentsIndexRoute = AdminCommentsIndexRouteImport.update({
-  id: '/comments/',
-  path: '/comments/',
+const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
+  id: '/media/',
+  path: '/media/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const PublicPostSlugRoute = PublicPostSlugRouteImport.update({
-  id: '/post/$slug',
-  path: '/post/$slug',
-  getParentRoute: () => PublicRouteRoute,
+const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminPostsRouteRoute,
+} as any)
+const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminTagsIndexRoute = AdminTagsIndexRouteImport.update({
+  id: '/tags/',
+  path: '/tags/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => ApiAuthRoute,
 } as any)
 const AdminPostsEditIdRoute = AdminPostsEditIdRouteImport.update({
   id: '/edit/$id',
   path: '/edit/$id',
   getParentRoute: () => AdminPostsRouteRoute,
 } as any)
+const ApiAdminExportDownloadTaskIdRoute =
+  ApiAdminExportDownloadTaskIdRouteImport.update({
+    id: '/api/admin/export/download/$taskId',
+    path: '/api/admin/export/download/$taskId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/atom.xml': typeof AtomDotxmlRoute
+  '/feed.json': typeof FeedDotjsonRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/site.webmanifest': typeof SiteDotwebmanifestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats.js': typeof StatsDotjsRoute
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -185,9 +265,13 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
-  '/oauth/consent': typeof OauthConsentRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/send': typeof ApiSendRoute
+  '/images/$': typeof ImagesSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/comments/': typeof AdminCommentsIndexRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
@@ -195,9 +279,17 @@ export interface FileRoutesByFullPath {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
+  '/atom.xml': typeof AtomDotxmlRoute
+  '/feed.json': typeof FeedDotjsonRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/site.webmanifest': typeof SiteDotwebmanifestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats.js': typeof StatsDotjsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -209,9 +301,13 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/profile': typeof UserProfileRoute
   '/submit-friend-link': typeof UserSubmitFriendLinkRoute
-  '/oauth/consent': typeof OauthConsentRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/send': typeof ApiSendRoute
+  '/images/$': typeof ImagesSplatRoute
   '/admin': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/comments': typeof AdminCommentsIndexRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
@@ -219,6 +315,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -226,6 +323,13 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteRouteWithChildren
   '/_user': typeof UserRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/atom.xml': typeof AtomDotxmlRoute
+  '/feed.json': typeof FeedDotjsonRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
+  '/site.webmanifest': typeof SiteDotwebmanifestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats.js': typeof StatsDotjsRoute
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -238,10 +342,14 @@ export interface FileRoutesById {
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/_user/profile': typeof UserProfileRoute
   '/_user/submit-friend-link': typeof UserSubmitFriendLinkRoute
-  '/oauth/consent': typeof OauthConsentRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/send': typeof ApiSendRoute
+  '/images/$': typeof ImagesSplatRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/_public/post/$slug': typeof PublicPostSlugRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/comments/': typeof AdminCommentsIndexRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
@@ -249,12 +357,20 @@ export interface FileRoutesById {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/atom.xml'
+    | '/feed.json'
+    | '/robots.txt'
+    | '/rss.xml'
+    | '/site.webmanifest'
+    | '/sitemap.xml'
+    | '/stats.js'
     | '/admin/posts'
     | '/forgot-password'
     | '/login'
@@ -267,9 +383,13 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
-    | '/oauth/consent'
+    | '/api/$'
+    | '/api/auth'
+    | '/api/send'
+    | '/images/$'
     | '/admin/'
     | '/post/$slug'
+    | '/api/auth/$'
     | '/admin/comments/'
     | '/admin/friend-links/'
     | '/admin/media/'
@@ -277,9 +397,17 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
+    | '/api/admin/export/download/$taskId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/atom.xml'
+    | '/feed.json'
+    | '/robots.txt'
+    | '/rss.xml'
+    | '/site.webmanifest'
+    | '/sitemap.xml'
+    | '/stats.js'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -291,9 +419,13 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/profile'
     | '/submit-friend-link'
-    | '/oauth/consent'
+    | '/api/$'
+    | '/api/auth'
+    | '/api/send'
+    | '/images/$'
     | '/admin'
     | '/post/$slug'
+    | '/api/auth/$'
     | '/admin/comments'
     | '/admin/friend-links'
     | '/admin/media'
@@ -301,12 +433,20 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin/posts/edit/$id'
+    | '/api/admin/export/download/$taskId'
   id:
     | '__root__'
     | '/_auth'
     | '/_public'
     | '/_user'
     | '/admin'
+    | '/atom.xml'
+    | '/feed.json'
+    | '/robots.txt'
+    | '/rss.xml'
+    | '/site.webmanifest'
+    | '/sitemap.xml'
+    | '/stats.js'
     | '/admin/posts'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -319,10 +459,14 @@ export interface FileRouteTypes {
     | '/_public/unsubscribe'
     | '/_user/profile'
     | '/_user/submit-friend-link'
-    | '/oauth/consent'
+    | '/api/$'
+    | '/api/auth'
+    | '/api/send'
+    | '/images/$'
     | '/_public/'
     | '/admin/'
     | '/_public/post/$slug'
+    | '/api/auth/$'
     | '/admin/comments/'
     | '/admin/friend-links/'
     | '/admin/media/'
@@ -330,6 +474,7 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
+    | '/api/admin/export/download/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -337,23 +482,27 @@ export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
   UserRouteRoute: typeof UserRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
-  OauthConsentRoute: typeof OauthConsentRoute
+  AtomDotxmlRoute: typeof AtomDotxmlRoute
+  FeedDotjsonRoute: typeof FeedDotjsonRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  RssDotxmlRoute: typeof RssDotxmlRoute
+  SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatsDotjsRoute: typeof StatsDotjsRoute
+  ApiSplatRoute: typeof ApiSplatRoute
+  ApiAuthRoute: typeof ApiAuthRouteWithChildren
+  ApiSendRoute: typeof ApiSendRoute
+  ImagesSplatRoute: typeof ImagesSplatRoute
+  ApiAdminExportDownloadTaskIdRoute: typeof ApiAdminExportDownloadTaskIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_user': {
-      id: '/_user'
+    '/_auth': {
+      id: '/_auth'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof UserRouteRouteImport
+      preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public': {
@@ -363,95 +512,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth': {
-      id: '/_auth'
+    '/_user': {
+      id: '/_user'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthRouteRouteImport
+      preLoaderRoute: typeof UserRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/_public/': {
-      id: '/_public/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/oauth/consent': {
-      id: '/oauth/consent'
-      path: '/oauth/consent'
-      fullPath: '/oauth/consent'
-      preLoaderRoute: typeof OauthConsentRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_user/submit-friend-link': {
-      id: '/_user/submit-friend-link'
-      path: '/submit-friend-link'
-      fullPath: '/submit-friend-link'
-      preLoaderRoute: typeof UserSubmitFriendLinkRouteImport
-      parentRoute: typeof UserRouteRoute
+    '/atom.xml': {
+      id: '/atom.xml'
+      path: '/atom.xml'
+      fullPath: '/atom.xml'
+      preLoaderRoute: typeof AtomDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_user/profile': {
-      id: '/_user/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof UserProfileRouteImport
-      parentRoute: typeof UserRouteRoute
+    '/feed.json': {
+      id: '/feed.json'
+      path: '/feed.json'
+      fullPath: '/feed.json'
+      preLoaderRoute: typeof FeedDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_public/unsubscribe': {
-      id: '/_public/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof PublicUnsubscribeRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_public/search': {
-      id: '/_public/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof PublicSearchRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/rss.xml': {
+      id: '/rss.xml'
+      path: '/rss.xml'
+      fullPath: '/rss.xml'
+      preLoaderRoute: typeof RssDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_public/posts': {
-      id: '/_public/posts'
-      path: '/posts'
-      fullPath: '/posts'
-      preLoaderRoute: typeof PublicPostsRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/site.webmanifest': {
+      id: '/site.webmanifest'
+      path: '/site.webmanifest'
+      fullPath: '/site.webmanifest'
+      preLoaderRoute: typeof SiteDotwebmanifestRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_public/friend-links': {
-      id: '/_public/friend-links'
-      path: '/friend-links'
-      fullPath: '/friend-links'
-      preLoaderRoute: typeof PublicFriendLinksRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_auth/verify-email': {
-      id: '/_auth/verify-email'
-      path: '/verify-email'
-      fullPath: '/verify-email'
-      preLoaderRoute: typeof AuthVerifyEmailRouteImport
-      parentRoute: typeof AuthRouteRoute
+    '/stats.js': {
+      id: '/stats.js'
+      path: '/stats.js'
+      fullPath: '/stats.js'
+      preLoaderRoute: typeof StatsDotjsRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_auth/reset-link': {
-      id: '/_auth/reset-link'
-      path: '/reset-link'
-      fullPath: '/reset-link'
-      preLoaderRoute: typeof AuthResetLinkRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/register': {
-      id: '/_auth/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_auth/login': {
@@ -461,12 +589,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
     }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/reset-link': {
+      id: '/_auth/reset-link'
+      path: '/reset-link'
+      fullPath: '/reset-link'
+      preLoaderRoute: typeof AuthResetLinkRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/verify-email': {
+      id: '/_auth/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof AuthVerifyEmailRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_public/': {
+      id: '/_public/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/friend-links': {
+      id: '/_public/friend-links'
+      path: '/friend-links'
+      fullPath: '/friend-links'
+      preLoaderRoute: typeof PublicFriendLinksRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/posts': {
+      id: '/_public/posts'
+      path: '/posts'
+      fullPath: '/posts'
+      preLoaderRoute: typeof PublicPostsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/search': {
+      id: '/_public/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof PublicSearchRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/unsubscribe': {
+      id: '/_public/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof PublicUnsubscribeRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_user/profile': {
+      id: '/_user/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof UserProfileRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/submit-friend-link': {
+      id: '/_user/submit-friend-link'
+      path: '/submit-friend-link'
+      fullPath: '/submit-friend-link'
+      preLoaderRoute: typeof UserSubmitFriendLinkRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/posts': {
       id: '/admin/posts'
@@ -475,32 +673,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPostsRouteRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/tags/': {
-      id: '/admin/tags/'
-      path: '/tags'
-      fullPath: '/admin/tags/'
-      preLoaderRoute: typeof AdminTagsIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/settings/': {
-      id: '/admin/settings/'
-      path: '/settings'
-      fullPath: '/admin/settings/'
-      preLoaderRoute: typeof AdminSettingsIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
+    '/api/auth': {
+      id: '/api/auth'
+      path: '/api/auth'
+      fullPath: '/api/auth'
+      preLoaderRoute: typeof ApiAuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/posts/': {
-      id: '/admin/posts/'
-      path: '/'
-      fullPath: '/admin/posts/'
-      preLoaderRoute: typeof AdminPostsIndexRouteImport
-      parentRoute: typeof AdminPostsRouteRoute
+    '/api/send': {
+      id: '/api/send'
+      path: '/api/send'
+      fullPath: '/api/send'
+      preLoaderRoute: typeof ApiSendRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/media/': {
-      id: '/admin/media/'
-      path: '/media'
-      fullPath: '/admin/media/'
-      preLoaderRoute: typeof AdminMediaIndexRouteImport
+    '/images/$': {
+      id: '/images/$'
+      path: '/images/$'
+      fullPath: '/images/$'
+      preLoaderRoute: typeof ImagesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/post/$slug': {
+      id: '/_public/post/$slug'
+      path: '/post/$slug'
+      fullPath: '/post/$slug'
+      preLoaderRoute: typeof PublicPostSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/admin/comments/': {
+      id: '/admin/comments/'
+      path: '/comments'
+      fullPath: '/admin/comments/'
+      preLoaderRoute: typeof AdminCommentsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/friend-links/': {
@@ -510,19 +722,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFriendLinksIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/comments/': {
-      id: '/admin/comments/'
-      path: '/comments'
-      fullPath: '/admin/comments/'
-      preLoaderRoute: typeof AdminCommentsIndexRouteImport
+    '/admin/media/': {
+      id: '/admin/media/'
+      path: '/media'
+      fullPath: '/admin/media/'
+      preLoaderRoute: typeof AdminMediaIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/_public/post/$slug': {
-      id: '/_public/post/$slug'
-      path: '/post/$slug'
-      fullPath: '/post/$slug'
-      preLoaderRoute: typeof PublicPostSlugRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/admin/posts/': {
+      id: '/admin/posts/'
+      path: '/'
+      fullPath: '/admin/posts/'
+      preLoaderRoute: typeof AdminPostsIndexRouteImport
+      parentRoute: typeof AdminPostsRouteRoute
+    }
+    '/admin/settings/': {
+      id: '/admin/settings/'
+      path: '/settings'
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AdminSettingsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/tags/': {
+      id: '/admin/tags/'
+      path: '/tags'
+      fullPath: '/admin/tags/'
+      preLoaderRoute: typeof AdminTagsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof ApiAuthRoute
     }
     '/admin/posts/edit/$id': {
       id: '/admin/posts/edit/$id'
@@ -530,6 +763,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/posts/edit/$id'
       preLoaderRoute: typeof AdminPostsEditIdRouteImport
       parentRoute: typeof AdminPostsRouteRoute
+    }
+    '/api/admin/export/download/$taskId': {
+      id: '/api/admin/export/download/$taskId'
+      path: '/api/admin/export/download/$taskId'
+      fullPath: '/api/admin/export/download/$taskId'
+      preLoaderRoute: typeof ApiAdminExportDownloadTaskIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -628,12 +868,34 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface ApiAuthRouteChildren {
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+}
+
+const ApiAuthRouteChildren: ApiAuthRouteChildren = {
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+}
+
+const ApiAuthRouteWithChildren =
+  ApiAuthRoute._addFileChildren(ApiAuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthRouteRoute: AuthRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
-  OauthConsentRoute: OauthConsentRoute,
+  AtomDotxmlRoute: AtomDotxmlRoute,
+  FeedDotjsonRoute: FeedDotjsonRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  RssDotxmlRoute: RssDotxmlRoute,
+  SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatsDotjsRoute: StatsDotjsRoute,
+  ApiSplatRoute: ApiSplatRoute,
+  ApiAuthRoute: ApiAuthRouteWithChildren,
+  ApiSendRoute: ApiSendRoute,
+  ImagesSplatRoute: ImagesSplatRoute,
+  ApiAdminExportDownloadTaskIdRoute: ApiAdminExportDownloadTaskIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

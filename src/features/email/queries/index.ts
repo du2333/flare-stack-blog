@@ -1,23 +1,27 @@
-import { queryOptions } from "@tanstack/react-query";
-import { getReplyNotificationStatusFn } from "@/features/email/api/email.api";
+import { orpc } from "@/lib/orpc";
+import type { EmailUnsubscribeType } from "@/lib/db/schema";
 
-export const EMAIL_KEYS = {
-  all: ["email"] as const,
+export function replyNotificationStatusQuery(enabled: boolean) {
+  return orpc.email.replyStatus.queryOptions({
+    enabled,
+  });
+}
 
-  // Parent keys (static arrays for prefix invalidation)
-  notifications: ["email", "notifications"] as const,
+export function notificationAvailabilityQuery(enabled: boolean) {
+  return orpc.email.availability.queryOptions({ enabled });
+}
 
-  // Child keys (functions for specific queries)
-  replyNotification: (userId?: string) =>
-    ["email", "notifications", "reply", userId] as const,
-  unsubscribe: (params: Record<string, string>) =>
-    ["email", "unsubscribe", params] as const,
-};
+export function hasPasswordQuery(enabled: boolean) {
+  return orpc.email.hasPassword.queryOptions({ enabled });
+}
 
-export function replyNotificationStatusQuery(userId?: string) {
-  return queryOptions({
-    queryKey: EMAIL_KEYS.replyNotification(userId),
-    queryFn: () => getReplyNotificationStatusFn(),
-    enabled: !!userId,
+export function unsubscribeQuery(
+  input: { userId: string; type: EmailUnsubscribeType; token: string },
+  enabled: boolean,
+) {
+  return orpc.email.unsubscribe.queryOptions({
+    input,
+    retry: false,
+    enabled,
   });
 }

@@ -70,9 +70,7 @@ export function WebhookSettingsSection() {
 
     try {
       await testWebhook({
-        data: {
-          endpoint,
-        },
+        endpoint,
       });
       toast.success(m.settings_webhook_toast_test_sent());
     } catch (error) {

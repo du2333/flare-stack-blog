@@ -164,10 +164,7 @@ export function BackupRestoreSection() {
   // --- Export State ---
   const [exportTaskId, setExportTaskId] = useState<string | null>(null);
   const startExport = useStartExport();
-  const { data: exportProgress } = useExportProgress(exportTaskId);
-  const exportProgressData = exportProgress?.error
-    ? null
-    : exportProgress?.data;
+  const { data: exportProgressData } = useExportProgress(exportTaskId);
 
   const isExporting =
     exportTaskId !== null ||
@@ -179,26 +176,12 @@ export function BackupRestoreSection() {
       {},
       {
         onSuccess: (result) => {
-          if (result.error) {
-            const reason = result.error.reason;
-            switch (reason) {
-              case "WORKFLOW_CREATE_FAILED":
-                toast.error(m.settings_maintenance_backup_toast_start_fail(), {
-                  description:
-                    m.settings_maintenance_backup_toast_start_fail_desc(),
-                });
-                return;
-              default: {
-                reason satisfies never;
-                toast.error(m.settings_maintenance_backup_toast_start_fail(), {
-                  description:
-                    m.settings_maintenance_backup_toast_unknown_error(),
-                });
-                return;
-              }
-            }
-          }
-          setExportTaskId(result.data.taskId);
+          setExportTaskId(result.taskId);
+        },
+        onError: () => {
+          toast.error(m.settings_maintenance_backup_toast_start_fail(), {
+            description: m.settings_maintenance_backup_toast_start_fail_desc(),
+          });
         },
       },
     );
@@ -206,30 +189,9 @@ export function BackupRestoreSection() {
 
   // Export completion toast
   useEffect(() => {
-    if (!exportTaskId || !exportProgress) return;
+    if (!exportTaskId || !exportProgressData) return;
 
-    if (exportProgress.error) {
-      const reason = exportProgress.error.reason;
-      switch (reason) {
-        case "TASK_NOT_FOUND":
-          // KV eventual consistency: keep polling
-          return;
-        case "INVALID_PROGRESS_DATA":
-          toast.error(m.settings_maintenance_backup_toast_failed(), {
-            id: EXPORT_TOAST_ID,
-            duration: ms("10s"),
-            description: m.settings_maintenance_backup_toast_progress_error(),
-          });
-          setExportTaskId(null);
-          return;
-        default: {
-          reason satisfies never;
-          return;
-        }
-      }
-    }
-
-    const { status, total } = exportProgress.data;
+    const { status, total } = exportProgressData;
 
     if (status === "completed") {
       const currentTaskId = exportTaskId;
@@ -254,16 +216,13 @@ export function BackupRestoreSection() {
       });
       setExportTaskId(null);
     }
-  }, [exportProgress, exportTaskId]);
+  }, [exportProgressData, exportTaskId]);
 
   // --- Import State ---
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importTaskId, setImportTaskId] = useState<string | null>(null);
   const uploadMutation = useUploadForImport();
-  const { data: importProgress } = useImportProgress(importTaskId);
-  const importProgressData = importProgress?.error
-    ? null
-    : importProgress?.data;
+  const { data: importProgressData } = useImportProgress(importTaskId);
 
   const isImporting =
     importTaskId !== null ||
@@ -282,38 +241,13 @@ export function BackupRestoreSection() {
 
     uploadMutation.mutate(formData, {
       onSuccess: (result) => {
-        if (result.error) {
-          const reason = result.error.reason;
-          switch (reason) {
-            case "NO_FILES":
-              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
-                description:
-                  m.settings_maintenance_restore_toast_upload_no_files(),
-              });
-              return;
-            case "UPLOAD_FAILED":
-              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
-                description:
-                  m.settings_maintenance_restore_toast_upload_failed_desc(),
-              });
-              return;
-            case "WORKFLOW_CREATE_FAILED":
-              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
-                description:
-                  m.settings_maintenance_restore_toast_start_fail_desc(),
-              });
-              return;
-            default: {
-              reason satisfies never;
-              toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
-                description:
-                  m.settings_maintenance_restore_toast_unknown_error(),
-              });
-              return;
-            }
-          }
-        }
-        setImportTaskId(result.data.taskId);
+        setImportTaskId(result.taskId);
+      },
+      onError: () => {
+        toast.error(m.settings_maintenance_restore_toast_upload_fail(), {
+          description:
+            m.settings_maintenance_restore_toast_upload_failed_desc(),
+        });
       },
     });
 
@@ -322,30 +256,9 @@ export function BackupRestoreSection() {
 
   // Import completion toast
   useEffect(() => {
-    if (!importTaskId || !importProgress) return;
+    if (!importTaskId || !importProgressData) return;
 
-    if (importProgress.error) {
-      const reason = importProgress.error.reason;
-      switch (reason) {
-        case "TASK_NOT_FOUND":
-          // KV eventual consistency: keep polling
-          return;
-        case "INVALID_PROGRESS_DATA":
-          toast.error(m.settings_maintenance_restore_toast_failed(), {
-            id: IMPORT_TOAST_ID,
-            duration: ms("10s"),
-            description: m.settings_maintenance_restore_toast_progress_error(),
-          });
-          setImportTaskId(null);
-          return;
-        default: {
-          reason satisfies never;
-          return;
-        }
-      }
-    }
-
-    const { status, report } = importProgress.data;
+    const { status, report } = importProgressData;
 
     if (status === "completed") {
       const succeeded = report?.succeeded ?? [];
@@ -375,7 +288,7 @@ export function BackupRestoreSection() {
       });
       setImportTaskId(null);
     }
-  }, [importProgress, importTaskId]);
+  }, [importProgressData, importTaskId]);
 
   return (
     <div className="space-y-12 animate-in fade-in duration-1000">

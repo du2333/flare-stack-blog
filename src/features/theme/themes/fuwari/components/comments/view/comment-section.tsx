@@ -24,9 +24,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
   const { data: session } = authClient.useSession();
   const { rootId, highlightCommentId } = routeApi.useSearch();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery(
-      rootCommentsByPostIdInfiniteQuery(postId, session?.user.id),
-    );
+    useInfiniteQuery(rootCommentsByPostIdInfiniteQuery(postId));
 
   const rootComments = data?.pages.flatMap((page) => page.items) ?? [];
   const totalCount = data?.pages[0]?.total ?? 0;
@@ -62,10 +60,8 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     requireTurnstile();
     try {
       await createComment({
-        data: {
-          postId,
-          content,
-        },
+        postId,
+        content,
       });
     } finally {
       resetTurnstile();
@@ -77,12 +73,10 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     requireTurnstile();
     try {
       await createComment({
-        data: {
-          postId,
-          content,
-          rootId: replyTarget.rootId,
-          replyToCommentId: replyTarget.commentId,
-        },
+        postId,
+        content,
+        rootId: replyTarget.rootId,
+        replyToCommentId: replyTarget.commentId,
       });
       setReplyTarget(null);
     } finally {
@@ -92,7 +86,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
 
   const handleDelete = async () => {
     if (commentToDelete) {
-      await deleteComment({ data: { id: commentToDelete } });
+      await deleteComment({ id: commentToDelete });
       setCommentToDelete(null);
     }
   };

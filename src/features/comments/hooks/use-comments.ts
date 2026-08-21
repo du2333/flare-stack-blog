@@ -1,110 +1,93 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { COMMENTS_KEYS } from "@/features/comments/queries";
+import { handleORPCError } from "@/lib/orpc/error-handler";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
-import {
-  adminDeleteCommentFn,
-  moderateCommentFn,
-} from "../api/comments.admin.api";
-import { createCommentFn, deleteCommentFn } from "../api/comments.public.api";
+import type {
+  CreateCommentInput,
+  DeleteCommentInput,
+  ModerateCommentInput,
+} from "../comments.schema";
+
+function invalidateCommentViews(
+  queryClient: ReturnType<typeof useQueryClient>,
+  postId?: number,
+) {
+  if (postId) {
+    queryClient.invalidateQueries({
+      queryKey: orpc.comments.roots.key({ input: { postId } }),
+    });
+    queryClient.invalidateQueries({
+      queryKey: orpc.comments.replies.key({ input: { postId } }),
+    });
+  }
+  queryClient.invalidateQueries({
+    queryKey: orpc.comments.admin.key(),
+  });
+  queryClient.invalidateQueries({
+    queryKey: orpc.comments.mine.key(),
+  });
+}
 
 export function useComments(postId?: number) {
   const queryClient = useQueryClient();
 
   const createCommentMutation = useMutation({
-    mutationFn: async (input: Parameters<typeof createCommentFn>[0]) => {
-      return await createCommentFn(input);
+    mutationFn: (input: CreateCommentInput) =>
+      orpcClient.comments.create(input),
+    onSuccess: () => {
+      invalidateCommentViews(queryClient, postId);
     },
-    onSuccess: (result) => {
-      if (result.error) {
-        const reason = result.error.reason;
-        switch (reason) {
-          case "ROOT_COMMENT_NOT_FOUND":
-          case "REPLY_TO_COMMENT_NOT_FOUND":
+    onError: (error) => {
+      handleORPCError(error, {
+        defined: {
+          ROOT_COMMENT_NOT_FOUND: () => {
             toast.error(m.comments_toast_deleted_refresh());
-            return;
-          case "INVALID_ROOT_ID":
-          case "ROOT_COMMENT_POST_MISMATCH":
-          case "REPLY_TO_COMMENT_ROOT_MISMATCH":
-          case "ROOT_COMMENT_CANNOT_HAVE_REPLY_TO":
+          },
+          REPLY_TO_COMMENT_NOT_FOUND: () => {
+            toast.error(m.comments_toast_deleted_refresh());
+          },
+          INVALID_ROOT_ID: () => {
             toast.error(m.comments_toast_structure_error());
-            return;
-          default: {
-            reason satisfies never;
-            toast.error(m.comments_toast_unknown_error());
-            return;
-          }
-        }
-      }
-
-      // Invalidate both root comments and all replies queries for this post
-      if (postId) {
-        queryClient.invalidateQueries({
-          queryKey: COMMENTS_KEYS.roots(postId),
-          exact: false,
-        });
-        queryClient.invalidateQueries({
-          queryKey: COMMENTS_KEYS.repliesLists(postId),
-          exact: false,
-        });
-      }
-      // Also invalidate admin view queries
-      queryClient.invalidateQueries({
-        queryKey: COMMENTS_KEYS.admin,
-        exact: false,
-      });
-      // Also invalidate user's own comments list
-      queryClient.invalidateQueries({
-        queryKey: COMMENTS_KEYS.mine,
-        exact: false,
+          },
+          ROOT_COMMENT_POST_MISMATCH: () => {
+            toast.error(m.comments_toast_structure_error());
+          },
+          REPLY_TO_COMMENT_ROOT_MISMATCH: () => {
+            toast.error(m.comments_toast_structure_error());
+          },
+          ROOT_COMMENT_CANNOT_HAVE_REPLY_TO: () => {
+            toast.error(m.comments_toast_structure_error());
+          },
+        },
+        fallback: () => {
+          toast.error(m.comments_toast_unknown_error());
+        },
       });
     },
   });
 
   const deleteCommentMutation = useMutation({
-    mutationFn: async (input: Parameters<typeof deleteCommentFn>[0]) => {
-      return await deleteCommentFn(input);
-    },
-    onSuccess: (result) => {
-      if (result.error) {
-        const reason = result.error.reason;
-        switch (reason) {
-          case "COMMENT_NOT_FOUND":
-            toast.error(m.comments_toast_delete_not_found());
-            return;
-          case "PERMISSION_DENIED":
-            toast.error(m.comments_toast_delete_denied());
-            return;
-          default: {
-            reason satisfies never;
-            toast.error(m.comments_toast_delete_error());
-            return;
-          }
-        }
-      }
-
-      // Invalidate both root comments and all replies queries for this post
-      if (postId) {
-        queryClient.invalidateQueries({
-          queryKey: COMMENTS_KEYS.roots(postId),
-          exact: false,
-        });
-        queryClient.invalidateQueries({
-          queryKey: COMMENTS_KEYS.repliesLists(postId),
-          exact: false,
-        });
-      }
-      // NEW: Also invalidate admin view queries
-      queryClient.invalidateQueries({
-        queryKey: COMMENTS_KEYS.admin,
-        exact: false,
-      });
-      // Also invalidate user's own comments list
-      queryClient.invalidateQueries({
-        queryKey: COMMENTS_KEYS.mine,
-        exact: false,
-      });
+    mutationFn: (input: DeleteCommentInput) =>
+      orpcClient.comments.remove(input),
+    onSuccess: () => {
+      invalidateCommentViews(queryClient, postId);
       toast.success(m.comments_toast_delete_success());
+    },
+    onError: (error) => {
+      handleORPCError(error, {
+        defined: {
+          COMMENT_NOT_FOUND: () => {
+            toast.error(m.comments_toast_delete_not_found());
+          },
+          FORBIDDEN: () => {
+            toast.error(m.comments_toast_delete_denied());
+          },
+        },
+        fallback: () => {
+          toast.error(m.comments_toast_delete_error());
+        },
+      });
     },
   });
 
@@ -120,34 +103,26 @@ export function useAdminComments() {
   const queryClient = useQueryClient();
 
   const moderateMutation = useMutation({
-    mutationFn: async (input: Parameters<typeof moderateCommentFn>[0]) => {
-      return await moderateCommentFn(input);
-    },
-    onSuccess: (result) => {
-      if (result.error) {
-        toast.error(m.comments_toast_moderate_not_found());
-        return;
-      }
-
-      // Invalidate all comment related queries to be safe since moderation
-      // affects visibility in both admin and public views
-      queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
+    mutationFn: (input: ModerateCommentInput) =>
+      orpcClient.comments.admin.moderate(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
       toast.success(m.comments_toast_moderate_success());
+    },
+    onError: () => {
+      toast.error(m.comments_toast_moderate_not_found());
     },
   });
 
   const adminDeleteMutation = useMutation({
-    mutationFn: async (input: Parameters<typeof adminDeleteCommentFn>[0]) => {
-      return await adminDeleteCommentFn(input);
-    },
-    onSuccess: (result) => {
-      if (result.error) {
-        toast.error(m.comments_toast_destroy_not_found());
-        return;
-      }
-
-      queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.all });
+    mutationFn: (input: DeleteCommentInput) =>
+      orpcClient.comments.admin.remove(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
       toast.success(m.comments_toast_destroy_success());
+    },
+    onError: () => {
+      toast.error(m.comments_toast_destroy_not_found());
     },
   });
 

@@ -23,7 +23,7 @@ export function useFriendLinkSubmitForm(defaultEmail?: string) {
 
   const handleSubmit = async (data: SubmitFriendLinkInput) => {
     try {
-      await submit({ data });
+      await submit(data);
       form.reset({ contactEmail: defaultEmail || "" });
     } catch {
       // Error toast is handled by mutation onSuccess branch / global onError

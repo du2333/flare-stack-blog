@@ -19,9 +19,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getLinkedPostsFn } from "@/features/media/api/media.api";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { linkedPostsQuery } from "@/features/media/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -117,14 +116,9 @@ export function MediaPreviewModal({
   };
 
   // Query linked posts via server function
-  const { data: linkedPosts = [] } = useQuery({
-    queryKey: MEDIA_KEYS.linkedPosts(activeAsset?.key || ""),
-    queryFn: async () => {
-      if (!activeAsset?.key) return [];
-      return await getLinkedPostsFn({ data: { key: activeAsset.key } });
-    },
-    enabled: !!activeAsset?.key,
-  });
+  const { data: linkedPosts = [] } = useQuery(
+    linkedPostsQuery(activeAsset?.key || ""),
+  );
 
   if (!shouldRender || !activeAsset) return null;
 

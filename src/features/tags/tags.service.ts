@@ -19,7 +19,6 @@ import {
   TagWithCountSchema,
 } from "@/features/tags/tags.schema";
 import { err, ok } from "@/lib/errors";
-import { purgeCDNCache } from "@/lib/invalidate";
 
 /**
  * Get all tags (cached)
@@ -132,20 +131,11 @@ async function invalidateTagRelatedCache(
       );
     }
 
-    // Purge CDN for affected posts and list pages
-    const cdnUrls = ["/", "/posts"];
-    for (const post of affectedPosts) {
-      cdnUrls.push(`/post/${post.slug}`);
-    }
-    tasks.push(purgeCDNCache(context.env, { urls: cdnUrls }));
-
     await Promise.all(tasks);
   } else {
-    // 3. 保守策略：可能是 DB/KV 不同步，bump 所有版本号
     await Promise.all([
       CacheService.bumpVersion(context, "posts:detail"),
       CacheService.bumpVersion(context, "posts:list"),
-      purgeCDNCache(context.env, { urls: ["/", "/posts"] }),
     ]);
   }
 }

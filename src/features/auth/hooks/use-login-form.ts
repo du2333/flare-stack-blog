@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { AUTH_KEYS } from "@/features/auth/queries";
+import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import {
@@ -113,7 +113,7 @@ export function useLoginForm(options: UseLoginFormOptions) {
       return;
     }
 
-    queryClient.removeQueries({ queryKey: AUTH_KEYS.session });
+    resetAuthBoundQueries(queryClient);
     setLoginStep("SUCCESS");
 
     setTimeout(() => {

@@ -13,17 +13,7 @@ const serverEnvSchema = z.object({
   LOCALE: localeSchema.catch("zh"),
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
-  CLOUDFLARE_ZONE_ID: z.string(),
-  CLOUDFLARE_PURGE_API_TOKEN: z.string(),
   DOMAIN: domainSchema,
-  CDN_DOMAIN: z
-    .string()
-    .optional()
-    .transform((v) => v?.trim() || undefined)
-    .refine(
-      (v) => v === undefined || domainRegex.test(v),
-      "Must be a valid domain (e.g., cdn.example.com)",
-    ),
   ENVIRONMENT: z.enum(["dev", "prod", "test"]).optional(),
   VITE_UMAMI_WEBSITE_ID: z.string().optional(),
   UMAMI_SRC: z.string().optional(),

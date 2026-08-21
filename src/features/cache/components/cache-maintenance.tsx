@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { invalidateSiteCacheFn } from "@/features/cache/cache.api";
+import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 export function CacheMaintenance() {
@@ -13,7 +13,7 @@ export function CacheMaintenance() {
     setIsModalOpen(false);
     toast.promise(
       async () => {
-        await invalidateSiteCacheFn();
+        await orpcClient.cache.invalidate();
       },
       {
         loading: m.settings_maintenance_cache_toast_loading(),

@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   Check,
   Hammer,
-  KeyRound,
   LayoutTemplate,
   Loader2,
   Mail,
@@ -25,7 +24,6 @@ import {
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
-import { OAuthClientsSection } from "@/features/oauth-clients/components/oauth-clients-section";
 import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -72,11 +70,6 @@ function RouteComponent() {
       icon: Hammer,
       label: m.settings_tab_maintenance(),
     },
-    {
-      value: "integrations",
-      icon: KeyRound,
-      label: m.settings_tab_mcp(),
-    },
   ] as const;
 
   const methods = useForm<SystemConfig>({
@@ -118,7 +111,7 @@ function RouteComponent() {
 
   const onSubmit = async (data: SystemConfig) => {
     try {
-      await saveSettings({ data });
+      await saveSettings(data);
       toast.success(m.settings_toast_save_success());
       // Reset dirty state with new values
       reset(data);
@@ -225,18 +218,6 @@ function RouteComponent() {
                 </p>
               </div>
               <SiteSettingsSection />
-            </TabsContent>
-
-            <TabsContent value="integrations" className="mt-0 space-y-10">
-              <div className="space-y-2 pb-6 border-b border-border/30">
-                <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  {m.settings_mcp_title()}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {m.settings_mcp_desc()}
-                </p>
-              </div>
-              <OAuthClientsSection />
             </TabsContent>
 
             <TabsContent value="email" className="mt-0 space-y-10">

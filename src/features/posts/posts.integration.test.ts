@@ -7,16 +7,13 @@ import {
   createTestContext,
   drainTestExecutionContexts,
   seedUser,
-  testRequest,
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as CacheService from "@/features/cache/cache.service";
-import postsListRoute from "@/features/posts/api/hono/posts.list.route";
 import {
   GetPostsCursorInputSchema,
   POSTS_CACHE_KEYS,
-  PostListResponseSchema,
 } from "@/features/posts/schema/posts.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
@@ -1411,16 +1408,9 @@ describe("Posts Integration", () => {
     });
 
     it("shows the first Published Post after rotating an empty public list", async () => {
-      const requestPath = "/?limit=10";
-      const emptyResponse = await testRequest(
-        postsListRoute,
-        requestPath,
-        {},
-        adminContext.env,
-      );
-      const emptyList = PostListResponseSchema.parse(
-        await emptyResponse.json(),
-      );
+      const emptyList = await PostService.getPostsCursor(adminContext, {
+        limit: 10,
+      });
       expect(emptyList.items).toEqual([]);
       await drainTestExecutionContexts();
       expect(await CacheService.getVersion(adminContext, "posts:list")).toBe(
@@ -1468,15 +1458,9 @@ describe("Posts Integration", () => {
         step,
       );
 
-      const refreshedResponse = await testRequest(
-        postsListRoute,
-        requestPath,
-        {},
-        adminContext.env,
-      );
-      const refreshedList = PostListResponseSchema.parse(
-        await refreshedResponse.json(),
-      );
+      const refreshedList = await PostService.getPostsCursor(adminContext, {
+        limit: 10,
+      });
       expect(refreshedList.items.map((post) => post.slug)).toContain(
         "first-published-post",
       );

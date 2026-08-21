@@ -1,37 +1,16 @@
-import { queryOptions } from "@tanstack/react-query";
 import type { FriendLinkStatus } from "@/lib/db/schema";
-import { getAllFriendLinksFn } from "../api/friend-links.admin.api";
-import {
-  getApprovedFriendLinksFn,
-  getMyFriendLinksFn,
-} from "../api/friend-links.user.api";
-
-export const FRIEND_LINKS_KEYS = {
-  all: ["friend-links"] as const,
-  approved: ["friend-links", "approved"] as const,
-  mine: ["friend-links", "mine"] as const,
-  admin: ["friend-links", "admin"] as const,
-};
+import { orpc } from "@/lib/orpc";
 
 export function myFriendLinksQuery() {
-  return queryOptions({
-    queryKey: FRIEND_LINKS_KEYS.mine,
-    queryFn: () => getMyFriendLinksFn(),
-  });
+  return orpc.friendLinks.mine.queryOptions();
 }
 
 export function approvedFriendLinksQuery() {
-  return queryOptions({
-    queryKey: FRIEND_LINKS_KEYS.approved,
-    queryFn: () => getApprovedFriendLinksFn(),
-  });
+  return orpc.friendLinks.listApproved.queryOptions();
 }
 
 export function allFriendLinksQuery(
   options: { offset?: number; limit?: number; status?: FriendLinkStatus } = {},
 ) {
-  return queryOptions({
-    queryKey: [...FRIEND_LINKS_KEYS.admin, options],
-    queryFn: () => getAllFriendLinksFn({ data: options }),
-  });
+  return orpc.friendLinks.admin.list.queryOptions({ input: options });
 }

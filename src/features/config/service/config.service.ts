@@ -10,7 +10,6 @@ import * as ConfigRepo from "@/features/config/data/config.data";
 import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import * as Storage from "@/features/media/data/media.storage";
-import { purgeSiteCDNCache } from "@/lib/invalidate";
 
 const DEFAULT_SMTP_PORT = 465;
 const RESEND_SMTP_HOST = "smtp.resend.com";
@@ -136,16 +135,6 @@ export function resolveSiteConfig(
   });
 }
 
-function hasSiteConfigChanged(
-  currentConfig: SystemConfig | null | undefined,
-  nextConfig: SystemConfig | null | undefined,
-) {
-  return (
-    JSON.stringify(resolveSiteConfig(currentConfig)) !==
-    JSON.stringify(resolveSiteConfig(nextConfig))
-  );
-}
-
 export async function getSystemConfig(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
@@ -184,15 +173,10 @@ export async function updateSystemConfig(
   context: DbContext & { executionCtx: ExecutionContext },
   data: SystemConfig,
 ) {
-  const currentConfig = await ConfigRepo.getSystemConfig(context.db);
   const nextConfig = resolveSystemConfig(data);
 
   await ConfigRepo.upsertSystemConfig(context.db, nextConfig);
   await CacheService.deleteKey(context, CONFIG_CACHE_KEYS.system);
-
-  if (hasSiteConfigChanged(currentConfig, nextConfig)) {
-    await purgeSiteCDNCache(context.env);
-  }
 
   return { success: true };
 }

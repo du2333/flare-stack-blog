@@ -5,18 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { MEDIA_KEYS } from "@/features/media/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import {
-  deletePostRevisionsFn,
-  restorePostRevisionFn,
-} from "@/features/posts/api/post-revisions.admin.api";
-import {
-  POSTS_KEYS,
   postRevisionDetailQuery,
   postRevisionListQuery,
 } from "@/features/posts/queries";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
-import { TAGS_KEYS } from "@/features/tags/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -44,16 +38,14 @@ function invalidatePostEditorQueries(
   postId: number,
 ) {
   const queryKeys = [
-    POSTS_KEYS.detail(postId),
-    POSTS_KEYS.lists,
-    POSTS_KEYS.adminLists,
-    POSTS_KEYS.counts,
-    POSTS_KEYS.revisionList(postId),
-    POSTS_KEYS.revisionDetails,
-    TAGS_KEYS.postTags(postId),
-    TAGS_KEYS.admin,
-    MEDIA_KEYS.linked,
-  ] as const;
+    orpc.posts.admin.get.key({ input: { id: postId } }),
+    orpc.posts.list.key(),
+    orpc.posts.admin.list.key(),
+    orpc.posts.admin.count.key(),
+    orpc.posts.admin.revisions.key(),
+    orpc.tags.admin.key(),
+    orpc.media.linkedKeys.key(),
+  ];
 
   return Promise.all(
     queryKeys.map((queryKey) =>
@@ -201,13 +193,10 @@ function HistoryPanelInternal({
         throw new Error("REVISION_NOT_SELECTED");
       }
 
-      const result = await restorePostRevisionFn({
-        data: { postId, revisionId: selectedRevisionId },
+      await orpcClient.posts.admin.revisions.restore({
+        postId,
+        revisionId: selectedRevisionId,
       });
-
-      if (result.error) {
-        throw new Error(result.error.reason);
-      }
     },
     onSuccess: async () => {
       if (!selectedRevision) return;
@@ -238,15 +227,10 @@ function HistoryPanelInternal({
 
   const deleteMutation = useMutation({
     mutationFn: async (revisionIds: Array<number>) => {
-      const result = await deletePostRevisionsFn({
-        data: { postId, revisionIds },
+      return await orpcClient.posts.admin.revisions.remove({
+        postId,
+        revisionIds,
       });
-
-      if (!result.data) {
-        throw new Error("DELETE_FAILED");
-      }
-
-      return result.data;
     },
     onSuccess: async (result) => {
       const deletedCurrentRevision =

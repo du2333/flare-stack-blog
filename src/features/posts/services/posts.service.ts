@@ -36,7 +36,6 @@ import { calculatePostHash } from "@/features/posts/utils/sync";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
 import * as SearchService from "@/features/search/service/search.service";
 import { err, ok } from "@/lib/errors";
-import { purgePostCDNCache } from "@/lib/invalidate";
 
 function stripPublicContentJson<T extends { publicContentJson?: unknown }>(
   post: T,
@@ -380,7 +379,6 @@ export async function deletePost(
     );
     tasks.push(CacheService.bumpVersion(context, "posts:list"));
     tasks.push(SearchService.deleteIndex(context, { id: data.id }));
-    tasks.push(purgePostCDNCache(context.env, post.slug));
     tasks.push(
       CacheService.deleteKey(context, POSTS_CACHE_KEYS.syncHash(data.id)),
     );

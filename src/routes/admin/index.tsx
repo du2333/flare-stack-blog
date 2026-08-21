@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { refreshDashboardCacheFn } from "@/features/dashboard/api/dashboard.api";
+import { orpcClient } from "@/lib/orpc";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
 import { MetricItem } from "@/features/dashboard/components/metric-item";
 import { StatCard } from "@/features/dashboard/components/stat-card";
@@ -69,7 +69,7 @@ function DashboardOverview() {
   useVersionCheck();
 
   const refreshDashboardCacheMutation = useMutation({
-    mutationFn: refreshDashboardCacheFn,
+    mutationFn: () => orpcClient.dashboard.refresh(),
     onSuccess: () => {
       queryClient.invalidateQueries(dashboardStatsQuery);
       toast.success(m.admin_overview_refresh_success());
@@ -135,7 +135,7 @@ function DashboardOverview() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => refreshDashboardCacheMutation.mutate({})}
+                  onClick={() => refreshDashboardCacheMutation.mutate()}
                   disabled={isFetching}
                   className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 p-2 hover:bg-muted/30 rounded-sm"
                 >

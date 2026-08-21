@@ -49,13 +49,11 @@ const AddFriendLinkModalInternal = ({
   const onSubmit = (data: CreateFriendLinkInput) => {
     create(
       {
-        data: {
-          siteName: data.siteName,
-          siteUrl: data.siteUrl,
-          description: data.description || undefined,
-          logoUrl: data.logoUrl || undefined,
-          contactEmail: data.contactEmail || undefined,
-        },
+        siteName: data.siteName,
+        siteUrl: data.siteUrl,
+        description: data.description || undefined,
+        logoUrl: data.logoUrl || undefined,
+        contactEmail: data.contactEmail || undefined,
       },
       {
         onSuccess: () => {

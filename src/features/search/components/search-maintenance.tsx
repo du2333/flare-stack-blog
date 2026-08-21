@@ -4,14 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { buildSearchIndexFn } from "@/features/search/api/search.api";
+import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 export function SearchMaintenance() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const rebuildToastId = "search-index-rebuild";
   const rebuildSearchIndexMutation = useMutation({
-    mutationFn: buildSearchIndexFn,
+    mutationFn: () => orpcClient.search.rebuild(),
     onMutate: () => {
       toast.loading(m.settings_maintenance_search_toast_loading(), {
         id: rebuildToastId,
@@ -34,7 +34,7 @@ export function SearchMaintenance() {
 
   const handleRebuild = () => {
     setIsModalOpen(false);
-    rebuildSearchIndexMutation.mutate({});
+    rebuildSearchIndexMutation.mutate();
   };
 
   return (

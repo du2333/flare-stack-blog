@@ -1,14 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-import { testWebhookFn } from "@/features/webhook/api/webhook.api";
+import { orpcClient } from "@/lib/orpc";
 
 export function useWebhookConnection() {
   const mutation = useMutation({
-    mutationFn: testWebhookFn,
+    mutationFn: (input: Parameters<typeof orpcClient.webhooks.test>[0]) =>
+      orpcClient.webhooks.test(input),
   });
 
   return {
     testWebhook: mutation.mutateAsync,
-    testingEndpointId: mutation.variables?.data.endpoint.id,
+    testingEndpointId: mutation.variables?.endpoint.id,
     isTesting: mutation.isPending,
   };
 }

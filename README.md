@@ -42,7 +42,6 @@
 - **全文搜索** — 基于 Orama 的高性能搜索
 - **媒体库** — R2 对象存储，图片管理与优化
 - **用户认证** — GitHub OAuth 登录，权限控制
-- **MCP Server** — 支持通过 OAuth 连接 AI 客户端，进行文章、评论、标签、友链、媒体与统计管理
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
 - **AI 辅助** — Cloudflare Workers AI 集成
@@ -74,10 +73,10 @@
 
 ### 后端
 
-- **网关层**：Hono（认证路由、媒体服务、缓存控制）
-- **业务层**：TanStack Start（SSR、Server Functions）
+- **入口**：TanStack Start（SSR、页面路由、非 JSON HTTP）
+- **JSON API**：oRPC OpenAPI（显式 method/path，挂在 `/api`）
+- **认证**：Better Auth（`/api/auth/*`，GitHub OAuth）
 - **数据库**：Drizzle ORM + drizzle-zod
-- **认证**：Better Auth（GitHub OAuth）
 
 ### 编辑器
 
@@ -153,20 +152,15 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 ### 请求流程
 
 ```
-请求 → Cloudflare CDN（边缘缓存）
-         ↓ 未命中
-      server.ts（Hono 入口）
+请求 → server.ts（TanStack Start）
          ├── /api/auth/* → Better Auth
+         ├── /api/*      → oRPC OpenAPI
          ├── /images/*   → R2 媒体服务
-         └── 其他        → TanStack Start
+         └── 页面        → 路由匹配 + Loader
                               ↓
-                         中间件注入（db, auth, session）
+                  KV Public Cache ←→ Service 层 ←→ D1
                               ↓
-                         路由匹配 + Loader 执行
-                              ↓
-                  KV 缓存 ←→ Service 层 ←→ D1 数据库
-                              ↓
-                         SSR 渲染（带缓存头）
+                         SSR 渲染
 ```
 
 ## 部署指南
@@ -198,8 +192,6 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `ADMIN_EMAIL`                | 运行时 | 管理员邮箱                                        |
 | `GITHUB_CLIENT_ID`           | 运行时 | GitHub OAuth Client ID                            |
 | `GITHUB_CLIENT_SECRET`       | 运行时 | GitHub OAuth Client Secret                        |
-| `CLOUDFLARE_ZONE_ID`         | 运行时 | Cloudflare Zone ID                                |
-| `CLOUDFLARE_PURGE_API_TOKEN` | 运行时 | 具有 Purge CDN 权限的 API Token                   |
 | `DOMAIN`                     | 运行时 | 博客域名（如 `blog.example.com`）                 |
 
 ### 可选
@@ -211,7 +203,6 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 | `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
 | `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |
 | `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
-| `CDN_DOMAIN`              | 运行时 | 独立 CDN 域名（如 `cdn.example.com`），purge 时优先使用；须为当前 Zone 下通过 SaaS CNAME 接入的自定义域名 |
 | `ROUTE`                   | CI/CD  | 设为 `1` 时，GitHub Actions 部署自动改用 Cloudflare `routes` 模式                                        |
 | `ZONE_NAME`               | CI/CD  | 可选。仅在 `ROUTE=1` 且 Zone 不是从 `DOMAIN` 自动推导结果时填写                                           |
 | `PAGEVIEW_SALT`           | 运行时 | 浏览量统计的访客匿名化 salt，运行 `openssl rand -hex 16` 生成                                             |

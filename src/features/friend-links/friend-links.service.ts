@@ -2,7 +2,6 @@ import * as CacheService from "@/features/cache/cache.service";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
-import { purgeCDNCache } from "@/lib/invalidate";
 import * as FriendLinkRepo from "./data/friend-links.data";
 import type {
   ApproveFriendLinkInput,
@@ -96,12 +95,7 @@ function invalidateCache(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
   context.executionCtx.waitUntil(
-    Promise.all([
-      CacheService.bumpVersion(context, "friend-links:list"),
-      purgeCDNCache(context.env, {
-        urls: ["/friend-links"],
-      }),
-    ]),
+    CacheService.bumpVersion(context, "friend-links:list"),
   );
 }
 

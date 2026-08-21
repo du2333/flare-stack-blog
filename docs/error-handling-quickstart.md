@@ -7,16 +7,17 @@
 ## 一句话规则
 
 1. `Result` 只处理业务错误（可预期、可恢复、需界面提示或分支处理）。
-2. 请求级错误（鉴权、权限、限流、人机验证）由中间件直接 `throw`（仅指 TanStack Start / ServerFn 中间件；`Hono /api` 是独立 HTTP 通道，不套这套 `Result` 约定）。
-3. 没有业务错误的 service 直接返回 `T`，不要包 `ok(...)`。
-4. 默认让 TypeScript 自动推断返回类型，仅在公共边界需要“锁类型”时再显式标注。
+2. 请求级错误（鉴权、权限、限流、人机验证）由 oRPC procedure 中间件 `throw` typed error。
+3. OpenAPI 边界把 service `Result` 解开：成功返回数据，失败 `throw errors.CODE()`。
+4. 没有业务错误的 service 直接返回 `T`，不要包 `ok(...)`。
+5. 默认让 TypeScript 自动推断返回类型，仅在公共边界需要“锁类型”时再显式标注。
 
 ## 分层职责
 
-### `middleware`
+### oRPC procedure middleware
 
-1. 处理请求级问题：`UNAUTHENTICATED`、`PERMISSION_DENIED`、`RATE_LIMITED`、`TURNSTILE_FAILED`。
-2. 通过 `createXxxError` 抛出可序列化错误（位于 `src/lib/errors/request-errors.ts`）。
+1. 处理请求级问题：`UNAUTHORIZED`、`FORBIDDEN`、`RATE_LIMITED`、`TURNSTILE_FAILED`。
+2. 在 procedure `.errors()` 中声明，并用 `throw errors.CODE()` 抛出。
 
 ### `service`
 
@@ -24,15 +25,15 @@
 2. 有业务错误时返回 `Result<T, { reason: ... }>`。
 3. 无业务错误时返回纯数据 `T`。
 
-### `api`（server function）
+### `server/router.ts`（oRPC）
 
-1. 尽量做薄层转发：鉴权和限流交给 middleware，业务交给 service。
-2. 不在 API 层重复包装 `ok(...)`（除非该 API 自身确实有独立业务错误分支）。
+1. 尽量做薄层转发：鉴权和限流交给 procedure middleware，业务交给 service。
+2. 收到 `Result` 时用 `unwrapResult` 映射成 typed oRPC error。
 
 ### `client`（TanStack Query）
 
 1. `query/mutation` 默认不写自定义 `onError`，请求级错误统一走全局 `onError`：`src/lib/errors/error-handler.ts`。
-2. 业务错误统一在 `onSuccess` 中处理 `result.error.reason` 分支。
+2. 业务错误在 mutation `onError` 里用 `handleORPCError` 按错误码分支。
 
 ## 何时用 Result
 

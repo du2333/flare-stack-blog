@@ -3,8 +3,8 @@ import { Check, Hash, Loader2, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { createTagFn } from "@/features/tags/api/tags.api";
-import { TAGS_KEYS, tagsAdminQueryOptions } from "@/features/tags/queries";
+import { tagsAdminQueryOptions } from "@/features/tags/queries";
+import { orpcClient } from "@/lib/orpc";
 import type { Tag } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -25,29 +25,30 @@ export function TagSelector({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const adminTagsQuery = tagsAdminQueryOptions();
+  const adminTagsQueryKey = adminTagsQuery.queryKey;
 
   // Use admin query options (Infinity staleTime)
   const {
     data: tags = [],
     isLoading: isTagsLoading,
     isError,
-  } = useQuery(tagsAdminQueryOptions());
+  } = useQuery(adminTagsQuery);
 
   // Strict optimistic update following TanStack Query best practices
   const createTagMutation = useMutation({
-    mutationFn: async (name: string) => createTagFn({ data: { name } }),
+    mutationFn: async (name: string) => orpcClient.tags.admin.create({ name }),
 
     // When mutate is called (BEFORE the request)
     onMutate: async (newTagName) => {
       // 1. Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
-        queryKey: TAGS_KEYS.adminList({}),
+        queryKey: adminTagsQueryKey,
       });
 
       // 2. Snapshot the previous value for rollback
-      const previousTags = queryClient.getQueryData<Array<Tag>>(
-        TAGS_KEYS.adminList({}),
-      );
+      const previousTags =
+        queryClient.getQueryData<Array<Tag>>(adminTagsQueryKey);
 
       // 3. Optimistically update the cache with a temporary tag
       const tempId = -Math.round(Math.random() * 1000000); // Random negative ID
@@ -58,7 +59,7 @@ export function TagSelector({
       };
 
       queryClient.setQueryData(
-        TAGS_KEYS.adminList({}),
+        adminTagsQueryKey,
         (old: Array<Tag> | undefined) => {
           if (!old) return [optimisticTag];
           return [...old, optimisticTag].sort((a, b) =>
@@ -77,20 +78,10 @@ export function TagSelector({
     },
 
     // If mutation succeeds, we need to swap the optimistic ID with the real ID
-    onSuccess: (result, _variables, context) => {
-      if (result.error) {
-        queryClient.setQueryData(TAGS_KEYS.adminList({}), context.previousTags);
-        onChange(value.filter((id) => id !== context.optimisticTagId));
-        toast.error(m.tag_selector_create_fail(), {
-          description: m.tag_selector_create_fail_desc(),
-        });
-        return;
-      }
-
-      const newTag = result.data;
+    onSuccess: (newTag, _variables, context) => {
       // 1. Update the cache to replace the temp tag with the real one
       queryClient.setQueryData(
-        TAGS_KEYS.adminList({}),
+        adminTagsQueryKey,
         (old: Array<Tag> | undefined) => {
           if (!old) return [newTag];
           return old
@@ -107,22 +98,20 @@ export function TagSelector({
     },
 
     // Always refetch after error or success for consistency
-    onSettled: (_data, settledError, _newTagName, context) => {
-      if (settledError) {
-        // If mutation fails, roll back to snapshot
-        if (context?.previousTags) {
-          queryClient.setQueryData(
-            TAGS_KEYS.adminList({}),
-            context.previousTags,
-          );
-        }
-        if (context?.optimisticTagId) {
-          onChange(value.filter((id) => id !== context.optimisticTagId));
-        }
+    onError: (_error, _newTagName, context) => {
+      if (context?.previousTags) {
+        queryClient.setQueryData(adminTagsQueryKey, context.previousTags);
       }
-
+      if (context?.optimisticTagId) {
+        onChange(value.filter((id) => id !== context.optimisticTagId));
+      }
+      toast.error(m.tag_selector_create_fail(), {
+        description: m.tag_selector_create_fail_desc(),
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: TAGS_KEYS.adminList({}),
+        queryKey: adminTagsQueryKey,
       });
     },
   });

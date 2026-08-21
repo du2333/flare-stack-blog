@@ -1,4 +1,3 @@
-import type { OAuthHelpers } from "@cloudflare/workers-oauth-provider";
 import type { ThemeName, ThemeRouterConfig } from "@/features/theme/registry";
 import type {
   Auth as AuthType,
@@ -50,7 +49,6 @@ declare global {
     SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
     IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
-    OAUTH_PROVIDER?: OAuthHelpers;
     QUEUE: Queue<QueueMessage>;
   }
 

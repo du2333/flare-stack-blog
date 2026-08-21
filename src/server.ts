@@ -1,4 +1,6 @@
+import handler from "@tanstack/react-start/server-entry";
 import { handleQueueBatch } from "@/lib/queue/queue.handler";
+import { paraglideMiddleware } from "@/paraglide/server";
 
 export { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
 export { ExportWorkflow } from "@/features/import-export/workflows/export.workflow";
@@ -22,8 +24,14 @@ declare module "@tanstack/react-start" {
 
 export default {
   async fetch(request, env, ctx) {
-    const { handleRootRequest } = await import("@/lib/worker/root-handler");
-    return handleRootRequest(request, env, ctx);
+    return paraglideMiddleware(request, () =>
+      handler.fetch(request, {
+        context: {
+          env,
+          executionCtx: ctx,
+        },
+      }),
+    );
   },
   async queue(batch, env, ctx) {
     await handleQueueBatch(batch, env, ctx);

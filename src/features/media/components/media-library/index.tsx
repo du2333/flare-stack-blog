@@ -159,7 +159,7 @@ export function MediaLibrary() {
         asset={previewAsset}
         onClose={() => setPreviewAsset(null)}
         onUpdateName={async (key, name) => {
-          await updateAsset.mutateAsync({ data: { key, name } });
+          await updateAsset.mutateAsync({ key, name });
         }}
         onDelete={async (key) => {
           const allowed = await requestDelete([key]);

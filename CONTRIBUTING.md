@@ -71,7 +71,7 @@ features/<name>/
 ├── data/               # 数据层：纯 Drizzle 查询，无业务逻辑
 ├── <name>.service.ts   # 服务层：业务逻辑 + 缓存编排
 ├── <name>.schema.ts    # Zod schemas + 缓存 key 工厂
-└── api/                # API 层：Server Functions 入口
+└── server/router.ts    # oRPC procedures（显式 HTTP method/path）
 ```
 
 **数据层示例**：
@@ -153,36 +153,7 @@ export async function getTags(context: DbContext) {
 
 ### 3. 中间件链
 
-TanStack Start 中间件按顺序注入依赖：
-
-```
-dbMiddleware → sessionMiddleware → authMiddleware → adminMiddleware
-```
-
-使用示例：
-
-```typescript
-// 公开接口 + 限流
-export const createCommentFn = createServerFn()
-  .middleware([
-    createRateLimitMiddleware({
-      capacity: 10,
-      interval: "1m",
-      key: "comments:create",
-    }),
-  ])
-  .handler(({ data, context }) => CommentService.createComment(context, data));
-
-// 公开接口（仅需数据库）
-export const getPostsFn = createServerFn()
-  .middleware([dbMiddleware])
-  .handler(({ context }) => PostService.getPosts(context));
-
-// 管理接口（需要认证 + 管理员权限）
-export const updatePostFn = createServerFn()
-  .middleware([adminMiddleware]) // 自动包含 db + session + auth 检查
-  .handler(({ data, context }) => PostService.updatePost(context, data));
-```
+oRPC procedure 按权限分层：`publicProcedure` → `authProcedure` → `adminProcedure`。JSON API 挂在 `/api`，每个过程声明 `.route({ method, path })`。
 
 ### 4. 缓存策略
 
@@ -190,8 +161,8 @@ export const updatePostFn = createServerFn()
 
 | 层  | 技术                  | 用途                                        |
 | --- | --------------------- | ------------------------------------------- |
-| CDN | Cache-Control headers | 边缘缓存，通过页面 headers 或 Hono 路由设置 |
-| KV  | generation key        | 服务端缓存，通过 `CacheService` 管理        |
+| 页面 | Cache-Control headers | 浏览器/将来的 Workers Cache |
+| KV   | generation key        | **Public Cache**，通过 `CacheService` 管理 |
 
 失效模式：
 

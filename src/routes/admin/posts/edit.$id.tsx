@@ -1,14 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { MEDIA_KEYS } from "@/features/media/queries";
-import { updatePostFn as adminUpdatePostFn } from "@/features/posts/api/posts.admin.api";
 import { PostEditor } from "@/features/posts/components/post-editor";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
-import { POSTS_KEYS, postByIdQuery } from "@/features/posts/queries";
-import { setPostTagsFn } from "@/features/tags/api/tags.api";
+import { postByIdQuery } from "@/features/posts/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import {
-  TAGS_KEYS,
   tagsAdminQueryOptions,
   tagsByPostIdQueryOptions,
 } from "@/features/tags/queries";
@@ -84,41 +81,29 @@ function EditPost() {
         : data.publishedAt;
 
     // Parallelize updates
-    const [updateResult] = await Promise.all([
-      adminUpdatePostFn({
+    await Promise.all([
+      orpcClient.posts.admin.update({
+        id: post.id,
         data: {
-          id: post.id,
-          data: {
-            ...data,
-            publishedAt,
-          },
+          ...data,
+          publishedAt,
         },
       }),
-      setPostTagsFn({
-        data: {
-          postId: post.id,
-          tagIds: data.tagIds,
-        },
+      orpcClient.tags.admin.setPostTags({
+        postId: post.id,
+        tagIds: data.tagIds,
       }),
     ]);
 
-    if (updateResult.error) {
-      throw new Error(m.admin_post_edit_error_not_found());
-    }
-
     // Invalidate cache to ensure fresh data on next visit
-    queryClient.invalidateQueries({ queryKey: POSTS_KEYS.detail(postId) });
-    // Invalidate lists and counts, but keep other details cached
-    queryClient.invalidateQueries({ queryKey: POSTS_KEYS.lists });
-    queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
-    queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
-
-    queryClient.invalidateQueries({ queryKey: TAGS_KEYS.postTags(postId) });
-    queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
-    // Replaces predicate: matches ["media", "linked-keys", ...]
     queryClient.invalidateQueries({
-      queryKey: MEDIA_KEYS.linked,
+      queryKey: orpc.posts.admin.get.key({ input: { id: postId } }),
     });
+    queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() });
+    queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
+    queryClient.invalidateQueries({ queryKey: orpc.posts.admin.count.key() });
+    queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
+    queryClient.invalidateQueries({ queryKey: orpc.media.linkedKeys.key() });
   };
 
   return <PostEditor initialData={initialData} onSave={handleSave} />;

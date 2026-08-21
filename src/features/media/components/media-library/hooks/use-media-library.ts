@@ -8,15 +8,11 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  deleteImageFn,
-  updateMediaNameFn,
-} from "@/features/media/api/media.api";
-import {
   linkedMediaKeysQuery,
-  MEDIA_KEYS,
   mediaInfiniteQueryOptions,
   totalMediaSizeQuery,
 } from "@/features/media/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { useDebounce } from "@/hooks/use-debounce";
 import { m } from "@/paraglide/messages";
 
@@ -95,22 +91,17 @@ export function useMediaLibrary() {
       const deletedKeys: Array<string> = [];
 
       for (const key of keys) {
-        const result = await deleteImageFn({ data: { key } });
-        if (result.error) {
-          return { deletedKeys, error: result.error };
-        }
+        await orpcClient.media.remove({ key });
         deletedKeys.push(key);
       }
 
-      return { deletedKeys: keys, error: null };
+      return { deletedKeys };
     },
     onSuccess: (result) => {
       const deletedKeys = result.deletedKeys;
 
       if (deletedKeys.length > 0) {
-        // 刷新列表
-        queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
-        // 清除选择
+        queryClient.invalidateQueries({ queryKey: orpc.media.key() });
         setSelectedKeys((prev) => {
           const next = new Set(prev);
           deletedKeys.forEach((key) => next.delete(key));
@@ -118,25 +109,15 @@ export function useMediaLibrary() {
         });
       }
 
-      if (result.error) {
-        if (deletedKeys.length > 0) {
-          toast.warning(m.media_toast_partial_delete(), {
-            description: m.media_toast_partial_delete_desc({
-              count: deletedKeys.length,
-            }),
-          });
-        } else {
-          toast.warning(m.media_toast_delete_fail(), {
-            description: m.media_toast_delete_fail_desc(),
-          });
-        }
-        return;
-      }
-
       toast.success(m.media_toast_delete_success(), {
         description: m.media_toast_delete_success_desc({
           count: deletedKeys.length,
         }),
+      });
+    },
+    onError: () => {
+      toast.warning(m.media_toast_delete_fail(), {
+        description: m.media_toast_delete_fail_desc(),
       });
     },
     onSettled: () => {
@@ -146,10 +127,10 @@ export function useMediaLibrary() {
 
   // Update name mutation
   const updateAsset = useMutation({
-    mutationFn: (payload: Parameters<typeof updateMediaNameFn>[0]) =>
-      updateMediaNameFn(payload),
+    mutationFn: (payload: { key: string; name: string }) =>
+      orpcClient.media.updateName(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: MEDIA_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: orpc.media.key() });
       toast.success(m.media_toast_metadata_updated(), {
         description: m.media_toast_metadata_updated_desc(),
       });

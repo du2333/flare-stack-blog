@@ -2,7 +2,6 @@ import type { z } from "zod";
 import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
 import type { Duration } from "@/lib/duration";
 import { ms } from "@/lib/duration";
-import { purgeSiteCDNCache } from "@/lib/invalidate";
 import { serializeKey } from "./cache.utils";
 import type { CacheKey, CacheNamespace } from "./types";
 
@@ -218,13 +217,10 @@ export async function getVersioned<T extends z.ZodTypeAny>(
 export async function invalidateSiteCache(
   context: BaseContext & { executionCtx: ExecutionContext },
 ) {
-  const purgeTask = purgeSiteCDNCache(context.env);
-  const kvTasks = [
+  await Promise.all([
     bumpVersion(context, "posts:list"),
     bumpVersion(context, "posts:detail"),
     deleteKey(context, TAGS_CACHE_KEYS.publicList),
-  ];
-
-  await Promise.all([purgeTask, ...kvTasks]);
+  ]);
   return { success: true };
 }

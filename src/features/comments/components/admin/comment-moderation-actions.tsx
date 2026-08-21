@@ -35,12 +35,12 @@ export const CommentModerationActions = ({
     newStatus: "published" | "pending" | "deleted",
   ) => {
     setIsOpen(false);
-    moderate({ data: { id: commentId, status: newStatus } });
+    moderate({ id: commentId, status: newStatus });
   };
 
   const confirmDelete = () => {
     adminDelete(
-      { data: { id: commentId } },
+      { id: commentId },
       { onSuccess: () => setShowDeleteConfirm(false) },
     );
   };

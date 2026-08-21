@@ -27,8 +27,6 @@ export default defineConfig(async () => {
             ADMIN_EMAIL: "admin@example.com",
             GITHUB_CLIENT_ID: "test-id",
             GITHUB_CLIENT_SECRET: "test-secret",
-            CLOUDFLARE_ZONE_ID: "test-zone",
-            CLOUDFLARE_PURGE_API_TOKEN: "test-token",
             DOMAIN: "example.com",
             ENVIRONMENT: "test",
           },

@@ -2,31 +2,25 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { forceCheckUpdateFn } from "@/features/version/api/version.api";
-import { VERSION_KEYS } from "@/features/version/queries";
+import { orpcClient } from "@/lib/orpc";
+import { updateCheckQuery } from "@/features/version/queries";
 import { m } from "@/paraglide/messages";
 
 export function VersionMaintenance() {
   const queryClient = useQueryClient();
 
   const checkUpdateMutation = useMutation({
-    mutationFn: forceCheckUpdateFn,
+    mutationFn: () => orpcClient.version.forceCheck(),
     onSuccess: (result) => {
-      queryClient.setQueryData(VERSION_KEYS.updateCheck, result);
-      if (result.error) {
-        toast.error(m.settings_maintenance_version_toast_fail(), {
-          description: m.settings_maintenance_version_toast_fail_desc(),
-        });
-        return;
-      }
-      if (result.data.hasUpdate) {
+      queryClient.setQueryData(updateCheckQuery.queryKey, result);
+      if (result.hasUpdate) {
         toast.info(m.settings_maintenance_version_toast_new(), {
           description: m.settings_maintenance_version_toast_new_desc({
-            version: result.data.latestVersion,
+            version: result.latestVersion,
           }),
           action: {
             label: m.settings_maintenance_version_action_view(),
-            onClick: () => window.open(result.data.releaseUrl, "_blank"),
+            onClick: () => window.open(result.releaseUrl, "_blank"),
           },
         });
         return;
@@ -35,6 +29,11 @@ export function VersionMaintenance() {
         description: m.settings_maintenance_version_toast_latest_desc({
           version: __APP_VERSION__,
         }),
+      });
+    },
+    onError: () => {
+      toast.error(m.settings_maintenance_version_toast_fail(), {
+        description: m.settings_maintenance_version_toast_fail_desc(),
       });
     },
   });
@@ -62,7 +61,7 @@ export function VersionMaintenance() {
       <Button
         type="button"
         variant="outline"
-        onClick={() => checkUpdateMutation.mutate({})}
+        onClick={() => checkUpdateMutation.mutate()}
         disabled={checkUpdateMutation.isPending}
         className="h-10 shrink-0 rounded-none border-border/50 px-6 font-mono text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-background group"
       >

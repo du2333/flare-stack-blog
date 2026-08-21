@@ -6,8 +6,7 @@ import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ErrorPage } from "@/components/common/error-page";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { createEmptyPostFn } from "@/features/posts/api/posts.admin.api";
-import { POSTS_KEYS } from "@/features/posts/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { useDebounce } from "@/hooks/use-debounce";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
@@ -89,11 +88,11 @@ export function PostManager({
 
   // Create empty post mutation
   const createMutation = useMutation({
-    mutationFn: () => createEmptyPostFn(),
+    mutationFn: () => orpcClient.posts.admin.create(),
     onSuccess: (createdPost) => {
       // Precise invalidation for new post creation
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
+      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
+      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.count.key() });
       navigate({
         to: "/admin/posts/edit/$id",
         params: { id: String(createdPost.id) },

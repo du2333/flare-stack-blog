@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  getReplyNotificationStatusFn,
-  getUserNotificationAvailabilityFn,
-  toggleReplyNotificationFn,
-} from "@/features/email/api/email.api";
-import { EMAIL_KEYS } from "@/features/email/queries";
+  notificationAvailabilityQuery,
+  replyNotificationStatusQuery,
+} from "@/features/email/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 export function useNotificationToggle(userId: string | undefined) {
@@ -15,27 +14,18 @@ export function useNotificationToggle(userId: string | undefined) {
     data: availability,
     isLoading: isAvailabilityLoading,
     error: availabilityError,
-  } = useQuery({
-    queryKey: [...EMAIL_KEYS.notifications, "availability", userId],
-    queryFn: () => getUserNotificationAvailabilityFn(),
-    enabled: !!userId,
-  });
+  } = useQuery(notificationAvailabilityQuery(!!userId));
   const {
     data: notificationStatus,
     isLoading,
     error: queryError,
-  } = useQuery({
-    queryKey: EMAIL_KEYS.replyNotification(userId),
-    queryFn: () => getReplyNotificationStatusFn(),
-    enabled: !!userId,
-  });
+  } = useQuery(replyNotificationStatusQuery(!!userId));
   const currentEnabled = notificationStatus?.enabled;
 
   const mutation = useMutation({
-    mutationFn: (enabled: boolean) =>
-      toggleReplyNotificationFn({ data: { enabled } }),
+    mutationFn: (enabled: boolean) => orpcClient.email.toggleReply({ enabled }),
     onSuccess: (_result, enabled) => {
-      queryClient.setQueryData(EMAIL_KEYS.replyNotification(userId), {
+      queryClient.setQueryData(orpc.email.replyStatus.queryKey(), {
         enabled,
       });
       toast.success(

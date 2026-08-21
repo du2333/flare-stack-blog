@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { POSTS_KEYS } from "@/features/posts/queries";
+import { orpc } from "@/lib/orpc";
 import type { PostListItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 
@@ -12,7 +12,7 @@ export function PostPageSkeleton() {
 
   // Optimistic UI: Try to get the post title from cache to verify transition immediately
   const cachedPost = queryClient
-    .getQueriesData<unknown>({ queryKey: POSTS_KEYS.all })
+    .getQueriesData<unknown>({ queryKey: orpc.posts.key() })
     .map(([, data]) => data)
     .filter(Boolean)
     .flatMap((data) => {

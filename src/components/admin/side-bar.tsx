@@ -15,7 +15,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { AUTH_KEYS } from "@/features/auth/queries";
+import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -60,7 +60,7 @@ export function SideBar({
       return;
     }
 
-    queryClient.removeQueries({ queryKey: AUTH_KEYS.session });
+    resetAuthBoundQueries(queryClient);
 
     toast.success(m.admin_sidebar_logout_success());
     navigate({ to: "/login" });

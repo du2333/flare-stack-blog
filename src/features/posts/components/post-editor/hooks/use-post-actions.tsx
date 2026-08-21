@@ -2,15 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  generateSlugFn,
-  previewSummaryFn,
-  startPostProcessWorkflowFn,
-} from "@/features/posts/api/posts.admin.api";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { convertToPlainText, slugify } from "@/features/posts/utils/content";
-import { createTagFn, generateTagsFn } from "@/features/tags/api/tags.api";
-import { TAGS_KEYS } from "@/features/tags/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import type { Tag } from "@/features/tags/tags.schema";
 import { useDebounce } from "@/hooks/use-debounce";
 import { toLocalDateString } from "@/lib/utils";
@@ -113,7 +107,11 @@ export function usePostActions({
   const debouncedContentJson = useDebounce(post.contentJson, 500);
 
   const processDataMutation = useMutation({
-    mutationFn: startPostProcessWorkflowFn,
+    mutationFn: (input: {
+      id: number;
+      status: "draft" | "published";
+      clientToday: string;
+    }) => orpcClient.posts.admin.process(input),
     onSuccess: () => {
       // Feedback: Notify user task is running
       toast(m.editor_action_publish_start(), {
@@ -148,11 +146,9 @@ export function usePostActions({
 
     setTimeout(() => {
       processDataMutation.mutate({
-        data: {
-          id: postId,
-          status: post.status,
-          clientToday: toLocalDateString(new Date()),
-        },
+        id: postId,
+        status: post.status,
+        clientToday: toLocalDateString(new Date()),
       });
     }, 800);
   };
@@ -160,11 +156,9 @@ export function usePostActions({
   // Slug generation mutation
   const slugMutation = useMutation({
     mutationFn: (title: string) =>
-      generateSlugFn({
-        data: {
-          title,
-          excludeId: postId,
-        },
+      orpcClient.posts.admin.generateSlug({
+        title,
+        excludeId: postId,
       }),
     onSuccess: (result) => {
       setPost((prev) => ({ ...prev, slug: result.slug }));
@@ -185,10 +179,8 @@ export function usePostActions({
 
   const previewSummaryMutation = useMutation({
     mutationFn: () =>
-      previewSummaryFn({
-        data: {
-          contentJson: post.contentJson,
-        },
+      orpcClient.posts.admin.previewSummary({
+        contentJson: post.contentJson,
       }),
     onSuccess: (result) => {
       setPost((prev) => ({ ...prev, summary: result.summary }));
@@ -304,16 +296,14 @@ export function usePostActions({
   const handleGenerateTags = async () => {
     try {
       setIsGeneratingTags(true);
-      const generatedTagNames = await generateTagsFn({
-        data: {
-          title: post.title,
-          summary: post.summary,
-          content:
-            typeof post.contentJson === "string"
-              ? post.contentJson
-              : JSON.stringify(post.contentJson),
-          existingTags: allTags.map((t) => t.name),
-        },
+      const generatedTagNames = await orpcClient.tags.admin.generate({
+        title: post.title,
+        summary: post.summary,
+        content:
+          typeof post.contentJson === "string"
+            ? post.contentJson
+            : JSON.stringify(post.contentJson),
+        existingTags: allTags.map((t) => t.name),
       });
 
       // Match or Create Tags
@@ -331,13 +321,13 @@ export function usePostActions({
             currentTagIds.add(existingTag.id);
           }
         } else {
-          const result = await createTagFn({ data: { name } });
-          if (result.error) {
-            // 当前仅会返回 TAG_NAME_ALREADY_EXISTS，直接跳过即可
+          try {
+            const created = await orpcClient.tags.admin.create({ name });
+            newTagIds.push(created.id);
+            currentTagIds.add(created.id);
+          } catch {
             continue;
           }
-          newTagIds.push(result.data.id);
-          currentTagIds.add(result.data.id);
         }
       }
 
@@ -348,7 +338,7 @@ export function usePostActions({
         }));
 
         await queryClient.invalidateQueries({
-          queryKey: TAGS_KEYS.adminList({}),
+          queryKey: orpc.tags.admin.list.key(),
         });
 
         toast.success(m.editor_action_tags_done(), {

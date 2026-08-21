@@ -1,12 +1,3 @@
-import { queryOptions } from "@tanstack/react-query";
-import { getDashboardStatsFn } from "../api/dashboard.api";
+import { orpc } from "@/lib/orpc";
 
-export const DASHBOARD_KEYS = {
-  all: ["dashboard"] as const,
-  stats: ["dashboard", "stats"] as const,
-};
-
-export const dashboardStatsQuery = queryOptions({
-  queryKey: DASHBOARD_KEYS.stats,
-  queryFn: () => getDashboardStatsFn(),
-});
+export const dashboardStatsQuery = orpc.dashboard.stats.queryOptions();

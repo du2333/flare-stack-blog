@@ -24,7 +24,8 @@ import { m } from "@/paraglide/messages";
 import type { CreateFriendLinkInput } from "../../friend-links.schema";
 import { createCreateFriendLinkSchema } from "../../friend-links.schema";
 import { useAdminFriendLinks } from "../../hooks/use-friend-links";
-import { allFriendLinksQuery, FRIEND_LINKS_KEYS } from "../../queries";
+import { orpc } from "@/lib/orpc";
+import { allFriendLinksQuery } from "../../queries";
 
 interface FriendLinkModerationTableProps {
   status?: FriendLinkStatus;
@@ -81,11 +82,11 @@ export const FriendLinkModerationTable = ({
     );
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => approveAsync({ data: { id } })),
+        Array.from(selectedIds).map((id) => approveAsync({ id })),
       );
       toast.success(m.friend_links_batch_approve_success(), { id: toastId });
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
     } catch (caughtError) {
       toast.error(m.friend_links_batch_partial_fail(), {
         id: toastId,
@@ -100,11 +101,11 @@ export const FriendLinkModerationTable = ({
     );
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => rejectAsync({ data: { id } })),
+        Array.from(selectedIds).map((id) => rejectAsync({ id })),
       );
       toast.success(m.friend_links_batch_reject_success(), { id: toastId });
       setSelectedIds(new Set());
-      queryClient.invalidateQueries({ queryKey: FRIEND_LINKS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
     } catch (caughtError) {
       toast.error(m.friend_links_batch_partial_fail(), {
         id: toastId,
@@ -489,12 +490,12 @@ const FriendLinkActions = ({
 
   const handleApprove = () => {
     setIsOpen(false);
-    approve({ data: { id: friendLinkId } });
+    approve({ id: friendLinkId });
   };
 
   const confirmDelete = () => {
     adminDelete(
-      { data: { id: friendLinkId } },
+      { id: friendLinkId },
       { onSuccess: () => setShowDeleteConfirm(false) },
     );
   };
@@ -587,7 +588,7 @@ const FriendLinkActions = ({
         onClose={() => setShowRejectModal(false)}
         onConfirm={(reason) => {
           reject(
-            { data: { id: friendLinkId, rejectionReason: reason } },
+            { id: friendLinkId, rejectionReason: reason },
             { onSuccess: () => setShowRejectModal(false) },
           );
         }}
@@ -600,7 +601,7 @@ const FriendLinkActions = ({
         onClose={() => setShowEditModal(false)}
         onConfirm={(data) => {
           update(
-            { data: { id: friendLinkId, ...data } },
+            { id: friendLinkId, ...data },
             { onSuccess: () => setShowEditModal(false) },
           );
         }}

@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import theme from "@theme";
-import { userHasPasswordFn } from "@/features/auth/api/auth.api";
 import {
   useLogout,
   useNotificationToggle,
   usePasswordForm,
   useProfileForm,
 } from "@/features/auth/hooks";
-import { AUTH_KEYS } from "@/features/auth/queries";
+import { hasPasswordQuery } from "@/features/email/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
 
@@ -35,11 +34,7 @@ function ProfilePage() {
 
   const profileForm = useProfileForm({ user });
   const passwordForm = usePasswordForm();
-  const { data: hasPassword } = useQuery({
-    queryKey: AUTH_KEYS.hasPassword(user?.id),
-    queryFn: () => userHasPasswordFn(),
-    enabled: !!user,
-  });
+  const { data: hasPassword } = useQuery(hasPasswordQuery(!!user));
   const notification = useNotificationToggle(user?.id);
   const { logout } = useLogout();
 

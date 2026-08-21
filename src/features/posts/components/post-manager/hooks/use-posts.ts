@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  deletePostFn,
-  getPostsCountFn,
-  getPostsFn,
-} from "@/features/posts/api/posts.admin.api";
-import { POSTS_KEYS } from "@/features/posts/queries";
+  adminPostsCountQuery,
+  adminPostsQuery,
+} from "@/features/posts/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 import type {
@@ -47,15 +46,9 @@ export function usePosts({
     search: search || undefined,
   };
 
-  const postsQuery = useQuery({
-    queryKey: POSTS_KEYS.adminList(listParams),
-    queryFn: () => getPostsFn({ data: listParams }),
-  });
+  const postsQuery = useQuery(adminPostsQuery(listParams));
 
-  const countQuery = useQuery({
-    queryKey: POSTS_KEYS.count(countParams),
-    queryFn: () => getPostsCountFn({ data: countParams }),
-  });
+  const countQuery = useQuery(adminPostsCountQuery(countParams));
 
   const totalPages = Math.ceil((countQuery.data ?? 0) / ADMIN_ITEMS_PER_PAGE);
 
@@ -77,29 +70,25 @@ export function useDeletePost({ onSuccess }: UseDeletePostOptions = {}) {
 
   return useMutation({
     mutationFn: async (post: PostListItem) => {
-      return {
-        post,
-        result: await deletePostFn({ data: { id: post.id } }),
-      };
+      await orpcClient.posts.admin.remove({ id: post.id });
+      return post;
     },
-    onSuccess: ({ post, result }) => {
-      if (result.error) {
-        toast.error(m.admin_posts_toast_delete_failed(), {
-          description: m.admin_posts_toast_delete_failed_desc({
-            title: post.title,
-          }),
-        });
-        return;
-      }
-
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.adminLists });
-      queryClient.invalidateQueries({ queryKey: POSTS_KEYS.counts });
+    onSuccess: (post) => {
+      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
+      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.count.key() });
       toast.success(m.admin_posts_toast_delete_success(), {
         description: m.admin_posts_toast_delete_success_desc({
           title: post.title,
         }),
       });
       onSuccess?.();
+    },
+    onError: (_error, post) => {
+      toast.error(m.admin_posts_toast_delete_failed(), {
+        description: m.admin_posts_toast_delete_failed_desc({
+          title: post.title,
+        }),
+      });
     },
   });
 }

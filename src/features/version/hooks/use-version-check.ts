@@ -9,9 +9,9 @@ export function useVersionCheck() {
   const { data: updateData } = useQuery(updateCheckQuery);
 
   useEffect(() => {
-    if (!updateData || updateData.error || !updateData.data.hasUpdate) return;
+    if (!updateData || !updateData.hasUpdate) return;
 
-    const { data } = updateData;
+    const data = updateData;
     const lastToastTime = localStorage.getItem("last_version_check_toast");
     const ignoredVersion = localStorage.getItem("ignored_version");
     const now = Date.now();

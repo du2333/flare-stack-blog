@@ -150,7 +150,6 @@ Disallow: /register
 Disallow: /forgot-password
 Disallow: /verify-email
 Disallow: /reset-link
-Disallow: /oauth/consent
 Disallow: /profile
 Disallow: /submit-friend-link
 Sitemap: https://${env.DOMAIN}/sitemap.xml`;

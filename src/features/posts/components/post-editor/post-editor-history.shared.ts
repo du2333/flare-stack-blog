@@ -1,21 +1,17 @@
 import { type LucideIcon, RotateCcw, Save, Send } from "lucide-react";
-import type {
-  deletePostRevisionsFn,
-  getPostRevisionFn,
-  listPostRevisionsFn,
-} from "@/features/posts/api/post-revisions.admin.api";
+import { orpcClient } from "@/lib/orpc";
 import { ms } from "@/lib/duration";
 import { m } from "@/paraglide/messages";
 
 export type RevisionListItem = Awaited<
-  ReturnType<typeof listPostRevisionsFn>
+  ReturnType<typeof orpcClient.posts.admin.revisions.list>
 >[number];
 
 export type RevisionDetail = NonNullable<
-  Awaited<ReturnType<typeof getPostRevisionFn>>
+  Awaited<ReturnType<typeof orpcClient.posts.admin.revisions.get>>
 >;
 export type DeleteRevisionsResult = Awaited<
-  ReturnType<typeof deletePostRevisionsFn>
+  ReturnType<typeof orpcClient.posts.admin.revisions.remove>
 >;
 
 export const HISTORY_POLL_WINDOW_MS = ms("20s");

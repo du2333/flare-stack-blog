@@ -122,9 +122,7 @@ function RootCommentWithReplies({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery(
-    repliesByRootIdInfiniteQuery(postId, root.id, session?.user.id),
-  );
+  } = useInfiniteQuery(repliesByRootIdInfiniteQuery(postId, root.id));
 
   const allReplies = repliesData?.pages.flatMap((page) => page.items) ?? [];
   const isReplyingToRoot =

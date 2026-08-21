@@ -1,8 +1,4 @@
-import {
-  createFileRoute,
-  useLocation,
-  useRouteContext,
-} from "@tanstack/react-router";
+import { createFileRoute, useRouteContext } from "@tanstack/react-router";
 import theme from "@theme";
 import { z } from "zod";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
@@ -26,7 +22,6 @@ export const Route = createFileRoute("/_auth/login")({
 function RouteComponent() {
   const { isEmailConfigured } = useRouteContext({ from: "/_auth" });
   const search = Route.useSearch();
-  const location = useLocation();
   const {
     isPending: turnstilePending,
     token: turnstileToken,
@@ -34,17 +29,7 @@ function RouteComponent() {
     turnstileProps,
   } = useTurnstile("login");
 
-  const currentSearchParams = new URLSearchParams(
-    new URL(location.href, window.location.origin).search,
-  );
-  const isOAuthAuthorizationRequest =
-    !!currentSearchParams.get("client_id") &&
-    !!currentSearchParams.get("response_type");
-
-  let resolvedRedirectTo = search.redirectTo;
-  if (!resolvedRedirectTo && isOAuthAuthorizationRequest) {
-    resolvedRedirectTo = `/oauth/consent?${currentSearchParams.toString()}`;
-  }
+  const resolvedRedirectTo = search.redirectTo;
 
   const loginForm = useLoginForm({
     turnstileToken,

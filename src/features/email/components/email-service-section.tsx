@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import type { SystemConfig } from "@/features/config/config.schema";
-import type { Result } from "@/lib/errors";
 import { m } from "@/paraglide/messages";
 import { EmailCredentialsPanel } from "./email-credentials-panel";
 import { EmailDocPanel } from "./email-doc-panel";
@@ -12,18 +11,14 @@ import { EmailTestToolbar } from "./email-test-toolbar";
 type ConnectionStatus = "IDLE" | "TESTING" | "SUCCESS" | "ERROR";
 
 interface EmailSectionProps {
-  testEmailConnection: (options: {
-    data: {
-      host: string;
-      port: number;
-      username: string;
-      password: string;
-      senderAddress: string;
-      senderName?: string;
-    };
-  }) => Promise<
-    Result<{ success: boolean }, { reason: "SEND_FAILED"; message: string }>
-  >;
+  testEmailConnection: (input: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    senderAddress: string;
+    senderName?: string;
+  }) => Promise<unknown>;
 }
 
 export function EmailServiceSection({
@@ -53,25 +48,15 @@ export function EmailServiceSection({
     setStatus("TESTING");
 
     try {
-      const result = await testEmailConnection({
-        data: {
-          host: emailConfig?.host || "",
-          port: emailConfig?.port || 465,
-          username: emailConfig?.username || "",
-          password: emailConfig?.password || "",
-          senderAddress: emailConfig?.senderAddress || "",
-          senderName: emailConfig?.senderName,
-        },
+      await testEmailConnection({
+        host: emailConfig?.host || "",
+        port: emailConfig?.port || 465,
+        username: emailConfig?.username || "",
+        password: emailConfig?.password || "",
+        senderAddress: emailConfig?.senderAddress || "",
+        senderName: emailConfig?.senderName,
       });
-
-      if (!result.error) {
-        setStatus("SUCCESS");
-      } else {
-        setStatus("ERROR");
-        toast.error(m.settings_email_test_status_error(), {
-          description: result.error.message,
-        });
-      }
+      setStatus("SUCCESS");
     } catch (error) {
       setStatus("ERROR");
       toast.error(m.settings_email_test_status_error(), {

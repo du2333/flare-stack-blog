@@ -7,15 +7,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
-import {
-  createTagFn,
-  deleteTagFn,
-  updateTagFn,
-} from "@/features/tags/api/tags.api";
-import {
-  TAGS_KEYS,
-  tagsWithCountAdminQueryOptions,
-} from "@/features/tags/queries";
+import { tagsWithCountAdminQueryOptions } from "@/features/tags/queries";
+import { handleORPCError } from "@/lib/orpc/error-handler";
+import { orpc, orpcClient } from "@/lib/orpc";
 import type { CreateTagInput } from "@/features/tags/tags.schema";
 import { CreateTagInputSchema } from "@/features/tags/tags.schema";
 import { cn } from "@/lib/utils";
@@ -51,63 +45,58 @@ export function TagManager() {
 
   const updateTagMutation = useMutation({
     mutationFn: async (data: { id: number; name: string }) => {
-      return await updateTagFn({
-        data: { id: data.id, data: { name: data.name } },
+      return await orpcClient.tags.admin.update({
+        id: data.id,
+        data: { name: data.name },
       });
     },
-    onSuccess: (result) => {
-      if (result.error) {
-        const reason = result.error.reason;
-        switch (reason) {
-          case "TAG_NOT_FOUND":
-            toast.error(m.tag_manager_not_found());
-            return;
-          case "TAG_NAME_ALREADY_EXISTS":
-            toast.error(m.tag_manager_name_exists());
-            return;
-          default: {
-            reason satisfies never;
-            toast.error(m.tag_manager_unknown_error());
-            return;
-          }
-        }
-      }
-
-      queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
       setTagToEdit(null);
       toast.success(m.tag_manager_renamed());
+    },
+    onError: (error) => {
+      handleORPCError(error, {
+        defined: {
+          TAG_NOT_FOUND: () => {
+            toast.error(m.tag_manager_not_found());
+          },
+          TAG_NAME_ALREADY_EXISTS: () => {
+            toast.error(m.tag_manager_name_exists());
+          },
+        },
+        fallback: () => {
+          toast.error(m.tag_manager_unknown_error());
+        },
+      });
     },
   });
 
   const deleteTagMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await deleteTagFn({ data: { id } });
+      return await orpcClient.tags.admin.remove({ id });
     },
-    onSuccess: (result) => {
-      if (result.error) {
-        toast.error(m.tag_manager_delete_fail());
-        return;
-      }
-
-      queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
       setTagToDelete(null);
       toast.success(m.tag_manager_deleted());
+    },
+    onError: () => {
+      toast.error(m.tag_manager_delete_fail());
     },
   });
 
   const createTagMutation = useMutation({
     mutationFn: async (name: string) => {
-      return await createTagFn({ data: { name } });
+      return await orpcClient.tags.admin.create({ name });
     },
-    onSuccess: (result) => {
-      if (result.error) {
-        toast.error(m.tag_manager_name_exists());
-        return;
-      }
-
-      queryClient.invalidateQueries({ queryKey: TAGS_KEYS.admin });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
       setIsCreating(false);
       toast.success(m.tag_manager_created());
+    },
+    onError: () => {
+      toast.error(m.tag_manager_name_exists());
     },
   });
 
