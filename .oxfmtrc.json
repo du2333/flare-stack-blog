@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "singleQuote": false,
+  "jsxSingleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "all",
+  "semi": true,
+  "arrowParens": "always",
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "ignorePatterns": [
+    "src/paraglide",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts",
+    "migrations/**/*",
+    "messages/**",
+    "docs/**",
+    "**/*.md",
+    "wrangler.example.jsonc"
+  ]
+}

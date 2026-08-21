@@ -23,9 +23,8 @@ export const getOAuthClientMetadataFn = createServerFn({
   .middleware([adminMiddleware])
   .inputValidator(GetOAuthClientMetadataInputSchema)
   .handler(async ({ context, data }) => {
-    const OAuthClientService = await import(
-      "../../oauth-clients/service/oauth-client.service"
-    );
+    const OAuthClientService =
+      await import("../../oauth-clients/service/oauth-client.service");
 
     return OAuthClientService.getOAuthClientMetadata(context, data.clientId);
   });

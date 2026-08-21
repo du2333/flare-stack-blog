@@ -1,14 +1,14 @@
 {
   "name": "flare-stack-blog",
   "version": "1.5.2",
-  "type": "module",
+  "private": true,
+  "license": "GPL-3.0-only",
   "author": {
-    "email": "kuangdadu@gmail.com",
     "name": "akuang",
+    "email": "kuangdadu@gmail.com",
     "url": "https://github.com/du2333"
   },
-  "license": "GPL-3.0-only",
-  "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "bun scripts/generate-manifest.ts && vite build",
@@ -16,11 +16,11 @@
     "serve": "vite preview",
     "test": "vitest run",
     "test:node": "vitest run --config vitest.node.config.ts",
-    "lint": "biome lint",
-    "lint:fix": "biome check --write",
-    "format": "biome format --write",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
     "typecheck": "./node_modules/typescript/bin/tsc --noEmit",
-    "check": "biome check --write && bun typecheck",
+    "check": "oxlint && oxfmt --check && bun typecheck",
     "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "i18n:verify": "bun scripts/verify-translations.ts",
     "i18n:prune-unused": "bun scripts/prune-unused-translations.ts",
@@ -104,7 +104,6 @@
     "zod": "~4.3.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.11",
     "@cloudflare/vite-plugin": "^1.53.1",
     "@cloudflare/vitest-plugin": "^1.0.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
@@ -128,6 +127,8 @@
     "fallow": "^2.104.0",
     "husky": "^9.1.7",
     "jsdom": "^27.0.0",
+    "oxfmt": "^0.64.0",
+    "oxlint": "^1.79.0",
     "release-it": "^19.2.4",
     "shiki": "^3.23.0",
     "typescript": "^7.0.2",

@@ -260,7 +260,7 @@ bun dev
 | `bun dev`       | Starts local dev server (default port 3000)      |
 | `bun run build` | Builds the production bundle                     |
 | `bun run test`  | Runs the test suites                             |
-| `bun lint`      | Runs the ESLint checker                          |
+| `bun lint`      | Runs the Oxlint checker                          |
 | `bun check`     | Initiates Type checking + Lint + Code formatting |
 
 ### Database Commands

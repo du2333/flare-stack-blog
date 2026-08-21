@@ -28,8 +28,9 @@ interface McpPromptBase {
   title?: string;
 }
 
-interface McpPromptWithArgs<TArgsSchema extends McpPromptArgsSchema>
-  extends McpPromptBase {
+interface McpPromptWithArgs<
+  TArgsSchema extends McpPromptArgsSchema,
+> extends McpPromptBase {
   argsSchema: TArgsSchema;
   handler: (
     args: z.infer<z.ZodObject<TArgsSchema>>,

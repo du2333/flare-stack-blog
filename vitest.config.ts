@@ -1,8 +1,5 @@
 import path from "node:path";
-import {
-  cloudflareTest,
-  readD1Migrations,
-} from "@cloudflare/vitest-plugin";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { loadEnv } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";

@@ -267,7 +267,7 @@ bun dev
 | `bun dev`       | 启动开发服务器（端口 3000） |
 | `bun run build` | 构建生产版本                |
 | `bun run test`  | 运行测试                    |
-| `bun lint`      | ESLint 检查                 |
+| `bun lint`      | Oxlint 检查                 |
 | `bun check`     | 类型检查 + Lint + 格式化    |
 
 ### 数据库命令

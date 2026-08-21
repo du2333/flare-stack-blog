@@ -21,7 +21,7 @@ export function BackgroundLayer({
   const isHomepage = pathname === "/" || pathname === "";
   const hasAnyImage = Boolean(
     background &&
-      (background.homeImage !== "" || background.globalImage !== ""),
+    (background.homeImage !== "" || background.globalImage !== ""),
   );
 
   // Directly set --scroll-progress CSS variable — no React re-renders on scroll
