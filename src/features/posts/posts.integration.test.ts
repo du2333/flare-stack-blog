@@ -10,7 +10,8 @@ import {
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
+import { invalidate } from "@/features/cache/public-cache";
 import {
   GetPostsCursorInputSchema,
   POSTS_CACHE_KEYS,
@@ -225,20 +226,13 @@ describe("Posts Integration", () => {
       });
       expect(post1).not.toBeNull();
 
-      // 等待缓存写入完成
       await waitForBackgroundTasks(adminContext.executionCtx);
 
-      // 验证 KV 中有缓存数据 (key 格式: version:post:slug)
-      const version = await CacheService.getVersion(
-        adminContext,
-        "posts:detail",
-      );
-      const cacheKey = `${version}:post:cached-post`;
-      const cachedData = await env.KV.get(cacheKey, "json");
+      const cachedData = await env.KV.get("v0:post:cached-post", "json");
       expect(cachedData).not.toBeNull();
     });
 
-    it("should invalidate cache when version is bumped", async () => {
+    it("should refetch after public cache invalidation", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       await updatePost({
         id,
@@ -250,39 +244,17 @@ describe("Posts Integration", () => {
         },
       });
 
-      // First fetch to populate cache
       await PostService.findPostBySlug(adminContext, { slug: "version-test" });
       await waitForBackgroundTasks(adminContext.executionCtx);
+      expect(await env.KV.get("v0:post:version-test", "json")).not.toBeNull();
 
-      // Get current bootstrap generation before any bump
-      const oldVersion = await CacheService.getVersion(
-        adminContext,
-        "posts:detail",
-      );
-      expect(oldVersion).toBe("v0");
+      await invalidate.postPublished(adminContext, { slug: "version-test" });
 
-      // One rotation must make the old cache generation unreachable
-      await CacheService.bumpVersion(adminContext, "posts:detail");
-
-      const newVersion = await CacheService.getVersion(
-        adminContext,
-        "posts:detail",
-      );
-      expect(newVersion).not.toBe(oldVersion);
-
-      // New cache key doesn't exist yet (old one is stale)
-      const newCacheKey = `${newVersion}:post:version-test`;
-      const newCachedData = await env.KV.get(newCacheKey, "json");
-      expect(newCachedData).toBeNull();
+      expect(await env.KV.get("v0:post:version-test", "json")).toBeNull();
     });
 
     it("should use isolated storage for each test", async () => {
-      // Verify KV is clean at the start of this test
-      const version = await CacheService.getVersion(
-        adminContext,
-        "posts:detail",
-      );
-      expect(version).toBe("v0");
+      expect(await env.KV.get("v0:post:cached-post")).toBeNull();
     });
   });
 
@@ -370,7 +342,7 @@ describe("Posts Integration", () => {
       const publicContext = createTestContext();
       await createPublishedPost("Fresh Post", "fresh-post");
       await publicContext.env.KV.put(
-        POSTS_CACHE_KEYS.list("v0", 10, 0).join(":"),
+        "v0:posts:list:10:0:all",
         JSON.stringify({ items: [], nextCursor: null }),
       );
       vi.spyOn(publicContext.env.KV, "get").mockRejectedValueOnce(
@@ -1365,7 +1337,7 @@ describe("Posts Integration", () => {
       expect(post).not.toBeNull();
       const updatedAtBeforeRun = post!.updatedAt;
 
-      await CacheService.set(
+      await kvStore.put(
         { env: adminContext.env },
         POSTS_CACHE_KEYS.syncHash(id),
         await calculatePostHash({
@@ -1413,9 +1385,6 @@ describe("Posts Integration", () => {
       });
       expect(emptyList.items).toEqual([]);
       await drainTestExecutionContexts();
-      expect(await CacheService.getVersion(adminContext, "posts:list")).toBe(
-        "v0",
-      );
 
       const { id } = await PostService.createEmptyPost(adminContext);
       unwrap(

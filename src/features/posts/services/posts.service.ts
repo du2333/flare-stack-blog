@@ -1,9 +1,15 @@
-import { z } from "zod";
 import * as AiService from "@/features/ai/ai.service";
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
+import { invalidate } from "@/features/cache/public-cache";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
+import {
+  pinnedPosts,
+  postBySlug,
+  postsList,
+  relatedPostIds,
+} from "@/features/posts/posts.cache";
 import type {
   DeletePostInput,
   FindPostByIdInput,
@@ -20,17 +26,10 @@ import type {
 import {
   normalizePostTagName,
   POSTS_CACHE_KEYS,
-  PostItemSchema,
-  PostListResponseSchema,
-  PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
 import { logPostAutoSnapshot } from "@/features/posts/services/post-auto-snapshot.logging";
 import * as PostAutoSnapshotService from "@/features/posts/services/post-auto-snapshot.service";
-import {
-  convertToPlainText,
-  highlightCodeBlocks,
-  slugify,
-} from "@/features/posts/utils/content";
+import { convertToPlainText, slugify } from "@/features/posts/utils/content";
 import { isFuturePublishDate } from "@/features/posts/utils/date";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
@@ -47,14 +46,7 @@ function stripPublicContentJson<T extends { publicContentJson?: unknown }>(
 export async function getPinnedPosts(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  return CacheService.getVersioned(
-    context,
-    "posts:list",
-    POSTS_CACHE_KEYS.pinned,
-    PostItemSchema.array(),
-    () => PostRepo.findPinnedPosts(context.db),
-    { ttl: "7d" },
-  );
+  return pinnedPosts.get(context, {});
 }
 
 export async function getPostsCursor(
@@ -62,111 +54,39 @@ export async function getPostsCursor(
   data: GetPostsCursorInput,
 ) {
   const tagName = normalizePostTagName(data.tagName);
-  const fetcher = async () =>
-    await PostRepo.getPostsCursor(context.db, {
-      cursor: data.cursor,
-      limit: data.limit,
-      publicOnly: true,
-      tagName,
-      excludePinned: data.excludePinned,
-    });
-
-  return await CacheService.getVersioned(
-    context,
-    "posts:list",
-    (version) =>
-      POSTS_CACHE_KEYS.list(
-        version,
-        data.limit ?? 10,
-        data.cursor ?? 0,
-        tagName,
-      ),
-    PostListResponseSchema,
-    fetcher,
-    {
-      ttl: "7d",
-    },
-  );
+  return postsList.get(context, {
+    limit: data.limit ?? 10,
+    cursor: data.cursor ?? 0,
+    tagName,
+    excludePinned: data.excludePinned,
+  });
 }
 
 export async function findPostBySlug(
   context: DbContext & { executionCtx: ExecutionContext },
   data: FindPostBySlugInput,
 ) {
-  const fetcher = async () => {
-    const post = await PostRepo.findPostBySlug(context.db, data.slug, {
-      publicOnly: true,
-    });
-    if (!post) return null;
-
-    let contentJson = post.publicContentJson ?? post.contentJson;
-    // Backward-compatible fallback for posts that haven't been reprocessed yet.
-    // New publishes should read pre-highlighted content from `publicContentJson`.
-    if (!post.publicContentJson && contentJson) {
-      contentJson = await highlightCodeBlocks(contentJson);
-      context.executionCtx.waitUntil(
-        PostRepo.updatePublicContentSnapshot(
-          context.db,
-          post.id,
-          contentJson,
-        ).then(() => undefined),
-      );
-    }
-
-    return {
-      ...stripPublicContentJson(post),
-      contentJson,
-      toc: generateTableOfContents(contentJson),
-    };
-  };
-
-  return await CacheService.getVersioned(
-    context,
-    "posts:detail",
-    (version) => POSTS_CACHE_KEYS.detail(version, data.slug),
-    PostWithTocSchema,
-    fetcher,
-    { ttl: "7d" },
-  );
+  return postBySlug.get(context, { slug: data.slug });
 }
 
 export async function getRelatedPosts(
   context: DbContext & { executionCtx: ExecutionContext },
   data: FindRelatedPostsInput,
 ) {
-  const fetcher = async () => {
-    const postIds = await PostRepo.getRelatedPostIds(context.db, data.slug, {
-      limit: data.limit,
-    });
-    return postIds;
-  };
-
-  // Cache IDs for 7 days (long-lived cache)
-  // This key is NOT dependent on version, so it persists across publishes
-  const cacheKey = POSTS_CACHE_KEYS.related(data.slug, data.limit);
-  const cachedIds = await CacheService.get(
-    context,
-    cacheKey,
-    z.array(z.number()),
-    fetcher,
-    {
-      ttl: "7d",
-    },
-  );
+  const cachedIds = await relatedPostIds.get(context, {
+    slug: data.slug,
+    limit: data.limit,
+  });
 
   if (cachedIds.length === 0) {
     return [];
   }
 
-  // Real-time hydration: fetch actual post data (automatically filters non-published)
   const posts = await PostRepo.getPublicPostsByIds(context.db, cachedIds);
 
-  // Restore order because SQL 'IN' clause doesn't guarantee order
-  const orderedPosts = cachedIds
+  return cachedIds
     .map((id) => posts.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => !!p);
-
-  return orderedPosts;
 }
 
 export async function generateSummaryByPostId({
@@ -303,10 +223,7 @@ export async function findPostById(
   const post = await PostRepo.findPostById(context.db, data.id);
   if (!post) return null;
 
-  const kvHash = await CacheService.getRaw(
-    context,
-    POSTS_CACHE_KEYS.syncHash(post.id),
-  );
+  const kvHash = await kvStore.get(context, POSTS_CACHE_KEYS.syncHash(post.id));
   const hasPublicCache = kvHash !== null;
 
   let isSynced: boolean;
@@ -367,27 +284,17 @@ export async function deletePost(
 
   await PostRepo.deletePost(context.db, data.id);
 
-  // Only clear cache/index for published posts
   if (post.status === "published") {
-    const tasks = [];
-    const version = await CacheService.getVersion(context, "posts:detail");
-    tasks.push(
-      CacheService.deleteKey(
-        context,
-        POSTS_CACHE_KEYS.detail(version, post.slug),
-      ),
-    );
-    tasks.push(CacheService.bumpVersion(context, "posts:list"));
-    tasks.push(SearchService.deleteIndex(context, { id: data.id }));
-    tasks.push(
-      CacheService.deleteKey(context, POSTS_CACHE_KEYS.syncHash(data.id)),
-    );
-
-    context.executionCtx.waitUntil(Promise.all(tasks));
-  } else {
-    // Even for drafts, clean up hash if exists
     context.executionCtx.waitUntil(
-      CacheService.deleteKey(context, POSTS_CACHE_KEYS.syncHash(data.id)),
+      Promise.all([
+        invalidate.postDeleted(context, { slug: post.slug }),
+        SearchService.deleteIndex(context, { id: data.id }),
+        kvStore.remove(context, POSTS_CACHE_KEYS.syncHash(data.id)),
+      ]),
+    );
+  } else {
+    context.executionCtx.waitUntil(
+      kvStore.remove(context, POSTS_CACHE_KEYS.syncHash(data.id)),
     );
   }
 

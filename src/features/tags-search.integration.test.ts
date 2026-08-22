@@ -6,11 +6,9 @@ import {
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
-import * as CacheService from "@/features/cache/cache.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import { getOramaDb, persistOramaDb } from "@/features/search/model/store";
 import * as SearchService from "@/features/search/service/search.service";
-import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
 import * as TagService from "@/features/tags/tags.service";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 import { unwrap } from "@/lib/errors";
@@ -162,10 +160,7 @@ describe("Tags & Search Integration", () => {
 
         await waitForBackgroundTasks(adminContext.executionCtx);
 
-        const cached = await CacheService.getRaw(
-          adminContext,
-          TAGS_CACHE_KEYS.publicList,
-        );
+        const cached = await adminContext.env.KV.get("public:tags:list");
         expect(cached).not.toBeNull();
 
         const result2 = await TagService.getPublicTags(adminContext);
@@ -197,10 +192,7 @@ describe("Tags & Search Integration", () => {
         );
         await waitForBackgroundTasks(adminContext.executionCtx);
 
-        const cached = await CacheService.getRaw(
-          adminContext,
-          TAGS_CACHE_KEYS.publicList,
-        );
+        const cached = await adminContext.env.KV.get("public:tags:list");
         expect(cached).toBeNull();
 
         const updated = await TagService.getTags(adminContext);
@@ -217,10 +209,7 @@ describe("Tags & Search Integration", () => {
         await TagService.deleteTag(adminContext, { id: tag.id });
         await waitForBackgroundTasks(adminContext.executionCtx);
 
-        const cached = await CacheService.getRaw(
-          adminContext,
-          TAGS_CACHE_KEYS.publicList,
-        );
+        const cached = await adminContext.env.KV.get("public:tags:list");
         expect(cached).toBeNull();
 
         const result = await TagService.getTags(adminContext);

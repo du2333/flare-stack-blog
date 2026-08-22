@@ -92,14 +92,7 @@ export async function findPostBySlug(
   context: DbContext & { executionCtx: ExecutionContext },
   data: { slug: string },
 ) {
-  const fetcher = () => PostRepo.findPostBySlug(context.db, data.slug);
-  return CacheService.getVersioned(
-    context,
-    "posts:detail",
-    (version) => POSTS_CACHE_KEYS.detail(version, data.slug),
-    PostSchema,
-    fetcher,
-  );
+  return postBySlug.get(context, { slug: data.slug });
 }
 ```
 
@@ -190,18 +183,14 @@ Dual-layer caching architecture:
 
 | Layer | Technology            | Purpose                                           |
 | ----- | --------------------- | ------------------------------------------------- |
-| CDN   | Cache-Control headers | Edge caching, set via page headers or Hono routes |
-| KV    | Generation Keys       | Server-side caching, managed via `CacheService`   |
+| Pages | Cache-Control headers | Browser / future Workers Cache                    |
+| KV    | Public Cache          | Public read model via `defineEntry` / `invalidate` |
 
 Invalidation Patterns:
 
 ```typescript
-// Batch Invalidation: Rotate to a new generation token
-await CacheService.bumpVersion(context, "posts:list");
-
-// Single Item Invalidation: Delete specific key
-const version = await CacheService.getVersion(context, "posts:detail");
-await CacheService.deleteKey(context, POSTS_CACHE_KEYS.detail(version, slug));
+await invalidate.postPublished(context, { slug });
+await invalidate.tagChanged(context, { slugs: affectedSlugs });
 ```
 
 ### 5. TanStack Query Patterns

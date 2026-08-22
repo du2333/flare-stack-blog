@@ -68,7 +68,3 @@ export type SetPostTagsInput = z.infer<typeof SetPostTagsInputSchema>;
 export type GetTagsByPostIdInput = z.infer<typeof GetTagsByPostIdInputSchema>;
 export type TagWithCount = z.infer<typeof TagWithCountSchema>;
 export type GenerateTagsInput = z.infer<typeof GenerateTagsInputSchema>;
-
-export const TAGS_CACHE_KEYS = {
-  publicList: ["public", "tags", "list"] as const,
-} as const;

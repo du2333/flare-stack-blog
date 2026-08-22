@@ -1,4 +1,4 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import type {
   DashboardRange,
   DashboardResponse,
@@ -100,7 +100,7 @@ export async function getDashboardStats(
     ) as NonNullable<DashboardResponse["trafficByRange"]>;
   };
 
-  const trafficByRange = await CacheService.get(
+  const trafficByRange = await kvStore.remember(
     context,
     PAGEVIEW_CACHE_KEYS.traffic,
     CachedAllRangesSchema,

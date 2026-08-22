@@ -1,4 +1,4 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import { logPostAutoSnapshot } from "@/features/posts/services/post-auto-snapshot.logging";
 
 export const DEFAULT_AUTO_SNAPSHOT_QUIET_WINDOW_SECONDS = 30;
@@ -17,7 +17,7 @@ export async function enqueuePostAutoSnapshot(
   },
 ) {
   const throttleKey = getPostAutoSnapshotThrottleKey(data.postId);
-  const alreadyQueued = await CacheService.getRaw(context, throttleKey);
+  const alreadyQueued = await kvStore.get(context, throttleKey);
   if (alreadyQueued) {
     logPostAutoSnapshot(context.env, "enqueue_skipped_throttled", {
       postId: data.postId,
@@ -28,7 +28,7 @@ export async function enqueuePostAutoSnapshot(
     return;
   }
 
-  await CacheService.set(context, throttleKey, "1", {
+  await kvStore.put(context, throttleKey, "1", {
     ttl: AUTO_SNAPSHOT_QUEUE_THROTTLE_TTL,
   });
 

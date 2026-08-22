@@ -1,15 +1,18 @@
-import * as CacheService from "@/features/cache/cache.service";
+import { invalidate } from "@/features/cache/public-cache";
 import { adminProcedure } from "@/lib/orpc/procedure";
 
-const invalidate = adminProcedure
+const invalidateSite = adminProcedure
   .route({
     method: "POST",
     path: "/admin/cache/invalidate",
     summary: "Invalidate the public cache",
     tags: ["Admin Cache"],
   })
-  .handler(({ context }) => CacheService.invalidateSiteCache(context));
+  .handler(async ({ context }) => {
+    await invalidate.all(context);
+    return { success: true };
+  });
 
 export default {
-  invalidate,
+  invalidate: invalidateSite,
 };

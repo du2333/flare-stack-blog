@@ -144,13 +144,5 @@ export type PostItem = z.infer<typeof PostItemSchema>;
 export type PostWithToc = z.infer<typeof PostWithTocSchema>;
 
 export const POSTS_CACHE_KEYS = {
-  list: (version: string, limit: number, cursor: number, tagName?: string) =>
-    tagName === undefined
-      ? (["posts", "list", version, limit, cursor, "all"] as const)
-      : (["posts", "list", version, limit, cursor, "tag", tagName] as const),
-  detail: (version: string, slug: string) => [version, "post", slug] as const,
-  related: (slug: string, limit?: number) =>
-    ["posts", "related-ids", slug, limit] as const,
   syncHash: (id: number) => `post_hash:${id}` as const,
-  pinned: (version: string) => [version, "posts", "pinned"] as const,
 } as const;

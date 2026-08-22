@@ -79,7 +79,3 @@ export const DEFAULT_CONFIG: SystemConfig = {
   },
   site: blogConfig satisfies SiteConfigInput,
 };
-
-export const CONFIG_CACHE_KEYS = {
-  system: ["system"] as const,
-} as const;

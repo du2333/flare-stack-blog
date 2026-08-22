@@ -92,14 +92,7 @@ export async function findPostBySlug(
   context: DbContext & { executionCtx: ExecutionContext },
   data: { slug: string },
 ) {
-  const fetcher = () => PostRepo.findPostBySlug(context.db, data.slug);
-  return CacheService.getVersioned(
-    context,
-    "posts:detail",
-    (version) => POSTS_CACHE_KEYS.detail(version, data.slug),
-    PostSchema,
-    fetcher,
-  );
+  return postBySlug.get(context, { slug: data.slug });
 }
 ```
 
@@ -162,17 +155,13 @@ oRPC procedure 按权限分层：`publicProcedure` → `authProcedure` → `admi
 | 层  | 技术                  | 用途                                        |
 | --- | --------------------- | ------------------------------------------- |
 | 页面 | Cache-Control headers | 浏览器/将来的 Workers Cache |
-| KV   | generation key        | **Public Cache**，通过 `CacheService` 管理 |
+| KV   | Public Cache          | 公开读模型，通过 `defineEntry` / `invalidate` 管理 |
 
 失效模式：
 
 ```typescript
-// 批量失效：旋转到新的 generation token
-await CacheService.bumpVersion(context, "posts:list");
-
-// 单条失效：删除特定 key
-const version = await CacheService.getVersion(context, "posts:detail");
-await CacheService.deleteKey(context, POSTS_CACHE_KEYS.detail(version, slug));
+await invalidate.postPublished(context, { slug });
+await invalidate.tagChanged(context, { slugs: affectedSlugs });
 ```
 
 ### 5. TanStack Query 模式

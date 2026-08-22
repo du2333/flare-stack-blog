@@ -1,6 +1,6 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { WorkflowEntrypoint } from "cloudflare:workers";
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import type {
   ExportManifest,
   PostFrontmatter,
@@ -285,7 +285,7 @@ export class ExportWorkflow extends WorkflowEntrypoint<
 
   private async updateProgress(key: string, progress: TaskProgress) {
     const context: BaseContext = { env: this.env };
-    await CacheService.set(context, key, JSON.stringify(progress), {
+    await kvStore.put(context, key, JSON.stringify(progress), {
       ttl: "24h",
     });
   }

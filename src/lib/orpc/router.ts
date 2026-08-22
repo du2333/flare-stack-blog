@@ -1,3 +1,8 @@
+import "@/features/config/config.cache";
+import "@/features/friend-links/friend-links.cache";
+import "@/features/pageview/pageview.cache";
+import "@/features/posts/posts.cache";
+import "@/features/tags/tags.cache";
 import cacheRouter from "@/features/cache/server/router";
 import commentsRouter from "@/features/comments/server/router";
 import configRouter from "@/features/config/server/router";

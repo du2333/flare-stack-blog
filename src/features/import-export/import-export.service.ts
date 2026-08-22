@@ -1,4 +1,4 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import type {
   StartExportInput,
   TaskProgress,
@@ -38,7 +38,7 @@ export async function startExport(
     warnings: [],
   };
 
-  await CacheService.set(
+  await kvStore.put(
     context,
     IMPORT_EXPORT_CACHE_KEYS.exportProgress(taskId),
     JSON.stringify(initialProgress),
@@ -61,7 +61,7 @@ export async function startExport(
         error: error instanceof Error ? error.message : String(error),
       }),
     );
-    await CacheService.deleteKey(
+    await kvStore.remove(
       context,
       IMPORT_EXPORT_CACHE_KEYS.exportProgress(taskId),
     );
@@ -149,7 +149,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
     warnings: [],
   };
 
-  await CacheService.set(
+  await kvStore.put(
     context,
     IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId),
     JSON.stringify(initialProgress),
@@ -167,7 +167,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
         error: error instanceof Error ? error.message : String(error),
       }),
     );
-    await CacheService.deleteKey(
+    await kvStore.remove(
       context,
       IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId),
     );
@@ -178,7 +178,7 @@ export async function startImport(context: BaseContext, files: Array<File>) {
 }
 
 export async function getExportProgress(context: BaseContext, taskId: string) {
-  const raw = await CacheService.getRaw(
+  const raw = await kvStore.get(
     context,
     IMPORT_EXPORT_CACHE_KEYS.exportProgress(taskId),
   );
@@ -186,7 +186,7 @@ export async function getExportProgress(context: BaseContext, taskId: string) {
 }
 
 export async function getImportProgress(context: BaseContext, taskId: string) {
-  const raw = await CacheService.getRaw(
+  const raw = await kvStore.get(
     context,
     IMPORT_EXPORT_CACHE_KEYS.importProgress(taskId),
   );

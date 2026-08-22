@@ -1,4 +1,5 @@
-import * as CacheService from "@/features/cache/cache.service";
+import { invalidate } from "@/features/cache/public-cache";
+import { approvedFriendLinks } from "@/features/friend-links/friend-links.cache";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
@@ -11,10 +12,6 @@ import type {
   RejectFriendLinkInput,
   SubmitFriendLinkInput,
   UpdateFriendLinkInput,
-} from "./friend-links.schema";
-import {
-  ApprovedFriendLinksResponseSchema,
-  FRIEND_LINKS_CACHE_KEYS,
 } from "./friend-links.schema";
 
 // ============ Authed User Methods ============
@@ -73,30 +70,13 @@ export async function getMyFriendLinks(context: AuthContext) {
 export async function getApprovedFriendLinks(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  const fetcher = async () =>
-    await FriendLinkRepo.getAllFriendLinks(context.db, {
-      status: "approved",
-      limit: null,
-    });
-
-  return await CacheService.getVersioned(
-    context,
-    "friend-links:list",
-    FRIEND_LINKS_CACHE_KEYS.approvedList,
-    ApprovedFriendLinksResponseSchema,
-    fetcher,
-    { ttl: "7d" },
-  );
+  return approvedFriendLinks.get(context, {});
 }
-
-// ============ Admin Methods ============
 
 function invalidateCache(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  context.executionCtx.waitUntil(
-    CacheService.bumpVersion(context, "friend-links:list"),
-  );
+  context.executionCtx.waitUntil(invalidate.friendLinksChanged(context));
 }
 
 export async function createFriendLink(

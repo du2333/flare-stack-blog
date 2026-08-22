@@ -1,6 +1,7 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { WorkflowEntrypoint } from "cloudflare:workers";
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
+import { invalidate } from "@/features/cache/public-cache";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import { POSTS_CACHE_KEYS } from "@/features/posts/schema/posts.schema";
 import * as PostService from "@/features/posts/services/posts.service";
@@ -55,7 +56,7 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
           pinnedAt: p.pinnedAt,
           readTimeInMinutes: p.readTimeInMinutes,
         });
-        const oldHash = await CacheService.getRaw(
+        const oldHash = await kvStore.get(
           { env: this.env },
           POSTS_CACHE_KEYS.syncHash(postId),
         );
@@ -140,7 +141,7 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
         pinnedAt: p.pinnedAt,
         readTimeInMinutes: p.readTimeInMinutes,
       });
-      await CacheService.set(
+      await kvStore.put(
         { env: this.env },
         POSTS_CACHE_KEYS.syncHash(postId),
         hash,
@@ -160,8 +161,8 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     });
 
     await step.do("invalidate caches", async () => {
-      await invalidatePostCaches(this.env, post.slug);
-      await CacheService.deleteKey(
+      await invalidate.postDeleted({ env: this.env }, { slug: post.slug });
+      await kvStore.remove(
         { env: this.env },
         POSTS_CACHE_KEYS.syncHash(postId),
       );

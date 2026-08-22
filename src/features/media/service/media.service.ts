@@ -156,7 +156,13 @@ export async function handleImageRequest(
   const isLoop = viaHeader && /image-resizing/.test(viaHeader);
   const wantsOriginal = searchParams.get("original") === "true";
 
-  if (isLoop || wantsOriginal) {
+  const isLocalDev =
+    url.hostname === "localhost" || url.hostname === "127.0.0.1";
+
+  // Miniflare's local Image Resizing encodes AVIF extremely slowly (~30s for a
+  // ~1MB hero image). Serve the R2 original in local dev; production still
+  // goes through Cloudflare Image Resizing.
+  if (isLoop || wantsOriginal || isLocalDev) {
     return await serveOriginal();
   }
 

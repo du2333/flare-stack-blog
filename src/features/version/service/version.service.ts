@@ -1,4 +1,4 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import type { UpdateCheckResult } from "@/features/version/version.schema";
 import {
   GitHubReleaseSchema,
@@ -69,7 +69,7 @@ export async function checkForUpdate(
     if (force) {
       data = await fetcher();
       context.executionCtx.waitUntil(
-        CacheService.set(
+        kvStore.put(
           context,
           VERSION_CACHE_KEYS.updateCheck,
           JSON.stringify(data),
@@ -77,7 +77,7 @@ export async function checkForUpdate(
         ),
       );
     } else {
-      data = await CacheService.get(
+      data = await kvStore.remember(
         context,
         VERSION_CACHE_KEYS.updateCheck,
         UpdateCheckResultSchema,

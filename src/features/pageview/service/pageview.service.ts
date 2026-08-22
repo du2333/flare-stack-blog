@@ -1,46 +1,16 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import * as PageviewRepo from "@/features/pageview/data/pageview.data";
+import { popularPosts } from "@/features/pageview/pageview.cache";
 import {
   PAGEVIEW_CACHE_KEYS,
   ViewCountsSchema,
 } from "@/features/pageview/pageview.schema";
-import * as PostRepo from "@/features/posts/data/posts.data";
-import { PostItemSchema } from "@/features/posts/schema/posts.schema";
 
 export async function getPopularPosts(
   context: DbContext & { executionCtx: ExecutionContext },
   limit = 5,
 ) {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now);
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  return CacheService.getVersioned(
-    context,
-    "posts:list",
-    (version) => [version, ...PAGEVIEW_CACHE_KEYS.popular, limit],
-    PostItemSchema.array(),
-    async () => {
-      const topPages = await PageviewRepo.getTopPages(
-        context.db,
-        thirtyDaysAgo,
-        now,
-        limit,
-      );
-      if (topPages.length === 0) return [];
-
-      const slugs = topPages.map((p) => p.slug);
-      const posts = await PostRepo.findPostsBySlugs(context.db, slugs);
-
-      // Preserve popularity order
-      const bySlug = new Map(posts.map((p) => [p.slug, p]));
-      return slugs.flatMap((slug) => {
-        const post = bySlug.get(slug);
-        return post ? [post] : [];
-      });
-    },
-    { ttl: "3h" },
-  );
+  return popularPosts.get(context, { limit });
 }
 
 export async function getViewCounts(
@@ -49,7 +19,7 @@ export async function getViewCounts(
 ) {
   if (slugs.length === 0) return {};
 
-  return CacheService.get(
+  return kvStore.remember(
     context,
     PAGEVIEW_CACHE_KEYS.viewCounts(slugs),
     ViewCountsSchema,

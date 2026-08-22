@@ -1,4 +1,4 @@
-import * as CacheService from "@/features/cache/cache.service";
+import * as kvStore from "@/features/cache/kv-store";
 import * as DashboardService from "@/features/dashboard/service/dashboard.service";
 import { PAGEVIEW_CACHE_KEYS } from "@/features/pageview/pageview.schema";
 import { adminProcedure } from "@/lib/orpc/procedure";
@@ -20,7 +20,7 @@ const refresh = adminProcedure
     tags: ["Admin Dashboard"],
   })
   .handler(async ({ context }) => {
-    await CacheService.deleteKey(context, PAGEVIEW_CACHE_KEYS.traffic);
+    await kvStore.remove(context, PAGEVIEW_CACHE_KEYS.traffic);
     return DashboardService.getDashboardStats(context);
   });
 

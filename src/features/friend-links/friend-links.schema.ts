@@ -155,11 +155,6 @@ export const ApprovedFriendLinksResponseSchema = z.array(
   FriendLinkWithUserSchema,
 );
 
-export const FRIEND_LINKS_CACHE_KEYS = {
-  approvedList: (version: string) =>
-    ["friend-links", "approved", version] as const,
-} as const;
-
 // === Types ===
 export type SubmitFriendLinkInput = z.infer<typeof SubmitFriendLinkInputSchema>;
 export type CreateFriendLinkInput = z.infer<typeof CreateFriendLinkInputSchema>;
