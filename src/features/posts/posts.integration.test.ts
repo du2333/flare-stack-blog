@@ -1,4 +1,3 @@
-import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import {
@@ -10,16 +9,10 @@ import {
   waitForBackgroundTasks,
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as kvStore from "@/features/cache/kv-store";
 import { invalidate } from "@/features/cache/public-cache";
-import {
-  GetPostsCursorInputSchema,
-  POSTS_CACHE_KEYS,
-} from "@/features/posts/schema/posts.schema";
+import { GetPostsCursorInputSchema } from "@/features/posts/schema/posts.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
-import { calculatePostHash } from "@/features/posts/utils/sync";
-import { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 import * as TagService from "@/features/tags/tags.service";
 import { PostRevisionsTable, PostsTable } from "@/lib/db/schema";
 
@@ -660,28 +653,27 @@ describe("Posts Integration", () => {
   });
 
   describe("Workflow Integration", () => {
-    it("should trigger POST_PROCESS_WORKFLOW when startPostProcessWorkflow called", async () => {
+    it("does not insert another publish revision when republishing unchanged content", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       await updatePost({
         id,
         data: {
-          title: "Workflow Test",
-          slug: "workflow-test",
+          title: "Idempotent Publish",
+          slug: "idempotent-publish",
           publishedAt: new Date(),
         },
       });
 
       unwrap(await PostService.publishPost(adminContext, { id }));
+      unwrap(await PostService.publishPost(adminContext, { id }));
 
+      const revisions = await PostRevisionService.listPostRevisions(
+        adminContext,
+        { postId: id },
+      );
       expect(
-        adminContext.env.POST_PROCESS_WORKFLOW.create,
-      ).toHaveBeenCalledWith({
-        params: {
-          postId: id,
-          isPublished: true,
-          slug: "workflow-test",
-        },
-      });
+        revisions.filter((revision) => revision.reason === "publish"),
+      ).toHaveLength(1);
     });
 
     it("should auto-set publishedAt when publishing for the first time", async () => {
@@ -1248,26 +1240,7 @@ describe("Posts Integration", () => {
     });
   });
 
-  describe("PostProcessWorkflow", () => {
-    const step: WorkflowStep = {
-      do: (async (
-        _name: string,
-        configOrCallback: unknown,
-        maybeCallback?: unknown,
-      ) => {
-        const callback =
-          typeof configOrCallback === "function"
-            ? configOrCallback
-            : maybeCallback;
-        return await (callback as () => Promise<unknown>)();
-      }) as WorkflowStep["do"],
-      sleep: (async () => undefined) as unknown as WorkflowStep["sleep"],
-      sleepUntil: (async () =>
-        undefined) as unknown as WorkflowStep["sleepUntil"],
-      waitForEvent: (async () =>
-        undefined) as unknown as WorkflowStep["waitForEvent"],
-    };
-
+  describe("Publish", () => {
     beforeEach(async () => {
       vi.restoreAllMocks();
       adminContext = createAdminTestContext({
@@ -1276,14 +1249,14 @@ describe("Posts Integration", () => {
       await seedUser(adminContext.db, adminContext.session.user);
     });
 
-    it("rebuilds missing public content even when the sync hash matches", async () => {
+    it("stores highlighted code in the public snapshot", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       unwrap(
         await PostService.updatePost(adminContext, {
           id,
           data: {
-            title: "Workflow Snapshot",
-            slug: "workflow-snapshot",
+            title: "Highlighted Snapshot",
+            slug: "highlighted-snapshot",
             summary: "already summarized",
             publishedAt: new Date(),
             contentJson: {
@@ -1300,56 +1273,18 @@ describe("Posts Integration", () => {
         }),
       );
 
-      const post = await adminContext.db.query.PostsTable.findFirst({
-        where: eq(PostsTable.id, id),
-        with: {
-          postTags: {
-            with: {
-              tag: true,
-            },
-          },
-        },
-      });
-      expect(post).not.toBeNull();
-      const updatedAtBeforeRun = post!.updatedAt;
-
-      await kvStore.put(
-        { env: adminContext.env },
-        POSTS_CACHE_KEYS.syncHash(id),
-        await calculatePostHash({
-          title: post!.title,
-          contentJson: post!.contentJson,
-          summary: post!.summary,
-          tagIds: post!.postTags.map((pt) => pt.tag.id),
-          slug: post!.slug,
-          publishedAt: post!.publishedAt,
-        }),
-      );
-
-      const workflow = Object.assign(
-        Object.create(PostProcessWorkflow.prototype),
-        {
-          env: adminContext.env,
-        },
-      ) as PostProcessWorkflow;
-
-      await workflow.run(
-        {
-          payload: { postId: id, isPublished: true },
-        } as WorkflowEvent<{
-          postId: number;
-          isPublished: boolean;
-        }>,
-        step,
-      );
+      unwrap(await PostService.publishPost(adminContext, { id }));
 
       const updatedPost = await adminContext.db.query.PostsTable.findFirst({
         where: eq(PostsTable.id, id),
       });
+      const codeBlock =
+        updatedPost?.publicSnapshotJson?.contentJson?.content?.find(
+          (node) => node.type === "codeBlock",
+        );
 
-      expect(updatedPost?.publicSnapshotJson).toBeTruthy();
-      expect(updatedPost?.updatedAt?.getTime()).toBe(
-        updatedAtBeforeRun.getTime(),
+      expect(codeBlock?.attrs?.highlightedHtml).toEqual(
+        expect.stringContaining("const"),
       );
     });
 

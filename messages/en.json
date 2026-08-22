@@ -676,6 +676,9 @@
   "editor_leave_confirm": "Confirm Leave",
   "editor_action_publish_start": "Publish Workflow Started",
   "editor_action_publish_desc": "Content processing and deployment analysis in progress.",
+  "editor_action_publish_failed": "Publishing did not finish. Try again.",
+  "editor_action_image_uploading": "Images are still uploading. Wait until they finish, then publish.",
+  "editor_action_unpublish_failed": "Unpublishing did not finish. Try again.",
   "editor_action_slug_set": "URL Slug Set",
   "editor_action_slug_set_desc": [
     {

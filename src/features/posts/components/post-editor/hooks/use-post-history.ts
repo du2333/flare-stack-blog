@@ -42,11 +42,13 @@ export function usePostHistory({
   isInspecting,
   onInspectingChange,
   onRestoreApplied,
+  beforeRestore,
 }: {
   postId: number;
   isInspecting: boolean;
   onInspectingChange: (isInspecting: boolean) => void;
   onRestoreApplied: (snapshot: PostRevisionSnapshot) => void;
+  beforeRestore?: () => Promise<void>;
 }) {
   const queryClient = useQueryClient();
   const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
@@ -100,6 +102,8 @@ export function usePostHistory({
       if (selectedRevisionId == null) {
         throw new Error("REVISION_NOT_SELECTED");
       }
+
+      await beforeRestore?.();
 
       await orpcClient.posts.admin.revisions.restore({
         postId,

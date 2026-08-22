@@ -22,8 +22,8 @@ import { TableBubbleMenu } from "./ui/table-bubble-menu";
 
 interface EditorProps {
   content?: JSONContent | string;
-  onChange?: (json: JSONContent) => void;
-  onCreated?: (editor: TiptapEditor) => void;
+  onUpdate?: (editor: TiptapEditor) => void;
+  onCreated?: (editor: TiptapEditor | null) => void;
   extensions: Extensions;
   editable?: boolean;
   className?: string;
@@ -32,7 +32,7 @@ interface EditorProps {
 
 export const Editor = memo(function Editor({
   content,
-  onChange,
+  onUpdate,
   onCreated,
   extensions,
   editable = true,
@@ -57,7 +57,10 @@ export const Editor = memo(function Editor({
       onCreated?.(currentEditor);
     },
     onUpdate: ({ editor: currentEditor }) => {
-      onChange?.(currentEditor.getJSON());
+      onUpdate?.(currentEditor);
+    },
+    onDestroy: () => {
+      onCreated?.(null);
     },
     editorProps: {
       attributes: {

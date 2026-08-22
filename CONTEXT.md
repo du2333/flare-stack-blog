@@ -112,7 +112,7 @@ _Avoid_: Webhook, callback URL
 - A **Post** can reference zero or more **Media** items.
 - A **Published Post** has a **Public Content Snapshot** for public rendering.
 - A **Draft Post** does not appear in public listing, detail, or search surfaces.
-- Publishing a **Post** replaces its **Public Content Snapshot** from the Post the **Admin** is editing and creates a **Post Revision**.
+- Publishing a **Post** replaces its **Public Content Snapshot** from the Post the **Admin** is editing and creates a **Post Revision**. Publishing again is safe: it replaces the snapshot and updates the **Search Index** and **Public Cache**.
 - Autosave does not create a **Post Revision**.
 - Editing or autosaving a **Post** does not update the **Public Content Snapshot**.
 - Unpublishing a **Published Post** discards its **Public Content Snapshot**, making it a **Draft Post**, and removes it from public listing, detail, and search.
@@ -134,6 +134,7 @@ _Avoid_: Webhook, callback URL
 - An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, and **Friend Links**.
 - A **User** can create **Comments** and submit **Friend Links**.
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
+- Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
 - **AI Moderation** processes **Verifying Comments**.
 - **Traffic Metrics** can rank **Published Posts** as popular posts.

@@ -44,6 +44,18 @@ export function extractAllImageKeys(doc: JSONContent | null): Array<string> {
   return Array.from(new Set(keys)); // 去重
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+export function fallbackCodeHtml(code: string) {
+  return `<pre><code>${escapeHtml(code)}</code></pre>`;
+}
+
 export async function highlightCodeBlocks(
   doc: JSONContent,
 ): Promise<JSONContent> {
@@ -54,7 +66,7 @@ export async function highlightCodeBlocks(
       const code = node.content?.map((n) => n.text || "").join("") || "";
       const lang = node.attrs?.language || "text";
       try {
-        const html = await highlight(code.trim(), lang);
+        const html = await highlight(code, lang);
         node.attrs = { ...node.attrs, highlightedHtml: html };
       } catch (e) {
         console.warn(
@@ -64,6 +76,10 @@ export async function highlightCodeBlocks(
             error: e instanceof Error ? e.message : String(e),
           }),
         );
+        node.attrs = {
+          ...node.attrs,
+          highlightedHtml: fallbackCodeHtml(code),
+        };
       }
     }
     if (node.content) {

@@ -129,10 +129,6 @@ export const UpdatePostInputSchema = z.object({
 
 export const DeletePostInputSchema = z.object({ id: z.number() });
 
-export const PreviewSummaryInputSchema = PostSelectSchema.pick({
-  contentJson: true,
-});
-
 export const PublishPostInputSchema = z.object({
   id: z.number(),
 });
@@ -147,7 +143,6 @@ export type GetPostsCountInput = z.infer<typeof GetPostsCountInputSchema>;
 export type FindPostByIdInput = z.infer<typeof FindPostByIdInputSchema>;
 export type UpdatePostInput = z.infer<typeof UpdatePostInputSchema>;
 export type DeletePostInput = z.infer<typeof DeletePostInputSchema>;
-export type PreviewSummaryInput = z.infer<typeof PreviewSummaryInputSchema>;
 export type PublishPostInput = z.infer<typeof PublishPostInputSchema>;
 export type UnpublishPostInput = z.infer<typeof UnpublishPostInputSchema>;
 export type PostListItem = PostItem;
@@ -155,7 +150,3 @@ export type PostListItem = PostItem;
 export type PostListResponse = z.infer<typeof PostListResponseSchema>;
 export type PostItem = z.infer<typeof PostItemSchema>;
 export type PostWithToc = z.infer<typeof PostWithTocSchema>;
-
-export const POSTS_CACHE_KEYS = {
-  syncHash: (id: number) => `post_hash:${id}` as const,
-} as const;

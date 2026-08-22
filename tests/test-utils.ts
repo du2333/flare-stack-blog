@@ -117,12 +117,6 @@ export function createTestContext(
     >,
   );
 
-  vi.spyOn(context.env.POST_PROCESS_WORKFLOW, "create").mockResolvedValue(
-    mockWorkflowInstance as unknown as Awaited<
-      ReturnType<Env["POST_PROCESS_WORKFLOW"]["create"]>
-    >,
-  );
-
   vi.spyOn(context.env.QUEUE, "send").mockResolvedValue({
     metadata: {
       metrics: {

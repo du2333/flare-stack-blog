@@ -1,5 +1,3 @@
-import * as AiService from "@/features/ai/ai.service";
-import * as kvStore from "@/features/cache/kv-store";
 import { invalidate } from "@/features/cache/public-cache";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
@@ -19,21 +17,13 @@ import type {
   GetPostsCountInput,
   GetPostsCursorInput,
   GetPostsInput,
-  PreviewSummaryInput,
   PublishPostInput,
   UnpublishPostInput,
   UpdatePostInput,
 } from "@/features/posts/schema/posts.schema";
-import {
-  normalizePostTagName,
-  POSTS_CACHE_KEYS,
-} from "@/features/posts/schema/posts.schema";
+import { normalizePostTagName } from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
-import {
-  convertToPlainText,
-  highlightCodeBlocks,
-  slugify,
-} from "@/features/posts/utils/content";
+import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
 import {
   isFuturePublishDate,
   serverUtcDateString,
@@ -86,6 +76,15 @@ async function createPublishRevision(
     publishedAt: post.publishedAt,
     pinnedAt: post.pinnedAt,
   });
+
+  const latestPublish = await PostRevisionRepo.findLatestPostRevision(
+    context.db,
+    post.id,
+    { reason: "publish" },
+  );
+  if (latestPublish?.snapshotHash === snapshotHash) {
+    return;
+  }
 
   await PostRevisionRepo.insertPostRevision(context.db, {
     postId: post.id,
@@ -148,44 +147,6 @@ export async function getRelatedPosts(
     .map((id) => posts.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => !!p);
 }
-
-export async function generateSummaryByPostId({
-  context,
-  postId,
-}: {
-  context: DbContext;
-  postId: number;
-}) {
-  const post = await PostRepo.findPostById(context.db, postId);
-
-  if (!post) {
-    return err({ reason: "POST_NOT_FOUND" });
-  }
-
-  // 如果已经存在摘要，则直接返回
-  if (post.summary && post.summary.trim().length > 0) {
-    return ok(stripPublicSnapshot(post));
-  }
-
-  const plainText = convertToPlainText(post.contentJson);
-  if (plainText.length < 100) {
-    return ok(stripPublicSnapshot(post));
-  }
-
-  const { summary } = await AiService.summarizeText(context, plainText);
-
-  const updatedPost = await PostRepo.updatePost(context.db, post.id, {
-    summary,
-  });
-
-  if (!updatedPost) {
-    return err({ reason: "POST_NOT_FOUND" });
-  }
-
-  return ok(stripPublicSnapshot(updatedPost));
-}
-
-// ============ Admin Service Methods ============
 
 export async function generateSlug(
   context: DbContext,
@@ -322,29 +283,11 @@ export async function deletePost(
 
   const publicSlug = post.publicSlug ?? post.publicSnapshotJson?.slug;
   if (publicSlug) {
-    context.executionCtx.waitUntil(
-      Promise.all([
-        invalidate.postDeleted(context, { slug: publicSlug }),
-        SearchService.deleteIndex(context, { id: data.id }),
-        kvStore.remove(context, POSTS_CACHE_KEYS.syncHash(data.id)),
-      ]),
-    );
-  } else {
-    context.executionCtx.waitUntil(
-      kvStore.remove(context, POSTS_CACHE_KEYS.syncHash(data.id)),
-    );
+    await SearchService.deleteIndex(context, { id: data.id });
+    await invalidate.postDeleted(context, { slug: publicSlug });
   }
 
   return ok({ success: true });
-}
-
-export async function previewSummary(
-  context: DbContext,
-  data: PreviewSummaryInput,
-) {
-  const plainText = convertToPlainText(data.contentJson);
-  const { summary } = await AiService.summarizeText(context, plainText);
-  return { summary };
 }
 
 export async function publishPost(
@@ -388,22 +331,22 @@ export async function publishPost(
   const previousPublicSlug = publishedPost.publicSlug;
   await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
 
-  if (previousPublicSlug && previousPublicSlug !== snapshot.slug) {
-    context.executionCtx.waitUntil(
-      invalidate.postDeleted(context, { slug: previousPublicSlug }),
-    );
-  }
-  context.executionCtx.waitUntil(
-    invalidate.postPublished(context, { slug: snapshot.slug }),
+  await SearchService.upsert(
+    { env: context.env },
+    {
+      id: publishedPost.id,
+      slug: snapshot.slug,
+      title: snapshot.title,
+      summary: snapshot.summary,
+      contentJson: highlighted,
+      tags: publishedPost.tags.map((tag) => tag.name),
+    },
   );
 
-  await context.env.POST_PROCESS_WORKFLOW.create({
-    params: {
-      postId: publishedPost.id,
-      isPublished: true,
-      slug: snapshot.slug,
-    },
-  });
+  if (previousPublicSlug && previousPublicSlug !== snapshot.slug) {
+    await invalidate.postDeleted(context, { slug: previousPublicSlug });
+  }
+  await invalidate.postPublished(context, { slug: snapshot.slug });
 
   return ok({ success: true });
 }
@@ -420,17 +363,8 @@ export async function unpublishPost(
   const publicSlug =
     post.publicSlug ?? post.publicSnapshotJson?.slug ?? post.slug;
   await PostRepo.clearPublicSnapshot(context.db, post.id);
-  context.executionCtx.waitUntil(
-    invalidate.postDeleted(context, { slug: publicSlug }),
-  );
-
-  await context.env.POST_PROCESS_WORKFLOW.create({
-    params: {
-      postId: post.id,
-      isPublished: false,
-      slug: publicSlug,
-    },
-  });
+  await SearchService.deleteIndex(context, { id: post.id });
+  await invalidate.postDeleted(context, { slug: publicSlug });
 
   return ok({ success: true });
 }

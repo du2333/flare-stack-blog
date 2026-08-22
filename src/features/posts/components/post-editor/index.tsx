@@ -2,17 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useBlocker } from "@tanstack/react-router";
 import type { JSONContent, Editor as TiptapEditor } from "@tiptap/react";
 import { History, Loader2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Editor } from "@/components/tiptap-editor";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
+import { convertToPlainText } from "@/features/posts/utils/content";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { EditorTableOfContents } from "./editor-table-of-contents";
 import { useAutoSave, usePostActions, usePostHistory } from "./hooks";
+import { contentStatsFromText } from "./post-editor.model";
 import { PostEditorHeader } from "./post-editor-header";
 import { PostEditorHistoryDocument } from "./post-editor-history-document";
 import { PostEditorHistoryList } from "./post-editor-history-list";
@@ -33,25 +35,13 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     hasPublicSnapshot: initialData.hasPublicSnapshot,
     serverToday: initialData.serverToday,
   }));
-
-  const [prevInitialDataId, setPrevInitialDataId] = useState(initialData.id);
-  const [prevTagIds, setPrevTagIds] = useState(() =>
-    [...initialData.tagIds].sort().join(","),
+  const [editorContent, setEditorContent] = useState<JSONContent | null>(
+    () => initialData.contentJson ?? null,
   );
-
-  const currentTagIdsStr = [...initialData.tagIds].sort().join(",");
-
-  if (prevInitialDataId !== initialData.id || prevTagIds !== currentTagIdsStr) {
-    setPrevInitialDataId(initialData.id);
-    setPrevTagIds(currentTagIdsStr);
-    setPost((prev) => ({
-      ...prev,
-      tagIds: initialData.tagIds,
-      hasPublicSnapshot: initialData.hasPublicSnapshot,
-      serverToday: initialData.serverToday,
-    }));
-  }
-
+  const [contentEpoch, setContentEpoch] = useState(0);
+  const [contentStats, setContentStats] = useState(() =>
+    contentStatsFromText(convertToPlainText(initialData.contentJson ?? null)),
+  );
   const [editorInstance, setEditorInstance] = useState<TiptapEditor | null>(
     null,
   );
@@ -60,15 +50,44 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   );
   const [isInspecting, setIsInspecting] = useState(false);
 
+  const editorRef = useRef<TiptapEditor | null>(null);
+  const editorContentRef = useRef(editorContent);
+  editorContentRef.current = editorContent;
+  editorRef.current = editorInstance;
+
   const { data: allTags = [] } = useQuery(tagsAdminQueryOptions());
 
-  const useAutoSaveReturn = useAutoSave({
+  const getContent = useCallback(() => {
+    const editor = editorRef.current;
+    if (editor && !editor.isDestroyed) {
+      return editor.getJSON();
+    }
+    return editorContentRef.current;
+  }, []);
+
+  const {
+    saveStatus,
+    lastSaved,
+    setError,
+    markSaved,
+    flush,
+    waitForInFlightSave,
+    discardInFlightSave,
+  } = useAutoSave({
     post,
+    getContent,
+    contentEpoch,
     onSave,
     enabled: !isInspecting,
   });
 
-  const { saveStatus, lastSaved, setError, markSaved } = useAutoSaveReturn;
+  const sampleEditorContent = useCallback(() => {
+    const json = getContent();
+    editorContentRef.current = json;
+    setEditorContent(json);
+    setPost((prev) => ({ ...prev, contentJson: json }));
+    return json;
+  }, [getContent]);
 
   const handleRestoreApplied = useCallback(
     (snapshot: PostRevisionSnapshot) => {
@@ -84,9 +103,13 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         serverToday: post.serverToday,
       };
 
+      editorContentRef.current = snapshot.contentJson;
+      setEditorContent(snapshot.contentJson);
       setPost(restoredPost);
+      setContentEpoch(0);
+      setContentStats(contentStatsFromText(""));
       setEditorRenderKey(`editor:${initialData.id}:${Date.now()}`);
-      markSaved(restoredPost);
+      markSaved(restoredPost, 0);
     },
     [
       initialData.id,
@@ -97,45 +120,67 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     ],
   );
 
+  const beforeRestore = useCallback(async () => {
+    await waitForInFlightSave();
+    discardInFlightSave();
+  }, [discardInFlightSave, waitForInFlightSave]);
+
   const history = usePostHistory({
     postId: initialData.id,
     isInspecting,
     onInspectingChange: setIsInspecting,
     onRestoreApplied: handleRestoreApplied,
+    beforeRestore,
   });
 
+  const openHistory = useCallback(() => {
+    sampleEditorContent();
+    history.openHistory();
+  }, [history, sampleEditorContent]);
+
   const { proceed, reset, status } = useBlocker({
-    shouldBlockFn: () => saveStatus === "SAVING",
+    shouldBlockFn: () => saveStatus !== "SYNCED",
     withResolver: true,
   });
 
   const {
     isGeneratingSlug,
-    isGeneratingSummary,
     handleGenerateSlug,
-    handleGenerateSummary,
     handlePublish,
     handleUnpublish,
     processState,
     canPublish,
-    isGeneratingTags,
-    handleGenerateTags,
-    contentStats,
+    lockSlug,
   } = usePostActions({
     postId: initialData.id,
     post,
     setPost,
     setError,
-    allTags,
+    flush,
   });
 
-  const handleContentChange = useCallback((json: JSONContent) => {
-    setPost((prev) => ({ ...prev, contentJson: json }));
+  const handleEditorCreated = useCallback((editor: TiptapEditor | null) => {
+    editorRef.current = editor;
+    setEditorInstance(editor);
+    if (editor) {
+      setContentStats(contentStatsFromText(editor.getText()));
+    }
   }, []);
 
-  const handlePostChange = useCallback((updates: Partial<PostEditorData>) => {
-    setPost((prev) => ({ ...prev, ...updates }));
+  const handleEditorUpdate = useCallback((editor: TiptapEditor) => {
+    setContentEpoch((epoch) => epoch + 1);
+    setContentStats(contentStatsFromText(editor.getText()));
   }, []);
+
+  const handlePostChange = useCallback(
+    (updates: Partial<PostEditorData>) => {
+      if (updates.slug !== undefined) {
+        lockSlug();
+      }
+      setPost((prev) => ({ ...prev, ...updates }));
+    },
+    [lockSlug],
+  );
 
   const historyTagNames = useMemo(() => {
     if (!history.selectedRevision) return [];
@@ -181,7 +226,6 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
 
       <PostEditorHeader
         post={post}
-        saveStatus={saveStatus}
         processState={processState}
         canPublish={canPublish}
         onPublish={handlePublish}
@@ -238,7 +282,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={history.openHistory}
+                    onClick={openHistory}
                     className="rounded-none text-[10px] font-mono uppercase tracking-[0.18em]"
                   >
                     <History size={14} />
@@ -249,21 +293,17 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
                 <PostEditorMetadata
                   post={post}
                   isGeneratingSlug={isGeneratingSlug}
-                  isGeneratingSummary={isGeneratingSummary}
-                  isGeneratingTags={isGeneratingTags}
                   onPostChange={handlePostChange}
                   onGenerateSlug={handleGenerateSlug}
-                  onGenerateSummary={handleGenerateSummary}
-                  onGenerateTags={handleGenerateTags}
                 />
 
                 <div className="min-h-[60vh] pb-32">
                   <Editor
                     key={editorRenderKey}
                     extensions={extensions}
-                    content={post.contentJson ?? ""}
-                    onChange={handleContentChange}
-                    onCreated={setEditorInstance}
+                    content={editorContent ?? ""}
+                    onUpdate={handleEditorUpdate}
+                    onCreated={handleEditorCreated}
                   />
                 </div>
               </>
@@ -288,7 +328,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
               <div className="space-y-6">
                 <button
                   type="button"
-                  onClick={history.openHistory}
+                  onClick={openHistory}
                   className="flex w-full items-center justify-between border border-border/30 px-4 py-3 text-left transition-colors hover:border-foreground/20 hover:bg-muted/30"
                 >
                   <div>

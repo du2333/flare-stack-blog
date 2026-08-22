@@ -669,6 +669,9 @@
   "editor_leave_confirm": "确认离开",
   "editor_action_publish_start": "发布流启动",
   "editor_action_publish_desc": "后台正在进行内容处理与部署分析。",
+  "editor_action_publish_failed": "发布未完成，请再试一次。",
+  "editor_action_image_uploading": "图片还在上传，等完成后再发布。",
+  "editor_action_unpublish_failed": "取消发布未完成，请再试一次。",
   "editor_action_slug_set": "URL slug 已设置",
   "editor_action_slug_set_desc": [
     {

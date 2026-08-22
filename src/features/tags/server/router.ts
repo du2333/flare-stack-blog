@@ -1,8 +1,6 @@
-import * as AIService from "@/features/ai/ai.service";
 import {
   CreateTagInputSchema,
   DeleteTagInputSchema,
-  GenerateTagsInputSchema,
   GetTagsByPostIdInputSchema,
   GetTagsInputSchema,
   SetPostTagsInputSchema,
@@ -120,26 +118,6 @@ const byPostId = adminProcedure
   .input(GetTagsByPostIdInputSchema)
   .handler(({ context, input }) => TagService.getTagsByPostId(context, input));
 
-const generate = adminProcedure
-  .route({
-    method: "POST",
-    path: "/admin/tags/generate",
-    summary: "Generate tags with AI",
-    tags: ["Admin Tags"],
-  })
-  .input(GenerateTagsInputSchema)
-  .handler(({ context, input }) =>
-    AIService.generateTags(
-      context,
-      {
-        title: input.title,
-        summary: input.summary,
-        content: input.content,
-      },
-      input.existingTags,
-    ),
-  );
-
 export default {
   list,
   admin: {
@@ -150,6 +128,5 @@ export default {
     remove,
     setPostTags,
     byPostId,
-    generate,
   },
 };

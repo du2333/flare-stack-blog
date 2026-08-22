@@ -57,68 +57,81 @@ function handleFilePaste(editor: TiptapEditor, files: Array<File>) {
   });
 }
 
+function createBaseExtensions() {
+  return [
+    StarterKit.configure({
+      heading: false,
+      codeBlock: false,
+      blockquote: false,
+      code: {
+        HTMLAttributes: {
+          class:
+            "font-mono text-sm px-1 text-foreground/80 bg-muted/40 rounded-sm",
+          spellCheck: false,
+        },
+      },
+      underline: {
+        HTMLAttributes: {
+          class: "underline underline-offset-4 decoration-border/60",
+        },
+      },
+      strike: {
+        HTMLAttributes: {
+          class: "line-through opacity-50 decoration-foreground/40",
+        },
+      },
+      link: {
+        autolink: true,
+        openOnClick: false,
+        HTMLAttributes: {
+          class:
+            "font-normal underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 cursor-pointer text-foreground",
+          target: "_blank",
+        },
+      },
+    }),
+    HeadingExtension.configure({
+      levels: [1, 2, 3, 4],
+    }),
+    BlockQuoteExtension,
+    CodeBlockExtension,
+    Mathematics.configure({
+      katexOptions: { throwOnError: false },
+      inlineOptions: {
+        onClick: (node, pos) => {
+          openFormulaModalForEdit({
+            latex: node.attrs.latex ?? "",
+            pos,
+            type: "inline",
+            instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
+          });
+        },
+      },
+      blockOptions: {
+        onClick: (node, pos) => {
+          openFormulaModalForEdit({
+            latex: node.attrs.latex ?? "",
+            pos,
+            type: "block",
+            instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
+          });
+        },
+      },
+    }),
+    ...TableBlockExtension,
+    ImageExtension,
+    Placeholder.configure({
+      placeholder: m.editor_content_placeholder(),
+      emptyEditorClass: "is-editor-empty",
+    }),
+    TableOfContents.configure({
+      getId: (text) => slugify(text),
+    }),
+  ];
+}
+
 export const extensions = [
-  StarterKit.configure({
-    heading: false,
-    codeBlock: false,
-    blockquote: false,
-    code: {
-      HTMLAttributes: {
-        class:
-          "font-mono text-sm px-1 text-foreground/80 bg-muted/40 rounded-sm",
-        spellCheck: false,
-      },
-    },
-    underline: {
-      HTMLAttributes: {
-        class: "underline underline-offset-4 decoration-border/60",
-      },
-    },
-    strike: {
-      HTMLAttributes: {
-        class: "line-through opacity-50 decoration-foreground/40",
-      },
-    },
-    link: {
-      autolink: true,
-      openOnClick: false,
-      HTMLAttributes: {
-        class:
-          "font-normal underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 cursor-pointer text-foreground",
-        target: "_blank",
-      },
-    },
-  }),
-  HeadingExtension.configure({
-    levels: [1, 2, 3, 4],
-  }),
-  BlockQuoteExtension,
-  CodeBlockExtension,
-  Mathematics.configure({
-    katexOptions: { throwOnError: false },
-    inlineOptions: {
-      onClick: (node, pos) => {
-        openFormulaModalForEdit({
-          latex: node.attrs.latex ?? "",
-          pos,
-          type: "inline",
-          instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
-        });
-      },
-    },
-    blockOptions: {
-      onClick: (node, pos) => {
-        openFormulaModalForEdit({
-          latex: node.attrs.latex ?? "",
-          pos,
-          type: "block",
-          instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
-        });
-      },
-    },
-  }),
-  ...TableBlockExtension,
-  ImageExtension,
+  ...createBaseExtensions(),
   ImageUpload.configure({
     onUpload: handleImageUpload,
     onError: (error) => {
@@ -132,11 +145,6 @@ export const extensions = [
     onDrop: handleFileDrop,
     onPaste: handleFilePaste,
   }),
-  Placeholder.configure({
-    placeholder: m.editor_content_placeholder(),
-    emptyEditorClass: "is-editor-empty",
-  }),
-  TableOfContents.configure({
-    getId: (text) => slugify(text),
-  }),
 ];
+
+export const inspectExtensions = createBaseExtensions();

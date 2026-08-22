@@ -101,7 +101,9 @@ export async function deleteIndex(
   data: DeleteSearchDocInput,
 ) {
   const db = await getOramaDb(context.env);
-  await remove(db, data.id.toString());
+  try {
+    await remove(db, data.id.toString());
+  } catch {}
   await persistOramaDb(context.env, db);
   return { id: data.id };
 }

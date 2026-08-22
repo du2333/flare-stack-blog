@@ -90,6 +90,14 @@ export async function loadLanguage(lang: string) {
   }
 }
 
+function fallbackHighlightedCode(code: string) {
+  return `<pre><code>${code
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")}</code></pre>`;
+}
+
 export async function highlight(code: string, lang: string) {
   await loadLanguage(lang);
   const normalizedLang = aliases[lang] || lang;
@@ -112,26 +120,6 @@ export async function highlight(code: string, lang: string) {
     });
   } catch (e) {
     console.warn(`Failed to highlight language: ${lang}`, e);
-    return `<pre><code>${code}</code></pre>`;
+    return fallbackHighlightedCode(code);
   }
-}
-
-/**
- * Get tokens for ProseMirror decorations with dual-theme support.
- * Loads the language lazily if not already loaded.
- */
-export async function codeToTokens(code: string, lang: string) {
-  await loadLanguage(lang);
-  const highlighter = await getHighlighter();
-
-  const supportedLangs = highlighter.getLoadedLanguages();
-  const safeLang = supportedLangs.includes(lang) ? lang : "plaintext";
-
-  return highlighter.codeToTokens(code, {
-    lang: safeLang,
-    themes: {
-      light: themes.light,
-      dark: themes.dark,
-    },
-  });
 }

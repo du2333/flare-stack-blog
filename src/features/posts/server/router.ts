@@ -12,7 +12,6 @@ import {
   PostItemSchema,
   PostListResponseSchema,
   PostWithTocSchema,
-  PreviewSummaryInputSchema,
   PublishPostInputSchema,
   UnpublishPostInputSchema,
   UpdatePostInputSchema,
@@ -189,16 +188,6 @@ const remove = adminProcedure
     }),
   );
 
-const previewSummary = adminProcedure
-  .route({
-    method: "POST",
-    path: "/admin/posts/preview-summary",
-    summary: "Preview a post summary",
-    tags: ["Admin Posts"],
-  })
-  .input(PreviewSummaryInputSchema)
-  .handler(({ context, input }) => PostService.previewSummary(context, input));
-
 const publishPost = adminProcedure
   .errors(postErrors)
   .route({
@@ -320,7 +309,6 @@ export default {
     create,
     update,
     remove,
-    previewSummary,
     publish: publishPost,
     unpublish: unpublishPost,
     revisions: {

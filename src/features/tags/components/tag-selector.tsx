@@ -24,6 +24,8 @@ export function TagSelector({
   const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
   const queryClient = useQueryClient();
   const adminTagsQuery = tagsAdminQueryOptions();
   const adminTagsQueryKey = adminTagsQuery.queryKey;
@@ -70,7 +72,7 @@ export function TagSelector({
 
       // 4. Update selection with optimistic ID immediately
       // This makes it feel instant to the user
-      onChange([...value, optimisticTag.id]);
+      onChange([...valueRef.current, optimisticTag.id]);
       setSearchTerm("");
 
       // Return context with snapshot and tempId
@@ -93,7 +95,9 @@ export function TagSelector({
       // 2. Update the parent selection to swap ID
       // This loop is critical to prevent "flicker" or losing selection
       onChange(
-        value.map((id) => (id === context.optimisticTagId ? newTag.id : id)),
+        valueRef.current.map((id) =>
+          id === context.optimisticTagId ? newTag.id : id,
+        ),
       );
     },
 
@@ -103,7 +107,9 @@ export function TagSelector({
         queryClient.setQueryData(adminTagsQueryKey, context.previousTags);
       }
       if (context?.optimisticTagId) {
-        onChange(value.filter((id) => id !== context.optimisticTagId));
+        onChange(
+          valueRef.current.filter((id) => id !== context.optimisticTagId),
+        );
       }
       toast.error(m.tag_selector_create_fail(), {
         description: m.tag_selector_create_fail_desc(),

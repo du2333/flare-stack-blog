@@ -5,7 +5,6 @@ import { paraglideMiddleware } from "@/paraglide/server";
 export { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
 export { ExportWorkflow } from "@/features/import-export/workflows/export.workflow";
 export { ImportWorkflow } from "@/features/import-export/workflows/import.workflow";
-export { PostProcessWorkflow } from "@/features/posts/workflows/post-process";
 export { PasswordHasher } from "@/lib/do/password-hasher";
 export { RateLimiter } from "@/lib/do/rate-limiter";
 

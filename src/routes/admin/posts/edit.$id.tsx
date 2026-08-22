@@ -1,14 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { PostEditor } from "@/features/posts/components/post-editor";
+import { persistableTagIds } from "@/features/posts/components/post-editor/post-editor.model";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { postByIdQuery } from "@/features/posts/queries";
-import { orpc, orpcClient } from "@/lib/orpc";
 import {
   tagsAdminQueryOptions,
   tagsByPostIdQueryOptions,
 } from "@/features/tags/queries";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin/posts/edit/$id")({
@@ -87,7 +88,7 @@ function EditPost() {
       }),
       orpcClient.tags.admin.setPostTags({
         postId: post.id,
-        tagIds: data.tagIds,
+        tagIds: persistableTagIds(data.tagIds),
       }),
     ]);
 
@@ -102,5 +103,7 @@ function EditPost() {
     queryClient.invalidateQueries({ queryKey: orpc.media.linkedKeys.key() });
   };
 
-  return <PostEditor initialData={initialData} onSave={handleSave} />;
+  return (
+    <PostEditor key={post.id} initialData={initialData} onSave={handleSave} />
+  );
 }

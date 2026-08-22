@@ -145,18 +145,6 @@
           }
         }
       },
-      "previewSummary": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "POST",
-            "path": "/admin/posts/preview-summary",
-            "summary": "Preview a post summary",
-            "tags": ["Admin Posts"]
-          }
-        }
-      },
       "publish": {
         "~orpc": {
           "errorMap": {},
@@ -327,18 +315,6 @@
             "method": "GET",
             "path": "/admin/posts/{postId}/tags",
             "summary": "List tags for a post",
-            "tags": ["Admin Tags"]
-          }
-        }
-      },
-      "generate": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "POST",
-            "path": "/admin/tags/generate",
-            "summary": "Generate tags with AI",
             "tags": ["Admin Tags"]
           }
         }

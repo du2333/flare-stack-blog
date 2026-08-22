@@ -1,4 +1,4 @@
-import { Loader2, Pin, PinOff, Sparkles } from "lucide-react";
+import { Loader2, Pin, PinOff, RefreshCw } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -10,23 +10,15 @@ import type { PostEditorData } from "./types";
 interface PostEditorMetadataProps {
   post: PostEditorData;
   isGeneratingSlug: boolean;
-  isGeneratingSummary: boolean;
-  isGeneratingTags: boolean;
   onPostChange: (updates: Partial<PostEditorData>) => void;
   onGenerateSlug: () => void;
-  onGenerateSummary: () => void;
-  onGenerateTags: () => void;
 }
 
 export function PostEditorMetadata({
   post,
   isGeneratingSlug,
-  isGeneratingSummary,
-  isGeneratingTags,
   onPostChange,
   onGenerateSlug,
-  onGenerateSummary,
-  onGenerateTags,
 }: PostEditorMetadataProps) {
   return (
     <>
@@ -114,30 +106,16 @@ export function PostEditorMetadata({
               {isGeneratingSlug ? (
                 <Loader2 size={10} className="animate-spin" />
               ) : (
-                <Sparkles size={10} />
+                <RefreshCw size={10} />
               )}
             </button>
           </div>
         </div>
 
         <div className="col-span-1 space-y-3 md:col-span-3">
-          <div className="flex items-center justify-between">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              {m.editor_meta_tags()}
-            </label>
-            <button
-              onClick={onGenerateTags}
-              disabled={isGeneratingTags}
-              className="flex items-center gap-1 text-[9px] font-mono text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {isGeneratingTags ? (
-                <Loader2 size={8} className="animate-spin" />
-              ) : (
-                <Sparkles size={8} />
-              )}
-              {m.editor_meta_auto_generate()}
-            </button>
-          </div>
+          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            {m.editor_meta_tags()}
+          </label>
           <TagSelector
             value={post.tagIds}
             onChange={(tagIds) => onPostChange({ tagIds })}
@@ -145,23 +123,9 @@ export function PostEditorMetadata({
         </div>
 
         <div className="col-span-1 space-y-3 md:col-span-3">
-          <div className="flex items-center justify-between">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              {m.editor_meta_summary()}
-            </label>
-            <button
-              onClick={onGenerateSummary}
-              disabled={isGeneratingSummary}
-              className="flex items-center gap-1 text-[9px] font-mono text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {isGeneratingSummary ? (
-                <Loader2 size={8} className="animate-spin" />
-              ) : (
-                <Sparkles size={8} />
-              )}
-              {m.editor_meta_auto_generate()}
-            </button>
-          </div>
+          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            {m.editor_meta_summary()}
+          </label>
           <TextareaAutosize
             value={post.summary || ""}
             onChange={(e) => onPostChange({ summary: e.target.value })}

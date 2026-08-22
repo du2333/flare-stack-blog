@@ -38,11 +38,6 @@
   ],
   "workflows": [
     {
-      "name": "post-process-workflow",
-      "binding": "POST_PROCESS_WORKFLOW",
-      "class_name": "PostProcessWorkflow"
-    },
-    {
       "name": "comment-moderation-workflow",
       "binding": "COMMENT_MODERATION_WORKFLOW",
       "class_name": "CommentModerationWorkflow"
@@ -125,11 +120,6 @@
         }
       ],
       "workflows": [
-        {
-          "name": "post-process-workflow",
-          "binding": "POST_PROCESS_WORKFLOW",
-          "class_name": "PostProcessWorkflow"
-        },
         {
           "name": "comment-moderation-workflow",
           "binding": "COMMENT_MODERATION_WORKFLOW",

@@ -6,7 +6,6 @@ import type { PostEditorData } from "./types";
 
 interface PostEditorHeaderProps {
   post: PostEditorData;
-  saveStatus: "SYNCED" | "SAVING" | "PENDING" | "ERROR";
   processState: "IDLE" | "PROCESSING" | "SUCCESS";
   canPublish: boolean;
   onPublish: () => void;
@@ -22,7 +21,6 @@ interface PostEditorHeaderProps {
 
 export function PostEditorHeader({
   post,
-  saveStatus,
   processState,
   canPublish,
   onPublish,
@@ -93,7 +91,7 @@ export function PostEditorHeader({
             {post.hasPublicSnapshot && (
               <Button
                 onClick={onUnpublish}
-                disabled={processState !== "IDLE" || saveStatus === "SAVING"}
+                disabled={processState !== "IDLE"}
                 variant="ghost"
                 className="h-8 rounded-none px-2 text-[10px] font-mono text-orange-500 transition-colors disabled:opacity-30 hover:bg-transparent hover:text-orange-400"
               >
@@ -105,11 +103,7 @@ export function PostEditorHeader({
 
             <Button
               onClick={onPublish}
-              disabled={
-                processState !== "IDLE" ||
-                saveStatus === "SAVING" ||
-                !canPublish
-              }
+              disabled={processState !== "IDLE" || !canPublish}
               variant="ghost"
               className={`
               h-8 rounded-none px-2 text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent

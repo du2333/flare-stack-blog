@@ -1,57 +1,15 @@
 import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DropdownMenu from "@/components/ui/dropdown-menu";
-import {
-  getHighlighter,
-  loadLanguage,
-  themes as shikiThemes,
-} from "@/lib/shiki";
 import { m } from "@/paraglide/messages";
 import { getLanguages } from "./languages";
 
-export function CodeBlockView({
-  node,
-  updateAttributes,
-  editor,
-}: NodeViewProps) {
+export function CodeBlockView({ node, updateAttributes }: NodeViewProps) {
   const [copied, setCopied] = useState(false);
-  const [themeStyles, setThemeStyles] = useState<React.CSSProperties>({});
   const language = node.attrs.language || "text";
   const languages = getLanguages();
-
-  useEffect(() => {
-    let mounted = true;
-
-    // Load language and theme styles
-    const init = async () => {
-      await loadLanguage(language);
-
-      const h = await getHighlighter();
-      const lightTheme = h.getTheme(shikiThemes.light);
-      const darkTheme = h.getTheme(shikiThemes.dark);
-
-      if (mounted) {
-        setThemeStyles({
-          "--shiki-light": lightTheme.fg,
-          "--shiki-dark": darkTheme.fg,
-          "--shiki-light-bg": lightTheme.bg,
-          "--shiki-dark-bg": darkTheme.bg,
-        } as React.CSSProperties);
-
-        // Trigger re-decoration in shiki plugin
-        const tr = editor.state.tr.setMeta("shikiUpdate", true);
-        editor.view.dispatch(tr);
-      }
-    };
-
-    init();
-
-    return () => {
-      mounted = false;
-    };
-  }, [language, editor]);
 
   const handleCopy = () => {
     const code = node.textContent;
@@ -62,9 +20,8 @@ export function CodeBlockView({
 
   return (
     <NodeViewWrapper className="my-12 group relative max-w-full outline-none [&.ProseMirror-selectednode]:outline-none [&.ProseMirror-selectednode]:ring-0 [&.ProseMirror-selectednode]:shadow-none">
-      <div className="relative rounded-sm border border-zinc-200/40 dark:border-zinc-800/40 hover:border-zinc-300/60 dark:hover:border-zinc-700/60 transition-colors duration-500">
-        {/* Minimal Header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200/10 dark:border-zinc-800/10 bg-zinc-100 dark:bg-zinc-800 select-none rounded-t-sm">
+      <div className="relative rounded-sm border border-zinc-200/40 transition-colors duration-500 hover:border-zinc-300/60 dark:border-zinc-800/40 dark:hover:border-zinc-700/60">
+        <div className="flex select-none items-center justify-between rounded-t-sm border-b border-zinc-200/10 bg-zinc-100 px-4 py-2 dark:border-zinc-800/10 dark:bg-zinc-800">
           <div className="flex items-center gap-4">
             <span className="text-xs font-mono font-medium text-muted-foreground/80">
               <DropdownMenu
@@ -81,27 +38,23 @@ export function CodeBlockView({
           <button
             onClick={handleCopy}
             contentEditable={false}
-            className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-all duration-300"
+            className="flex items-center gap-2 font-mono text-xs text-muted-foreground transition-all duration-300 hover:text-foreground"
           >
             {copied ? (
               <span className="animate-in fade-in slide-in-from-right-1 opacity-70">
                 {m.common_copied()}
               </span>
             ) : null}
-            <div className="p-0.5 opacity-60 group-hover/btn:opacity-100 transition-opacity">
+            <div className="p-0.5 opacity-60">
               {copied ? <Check size={12} /> : <Copy size={12} />}
             </div>
           </button>
         </div>
 
-        {/* Code Area */}
-        <div
-          className="shiki relative overflow-x-auto custom-scrollbar rounded-b-sm"
-          style={themeStyles}
-        >
+        <div className="relative overflow-x-auto rounded-b-sm custom-scrollbar">
           <NodeViewContent
             as="div"
-            className="p-6 font-mono text-sm leading-relaxed outline-none min-w-full w-fit"
+            className="w-fit min-w-full p-6 font-mono text-sm leading-relaxed outline-none"
             spellCheck={false}
           />
         </div>
