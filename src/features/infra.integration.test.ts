@@ -3,8 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
 import { serializeKey } from "@/features/cache/cache.utils";
-import type { CacheNamespace } from "@/features/cache/types";
+import { CACHE_NAMESPACES, type CacheNamespace } from "@/features/cache/types";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
+import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import * as ConfigService from "@/features/config/service/config.service";
 
@@ -398,6 +399,30 @@ describe("Infra Integration", () => {
         const newKey = serializeKey([newVersion, "post", slug]);
         const newData = await context.env.KV.get(newKey);
         expect(newData).toBeNull();
+      });
+    });
+
+    describe("invalidateSiteCache", () => {
+      it("should rotate every versioned namespace and drop the public tag list", async () => {
+        const context = createTestContext();
+        for (const namespace of Object.values(CACHE_NAMESPACES)) {
+          await context.env.KV.put(`ver:${namespace}`, "stale");
+        }
+        await context.env.KV.put(
+          serializeKey(TAGS_CACHE_KEYS.publicList),
+          JSON.stringify([]),
+        );
+
+        await CacheService.invalidateSiteCache(context);
+
+        for (const namespace of Object.values(CACHE_NAMESPACES)) {
+          const stored = await context.env.KV.get(`ver:${namespace}`);
+          expect(stored).not.toBe("stale");
+          expect(stored).toBeTruthy();
+        }
+        expect(
+          await context.env.KV.get(serializeKey(TAGS_CACHE_KEYS.publicList)),
+        ).toBeNull();
       });
     });
 

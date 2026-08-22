@@ -3,7 +3,7 @@ import { TAGS_CACHE_KEYS } from "@/features/tags/tags.schema";
 import type { Duration } from "@/lib/duration";
 import { ms } from "@/lib/duration";
 import { serializeKey } from "./cache.utils";
-import type { CacheKey, CacheNamespace } from "./types";
+import { CACHE_NAMESPACES, type CacheKey, type CacheNamespace } from "./types";
 
 /**
  * 缓存数据
@@ -218,8 +218,9 @@ export async function invalidateSiteCache(
   context: BaseContext & { executionCtx: ExecutionContext },
 ) {
   await Promise.all([
-    bumpVersion(context, "posts:list"),
-    bumpVersion(context, "posts:detail"),
+    ...Object.values(CACHE_NAMESPACES).map((namespace) =>
+      bumpVersion(context, namespace),
+    ),
     deleteKey(context, TAGS_CACHE_KEYS.publicList),
   ]);
   return { success: true };
