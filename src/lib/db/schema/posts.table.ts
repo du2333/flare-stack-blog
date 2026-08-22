@@ -6,10 +6,21 @@ import {
   primaryKey,
   sqliteTable,
   text,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { createdAt, id, updatedAt } from "./helper";
 
 export const POST_STATUSES = ["draft", "published"] as const;
+
+export type PublicPostSnapshot = {
+  title: string;
+  summary: string | null;
+  slug: string;
+  contentJson: JSONContent | null;
+  tagIds: Array<number>;
+  publishedAt: string;
+  pinnedAt: string | null;
+};
 
 export const PostsTable = sqliteTable(
   "posts",
@@ -17,13 +28,13 @@ export const PostsTable = sqliteTable(
     id,
     title: text().notNull(),
     summary: text(),
-    readTimeInMinutes: integer("read_time_in_minutes").default(1).notNull(),
     slug: text().notNull().unique(),
 
     contentJson: text("content_json", { mode: "json" }).$type<JSONContent>(),
-    publicContentJson: text("public_content_json", {
+    publicSnapshotJson: text("public_snapshot_json", {
       mode: "json",
-    }).$type<JSONContent>(),
+    }).$type<PublicPostSnapshot>(),
+    publicSlug: text("public_slug"),
     status: text("status", { enum: POST_STATUSES }).notNull().default("draft"),
     publishedAt: integer("published_at", { mode: "timestamp" }),
     pinnedAt: integer("pinned_at", { mode: "timestamp" }),
@@ -31,6 +42,7 @@ export const PostsTable = sqliteTable(
     updatedAt,
   },
   (table) => [
+    uniqueIndex("posts_public_slug_unique").on(table.publicSlug),
     index("published_at_idx").on(table.publishedAt, table.status),
     index("created_at_idx").on(table.createdAt),
   ],

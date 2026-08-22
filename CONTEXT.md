@@ -9,20 +9,20 @@ A piece of blog content that can be drafted, published, tagged, versioned, index
 _Avoid_: Article
 
 **Draft Post**:
-A **Post** that is editable in admin workflows but should not appear on the public site.
+A **Post** with no **Public Content Snapshot**. It is editable in admin workflows and does not appear on the public site.
 _Avoid_: Unpublished article
 
 **Published Post**:
-A **Post** that is eligible for public listing, detail rendering, search indexing, and public cache updates.
-_Avoid_: Live article
+A **Post** that has a **Public Content Snapshot** and therefore appears in public listing, detail rendering, search indexing, and public cache updates. Publication is immediate; there is no scheduled or future publication. Draft versus published is the result of publish and unpublish, not a separate field the Admin sets and later syncs.
+_Avoid_: Live article, scheduled post, future post
 
 **Public Content Snapshot**:
-The processed version of a published **Post**'s content that the public site reads for rendering and caching.
-_Avoid_: publicContentJson, rendered content, cached content
+The published state of a **Post** that the public site reads for listing, detail, search, and caching. It includes the public title, summary, slug, content, tags, publication date, and pin state. Editing or autosaving a **Post** does not change it. Publishing replaces it. Unpublishing discards it.
+_Avoid_: publicContentJson, rendered content, cached content, live version, working copy
 
 **Post Revision**:
-A saved snapshot of a **Post** used to inspect or restore previous editing or publishing state.
-_Avoid_: Version, history item, backup
+A snapshot of the **Post** the **Admin** is editing, taken when publishing or immediately before restoring another **Post Revision**. Inspecting one shows that snapshot in the editor without changing the **Post** until restore. Autosave does not create one.
+_Avoid_: Version, history item, backup, auto snapshot
 
 **Tag**:
 A reusable non-hierarchical label that groups **Posts**.
@@ -92,10 +92,6 @@ _Avoid_: Orama index
 The cached public read surface for published content and public lists.
 _Avoid_: KV cache, CDN cache, sync hash
 
-**Scheduled Publish**:
-A future-dated publication of a **Post** that becomes public through a workflow at its planned publish time.
-_Avoid_: Future post
-
 **AI Moderation**:
 Automated review that decides whether a non-admin **Comment** can be published or must become a **Pending Comment**.
 _Avoid_: AI review
@@ -116,6 +112,13 @@ _Avoid_: Webhook, callback URL
 - A **Post** can reference zero or more **Media** items.
 - A **Published Post** has a **Public Content Snapshot** for public rendering.
 - A **Draft Post** does not appear in public listing, detail, or search surfaces.
+- Publishing a **Post** replaces its **Public Content Snapshot** from the Post the **Admin** is editing and creates a **Post Revision**.
+- Autosave does not create a **Post Revision**.
+- Editing or autosaving a **Post** does not update the **Public Content Snapshot**.
+- Unpublishing a **Published Post** discards its **Public Content Snapshot**, making it a **Draft Post**, and removes it from public listing, detail, and search.
+- Restoring a **Post Revision** first saves the current editable **Post** as a **Post Revision**, then writes the chosen snapshot into the **Post** the **Admin** is editing. It does not replace or discard the **Public Content Snapshot**.
+- Publishing with a new slug replaces the **Public Content Snapshot** slug. The previous public slug does not remain reachable.
+- A **Published Post** has a publication date for display and listing order. The date is a past or current server date, never a future date. First publication without a date uses server time.
 - A **Post Revision** belongs to exactly one **Post**.
 - A **Comment Thread** belongs to exactly one **Post**.
 - A **Reply** belongs to exactly one **Comment Thread**.
@@ -132,7 +135,6 @@ _Avoid_: Webhook, callback URL
 - A **User** can create **Comments** and submit **Friend Links**.
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
-- A **Scheduled Publish** becomes a **Published Post** at its planned publish time.
 - **AI Moderation** processes **Verifying Comments**.
 - **Traffic Metrics** can rank **Published Posts** as popular posts.
 - A **Webhook Endpoint** receives selected admin **Notification Events**.
@@ -148,3 +150,4 @@ _Avoid_: Webhook, callback URL
 - "Category" is not a current Flare Stack Blog concept; use **Tag** for non-hierarchical grouping.
 - "Pending comment" and **Verifying Comment** are distinct: **Verifying Comment** is awaiting automated moderation, while **Pending Comment** is awaiting admin review.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
+- "Version" in product talk about drafts and publishing means the **Public Content Snapshot** or a **Post Revision**, not a second **Post**.

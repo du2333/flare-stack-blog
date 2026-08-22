@@ -265,22 +265,10 @@ bun dev
 
 | 命令              | 说明                                |
 | :---------------- | :---------------------------------- |
-| `bun db:studio`   | 启动 Drizzle Studio（可视化数据库） |
-| `bun db:generate` | 生成迁移文件                        |
-| `bun db:migrate`  | 安全应用远程 D1 迁移，校验失败自动回滚 |
-| `bun db:migrate:local` | 安全应用本地 D1 迁移，校验失败自动恢复 |
-| `bun db:migrate:unsafe` | 直接应用远程 D1 迁移，不做校验 |
-
-`bun db:migrate` / `bun db:migrate:local` 会复用 schema 中定义的状态常量，在迁移前后校验以下关键计数是否一致：
-
-- `posts`：总文章数，以及每个文章状态的数量
-- `comments`：总评论数、根评论数、子评论数，以及每个评论状态的数量
-
-安全脚本还会额外做这些事情：
-
-- 远程模式：默认只记录 D1 Time Travel bookmark，校验失败时自动执行 restore
-- 远程模式：如需额外保留 SQL 快照，可手动运行 `bun scripts/safe-d1-migrate/main.ts --remote --with-export`
-- 本地模式：快照 `.wrangler/state`（或你传入的 `--persist-to`），校验失败时自动恢复本地持久化目录
+| `bun db:studio`        | 启动 Drizzle Studio（可视化数据库） |
+| `bun db:generate`      | 生成迁移文件                        |
+| `bun db:migrate`       | 应用远程 D1 迁移                    |
+| `bun db:migrate:local` | 应用本地 D1 迁移                    |
 
 ### 本地模拟 Cloudflare 资源
 

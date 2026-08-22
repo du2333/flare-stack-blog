@@ -8,7 +8,6 @@ export async function calculatePostHash(post: {
   slug: string;
   publishedAt: Date | string | null;
   pinnedAt?: Date | string | null;
-  readTimeInMinutes: number;
 }): Promise<string> {
   const toISOOrNull = (d: Date | string | null) =>
     d instanceof Date ? d.toISOString() : d;
@@ -21,7 +20,6 @@ export async function calculatePostHash(post: {
     slug: post.slug,
     publishedAt: toISOOrNull(post.publishedAt),
     pinnedAt: toISOOrNull(post.pinnedAt ?? null),
-    readTimeInMinutes: post.readTimeInMinutes,
   };
 
   const msgUint8 = new TextEncoder().encode(JSON.stringify(stateToHash));

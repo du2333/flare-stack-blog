@@ -6,7 +6,7 @@ import {
   PostListResponseSchema,
   PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
-import { highlightCodeBlocks } from "@/features/posts/utils/content";
+import { estimateReadTimeMinutes } from "@/features/posts/utils/content";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
 
 const POST_PUBLIC_REASONS = [
@@ -14,13 +14,6 @@ const POST_PUBLIC_REASONS = [
   "post.deleted",
   "tag.changed",
 ] as const;
-
-function stripPublicContentJson<T extends { publicContentJson?: unknown }>(
-  post: T,
-): Omit<T, "publicContentJson"> {
-  const { publicContentJson: _publicContentJson, ...rest } = post;
-  return rest;
-}
 
 export const pinnedPosts = defineEntry({
   name: "posts.pinned",
@@ -76,22 +69,20 @@ export const postBySlug = defineEntry({
     });
     if (!post) return null;
 
-    let contentJson = post.publicContentJson ?? post.contentJson;
-    if (!post.publicContentJson && contentJson) {
-      contentJson = await highlightCodeBlocks(contentJson);
-      context.executionCtx.waitUntil(
-        PostRepo.updatePublicContentSnapshot(
-          context.db,
-          post.id,
-          contentJson,
-        ).then(() => undefined),
-      );
-    }
-
     return {
-      ...stripPublicContentJson(post),
-      contentJson,
-      toc: generateTableOfContents(contentJson),
+      id: post.id,
+      title: post.title,
+      summary: post.summary,
+      slug: post.slug,
+      status: "published" as const,
+      publishedAt: post.publishedAt,
+      pinnedAt: post.pinnedAt,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      contentJson: post.contentJson,
+      readTimeInMinutes: estimateReadTimeMinutes(post.contentJson),
+      tags: post.tags,
+      toc: generateTableOfContents(post.contentJson),
     };
   },
 });

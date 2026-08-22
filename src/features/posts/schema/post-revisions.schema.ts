@@ -19,7 +19,6 @@ export const PostRevisionSnapshotSchema = z.object({
   slug: z.string(),
   status: z.enum(POST_STATUSES),
   publishedAt: z.string().nullable(),
-  readTimeInMinutes: z.number().int().min(1),
   contentJson: NullableJsonContentSchema,
   tagIds: z.array(z.number().int()),
 });

@@ -11,7 +11,6 @@ import type {
   RestorePostRevisionInput,
 } from "@/features/posts/schema/post-revisions.schema";
 import { PostRevisionSnapshotSchema } from "@/features/posts/schema/post-revisions.schema";
-import { logPostAutoSnapshot } from "@/features/posts/services/post-auto-snapshot.logging";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { ms } from "@/lib/duration";
 import { err, ok } from "@/lib/errors";
@@ -32,7 +31,6 @@ function toRevisionSnapshot(
     slug: post.slug,
     status: post.status,
     publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
-    readTimeInMinutes: post.readTimeInMinutes,
     contentJson: post.contentJson,
     tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort((a, b) => a - b),
   };
@@ -46,7 +44,6 @@ async function hashSnapshot(snapshot: PostRevisionSnapshot) {
     tagIds: snapshot.tagIds,
     slug: snapshot.slug,
     publishedAt: snapshot.publishedAt,
-    readTimeInMinutes: snapshot.readTimeInMinutes,
   });
 }
 
@@ -86,21 +83,9 @@ export async function createPostRevision(
   data: CreatePostRevisionInput,
 ) {
   const reason = data.reason ?? "auto";
-  if (reason === "auto") {
-    logPostAutoSnapshot(context.env, "create_revision_started", {
-      postId: data.postId,
-      reason,
-    });
-  }
 
   const post = await PostRepo.findPostById(context.db, data.postId);
   if (!post) {
-    if (reason === "auto") {
-      logPostAutoSnapshot(context.env, "create_revision_post_not_found", {
-        postId: data.postId,
-        reason,
-      });
-    }
     return err({ reason: "POST_NOT_FOUND" });
   }
 
@@ -116,11 +101,6 @@ export async function createPostRevision(
     ]);
 
     if (latestRevision?.snapshotHash === snapshotHash) {
-      logPostAutoSnapshot(context.env, "create_revision_skipped_unchanged", {
-        postId: data.postId,
-        reason,
-        latestRevisionId: latestRevision.id,
-      });
       return ok<CreatePostRevisionResult>({
         created: false,
         revision: latestRevision,
@@ -133,21 +113,6 @@ export async function createPostRevision(
       Date.now() - latestAutoRevision.createdAt.getTime() <
         ms(AUTO_SNAPSHOT_MIN_INTERVAL)
     ) {
-      const nowMs = Date.now();
-      const latestAutoRevisionCreatedAtMs =
-        latestAutoRevision.createdAt.getTime();
-      const minIntervalMs = ms(AUTO_SNAPSHOT_MIN_INTERVAL);
-      logPostAutoSnapshot(context.env, "create_revision_skipped_rate_limited", {
-        postId: data.postId,
-        reason,
-        latestAutoRevisionId: latestAutoRevision.id,
-        latestAutoRevisionCreatedAtIso:
-          latestAutoRevision.createdAt.toISOString(),
-        latestAutoRevisionCreatedAtMs,
-        nowMs,
-        minIntervalMs,
-        msSinceLatestAutoRevision: nowMs - latestAutoRevisionCreatedAtMs,
-      });
       return ok<CreatePostRevisionResult>({
         created: false,
         revision: latestAutoRevision,
@@ -166,12 +131,6 @@ export async function createPostRevision(
   if (reason === "auto") {
     await PostRevisionRepo.trimAutoRevisions(context.db, data.postId, {
       keep: MAX_AUTO_REVISIONS_PER_POST,
-    });
-
-    logPostAutoSnapshot(context.env, "create_revision_succeeded", {
-      postId: data.postId,
-      reason,
-      revisionId: revision.id,
     });
   }
 

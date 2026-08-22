@@ -1,3 +1,4 @@
+import { Loader2, RotateCcw, Trash2 } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { m } from "@/paraglide/messages";
@@ -7,31 +8,41 @@ interface PostEditorHeaderProps {
   post: PostEditorData;
   saveStatus: "SYNCED" | "SAVING" | "PENDING" | "ERROR";
   processState: "IDLE" | "PROCESSING" | "SUCCESS";
-  isPostDirty: boolean;
-  onPreview: () => void;
-  onProcess: () => void;
+  canPublish: boolean;
+  onPublish: () => void;
+  onUnpublish: () => void;
+  isInspecting?: boolean;
+  canRestore?: boolean;
+  isRestoring?: boolean;
+  isDeleting?: boolean;
+  onExitHistory?: () => void;
+  onRestore?: () => void;
+  onDelete?: () => void;
 }
 
 export function PostEditorHeader({
   post,
   saveStatus,
   processState,
-  isPostDirty,
-  onPreview,
-  onProcess,
+  canPublish,
+  onPublish,
+  onUnpublish,
+  isInspecting = false,
+  canRestore = false,
+  isRestoring = false,
+  isDeleting = false,
+  onExitHistory,
+  onRestore,
+  onDelete,
 }: PostEditorHeaderProps) {
-  const getProcessButtonColor = () => {
+  const getPublishButtonColor = () => {
     if (processState === "SUCCESS") return "text-emerald-500";
-    if (post.status === "draft" && post.hasPublicCache)
-      return "text-orange-500";
     return "text-foreground hover:text-foreground/80";
   };
 
-  const getProcessButtonText = () => {
+  const getPublishButtonText = () => {
     if (processState === "PROCESSING") return m.editor_header_processing();
     if (processState === "SUCCESS") return m.editor_header_success();
-    if (post.status === "draft" && post.hasPublicCache)
-      return m.editor_header_unpublish();
     return m.editor_header_publish();
   };
 
@@ -41,46 +52,77 @@ export function PostEditorHeader({
         <Breadcrumbs />
       </div>
 
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-4">
+      {isInspecting ? (
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            onClick={onPreview}
-            disabled={!post.hasPublicCache}
-            title={
-              !post.hasPublicCache
-                ? m.editor_header_preview_unavailable()
-                : m.editor_header_preview()
-            }
-            className="h-8 rounded-none px-2 text-[10px] font-mono text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground disabled:opacity-30"
+            className="h-8 rounded-none px-2 text-[10px] font-mono"
+            onClick={onExitHistory}
           >
-            <span className="mr-2 opacity-50">[</span>
-            {m.editor_header_preview_btn()}
-            <span className="ml-2 opacity-50">]</span>
+            {m.editor_history_back()}
           </Button>
-
-          <div className="h-4 w-px bg-border/30" />
-
           <Button
-            onClick={onProcess}
-            disabled={
-              processState !== "IDLE" ||
-              saveStatus === "SAVING" ||
-              !isPostDirty ||
-              (post.status === "published" && !post.publishedAt)
-            }
             variant="ghost"
-            className={`
-              h-8 rounded-none px-2 text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent
-              ${getProcessButtonColor()}
-            `}
+            className="h-8 rounded-none px-2 text-[10px] font-mono text-destructive hover:text-destructive"
+            disabled={!canRestore || isDeleting || isRestoring}
+            onClick={onDelete}
           >
-            <span className="mr-2 opacity-50">[</span>
-            {getProcessButtonText()}
-            <span className="ml-2 opacity-50">]</span>
+            {isDeleting ? (
+              <Loader2 size={12} className="mr-1 animate-spin" />
+            ) : (
+              <Trash2 size={12} className="mr-1" />
+            )}
+            {m.editor_history_delete_action()}
+          </Button>
+          <Button
+            className="h-8 rounded-none px-3 text-[10px] font-mono"
+            disabled={!canRestore || isRestoring || isDeleting}
+            onClick={onRestore}
+          >
+            {isRestoring ? (
+              <Loader2 size={12} className="mr-1 animate-spin" />
+            ) : (
+              <RotateCcw size={12} className="mr-1" />
+            )}
+            {m.editor_history_restore_this()}
           </Button>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            {post.hasPublicSnapshot && (
+              <Button
+                onClick={onUnpublish}
+                disabled={processState !== "IDLE" || saveStatus === "SAVING"}
+                variant="ghost"
+                className="h-8 rounded-none px-2 text-[10px] font-mono text-orange-500 transition-colors disabled:opacity-30 hover:bg-transparent hover:text-orange-400"
+              >
+                <span className="mr-2 opacity-50">[</span>
+                {m.editor_header_unpublish()}
+                <span className="ml-2 opacity-50">]</span>
+              </Button>
+            )}
+
+            <Button
+              onClick={onPublish}
+              disabled={
+                processState !== "IDLE" ||
+                saveStatus === "SAVING" ||
+                !canPublish
+              }
+              variant="ghost"
+              className={`
+              h-8 rounded-none px-2 text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent
+              ${getPublishButtonColor()}
+            `}
+            >
+              <span className="mr-2 opacity-50">[</span>
+              {getPublishButtonText()}
+              <span className="ml-2 opacity-50">]</span>
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

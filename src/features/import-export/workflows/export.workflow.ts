@@ -89,7 +89,6 @@ export class ExportWorkflow extends WorkflowEntrypoint<
             publishedAt: post.publishedAt?.toISOString(),
             createdAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString(),
-            readTimeInMinutes: post.readTimeInMinutes,
             tags: post.tags.map((t) => t.name),
           };
 

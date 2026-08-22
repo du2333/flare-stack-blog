@@ -18,8 +18,7 @@ import { getDb } from "@/lib/db";
 interface Params {
   postId: number;
   isPublished: boolean;
-  publishedAt?: string; // ISO 8601
-  isFuturePost?: boolean;
+  slug?: string;
 }
 
 export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
@@ -29,12 +28,12 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     if (isPublished) {
       await this.handlePublish(event, step, postId);
     } else {
-      await this.handleUnpublish(step, postId);
+      await this.handleUnpublish(event, step, postId);
     }
   }
 
   private async handlePublish(
-    event: WorkflowEvent<Params>,
+    _event: WorkflowEvent<Params>,
     step: WorkflowStep,
     postId: number,
   ) {
@@ -54,13 +53,12 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
           slug: p.slug,
           publishedAt: p.publishedAt,
           pinnedAt: p.pinnedAt,
-          readTimeInMinutes: p.readTimeInMinutes,
         });
         const oldHash = await kvStore.get(
           { env: this.env },
           POSTS_CACHE_KEYS.syncHash(postId),
         );
-        const needsPublicContentBuild = !!p.contentJson && !p.publicContentJson;
+        const needsPublicContentBuild = !p.publicSnapshotJson;
 
         if (newHash === oldHash && !needsPublicContentBuild) {
           console.log(
@@ -99,27 +97,31 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     );
     if (!updatedPost) return;
 
-    // 3. Persist the highlighted public snapshot used by SSR/read paths.
     await step.do("build public content", async () => {
       const db = getDb(this.env);
       const post = await PostRepo.findPostById(db, postId);
-      if (!post) return;
+      if (!post || !post.publishedAt) return;
 
-      const publicContentJson = post.contentJson
+      const contentJson = post.contentJson
         ? await highlightCodeBlocks(post.contentJson)
         : null;
 
-      await PostRepo.updatePublicContentSnapshot(db, postId, publicContentJson);
+      await PostRepo.writePublicSnapshot(db, postId, {
+        title: post.title,
+        summary: post.summary,
+        slug: post.slug,
+        contentJson,
+        tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort(
+          (a, b) => a - b,
+        ),
+        publishedAt: post.publishedAt.toISOString(),
+        pinnedAt: post.pinnedAt ? post.pinnedAt.toISOString() : null,
+      });
     });
 
-    // 4. Update search index (skip for future posts — ScheduledPublishWorkflow handles it)
-    const isFuturePost = !!event.payload.isFuturePost;
-
-    if (!isFuturePost) {
-      await step.do("update search index", async () => {
-        return await upsertPostSearchIndex(this.env, updatedPost);
-      });
-    }
+    await step.do("update search index", async () => {
+      return await upsertPostSearchIndex(this.env, updatedPost);
+    });
 
     // 5. Invalidate caches
     await step.do("invalidate caches", async () => {
@@ -139,7 +141,6 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
         slug: p.slug,
         publishedAt: p.publishedAt,
         pinnedAt: p.pinnedAt,
-        readTimeInMinutes: p.readTimeInMinutes,
       });
       await kvStore.put(
         { env: this.env },
@@ -149,7 +150,11 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     });
   }
 
-  private async handleUnpublish(step: WorkflowStep, postId: number) {
+  private async handleUnpublish(
+    event: WorkflowEvent<Params>,
+    step: WorkflowStep,
+    postId: number,
+  ) {
     const post = await step.do("fetch post", async () => {
       return await fetchPost(this.env, postId);
     });
@@ -161,7 +166,8 @@ export class PostProcessWorkflow extends WorkflowEntrypoint<Env, Params> {
     });
 
     await step.do("invalidate caches", async () => {
-      await invalidate.postDeleted({ env: this.env }, { slug: post.slug });
+      const slug = event.payload.slug ?? post.slug;
+      await invalidate.postDeleted({ env: this.env }, { slug });
       await kvStore.remove(
         { env: this.env },
         POSTS_CACHE_KEYS.syncHash(postId),

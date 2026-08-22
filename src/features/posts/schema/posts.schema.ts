@@ -5,8 +5,8 @@ import {
 } from "drizzle-zod";
 import { z } from "zod";
 import { TagSelectSchema } from "@/features/tags/tags.schema";
-import type { Post, PostStatus, Tag } from "@/lib/db/schema";
-import { POST_STATUSES, PostsTable } from "@/lib/db/schema";
+import type { PostStatus } from "@/lib/db/schema";
+import { PostsTable } from "@/lib/db/schema";
 import { NullableJsonContentSchema } from "./json-content.schema";
 
 // Date fields need to accept both Date objects and ISO strings (for JSON serialization)
@@ -19,41 +19,53 @@ export const PostSelectSchema = createSelectSchema(PostsTable, {
   createdAt: coercedDate,
   updatedAt: coercedDate,
 }).omit({
-  publicContentJson: true,
+  publicSnapshotJson: true,
 });
 export const PostInsertSchema = createInsertSchema(PostsTable);
 export const PostUpdateSchema = createUpdateSchema(PostsTable, {
   contentJson: NullableJsonContentSchema.optional(),
-  publicContentJson: NullableJsonContentSchema.optional(),
 }).omit({
-  publicContentJson: true,
+  publicSnapshotJson: true,
+  publicSlug: true,
+  status: true,
 });
 
 export const PostItemSchema = PostSelectSchema.omit({
   contentJson: true,
+  publicSlug: true,
 }).extend({
   tags: z.array(TagSelectSchema).optional(),
+  readTimeInMinutes: z.number().int().min(1),
 });
 export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
   nextCursor: z.number().nullable(),
 });
-export const PostWithTocSchema = PostSelectSchema.extend({
-  tags: z.array(TagSelectSchema).optional(),
-  toc: z.array(
-    z.object({
-      id: z.string(),
-      text: z.string(),
-      level: z.number(),
-    }),
-  ),
-}).nullable();
+export const PostWithTocSchema = PostSelectSchema.omit({
+  publicSlug: true,
+})
+  .extend({
+    tags: z.array(TagSelectSchema).optional(),
+    readTimeInMinutes: z.number().int().min(1),
+    toc: z.array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+        level: z.number(),
+      }),
+    ),
+  })
+  .nullable();
 
-export const AdminPostSchema = PostSelectSchema.extend({
-  tags: z.array(TagSelectSchema).optional(),
-  isSynced: z.boolean(),
-  hasPublicCache: z.boolean(),
-}).nullable();
+export const AdminPostSchema = PostSelectSchema.omit({
+  publicSlug: true,
+})
+  .extend({
+    tags: z.array(TagSelectSchema).optional(),
+    hasPublicSnapshot: z.boolean(),
+    serverToday: z.string(),
+  })
+  .nullable();
 
 export function normalizePostTagName(
   tagName: string | undefined,
@@ -121,10 +133,12 @@ export const PreviewSummaryInputSchema = PostSelectSchema.pick({
   contentJson: true,
 });
 
-export const StartPostProcessInputSchema = z.object({
+export const PublishPostInputSchema = z.object({
   id: z.number(),
-  status: z.enum(POST_STATUSES),
-  clientToday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export const UnpublishPostInputSchema = z.object({
+  id: z.number(),
 });
 
 export type GenerateSlugInput = z.infer<typeof GenerateSlugInputSchema>;
@@ -134,10 +148,9 @@ export type FindPostByIdInput = z.infer<typeof FindPostByIdInputSchema>;
 export type UpdatePostInput = z.infer<typeof UpdatePostInputSchema>;
 export type DeletePostInput = z.infer<typeof DeletePostInputSchema>;
 export type PreviewSummaryInput = z.infer<typeof PreviewSummaryInputSchema>;
-export type StartPostProcessInput = z.infer<typeof StartPostProcessInputSchema>;
-export type PostListItem = Omit<Post, "contentJson" | "publicContentJson"> & {
-  tags?: Array<Tag>;
-};
+export type PublishPostInput = z.infer<typeof PublishPostInputSchema>;
+export type UnpublishPostInput = z.infer<typeof UnpublishPostInputSchema>;
+export type PostListItem = PostItem;
 
 export type PostListResponse = z.infer<typeof PostListResponseSchema>;
 export type PostItem = z.infer<typeof PostItemSchema>;

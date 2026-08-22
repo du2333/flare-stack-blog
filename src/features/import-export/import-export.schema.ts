@@ -74,7 +74,6 @@ export const PostFrontmatterSchema = z.object({
   publishedAt: z.string().optional().nullable(),
   createdAt: z.string().optional().nullable(),
   updatedAt: z.string().optional().nullable(),
-  readTimeInMinutes: z.number().default(1),
   tags: z.array(z.string()).default([]),
 });
 

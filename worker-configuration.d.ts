@@ -25,9 +25,7 @@ interface __BaseEnv_Env {
 	RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
 	PASSWORD_HASHER: DurableObjectNamespace<import("./src/server").PasswordHasher>;
 	POST_PROCESS_WORKFLOW: Workflow<Parameters<import("./src/server").PostProcessWorkflow['run']>[0]['payload']>;
-	POST_AUTO_SNAPSHOT_WORKFLOW: Workflow<Parameters<import("./src/server").PostAutoSnapshotWorkflow['run']>[0]['payload']>;
 	COMMENT_MODERATION_WORKFLOW: Workflow<Parameters<import("./src/server").CommentModerationWorkflow['run']>[0]['payload']>;
-	SCHEDULED_PUBLISH_WORKFLOW: Workflow<Parameters<import("./src/server").ScheduledPublishWorkflow['run']>[0]['payload']>;
 	EXPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ExportWorkflow['run']>[0]['payload']>;
 	IMPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ImportWorkflow['run']>[0]['payload']>;
 }

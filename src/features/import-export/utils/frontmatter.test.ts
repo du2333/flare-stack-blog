@@ -193,17 +193,10 @@ describe("normalizeFrontmatter", () => {
     expect(result!.publishedAt).toBeUndefined();
   });
 
-  it("should extract readTimeInMinutes", () => {
-    const result = normalizeFrontmatter({ ...base, readTimeInMinutes: 5 });
-    expect(result).not.toBeNull();
-    expect(result!.readTimeInMinutes).toBe(5);
-  });
-
   it("should apply defaults from schema", () => {
     const result = normalizeFrontmatter(base);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("published");
-    expect(result!.readTimeInMinutes).toBe(1);
     expect(result!.tags).toEqual([]);
   });
 });
@@ -214,7 +207,6 @@ describe("stringifyFrontmatter", () => {
       title: "Test",
       slug: "test",
       status: "published",
-      readTimeInMinutes: 1,
       tags: [],
     };
     const result = stringifyFrontmatter(fm, "Hello world");
@@ -231,7 +223,6 @@ describe("stringifyFrontmatter", () => {
       status: "draft",
       createdAt: "2024-06-15T00:00:00.000Z",
       updatedAt: "2024-06-15T00:00:00.000Z",
-      readTimeInMinutes: 3,
       tags: ["test"],
     };
     const content = "Some content here.";

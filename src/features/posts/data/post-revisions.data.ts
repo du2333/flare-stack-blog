@@ -134,11 +134,9 @@ export async function restorePostSnapshot(
         title: data.snapshot.title,
         summary: data.snapshot.summary,
         slug: data.snapshot.slug,
-        status: data.snapshot.status,
         publishedAt: data.snapshot.publishedAt
           ? new Date(data.snapshot.publishedAt)
           : null,
-        readTimeInMinutes: data.snapshot.readTimeInMinutes,
         contentJson: data.snapshot.contentJson,
       })
       .where(eq(PostsTable.id, data.postId)),

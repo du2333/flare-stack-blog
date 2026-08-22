@@ -1,5 +1,5 @@
 import { insert, search as oramaSearch, remove } from "@orama/orama";
-import { and, eq, lte } from "drizzle-orm";
+import { isNotNull } from "drizzle-orm";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { createMyDb } from "@/features/search/model/schema";
 import {
@@ -114,10 +114,7 @@ export async function rebuildIndex(context: DbContext) {
   const searchDb = await createMyDb();
 
   const posts = await db.query.PostsTable.findMany({
-    where: and(
-      eq(PostsTable.status, "published"),
-      lte(PostsTable.publishedAt, new Date()),
-    ),
+    where: isNotNull(PostsTable.publicSnapshotJson),
     with: {
       postTags: {
         with: {
@@ -128,21 +125,25 @@ export async function rebuildIndex(context: DbContext) {
   });
 
   for (const post of posts) {
-    if (!post.title || !post.slug) continue;
-    const plain = convertToPlainText(post.contentJson);
+    const snapshot = post.publicSnapshotJson;
+    if (!snapshot?.title || !snapshot.slug) continue;
+    const plain = convertToPlainText(snapshot.contentJson);
     const content =
       plain.length > CONTENT_SLICE ? plain.slice(0, CONTENT_SLICE) : plain;
     const summary =
-      post.summary && post.summary.trim().length > 0
-        ? post.summary
+      snapshot.summary && snapshot.summary.trim().length > 0
+        ? snapshot.summary
         : content.slice(0, SNIPPET_SLICE);
 
-    const tags = post.postTags.map((pt) => pt.tag.name);
+    const publishedTagIds = new Set(snapshot.tagIds);
+    const tags = post.postTags
+      .filter((pt) => publishedTagIds.has(pt.tag.id))
+      .map((pt) => pt.tag.name);
 
     await insert(searchDb, {
       id: post.id.toString(),
-      title: post.title,
-      slug: post.slug,
+      title: snapshot.title,
+      slug: snapshot.slug,
       tags,
       summary,
       content,

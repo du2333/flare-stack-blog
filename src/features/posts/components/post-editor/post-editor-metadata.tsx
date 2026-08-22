@@ -3,25 +3,17 @@ import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { TagSelector } from "@/features/tags/components/tag-selector";
-import { POST_STATUSES } from "@/lib/db/schema";
 import { toLocalDateString } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { PostEditorData } from "./types";
 
-const STATUS_LABELS: Record<PostEditorData["status"], () => string> = {
-  draft: m.editor_status_draft,
-  published: m.editor_status_published,
-};
-
 interface PostEditorMetadataProps {
   post: PostEditorData;
   isGeneratingSlug: boolean;
-  isCalculatingReadTime: boolean;
   isGeneratingSummary: boolean;
   isGeneratingTags: boolean;
   onPostChange: (updates: Partial<PostEditorData>) => void;
   onGenerateSlug: () => void;
-  onCalculateReadTime: () => void;
   onGenerateSummary: () => void;
   onGenerateTags: () => void;
 }
@@ -29,12 +21,10 @@ interface PostEditorMetadataProps {
 export function PostEditorMetadata({
   post,
   isGeneratingSlug,
-  isCalculatingReadTime,
   isGeneratingSummary,
   isGeneratingTags,
   onPostChange,
   onGenerateSlug,
-  onCalculateReadTime,
   onGenerateSummary,
   onGenerateTags,
 }: PostEditorMetadataProps) {
@@ -53,41 +43,16 @@ export function PostEditorMetadata({
       <div className="mb-16 grid grid-cols-1 gap-x-12 gap-y-8 border-t border-border/30 pt-8 md:grid-cols-3">
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            {m.editor_meta_status()}
+            {m.editor_meta_pin()}
           </label>
-          <div className="flex items-center gap-4">
-            {POST_STATUSES.map((status) => (
-              <button
-                key={status}
-                onClick={() => onPostChange({ status })}
-                className={`
-                  text-[10px] font-mono uppercase tracking-wider transition-colors
-                  ${
-                    post.status === status
-                      ? "border-b border-foreground font-bold text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }
-                `}
-              >
-                {STATUS_LABELS[status]()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {post.status === "published" && (
-          <div className="space-y-3">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-              {m.editor_meta_pin()}
-            </label>
-            <div>
-              <button
-                onClick={() =>
-                  onPostChange({
-                    pinnedAt: post.pinnedAt ? null : new Date(),
-                  })
-                }
-                className={`
+          <div>
+            <button
+              onClick={() =>
+                onPostChange({
+                  pinnedAt: post.pinnedAt ? null : new Date(),
+                })
+              }
+              className={`
                   flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider transition-colors
                   ${
                     post.pinnedAt
@@ -95,15 +60,14 @@ export function PostEditorMetadata({
                       : "text-muted-foreground hover:text-foreground"
                   }
                 `}
-              >
-                {post.pinnedAt ? <Pin size={12} /> : <PinOff size={12} />}
-                {post.pinnedAt
-                  ? m.editor_meta_pinned()
-                  : m.editor_meta_unpinned()}
-              </button>
-            </div>
+            >
+              {post.pinnedAt ? <Pin size={12} /> : <PinOff size={12} />}
+              {post.pinnedAt
+                ? m.editor_meta_pinned()
+                : m.editor_meta_unpinned()}
+            </button>
           </div>
-        )}
+        </div>
 
         <div className="space-y-3">
           <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -114,47 +78,16 @@ export function PostEditorMetadata({
               value={
                 post.publishedAt ? toLocalDateString(post.publishedAt) : ""
               }
-              onChange={(dateStr) =>
+              onChange={(dateStr) => {
+                if (dateStr && dateStr > post.serverToday) return;
                 onPostChange({
                   publishedAt: dateStr
                     ? new Date(`${dateStr}T12:00:00Z`)
                     : null,
-                })
-              }
+                });
+              }}
               className="h-auto! border-none! bg-transparent! p-0! text-xs text-foreground font-mono"
             />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            {m.editor_meta_read_time()}
-          </label>
-          <div className="group flex items-center gap-2">
-            <Input
-              type="number"
-              value={post.readTimeInMinutes}
-              onChange={(e) =>
-                onPostChange({
-                  readTimeInMinutes: Number.parseInt(e.target.value) || 0,
-                })
-              }
-              className="h-auto w-12 border-none bg-transparent p-0 px-0 text-xs font-mono text-foreground shadow-none focus-visible:ring-0"
-            />
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {m.editor_meta_minutes()}
-            </span>
-            <button
-              onClick={onCalculateReadTime}
-              disabled={isCalculatingReadTime}
-              className="ml-2 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
-            >
-              {isCalculatingReadTime ? (
-                <Loader2 size={10} className="animate-spin" />
-              ) : (
-                <Sparkles size={10} />
-              )}
-            </button>
           </div>
         </div>
 

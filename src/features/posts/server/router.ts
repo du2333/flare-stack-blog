@@ -13,7 +13,8 @@ import {
   PostListResponseSchema,
   PostWithTocSchema,
   PreviewSummaryInputSchema,
-  StartPostProcessInputSchema,
+  PublishPostInputSchema,
+  UnpublishPostInputSchema,
   UpdatePostInputSchema,
 } from "@/features/posts/schema/posts.schema";
 import {
@@ -36,6 +37,14 @@ const postErrors = {
   POST_REVISION_INVALID_SNAPSHOT: {
     status: 400,
     message: "Post revision snapshot is invalid.",
+  },
+  PUBLISHED_AT_IN_FUTURE: {
+    status: 400,
+    message: "Publish date cannot be in the future.",
+  },
+  PUBLIC_SLUG_TAKEN: {
+    status: 409,
+    message: "This public slug is already in use.",
   },
 } as const;
 
@@ -190,16 +199,44 @@ const previewSummary = adminProcedure
   .input(PreviewSummaryInputSchema)
   .handler(({ context, input }) => PostService.previewSummary(context, input));
 
-const processPost = adminProcedure
+const publishPost = adminProcedure
+  .errors(postErrors)
   .route({
     method: "POST",
-    path: "/admin/posts/{id}/process",
-    summary: "Start post processing workflow",
+    path: "/admin/posts/{id}/publish",
+    summary: "Publish a post",
     tags: ["Admin Posts"],
   })
-  .input(StartPostProcessInputSchema)
-  .handler(({ context, input }) =>
-    PostService.startPostProcessWorkflow(context, input),
+  .input(PublishPostInputSchema)
+  .handler(({ context, input, errors }) =>
+    unwrapResult(PostService.publishPost(context, input), {
+      POST_NOT_FOUND: () => {
+        throw errors.POST_NOT_FOUND();
+      },
+      PUBLISHED_AT_IN_FUTURE: () => {
+        throw errors.PUBLISHED_AT_IN_FUTURE();
+      },
+      PUBLIC_SLUG_TAKEN: () => {
+        throw errors.PUBLIC_SLUG_TAKEN();
+      },
+    }),
+  );
+
+const unpublishPost = adminProcedure
+  .errors(postErrors)
+  .route({
+    method: "POST",
+    path: "/admin/posts/{id}/unpublish",
+    summary: "Unpublish a post",
+    tags: ["Admin Posts"],
+  })
+  .input(UnpublishPostInputSchema)
+  .handler(({ context, input, errors }) =>
+    unwrapResult(PostService.unpublishPost(context, input), {
+      POST_NOT_FOUND: () => {
+        throw errors.POST_NOT_FOUND();
+      },
+    }),
   );
 
 const listRevisions = adminProcedure
@@ -284,7 +321,8 @@ export default {
     update,
     remove,
     previewSummary,
-    process: processPost,
+    publish: publishPost,
+    unpublish: unpublishPost,
     revisions: {
       list: listRevisions,
       get: getRevision,

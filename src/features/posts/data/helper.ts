@@ -8,7 +8,7 @@ export type SortDirection = "ASC" | "DESC";
 
 export function buildPostWhereClause(options: {
   status?: PostStatus;
-  publicOnly?: boolean; // For public pages - checks publishedAt <= now
+  publicOnly?: boolean;
   search?: string;
 }) {
   const whereClauses = [];
@@ -17,15 +17,8 @@ export function buildPostWhereClause(options: {
     whereClauses.push(eq(PostsTable.status, options.status));
   }
 
-  // For public pages, also filter by publishedAt
   if (options.publicOnly) {
-    whereClauses.push(eq(PostsTable.status, "published"));
-    // Compare date portions only (ignore time-of-day) to avoid timezone issues.
-    // publishedAt is stored as Unix seconds; date('now') returns today's UTC date.
-    // This matches the isFuturePublishDate() string-based date comparison used in scheduling.
-    whereClauses.push(
-      sql`date(${PostsTable.publishedAt}, 'unixepoch') <= date('now')`,
-    );
+    whereClauses.push(sql`${PostsTable.publicSnapshotJson} IS NOT NULL`);
   }
 
   // Search by title

@@ -119,6 +119,22 @@ export function convertToPlainText(doc: JSONContent | null): string {
   return textParts.join("").replace(/\n+/g, "\n").trim();
 }
 
+/** ~400 CJK chars/min, ~200 English words/min. Minimum 1. */
+export function estimateReadTimeMinutes(doc: JSONContent | null): number {
+  const text = convertToPlainText(doc);
+  const cjkChars = (
+    text.match(
+      /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/g,
+    ) || []
+  ).length;
+  const textWithoutCjk = text.replace(
+    /[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/g,
+    " ",
+  );
+  const englishWords = textWithoutCjk.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(cjkChars / 400 + englishWords / 200));
+}
+
 export function buildContentPreview(
   doc: JSONContent | null,
   maxLength = 1500,

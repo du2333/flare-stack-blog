@@ -231,18 +231,20 @@ export async function importSinglePost(
   }
 
   // 7. Insert post
+  const isPublished = normalized.status !== "draft";
+  const publishedAt = normalized.publishedAt
+    ? new Date(normalized.publishedAt)
+    : isPublished
+      ? new Date()
+      : null;
+
   const post = await PostRepo.insertPost(db, {
     title,
     slug,
     summary: normalized.summary ?? null,
     contentJson,
-    status: normalized.status === "draft" ? "draft" : "published",
-    readTimeInMinutes: normalized.readTimeInMinutes,
-    publishedAt: normalized.publishedAt
-      ? new Date(normalized.publishedAt)
-      : normalized.status !== "draft"
-        ? new Date()
-        : null,
+    status: isPublished ? "published" : "draft",
+    publishedAt,
   });
 
   // 8. Link tags
@@ -255,6 +257,18 @@ export async function importSinglePost(
   // 9. Sync post-media relationships
   if (contentJson) {
     await syncPostMedia(db, post.id, contentJson);
+  }
+
+  if (isPublished && publishedAt) {
+    await PostRepo.writePublicSnapshot(db, post.id, {
+      title: post.title,
+      summary: post.summary,
+      slug: post.slug,
+      contentJson,
+      tagIds: [...new Set(tagIds)].sort((a, b) => a - b),
+      publishedAt: publishedAt.toISOString(),
+      pinnedAt: null,
+    });
   }
 
   return { title: post.title, slug: post.slug, warnings };

@@ -121,7 +121,6 @@ describe("Import/Export Integration", () => {
         summary: "这是摘要",
         status: "published",
         publishedAt: "2024-06-15T00:00:00.000Z",
-        readTimeInMinutes: 3,
         tags: ["TypeScript", "测试"],
       };
 
@@ -157,7 +156,7 @@ describe("Import/Export Integration", () => {
       expect(post!.title).toBe("测试文章");
       expect(post!.summary).toBe("这是摘要");
       expect(post!.status).toBe("published");
-      expect(post!.readTimeInMinutes).toBe(3);
+
       expect(post!.contentJson).toEqual(SAMPLE_CONTENT);
 
       // Verify DB: tags
@@ -171,7 +170,6 @@ describe("Import/Export Integration", () => {
         title: "Markdown Only",
         slug: "md-only",
         status: "published",
-        readTimeInMinutes: 1,
         tags: [],
       };
 
@@ -207,7 +205,6 @@ describe("Import/Export Integration", () => {
         summary: "从 Markdown 导入",
         status: "published",
         publishedAt: "2024-03-01T00:00:00.000Z",
-        readTimeInMinutes: 2,
         tags: ["Markdown"],
       };
 
@@ -258,7 +255,6 @@ describe("Import/Export Integration", () => {
             title: "Duplicate",
             slug: "existing-post",
             status: "published",
-            readTimeInMinutes: 1,
             tags: [],
           },
           markdown: "Content",
@@ -287,7 +283,6 @@ describe("Import/Export Integration", () => {
             title: "Dedup Tags",
             slug: "dedup-tags",
             status: "published",
-            readTimeInMinutes: 1,
             tags: ["rust", "go", "rust"],
           },
           markdown: "Content",
@@ -322,7 +317,6 @@ describe("Import/Export Integration", () => {
             title: "Post A",
             slug: "post-a",
             status: "published",
-            readTimeInMinutes: 1,
             tags: ["shared-tag", "tag-a"],
           },
           markdown: "Content A",
@@ -334,7 +328,6 @@ describe("Import/Export Integration", () => {
             title: "Post B",
             slug: "post-b",
             status: "published",
-            readTimeInMinutes: 1,
             tags: ["shared-tag", "tag-b"],
           },
           markdown: "Content B",
@@ -379,7 +372,6 @@ describe("Import/Export Integration", () => {
             title: "Draft Post",
             slug: "draft-post",
             status: "draft",
-            readTimeInMinutes: 1,
             tags: [],
           },
           markdown: "Draft content",
@@ -415,7 +407,6 @@ describe("Import/Export Integration", () => {
         summary: "原始摘要",
         status: "published",
         contentJson: SAMPLE_CONTENT,
-        readTimeInMinutes: 5,
         publishedAt: new Date("2024-06-15T00:00:00.000Z"),
       });
 
@@ -440,7 +431,6 @@ describe("Import/Export Integration", () => {
         publishedAt: fullPost.publishedAt?.toISOString(),
         createdAt: fullPost.createdAt.toISOString(),
         updatedAt: fullPost.updatedAt.toISOString(),
-        readTimeInMinutes: fullPost.readTimeInMinutes,
         tags: fullPost.tags.map((t) => t.name),
       };
 
@@ -480,7 +470,7 @@ describe("Import/Export Integration", () => {
       expect(reimported!.title).toBe(fullPost.title);
       expect(reimported!.summary).toBe(fullPost.summary);
       expect(reimported!.status).toBe(fullPost.status);
-      expect(reimported!.readTimeInMinutes).toBe(fullPost.readTimeInMinutes);
+
       expect(reimported!.contentJson).toEqual(fullPost.contentJson);
 
       // Tags should match

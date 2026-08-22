@@ -81,11 +81,6 @@ export function normalizeFrontmatter(
     mapped.updatedAt = toISOString(updatedSource);
   }
 
-  // readTimeInMinutes
-  if (typeof data.readTimeInMinutes === "number") {
-    mapped.readTimeInMinutes = data.readTimeInMinutes;
-  }
-
   // tags — 可能是 tags 或 categories
   const tagsSource = data.tags ?? data.categories;
   if (Array.isArray(tagsSource)) {

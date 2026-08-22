@@ -31,5 +31,6 @@
     "**/*.tsx",
     "./worker-configuration.d.ts",
     ".release-it.ts"
-  ]
+  ],
+  "exclude": ["tmp"]
 }

@@ -1,4 +1,4 @@
-import { and, desc, eq, lte } from "drizzle-orm";
+import { desc, isNotNull, sql } from "drizzle-orm";
 import { Feed } from "feed";
 import type { SiteConfig } from "@/features/config/config.schema";
 import * as ConfigService from "@/features/config/service/config.service";
@@ -35,21 +35,17 @@ export async function buildFeed(env: Env, executionCtx: ExecutionContext) {
   const posts = await db
     .select({
       id: PostsTable.id,
-      title: PostsTable.title,
-      summary: PostsTable.summary,
-      contentJson: PostsTable.contentJson,
-      slug: PostsTable.slug,
-      publishedAt: PostsTable.publishedAt,
+      publicSnapshotJson: PostsTable.publicSnapshotJson,
+      publicSlug: PostsTable.publicSlug,
       updatedAt: PostsTable.updatedAt,
     })
     .from(PostsTable)
-    .where(
-      and(
-        eq(PostsTable.status, "published"),
-        lte(PostsTable.publishedAt, new Date()),
+    .where(isNotNull(PostsTable.publicSnapshotJson))
+    .orderBy(
+      desc(
+        sql`json_extract(${PostsTable.publicSnapshotJson}, '$.publishedAt')`,
       ),
     )
-    .orderBy(desc(PostsTable.publishedAt))
     .limit(100);
   const { DOMAIN } = serverEnv(env);
   const year = new Date().getFullYear();
@@ -71,14 +67,16 @@ export async function buildFeed(env: Env, executionCtx: ExecutionContext) {
   });
 
   posts.forEach((post) => {
+    const snapshot = post.publicSnapshotJson;
+    if (!snapshot) return;
     feed.addItem({
-      title: post.title,
+      title: snapshot.title,
       id: post.id.toString(),
-      link: `https://${DOMAIN}/post/${encodeURIComponent(post.slug)}`,
-      description: post.summary ?? "",
-      content: convertToPlainText(post.contentJson),
+      link: `https://${DOMAIN}/post/${encodeURIComponent(post.publicSlug ?? snapshot.slug)}`,
+      description: snapshot.summary ?? "",
+      content: convertToPlainText(snapshot.contentJson),
       author: [feedAuthor],
-      date: post.publishedAt ?? post.updatedAt,
+      date: new Date(snapshot.publishedAt),
     });
   });
 

@@ -1,6 +1,5 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
 import { handlePageviewMessages } from "@/features/pageview/api/pageview.consumer";
-import { handlePostAutoSnapshotMessage } from "@/features/posts/api/post-auto-snapshot.consumer";
 import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -45,9 +44,6 @@ export async function handleQueueBatch(
           break;
         case "WEBHOOK":
           await handleWebhookMessage({ env }, event.data, message.id);
-          break;
-        case "POST_AUTO_SNAPSHOT":
-          await handlePostAutoSnapshotMessage({ env }, event.data);
           break;
         case "PAGEVIEW":
           pageviewBatch.push({ data: event.data, message });

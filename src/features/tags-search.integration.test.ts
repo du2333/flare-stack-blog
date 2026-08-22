@@ -57,7 +57,6 @@ describe("Tags & Search Integration", () => {
             data: {
               title: "Post 1",
               slug: "post-1",
-              status: "published",
               publishedAt: new Date(Date.now() - 10000),
             },
           }),
@@ -99,7 +98,6 @@ describe("Tags & Search Integration", () => {
             data: {
               title: "Post 1",
               slug: "post-1",
-              status: "published",
               publishedAt: new Date(Date.now() - 10000),
             },
           }),
@@ -108,6 +106,7 @@ describe("Tags & Search Integration", () => {
           postId: post1.id,
           tagIds: [tag1.id],
         });
+        unwrap(await PostService.publishPost(adminContext, { id: post1.id }));
 
         const post2 = await PostService.createEmptyPost(adminContext);
         await TagService.setPostTags(adminContext, {
@@ -145,7 +144,6 @@ describe("Tags & Search Integration", () => {
             data: {
               title: "Post",
               slug: "post",
-              status: "published",
               publishedAt: new Date(Date.now() - 10000),
             },
           }),
@@ -154,6 +152,7 @@ describe("Tags & Search Integration", () => {
           postId: post.id,
           tagIds: [tag.id],
         });
+        unwrap(await PostService.publishPost(adminContext, { id: post.id }));
 
         const result1 = await TagService.getPublicTags(adminContext);
         expect(result1).toHaveLength(1);
@@ -292,7 +291,16 @@ describe("Tags & Search Integration", () => {
         contentJson: { type: "doc", content: [] },
         publishedAt: new Date(),
         status: "published" as const,
-        readTimeInMinutes: 1,
+        publicSlug: "db-post",
+        publicSnapshotJson: {
+          title: "Database Post",
+          summary: "From DB",
+          slug: "db-post",
+          contentJson: { type: "doc", content: [] },
+          tagIds: [1],
+          publishedAt: new Date().toISOString(),
+          pinnedAt: null,
+        },
       };
 
       await context.db.insert(PostsTable).values(postData);

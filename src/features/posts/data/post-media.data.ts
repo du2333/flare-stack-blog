@@ -47,7 +47,6 @@ export async function getPostsByMediaKey(db: DB, key: string) {
       id: PostsTable.id,
       title: PostsTable.title,
       summary: PostsTable.summary,
-      readTimeInMinutes: PostsTable.readTimeInMinutes,
       slug: PostsTable.slug,
       status: PostsTable.status,
     })

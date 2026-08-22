@@ -1,6 +1,6 @@
 import { invalidate } from "@/features/cache/public-cache";
 import * as PostRepo from "@/features/posts/data/posts.data";
-import * as PostAutoSnapshotService from "@/features/posts/services/post-auto-snapshot.service";
+
 import * as TagRepo from "@/features/tags/data/tags.data";
 import { publicTagList } from "@/features/tags/tags.cache";
 import type {
@@ -174,8 +174,4 @@ export async function deleteTag(
 export async function setPostTags(context: DbContext, data: SetPostTagsInput) {
   await TagRepo.setPostTags(context.db, data.postId, data.tagIds);
   await PostRepo.touchPostUpdatedAt(context.db, data.postId);
-  await PostAutoSnapshotService.enqueuePostAutoSnapshot(context, {
-    postId: data.postId,
-    source: "tag_update",
-  });
 }

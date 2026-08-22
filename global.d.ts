@@ -10,18 +10,7 @@ declare global {
   interface PostProcessWorkflowParams {
     postId: number;
     isPublished: boolean;
-    publishedAt?: string;
-    isFuturePost?: boolean;
-  }
-
-  interface ScheduledPublishWorkflowParams {
-    postId: number;
-    publishedAt: string;
-  }
-
-  interface PostAutoSnapshotWorkflowParams {
-    postId: number;
-    quietWindowSeconds?: number;
+    slug?: string;
   }
 
   interface CommentModerationWorkflowParams {
@@ -44,9 +33,7 @@ declare global {
 
   interface Env extends Cloudflare.Env {
     POST_PROCESS_WORKFLOW: Workflow<PostProcessWorkflowParams>;
-    POST_AUTO_SNAPSHOT_WORKFLOW: Workflow<PostAutoSnapshotWorkflowParams>;
     COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
-    SCHEDULED_PUBLISH_WORKFLOW: Workflow<ScheduledPublishWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
     IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
     QUEUE: Queue<QueueMessage>;

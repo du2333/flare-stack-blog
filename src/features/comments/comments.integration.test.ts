@@ -64,7 +64,6 @@ describe("Comments Integration", () => {
           id,
           data: {
             title: "Test Post",
-            status: "published",
             slug: `test-post-${Date.now()}`,
           },
         }),
@@ -400,7 +399,6 @@ describe("Comments Integration", () => {
             id: otherPostId,
             data: {
               title: "Other Post",
-              status: "published",
               slug: `other-post-${Date.now()}`,
             },
           }),
@@ -1091,7 +1089,6 @@ describe("Comments Integration", () => {
           data: {
             title: "上下文测试文章",
             summary: "这是一篇讨论代码审核与评论交流边界的文章摘要。",
-            status: "published",
             slug: `workflow-test-${Date.now()}`,
             contentJson: createCommentContent(
               "文章正文详细讨论了如何区分正常反驳、友好调侃、恶意辱骂和广告灌水。",

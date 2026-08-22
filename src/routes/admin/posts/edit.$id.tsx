@@ -64,29 +64,25 @@ function EditPost() {
     title: post.title,
     summary: post.summary ?? "",
     slug: post.slug,
-    status: post.status,
-    readTimeInMinutes: post.readTimeInMinutes,
     contentJson: post.contentJson,
     publishedAt: post.publishedAt,
     tagIds: tags.map((t) => t.id),
     pinnedAt: post.pinnedAt,
-    isSynced: post.isSynced,
-    hasPublicCache: post.hasPublicCache,
+    hasPublicSnapshot: post.hasPublicSnapshot,
+    serverToday: post.serverToday,
   };
 
   const handleSave = async (data: PostEditorData) => {
-    const publishedAt =
-      data.status === "published" && !post.publishedAt
-        ? new Date()
-        : data.publishedAt;
-
-    // Parallelize updates
     await Promise.all([
       orpcClient.posts.admin.update({
         id: post.id,
         data: {
-          ...data,
-          publishedAt,
+          title: data.title,
+          summary: data.summary,
+          slug: data.slug,
+          contentJson: data.contentJson,
+          publishedAt: data.publishedAt,
+          pinnedAt: data.pinnedAt,
         },
       }),
       orpcClient.tags.admin.setPostTags({

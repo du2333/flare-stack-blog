@@ -123,18 +123,6 @@ export function createTestContext(
     >,
   );
 
-  vi.spyOn(context.env.POST_AUTO_SNAPSHOT_WORKFLOW, "create").mockResolvedValue(
-    mockWorkflowInstance as unknown as Awaited<
-      ReturnType<Env["POST_AUTO_SNAPSHOT_WORKFLOW"]["create"]>
-    >,
-  );
-  vi.spyOn(
-    context.env.POST_AUTO_SNAPSHOT_WORKFLOW,
-    "createBatch",
-  ).mockResolvedValue([mockWorkflowInstance] as unknown as Awaited<
-    ReturnType<Env["POST_AUTO_SNAPSHOT_WORKFLOW"]["createBatch"]>
-  >);
-
   vi.spyOn(context.env.QUEUE, "send").mockResolvedValue({
     metadata: {
       metrics: {
@@ -143,25 +131,6 @@ export function createTestContext(
       },
     },
   });
-
-  vi.spyOn(context.env.SCHEDULED_PUBLISH_WORKFLOW, "get").mockResolvedValue({
-    ...mockWorkflowInstance,
-    terminate: vi.fn(),
-  } as unknown as Awaited<
-    ReturnType<Env["SCHEDULED_PUBLISH_WORKFLOW"]["get"]>
-  >);
-
-  vi.spyOn(context.env.SCHEDULED_PUBLISH_WORKFLOW, "create").mockResolvedValue(
-    mockWorkflowInstance as unknown as Awaited<
-      ReturnType<Env["SCHEDULED_PUBLISH_WORKFLOW"]["create"]>
-    >,
-  );
-  vi.spyOn(
-    context.env.SCHEDULED_PUBLISH_WORKFLOW,
-    "createBatch",
-  ).mockResolvedValue([mockWorkflowInstance] as unknown as Awaited<
-    ReturnType<Env["SCHEDULED_PUBLISH_WORKFLOW"]["createBatch"]>
-  >);
 
   return context;
 }

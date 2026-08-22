@@ -43,19 +43,9 @@
       "class_name": "PostProcessWorkflow"
     },
     {
-      "name": "post-auto-snapshot-workflow",
-      "binding": "POST_AUTO_SNAPSHOT_WORKFLOW",
-      "class_name": "PostAutoSnapshotWorkflow"
-    },
-    {
       "name": "comment-moderation-workflow",
       "binding": "COMMENT_MODERATION_WORKFLOW",
       "class_name": "CommentModerationWorkflow"
-    },
-    {
-      "name": "scheduled-publish-workflow",
-      "binding": "SCHEDULED_PUBLISH_WORKFLOW",
-      "class_name": "ScheduledPublishWorkflow"
     },
     {
       "name": "export-workflow",
@@ -141,19 +131,9 @@
           "class_name": "PostProcessWorkflow"
         },
         {
-          "name": "post-auto-snapshot-workflow",
-          "binding": "POST_AUTO_SNAPSHOT_WORKFLOW",
-          "class_name": "PostAutoSnapshotWorkflow"
-        },
-        {
           "name": "comment-moderation-workflow",
           "binding": "COMMENT_MODERATION_WORKFLOW",
           "class_name": "CommentModerationWorkflow"
-        },
-        {
-          "name": "scheduled-publish-workflow",
-          "binding": "SCHEDULED_PUBLISH_WORKFLOW",
-          "class_name": "ScheduledPublishWorkflow"
         },
         {
           "name": "export-workflow",

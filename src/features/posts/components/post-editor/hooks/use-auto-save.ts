@@ -5,6 +5,7 @@ interface UseAutoSaveOptions {
   post: PostEditorData;
   onSave: (data: PostEditorData) => Promise<void>;
   debounceMs?: number;
+  enabled?: boolean;
 }
 
 interface UseAutoSaveReturn {
@@ -21,6 +22,7 @@ export function useAutoSave({
   post,
   onSave,
   debounceMs = 1500,
+  enabled = true,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("SYNCED");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -36,11 +38,9 @@ export function useAutoSave({
     title: string;
     summary: string;
     slug: string;
-    status: string;
-    readTimeInMinutes: number;
     publishedAt: number | null;
     pinnedAt: number | null;
-    tagIds: string; // Serialize for easy comparison
+    tagIds: string;
     contentRef: PostEditorData["contentJson"];
   } | null>(null);
   // Store onSave in ref to avoid effect re-running when onSave reference changes
@@ -51,8 +51,6 @@ export function useAutoSave({
     title: p.title,
     summary: p.summary,
     slug: p.slug,
-    status: p.status,
-    readTimeInMinutes: p.readTimeInMinutes,
     publishedAt: p.publishedAt ? p.publishedAt.valueOf() : null,
     pinnedAt: p.pinnedAt ? p.pinnedAt.valueOf() : null,
     tagIds: [...p.tagIds].sort().join(","),
@@ -66,8 +64,6 @@ export function useAutoSave({
       prev.title !== curr.title ||
       prev.summary !== curr.summary ||
       prev.slug !== curr.slug ||
-      prev.status !== curr.status ||
-      prev.readTimeInMinutes !== curr.readTimeInMinutes ||
       prev.publishedAt !== curr.publishedAt ||
       prev.pinnedAt !== curr.pinnedAt ||
       prev.tagIds !== curr.tagIds ||
@@ -99,9 +95,10 @@ export function useAutoSave({
     };
   }, []);
 
-  // Auto-save effect - always enabled
   useEffect(() => {
     latestPostRef.current = post;
+    if (!enabled) return;
+
     const current = toComparable(post);
 
     if (isFirstMount.current) {
@@ -165,7 +162,7 @@ export function useAutoSave({
         retryTimerRef.current = null;
       }
     };
-  }, [post, debounceMs]);
+  }, [post, debounceMs, enabled]);
 
   return {
     saveStatus,

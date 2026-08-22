@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, lte, ne, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, ne, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 
@@ -50,12 +50,7 @@ export async function getAllTagsWithCount(
     // Only count published posts
     query
       .innerJoin(PostsTable, eq(PostTagsTable.postId, PostsTable.id))
-      .where(
-        and(
-          eq(PostsTable.status, "published"),
-          lte(PostsTable.publishedAt, new Date()),
-        ),
-      )
+      .where(sql`${PostsTable.publicSnapshotJson} IS NOT NULL`)
       .having(gt(count(PostTagsTable.postId), 0));
   }
 
@@ -206,15 +201,16 @@ export async function getPublishedPostsByTagId(db: DB, tagId: number) {
   const results = await db
     .select({
       id: PostsTable.id,
-      slug: PostsTable.slug,
+      slug: sql<string>`coalesce(${PostsTable.publicSlug}, ${PostsTable.slug})`.as(
+        "slug",
+      ),
     })
     .from(PostTagsTable)
     .innerJoin(PostsTable, eq(PostTagsTable.postId, PostsTable.id))
     .where(
       and(
         eq(PostTagsTable.tagId, tagId),
-        eq(PostsTable.status, "published"),
-        lte(PostsTable.publishedAt, new Date()),
+        sql`${PostsTable.publicSnapshotJson} IS NOT NULL`,
       ),
     );
 

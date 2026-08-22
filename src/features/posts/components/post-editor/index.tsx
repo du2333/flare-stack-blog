@@ -9,32 +9,31 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
+import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { EditorTableOfContents } from "./editor-table-of-contents";
-import { useAutoSave, usePostActions } from "./hooks";
+import { useAutoSave, usePostActions, usePostHistory } from "./hooks";
 import { PostEditorHeader } from "./post-editor-header";
-import { PostEditorHistoryPanel } from "./post-editor-history-panel";
+import { PostEditorHistoryDocument } from "./post-editor-history-document";
+import { PostEditorHistoryList } from "./post-editor-history-list";
+import { toDateOrNull } from "./post-editor-history.shared";
 import { PostEditorMetadata } from "./post-editor-metadata";
 import { PostEditorStatusBar } from "./post-editor-status-bar";
 import type { PostEditorData, PostEditorProps } from "./types";
 
 export function PostEditor({ initialData, onSave }: PostEditorProps) {
-  // Initialize post state from initialData (always provided)
   const [post, setPost] = useState<PostEditorData>(() => ({
     title: initialData.title,
     summary: initialData.summary,
     slug: initialData.slug,
-    status: initialData.status,
-    readTimeInMinutes: initialData.readTimeInMinutes,
     contentJson: initialData.contentJson ?? null,
     publishedAt: initialData.publishedAt,
     pinnedAt: initialData.pinnedAt,
     tagIds: initialData.tagIds,
-    isSynced: initialData.isSynced,
-    hasPublicCache: initialData.hasPublicCache,
+    hasPublicSnapshot: initialData.hasPublicSnapshot,
+    serverToday: initialData.serverToday,
   }));
 
-  // Sync state when initialData updates (e.g. after background refetch/invalidation)
   const [prevInitialDataId, setPrevInitialDataId] = useState(initialData.id);
   const [prevTagIds, setPrevTagIds] = useState(() =>
     [...initialData.tagIds].sort().join(","),
@@ -48,7 +47,8 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     setPost((prev) => ({
       ...prev,
       tagIds: initialData.tagIds,
-      isSynced: initialData.isSynced,
+      hasPublicSnapshot: initialData.hasPublicSnapshot,
+      serverToday: initialData.serverToday,
     }));
   }
 
@@ -58,42 +58,72 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   const [editorRenderKey, setEditorRenderKey] = useState(
     `editor:${initialData.id}`,
   );
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isInspecting, setIsInspecting] = useState(false);
 
-  // Fetch all tags for AI context and matching
   const { data: allTags = [] } = useQuery(tagsAdminQueryOptions());
 
-  // Auto-save hook
   const useAutoSaveReturn = useAutoSave({
     post,
     onSave,
+    enabled: !isInspecting,
   });
 
   const { saveStatus, lastSaved, setError, markSaved } = useAutoSaveReturn;
+
+  const handleRestoreApplied = useCallback(
+    (snapshot: PostRevisionSnapshot) => {
+      const restoredPost: PostEditorData = {
+        title: snapshot.title,
+        summary: snapshot.summary ?? "",
+        slug: snapshot.slug,
+        contentJson: snapshot.contentJson,
+        publishedAt: toDateOrNull(snapshot.publishedAt),
+        pinnedAt: post.pinnedAt,
+        tagIds: snapshot.tagIds,
+        hasPublicSnapshot: post.hasPublicSnapshot,
+        serverToday: post.serverToday,
+      };
+
+      setPost(restoredPost);
+      setEditorRenderKey(`editor:${initialData.id}:${Date.now()}`);
+      markSaved(restoredPost);
+    },
+    [
+      initialData.id,
+      markSaved,
+      post.hasPublicSnapshot,
+      post.pinnedAt,
+      post.serverToday,
+    ],
+  );
+
+  const history = usePostHistory({
+    postId: initialData.id,
+    isInspecting,
+    onInspectingChange: setIsInspecting,
+    onRestoreApplied: handleRestoreApplied,
+  });
 
   const { proceed, reset, status } = useBlocker({
     shouldBlockFn: () => saveStatus === "SAVING",
     withResolver: true,
   });
 
-  // Post actions hook
   const {
     isGeneratingSlug,
-    isCalculatingReadTime,
     isGeneratingSummary,
     handleGenerateSlug,
-    handleCalculateReadTime,
     handleGenerateSummary,
-    handleProcessData,
+    handlePublish,
+    handleUnpublish,
     processState,
+    canPublish,
     isGeneratingTags,
     handleGenerateTags,
-    isDirty: isPostDirty,
     contentStats,
   } = usePostActions({
     postId: initialData.id,
     post,
-    initialData,
     setPost,
     setError,
     allTags,
@@ -107,70 +137,20 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     setPost((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const handleRestoreApplied = useCallback(
-    ({
-      snapshot,
-    }: {
-      snapshot: {
-        title: string;
-        summary: string | null;
-        slug: string;
-        status: PostEditorData["status"];
-        publishedAt: string | null;
-        readTimeInMinutes: number;
-        contentJson: PostEditorData["contentJson"];
-        tagIds: Array<number>;
-      };
-    }) => {
-      const hasPublicCache = post.hasPublicCache;
-      const restoredPost: PostEditorData = {
-        title: snapshot.title,
-        summary: snapshot.summary ?? "",
-        slug: snapshot.slug,
-        status: snapshot.status,
-        readTimeInMinutes: snapshot.readTimeInMinutes,
-        contentJson: snapshot.contentJson,
-        publishedAt: snapshot.publishedAt
-          ? new Date(snapshot.publishedAt)
-          : null,
-        pinnedAt: post.pinnedAt,
-        tagIds: snapshot.tagIds,
-        isSynced: snapshot.status === "draft" ? !hasPublicCache : false,
-        hasPublicCache,
-      };
+  const historyTagNames = useMemo(() => {
+    if (!history.selectedRevision) return [];
+    const tagMap = new Map(allTags.map((tag) => [tag.id, tag.name]));
+    return history.selectedRevision.snapshotJson.tagIds
+      .map((tagId) => tagMap.get(tagId))
+      .filter((tagName): tagName is string => Boolean(tagName));
+  }, [allTags, history.selectedRevision]);
 
-      setPost(restoredPost);
-      setEditorRenderKey(`editor:${initialData.id}:${Date.now()}`);
-      markSaved(restoredPost);
-    },
-    [initialData.id, markSaved, post.hasPublicCache],
-  );
-
-  const currentSnapshot = useMemo<PostRevisionSnapshot>(
-    () => ({
-      title: post.title,
-      summary: post.summary.trim() || null,
-      slug: post.slug,
-      status: post.status,
-      publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
-      readTimeInMinutes: post.readTimeInMinutes,
-      contentJson: post.contentJson,
-      tagIds: [...new Set(post.tagIds)].sort((a, b) => a - b),
-    }),
-    [
-      post.contentJson,
-      post.publishedAt,
-      post.readTimeInMinutes,
-      post.slug,
-      post.status,
-      post.summary,
-      post.tagIds,
-      post.title,
-    ],
-  );
+  const viewingTime = history.selectedRevision
+    ? formatDate(history.selectedRevision.createdAt, { includeTime: true })
+    : "";
 
   return (
-    <div className="fixed inset-0 z-80 flex flex-col bg-background overflow-hidden">
+    <div className="fixed inset-0 z-80 flex flex-col overflow-hidden bg-background">
       <ConfirmationModal
         isOpen={status === "blocked"}
         onClose={() => reset?.()}
@@ -179,102 +159,161 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         message={m.editor_leave_message()}
         confirmLabel={m.editor_leave_confirm()}
       />
+      <ConfirmationModal
+        isOpen={history.confirm === "restore"}
+        onClose={history.cancelConfirm}
+        onConfirm={history.confirmRestore}
+        title={m.editor_history_restore_title()}
+        message={m.editor_history_restore_message()}
+        confirmLabel={m.editor_history_restore_action()}
+        isLoading={history.isRestoring}
+      />
+      <ConfirmationModal
+        isOpen={history.confirm === "delete"}
+        onClose={history.cancelConfirm}
+        onConfirm={history.confirmDelete}
+        title={m.editor_history_delete_title()}
+        message={m.editor_history_delete_message()}
+        confirmLabel={m.editor_history_delete_action()}
+        isLoading={history.isDeleting}
+        isDanger
+      />
 
       <PostEditorHeader
         post={post}
         saveStatus={saveStatus}
         processState={processState}
-        isPostDirty={isPostDirty}
-        onPreview={() => {
-          if (post.slug) window.open(`/post/${post.slug}`, "_blank");
-        }}
-        onProcess={handleProcessData}
+        canPublish={canPublish}
+        onPublish={handlePublish}
+        onUnpublish={handleUnpublish}
+        isInspecting={history.isInspecting}
+        canRestore={history.selectedRevision != null}
+        isRestoring={history.isRestoring}
+        isDeleting={history.isDeleting}
+        onExitHistory={history.exitInspect}
+        onRestore={history.requestRestore}
+        onDelete={history.requestDelete}
       />
 
-      <PostEditorHistoryPanel
-        postId={initialData.id}
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        currentSnapshot={currentSnapshot}
-        allTags={allTags}
-        onRestoreApplied={handleRestoreApplied}
-      />
+      {history.isInspecting && history.selectedRevision && (
+        <div className="border-b border-amber-500/40 bg-amber-500/10 px-6 py-3">
+          <p className="text-sm font-medium">
+            {m.editor_history_banner_title({ time: viewingTime })}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {m.editor_history_banner_hint()}
+          </p>
+        </div>
+      )}
 
-      {/* Main Content Area (Only this scrolls) */}
+      {history.isInspecting && (
+        <div className="border-b border-border/30 px-4 py-2 xl:hidden">
+          <PostEditorHistoryList
+            revisions={history.revisions}
+            isLoading={history.isListLoading}
+            selectedRevisionId={history.selectedRevisionId}
+            onSelect={history.selectRevision}
+            layout="strip"
+          />
+        </div>
+      )}
+
       <div
         id="post-editor-scroll-container"
-        className="flex-1 overflow-y-auto custom-scrollbar relative scroll-smooth animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both delay-100"
+        className="custom-scrollbar relative flex-1 scroll-smooth overflow-y-auto animate-in fade-in slide-in-from-bottom-4 fill-mode-both delay-100 duration-1000"
       >
-        <div className="w-full mx-auto py-20 px-6 md:px-12 grid grid-cols-1 xl:grid-cols-[1fr_240px] 2xl:grid-cols-[1fr_56rem_1fr] gap-12 items-start">
+        <div className="mx-auto grid w-full grid-cols-1 items-start gap-12 px-6 py-20 md:px-12 xl:grid-cols-[1fr_240px] 2xl:grid-cols-[1fr_56rem_1fr]">
           <div className="hidden 2xl:block" />
-          <div className="min-w-0 w-full max-w-4xl mx-auto 2xl:mx-0">
-            <div className="mb-6 flex justify-end xl:hidden">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsHistoryOpen(true)}
-                className="rounded-none text-[10px] font-mono uppercase tracking-[0.18em]"
-              >
-                <History size={14} />
-                <span className="ml-2">{m.editor_history_open()}</span>
-              </Button>
-            </div>
-
-            <PostEditorMetadata
-              post={post}
-              isGeneratingSlug={isGeneratingSlug}
-              isCalculatingReadTime={isCalculatingReadTime}
-              isGeneratingSummary={isGeneratingSummary}
-              isGeneratingTags={isGeneratingTags}
-              onPostChange={handlePostChange}
-              onGenerateSlug={handleGenerateSlug}
-              onCalculateReadTime={handleCalculateReadTime}
-              onGenerateSummary={handleGenerateSummary}
-              onGenerateTags={handleGenerateTags}
-            />
-
-            {/* Editor Area */}
-            <div className="min-h-[60vh] pb-32">
-              <Editor
-                key={editorRenderKey}
-                extensions={extensions}
-                content={post.contentJson ?? ""}
-                onChange={handleContentChange}
-                onCreated={setEditorInstance}
+          <div className="mx-auto min-w-0 w-full max-w-4xl 2xl:mx-0">
+            {history.isInspecting ? (
+              <PostEditorHistoryDocument
+                snapshot={history.selectedRevision?.snapshotJson ?? null}
+                tagNames={historyTagNames}
+                isLoading={history.isRevisionLoading}
+                editorKey={`history:${initialData.id}:${history.selectedRevisionId ?? "none"}`}
               />
-            </div>
+            ) : (
+              <>
+                <div className="mb-6 flex justify-end xl:hidden">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={history.openHistory}
+                    className="rounded-none text-[10px] font-mono uppercase tracking-[0.18em]"
+                  >
+                    <History size={14} />
+                    <span className="ml-2">{m.editor_history_open()}</span>
+                  </Button>
+                </div>
+
+                <PostEditorMetadata
+                  post={post}
+                  isGeneratingSlug={isGeneratingSlug}
+                  isGeneratingSummary={isGeneratingSummary}
+                  isGeneratingTags={isGeneratingTags}
+                  onPostChange={handlePostChange}
+                  onGenerateSlug={handleGenerateSlug}
+                  onGenerateSummary={handleGenerateSummary}
+                  onGenerateTags={handleGenerateTags}
+                />
+
+                <div className="min-h-[60vh] pb-32">
+                  <Editor
+                    key={editorRenderKey}
+                    extensions={extensions}
+                    content={post.contentJson ?? ""}
+                    onChange={handleContentChange}
+                    onCreated={setEditorInstance}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Sidebar */}
-          <aside className="hidden xl:block sticky top-20 h-full max-h-[calc(100vh-10rem)] w-60">
-            <div className="space-y-6">
-              <button
-                type="button"
-                onClick={() => setIsHistoryOpen(true)}
-                className="flex w-full items-center justify-between border border-border/30 px-4 py-3 text-left transition-colors hover:border-foreground/20 hover:bg-muted/30"
-              >
-                <div>
-                  <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/55">
-                    {m.editor_history_eyebrow()}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-foreground">
-                    {m.editor_history_title()}
-                  </p>
-                </div>
-                {saveStatus === "SAVING" ? (
-                  <Loader2
-                    size={14}
-                    className="animate-spin text-muted-foreground"
-                  />
-                ) : (
-                  <History size={16} className="text-muted-foreground" />
-                )}
-              </button>
+          <aside className="sticky top-20 hidden h-full max-h-[calc(100vh-10rem)] w-60 xl:block">
+            {history.isInspecting ? (
+              <div className="flex h-full flex-col border border-border/30">
+                <p className="border-b border-border/30 px-4 py-3 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                  {m.editor_history_list_title()}
+                </p>
+                <PostEditorHistoryList
+                  revisions={history.revisions}
+                  isLoading={history.isListLoading}
+                  selectedRevisionId={history.selectedRevisionId}
+                  onSelect={history.selectRevision}
+                  layout="rail"
+                />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <button
+                  type="button"
+                  onClick={history.openHistory}
+                  className="flex w-full items-center justify-between border border-border/30 px-4 py-3 text-left transition-colors hover:border-foreground/20 hover:bg-muted/30"
+                >
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/55">
+                      {m.editor_history_eyebrow()}
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {m.editor_history_title()}
+                    </p>
+                  </div>
+                  {saveStatus === "SAVING" ? (
+                    <Loader2
+                      size={14}
+                      className="animate-spin text-muted-foreground"
+                    />
+                  ) : (
+                    <History size={16} className="text-muted-foreground" />
+                  )}
+                </button>
 
-              {editorInstance && (
-                <EditorTableOfContents editor={editorInstance} />
-              )}
-            </div>
+                {editorInstance && (
+                  <EditorTableOfContents editor={editorInstance} />
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </div>
