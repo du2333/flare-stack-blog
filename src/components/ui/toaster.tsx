@@ -14,6 +14,7 @@ const Toaster: React.FC<ToasterProps> = (props) => {
         classNames: {
           toast:
             "group relative w-full max-w-[350px] flex items-start justify-between gap-4 p-5 bg-background border border-border/40 shadow-sm transition-all duration-500 hover:border-border/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-10 data-[state=open]:slide-in-from-bottom-4 [&:has([data-button])]:pr-10",
+          icon: "relative flex size-4 shrink-0 items-center justify-center",
           title: "text-sm font-medium text-foreground tracking-tight",
           description: "text-xs text-muted-foreground mt-1",
           content: "flex flex-col gap-0.5 flex-1 min-w-0 pr-2",
