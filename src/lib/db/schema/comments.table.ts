@@ -11,12 +11,7 @@ import { user } from "./auth.table";
 import { createdAt, id, updatedAt } from "./helper";
 import { PostsTable } from "./posts.table";
 
-export const COMMENT_STATUSES = [
-  "pending",
-  "published",
-  "deleted",
-  "verifying",
-] as const;
+export const COMMENT_STATUSES = ["published", "deleted"] as const;
 
 export const CommentsTable = sqliteTable(
   "comments",
@@ -35,8 +30,7 @@ export const CommentsTable = sqliteTable(
     ),
     status: text("status", { enum: COMMENT_STATUSES })
       .notNull()
-      .default("verifying"),
-    aiReason: text("ai_reason"),
+      .default("published"),
 
     postId: integer("post_id")
       .notNull()

@@ -45,11 +45,6 @@
   ],
   "workflows": [
     {
-      "name": "comment-moderation-workflow",
-      "binding": "COMMENT_MODERATION_WORKFLOW",
-      "class_name": "CommentModerationWorkflow"
-    },
-    {
       "name": "export-workflow",
       "binding": "EXPORT_WORKFLOW",
       "class_name": "ExportWorkflow"
@@ -71,10 +66,6 @@
         "class_name": "PasswordHasher"
       }
     ]
-  },
-  "ai": {
-    "binding": "AI",
-    "remote": true
   },
   "queues": {
     "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
@@ -127,11 +118,6 @@
         }
       ],
       "workflows": [
-        {
-          "name": "comment-moderation-workflow",
-          "binding": "COMMENT_MODERATION_WORKFLOW",
-          "class_name": "CommentModerationWorkflow"
-        },
         {
           "name": "export-workflow",
           "binding": "EXPORT_WORKFLOW",

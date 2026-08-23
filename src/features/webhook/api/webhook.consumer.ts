@@ -18,16 +18,6 @@ function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
         },
         { locale },
       );
-    case "comment.admin_pending_review":
-      return m.email_webhook_comment_admin_pending_message(
-        {
-          commentPreview: event.data.commentPreview,
-          commenterName: event.data.commenterName,
-          postTitle: event.data.postTitle,
-          reviewUrl: event.data.reviewUrl,
-        },
-        { locale },
-      );
     case "comment.reply_to_admin_published":
     case "comment.reply_to_user_published":
       return m.email_webhook_comment_reply_message(

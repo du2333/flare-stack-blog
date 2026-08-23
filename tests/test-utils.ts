@@ -108,15 +108,6 @@ export function createTestContext(
     ...overrides,
   };
 
-  // Mock Workflow create methods
-  const mockWorkflowInstance = { id: "mock-id" };
-
-  vi.spyOn(context.env.COMMENT_MODERATION_WORKFLOW, "create").mockResolvedValue(
-    mockWorkflowInstance as unknown as Awaited<
-      ReturnType<Env["COMMENT_MODERATION_WORKFLOW"]["create"]>
-    >,
-  );
-
   vi.spyOn(context.env.QUEUE, "send").mockResolvedValue({
     metadata: {
       metrics: {

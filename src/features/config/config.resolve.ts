@@ -3,6 +3,7 @@ import type { SiteConfig, SystemConfig } from "@/features/config/config.schema";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
+import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
 
 const DEFAULT_SMTP_PORT = 465;
 const RESEND_SMTP_HOST = "smtp.resend.com";
@@ -118,8 +119,14 @@ export function resolveSystemConfig(
         ...DEFAULT_CONFIG.notification?.user,
         ...config?.notification?.user,
       },
-      webhooks:
-        config?.notification?.webhooks ?? DEFAULT_CONFIG.notification?.webhooks,
+      webhooks: (
+        config?.notification?.webhooks ?? DEFAULT_CONFIG.notification?.webhooks
+      )?.map((endpoint) => ({
+        ...endpoint,
+        events: endpoint.events.filter((event) =>
+          (NOTIFICATION_WEBHOOK_EVENTS as readonly string[]).includes(event),
+        ),
+      })),
     },
     site: resolveSiteConfig(config),
   };

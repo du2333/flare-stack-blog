@@ -44,26 +44,11 @@ export const CommentWithUserSchema = CommentSelectSchema.extend({
     .optional(),
 });
 
-export const UserStatsSchema = z.object({
-  totalComments: z.number(),
-  rejectedComments: z.number(),
-  registeredAt: coercedDate,
-});
-
-export const GetUserStatsInputSchema = z.object({
-  userId: z.string(),
-});
-
 // Public API Schemas
 export const GetCommentsByPostIdInputSchema = z.object({
   postId: z.number(),
   offset: z.number().optional(),
   limit: z.number().optional(),
-});
-
-export const GetCommentsResponseSchema = z.object({
-  items: z.array(CommentWithUserSchema),
-  total: z.number(),
 });
 
 export const GetRepliesByRootIdInputSchema = z.object({
@@ -119,25 +104,6 @@ export const GetMyCommentsInputSchema = z.object({
   status: z.custom<CommentStatus>().optional(),
 });
 
-// Admin API Schemas
-export const GetAllCommentsInputSchema = z.object({
-  offset: z.number().optional(),
-  limit: z.number().optional(),
-  status: z.custom<CommentStatus>().optional(),
-  postId: z.number().optional(),
-  userId: z.string().optional(),
-  userName: z.string().optional(),
-});
-
-export const ModerateCommentInputSchema = z.object({
-  id: z.number(),
-  status: z.enum(["published", "deleted", "pending"]),
-});
-
-export const StartCommentModerationInputSchema = z.object({
-  commentId: z.number(),
-});
-
 // Types
 export type GetCommentsByPostIdInput = z.infer<
   typeof GetCommentsByPostIdInputSchema
@@ -146,11 +112,6 @@ export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
 export type UpdateCommentInput = z.infer<typeof UpdateCommentInputSchema>;
 export type DeleteCommentInput = z.infer<typeof DeleteCommentInputSchema>;
 export type GetMyCommentsInput = z.infer<typeof GetMyCommentsInputSchema>;
-export type GetAllCommentsInput = z.infer<typeof GetAllCommentsInputSchema>;
-export type ModerateCommentInput = z.infer<typeof ModerateCommentInputSchema>;
-export type StartCommentModerationInput = z.infer<
-  typeof StartCommentModerationInputSchema
->;
 export type RootCommentWithReplyCount = z.infer<
   typeof RootCommentWithReplyCountSchema
 >;

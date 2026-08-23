@@ -69,7 +69,6 @@ export async function getDashboardStats(
   const { db } = context;
 
   const [
-    pendingComments,
     publishedPosts,
     drafts,
     mediaSize,
@@ -77,7 +76,6 @@ export async function getDashboardStats(
     recentPosts,
     recentUsers,
   ] = await Promise.all([
-    DashboardRepo.getPendingCommentsCount(db),
     DashboardRepo.getPublishedPostsCount(db),
     DashboardRepo.getDraftsCount(db),
     MediaRepo.getTotalMediaSize(db),
@@ -146,7 +144,6 @@ export async function getDashboardStats(
 
   return {
     stats: {
-      pendingComments,
       publishedPosts,
       drafts,
       mediaSize,

@@ -7,10 +7,6 @@ import type { DB as DBType } from "@/lib/db";
 import type { QueueMessage } from "@/lib/queue/queue.schema";
 
 declare global {
-  interface CommentModerationWorkflowParams {
-    commentId: number;
-  }
-
   interface ExportWorkflowParams {
     taskId: string;
     postIds?: Array<number>;
@@ -26,7 +22,6 @@ declare global {
   }
 
   interface Env extends Cloudflare.Env {
-    COMMENT_MODERATION_WORKFLOW: Workflow<CommentModerationWorkflowParams>;
     EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
     IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
     QUEUE: Queue<QueueMessage>;

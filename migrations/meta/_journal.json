@@ -85,6 +85,13 @@
       "when": 1776686400000,
       "tag": "0011_publish_public_snapshot",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1776892800000,
+      "tag": "0012_drop_comment_moderation",
+      "breakpoints": true
     }
   ]
 }

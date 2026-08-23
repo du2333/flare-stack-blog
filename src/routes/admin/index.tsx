@@ -9,7 +9,6 @@ import {
   Database,
   Eye,
   FileText,
-  MessageSquare,
   RefreshCw,
   Users,
 } from "lucide-react";
@@ -155,18 +154,6 @@ function DashboardOverview() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/admin/comments" search={{ status: "pending" }}>
-          <StatCard
-            label={m.admin_overview_stat_pending_comments()}
-            value={stats.pendingComments.toString()}
-            icon={<MessageSquare size={14} />}
-            trend={
-              stats.pendingComments > 0
-                ? m.admin_overview_trend_action_required()
-                : m.admin_overview_trend_all_good()
-            }
-          />
-        </Link>
         <Link to="/admin/posts" search={{ status: "PUBLISHED" }}>
           <StatCard
             label={m.admin_overview_stat_published_posts()}

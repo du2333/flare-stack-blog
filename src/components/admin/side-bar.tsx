@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Link2,
   LogOut,
-  MessageSquare,
   Tag,
   User,
   X,
@@ -89,12 +88,6 @@ export function SideBar({
       path: "/admin/media",
       icon: ImageIcon,
       label: m.admin_sidebar_media(),
-      exact: false,
-    },
-    {
-      path: "/admin/comments",
-      icon: MessageSquare,
-      label: m.admin_sidebar_comments(),
       exact: false,
     },
     {

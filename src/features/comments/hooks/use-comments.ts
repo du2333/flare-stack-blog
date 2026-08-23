@@ -6,7 +6,6 @@ import { m } from "@/paraglide/messages";
 import type {
   CreateCommentInput,
   DeleteCommentInput,
-  ModerateCommentInput,
 } from "../comments.schema";
 
 function invalidateCommentViews(
@@ -21,9 +20,6 @@ function invalidateCommentViews(
       queryKey: orpc.comments.replies.key({ input: { postId } }),
     });
   }
-  queryClient.invalidateQueries({
-    queryKey: orpc.comments.admin.key(),
-  });
   queryClient.invalidateQueries({
     queryKey: orpc.comments.mine.key(),
   });
@@ -96,41 +92,5 @@ export function useComments(postId?: number) {
     isCreating: createCommentMutation.isPending,
     deleteComment: deleteCommentMutation.mutateAsync,
     isDeleting: deleteCommentMutation.isPending,
-  };
-}
-
-export function useAdminComments() {
-  const queryClient = useQueryClient();
-
-  const moderateMutation = useMutation({
-    mutationFn: (input: ModerateCommentInput) =>
-      orpcClient.comments.admin.moderate(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
-      toast.success(m.comments_toast_moderate_success());
-    },
-    onError: () => {
-      toast.error(m.comments_toast_moderate_not_found());
-    },
-  });
-
-  const adminDeleteMutation = useMutation({
-    mutationFn: (input: DeleteCommentInput) =>
-      orpcClient.comments.admin.remove(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
-      toast.success(m.comments_toast_destroy_success());
-    },
-    onError: () => {
-      toast.error(m.comments_toast_destroy_not_found());
-    },
-  });
-
-  return {
-    moderate: moderateMutation.mutate,
-    moderateAsync: moderateMutation.mutateAsync,
-    isModerating: moderateMutation.isPending,
-    adminDelete: adminDeleteMutation.mutate,
-    isAdminDeleting: adminDeleteMutation.isPending,
   };
 }

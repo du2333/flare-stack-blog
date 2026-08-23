@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const DashboardStatsSchema = z.object({
-  pendingComments: z.number(),
   publishedPosts: z.number(),
   drafts: z.number(),
   mediaSize: z.number(),

@@ -2,21 +2,15 @@ import {
   CommentSelectSchema,
   CreateCommentInputSchema,
   DeleteCommentInputSchema,
-  GetAllCommentsInputSchema,
   GetCommentsByPostIdInputSchema,
-  GetCommentsResponseSchema,
   GetMyCommentsInputSchema,
   GetRepliesByRootIdInputSchema,
   GetRepliesResponseSchema,
   GetRootCommentsResponseSchema,
-  GetUserStatsInputSchema,
-  ModerateCommentInputSchema,
-  UserStatsSchema,
 } from "@/features/comments/comments.schema";
 import { z } from "zod";
 import * as CommentService from "@/features/comments/comments.service";
 import {
-  adminProcedure,
   authProcedure,
   optionalSessionProcedure,
   turnstileMiddleware,
@@ -146,79 +140,10 @@ const mine = authProcedure
     CommentService.getMyComments(context, input),
   );
 
-const adminList = adminProcedure
-  .route({
-    method: "GET",
-    path: "/admin/comments",
-    summary: "List comments for admin",
-    tags: ["Admin Comments"],
-  })
-  .input(GetAllCommentsInputSchema)
-  .output(GetCommentsResponseSchema)
-  .handler(({ context, input }) =>
-    CommentService.getAllComments(context, input),
-  );
-
-const moderate = adminProcedure
-  .errors(commentErrors)
-  .route({
-    method: "PATCH",
-    path: "/admin/comments/{id}",
-    summary: "Moderate a comment",
-    tags: ["Admin Comments"],
-  })
-  .input(ModerateCommentInputSchema)
-  .handler(({ context, input, errors }) =>
-    unwrapResult(
-      CommentService.moderateComment(context, input, context.session.user.id),
-      {
-        COMMENT_NOT_FOUND: () => {
-          throw errors.COMMENT_NOT_FOUND();
-        },
-      },
-    ),
-  );
-
-const adminRemove = adminProcedure
-  .errors(commentErrors)
-  .route({
-    method: "DELETE",
-    path: "/admin/comments/{id}",
-    summary: "Hard-delete a comment",
-    tags: ["Admin Comments"],
-  })
-  .input(DeleteCommentInputSchema)
-  .handler(({ context, input, errors }) =>
-    unwrapResult(CommentService.adminDeleteComment(context, input), {
-      COMMENT_NOT_FOUND: () => {
-        throw errors.COMMENT_NOT_FOUND();
-      },
-    }),
-  );
-
-const userStats = adminProcedure
-  .route({
-    method: "GET",
-    path: "/admin/users/{userId}/stats",
-    summary: "Get comment stats for a user",
-    tags: ["Admin Comments"],
-  })
-  .input(GetUserStatsInputSchema)
-  .output(UserStatsSchema)
-  .handler(({ context, input }) =>
-    CommentService.getUserCommentStats(context, input.userId),
-  );
-
 export default {
   roots,
   replies,
   create,
   remove,
   mine,
-  admin: {
-    list: adminList,
-    moderate,
-    remove: adminRemove,
-    userStats,
-  },
 };

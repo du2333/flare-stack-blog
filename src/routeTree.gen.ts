@@ -39,7 +39,6 @@ import { Route as ApiAuthRouteImport } from './routes/api.auth'
 import { Route as ApiSendRouteImport } from './routes/api.send'
 import { Route as ImagesSplatRouteImport } from './routes/images.$'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
-import { Route as AdminCommentsIndexRouteImport } from './routes/admin/comments/index'
 import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
@@ -196,11 +195,6 @@ const PublicPostSlugRoute = PublicPostSlugRouteImport.update({
   path: '/post/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const AdminCommentsIndexRoute = AdminCommentsIndexRouteImport.update({
-  id: '/comments/',
-  path: '/comments/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminFriendLinksIndexRoute = AdminFriendLinksIndexRouteImport.update({
   id: '/friend-links/',
   path: '/friend-links/',
@@ -272,7 +266,6 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin/comments/': typeof AdminCommentsIndexRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
@@ -308,7 +301,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin/comments': typeof AdminCommentsIndexRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
@@ -350,7 +342,6 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/_public/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/admin/comments/': typeof AdminCommentsIndexRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
@@ -390,7 +381,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/post/$slug'
     | '/api/auth/$'
-    | '/admin/comments/'
     | '/admin/friend-links/'
     | '/admin/media/'
     | '/admin/posts/'
@@ -426,7 +416,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/post/$slug'
     | '/api/auth/$'
-    | '/admin/comments'
     | '/admin/friend-links'
     | '/admin/media'
     | '/admin/posts'
@@ -467,7 +456,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/_public/post/$slug'
     | '/api/auth/$'
-    | '/admin/comments/'
     | '/admin/friend-links/'
     | '/admin/media/'
     | '/admin/posts/'
@@ -708,13 +696,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPostSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/admin/comments/': {
-      id: '/admin/comments/'
-      path: '/comments'
-      fullPath: '/admin/comments/'
-      preLoaderRoute: typeof AdminCommentsIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/friend-links/': {
       id: '/admin/friend-links/'
       path: '/friend-links'
@@ -847,7 +828,6 @@ const AdminPostsRouteRouteWithChildren = AdminPostsRouteRoute._addFileChildren(
 interface AdminRouteRouteChildren {
   AdminPostsRouteRoute: typeof AdminPostsRouteRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
-  AdminCommentsIndexRoute: typeof AdminCommentsIndexRoute
   AdminFriendLinksIndexRoute: typeof AdminFriendLinksIndexRoute
   AdminMediaIndexRoute: typeof AdminMediaIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
@@ -857,7 +837,6 @@ interface AdminRouteRouteChildren {
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminPostsRouteRoute: AdminPostsRouteRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
-  AdminCommentsIndexRoute: AdminCommentsIndexRoute,
   AdminFriendLinksIndexRoute: AdminFriendLinksIndexRoute,
   AdminMediaIndexRoute: AdminMediaIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,

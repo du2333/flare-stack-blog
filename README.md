@@ -36,7 +36,7 @@
 - **文章管理** — 富文本编辑器，支持代码高亮、图片上传、草稿/发布流程
 - **版本历史** — 编辑器自动快照与文章版本回溯，方便恢复误改内容
 - **标签系统** — 灵活的文章分类
-- **评论系统** — 支持嵌套回复、邮件通知、AI 辅助审核与上下文化评论审核
+- **评论系统** — 支持嵌套回复、邮件通知
 - **友情链接** — 用户申请、管理员审核、邮件通知
 - **通知系统** — 支持邮件与 Webhook 多通道通知，可按事件订阅
 - **全文搜索** — 基于 Orama 的高性能搜索
@@ -44,7 +44,6 @@
 - **用户认证** — GitHub OAuth 登录，权限控制
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
-- **AI 辅助** — Cloudflare Workers AI 集成
 - **主题系统** — 可扩展的主题模板，支持完整替换所有页面和布局
 - **导入导出** — 支持Markdown导入导出，保留图片以及Frontmatter
 
@@ -59,9 +58,8 @@
 | R2              | 对象存储（媒体文件）           |
 | KV              | 缓存层                         |
 | Durable Objects | 分布式限流                     |
-| Workflows       | 异步任务（内容审核、定时发布） |
+| Workflows       | 异步任务（导入导出）           |
 | Queues          | 消息队列（邮件通知）           |
-| Workers AI      | AI 能力                        |
 | Images          | 图片优化                       |
 
 ### 前端
@@ -95,7 +93,7 @@ src/
 │   │   ├── components/         # 功能专属组件
 │   │   ├── queries/            # TanStack Query Hooks
 │   │   └── workflows/          # Cloudflare Workflows
-│   ├── comments/    # 评论、嵌套回复、审核
+│   ├── comments/    # 评论、嵌套回复
 │   ├── tags/        # 标签管理
 │   ├── media/       # 媒体上传、R2 存储
 │   ├── search/      # Orama 全文搜索
@@ -108,7 +106,6 @@ src/
 │   ├── import-export/# Markdown 导入导出
 │   ├── version/     # 版本更新检查
 │   ├── theme/       # 主题系统（契约、注册表、各主题实现）
-│   └── ai/          # Workers AI 集成
 ├── routes/
 │   ├── _public/     # 公开页面（首页、文章列表/详情、搜索）
 │   ├── _auth/       # 登录/注册相关页面

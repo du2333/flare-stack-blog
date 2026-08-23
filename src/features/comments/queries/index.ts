@@ -47,23 +47,3 @@ export function myCommentsQuery(
 ) {
   return orpc.comments.mine.queryOptions({ input: options });
 }
-
-export function allCommentsQuery(
-  options: {
-    offset?: number;
-    limit?: number;
-    status?: CommentStatus;
-    postId?: number;
-    userId?: string;
-    userName?: string;
-  } = {},
-) {
-  return orpc.comments.admin.list.queryOptions({ input: options });
-}
-
-export function userCommentStatsQuery(userId: string) {
-  return orpc.comments.admin.userStats.queryOptions({
-    input: { userId },
-    staleTime: 1000 * 60 * 5,
-  });
-}

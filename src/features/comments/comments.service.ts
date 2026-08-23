@@ -1,11 +1,8 @@
 import type {
   CreateCommentInput,
   DeleteCommentInput,
-  GetAllCommentsInput,
   GetCommentsByPostIdInput,
   GetMyCommentsInput,
-  ModerateCommentInput,
-  StartCommentModerationInput,
 } from "@/features/comments/comments.schema";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
@@ -136,17 +133,10 @@ export async function createComment(
     rootId,
     replyToCommentId,
     userId: context.session.user.id,
-    // Admin comments are published immediately, others go through moderation
-    status: isAdmin ? "published" : "verifying",
+    status: "published",
   });
 
-  // Trigger AI moderation workflow only for non-admin users
-  if (!isAdmin) {
-    await startCommentModerationWorkflow(context, { commentId: comment.id });
-  }
-
-  // Send reply notification for admin replies (non-admin replies get notified via moderation workflow)
-  if (isAdmin && replyToCommentId) {
+  if (replyToCommentId) {
     const post = await PostService.findPostById(context, {
       id: data.postId,
     });
@@ -227,122 +217,4 @@ export async function getMyComments(
       status: data.status,
     },
   );
-}
-
-// ============ Admin Service Methods ============
-
-export async function getAllComments(
-  context: DbContext,
-  data: GetAllCommentsInput,
-) {
-  const [items, total] = await Promise.all([
-    CommentRepo.getAllComments(context.db, {
-      offset: data.offset,
-      limit: data.limit,
-      status: data.status,
-      postId: data.postId,
-      userId: data.userId,
-      userName: data.userName,
-    }),
-    CommentRepo.getAllCommentsCount(context.db, {
-      status: data.status,
-      postId: data.postId,
-      userId: data.userId,
-      userName: data.userName,
-    }),
-  ]);
-
-  return { items, total };
-}
-
-export async function moderateComment(
-  context: DbContext & { executionCtx: ExecutionContext },
-  data: ModerateCommentInput,
-  moderatorUserId?: string,
-) {
-  const comment = await CommentRepo.findCommentById(context.db, data.id);
-
-  if (!comment) {
-    return err({ reason: "COMMENT_NOT_FOUND" });
-  }
-
-  const updatedComment = await CommentRepo.updateComment(context.db, data.id, {
-    status: data.status,
-  });
-
-  // Send reply notification when manually approving a reply comment
-  // Guard: only on first approval (comment.status !== "published") to prevent duplicates
-  if (
-    data.status === "published" &&
-    comment.status !== "published" &&
-    comment.replyToCommentId
-  ) {
-    const post = await PostService.findPostById(context, {
-      id: comment.postId,
-    });
-    if (post) {
-      await sendReplyNotification(context, {
-        comment: {
-          id: comment.id,
-          rootId: comment.rootId,
-          replyToCommentId: comment.replyToCommentId,
-          userId: comment.userId,
-          content: comment.content,
-        },
-        post: { slug: post.slug, title: post.title },
-        skipNotifyUserId: moderatorUserId,
-      });
-    }
-  }
-
-  return ok(updatedComment);
-}
-
-export async function adminDeleteComment(
-  context: DbContext,
-  data: DeleteCommentInput,
-) {
-  const comment = await CommentRepo.findCommentById(context.db, data.id);
-
-  if (!comment) {
-    return err({ reason: "COMMENT_NOT_FOUND" });
-  }
-
-  // Hard delete for admin
-  await CommentRepo.deleteComment(context.db, data.id);
-
-  return ok({ success: true });
-}
-
-// ============ Workflow Methods ============
-
-export async function startCommentModerationWorkflow(
-  context: DbContext,
-  data: StartCommentModerationInput,
-) {
-  await context.env.COMMENT_MODERATION_WORKFLOW.create({
-    params: {
-      commentId: data.commentId,
-    },
-  });
-}
-
-export async function findCommentById(context: DbContext, commentId: number) {
-  return await CommentRepo.findCommentById(context.db, commentId);
-}
-
-export async function updateCommentStatus(
-  context: DbContext,
-  commentId: number,
-  status: "published" | "pending" | "deleted",
-  aiReason?: string,
-) {
-  return await CommentRepo.updateComment(context.db, commentId, {
-    status,
-    aiReason,
-  });
-}
-
-export async function getUserCommentStats(context: DbContext, userId: string) {
-  return await CommentRepo.getUserCommentStats(context.db, userId);
 }

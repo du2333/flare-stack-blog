@@ -43,7 +43,7 @@ Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
 - **MCP Server** — Connect AI clients through OAuth to manage posts, comments, tags, friend links, media, and analytics.
 - **Analytics** — Umami integration for visitor metrics and top posts.
 - **SEO Enhancements** — Canonical URLs, Schema.org structured data, RSS, Sitemap, and Robots support.
-- **AI Integration** — Cloudflare Workers AI integration.
+
 - **Theme System** — Extensible theme templates, fully supporting replacement of all pages and layouts.
 - **Import / Export** — Supports Markdown import and export, preserving images and frontmatter.
 
@@ -58,9 +58,8 @@ Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
 | R2              | Object storage (media files)                                  |
 | KV              | Caching layer                                                 |
 | Durable Objects | Distributed rate limiting                                     |
-| Workflows       | Asynchronous tasks (content moderation, scheduled publishing) |
+| Workflows       | Asynchronous tasks (import/export)                            |
 | Queues          | Message queues (email notifications)                          |
-| Workers AI      | AI capabilities                                               |
 | Images          | Image optimization                                            |
 
 ### Frontend
@@ -94,7 +93,7 @@ src/
 │   │   ├── components/         # Feature-specific components
 │   │   ├── queries/            # TanStack Query Hooks
 │   │   └── workflows/          # Cloudflare Workflows
-│   ├── comments/    # Comments, nested replies, moderation
+│   ├── comments/    # Comments, nested replies
 │   ├── tags/        # Tag management
 │   ├── media/       # Media uploads, R2 storage
 │   ├── search/      # Orama full-text search
@@ -107,7 +106,6 @@ src/
 │   ├── import-export/# Markdown importing/exporting
 │   ├── version/     # Version update checker
 │   ├── theme/       # Theme system (Contracts, registry, theme implementations)
-│   └── ai/          # Workers AI integration
 ├── routes/
 │   ├── _public/     # Public pages (Home, post lists/details, search)
 │   ├── _auth/       # Login/Registration related pages

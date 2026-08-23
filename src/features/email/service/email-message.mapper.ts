@@ -38,29 +38,10 @@ export function createEmailMessageFromNotification(
         html: renderToStaticMarkup(
           AdminNotificationEmail({
             locale,
-            mode: "new",
             postTitle: event.data.postTitle,
             commenterName: event.data.commenterName,
             commentPreview: event.data.commentPreview,
             commentUrl: event.data.commentUrl,
-          }),
-        ),
-      };
-    case "comment.admin_pending_review":
-      return {
-        to: event.data.to,
-        subject: m.email_comment_admin_pending_subject(
-          { postTitle: event.data.postTitle },
-          { locale },
-        ),
-        html: renderToStaticMarkup(
-          AdminNotificationEmail({
-            locale,
-            mode: "pending",
-            postTitle: event.data.postTitle,
-            commenterName: event.data.commenterName,
-            commentPreview: event.data.commentPreview,
-            commentUrl: event.data.reviewUrl,
           }),
         ),
       };

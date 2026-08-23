@@ -381,56 +381,6 @@
           "tags": ["Comments"]
         }
       }
-    },
-    "admin": {
-      "list": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "GET",
-            "path": "/admin/comments",
-            "summary": "List comments for admin",
-            "tags": ["Admin Comments"]
-          }
-        }
-      },
-      "moderate": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "PATCH",
-            "path": "/admin/comments/{id}",
-            "summary": "Moderate a comment",
-            "tags": ["Admin Comments"]
-          }
-        }
-      },
-      "remove": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "DELETE",
-            "path": "/admin/comments/{id}",
-            "summary": "Hard-delete a comment",
-            "tags": ["Admin Comments"]
-          }
-        }
-      },
-      "userStats": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "GET",
-            "path": "/admin/users/{userId}/stats",
-            "summary": "Get comment stats for a user",
-            "tags": ["Admin Comments"]
-          }
-        }
-      }
     }
   },
   "media": {

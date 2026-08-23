@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable } from "@/lib/db/schema";
 
@@ -10,7 +10,7 @@ export function buildCommentWhereClause(options: {
   rootId?: number | null;
   rootOnly?: boolean;
 }) {
-  const { status, postId, userId, viewerId, rootId, rootOnly } = options;
+  const { status, postId, userId, rootId, rootOnly } = options;
 
   const whereClauses = [];
 
@@ -32,21 +32,7 @@ export function buildCommentWhereClause(options: {
     }
   }
 
-  // logic:
-  // 1. If viewerId is provided, we want (status: published) OR (userId: viewerId AND status: pending/verifying)
-  // 2. If status is explicitly provided, we use that.
-
-  if (viewerId && !status && !userId) {
-    whereClauses.push(
-      or(
-        inArray(CommentsTable.status, ["published", "deleted"]),
-        and(
-          eq(CommentsTable.userId, viewerId),
-          inArray(CommentsTable.status, ["pending", "verifying"]),
-        ),
-      ),
-    );
-  } else if (status) {
+  if (status) {
     if (Array.isArray(status)) {
       whereClauses.push(inArray(CommentsTable.status, status));
     } else {

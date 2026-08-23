@@ -29,8 +29,8 @@ A reusable non-hierarchical label that groups **Posts**.
 _Avoid_: Category
 
 **Comment**:
-A user-authored response attached to a **Post**.
-_Avoid_: Message
+A user-authored response attached to a **Post**. It is public as soon as it is created. The author or an **Admin** can delete it from the public post page.
+_Avoid_: Message, pending comment, verifying comment
 
 **Comment Thread**:
 A root **Comment** plus its direct replies under one **Post**.
@@ -39,14 +39,6 @@ _Avoid_: Nested comment tree
 **Reply**:
 A **Comment** that belongs to a **Comment Thread** and may target either the root comment or another reply for display context.
 _Avoid_: Nested reply
-
-**Verifying Comment**:
-A **Comment** awaiting automated moderation.
-_Avoid_: Pending comment
-
-**Pending Comment**:
-A **Comment** awaiting admin review after automated moderation could not publish it automatically.
-_Avoid_: Verifying comment
 
 **Media**:
 An uploaded file tracked by the CMS for reuse in **Posts**.
@@ -92,10 +84,6 @@ _Avoid_: Orama index
 The cached public read surface for published content and public lists.
 _Avoid_: KV cache, CDN cache, sync hash
 
-**AI Moderation**:
-Automated review that decides whether a non-admin **Comment** can be published or must become a **Pending Comment**.
-_Avoid_: AI review
-
 **Traffic Metrics**:
 Public-site viewing data used for dashboard traffic charts, view counts, top pages, and popular posts.
 _Avoid_: Analytics, Pageview
@@ -122,8 +110,6 @@ _Avoid_: Webhook, callback URL
 - A **Post Revision** belongs to exactly one **Post**.
 - A **Comment Thread** belongs to exactly one **Post**.
 - A **Reply** belongs to exactly one **Comment Thread**.
-- A non-admin **Comment** starts as a **Verifying Comment**.
-- A **Pending Comment** requires admin review before becoming publicly visible.
 - A **Media** item referenced by a **Post** cannot be deleted from the media library.
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
@@ -136,7 +122,6 @@ _Avoid_: Webhook, callback URL
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
-- **AI Moderation** processes **Verifying Comments**.
 - **Traffic Metrics** can rank **Published Posts** as popular posts.
 - A **Webhook Endpoint** receives selected admin **Notification Events**.
 
@@ -149,6 +134,5 @@ _Avoid_: Webhook, callback URL
 
 - "Article" may appear in Chinese product discussion as "文章", but glossary, issues, and implementation planning should use **Post**.
 - "Category" is not a current Flare Stack Blog concept; use **Tag** for non-hierarchical grouping.
-- "Pending comment" and **Verifying Comment** are distinct: **Verifying Comment** is awaiting automated moderation, while **Pending Comment** is awaiting admin review.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
 - "Version" in product talk about drafts and publishing means the **Public Content Snapshot** or a **Post Revision**, not a second **Post**.

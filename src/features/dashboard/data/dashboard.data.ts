@@ -1,14 +1,6 @@
 import { count, desc, eq } from "drizzle-orm";
 import { CommentsTable, PostsTable, user as UserTable } from "@/lib/db/schema";
 
-export async function getPendingCommentsCount(db: DB) {
-  const [result] = await db
-    .select({ count: count() })
-    .from(CommentsTable)
-    .where(eq(CommentsTable.status, "pending"));
-  return result.count;
-}
-
 export async function getPublishedPostsCount(db: DB) {
   const [result] = await db
     .select({ count: count() })
