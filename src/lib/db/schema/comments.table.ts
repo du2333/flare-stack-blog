@@ -1,4 +1,3 @@
-import type { JSONContent } from "@tiptap/react";
 import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import {
   index,
@@ -17,7 +16,7 @@ export const CommentsTable = sqliteTable(
   "comments",
   {
     id,
-    content: text({ mode: "json" }).$type<JSONContent>(),
+    content: text(),
     rootId: integer("root_id").references(
       (): AnySQLiteColumn => CommentsTable.id,
       {

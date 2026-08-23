@@ -1,8 +1,6 @@
-import type { JSONContent } from "@tiptap/core";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
-import { convertToPlainText } from "@/features/posts/utils/content";
 import { serverEnv } from "@/lib/env/server.env";
 
 interface SendReplyNotificationParams {
@@ -11,7 +9,7 @@ interface SendReplyNotificationParams {
     rootId: number | null;
     replyToCommentId: number | null;
     userId: string | null;
-    content: JSONContent | null;
+    content: string | null;
   };
   post: {
     slug: string;
@@ -68,7 +66,7 @@ export async function sendReplyNotification(
     comment.id,
   );
   const replierName = replier?.name ?? "有人";
-  const replyPreview = convertToPlainText(comment.content).slice(0, 100);
+  const replyPreview = (comment.content ?? "").slice(0, 100);
 
   const { DOMAIN, BETTER_AUTH_SECRET } = serverEnv(context.env);
   const unsubscribeType = "reply_notification" as const;

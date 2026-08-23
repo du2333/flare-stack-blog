@@ -1,11 +1,10 @@
-import type { JSONContent } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
+import { CommentBody } from "@/features/comments/components/comment-body";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { renderCommentReact } from "./comment-render";
 
 interface ExpandableContentProps {
-  content: JSONContent | null;
+  content: string | null;
   className?: string;
   maxLines?: number;
 }
@@ -32,7 +31,7 @@ export function ExpandableContent({
       <div
         ref={contentRef}
         className={cn(
-          "max-w-none text-sm transition-all duration-300 prose dark:prose-invert prose-sm fuwari-custom-md",
+          "max-w-none text-sm transition-all duration-300",
           !expanded && "overflow-hidden",
         )}
         style={{
@@ -41,11 +40,15 @@ export function ExpandableContent({
           WebkitLineClamp: expanded ? "unset" : maxLines,
         }}
       >
-        {renderCommentReact(content)}
+        <CommentBody
+          content={content}
+          linkClassName="underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 break-all"
+        />
       </div>
 
       {showButton && (
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="mt-1.5 text-xs text-(--fuwari-primary) hover:text-(--fuwari-primary-hover) font-medium transition-colors"
         >

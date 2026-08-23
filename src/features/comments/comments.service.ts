@@ -8,7 +8,6 @@ import * as CommentRepo from "@/features/comments/data/comments.data";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import * as PostService from "@/features/posts/services/posts.service";
-import { convertToPlainText } from "@/features/posts/utils/content";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
 
@@ -162,7 +161,7 @@ export async function createComment(
     const post = await PostService.findPostById(context, { id: data.postId });
     if (post) {
       const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
-      const commentPreview = convertToPlainText(data.content).slice(0, 100);
+      const commentPreview = data.content.slice(0, 100);
       const commenterName = context.session.user.name;
       await publishNotificationEvent(context, {
         type: "comment.admin_root_created",

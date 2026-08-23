@@ -1,6 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import type { JSONContent } from "@tiptap/react";
 import { LogIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -60,7 +59,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
     throw new Error("TURNSTILE_PENDING");
   };
 
-  const handleCreateComment = async (content: JSONContent) => {
+  const handleCreateComment = async (content: string) => {
     requireTurnstile();
     try {
       await createComment({
@@ -72,7 +71,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
     }
   };
 
-  const handleCreateReply = async (content: JSONContent) => {
+  const handleCreateReply = async (content: string) => {
     if (!replyTarget) return;
     requireTurnstile();
     try {
@@ -163,6 +162,13 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
           <CommentEditor
             onSubmit={handleCreateComment}
             isSubmitting={isCreating && !replyTarget}
+            challenge={
+              replyTarget ? undefined : (
+                <div ref={turnstileRef}>
+                  <Turnstile {...turnstileProps} />
+                </div>
+              )
+            }
           />
         </div>
       ) : (
@@ -182,10 +188,6 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
         </div>
       )}
 
-      <div ref={turnstileRef}>
-        <Turnstile {...turnstileProps} />
-      </div>
-
       {/* Comments List */}
       <CommentList
         rootComments={rootComments}
@@ -200,6 +202,13 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
         isSubmittingReply={isCreating}
         initialExpandedRootId={rootId}
         highlightCommentId={highlightCommentId}
+        challenge={
+          replyTarget && session ? (
+            <div ref={turnstileRef}>
+              <Turnstile {...turnstileProps} />
+            </div>
+          ) : undefined
+        }
       />
 
       {/* Load More Root Comments */}

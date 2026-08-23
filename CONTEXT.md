@@ -29,8 +29,8 @@ A reusable non-hierarchical label that groups **Posts**.
 _Avoid_: Category
 
 **Comment**:
-A user-authored response attached to a **Post**. It is public as soon as it is created. The author or an **Admin** can delete it from the public post page.
-_Avoid_: Message, pending comment, verifying comment
+A user-authored response attached to a **Post**. It is public as soon as it is created. The author or an **Admin** can delete it from the public post page. Its body is text, not a document tree.
+_Avoid_: Message, pending comment, verifying comment, rich document
 
 **Comment Thread**:
 A root **Comment** plus its direct replies under one **Post**.

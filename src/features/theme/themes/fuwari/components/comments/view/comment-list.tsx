@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import type { JSONContent } from "@tiptap/react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
@@ -18,10 +17,11 @@ interface CommentListProps {
   onDelete?: (commentId: number) => void;
   replyTarget?: { rootId: number; commentId: number; userName: string } | null;
   onCancelReply?: () => void;
-  onSubmitReply?: (content: JSONContent) => Promise<void>;
+  onSubmitReply?: (content: string) => Promise<void>;
   isSubmittingReply?: boolean;
   initialExpandedRootId?: number;
   highlightCommentId?: number;
+  challenge?: ReactNode;
 }
 
 export const FuwariCommentList = ({
@@ -35,6 +35,7 @@ export const FuwariCommentList = ({
   isSubmittingReply,
   initialExpandedRootId,
   highlightCommentId,
+  challenge,
 }: CommentListProps) => {
   const { data: session } = authClient.useSession();
   const [expandedRoots, setExpandedRoots] = useState<Set<number>>(new Set());
@@ -72,7 +73,11 @@ export const FuwariCommentList = ({
           key={root.id}
           root={root}
           postId={postId}
-          isExpanded={expandedRoots.has(root.id)}
+          isExpanded={
+            expandedRoots.has(root.id) ||
+            (replyTarget?.rootId === root.id &&
+              replyTarget.commentId !== root.id)
+          }
           onToggleExpand={() => toggleExpand(root.id)}
           onReply={onReply}
           onDelete={onDelete}
@@ -82,6 +87,7 @@ export const FuwariCommentList = ({
           isSubmittingReply={isSubmittingReply}
           session={session}
           highlightCommentId={highlightCommentId}
+          challenge={challenge}
         />
       ))}
     </div>
@@ -97,10 +103,11 @@ interface RootCommentWithRepliesProps {
   onDelete?: (commentId: number) => void;
   replyTarget?: { rootId: number; commentId: number; userName: string } | null;
   onCancelReply?: () => void;
-  onSubmitReply?: (content: JSONContent) => Promise<void>;
+  onSubmitReply?: (content: string) => Promise<void>;
   isSubmittingReply?: boolean;
   session: ReturnType<typeof authClient.useSession>["data"];
   highlightCommentId?: number;
+  challenge?: ReactNode;
 }
 
 function RootCommentWithReplies({
@@ -116,6 +123,7 @@ function RootCommentWithReplies({
   isSubmittingReply,
   session,
   highlightCommentId,
+  challenge,
 }: RootCommentWithRepliesProps) {
   const {
     data: repliesData,
@@ -157,6 +165,7 @@ function RootCommentWithReplies({
                 onSubmit={onSubmitReply}
                 isSubmitting={isSubmittingReply ?? false}
                 onCancel={onCancelReply}
+                challenge={challenge}
               />
             ) : null
           ) : (
@@ -223,6 +232,7 @@ function RootCommentWithReplies({
                             onSubmit={onSubmitReply!}
                             isSubmitting={isSubmittingReply!}
                             onCancel={onCancelReply!}
+                            challenge={challenge}
                           />
                         ) : (
                           <LoginToReplyPrompt
@@ -261,11 +271,13 @@ function ReplyForm({
   onSubmit,
   isSubmitting,
   onCancel,
+  challenge,
 }: {
   userName: string;
-  onSubmit: (content: JSONContent) => Promise<void>;
+  onSubmit: (content: string) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
+  challenge?: ReactNode;
 }) {
   return (
     <div>
@@ -283,6 +295,7 @@ function ReplyForm({
         autoFocus
         onCancel={onCancel}
         submitLabel={m.comments_editor_submit_reply()}
+        challenge={challenge}
       />
     </div>
   );

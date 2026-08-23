@@ -1,14 +1,15 @@
-import type { JSONContent } from "@tiptap/react";
 import clsx from "clsx";
+import type { ReactNode } from "react";
 import { m } from "@/paraglide/messages";
 import { CommentEditor } from "./comment-editor";
 
 interface CommentReplyFormProps {
   parentUserName: string;
-  onSubmit: (content: JSONContent) => Promise<void>;
+  onSubmit: (content: string) => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
   className?: string;
+  challenge?: ReactNode;
 }
 
 export const CommentReplyForm = ({
@@ -17,6 +18,7 @@ export const CommentReplyForm = ({
   isSubmitting,
   onCancel,
   className,
+  challenge,
 }: CommentReplyFormProps) => {
   return (
     <div
@@ -39,6 +41,7 @@ export const CommentReplyForm = ({
         autoFocus
         onCancel={onCancel}
         submitLabel={m.comments_editor_submit_reply()}
+        challenge={challenge}
       />
     </div>
   );

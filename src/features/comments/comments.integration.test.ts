@@ -22,16 +22,6 @@ describe("Comments Integration", () => {
   let userContext: ReturnType<typeof createAuthTestContext>;
   let postId: number;
 
-  const createCommentContent = (text: string) => ({
-    type: "doc" as const,
-    content: [
-      {
-        type: "paragraph" as const,
-        content: [{ type: "text" as const, text }],
-      },
-    ],
-  });
-
   beforeEach(async () => {
     // Setup admin context
     adminContext = createAdminTestContext({
@@ -75,7 +65,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Great post!"),
+            content: "Great post!",
           }),
         );
 
@@ -88,14 +78,14 @@ describe("Comments Integration", () => {
         const parent = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Parent comment"),
+            content: "Parent comment",
           }),
         );
 
         const reply = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Reply to parent"),
+            content: "Reply to parent",
             rootId: parent.id,
           }),
         );
@@ -110,7 +100,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("My comment"),
+            content: "My comment",
           }),
         );
 
@@ -129,7 +119,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("User 1's comment"),
+            content: "User 1's comment",
           }),
         );
 
@@ -157,7 +147,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("To be deleted by admin"),
+            content: "To be deleted by admin",
           }),
         );
 
@@ -182,14 +172,14 @@ describe("Comments Integration", () => {
         const root = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Root comment"),
+            content: "Root comment",
           }),
         );
 
         const reply = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Reply"),
+            content: "Reply",
             rootId: root.id,
           }),
         );
@@ -212,7 +202,7 @@ describe("Comments Integration", () => {
         const root = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Root"),
+            content: "Root",
           }),
         );
 
@@ -221,7 +211,7 @@ describe("Comments Integration", () => {
           unwrap(
             await CommentService.createComment(userContext, {
               postId,
-              content: createCommentContent(`Reply ${i}`),
+              content: `Reply ${i}`,
               rootId: root.id,
             }),
           );
@@ -252,7 +242,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Public comment"),
+            content: "Public comment",
           }),
         );
 
@@ -268,7 +258,7 @@ describe("Comments Integration", () => {
       it("should return ROOT_COMMENT_NOT_FOUND when replying to non-existent root", async () => {
         const result = await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Reply to nothing"),
+          content: "Reply to nothing",
           rootId: 999999,
         });
 
@@ -279,14 +269,14 @@ describe("Comments Integration", () => {
         const root = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Root"),
+            content: "Root",
           }),
         );
 
         const reply = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Reply"),
+            content: "Reply",
             rootId: root.id,
           }),
         );
@@ -294,7 +284,7 @@ describe("Comments Integration", () => {
         // Try to use the reply as a root (should fail)
         const result = await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Nested reply"),
+          content: "Nested reply",
           rootId: reply.id,
         });
 
@@ -318,14 +308,14 @@ describe("Comments Integration", () => {
         const otherPostComment = unwrap(
           await CommentService.createComment(userContext, {
             postId: otherPostId,
-            content: createCommentContent("Comment on other post"),
+            content: "Comment on other post",
           }),
         );
 
         // Try to reply to it from a different post
         const result = await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Cross-post reply"),
+          content: "Cross-post reply",
           rootId: otherPostComment.id,
         });
 
@@ -336,13 +326,13 @@ describe("Comments Integration", () => {
         const root = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Root"),
+            content: "Root",
           }),
         );
 
         const result = await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Reply to invalid"),
+          content: "Reply to invalid",
           rootId: root.id,
           replyToCommentId: 999999,
         });
@@ -354,14 +344,14 @@ describe("Comments Integration", () => {
         const existing = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("Existing"),
+            content: "Existing",
           }),
         );
 
         // Try to create a root comment (no rootId) but with replyToCommentId
         const result = await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Invalid root"),
+          content: "Invalid root",
           replyToCommentId: existing.id,
         });
 
@@ -374,7 +364,7 @@ describe("Comments Integration", () => {
         const comment = unwrap(
           await CommentService.createComment(adminContext, {
             postId,
-            content: createCommentContent("Admin comment"),
+            content: "Admin comment",
           }),
         );
 
@@ -384,7 +374,7 @@ describe("Comments Integration", () => {
       it("should enqueue admin notification email on new root comment", async () => {
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("New root comment for notification"),
+          content: "New root comment for notification",
         });
 
         expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
@@ -426,7 +416,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Dual channel comment"),
+          content: "Dual channel comment",
         });
 
         expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(2);
@@ -466,7 +456,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Webhook only notification"),
+          content: "Webhook only notification",
         });
 
         expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
@@ -520,7 +510,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Only matched webhook should receive"),
+          content: "Only matched webhook should receive",
         });
 
         expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
@@ -566,7 +556,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("Comment with disabled webhook"),
+          content: "Comment with disabled webhook",
         });
 
         expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
@@ -576,7 +566,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("User's comment"),
+            content: "User's comment",
           }),
         );
 
@@ -586,7 +576,7 @@ describe("Comments Integration", () => {
         // Admin replies to the user's comment
         await CommentService.createComment(adminContext, {
           postId,
-          content: createCommentContent("Admin reply"),
+          content: "Admin reply",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -616,7 +606,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("User comment"),
+            content: "User comment",
           }),
         );
 
@@ -624,7 +614,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(adminContext, {
           postId,
-          content: createCommentContent("Admin reply"),
+          content: "Admin reply",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -636,7 +626,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(userContext, {
             postId,
-            content: createCommentContent("User comment from deleted account"),
+            content: "User comment from deleted account",
           }),
         );
 
@@ -649,7 +639,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(adminContext, {
           postId,
-          content: createCommentContent("Admin reply after account deletion"),
+          content: "Admin reply after account deletion",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -661,7 +651,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(adminContext, {
             postId,
-            content: createCommentContent("Admin's root comment"),
+            content: "Admin's root comment",
           }),
         );
 
@@ -671,7 +661,7 @@ describe("Comments Integration", () => {
         // Admin replies to own comment
         await CommentService.createComment(adminContext, {
           postId,
-          content: createCommentContent("Admin self-reply"),
+          content: "Admin self-reply",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -684,7 +674,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(adminContext, {
             postId,
-            content: createCommentContent("Admin's root comment"),
+            content: "Admin's root comment",
           }),
         );
 
@@ -692,7 +682,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("User reply to admin"),
+          content: "User reply to admin",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -725,7 +715,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(adminContext, {
             postId,
-            content: createCommentContent("Admin root comment"),
+            content: "Admin root comment",
           }),
         );
 
@@ -733,7 +723,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("User reply to admin"),
+          content: "User reply to admin",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });
@@ -773,7 +763,7 @@ describe("Comments Integration", () => {
         const rootComment = unwrap(
           await CommentService.createComment(adminContext, {
             postId,
-            content: createCommentContent("Admin root comment"),
+            content: "Admin root comment",
           }),
         );
 
@@ -781,7 +771,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: createCommentContent("User reply to unsubscribed admin"),
+          content: "User reply to unsubscribed admin",
           rootId: rootComment.id,
           replyToCommentId: rootComment.id,
         });

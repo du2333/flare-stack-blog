@@ -1,13 +1,12 @@
-import type { JSONContent } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
+import { CommentBody } from "@/features/comments/components/comment-body";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { renderCommentReact } from "./comment-render";
 
 interface ExpandableContentProps {
-  content: JSONContent | null;
+  content: string | null;
   className?: string;
-  maxLines?: number; // Default 3
+  maxLines?: number;
 }
 
 export function ExpandableContent({
@@ -21,14 +20,11 @@ export function ExpandableContent({
 
   useEffect(() => {
     if (contentRef.current) {
-      // Check if content is overflowing
-      // We compare scrollHeight (total height) with clientHeight (visible height)
-      // Note: This relies on line-clamp being applied initially
       const isOverflowing =
         contentRef.current.scrollHeight > contentRef.current.clientHeight;
       setShowButton(isOverflowing);
     }
-  }, [content]); // Re-check if content changes
+  }, [content]);
 
   return (
     <div className={cn("relative group", className)}>
@@ -44,11 +40,15 @@ export function ExpandableContent({
           WebkitLineClamp: expanded ? "unset" : maxLines,
         }}
       >
-        {renderCommentReact(content)}
+        <CommentBody
+          content={content}
+          linkClassName="underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 break-all"
+        />
       </div>
 
       {showButton && (
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="mt-1 text-xs text-muted-foreground hover:text-primary font-medium hover:underline flex items-center gap-1"
         >

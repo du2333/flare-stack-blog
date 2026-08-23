@@ -1,21 +1,15 @@
-import type { JSONContent } from "@tiptap/react";
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { Loader2, Send } from "lucide-react";
-import { useCallback, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getCommentExtensions } from "@/features/comments/components/editor/config";
-import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 import { m } from "@/paraglide/messages";
-import CommentEditorToolbar from "../editor/comment-editor-toolbar";
-import type { ModalType } from "../editor/comment-insert-modal";
-import InsertModal from "../editor/comment-insert-modal";
 
 interface CommentEditorProps {
-  onSubmit: (content: JSONContent) => Promise<void>;
+  onSubmit: (content: string) => Promise<void>;
   isSubmitting?: boolean;
   autoFocus?: boolean;
   onCancel?: () => void;
   submitLabel?: string;
+  challenge?: ReactNode;
 }
 
 export const CommentEditor = ({
@@ -24,73 +18,38 @@ export const CommentEditor = ({
   autoFocus,
   onCancel,
   submitLabel,
+  challenge,
 }: CommentEditorProps) => {
   const actualSubmitLabel = submitLabel || m.comments_editor_submit();
-
-  const [modalType, setModalType] = useState<ModalType>(null);
-  const [modalInitialUrl, setModalInitialUrl] = useState("");
-
-  const editor = useEditor({
-    extensions: getCommentExtensions(),
-    content: "",
-    autofocus: autoFocus ? "end" : false,
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[80px] w-full bg-transparent py-2 text-sm focus:outline-none placeholder:text-muted-foreground/30 max-w-none",
-      },
-    },
-  });
-
-  const { isEmpty } = useEditorState({
-    editor,
-    selector: (ctx) => ({
-      isEmpty: ctx.editor.isEmpty,
-    }),
-  });
-
-  const openLinkModal = useCallback(() => {
-    const previousUrl = editor.getAttributes("link").href as string | undefined;
-    setModalInitialUrl(previousUrl || "");
-    setModalType("LINK");
-  }, [editor]);
-
-  const openImageModal = useCallback(() => {
-    setModalInitialUrl("");
-    setModalType("IMAGE");
-  }, []);
+  const [value, setValue] = useState("");
+  const isEmpty = value.trim() === "";
 
   const handleSubmit = async () => {
     if (isEmpty || isSubmitting) return;
-
     try {
-      await onSubmit(editor.getJSON());
-      editor.commands.clearContent();
-    } catch (error) {
+      await onSubmit(value.trim());
+      setValue("");
+    } catch {
       // Error handled by parent hook
     }
   };
 
   return (
-    <div className="relative group/editor border border-border/10 rounded-sm bg-muted/5 transition-colors duration-300 hover:border-border/30 focus-within:border-border/50 focus-within:bg-background overflow-hidden">
-      {/* Toolbar - Always visible at top */}
-      <div className="border-b border-border/10 p-1 bg-background/50 backdrop-blur-sm sticky top-0 z-10 w-full">
-        <CommentEditorToolbar
-          editor={editor}
-          onLinkClick={openLinkModal}
-          onImageClick={openImageModal}
-        />
-      </div>
-
-      <EditorContent editor={editor} className="min-h-25 w-full px-4 py-3" />
-
-      <div className="flex items-center justify-between px-4 pb-2 pt-2 border-t border-border/10">
-        <div className="text-[10px] font-mono text-muted-foreground/30 tracking-widest pl-2">
-          {m.comments_editor_support_markdown()}
-        </div>
-        <div className="flex items-center gap-4">
+    <div className="relative group/editor border border-border/10 rounded-sm bg-muted/5 transition-colors duration-300 hover:border-border/30 focus-within:border-border/50 focus-within:bg-background">
+      <textarea
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        autoFocus={autoFocus}
+        placeholder={m.comments_editor_placeholder()}
+        rows={3}
+        className="min-h-20 w-full bg-transparent px-4 py-3 text-sm focus:outline-none placeholder:text-muted-foreground/30 resize-y"
+      />
+      <div className="flex flex-col gap-2 px-4 pb-2 pt-2 border-t border-border/10 sm:flex-row sm:items-center sm:justify-between">
+        {challenge ? <div className="min-w-0">{challenge}</div> : <div />}
+        <div className="flex items-center gap-4 self-end">
           {onCancel && (
             <button
+              type="button"
               onClick={onCancel}
               className="text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
@@ -116,34 +75,6 @@ export const CommentEditor = ({
           </Button>
         </div>
       </div>
-
-      <InsertModal
-        type={modalType}
-        initialUrl={modalInitialUrl}
-        onClose={() => setModalType(null)}
-        onSubmit={(url, attrs) => {
-          if (modalType === "LINK") {
-            const href = normalizeLinkHref(url);
-            if (href === "") {
-              editor.chain().focus().extendMarkRange("link").unsetLink().run();
-            } else {
-              editor
-                .chain()
-                .focus()
-                .extendMarkRange("link")
-                .setLink({ href })
-                .run();
-            }
-          } else if (modalType === "IMAGE") {
-            editor
-              .chain()
-              .focus()
-              .setImage({ src: url, ...attrs })
-              .run();
-          }
-          setModalType(null);
-        }}
-      />
     </div>
   );
 };

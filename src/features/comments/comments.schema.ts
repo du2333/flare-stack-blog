@@ -4,7 +4,6 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { z } from "zod";
-import { JsonContentSchema } from "@/features/posts/schema/json-content.schema";
 import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable } from "@/lib/db/schema";
 
@@ -82,16 +81,13 @@ export const GetRootCommentsResponseSchema = z.object({
 });
 
 // Authed User API Schemas
+export const CommentBodySchema = z.string().trim().min(1);
+
 export const CreateCommentInputSchema = z.object({
   postId: z.number(),
-  content: JsonContentSchema,
+  content: CommentBodySchema,
   rootId: z.number().optional(),
   replyToCommentId: z.number().optional(),
-});
-
-export const UpdateCommentInputSchema = z.object({
-  id: z.number(),
-  content: JsonContentSchema,
 });
 
 export const DeleteCommentInputSchema = z.object({
@@ -109,7 +105,6 @@ export type GetCommentsByPostIdInput = z.infer<
   typeof GetCommentsByPostIdInputSchema
 >;
 export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
-export type UpdateCommentInput = z.infer<typeof UpdateCommentInputSchema>;
 export type DeleteCommentInput = z.infer<typeof DeleteCommentInputSchema>;
 export type GetMyCommentsInput = z.infer<typeof GetMyCommentsInputSchema>;
 export type RootCommentWithReplyCount = z.infer<

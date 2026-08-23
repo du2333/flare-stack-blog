@@ -1,6 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import type { JSONContent } from "@tiptap/react";
 import { LogIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -56,7 +55,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     throw new Error("TURNSTILE_PENDING");
   };
 
-  const handleCreateComment = async (content: JSONContent) => {
+  const handleCreateComment = async (content: string) => {
     requireTurnstile();
     try {
       await createComment({
@@ -68,7 +67,7 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     }
   };
 
-  const handleCreateReply = async (content: JSONContent) => {
+  const handleCreateReply = async (content: string) => {
     if (!replyTarget) return;
     requireTurnstile();
     try {
@@ -141,6 +140,13 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         <FuwariCommentEditor
           onSubmit={handleCreateComment}
           isSubmitting={isCreating && !replyTarget}
+          challenge={
+            replyTarget ? undefined : (
+              <div ref={turnstileRef}>
+                <Turnstile {...turnstileProps} />
+              </div>
+            )
+          }
         />
       ) : (
         <div className="py-10 flex flex-col items-center justify-center gap-3 text-center">
@@ -156,10 +162,6 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         </div>
       )}
 
-      <div ref={turnstileRef}>
-        <Turnstile {...turnstileProps} />
-      </div>
-
       {/* Comments List */}
       <FuwariCommentList
         rootComments={rootComments}
@@ -174,6 +176,13 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         isSubmittingReply={isCreating}
         initialExpandedRootId={rootId}
         highlightCommentId={highlightCommentId}
+        challenge={
+          replyTarget && session ? (
+            <div ref={turnstileRef}>
+              <Turnstile {...turnstileProps} />
+            </div>
+          ) : undefined
+        }
       />
 
       {/* Load More Root Comments */}
