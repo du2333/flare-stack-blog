@@ -56,10 +56,6 @@ _Avoid_: Settings
 Public-facing site identity and presentation personalization used by the rendered blog.
 _Avoid_: System settings
 
-**Import/Export Task**:
-An asynchronous workflow that moves **Posts** and related content into or out of the CMS while reporting progress.
-_Avoid_: Backup job, migration
-
 **Notification Event**:
 A comment or friend-link domain event that is delivered through configured email and webhook channels.
 _Avoid_: Alert, message
@@ -114,8 +110,6 @@ _Avoid_: Webhook, callback URL
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
 - Public blog pages consume **Site Config** when rendering.
-- An **Import/Export Task** can include **Posts** and related content.
-- An **Import/Export Task** can preserve **Post** content, frontmatter, and related **Media** depending on the import/export format.
 - A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.
 - A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
 - An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, and **Friend Links**.

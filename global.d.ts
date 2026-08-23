@@ -6,23 +6,7 @@ import type { DB as DBType } from "@/lib/db";
 import type { QueueMessage } from "@/lib/queue/queue.schema";
 
 declare global {
-  interface ExportWorkflowParams {
-    taskId: string;
-    postIds?: Array<number>;
-    status?: "draft" | "published";
-    locale?: "zh" | "en";
-  }
-
-  interface ImportWorkflowParams {
-    taskId: string;
-    r2Key: string;
-    mode: "native" | "markdown";
-    locale?: "zh" | "en";
-  }
-
   interface Env extends Cloudflare.Env {
-    EXPORT_WORKFLOW: Workflow<ExportWorkflowParams>;
-    IMPORT_WORKFLOW: Workflow<ImportWorkflowParams>;
     QUEUE: Queue<QueueMessage>;
   }
 

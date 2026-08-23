@@ -847,56 +847,6 @@
       }
     }
   },
-  "importExport": {
-    "startExport": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "POST",
-          "path": "/admin/export",
-          "summary": "Start an export task",
-          "tags": ["Admin Import Export"]
-        }
-      }
-    },
-    "exportProgress": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "GET",
-          "path": "/admin/export/{taskId}",
-          "summary": "Get export task progress",
-          "tags": ["Admin Import Export"]
-        }
-      }
-    },
-    "startImport": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "POST",
-          "path": "/admin/import",
-          "summary": "Upload files and start an import task",
-          "tags": ["Admin Import Export"]
-        }
-      }
-    },
-    "importProgress": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "GET",
-          "path": "/admin/import/{taskId}",
-          "summary": "Get import task progress",
-          "tags": ["Admin Import Export"]
-        }
-      }
-    }
-  },
   "version": {
     "check": {
       "~orpc": {

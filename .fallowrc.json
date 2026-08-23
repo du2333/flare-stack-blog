@@ -11,10 +11,6 @@
   },
   "usedClassMembers": [
     {
-      "extends": "WorkflowEntrypoint",
-      "members": ["run"]
-    },
-    {
       "extends": "WorkerEntrypoint",
       "members": ["fetch"]
     },

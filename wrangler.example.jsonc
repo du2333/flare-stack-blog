@@ -43,18 +43,6 @@
       "remote": true
     }
   ],
-  "workflows": [
-    {
-      "name": "export-workflow",
-      "binding": "EXPORT_WORKFLOW",
-      "class_name": "ExportWorkflow"
-    },
-    {
-      "name": "import-workflow",
-      "binding": "IMPORT_WORKFLOW",
-      "class_name": "ImportWorkflow"
-    }
-  ],
   "durable_objects": {
     "bindings": [
       {
@@ -111,18 +99,6 @@
       "d1_databases": [
         {
           "binding": "DB"
-        }
-      ],
-      "workflows": [
-        {
-          "name": "export-workflow",
-          "binding": "EXPORT_WORKFLOW",
-          "class_name": "ExportWorkflow"
-        },
-        {
-          "name": "import-workflow",
-          "binding": "IMPORT_WORKFLOW",
-          "class_name": "ImportWorkflow"
         }
       ],
       "queues": {

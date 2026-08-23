@@ -5,7 +5,7 @@
 # Flare Stack Blog
 
 A full-stack modern blog CMS based on **Cloudflare Workers**<br>
-Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
+Deeply integrated with D1, R2, KV, Queues, and other Serverless services.
 
 [![License](https://img.shields.io/github/license/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/stargazers)
@@ -44,8 +44,6 @@ Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
 - **Analytics** — Umami integration for visitor metrics and top posts.
 - **SEO Enhancements** — Canonical URLs, Schema.org structured data, RSS, Sitemap, and Robots support.
 
-- **Import / Export** — Supports Markdown import and export, preserving images and frontmatter.
-
 ## Tech Stack
 
 ### Cloudflare Ecosystem
@@ -57,7 +55,6 @@ Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
 | R2              | Object storage (media files)                                  |
 | KV              | Caching layer                                                 |
 | Durable Objects | Distributed rate limiting                                     |
-| Workflows       | Asynchronous tasks (import/export)                            |
 | Queues          | Message queues (email notifications)                          |
 | Images          | Image optimization                                            |
 
@@ -90,8 +87,7 @@ src/
 │   │   ├── posts.service.ts    # Business logic
 │   │   ├── posts.schema.ts     # Zod Schemas + Cache Key Factories
 │   │   ├── components/         # Feature-specific components
-│   │   ├── queries/            # TanStack Query Hooks
-│   │   └── workflows/          # Cloudflare Workflows
+│   │   └── queries/            # TanStack Query Hooks
 │   ├── comments/    # Comments, nested replies
 │   ├── tags/        # Tag management
 │   ├── media/       # Media uploads, R2 storage
@@ -102,7 +98,6 @@ src/
 │   ├── cache/       # KV caching services
 │   ├── config/      # Blog configurations
 │   ├── friend-links/# Friend links (applications, moderation)
-│   ├── import-export/# Markdown importing/exporting
 │   ├── version/     # Version update checker
 ├── routes/
 │   ├── _public/     # Public pages (Home, post lists/details, search)

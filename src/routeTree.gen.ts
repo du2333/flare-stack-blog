@@ -46,7 +46,6 @@ import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
-import { Route as ApiAdminExportDownloadTaskIdRouteImport } from './routes/api.admin.export.download.$taskId'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -230,12 +229,6 @@ const AdminPostsEditIdRoute = AdminPostsEditIdRouteImport.update({
   path: '/edit/$id',
   getParentRoute: () => AdminPostsRouteRoute,
 } as any)
-const ApiAdminExportDownloadTaskIdRoute =
-  ApiAdminExportDownloadTaskIdRouteImport.update({
-    id: '/api/admin/export/download/$taskId',
-    path: '/api/admin/export/download/$taskId',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -272,7 +265,6 @@ export interface FileRoutesByFullPath {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
-  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
@@ -307,7 +299,6 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
-  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -348,7 +339,6 @@ export interface FileRoutesById {
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
-  '/api/admin/export/download/$taskId': typeof ApiAdminExportDownloadTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -387,7 +377,6 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
-    | '/api/admin/export/download/$taskId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -422,7 +411,6 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tags'
     | '/admin/posts/edit/$id'
-    | '/api/admin/export/download/$taskId'
   id:
     | '__root__'
     | '/_auth'
@@ -462,7 +450,6 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
-    | '/api/admin/export/download/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -481,7 +468,6 @@ export interface RootRouteChildren {
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiSendRoute: typeof ApiSendRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
-  ApiAdminExportDownloadTaskIdRoute: typeof ApiAdminExportDownloadTaskIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -745,13 +731,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPostsEditIdRouteImport
       parentRoute: typeof AdminPostsRouteRoute
     }
-    '/api/admin/export/download/$taskId': {
-      id: '/api/admin/export/download/$taskId'
-      path: '/api/admin/export/download/$taskId'
-      fullPath: '/api/admin/export/download/$taskId'
-      preLoaderRoute: typeof ApiAdminExportDownloadTaskIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -874,7 +853,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiSendRoute: ApiSendRoute,
   ImagesSplatRoute: ImagesSplatRoute,
-  ApiAdminExportDownloadTaskIdRoute: ApiAdminExportDownloadTaskIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

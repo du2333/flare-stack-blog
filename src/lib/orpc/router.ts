@@ -9,7 +9,6 @@ import configRouter from "@/features/config/server/router";
 import dashboardRouter from "@/features/dashboard/server/router";
 import emailRouter from "@/features/email/server/router";
 import friendLinksRouter from "@/features/friend-links/server/router";
-import importExportRouter from "@/features/import-export/server/router";
 import mediaRouter from "@/features/media/server/router";
 import pageviewRouter from "@/features/pageview/server/router";
 import postsRouter from "@/features/posts/server/router";
@@ -30,7 +29,6 @@ export const router = {
   pageviews: pageviewRouter,
   dashboard: dashboardRouter,
   cache: cacheRouter,
-  importExport: importExportRouter,
   version: versionRouter,
   webhooks: webhookRouter,
 };

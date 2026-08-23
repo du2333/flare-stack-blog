@@ -5,7 +5,7 @@
 # Flare Stack Blog
 
 基于 **Cloudflare Workers** 的全栈现代化博客 CMS<br>
-深度集成 D1、R2、KV、Workflows 等 Serverless 服务
+深度集成 D1、R2、KV、Queues 等 Serverless 服务
 
 [![License](https://img.shields.io/github/license/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/du2333/flare-stack-blog?style=flat-square)](https://github.com/du2333/flare-stack-blog/stargazers)
@@ -44,7 +44,6 @@
 - **用户认证** — GitHub OAuth 登录，权限控制
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
-- **导入导出** — 支持Markdown导入导出，保留图片以及Frontmatter
 
 ## 技术栈
 
@@ -57,7 +56,6 @@
 | R2              | 对象存储（媒体文件）           |
 | KV              | 缓存层                         |
 | Durable Objects | 分布式限流                     |
-| Workflows       | 异步任务（导入导出）           |
 | Queues          | 消息队列（邮件通知）           |
 | Images          | 图片优化                       |
 
@@ -90,8 +88,7 @@ src/
 │   │   ├── posts.service.ts    # 业务逻辑
 │   │   ├── posts.schema.ts     # Zod Schema + 缓存 Key 工厂
 │   │   ├── components/         # 功能专属组件
-│   │   ├── queries/            # TanStack Query Hooks
-│   │   └── workflows/          # Cloudflare Workflows
+│   │   └── queries/            # TanStack Query Hooks
 │   ├── comments/    # 评论、嵌套回复
 │   ├── tags/        # 标签管理
 │   ├── media/       # 媒体上传、R2 存储
@@ -102,7 +99,6 @@ src/
 │   ├── cache/       # KV 缓存服务
 │   ├── config/      # 博客配置
 │   ├── friend-links/# 友情链接（申请、审核）
-│   ├── import-export/# Markdown 导入导出
 │   ├── version/     # 版本更新检查
 ├── routes/
 │   ├── _public/     # 公开页面（首页、文章列表/详情、搜索）
