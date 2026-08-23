@@ -55,6 +55,7 @@ describe("Comments Integration", () => {
           },
         }),
       );
+      unwrap(await PostService.publishPost(adminContext, { id }));
       postId = id;
 
       await ConfigRepo.upsertSystemConfig(adminContext.db, DEFAULT_CONFIG);
@@ -92,6 +93,28 @@ describe("Comments Integration", () => {
 
         expect(reply.rootId).toBe(parent.id);
         expect(reply.replyToCommentId).toBe(parent.id);
+      });
+
+      it("should reject a comment when the post has no Public Content Snapshot", async () => {
+        const { id: draftId } = await PostService.createEmptyPost(adminContext);
+
+        const result = await CommentService.createComment(userContext, {
+          postId: draftId,
+          content: "On a draft",
+        });
+
+        expect(result.error?.reason).toBe("POST_NOT_PUBLISHED");
+      });
+
+      it("should reject a comment after the post is unpublished", async () => {
+        unwrap(await PostService.unpublishPost(adminContext, { id: postId }));
+
+        const result = await CommentService.createComment(userContext, {
+          postId,
+          content: "After unpublish",
+        });
+
+        expect(result.error?.reason).toBe("POST_NOT_PUBLISHED");
       });
     });
 
@@ -157,13 +180,20 @@ describe("Comments Integration", () => {
           }),
         );
 
+        const stored = await CommentRepo.findCommentById(
+          adminContext.db,
+          comment.id,
+        );
+        expect(stored?.status).toBe("deleted");
+
         const result = await CommentService.getRootCommentsByPostId(
           userContext,
           { postId },
         );
         expect(
-          result.items.find((item) => item.id === comment.id)?.status,
-        ).toBe("deleted");
+          result.items.find((item) => item.id === comment.id),
+        ).toBeUndefined();
+        expect(result.total).toBe(0);
       });
     });
 
@@ -195,6 +225,8 @@ describe("Comments Integration", () => {
         expect(result.items).toHaveLength(1);
         expect(result.items[0].id).toBe(root.id);
         expect(result.items[0].replyCount).toBe(1);
+        expect(result.items[0].replies).toHaveLength(1);
+        expect(result.items[0].replies[0].id).toBe(reply.id);
         expect(result.total).toBe(1);
       });
 
@@ -252,6 +284,150 @@ describe("Comments Integration", () => {
         );
         expect(result.items.find((c) => c.id === comment.id)).toBeDefined();
       });
+
+      it("should hide a deleted root with no published replies", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Lonely root",
+          }),
+        );
+        unwrap(
+          await CommentService.deleteComment(userContext, { id: root.id }),
+        );
+
+        const result = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(result.items).toHaveLength(0);
+        expect(result.total).toBe(0);
+
+        const replies = await CommentService.getRepliesByRootId(userContext, {
+          postId,
+          rootId: root.id,
+        });
+        expect(replies.items).toHaveLength(0);
+        expect(replies.total).toBe(0);
+      });
+
+      it("should keep a deleted root as a placeholder when it has published replies", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root",
+          }),
+        );
+        unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Still here",
+            rootId: root.id,
+          }),
+        );
+        unwrap(
+          await CommentService.deleteComment(userContext, { id: root.id }),
+        );
+
+        const result = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(result.total).toBe(0);
+        expect(result.items).toHaveLength(1);
+        expect(result.items[0].id).toBe(root.id);
+        expect(result.items[0].status).toBe("deleted");
+        expect(result.items[0].replyCount).toBe(1);
+      });
+
+      it("should omit deleted replies from replyCount and keep them in the preview", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root",
+          }),
+        );
+        const first = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "First",
+            rootId: root.id,
+          }),
+        );
+        unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Second",
+            rootId: root.id,
+          }),
+        );
+        unwrap(
+          await CommentService.deleteComment(userContext, { id: first.id }),
+        );
+
+        const result = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(result.items[0].replyCount).toBe(1);
+        expect(result.items[0].replies).toHaveLength(2);
+        expect(result.items[0].replies[0].status).toBe("deleted");
+        expect(result.items[0].replies[1].status).toBe("published");
+      });
+
+      it("should preview the earliest three replies", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root",
+          }),
+        );
+        for (const content of ["A", "B", "C", "D"]) {
+          unwrap(
+            await CommentService.createComment(userContext, {
+              postId,
+              content,
+              rootId: root.id,
+            }),
+          );
+        }
+
+        const result = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(result.items[0].replyCount).toBe(4);
+        expect(result.items[0].replies.map((reply) => reply.content)).toEqual([
+          "A",
+          "B",
+          "C",
+        ]);
+      });
+
+      it("should hide comments on the public list after unpublish and restore them on publish", async () => {
+        unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Keep me",
+          }),
+        );
+
+        unwrap(await PostService.unpublishPost(adminContext, { id: postId }));
+        const unpublished = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(unpublished.items).toHaveLength(0);
+        expect(unpublished.total).toBe(0);
+
+        unwrap(await PostService.publishPost(adminContext, { id: postId }));
+        const published = await CommentService.getRootCommentsByPostId(
+          userContext,
+          { postId },
+        );
+        expect(published.items).toHaveLength(1);
+        expect(published.items[0].content).toBe("Keep me");
+      });
     });
 
     describe("Comment Validation - Edge Cases", () => {
@@ -303,6 +479,9 @@ describe("Comments Integration", () => {
               slug: `other-post-${Date.now()}`,
             },
           }),
+        );
+        unwrap(
+          await PostService.publishPost(adminContext, { id: otherPostId }),
         );
 
         const otherPostComment = unwrap(

@@ -38,6 +38,11 @@ const commentErrors = {
     message: "A root comment cannot reply to another comment.",
   },
   COMMENT_NOT_FOUND: { status: 404, message: "Comment not found." },
+  POST_NOT_FOUND: { status: 404, message: "Post not found." },
+  POST_NOT_PUBLISHED: {
+    status: 400,
+    message: "Comments require a published post.",
+  },
 } as const;
 
 const roots = optionalSessionProcedure
@@ -50,10 +55,7 @@ const roots = optionalSessionProcedure
   .input(GetCommentsByPostIdInputSchema)
   .output(GetRootCommentsResponseSchema)
   .handler(({ context, input }) =>
-    CommentService.getRootCommentsByPostId(context, {
-      ...input,
-      viewerId: context.session?.user.id,
-    }),
+    CommentService.getRootCommentsByPostId(context, input),
   );
 
 const replies = optionalSessionProcedure
@@ -66,10 +68,7 @@ const replies = optionalSessionProcedure
   .input(GetRepliesByRootIdInputSchema)
   .output(GetRepliesResponseSchema)
   .handler(({ context, input }) =>
-    CommentService.getRepliesByRootId(context, {
-      ...input,
-      viewerId: context.session?.user.id,
-    }),
+    CommentService.getRepliesByRootId(context, input),
   );
 
 const create = authProcedure
@@ -102,6 +101,12 @@ const create = authProcedure
       },
       ROOT_COMMENT_CANNOT_HAVE_REPLY_TO: () => {
         throw errors.ROOT_COMMENT_CANNOT_HAVE_REPLY_TO();
+      },
+      POST_NOT_FOUND: () => {
+        throw errors.POST_NOT_FOUND();
+      },
+      POST_NOT_PUBLISHED: () => {
+        throw errors.POST_NOT_PUBLISHED();
       },
     }),
   );

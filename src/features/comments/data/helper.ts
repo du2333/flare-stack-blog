@@ -6,7 +6,6 @@ export function buildCommentWhereClause(options: {
   status?: CommentStatus | Array<CommentStatus>;
   postId?: number;
   userId?: string;
-  viewerId?: string;
   rootId?: number | null;
   rootOnly?: boolean;
 }) {

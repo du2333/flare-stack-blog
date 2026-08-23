@@ -36,6 +36,14 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     commentId: number;
     userName: string;
   } | null>(null);
+  const [reveal, setReveal] = useState<{
+    rootId: number;
+    commentId: number;
+  } | null>(
+    rootId && highlightCommentId
+      ? { rootId, commentId: highlightCommentId }
+      : null,
+  );
 
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
@@ -71,12 +79,15 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
     if (!replyTarget) return;
     requireTurnstile();
     try {
-      await createComment({
+      const created = await createComment({
         postId,
         content,
         rootId: replyTarget.rootId,
         replyToCommentId: replyTarget.commentId,
       });
+      if (created?.id) {
+        setReveal({ rootId: replyTarget.rootId, commentId: created.id });
+      }
       setReplyTarget(null);
     } finally {
       resetTurnstile();
@@ -174,8 +185,8 @@ export function FuwariCommentSection({ postId }: FuwariCommentSectionProps) {
         onCancelReply={() => setReplyTarget(null)}
         onSubmitReply={handleCreateReply}
         isSubmittingReply={isCreating}
-        initialExpandedRootId={rootId}
-        highlightCommentId={highlightCommentId}
+        revealRootId={reveal?.rootId}
+        revealCommentId={reveal?.commentId}
         challenge={
           replyTarget && session ? (
             <div ref={turnstileRef}>

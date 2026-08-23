@@ -55,6 +55,12 @@ export function useComments(postId?: number) {
           ROOT_COMMENT_CANNOT_HAVE_REPLY_TO: () => {
             toast.error(m.comments_toast_structure_error());
           },
+          POST_NOT_PUBLISHED: () => {
+            toast.error(m.comments_toast_unknown_error());
+          },
+          POST_NOT_FOUND: () => {
+            toast.error(m.comments_toast_unknown_error());
+          },
         },
         fallback: () => {
           toast.error(m.comments_toast_unknown_error());

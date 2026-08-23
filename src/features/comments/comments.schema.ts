@@ -73,6 +73,7 @@ export const GetRepliesResponseSchema = z.object({
 
 export const RootCommentWithReplyCountSchema = CommentWithUserSchema.extend({
   replyCount: z.number(),
+  replies: z.array(ReplyWithUserAndReplyToSchema),
 });
 
 export const GetRootCommentsResponseSchema = z.object({

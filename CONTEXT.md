@@ -29,11 +29,11 @@ A reusable non-hierarchical label that groups **Posts**.
 _Avoid_: Category
 
 **Comment**:
-A user-authored response attached to a **Post**. It is public as soon as it is created. The author or an **Admin** can delete it from the public post page. Its body is text, not a document tree.
+A user-authored response attached to a **Post**, public as soon as it is created, whose body is text. The author or an **Admin** can delete it from the public post page; deletion keeps a placeholder in the **Comment Thread** instead of removing the row.
 _Avoid_: Message, pending comment, verifying comment, rich document
 
 **Comment Thread**:
-A root **Comment** plus its direct replies under one **Post**.
+A root **Comment** plus its direct replies under one **Post**. A thread whose root is deleted and that has no published replies is not shown.
 _Avoid_: Nested comment tree
 
 **Reply**:
@@ -105,6 +105,10 @@ _Avoid_: Webhook, callback URL
 - A **Published Post** has a publication date for display and listing order. The date is a past or current server date, never a future date. First publication without a date uses server time.
 - A **Post Revision** belongs to exactly one **Post**.
 - A **Comment Thread** belongs to exactly one **Post**.
+- A **User** can create a **Comment** only if that **Post** has a **Public Content Snapshot**.
+- Unpublishing a **Post** does not delete its **Comments**. They are not shown on the public site while the **Post** is a **Draft Post**, and they reappear when it is published again.
+- Public listings and counts of **Comments** exclude deleted **Comments**, except that a deleted root remains visible as a placeholder when its thread still has published replies, and a deleted reply remains visible as a placeholder in a visible thread.
+- A **Reply** notifies the author of the targeted **Comment**, not the rest of the **Comment Thread**. A new root **Comment** by a non-**Admin** notifies the **Admin**.
 - A **Reply** belongs to exactly one **Comment Thread**.
 - A **Media** item referenced by a **Post** cannot be deleted from the media library.
 - Only an approved **Friend Link** appears on the public friend-links page.

@@ -1,9 +1,30 @@
-import { count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, exists, inArray, isNull, or } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
+import {
+  COMMENT_PAGE_SIZE,
+  COMMENT_REPLY_PREVIEW_LIMIT,
+} from "@/features/comments/comment-thread";
 import { buildCommentWhereClause } from "@/features/comments/data/helper";
 import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable, user } from "@/lib/db/schema";
 
-const DEFAULT_PAGE_SIZE = 20;
+const commentListColumns = {
+  id: CommentsTable.id,
+  content: CommentsTable.content,
+  rootId: CommentsTable.rootId,
+  replyToCommentId: CommentsTable.replyToCommentId,
+  postId: CommentsTable.postId,
+  userId: CommentsTable.userId,
+  status: CommentsTable.status,
+  createdAt: CommentsTable.createdAt,
+  updatedAt: CommentsTable.updatedAt,
+  user: {
+    id: user.id,
+    name: user.name,
+    image: user.image,
+    role: user.role,
+  },
+};
 
 export async function insertComment(
   db: DB,
@@ -19,46 +40,46 @@ export async function findCommentById(db: DB, id: number) {
   });
 }
 
+function visibleRootCondition(db: DB, postId: number) {
+  const threadReplies = alias(CommentsTable, "thread_replies");
+  return and(
+    eq(CommentsTable.postId, postId),
+    isNull(CommentsTable.rootId),
+    or(
+      eq(CommentsTable.status, "published"),
+      and(
+        eq(CommentsTable.status, "deleted"),
+        exists(
+          db
+            .select({ id: threadReplies.id })
+            .from(threadReplies)
+            .where(
+              and(
+                eq(threadReplies.rootId, CommentsTable.id),
+                eq(threadReplies.status, "published"),
+              ),
+            ),
+        ),
+      ),
+    ),
+  );
+}
+
 export async function getRootCommentsByPostId(
   db: DB,
   postId: number,
   options: {
     offset?: number;
     limit?: number;
-    status?: CommentStatus | Array<CommentStatus>;
-    viewerId?: string;
   } = {},
 ) {
-  const { offset = 0, limit = DEFAULT_PAGE_SIZE, status, viewerId } = options;
-
-  const conditions = buildCommentWhereClause({
-    postId,
-    status,
-    viewerId,
-    rootOnly: true,
-  });
+  const { offset = 0, limit = COMMENT_PAGE_SIZE } = options;
 
   const comments = await db
-    .select({
-      id: CommentsTable.id,
-      content: CommentsTable.content,
-      rootId: CommentsTable.rootId,
-      replyToCommentId: CommentsTable.replyToCommentId,
-      postId: CommentsTable.postId,
-      userId: CommentsTable.userId,
-      status: CommentsTable.status,
-      createdAt: CommentsTable.createdAt,
-      updatedAt: CommentsTable.updatedAt,
-      user: {
-        id: user.id,
-        name: user.name,
-        image: user.image,
-        role: user.role,
-      },
-    })
+    .select(commentListColumns)
     .from(CommentsTable)
     .leftJoin(user, eq(CommentsTable.userId, user.id))
-    .where(conditions)
+    .where(visibleRootCondition(db, postId))
     .orderBy(desc(CommentsTable.createdAt))
     .limit(Math.min(limit, 100))
     .offset(offset);
@@ -66,29 +87,52 @@ export async function getRootCommentsByPostId(
   return comments;
 }
 
-export async function getRootCommentsByPostIdCount(
-  db: DB,
-  postId: number,
-  options: {
-    status?: CommentStatus | Array<CommentStatus>;
-    viewerId?: string;
-  } = {},
-) {
-  const { status, viewerId } = options;
-
-  const conditions = buildCommentWhereClause({
-    postId,
-    status,
-    viewerId,
-    rootOnly: true,
-  });
-
+export async function getPublishedRootCommentsCount(db: DB, postId: number) {
   const result = await db
     .select({ count: count() })
     .from(CommentsTable)
-    .where(conditions);
+    .where(
+      and(
+        eq(CommentsTable.postId, postId),
+        isNull(CommentsTable.rootId),
+        eq(CommentsTable.status, "published"),
+      ),
+    );
 
   return result[0].count;
+}
+
+export async function getPublishedReplyCountsByRootIds(
+  db: DB,
+  postId: number,
+  rootIds: Array<number>,
+) {
+  const counts = new Map<number, number>();
+  if (rootIds.length === 0) {
+    return counts;
+  }
+
+  const rows = await db
+    .select({
+      rootId: CommentsTable.rootId,
+      value: count(),
+    })
+    .from(CommentsTable)
+    .where(
+      and(
+        eq(CommentsTable.postId, postId),
+        inArray(CommentsTable.rootId, rootIds),
+        eq(CommentsTable.status, "published"),
+      ),
+    )
+    .groupBy(CommentsTable.rootId);
+
+  for (const row of rows) {
+    if (row.rootId != null) {
+      counts.set(row.rootId, row.value);
+    }
+  }
+  return counts;
 }
 
 export async function getReplyCountByRootId(
@@ -97,16 +141,14 @@ export async function getReplyCountByRootId(
   rootId: number,
   options: {
     status?: CommentStatus | Array<CommentStatus>;
-    viewerId?: string;
   } = {},
 ) {
-  const { status, viewerId } = options;
+  const { status } = options;
 
   const conditions = buildCommentWhereClause({
     postId,
     rootId,
     status,
-    viewerId,
   });
 
   const result = await db
@@ -115,6 +157,59 @@ export async function getReplyCountByRootId(
     .where(conditions);
 
   return result[0].count;
+}
+
+async function withReplyToUsers<T extends { replyToCommentId: number | null }>(
+  db: DB,
+  replies: Array<T>,
+) {
+  const targetIds = [
+    ...new Set(
+      replies
+        .map((reply) => reply.replyToCommentId)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+  if (targetIds.length === 0) {
+    return replies.map((reply) => ({ ...reply, replyTo: null }));
+  }
+
+  const targets = await db
+    .select({
+      id: CommentsTable.id,
+      userId: CommentsTable.userId,
+    })
+    .from(CommentsTable)
+    .where(inArray(CommentsTable.id, targetIds));
+
+  const userIds = [
+    ...new Set(
+      targets
+        .map((target) => target.userId)
+        .filter((id): id is string => id != null),
+    ),
+  ];
+  const users =
+    userIds.length === 0
+      ? []
+      : await db
+          .select({ id: user.id, name: user.name })
+          .from(user)
+          .where(inArray(user.id, userIds));
+  const userById = new Map(users.map((row) => [row.id, row]));
+  const replyToByCommentId = new Map(
+    targets.map((target) => [
+      target.id,
+      target.userId ? (userById.get(target.userId) ?? null) : null,
+    ]),
+  );
+
+  return replies.map((reply) => ({
+    ...reply,
+    replyTo: reply.replyToCommentId
+      ? (replyToByCommentId.get(reply.replyToCommentId) ?? null)
+      : null,
+  }));
 }
 
 export async function getRepliesByRootId(
@@ -124,104 +219,49 @@ export async function getRepliesByRootId(
   options: {
     offset?: number;
     limit?: number;
-    status?: CommentStatus | Array<CommentStatus>;
-    viewerId?: string;
   } = {},
 ) {
-  const { offset = 0, limit = DEFAULT_PAGE_SIZE, status, viewerId } = options;
-
-  const conditions = buildCommentWhereClause({
-    postId,
-    rootId,
-    status,
-    viewerId,
-  });
+  const { offset = 0, limit = COMMENT_PAGE_SIZE } = options;
 
   const replies = await db
-    .select({
-      id: CommentsTable.id,
-      content: CommentsTable.content,
-      rootId: CommentsTable.rootId,
-      replyToCommentId: CommentsTable.replyToCommentId,
-      postId: CommentsTable.postId,
-      userId: CommentsTable.userId,
-      status: CommentsTable.status,
-      createdAt: CommentsTable.createdAt,
-      updatedAt: CommentsTable.updatedAt,
-      user: {
-        id: user.id,
-        name: user.name,
-        image: user.image,
-        role: user.role,
-      },
-    })
+    .select(commentListColumns)
     .from(CommentsTable)
     .leftJoin(user, eq(CommentsTable.userId, user.id))
-    .where(conditions)
+    .where(
+      and(eq(CommentsTable.postId, postId), eq(CommentsTable.rootId, rootId)),
+    )
     .orderBy(CommentsTable.createdAt)
     .limit(Math.min(limit, 100))
     .offset(offset);
 
-  // Fetch replyTo user info separately for each reply
-  const repliesWithReplyTo = await Promise.all(
-    replies.map(async (reply) => {
-      if (!reply.replyToCommentId) {
-        return { ...reply, replyTo: null };
-      }
-
-      const replyToComment = await findCommentById(db, reply.replyToCommentId);
-      if (!replyToComment) {
-        return { ...reply, replyTo: null };
-      }
-
-      if (!replyToComment.userId) {
-        return { ...reply, replyTo: null };
-      }
-
-      const replyToUserInfo = await db.query.user.findFirst({
-        where: eq(user.id, replyToComment.userId),
-        columns: {
-          id: true,
-          name: true,
-        },
-      });
-
-      return {
-        ...reply,
-        replyTo: replyToUserInfo
-          ? { id: replyToUserInfo.id, name: replyToUserInfo.name }
-          : null,
-      };
-    }),
-  );
-
-  return repliesWithReplyTo;
+  return withReplyToUsers(db, replies);
 }
 
-export async function getRepliesByRootIdCount(
+export async function getReplyPreviewsByRootIds(
   db: DB,
   postId: number,
-  rootId: number,
-  options: {
-    status?: CommentStatus | Array<CommentStatus>;
-    viewerId?: string;
-  } = {},
+  rootIds: Array<number>,
 ) {
-  const { status, viewerId } = options;
+  const previews = new Map<
+    number,
+    Awaited<ReturnType<typeof getRepliesByRootId>>
+  >();
+  if (rootIds.length === 0) {
+    return previews;
+  }
 
-  const conditions = buildCommentWhereClause({
-    postId,
-    rootId,
-    status,
-    viewerId,
-  });
-
-  const result = await db
-    .select({ count: count() })
-    .from(CommentsTable)
-    .where(conditions);
-
-  return result[0].count;
+  const pages = await Promise.all(
+    rootIds.map(async (rootId) => ({
+      rootId,
+      replies: await getRepliesByRootId(db, postId, rootId, {
+        limit: COMMENT_REPLY_PREVIEW_LIMIT,
+      }),
+    })),
+  );
+  for (const page of pages) {
+    previews.set(page.rootId, page.replies);
+  }
+  return previews;
 }
 
 export async function getCommentsByUserId(
@@ -233,7 +273,7 @@ export async function getCommentsByUserId(
     status?: CommentStatus | Array<CommentStatus>;
   } = {},
 ) {
-  const { offset = 0, limit = DEFAULT_PAGE_SIZE, status } = options;
+  const { offset = 0, limit = COMMENT_PAGE_SIZE, status } = options;
 
   const conditions = buildCommentWhereClause({ userId, status });
 
