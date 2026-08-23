@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
 import { convertToPlainText } from "@/features/posts/utils/content";
+import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { formatDate } from "@/lib/utils";
@@ -28,7 +29,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     title: initialData.title,
     summary: initialData.summary,
     slug: initialData.slug,
-    contentJson: initialData.contentJson ?? null,
+    contentJson: normalizePostContent(initialData.contentJson) ?? null,
     publishedAt: initialData.publishedAt,
     pinnedAt: initialData.pinnedAt,
     tagIds: initialData.tagIds,
@@ -36,7 +37,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     serverToday: initialData.serverToday,
   }));
   const [editorContent, setEditorContent] = useState<JSONContent | null>(
-    () => initialData.contentJson ?? null,
+    () => normalizePostContent(initialData.contentJson) ?? null,
   );
   const [contentEpoch, setContentEpoch] = useState(0);
   const [contentStats, setContentStats] = useState(() =>
@@ -95,7 +96,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         title: snapshot.title,
         summary: snapshot.summary ?? "",
         slug: snapshot.slug,
-        contentJson: snapshot.contentJson,
+        contentJson: normalizePostContent(snapshot.contentJson),
         publishedAt: toDateOrNull(snapshot.publishedAt),
         pinnedAt: post.pinnedAt,
         tagIds: snapshot.tagIds,
@@ -103,8 +104,8 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         serverToday: post.serverToday,
       };
 
-      editorContentRef.current = snapshot.contentJson;
-      setEditorContent(snapshot.contentJson);
+      editorContentRef.current = restoredPost.contentJson;
+      setEditorContent(restoredPost.contentJson);
       setPost(restoredPost);
       setContentEpoch(0);
       setContentStats(contentStatsFromText(""));

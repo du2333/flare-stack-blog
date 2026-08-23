@@ -1,7 +1,10 @@
 import type { Editor } from "@tiptap/react";
 import { AlignLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { TableOfContentsItem } from "@/features/posts/utils/toc";
+import {
+  generateTableOfContents,
+  type TableOfContentsItem,
+} from "@/features/posts/utils/toc";
 import { useActiveTOC } from "@/hooks/use-active-toc";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -11,14 +14,7 @@ export function EditorTableOfContents({ editor }: { editor: Editor }) {
 
   useEffect(() => {
     const updateTOC = () => {
-      const content = editor.storage.tableOfContents.content;
-      // Map Tiptap TOC items to our standardized TableOfContentsItem
-      const newItems = content.map((item) => ({
-        id: item.id,
-        text: item.textContent,
-        level: item.level,
-      }));
-      setItems(newItems);
+      setItems(generateTableOfContents(editor.getJSON()));
     };
 
     updateTOC();
@@ -69,7 +65,7 @@ export function EditorTableOfContents({ editor }: { editor: Editor }) {
                     ? "border-foreground text-foreground font-bold"
                     : "border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60",
                 )}
-                style={{ marginLeft: `${(node.level - 1) * 0.5}rem` }}
+                style={{ marginLeft: `${(node.level - 2) * 0.5}rem` }}
               >
                 {node.text}
               </button>

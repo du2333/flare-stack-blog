@@ -2,6 +2,7 @@ import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { parseImageSize } from "@/features/posts/utils/normalize-content";
 import { m } from "@/paraglide/messages";
 
 export function ImageBlock({
@@ -10,12 +11,15 @@ export function ImageBlock({
   selected,
 }: NodeViewProps) {
   const src = node.attrs.src;
-  const isUploading = useMemo(() => src?.startsWith("blob:"), [src]);
-  const isPortrait = !!(
-    node.attrs.width &&
-    node.attrs.height &&
-    node.attrs.height > node.attrs.width
-  );
+  const isUploading = Boolean(node.attrs.uploadId || src?.startsWith("blob:"));
+  const width = parseImageSize(node.attrs.width);
+  const height = parseImageSize(node.attrs.height);
+  const isPortrait = !!(width && height && height > width);
+
+  const aspectRatio = useMemo(() => {
+    if (isPortrait || !width || !height) return "auto";
+    return `${width} / ${height}`;
+  }, [height, isPortrait, width]);
 
   return (
     <NodeViewWrapper className="my-12 relative image-node-view">
@@ -35,12 +39,7 @@ export function ImageBlock({
               ? "flex items-center justify-center max-h-[70vh]"
               : "max-h-[80vh]"
           }`}
-          style={{
-            aspectRatio:
-              !isPortrait && node.attrs.width && node.attrs.height
-                ? `${node.attrs.width} / ${node.attrs.height}`
-                : "auto",
-          }}
+          style={{ aspectRatio }}
         >
           <img
             src={src}
@@ -54,7 +53,6 @@ export function ImageBlock({
             }`}
           />
 
-          {/* Uploading Status */}
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-background/90 border border-border px-4 py-2 flex items-center gap-3">
@@ -68,7 +66,6 @@ export function ImageBlock({
         </div>
       </div>
 
-      {/* Caption / Alt Text */}
       <div className="mt-3 flex items-center justify-center">
         <input
           type="text"

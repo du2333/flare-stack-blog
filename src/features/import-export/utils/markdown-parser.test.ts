@@ -13,6 +13,8 @@ describe("markdownToJsonContent", () => {
 
     const types = json.content!.map((n) => n.type);
     expect(types).toContain("heading");
+    const importedHeading = json.content!.find((n) => n.type === "heading");
+    expect(importedHeading?.attrs?.level).toBe(2);
     expect(types).toContain("paragraph");
     expect(types).toContain("bulletList");
   });

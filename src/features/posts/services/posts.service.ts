@@ -24,6 +24,7 @@ import type {
 import { normalizePostTagName } from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
 import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
+import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import {
   isFuturePublishDate,
   serverUtcDateString,
@@ -256,14 +257,25 @@ export async function updatePost(
   context: DbContext & { executionCtx: ExecutionContext; env?: Env },
   data: UpdatePostInput,
 ) {
-  const updatedPost = await PostRepo.updatePost(context.db, data.id, data.data);
+  const updateData =
+    data.data.contentJson !== undefined
+      ? {
+          ...data.data,
+          contentJson: normalizePostContent(data.data.contentJson),
+        }
+      : data.data;
+  const updatedPost = await PostRepo.updatePost(
+    context.db,
+    data.id,
+    updateData,
+  );
   if (!updatedPost) {
     return err({ reason: "POST_NOT_FOUND" });
   }
 
-  if (data.data.contentJson !== undefined) {
+  if (updateData.contentJson !== undefined) {
     context.executionCtx.waitUntil(
-      syncPostMedia(context.db, updatedPost.id, data.data.contentJson),
+      syncPostMedia(context.db, updatedPost.id, updateData.contentJson),
     );
   }
 
@@ -320,6 +332,16 @@ export async function publishPost(
   );
   if (slugTaken) {
     return err({ reason: "PUBLIC_SLUG_TAKEN" });
+  }
+
+  const normalizedContent = normalizePostContent(publishedPost.contentJson);
+  if (normalizedContent) {
+    const updated = await PostRepo.updatePost(context.db, publishedPost.id, {
+      contentJson: normalizedContent,
+    });
+    if (updated) {
+      publishedPost = updated;
+    }
   }
 
   await createPublishRevision(context, publishedPost);

@@ -1,7 +1,6 @@
 import FileHandler from "@tiptap/extension-file-handler";
 import Mathematics from "@tiptap/extension-mathematics";
 import Placeholder from "@tiptap/extension-placeholder";
-import TableOfContents from "@tiptap/extension-table-of-contents";
 import type { Editor as TiptapEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { toast } from "sonner";
@@ -9,7 +8,6 @@ import {
   getActiveFormulaModalOpenerKey,
   openFormulaModalForEdit,
 } from "@/components/tiptap-editor/formula-modal-store";
-import { orpcClient } from "@/lib/orpc";
 import { CodeBlockExtension } from "@/features/posts/editor/extensions/code-block";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
 import { TableBlockExtension } from "@/features/posts/editor/extensions/table";
@@ -17,7 +15,7 @@ import { BlockQuoteExtension } from "@/features/posts/editor/extensions/typograp
 import { HeadingExtension } from "@/features/posts/editor/extensions/typography/heading";
 import type { ImageUploadResult } from "@/features/posts/editor/extensions/upload-image";
 import { ImageUpload } from "@/features/posts/editor/extensions/upload-image";
-import { slugify } from "@/features/posts/utils/content";
+import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 const ALLOWED_IMAGE_MIME_TYPES = [
@@ -57,7 +55,7 @@ function handleFilePaste(editor: TiptapEditor, files: Array<File>) {
   });
 }
 
-function createBaseExtensions() {
+function createSchemaExtensions(mathClick: boolean) {
   return [
     StarterKit.configure({
       heading: false,
@@ -65,73 +63,64 @@ function createBaseExtensions() {
       blockquote: false,
       code: {
         HTMLAttributes: {
-          class:
-            "font-mono text-sm px-1 text-foreground/80 bg-muted/40 rounded-sm",
           spellCheck: false,
-        },
-      },
-      underline: {
-        HTMLAttributes: {
-          class: "underline underline-offset-4 decoration-border/60",
-        },
-      },
-      strike: {
-        HTMLAttributes: {
-          class: "line-through opacity-50 decoration-foreground/40",
         },
       },
       link: {
         autolink: true,
         openOnClick: false,
         HTMLAttributes: {
-          class:
-            "font-normal underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 cursor-pointer text-foreground",
           target: "_blank",
         },
       },
     }),
     HeadingExtension.configure({
-      levels: [1, 2, 3, 4],
+      levels: [2, 3, 4],
     }),
     BlockQuoteExtension,
     CodeBlockExtension,
     Mathematics.configure({
       katexOptions: { throwOnError: false },
-      inlineOptions: {
-        onClick: (node, pos) => {
-          openFormulaModalForEdit({
-            latex: node.attrs.latex ?? "",
-            pos,
-            type: "inline",
-            instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
-          });
-        },
-      },
-      blockOptions: {
-        onClick: (node, pos) => {
-          openFormulaModalForEdit({
-            latex: node.attrs.latex ?? "",
-            pos,
-            type: "block",
-            instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
-          });
-        },
-      },
+      ...(mathClick
+        ? {
+            inlineOptions: {
+              onClick: (node, pos) => {
+                openFormulaModalForEdit({
+                  latex: node.attrs.latex ?? "",
+                  pos,
+                  type: "inline",
+                  instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
+                });
+              },
+            },
+            blockOptions: {
+              onClick: (node, pos) => {
+                openFormulaModalForEdit({
+                  latex: node.attrs.latex ?? "",
+                  pos,
+                  type: "block",
+                  instanceKey: getActiveFormulaModalOpenerKey() ?? undefined,
+                });
+              },
+            },
+          }
+        : {}),
     }),
     ...TableBlockExtension,
     ImageExtension,
-    Placeholder.configure({
-      placeholder: m.editor_content_placeholder(),
-      emptyEditorClass: "is-editor-empty",
-    }),
-    TableOfContents.configure({
-      getId: (text) => slugify(text),
-    }),
   ];
 }
 
+export const schemaExtensions = createSchemaExtensions(false);
+
+export const inspectExtensions = schemaExtensions;
+
 export const extensions = [
-  ...createBaseExtensions(),
+  ...createSchemaExtensions(true),
+  Placeholder.configure({
+    placeholder: m.editor_content_placeholder(),
+    emptyEditorClass: "is-editor-empty",
+  }),
   ImageUpload.configure({
     onUpload: handleImageUpload,
     onError: (error) => {
@@ -146,5 +135,3 @@ export const extensions = [
     onPaste: handleFilePaste,
   }),
 ];
-
-export const inspectExtensions = createBaseExtensions();

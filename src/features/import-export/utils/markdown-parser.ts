@@ -87,6 +87,8 @@ export async function markdownToJsonContent(
   const { DOMParser: PMDOMParser } = await import("@tiptap/pm/model");
   const { parseHTML } = await import("linkedom");
 
+  const { normalizePostContent } =
+    await import("@/features/posts/utils/normalize-content");
   const { default: StarterKit } = await import("@tiptap/starter-kit");
   const { default: ImageExt } = await import("@tiptap/extension-image");
   const { default: Mathematics } =
@@ -111,7 +113,9 @@ export async function markdownToJsonContent(
     `<!DOCTYPE html><html><body>${html}</body></html>`,
   );
 
-  return PMDOMParser.fromSchema(schema)
+  const parsed = PMDOMParser.fromSchema(schema)
     .parse(document.body as unknown as Element)
     .toJSON() as JSONContent;
+
+  return normalizePostContent(parsed) ?? parsed;
 }

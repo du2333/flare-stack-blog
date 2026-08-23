@@ -6,34 +6,18 @@ import { ImageBlock } from "./block";
 export const ImageExtension = Image.extend({
   addAttributes() {
     return {
-      src: {
+      ...this.parent?.(),
+      uploadId: {
         default: null,
-      },
-      alt: {
-        default: null,
-      },
-      title: {
-        default: null,
-      },
-      width: {
-        default: "100%",
-      },
-      height: {
-        default: null,
-      },
-      align: {
-        default: "center",
-      },
-      caption: {
-        default: "",
-      },
-      aspectRatio: {
-        default: null,
+        rendered: false,
       },
     };
   },
 
-  addNodeView: () => {
+  addNodeView() {
+    if (this.options.inline) {
+      return this.parent?.() ?? null;
+    }
     return ReactNodeViewRenderer(ImageBlock);
   },
 });

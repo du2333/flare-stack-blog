@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Editor } from "@/components/tiptap-editor";
 import { inspectExtensions } from "@/features/posts/editor/config";
+import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -85,7 +86,7 @@ export function PostEditorHistoryDocument({
         <Editor
           key={editorKey}
           extensions={inspectExtensions}
-          content={snapshot.contentJson ?? ""}
+          content={normalizePostContent(snapshot.contentJson) ?? ""}
           editable={false}
         />
       </div>

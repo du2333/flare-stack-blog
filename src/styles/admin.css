@@ -100,3 +100,52 @@
 .admin-layout .ProseMirror li {
   margin: 0.25rem 0;
 }
+
+.admin-layout .ProseMirror h2 {
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.875rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin: 3.5rem 0 2rem;
+}
+
+.admin-layout .ProseMirror h3 {
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 3rem 0 1.5rem;
+}
+
+.admin-layout .ProseMirror h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 2rem 0 1rem;
+}
+
+.admin-layout .ProseMirror blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid
+    color-mix(in oklab, var(--muted-foreground) 30%, transparent);
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.625;
+  color: var(--muted-foreground);
+}
+
+.admin-layout .ProseMirror code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  padding: 0 0.25rem;
+  border-radius: 0.125rem;
+  background: color-mix(in oklab, var(--muted) 40%, transparent);
+}
+
+.admin-layout .ProseMirror a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

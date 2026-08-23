@@ -1,16 +1,27 @@
 import type { JSONContent } from "@tiptap/react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import { MathFormula } from "@/components/content/math-formula";
-import { extensions } from "@/features/posts/editor/config";
+import { schemaExtensions } from "@/features/posts/editor/config";
+import { parseImageSize } from "@/features/posts/utils/normalize-content";
+import {
+  clampHeadingLevel,
+  withUniqueHeadingIds,
+} from "@/features/posts/utils/toc";
 import { CodeBlock } from "@/features/theme/themes/default/components/content/code-block";
 import { ImageDisplay } from "@/features/theme/themes/default/components/content/image-display";
 
 export function renderReact(content: JSONContent) {
   return renderToReactElement({
-    extensions,
-    content,
+    extensions: schemaExtensions,
+    content: withUniqueHeadingIds(content),
     options: {
       nodeMapping: {
+        heading: ({ node, children }) => {
+          const attrs = node.attrs as { level?: number; id?: string };
+          const level = clampHeadingLevel(attrs.level);
+          const Tag = `h${level}` as const;
+          return <Tag id={attrs.id}>{children}</Tag>;
+        },
         image: ({ node }) => {
           const attrs = node.attrs as {
             src: string;
@@ -23,21 +34,12 @@ export function renderReact(content: JSONContent) {
             (attrs.alt && attrs.alt !== "null" ? attrs.alt : null) ||
             "blog image";
 
-          const width =
-            typeof attrs.width === "string"
-              ? parseInt(attrs.width)
-              : attrs.width;
-          const height =
-            typeof attrs.height === "string"
-              ? parseInt(attrs.height)
-              : attrs.height;
-
           return (
             <ImageDisplay
               src={attrs.src}
               alt={alt}
-              width={width || undefined}
-              height={height || undefined}
+              width={parseImageSize(attrs.width)}
+              height={parseImageSize(attrs.height)}
             />
           );
         },

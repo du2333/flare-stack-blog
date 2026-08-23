@@ -16,6 +16,8 @@ export const CodeBlockExtension = CodeBlock.extend({
     return {
       ...this.parent?.(),
       languageClassPrefix: "language-",
+      enableTabIndentation: true,
+      tabSize: 2,
       exitOnTripleEnter: true,
       exitOnArrowDown: true,
       defaultLanguage: null,
@@ -23,16 +25,5 @@ export const CodeBlockExtension = CodeBlock.extend({
   },
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlockView);
-  },
-  addKeyboardShortcuts() {
-    return {
-      Tab: () => {
-        if (!this.editor.isActive(this.name)) {
-          return false;
-        }
-
-        return this.editor.commands.insertContent("  ");
-      },
-    };
   },
 });

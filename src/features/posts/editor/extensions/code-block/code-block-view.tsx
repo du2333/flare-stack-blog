@@ -51,13 +51,13 @@ export function CodeBlockView({ node, updateAttributes }: NodeViewProps) {
           </button>
         </div>
 
-        <div className="relative overflow-x-auto rounded-b-sm custom-scrollbar">
+        <pre className="relative m-0 overflow-x-auto rounded-b-sm custom-scrollbar">
           <NodeViewContent
             as="div"
-            className="w-fit min-w-full p-6 font-mono text-sm leading-relaxed outline-none"
+            className="block w-fit min-w-full p-6 font-mono text-sm leading-relaxed whitespace-pre outline-none"
             spellCheck={false}
           />
-        </div>
+        </pre>
       </div>
     </NodeViewWrapper>
   );
