@@ -7,9 +7,9 @@ import {
   useRouteContext,
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
-import theme from "@/features/theme/themes/fuwari";
 import { lazy, Suspense, type ComponentType } from "react";
 import { ThemeProvider } from "@/components/common/theme-provider";
+import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
 import { clientEnv } from "@/lib/env/client.env";
 import { getLocale } from "@/paraglide/runtime";
@@ -133,7 +133,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html
       lang={locale}
       suppressHydrationWarning
-      style={theme.getDocumentStyle?.(siteConfig)}
+      style={getFuwariThemeStyle(siteConfig)}
     >
       <head>
         <HeadContent />

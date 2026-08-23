@@ -1,10 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { PublicLayout as SitePublicLayout } from "@/components/layout/public-layout";
+import { Toaster } from "@/components/layout/toaster";
+import { getHomeBackgroundPreloadImages } from "@/components/layout/preload-images";
 import { resetAuthBoundQueries } from "@/features/auth/queries";
-import { getThemePreloadImages } from "@/features/theme/site-config.helpers";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { CACHE_CONTROL } from "@/lib/constants";
@@ -12,7 +13,7 @@ import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
   loader: ({ context }) => ({
-    preloadImages: getThemePreloadImages(context.siteConfig),
+    preloadImages: getHomeBackgroundPreloadImages(context.siteConfig),
   }),
   component: PublicLayout,
   headers: () => {
@@ -75,15 +76,15 @@ function PublicLayout() {
 
   return (
     <>
-      <theme.PublicLayout
+      <SitePublicLayout
         navOptions={navOptions}
         user={session?.user}
         isSessionLoading={isSessionPending}
         logout={logout}
       >
         <Outlet />
-      </theme.PublicLayout>
-      <theme.Toaster />
+      </SitePublicLayout>
+      <Toaster />
     </>
   );
 }

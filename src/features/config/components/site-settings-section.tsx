@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import { Field } from "@/features/config/components/site-settings-fields";
 import { SocialLinksEditor } from "@/features/config/components/social-links-editor";
-import { FuwariThemeSettings } from "@/features/config/components/themes/fuwari-theme-settings";
+import { FuwariThemeSettings } from "@/features/config/components/fuwari-theme-settings";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 

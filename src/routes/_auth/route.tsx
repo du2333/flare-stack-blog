@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import { Toaster } from "@/components/layout/toaster";
 import { emailConfiguredQuery, sessionQuery } from "@/features/auth/queries";
 import { useNavigateBack } from "@/hooks/use-navigate-back";
 import { CACHE_CONTROL } from "@/lib/constants";
@@ -26,10 +27,10 @@ function RouteComponent() {
   const navigateBack = useNavigateBack();
   return (
     <>
-      <theme.AuthLayout onBack={navigateBack}>
+      <AuthLayout onBack={navigateBack}>
         <Outlet />
-      </theme.AuthLayout>
-      <theme.Toaster />
+      </AuthLayout>
+      <Toaster />
     </>
   );
 }

@@ -3,8 +3,8 @@ import {
   redirect,
   useRouteContext,
 } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { RegisterPage } from "@/features/auth/components/register-page";
 import { useRegisterForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
@@ -47,7 +47,7 @@ function RouteComponent() {
   );
 
   return (
-    <theme.RegisterPage
+    <RegisterPage
       isEmailConfigured={isEmailConfigured}
       registerForm={{ ...registerForm, turnstileProps }}
       turnstileElement={turnstileElement}

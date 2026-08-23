@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
+import { SubmitFriendLinkPage } from "@/features/friend-links/components/submit-friend-link-page";
 import { useFriendLinkSubmitForm } from "@/features/friend-links/hooks/use-friend-link-submit-form";
 import { myFriendLinksQuery } from "@/features/friend-links/queries";
 import { authClient } from "@/lib/auth/auth.client";
@@ -33,5 +33,5 @@ function SubmitFriendLinkRoute() {
     return null;
   }
 
-  return <theme.SubmitFriendLinkPage myLinks={myLinks ?? []} form={form} />;
+  return <SubmitFriendLinkPage myLinks={myLinks ?? []} form={form} />;
 }

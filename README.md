@@ -104,7 +104,6 @@ src/
 │   ├── friend-links/# 友情链接（申请、审核）
 │   ├── import-export/# Markdown 导入导出
 │   ├── version/     # 版本更新检查
-│   ├── theme/       # 公开页表现（Fuwari）
 ├── routes/
 │   ├── _public/     # 公开页面（首页、文章列表/详情、搜索）
 │   ├── _auth/       # 登录/注册相关页面

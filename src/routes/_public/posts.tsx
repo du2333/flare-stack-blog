@@ -3,18 +3,20 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { useMemo } from "react";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
+import {
+  POSTS_PER_PAGE,
+  PostsPage,
+} from "@/features/posts/components/posts-page";
+import { PostsPageSkeleton } from "@/features/posts/components/posts-page-skeleton";
 import { postsInfiniteQueryOptions } from "@/features/posts/queries";
 import { PostTagNameSchema } from "@/features/posts/schema/posts.schema";
 import { getNextPostTagFilter } from "@/features/posts/utils/post-tag-filter";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
-
-const { postsPerPage } = theme.config.posts;
 
 export const Route = createFileRoute("/_public/posts")({
   validateSearch: z.object({
@@ -28,7 +30,7 @@ export const Route = createFileRoute("/_public/posts")({
       context.queryClient.prefetchInfiniteQuery(
         postsInfiniteQueryOptions({
           tagName: deps.tagName,
-          limit: postsPerPage,
+          limit: POSTS_PER_PAGE,
         }),
       ),
       context.queryClient.prefetchQuery(tagsQueryOptions),
@@ -66,7 +68,7 @@ function RouteComponent() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSuspenseInfiniteQuery(
-      postsInfiniteQueryOptions({ tagName, limit: postsPerPage }),
+      postsInfiniteQueryOptions({ tagName, limit: POSTS_PER_PAGE }),
     );
 
   const posts = useMemo(() => {
@@ -81,7 +83,7 @@ function RouteComponent() {
   };
 
   return (
-    <theme.PostsPage
+    <PostsPage
       posts={posts}
       tags={tags}
       selectedTag={tagName}
@@ -94,5 +96,5 @@ function RouteComponent() {
 }
 
 function PostsSkeleton() {
-  return <theme.PostsPageSkeleton />;
+  return <PostsPageSkeleton />;
 }

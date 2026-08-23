@@ -1,9 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { ErrorPage } from "@/components/common/error-page";
+import { Toaster } from "@/components/layout/toaster";
+import { UserLayout as SiteUserLayout } from "@/components/layout/user-layout";
 import { resetAuthBoundQueries, sessionQuery } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -70,7 +71,7 @@ function UserLayout() {
 
   return (
     <>
-      <theme.UserLayout
+      <SiteUserLayout
         isAuthenticated={!!session?.user}
         navOptions={navOptions}
         user={session?.user}
@@ -78,8 +79,8 @@ function UserLayout() {
         logout={logout}
       >
         <Outlet />
-      </theme.UserLayout>
-      <theme.Toaster />
+      </SiteUserLayout>
+      <Toaster />
     </>
   );
 }

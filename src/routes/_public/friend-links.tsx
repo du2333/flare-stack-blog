@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
+import { FriendLinksPage as FriendLinksView } from "@/features/friend-links/components/friend-links-page";
+import { FriendLinksPageSkeleton } from "@/features/friend-links/components/friend-links-page-skeleton";
 import { approvedFriendLinksQuery } from "@/features/friend-links/queries";
 import { m } from "@/paraglide/messages";
 
@@ -25,11 +26,11 @@ export const Route = createFileRoute("/_public/friend-links")({
       },
     ],
   }),
-  pendingComponent: theme.FriendLinksPageSkeleton,
+  pendingComponent: FriendLinksPageSkeleton,
 });
 
 function FriendLinksPage() {
   const { data: links } = useSuspenseQuery(approvedFriendLinksQuery());
 
-  return <theme.FriendLinksPage links={links} />;
+  return <FriendLinksView links={links} />;
 }

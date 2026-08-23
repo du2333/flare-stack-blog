@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { ForgotPasswordPage } from "@/features/auth/components/forgot-password-page";
 import { useForgotPasswordForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
@@ -41,7 +41,7 @@ function RouteComponent() {
   );
 
   return (
-    <theme.ForgotPasswordPage
+    <ForgotPasswordPage
       forgotPasswordForm={{
         ...forgotPasswordForm,
         turnstileProps,

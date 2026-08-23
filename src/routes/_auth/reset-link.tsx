@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { z } from "zod";
+import { ResetPasswordPage } from "@/features/auth/components/reset-password-page";
 import { useResetPasswordForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
@@ -29,7 +29,7 @@ function RouteComponent() {
   const resetPasswordForm = useResetPasswordForm({ token });
 
   return (
-    <theme.ResetPasswordPage
+    <ResetPasswordPage
       resetPasswordForm={resetPasswordForm}
       token={token}
       error={error}

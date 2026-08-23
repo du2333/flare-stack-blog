@@ -1,8 +1,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
+import { SearchPage } from "@/features/search/components/search-page";
 import {
   searchDocsQueryOptions,
   searchMetaQuery,
@@ -86,7 +86,7 @@ function SearchRoute() {
   };
 
   return (
-    <theme.SearchPage
+    <SearchPage
       query={query}
       results={searchResults}
       isSearching={isSearching}

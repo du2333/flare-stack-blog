@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { z } from "zod";
+import { VerifyEmailPage } from "@/features/auth/components/verify-email-page";
 import { useVerifyEmail } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
@@ -28,5 +28,5 @@ function RouteComponent() {
   const { error } = Route.useSearch();
   const { status } = useVerifyEmail({ error });
 
-  return <theme.VerifyEmailPage status={status} error={error} />;
+  return <VerifyEmailPage status={status} error={error} />;
 }

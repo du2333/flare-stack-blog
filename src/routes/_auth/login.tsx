@@ -1,7 +1,7 @@
 import { createFileRoute, useRouteContext } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { z } from "zod";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
+import { LoginPage } from "@/features/auth/components/login-page";
 import { useLoginForm, useSocialLogin } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
@@ -49,7 +49,7 @@ function RouteComponent() {
   ) : null;
 
   return (
-    <theme.LoginPage
+    <LoginPage
       isEmailConfigured={isEmailConfigured}
       loginForm={{
         ...loginForm,

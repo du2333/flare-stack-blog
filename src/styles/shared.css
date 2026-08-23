@@ -1,4 +1,4 @@
-/* Shared configuration and variables across all themes */
+/* Shared configuration and CSS variables */
 @import "katex/dist/katex.min.css";
 
 @custom-variant dark (&:is(.dark *));

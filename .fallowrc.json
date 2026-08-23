@@ -3,7 +3,6 @@
   "entry": ["src/server.ts"],
   "dynamicallyLoaded": [
     ".release-it.ts",
-    "src/features/theme/themes/*/index.ts",
     "tests/apply-migrations.ts",
     "tests/mocks/tanstack-start-mock.ts"
   ],

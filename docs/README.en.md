@@ -104,7 +104,6 @@ src/
 │   ├── friend-links/# Friend links (applications, moderation)
 │   ├── import-export/# Markdown importing/exporting
 │   ├── version/     # Version update checker
-│   ├── theme/       # Public presentation (Fuwari)
 ├── routes/
 │   ├── _public/     # Public pages (Home, post lists/details, search)
 │   ├── _auth/       # Login/Registration related pages

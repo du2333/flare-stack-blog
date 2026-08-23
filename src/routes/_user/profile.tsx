@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
+import { ProfilePage as ProfileView } from "@/features/auth/components/profile-page";
 import {
   useLogout,
   useNotificationToggle,
@@ -41,7 +41,7 @@ function ProfilePage() {
   if (!user) return null;
 
   return (
-    <theme.ProfilePage
+    <ProfileView
       user={user}
       profileForm={profileForm}
       passwordForm={hasPassword ? passwordForm : null}

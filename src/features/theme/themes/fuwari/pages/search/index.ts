@@ -1,1 +1,0 @@
-export { SearchPage } from "./page";

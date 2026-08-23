@@ -298,6 +298,6 @@ The publish button only triggers the backend to actually publish the post if its
 
 Change its status from "Published" to "Draft", and the "Publish" button will turn into an "Unpublish" button.
 
-### 6. How do I configure things like background images in certain themes?
+### 6. How do I configure things like background images?
 
-Use the admin **Settings** page for day-to-day site personalization. If you are developing or extending a theme, check `src/blog.config.ts` for seeded defaults and the site-config schema/theme guide for the runtime fields that can be overridden from admin.
+Use the admin **Settings** page for day-to-day site personalization. Seeded defaults live in `src/blog.config.ts` until you save overrides from admin.

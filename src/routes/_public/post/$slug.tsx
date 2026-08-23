@@ -1,10 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import theme from "@/features/theme/themes/fuwari";
 import { useEffect } from "react";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
 import { orpcClient } from "@/lib/orpc";
+import { PostPage } from "@/features/posts/components/post-page";
+import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
+import { RELATED_POSTS_LIMIT } from "@/features/posts/components/related-posts";
 import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
@@ -15,8 +17,6 @@ import {
 const searchSchema = z.object({
   comment: z.coerce.number().optional(),
 });
-
-const { relatedPostsLimit } = theme.config.post;
 
 export const Route = createFileRoute("/_public/post/$slug")({
   validateSearch: searchSchema,
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
 
     // 2. Deferred: Related posts (prefetch only, don't await)
     void context.queryClient.prefetchQuery(
-      relatedPostsQuery(params.slug, relatedPostsLimit),
+      relatedPostsQuery(params.slug, RELATED_POSTS_LIMIT),
     );
 
     if (!post) throw notFound();
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
         : [],
     };
   },
-  pendingComponent: () => <theme.PostPageSkeleton />,
+  pendingComponent: () => <PostPageSkeleton />,
   pendingMs: 1000,
 });
 
@@ -100,5 +100,5 @@ function RouteComponent() {
 
   if (!post) throw notFound();
 
-  return <theme.PostPage post={post} />;
+  return <PostPage post={post} />;
 }
