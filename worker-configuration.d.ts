@@ -21,14 +21,13 @@ interface __BaseEnv_Env {
 	TURNSTILE_SECRET_KEY: string;
 	GITHUB_TOKEN: string;
 	RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
-	PASSWORD_HASHER: DurableObjectNamespace<import("./src/server").PasswordHasher>;
 	EXPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ExportWorkflow['run']>[0]['payload']>;
 	IMPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ImportWorkflow['run']>[0]['payload']>;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
 		mainModule: typeof import("./src/server");
-		durableNamespaces: "RateLimiter" | "PasswordHasher";
+		durableNamespaces: "RateLimiter";
 	}
 	interface TestEnv {
 		KV: KVNamespace;
@@ -50,7 +49,6 @@ declare namespace Cloudflare {
 		TURNSTILE_SECRET_KEY: string;
 		GITHUB_TOKEN: string;
 		RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
-		PASSWORD_HASHER: DurableObjectNamespace<import("./src/server").PasswordHasher>;
 		EXPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ExportWorkflow['run']>[0]['payload']>;
 		IMPORT_WORKFLOW: Workflow<Parameters<import("./src/server").ImportWorkflow['run']>[0]['payload']>;
 	}

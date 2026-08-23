@@ -8,60 +8,6 @@ vi.mock("@/lib/turnstile", () => ({
 }));
 
 describe("Durable Objects Integration", () => {
-  describe("PasswordHasher", () => {
-    function getHasher() {
-      const id = env.PASSWORD_HASHER.idFromName("hasher-0");
-      return env.PASSWORD_HASHER.get(id);
-    }
-
-    it("should hash a password and return salt:key format", async () => {
-      const hasher = getHasher();
-      const hash = await hasher.hash("test-password-123");
-
-      expect(hash).toContain(":");
-      const [salt, key] = hash.split(":");
-      expect(salt).toHaveLength(32);
-      expect(key).toHaveLength(128);
-    });
-
-    it("should verify a correct password", async () => {
-      const hasher = getHasher();
-      const hash = await hasher.hash("my-secure-password");
-
-      const result = await hasher.verify({
-        hash,
-        password: "my-secure-password",
-      });
-      expect(result).toBe(true);
-    });
-
-    it("should reject an incorrect password", async () => {
-      const hasher = getHasher();
-      const hash = await hasher.hash("correct-password");
-
-      const result = await hasher.verify({
-        hash,
-        password: "wrong-password",
-      });
-      expect(result).toBe(false);
-    });
-
-    it("should produce different hashes for the same password (random salt)", async () => {
-      const hasher = getHasher();
-      const hash1 = await hasher.hash("same-password");
-      const hash2 = await hasher.hash("same-password");
-
-      expect(hash1).not.toBe(hash2);
-
-      expect(
-        await hasher.verify({ hash: hash1, password: "same-password" }),
-      ).toBe(true);
-      expect(
-        await hasher.verify({ hash: hash2, password: "same-password" }),
-      ).toBe(true);
-    });
-  });
-
   describe("RateLimiter", () => {
     beforeEach(() => {
       vi.useFakeTimers();

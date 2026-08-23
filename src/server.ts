@@ -10,7 +10,6 @@ import { paraglideMiddleware } from "@/paraglide/server";
 
 export { ExportWorkflow } from "@/features/import-export/workflows/export.workflow";
 export { ImportWorkflow } from "@/features/import-export/workflows/import.workflow";
-export { PasswordHasher } from "@/lib/do/password-hasher";
 export { RateLimiter } from "@/lib/do/rate-limiter";
 
 declare module "@tanstack/react-start" {

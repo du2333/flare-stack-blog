@@ -36,14 +36,6 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     GITHUB_CLIENT_SECRET,
   } = serverEnv(env);
 
-  // 固定 10 个 DO 实例池，随机选择避免冷启动
-  const PASSWORD_HASHER_POOL_SIZE = 10;
-  function getPasswordHasher() {
-    const index = Math.floor(Math.random() * PASSWORD_HASHER_POOL_SIZE);
-    const id = env.PASSWORD_HASHER.idFromName(`hasher-${index}`);
-    return env.PASSWORD_HASHER.get(id);
-  }
-
   function getAuthEmailLocale(): Locale {
     try {
       return getLocale();
@@ -80,11 +72,6 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
-      password: {
-        hash: (password: string) => getPasswordHasher().hash(password),
-        verify: (params: { hash: string; password: string }) =>
-          getPasswordHasher().verify(params),
-      },
       sendResetPassword: async ({ user, url }) => {
         // Per-email rate limit: 3 per hour — silently skip if exceeded
         const allowed = await checkEmailRateLimit(
