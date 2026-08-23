@@ -95,6 +95,11 @@ export const DeleteCommentInputSchema = z.object({
   id: z.number(),
 });
 
+export const GetThreadByCommentIdInputSchema = z.object({
+  postId: z.number(),
+  id: z.number(),
+});
+
 export const GetMyCommentsInputSchema = z.object({
   offset: z.number().optional(),
   limit: z.number().optional(),

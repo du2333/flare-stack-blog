@@ -45,6 +45,12 @@ export function repliesByRootIdInfiniteQuery(postId: number, rootId: number) {
   });
 }
 
+export function commentThreadQuery(postId: number, commentId: number) {
+  return orpc.comments.thread.queryOptions({
+    input: { postId, id: commentId },
+  });
+}
+
 export function myCommentsQuery(
   options: { offset?: number; limit?: number; status?: CommentStatus } = {},
 ) {

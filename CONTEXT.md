@@ -117,6 +117,7 @@ _Avoid_: Webhook, callback URL
 - An **Import/Export Task** can include **Posts** and related content.
 - An **Import/Export Task** can preserve **Post** content, frontmatter, and related **Media** depending on the import/export format.
 - A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.
+- A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
 - An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, and **Friend Links**.
 - A **User** can create **Comments** and submit **Friend Links**.
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.

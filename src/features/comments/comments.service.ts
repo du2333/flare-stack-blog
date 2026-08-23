@@ -3,7 +3,9 @@ import type {
   DeleteCommentInput,
   GetCommentsByPostIdInput,
   GetMyCommentsInput,
+  RootCommentWithReplyCount,
 } from "@/features/comments/comments.schema";
+import { publicCommentUrl } from "@/features/comments/comment-url";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
@@ -36,27 +38,61 @@ export async function getRootCommentsByPostId(
     CommentRepo.getPublishedRootCommentsCount(context.db, data.postId),
   ]);
 
-  const rootIds = items.map((item) => item.id);
-  const [replyCounts, previews] = await Promise.all([
-    CommentRepo.getPublishedReplyCountsByRootIds(
-      context.db,
-      data.postId,
-      rootIds,
-    ),
-    CommentRepo.getReplyPreviewsByRootIds(context.db, data.postId, rootIds),
-  ]);
-
   return {
-    items: items.map((item) => {
-      const replyCount = replyCounts.get(item.id) ?? 0;
-      return {
-        ...item,
-        replyCount,
-        replies: replyCount === 0 ? [] : (previews.get(item.id) ?? []),
-      };
-    }),
+    items: await withReplyCountsAndPreviews(context.db, data.postId, items),
     total,
   };
+}
+
+async function withReplyCountsAndPreviews(
+  db: DB,
+  postId: number,
+  items: Awaited<ReturnType<typeof CommentRepo.getRootCommentsByPostId>>,
+): Promise<Array<RootCommentWithReplyCount>> {
+  const rootIds = items.map((item) => item.id);
+  const [replyCounts, previews] = await Promise.all([
+    CommentRepo.getPublishedReplyCountsByRootIds(db, postId, rootIds),
+    CommentRepo.getReplyPreviewsByRootIds(db, postId, rootIds),
+  ]);
+
+  return items.map((item) => {
+    const replyCount = replyCounts.get(item.id) ?? 0;
+    return {
+      ...item,
+      replyCount,
+      replies: replyCount === 0 ? [] : (previews.get(item.id) ?? []),
+    };
+  });
+}
+
+export async function getThreadByCommentId(
+  context: DbContext,
+  data: { postId: number; id: number },
+) {
+  const post = await requirePublishedPost(context, data.postId);
+  if (!post) {
+    return err({ reason: "COMMENT_NOT_FOUND" });
+  }
+
+  const comment = await CommentRepo.findCommentById(context.db, data.id);
+  if (!comment || comment.postId !== data.postId) {
+    return err({ reason: "COMMENT_NOT_FOUND" });
+  }
+
+  const rootId = comment.rootId ?? comment.id;
+  const root = await CommentRepo.getVisibleRootById(
+    context.db,
+    data.postId,
+    rootId,
+  );
+  if (!root) {
+    return err({ reason: "COMMENT_NOT_FOUND" });
+  }
+
+  const [thread] = await withReplyCountsAndPreviews(context.db, data.postId, [
+    root,
+  ]);
+  return ok(thread);
 }
 
 export async function getRepliesByRootId(
@@ -183,7 +219,7 @@ export async function createComment(
         postTitle: post.title,
         commenterName,
         commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
-        commentUrl: `https://${DOMAIN}/post/${post.slug}?highlightCommentId=${comment.id}&rootId=${comment.id}#comment-${comment.id}`,
+        commentUrl: publicCommentUrl(DOMAIN, post.slug, comment.id),
       },
     });
   }

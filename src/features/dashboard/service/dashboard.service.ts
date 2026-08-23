@@ -1,4 +1,5 @@
 import * as kvStore from "@/features/cache/kv-store";
+import { publicCommentPath } from "@/features/comments/comment-url";
 import type {
   DashboardRange,
   DashboardResponse,
@@ -116,8 +117,7 @@ export async function getDashboardStats(
           postTitle: c.posts!.title,
         }),
         time: c.comments.createdAt,
-        link: `/post/${c.posts!.slug}?highlightCommentId=${c.comments.id}&rootId=${c.comments.rootId ?? c.comments.id}#comment-${c.comments.id}`,
-        rootId: c.comments.rootId ?? c.comments.id,
+        link: publicCommentPath(c.posts!.slug, c.comments.id),
       })),
     ...recentPosts.map((p) => ({
       type: "post" as const,

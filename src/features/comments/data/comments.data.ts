@@ -87,6 +87,21 @@ export async function getRootCommentsByPostId(
   return comments;
 }
 
+export async function getVisibleRootById(
+  db: DB,
+  postId: number,
+  rootId: number,
+) {
+  const comments = await db
+    .select(commentListColumns)
+    .from(CommentsTable)
+    .leftJoin(user, eq(CommentsTable.userId, user.id))
+    .where(and(visibleRootCondition(db, postId), eq(CommentsTable.id, rootId)))
+    .limit(1);
+
+  return comments[0] ?? null;
+}
+
 export async function getPublishedRootCommentsCount(db: DB, postId: number) {
   const result = await db
     .select({ count: count() })

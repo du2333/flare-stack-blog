@@ -7,6 +7,8 @@ import {
   GetRepliesByRootIdInputSchema,
   GetRepliesResponseSchema,
   GetRootCommentsResponseSchema,
+  GetThreadByCommentIdInputSchema,
+  RootCommentWithReplyCountSchema,
 } from "@/features/comments/comments.schema";
 import { z } from "zod";
 import * as CommentService from "@/features/comments/comments.service";
@@ -69,6 +71,24 @@ const replies = optionalSessionProcedure
   .output(GetRepliesResponseSchema)
   .handler(({ context, input }) =>
     CommentService.getRepliesByRootId(context, input),
+  );
+
+const thread = optionalSessionProcedure
+  .errors({ COMMENT_NOT_FOUND: commentErrors.COMMENT_NOT_FOUND })
+  .route({
+    method: "GET",
+    path: "/posts/{postId}/comments/{id}/thread",
+    summary: "Load the visible comment thread containing a comment",
+    tags: ["Comments"],
+  })
+  .input(GetThreadByCommentIdInputSchema)
+  .output(RootCommentWithReplyCountSchema)
+  .handler(({ context, input, errors }) =>
+    unwrapResult(CommentService.getThreadByCommentId(context, input), {
+      COMMENT_NOT_FOUND: () => {
+        throw errors.COMMENT_NOT_FOUND();
+      },
+    }),
   );
 
 const create = authProcedure
@@ -148,6 +168,7 @@ const mine = authProcedure
 export default {
   roots,
   replies,
+  thread,
   create,
   remove,
   mine,

@@ -346,6 +346,18 @@
         }
       }
     },
+    "thread": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/posts/{postId}/comments/{id}/thread",
+          "summary": "Load the visible comment thread containing a comment",
+          "tags": ["Comments"]
+        }
+      }
+    },
     "create": {
       "~orpc": {
         "errorMap": {},

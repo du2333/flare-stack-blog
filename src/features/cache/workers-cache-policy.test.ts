@@ -15,11 +15,9 @@ describe("workersCacheKey", () => {
   });
 
   it("drops comment highlight query on a post page", () => {
-    expect(
-      workersCacheKey(
-        "https://blog.example/post/hello?highlightCommentId=9&rootId=1",
-      ),
-    ).toBe("/post/hello");
+    expect(workersCacheKey("https://blog.example/post/hello?comment=9")).toBe(
+      "/post/hello",
+    );
   });
 
   it("drops the search query", () => {

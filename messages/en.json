@@ -416,6 +416,8 @@
   "comments_turnstile_required": "Please complete the CAPTCHA first",
   "comments_load_more": "Load more comments",
   "comments_loading": "Loading...",
+  "comments_locating": "Locating comment",
+  "comments_locate_failed": "Comment not found",
   "comments_delete_title": "Delete Comment",
   "comments_delete_desc": "Are you sure you want to delete this comment? If it is your comment, it will be marked as 'This comment has been deleted'.",
   "comments_delete_confirm": "Delete",

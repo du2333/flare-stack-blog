@@ -428,6 +428,50 @@ describe("Comments Integration", () => {
         expect(published.items).toHaveLength(1);
         expect(published.items[0].content).toBe("Keep me");
       });
+
+      it("should load a visible thread by a reply id", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root",
+          }),
+        );
+        const reply = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Deep reply",
+            rootId: root.id,
+          }),
+        );
+
+        const thread = unwrap(
+          await CommentService.getThreadByCommentId(userContext, {
+            postId,
+            id: reply.id,
+          }),
+        );
+        expect(thread.id).toBe(root.id);
+        expect(thread.replyCount).toBe(1);
+        expect(thread.replies[0].id).toBe(reply.id);
+      });
+
+      it("should reject a hidden thread lookup", async () => {
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Hidden",
+          }),
+        );
+        unwrap(
+          await CommentService.deleteComment(userContext, { id: root.id }),
+        );
+
+        const result = await CommentService.getThreadByCommentId(userContext, {
+          postId,
+          id: root.id,
+        });
+        expect(result.error?.reason).toBe("COMMENT_NOT_FOUND");
+      });
     });
 
     describe("Comment Validation - Edge Cases", () => {

@@ -409,6 +409,8 @@
   "comments_turnstile_required": "请先完成人机验证",
   "comments_load_more": "加载更多评论",
   "comments_loading": "正在加载...",
+  "comments_locating": "正在定位评论",
+  "comments_locate_failed": "找不到这条评论",
   "comments_delete_title": "删除评论",
   "comments_delete_desc": "您确定要删除这条评论吗？如果是您本人的评论，删除后将显示为「该评论已删除」。",
   "comments_delete_confirm": "确认删除",

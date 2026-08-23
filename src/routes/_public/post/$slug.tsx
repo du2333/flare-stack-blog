@@ -13,8 +13,7 @@ import {
 } from "@/lib/seo";
 
 const searchSchema = z.object({
-  highlightCommentId: z.coerce.number().optional(),
-  rootId: z.number().optional(),
+  comment: z.coerce.number().optional(),
 });
 
 const { relatedPostsLimit } = theme.config.post;

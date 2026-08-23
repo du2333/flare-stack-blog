@@ -12,6 +12,22 @@ import { FuwariCommentItem } from "./comment-item";
 
 type RootCommentWithUser = RootCommentWithReplyCount;
 
+function shouldExpandThread(
+  root: RootCommentWithUser | undefined,
+  revealRootId: number | undefined,
+  revealCommentId: number | undefined,
+) {
+  if (
+    revealRootId == null ||
+    revealCommentId == null ||
+    revealRootId === revealCommentId
+  ) {
+    return false;
+  }
+  if (!root) return true;
+  return !root.replies.some((reply) => reply.id === revealCommentId);
+}
+
 interface CommentListProps {
   rootComments: Array<RootCommentWithUser>;
   postId: number;
@@ -41,17 +57,19 @@ export const FuwariCommentList = ({
 }: CommentListProps) => {
   const { data: session } = authClient.useSession();
   const [expandedRoots, setExpandedRoots] = useState<Set<number>>(() => {
-    if (revealRootId && revealCommentId && revealRootId !== revealCommentId) {
-      return new Set([revealRootId]);
+    const root = rootComments.find((item) => item.id === revealRootId);
+    if (shouldExpandThread(root, revealRootId, revealCommentId)) {
+      return new Set([revealRootId!]);
     }
     return new Set();
   });
 
   useEffect(() => {
-    if (revealRootId && revealCommentId && revealRootId !== revealCommentId) {
-      setExpandedRoots((prev) => new Set(prev).add(revealRootId));
+    const root = rootComments.find((item) => item.id === revealRootId);
+    if (shouldExpandThread(root, revealRootId, revealCommentId)) {
+      setExpandedRoots((prev) => new Set(prev).add(revealRootId!));
     }
-  }, [revealRootId, revealCommentId]);
+  }, [revealCommentId, revealRootId, rootComments]);
 
   const toggleExpand = (targetRootId: number) => {
     setExpandedRoots((prev) => {

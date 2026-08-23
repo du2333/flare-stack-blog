@@ -1,3 +1,4 @@
+import { publicCommentUrl } from "@/features/comments/comment-url";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import { generateUnsubscribeToken } from "@/features/email/email.utils";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
@@ -77,9 +78,7 @@ export async function sendReplyNotification(
   );
   const unsubscribeUrl = `https://${DOMAIN}/unsubscribe?userId=${replyToAuthor.id}&type=${unsubscribeType}&token=${token}`;
 
-  // Build URL with comment anchor and query params for direct navigation
-  const rootId = comment.rootId ?? comment.id;
-  const commentUrl = `https://${DOMAIN}/post/${post.slug}?highlightCommentId=${comment.id}&rootId=${rootId}#comment-${comment.id}`;
+  const commentUrl = publicCommentUrl(DOMAIN, post.slug, comment.id);
 
   try {
     await publishNotificationEvent(
