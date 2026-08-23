@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import type { AuthLayoutProps } from "@/features/theme/contract/layouts";
+import type { AuthLayoutProps } from "@/features/theme/themes/fuwari/layout-props";
 import { m } from "@/paraglide/messages";
 
 export function AuthLayout({ onBack, children }: AuthLayoutProps) {

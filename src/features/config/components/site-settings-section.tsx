@@ -4,23 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import { Field } from "@/features/config/components/site-settings-fields";
 import { SocialLinksEditor } from "@/features/config/components/social-links-editor";
-import { DefaultThemeSettings } from "@/features/config/components/themes/default-theme-settings";
 import { FuwariThemeSettings } from "@/features/config/components/themes/fuwari-theme-settings";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
-
-function ThemeSettingsContent() {
-  switch (__THEME_NAME__) {
-    case "default":
-      return <DefaultThemeSettings />;
-    case "fuwari":
-      return <FuwariThemeSettings />;
-    default: {
-      __THEME_NAME__ satisfies never;
-      return null;
-    }
-  }
-}
 
 function SectionShell({
   title,
@@ -156,11 +142,9 @@ export function SiteSettingsSection() {
 
       <SectionShell
         title={m.settings_site_section_theme_title()}
-        description={m.settings_site_section_theme_desc({
-          theme: __THEME_NAME__,
-        })}
+        description={m.settings_site_section_theme_desc()}
       >
-        <ThemeSettingsContent />
+        <FuwariThemeSettings />
       </SectionShell>
     </div>
   );

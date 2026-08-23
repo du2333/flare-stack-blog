@@ -1,6 +1,4 @@
-import type { ThemeConfig } from "@/features/theme/contract/config";
-
-export const config: ThemeConfig = {
+export const config = {
   home: {
     recentPostsLimit: 5,
     popularPostsLimit: 3,

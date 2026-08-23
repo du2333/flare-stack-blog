@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { FriendLinksPageProps } from "@/features/theme/contract/pages";
+import type { FriendLinksPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 import { FriendCard } from "./components/friend-card";
 

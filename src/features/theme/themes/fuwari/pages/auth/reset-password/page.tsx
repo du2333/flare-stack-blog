@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, Loader2 } from "lucide-react";
-import type { ResetPasswordPageProps } from "@/features/theme/contract/pages";
+import type { ResetPasswordPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 export function ResetPasswordPage({

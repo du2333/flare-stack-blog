@@ -1,6 +1,6 @@
 import { ArrowLeft, Keyboard, Loader2, Search } from "lucide-react";
 import { useEffect, useRef } from "react";
-import type { SearchPageProps } from "@/features/theme/contract/pages";
+import type { SearchPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 export function SearchPage({

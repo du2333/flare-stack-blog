@@ -1,6 +1,6 @@
 import { useLocation, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
-import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
+import type { PublicLayoutProps } from "@/features/theme/themes/fuwari/layout-props";
 import { BackToTop } from "../components/control/back-to-top";
 import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";

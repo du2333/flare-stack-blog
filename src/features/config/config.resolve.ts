@@ -45,8 +45,6 @@ function migrateSocial(social: unknown): SocialLink[] {
 export function resolveSiteConfig(
   config: SystemConfig | null | undefined,
 ): SiteConfig {
-  const configDefaultBackground = config?.site?.theme?.default?.background;
-
   return FullSiteConfigSchema.parse({
     title: config?.site?.title ?? blogConfig.title,
     author: config?.site?.author ?? blogConfig.author,
@@ -64,26 +62,6 @@ export function resolveSiteConfig(
       webApp512: config?.site?.icons?.webApp512 || blogConfig.icons.webApp512,
     },
     theme: {
-      default: {
-        navBarName:
-          config?.site?.theme?.default?.navBarName ??
-          blogConfig.theme.default.navBarName,
-        background: configDefaultBackground
-          ? {
-              homeImage: configDefaultBackground.homeImage ?? "",
-              globalImage: configDefaultBackground.globalImage ?? "",
-              light: {
-                opacity: configDefaultBackground.light?.opacity ?? 0.15,
-              },
-              dark: {
-                opacity: configDefaultBackground.dark?.opacity ?? 0.1,
-              },
-              backdropBlur: configDefaultBackground.backdropBlur ?? 8,
-              transitionDuration:
-                configDefaultBackground.transitionDuration ?? 600,
-            }
-          : undefined,
-      },
       fuwari: {
         homeBg:
           config?.site?.theme?.fuwari?.homeBg ?? blogConfig.theme.fuwari.homeBg,

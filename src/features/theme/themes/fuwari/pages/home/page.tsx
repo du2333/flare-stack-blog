@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useViewCounts } from "@/features/pageview/queries";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
-import type { HomePageProps } from "@/features/theme/contract/pages";
+import type { HomePageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 import { PostCard } from "../../components/post-card";
 

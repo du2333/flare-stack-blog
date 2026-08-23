@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { GithubIcon } from "@/components/common/brand-icon";
-import type { LoginPageProps } from "@/features/theme/contract/pages";
+import type { LoginPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 export function LoginPage({

@@ -3,7 +3,10 @@ import { Home, Menu, Search, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import type {
+  NavOption,
+  UserInfo,
+} from "@/features/theme/themes/fuwari/layout-props";
 import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "./language-switcher";
 

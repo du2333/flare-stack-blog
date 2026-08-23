@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { useEffect } from "react";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
     };
   },
   pendingComponent: () => <theme.PostPageSkeleton />,
-  pendingMs: __THEME_CONFIG__.pendingMs,
+  pendingMs: 1000,
 });
 
 function RouteComponent() {

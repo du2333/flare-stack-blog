@@ -44,7 +44,6 @@ Deeply integrated with D1, R2, KV, Workflows, and other Serverless services.
 - **Analytics** — Umami integration for visitor metrics and top posts.
 - **SEO Enhancements** — Canonical URLs, Schema.org structured data, RSS, Sitemap, and Robots support.
 
-- **Theme System** — Extensible theme templates, fully supporting replacement of all pages and layouts.
 - **Import / Export** — Supports Markdown import and export, preserving images and frontmatter.
 
 ## Tech Stack
@@ -105,7 +104,7 @@ src/
 │   ├── friend-links/# Friend links (applications, moderation)
 │   ├── import-export/# Markdown importing/exporting
 │   ├── version/     # Version update checker
-│   ├── theme/       # Theme system (Contracts, registry, theme implementations)
+│   ├── theme/       # Public presentation (Fuwari)
 ├── routes/
 │   ├── _public/     # Public pages (Home, post lists/details, search)
 │   ├── _auth/       # Login/Registration related pages
@@ -119,32 +118,11 @@ src/
 └── hooks/           # Custom React Hooks
 ```
 
-### Theme System
+### Public pages
 
-All user-facing pages and layouts in Flare Stack Blog are decoupled from business logic via a **Theme Contract**. You can completely replace the visual presentation layer of the blog without modifying any routing or data logic.
+Reader-facing pages use the Fuwari presentation. Title, description, social links, favicon, home background, avatar, and primary hue are edited from admin **Settings**. `src/blog.config.ts` holds seeded defaults and fallbacks.
 
-→ **[Theme Development Guide](./theme-guide.en.md)** — Learn how to build your first custom theme from scratch.
-
-#### Available Themes
-
-Site personalization such as title, description, social links, favicon, and default-theme background assets is now managed from the admin **Settings** page. `src/blog.config.ts` mainly serves as seeded defaults and runtime fallback values; see the [Theme Development Guide](./theme-guide.en.md) for how themes should consume runtime `siteConfig`.
-
-<table>
-  <tr>
-    <th>Theme</th>
-    <th>Preview</th>
-  </tr>
-  <tr>
-    <td><code>default</code></td>
-    <td><img src="./assets/home.png" alt="Default theme preview" /></td>
-  </tr>
-  <tr>
-    <td><code>fuwari</code></td>
-    <td><img src="./assets/fuwari.png" alt="Fuwari theme preview" /></td>
-  </tr>
-</table>
-
-> Contributions are highly welcome! Built a custom theme following the [Theme Development Guide](./theme-guide.en.md)? Feel free to submit a PR to list your theme here.
+<img src="./assets/fuwari.png" alt="Public site preview" />
 
 ### Request Flow
 
@@ -200,7 +178,6 @@ Please refer to the **[Flare Stack Blog Deployment Guide](./deployment-guide.en.
 
 | Variable                  | Scope      | Description                                                                                              |
 | :------------------------ | :--------- | :------------------------------------------------------------------------------------------------------- |
-| `THEME`                   | Build-time | Theme name, defaults to `default`. Refer to [Available Themes](#available-themes).                       |
 | `TURNSTILE_SECRET_KEY`    | Runtime    | Cloudflare Turnstile Secret Key for CAPTCHA.                                                             |
 | `VITE_TURNSTILE_SITE_KEY` | Build-time | Cloudflare Turnstile Site Key.                                                                           |
 | `GITHUB_TOKEN`            | Runtime    | GitHub API Token (for version updates checking to avoid rate limits).                                    |

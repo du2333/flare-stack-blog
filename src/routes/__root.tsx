@@ -7,7 +7,7 @@ import {
   useRouteContext,
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { lazy, Suspense, type ComponentType } from "react";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { siteConfigQuery } from "@/features/config/queries";

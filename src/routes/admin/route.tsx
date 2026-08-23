@@ -12,8 +12,7 @@ import Toaster from "@/components/ui/toaster";
 import { sessionQuery } from "@/features/auth/queries";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
-// 管理后台固定使用 default 主题样式，不随 THEME 变量切换
-import "@/features/theme/themes/default/styles/index.css";
+import "@/styles/admin-theme.css";
 import "@/styles/admin.css";
 
 export const Route = createFileRoute("/admin")({

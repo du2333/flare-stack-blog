@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { z } from "zod";
 import { useVerifyEmail } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";

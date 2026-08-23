@@ -1,5 +1,3 @@
-import type { ThemeName } from "@/features/theme/registry";
-import { themeNames } from "@/features/theme/registry";
 import type { Messages } from "@/lib/i18n";
 
 export const SITE_ASSET_MAX_FILE_SIZE = 8 * 1024 * 1024; // 2MB
@@ -15,14 +13,10 @@ export const SITE_ASSET_ACCEPTED_TYPES = [
   "image/vnd.microsoft.icon",
 ] as const;
 
-type ThemePrefix = `themes/${ThemeName}/`;
-const themePrefixes = themeNames.map(
-  (name) => `themes/${name}/` satisfies ThemePrefix,
-);
 const ALLOWED_ASSET_PREFIXES = [
   "favicon/",
   "social/",
-  ...themePrefixes,
+  "themes/fuwari/",
 ] as const;
 
 function isAllowedAssetPath(path: string): boolean {

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { emailConfiguredQuery, sessionQuery } from "@/features/auth/queries";
 import { useNavigateBack } from "@/hooks/use-navigate-back";
 import { CACHE_CONTROL } from "@/lib/constants";

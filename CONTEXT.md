@@ -53,12 +53,8 @@ CMS-wide operational settings such as email, notification, and site configuratio
 _Avoid_: Settings
 
 **Site Config**:
-Public-facing site identity and theme personalization used by the rendered blog.
+Public-facing site identity and presentation personalization used by the rendered blog.
 _Avoid_: System settings
-
-**Theme Contract**:
-The boundary that lets public blog pages change presentation without changing routing or content-management logic.
-_Avoid_: Skin, template, CSS theme
 
 **Import/Export Task**:
 An asynchronous workflow that moves **Posts** and related content into or out of the CMS while reporting progress.
@@ -113,7 +109,7 @@ _Avoid_: Webhook, callback URL
 - A **Media** item referenced by a **Post** cannot be deleted from the media library.
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
-- A **Theme Contract** consumes **Site Config** when rendering public blog pages.
+- Public blog pages consume **Site Config** when rendering.
 - An **Import/Export Task** can include **Posts** and related content.
 - An **Import/Export Task** can preserve **Post** content, frontmatter, and related **Media** depending on the import/export format.
 - A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.

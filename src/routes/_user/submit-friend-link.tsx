@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { useFriendLinkSubmitForm } from "@/features/friend-links/hooks/use-friend-link-submit-form";
 import { myFriendLinksQuery } from "@/features/friend-links/queries";
 import { authClient } from "@/lib/auth/auth.client";

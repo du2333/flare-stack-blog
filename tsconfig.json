@@ -9,8 +9,6 @@
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"],
-      "@theme": ["./src/features/theme/themes/default"],
-      "@theme/*": ["./src/features/theme/themes/default/*"],
       "tests/*": ["./tests/*"]
     },
     "types": ["vite/client", "@cloudflare/vitest-plugin/types"],

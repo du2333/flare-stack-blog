@@ -1,8 +1,6 @@
 import type { FileRoutesByTo } from "@/routeTree.gen";
 
-/**
- * 主题契约 — 布局 Props 接口
- */
+/** Layout props passed from public/auth/user routes. */
 
 export interface NavOption {
   label: string;

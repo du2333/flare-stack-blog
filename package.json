@@ -33,7 +33,6 @@
     "db:migrate": "CI=1 wrangler d1 migrations apply DB --remote",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "auth:generate-schema": "bunx @better-auth/cli generate --config auth-cli.ts --output src/lib/db/schema/auth.table.ts",
-    "create-theme": "bun scripts/create-theme.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it",
     "prepare": "husky"
   },

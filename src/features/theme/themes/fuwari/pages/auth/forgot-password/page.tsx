@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2, MailCheck } from "lucide-react";
-import type { ForgotPasswordPageProps } from "@/features/theme/contract/pages";
+import type { ForgotPasswordPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 export function ForgotPasswordPage({

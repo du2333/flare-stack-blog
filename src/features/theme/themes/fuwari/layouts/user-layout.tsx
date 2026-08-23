@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Home, LogIn } from "lucide-react";
-import type { UserLayoutProps } from "@/features/theme/contract/layouts";
+import type { UserLayoutProps } from "@/features/theme/themes/fuwari/layout-props";
 import { m } from "@/paraglide/messages";
 import { PublicLayout } from "./public-layout";
 

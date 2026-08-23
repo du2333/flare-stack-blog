@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { CodeSquare, Loader2, LogOut, Settings2, Shield } from "lucide-react";
-import type { ProfilePageProps } from "@/features/theme/contract/pages";
+import type { ProfilePageProps } from "@/features/theme/themes/fuwari/page-props";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

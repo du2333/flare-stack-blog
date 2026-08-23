@@ -122,7 +122,6 @@ In your GitHub repository, go to Settings -> Secrets and variables -> Actions, c
 These variables usually go into the `Variables` tab. They start with `VITE_` and are injected into the client code.
 | Variable Name | Description |
 | :--- | :--- |
-| `THEME` | Theme name. Defaults to `default` |
 | `VITE_UMAMI_WEBSITE_ID` | Umami Website ID for client-side tracking (Note: This is set as a Variable, not a Secret) |
 | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
 | `ROUTE` | Set to `1` to let the GitHub Actions workflow switch from `custom_domain` to `routes` mode automatically |
@@ -193,7 +192,7 @@ For the built-in GitHub Actions deployment, you do not need to commit a route-sp
    - **Deploy command**: `bun run deploy`
 3. Add Environment Variables:
    - In the build configuration, add `BUN_VERSION`: `1.3.5`.
-   - Add build-time variables as needed, for example `THEME`, `VITE_UMAMI_WEBSITE_ID`, or `VITE_TURNSTILE_SITE_KEY`.
+   - Add build-time variables as needed, for example `VITE_UMAMI_WEBSITE_ID` or `VITE_TURNSTILE_SITE_KEY`.
 
 #### 3. Configure Runtime Variables
 
@@ -240,15 +239,9 @@ Go to the Cloudflare Turnstile page and create a Widget. Record the Site Key and
 **Blog Identity**: After your first admin login, open the admin **Settings** page to edit the site title, description, author, social links, and theme assets.
 **Favicon**: Generate favicon assets with a tool such as [Real Favicon Generator](https://realfavicongenerator.net/), then upload the generated files from the admin **Settings** page instead of replacing files in `public/`.
 
-### 5. Theme Selection and Personalization
+### 5. Site personalization
 
-Most day-to-day site personalization now lives in the admin **Settings** page. Use environment variables only for build-time theme selection:
-
-| Variable Name | Description |
-| :--- | :--- |
-| `THEME` | Theme name. Set it in GitHub Variables or Cloudflare build variables |
-
-If you are customizing or extending a theme, see `src/blog.config.ts` for seeded defaults and the theme guide for the runtime fields that can be overridden from the admin panel.
+Day-to-day site personalization lives in the admin **Settings** page: title, description, social links, favicon, home background, avatar, and primary hue. `src/blog.config.ts` holds seeded defaults.
 
 ---
 
@@ -282,7 +275,7 @@ If the deployment succeeds without errors but you see errors (like 500 or a blan
 
 Since this is a full-stack project, there are two types of variables:
 
-- **Build-time variables**: Variables such as `THEME` and those starting with `VITE_`. These are baked into the build output. If they are wrong, you MUST trigger a new build/deployment for fixes to take effect.
+- **Build-time variables**: Variables starting with `VITE_`. These are baked into the build output. If they are wrong, you MUST trigger a new build/deployment for fixes to take effect.
 - **Runtime variables**: Read by the server code during execution. These are used in server-side logic dynamically.
   In Option 1 (GitHub Actions), you just put everything into your GitHub Secrets/Variables and the pipeline sorts them. In Option 2 (Cloudflare Dashboard), you put Build variables in Settings -> Build -> Variables, and Runtime variables in Settings -> Variables and Secrets.
 

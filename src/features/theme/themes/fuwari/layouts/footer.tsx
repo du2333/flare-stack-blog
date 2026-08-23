@@ -1,5 +1,5 @@
 import { ClientOnly, useRouteContext } from "@tanstack/react-router";
-import type { NavOption } from "@/features/theme/contract/layouts";
+import type { NavOption } from "@/features/theme/themes/fuwari/layout-props";
 import { m } from "@/paraglide/messages";
 
 interface FooterProps {

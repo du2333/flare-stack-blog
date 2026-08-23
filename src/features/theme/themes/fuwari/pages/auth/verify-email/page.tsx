@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import type { VerifyEmailPageProps } from "@/features/theme/contract/pages";
+import type { VerifyEmailPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 export function VerifyEmailPage({ status, error }: VerifyEmailPageProps) {

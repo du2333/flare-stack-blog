@@ -3,7 +3,7 @@ import {
   redirect,
   useRouteContext,
 } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { useRegisterForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";

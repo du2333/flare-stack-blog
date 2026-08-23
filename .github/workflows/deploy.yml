@@ -86,7 +86,6 @@ jobs:
           echo "VITE_UMAMI_WEBSITE_ID=${{ vars.VITE_UMAMI_WEBSITE_ID }}" >> $GITHUB_ENV
           echo "PAGEVIEW_SALT=${{ secrets.PAGEVIEW_SALT }}" >> $GITHUB_ENV
           echo "VITE_TURNSTILE_SITE_KEY=${{ vars.VITE_TURNSTILE_SITE_KEY }}" >> $GITHUB_ENV
-          echo "THEME=${{ vars.THEME }}" >> $GITHUB_ENV
           echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> $GITHUB_ENV
 
       - name: Inject Resource IDs

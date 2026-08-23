@@ -1,5 +1,4 @@
 import "./styles/index.css";
-import type { ThemeComponents } from "@/features/theme/contract/components";
 import { Toaster } from "./components/toaster";
 import { config } from "./config";
 import { AuthLayout } from "./layouts/auth-layout";
@@ -19,10 +18,6 @@ import { SubmitFriendLinkPage } from "./pages/submit-friend-link";
 import { ProfilePage } from "./pages/user/profile";
 import { getFuwariThemeStyle } from "./theme-style";
 
-/**
- * Theme: fuwari — implements the full ThemeComponents contract.
- * TypeScript will error at compile time if any required component is missing.
- */
 export default {
   config,
   getDocumentStyle: getFuwariThemeStyle,
@@ -46,4 +41,4 @@ export default {
   VerifyEmailPage,
   ProfilePage,
   Toaster,
-} satisfies ThemeComponents;
+};

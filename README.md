@@ -44,7 +44,6 @@
 - **用户认证** — GitHub OAuth 登录，权限控制
 - **数据统计** — Umami 集成，访问分析与热门文章
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
-- **主题系统** — 可扩展的主题模板，支持完整替换所有页面和布局
 - **导入导出** — 支持Markdown导入导出，保留图片以及Frontmatter
 
 ## 技术栈
@@ -105,7 +104,7 @@ src/
 │   ├── friend-links/# 友情链接（申请、审核）
 │   ├── import-export/# Markdown 导入导出
 │   ├── version/     # 版本更新检查
-│   ├── theme/       # 主题系统（契约、注册表、各主题实现）
+│   ├── theme/       # 公开页表现（Fuwari）
 ├── routes/
 │   ├── _public/     # 公开页面（首页、文章列表/详情、搜索）
 │   ├── _auth/       # 登录/注册相关页面
@@ -119,32 +118,11 @@ src/
 └── hooks/           # 自定义 Hooks
 ```
 
-### 主题系统
+### 公开页面
 
-Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约（Theme Contract）** 与业务逻辑解耦。你可以在不修改任何路由或数据逻辑的前提下，完整替换博客的视觉表现层。
+面向读者的页面使用 Fuwari 这一套表现。标题、描述、社交链接、favicon、首页背景、头像和主色相在后台“设置”里改。`src/blog.config.ts` 是默认值和兜底。
 
-→ **[主题开发教程](./docs/theme-guide.md)** — 了解如何从零创建你的第一个自定义主题。
-
-#### 可用主题
-
-站点个性化配置（标题、描述、社交链接、favicon、默认主题背景图等）现在统一在后台“设置”页面维护。`src/blog.config.ts` 主要作为默认值与兜底配置；主题开发时，建议结合 [主题开发教程](./docs/theme-guide.md) 查看实际可用的运行时 `siteConfig`。
-
-<table>
-  <tr>
-    <th>主题</th>
-    <th>预览</th>
-  </tr>
-  <tr>
-    <td><code>default</code>（默认）</td>
-    <td><img src="docs/assets/home.png" alt="Default theme preview" /></td>
-  </tr>
-  <tr>
-    <td><code>fuwari</code></td>
-    <td><img src="docs/assets/fuwari.png" alt="Fuwari theme preview" /></td>
-  </tr>
-</table>
-
-> 欢迎提交你的自定义主题！参考 [主题开发教程](./docs/theme-guide.md) 完成开发后，可以通过 PR 将你的主题添加到这里。
+<img src="docs/assets/fuwari.png" alt="Public site preview" />
 
 ### 请求流程
 
@@ -195,7 +173,6 @@ Flare Stack Blog 的所有面向用户的页面与布局均通过 **主题契约
 
 | 变量名                    | 用途   | 说明                                                                                                      |
 | :------------------------ | :----- | :-------------------------------------------------------------------------------------------------------- |
-| `THEME`                   | 构建时 | 主题名称，默认 `default`，详见 [可用主题](#可用主题)                                                      |
 | `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key                                                                  |
 | `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
 | `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |

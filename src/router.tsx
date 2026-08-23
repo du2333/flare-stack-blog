@@ -23,7 +23,7 @@ export function getRouter() {
     },
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: ErrorPage,
-    defaultViewTransition: __THEME_CONFIG__.viewTransition,
+    defaultViewTransition: false,
     scrollRestoration: true,
   });
 

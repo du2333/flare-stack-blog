@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
-import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import type {
+  NavOption,
+  UserInfo,
+} from "@/features/theme/themes/fuwari/layout-props";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { PostsPageProps } from "@/features/theme/contract/pages";
+import type { PostsPageProps } from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 import { ArchivePanel } from "../../components/archive/archive-panel";
 

@@ -1,0 +1,11 @@
+export type * from "./forgot-password";
+export type * from "./friend-links";
+export type * from "./home";
+export type * from "./login";
+export type * from "./post";
+export type * from "./posts";
+export type * from "./profile";
+export type * from "./register";
+export type * from "./reset-password";
+export type * from "./search";
+export type * from "./verify-email";

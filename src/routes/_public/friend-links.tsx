@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import theme from "@theme";
+import theme from "@/features/theme/themes/fuwari";
 import { approvedFriendLinksQuery } from "@/features/friend-links/queries";
 import { m } from "@/paraglide/messages";
 

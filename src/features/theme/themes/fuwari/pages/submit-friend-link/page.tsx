@@ -11,7 +11,7 @@ import { Turnstile } from "@/components/common/turnstile";
 import type {
   MyFriendLink,
   SubmitFriendLinkPageProps,
-} from "@/features/theme/contract/pages";
+} from "@/features/theme/themes/fuwari/page-props";
 import { m } from "@/paraglide/messages";
 
 function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
