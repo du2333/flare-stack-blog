@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { unsubscribeQuery } from "@/features/email/queries";
+import { CACHE_CONTROL } from "@/lib/constants";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 import { m } from "@/paraglide/messages";
 
@@ -17,6 +18,7 @@ const unsubscribeSearchSchema = z
 
 export const Route = createFileRoute("/_public/unsubscribe")({
   ssr: false,
+  headers: () => CACHE_CONTROL.private,
   validateSearch: unsubscribeSearchSchema,
   component: UnsubscribePage,
   head: () => ({

@@ -1,5 +1,11 @@
+import { WorkerEntrypoint } from "cloudflare:workers";
 import handler from "@tanstack/react-start/server-entry";
+import {
+  applyWorkersCachePolicy,
+  workersCacheKey,
+} from "@/features/cache/workers-cache-policy";
 import { handleQueueBatch } from "@/lib/queue/queue.handler";
+import { extractLocaleFromRequest } from "@/paraglide/runtime";
 import { paraglideMiddleware } from "@/paraglide/server";
 
 export { CommentModerationWorkflow } from "@/features/comments/workflows/comment-moderation";
@@ -19,16 +25,30 @@ declare module "@tanstack/react-start" {
   }
 }
 
-export default {
-  async fetch(request, env, ctx) {
-    return paraglideMiddleware(request, () =>
+type AppProps = {
+  locale: string;
+};
+
+export class App extends WorkerEntrypoint<Env, AppProps> {
+  async fetch(request: Request) {
+    const response = await paraglideMiddleware(request, () =>
       handler.fetch(request, {
         context: {
-          env,
-          executionCtx: ctx,
+          env: this.env,
+          executionCtx: this.ctx,
         },
       }),
     );
+    return applyWorkersCachePolicy(request, response);
+  }
+}
+
+export default {
+  async fetch(request, _env, ctx) {
+    const locale = extractLocaleFromRequest(request);
+    return ctx.exports.App({ props: { locale } }).fetch(request, {
+      cf: { cacheKey: workersCacheKey(request.url) },
+    });
   },
   async queue(batch, env, ctx) {
     await handleQueueBatch(batch, env, ctx);

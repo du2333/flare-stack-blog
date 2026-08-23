@@ -154,7 +154,7 @@ oRPC procedure 按权限分层：`publicProcedure` → `authProcedure` → `admi
 
 | 层  | 技术                  | 用途                                        |
 | --- | --------------------- | ------------------------------------------- |
-| 页面 | Cache-Control headers | 浏览器/将来的 Workers Cache |
+| 页面 | Workers Cache         | 公开 HTML 和站点文档，按 tag 失效 |
 | KV   | Public Cache          | 公开读模型，通过 `defineEntry` / `invalidate` 管理 |
 
 失效模式：

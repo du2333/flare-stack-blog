@@ -7,6 +7,8 @@ import type {
   PublicCacheReadContext,
   PublicCacheReason,
 } from "./types";
+import { purgeWorkersCache } from "./workers-cache";
+import { purgeOptionsFor } from "./workers-cache-policy";
 
 type InvalidateContext = BaseContext;
 
@@ -267,31 +269,39 @@ export function defineEntry<
 }
 
 export const invalidate = {
-  postPublished(context: InvalidateContext, params: { slug: string }) {
-    return run("post.published", context, params);
+  async postPublished(context: InvalidateContext, params: { slug: string }) {
+    await run("post.published", context, params);
+    await purgeWorkersCache(purgeOptionsFor("post.published", params));
   },
-  postDeleted(context: InvalidateContext, params: { slug: string }) {
-    return run("post.deleted", context, params);
+  async postDeleted(context: InvalidateContext, params: { slug: string }) {
+    await run("post.deleted", context, params);
+    await purgeWorkersCache(purgeOptionsFor("post.deleted", params));
   },
   async tagChanged(context: InvalidateContext, params?: { slugs?: string[] }) {
     const slugs = params?.slugs ?? [];
     if (slugs.length === 0) {
       await run("tag.changed", context, {});
-      return;
+    } else {
+      await Promise.all(
+        slugs.map((slug) => run("tag.changed", context, { slug })),
+      );
     }
-    await Promise.all(
-      slugs.map((slug) => run("tag.changed", context, { slug })),
+    await purgeWorkersCache(
+      purgeOptionsFor("tag.changed", slugs.length > 0 ? { slugs } : {}),
     );
   },
-  friendLinksChanged(context: InvalidateContext) {
-    return run("friend-links.changed", context, {});
+  async friendLinksChanged(context: InvalidateContext) {
+    await run("friend-links.changed", context, {});
+    await purgeWorkersCache(purgeOptionsFor("friend-links.changed", {}));
   },
-  siteConfigChanged(context: InvalidateContext) {
-    return run("site-config.changed", context, {});
+  async siteConfigChanged(context: InvalidateContext) {
+    await run("site-config.changed", context, {});
+    await purgeWorkersCache(purgeOptionsFor("site-config.changed", {}));
   },
   async all(context: InvalidateContext) {
     await Promise.all(
       registry.map((entry) => invalidateEntry(entry, context, {})),
     );
+    await purgeWorkersCache(purgeOptionsFor("all", {}));
   },
 };

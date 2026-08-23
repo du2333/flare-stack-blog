@@ -4,6 +4,7 @@ import { z } from "zod";
 import * as kvStore from "@/features/cache/kv-store";
 import { defineEntry, invalidate } from "@/features/cache/public-cache";
 import { serializeKey } from "@/features/cache/serialize";
+import { purgeWorkersCache } from "@/features/cache/workers-cache";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import * as ConfigService from "@/features/config/service/config.service";
@@ -290,6 +291,29 @@ describe("Infra Integration", () => {
 
       const after = await testList.get(context, {});
       expect(after).toEqual(["fresh"]);
+    });
+
+    it("should purge Workers Cache tags when a post is published", async () => {
+      const context = createTestContext();
+      await invalidate.postPublished(context, { slug: "hello" });
+      expect(purgeWorkersCache).toHaveBeenCalledWith({
+        tags: ["posts", "post:hello"],
+      });
+    });
+
+    it("should fail invalidate when Workers Cache purge is rejected", async () => {
+      vi.mocked(purgeWorkersCache).mockRejectedValueOnce(
+        new Error(
+          JSON.stringify({
+            message: "workers cache purge failed",
+            errors: [{ code: 1, message: "rate limited" }],
+          }),
+        ),
+      );
+      const context = createTestContext();
+      await expect(
+        invalidate.postPublished(context, { slug: "hello" }),
+      ).rejects.toThrow("workers cache purge failed");
     });
   });
 

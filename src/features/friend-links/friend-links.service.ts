@@ -73,10 +73,10 @@ export async function getApprovedFriendLinks(
   return approvedFriendLinks.get(context, {});
 }
 
-function invalidateCache(
+async function invalidateCache(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  context.executionCtx.waitUntil(invalidate.friendLinksChanged(context));
+  await invalidate.friendLinksChanged(context);
 }
 
 export async function createFriendLink(
@@ -93,7 +93,7 @@ export async function createFriendLink(
     status: "approved",
   });
 
-  invalidateCache(context);
+  await invalidateCache(context);
 
   return friendLink;
 }
@@ -133,7 +133,7 @@ export async function approveFriendLink(
     rejectionReason: null,
   });
 
-  invalidateCache(context);
+  await invalidateCache(context);
 
   // Notify submitter if contactEmail exists
   if (friendLink.contactEmail) {
@@ -169,7 +169,7 @@ export async function rejectFriendLink(
   });
 
   if (friendLink.status === "approved") {
-    invalidateCache(context);
+    await invalidateCache(context);
   }
 
   // Notify submitter if contactEmail exists
@@ -208,7 +208,7 @@ export async function updateFriendLink(
   );
 
   if (friendLink.status === "approved") {
-    invalidateCache(context);
+    await invalidateCache(context);
   }
 
   return ok(updated);
@@ -229,7 +229,7 @@ export async function deleteFriendLink(
   await FriendLinkRepo.deleteFriendLink(context.db, data.id);
 
   if (friendLink.status === "approved") {
-    invalidateCache(context);
+    await invalidateCache(context);
   }
 
   return ok({ success: true });

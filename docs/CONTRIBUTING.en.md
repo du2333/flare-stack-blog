@@ -183,7 +183,7 @@ Dual-layer caching architecture:
 
 | Layer | Technology            | Purpose                                           |
 | ----- | --------------------- | ------------------------------------------------- |
-| Pages | Cache-Control headers | Browser / future Workers Cache                    |
+| Pages | Workers Cache         | Public HTML and site documents, purged by tag     |
 | KV    | Public Cache          | Public read model via `defineEntry` / `invalidate` |
 
 Invalidation Patterns:

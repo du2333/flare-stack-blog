@@ -4,6 +4,13 @@
   "compatibility_date": "2026-02-17",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "main": "./src/server.ts",
+  "cache": {
+    "enabled": true,
+  },
+  "exports": {
+    "default": { "type": "worker", "cache": { "enabled": false } },
+    "App": { "type": "worker", "cache": { "enabled": true } },
+  },
   "observability": {
     "enabled": true
   },
