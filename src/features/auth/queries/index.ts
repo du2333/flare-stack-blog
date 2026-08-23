@@ -10,7 +10,7 @@ export const AUTH_KEYS = {
 export const sessionQuery = queryOptions({
   queryKey: AUTH_KEYS.session,
   queryFn: async () => {
-    if (typeof window === "undefined") {
+    if (import.meta.env.SSR) {
       const { getRequestSession } =
         await import("@/lib/auth/get-request-session");
       return getRequestSession();
