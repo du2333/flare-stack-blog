@@ -1,10 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { m } from "@/paraglide/messages";
+
+const COLLAPSED_MAX_HEIGHT_PX = 160;
 
 export function TagsSkeleton() {
   return (
@@ -26,11 +28,18 @@ export function Tags() {
   const [showToggle, setShowToggle] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (containerRef.current) {
-      // Check if content height exceeds max height (10rem / 160px)
-      setShowToggle(containerRef.current.scrollHeight > 160);
-    }
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      setShowToggle(el.scrollHeight > COLLAPSED_MAX_HEIGHT_PX);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [tags]);
 
   if (tags.length === 0) return null;
@@ -48,7 +57,7 @@ export function Tags() {
       <div
         ref={containerRef}
         className={`px-4 flex flex-wrap gap-2 overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-          isExpanded || !showToggle ? "max-h-250" : "max-h-40"
+          isExpanded ? "max-h-250" : "max-h-40"
         }`}
       >
         {tags.map((tag) => (
