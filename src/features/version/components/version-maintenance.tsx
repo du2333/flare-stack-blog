@@ -2,8 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { orpcClient } from "@/lib/orpc";
 import { updateCheckQuery } from "@/features/version/queries";
+import { recordUpdateNoticeShown } from "@/features/version/update-notice";
+import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 export function VersionMaintenance() {
@@ -14,6 +15,7 @@ export function VersionMaintenance() {
     onSuccess: (result) => {
       queryClient.setQueryData(updateCheckQuery.queryKey, result);
       if (result.hasUpdate) {
+        recordUpdateNoticeShown(localStorage, result.latestVersion);
         toast.info(m.settings_maintenance_version_toast_new(), {
           description: m.settings_maintenance_version_toast_new_desc({
             version: result.latestVersion,
@@ -27,7 +29,7 @@ export function VersionMaintenance() {
       }
       toast.success(m.settings_maintenance_version_toast_latest(), {
         description: m.settings_maintenance_version_toast_latest_desc({
-          version: __APP_VERSION__,
+          version: result.currentVersion,
         }),
       });
     },

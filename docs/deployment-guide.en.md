@@ -8,7 +8,7 @@ Before getting started, let's look at the differences between the two methods:
 
 | Option   | Platform                  | Free Quota      | Features                                                                                             |
 | :------- | :------------------------ | :-------------- | :--------------------------------------------------------------------------------------------------- |
-| Option 1 | GitHub Actions            | 2000 mins/month | High flexibility, manual deployment trigger, automatic CDN cache clearing, easy subsequent updates   |
+| Option 1 | GitHub Actions            | 2000 mins/month | High flexibility, manual deployment trigger, easy subsequent updates                                 |
 | Option 2 | Cloudflare Workers Builds | 3000 mins/month | Simple configuration, no token management required, but deployments can only be triggered via `push` |
 
 Both quotas are generous and more than enough. GitHub Actions is completely free for public repositories; the 2000 minutes limit applies to private repositories.
@@ -40,23 +40,13 @@ Create the following resources in your Cloudflare Dashboard and record their Nam
 
 ### 4. Get Core Credentials (IDs)
 
-You will need the following two IDs throughout the deployment process. You can find them on the right side of your domain's overview page (Account Home -> Your Domain):
-
-- **Account ID**
-- **Zone ID**
+You will need the **Account ID** throughout the deployment process. You can find it on the right side of your domain's overview page (Account Home -> Your Domain).
 
 ### 5. Create API Tokens
 
 We need to grant the deployment scripts permission to operate on your account. Click on the top-right Avatar -> My Profile -> API Tokens -> Create Token.
 
-#### A. CDN Purge Token (Required)
-
-- **Template**: Use the "Edit zone DNS" template.
-- **Permissions**: Zone -> Cache Purge -> Purge.
-- **Resources**: Include -> All zones (or specify your domain).
-- **Purpose**: Automatically force updates to the CDN cache after the app is deployed.
-
-#### B. Deployment Token (Only required for Option 1)
+#### Deployment Token (Only required for Option 1)
 
 - **Template**: Use the "Edit Cloudflare Workers" template.
 - **Permissions**: Add more -> D1 -> Edit.
@@ -105,24 +95,25 @@ In your GitHub repository, go to Settings -> Secrets and variables -> Actions, c
 | `ADMIN_EMAIL` | Admin email address |
 | `GH_CLIENT_ID` | GitHub OAuth Client ID. The workflow maps this to runtime `GITHUB_CLIENT_ID` |
 | `GH_CLIENT_SECRET` | GitHub OAuth Client Secret. The workflow maps this to runtime `GITHUB_CLIENT_SECRET` |
-| `CLOUDFLARE_ZONE_ID` | Your Cloudflare Zone ID |
-| `CLOUDFLARE_PURGE_API_TOKEN` | The CDN Purge Token from Phase 1, Step 5A |
 | `DOMAIN` | Your blog domain (e.g., `blog.example.com`) |
 
 **C. Optional Runtime Configuration (Secrets)**
 | Variable Name | Description |
 | :--- | :--- |
 | `GH_TOKEN` | Used to check for version updates. The workflow maps this to runtime `GITHUB_TOKEN`. To avoid GitHub API rate limits (since multiple Workers share IPs), configure a [Fine-grained Personal Access Token](https://github.com/settings/personal-access-tokens/new) with default permissions. |
-| `CDN_DOMAIN` | Optional standalone CDN domain such as `cdn.example.com`, preferred when purging cache |
-| `PAGEVIEW_SALT` | Salt for anonymizing pageview visitor hashes. Generate with `openssl rand -hex 16`. |
-| `UMAMI_SRC` | Umami client-side tracking proxy URL (e.g., `https://cloud.umami.is`) |
+| `UMAMI_SRC` | Umami tracking proxy URL and the default API base for self-hosted installations |
+| `UMAMI_WEBSITE_ID` | Umami Website ID used by Worker popularity sync |
+| `UMAMI_API_URL` | Optional API URL override. Cloud defaults to `https://api.umami.is/v1`; self-hosted defaults to `${UMAMI_SRC}/api` |
+| `UMAMI_API_KEY` | Umami Cloud API key. Do not set it with self-hosted credentials |
+| `UMAMI_USERNAME` | Self-hosted Umami username. Must be set with `UMAMI_PASSWORD` |
+| `UMAMI_PASSWORD` | Self-hosted Umami password |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key for CAPTCHA |
 
 **D. Optional Build-time Frontend Variables**
 These variables usually go into the `Variables` tab. They start with `VITE_` and are injected into the client code.
 | Variable Name | Description |
 | :--- | :--- |
-| `VITE_UMAMI_WEBSITE_ID` | Umami Website ID for client-side tracking (Note: This is set as a Variable, not a Secret) |
+| `VITE_UMAMI_WEBSITE_ID` | Umami Website ID for client-side tracking |
 | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
 | `ROUTE` | Set to `1` to let the GitHub Actions workflow switch from `custom_domain` to `routes` mode automatically |
 | `ZONE_NAME` | Optional override for route mode when the actual Cloudflare zone cannot be inferred from `DOMAIN` |
@@ -196,7 +187,7 @@ For the built-in GitHub Actions deployment, you do not need to commit a route-sp
 
 #### 3. Configure Runtime Variables
 
-After the initial deployment is complete, go to the Worker's Settings -> Variables and Secrets. Click "Add secret" and fill in runtime configurations like `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `ADMIN_EMAIL`, `CDN_DOMAIN`, and so on. Check the tables from Option 1 for details.
+After the initial deployment is complete, go to the Worker's Settings -> Variables and Secrets. Click "Add secret" and fill in runtime configurations like `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_ID`, `ADMIN_EMAIL`, and so on. Check the tables from Option 1 for details.
 
 **Important Note on Variable Names**: For Cloudflare Dashboard deployment, use the full runtime names. The `GH_*` names are only GitHub repository secret aliases used by the built-in Actions workflow:
 
@@ -204,7 +195,7 @@ After the initial deployment is complete, go to the Worker's Settings -> Variabl
 - `GH_CLIENT_SECRET` → `GITHUB_CLIENT_SECRET`
 - `GH_TOKEN` → `GITHUB_TOKEN`
 
-**CDN Caching**: Because Option 2 does not use GitHub Actions, it will not automatically purge the CDN cache. After every new deployment, please manually click "Clear CDN Cache" in your blog's admin "Settings" page. (If you haven't registered an admin account yet and pages are missing styles, clear the cache directly in the Cloudflare dashboard).
+After a deployment, public pages are refreshed by Workers Caching. Use the cache reset in the blog's admin Settings page if you need to purge everything.
 
 ---
 
@@ -281,14 +272,28 @@ Since this is a full-stack project, there are two types of variables:
 
 ### 3. How do I configure analytics?
 
-The system has built-in pageview statistics (using Cloudflare Queue + D1). The admin dashboard shows traffic overview, and the homepage displays popular posts. Optionally set `PAGEVIEW_SALT` to strengthen visitor hash anonymization.
+Umami is the only traffic analytics system. The tracking script runs only on public routes. A Cloudflare Cron Trigger runs daily at 00:15 UTC, reads the previous 30 complete UTC days from Umami, and stores a small popularity snapshot in KV. If the snapshot is missing or older than seven days, the homepage falls back to pinned and recent posts.
 
-Optionally, you can also use Umami for client-side tracking by setting `UMAMI_SRC` and `VITE_UMAMI_WEBSITE_ID`:
+For Umami Cloud, configure the tracking endpoint, website ID, and API key:
 
 ```bash
 UMAMI_SRC=https://cloud.umami.is
 VITE_UMAMI_WEBSITE_ID=your-website-id
+UMAMI_WEBSITE_ID=your-website-id
+UMAMI_API_KEY=your-cloud-api-key
 ```
+
+For self-hosted Umami, configure login credentials instead:
+
+```bash
+UMAMI_SRC=https://stats.example.com
+VITE_UMAMI_WEBSITE_ID=your-website-id
+UMAMI_WEBSITE_ID=your-website-id
+UMAMI_USERNAME=reporter
+UMAMI_PASSWORD=your-password
+```
+
+Set `UMAMI_API_URL` when the API is mounted at a custom path. You can also run the sync manually from **Admin Settings > Maintenance**.
 
 ### 4. I published a post, why isn't it showing on the frontend?
 

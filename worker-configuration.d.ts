@@ -12,12 +12,13 @@ interface __BaseEnv_Env {
 	ADMIN_EMAIL: string;
 	GITHUB_CLIENT_ID: string;
 	GITHUB_CLIENT_SECRET: string;
-	CLOUDFLARE_ZONE_ID: string;
-	CLOUDFLARE_PURGE_API_TOKEN: string;
 	DOMAIN: string;
-	VITE_UMAMI_WEBSITE_ID: string;
+	UMAMI_WEBSITE_ID: string;
 	UMAMI_SRC: string;
-	PAGEVIEW_SALT: string;
+	UMAMI_API_URL: string;
+	UMAMI_API_KEY: string;
+	UMAMI_USERNAME: string;
+	UMAMI_PASSWORD: string;
 	TURNSTILE_SECRET_KEY: string;
 	GITHUB_TOKEN: string;
 	RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
@@ -38,12 +39,13 @@ declare namespace Cloudflare {
 		ADMIN_EMAIL: string;
 		GITHUB_CLIENT_ID: string;
 		GITHUB_CLIENT_SECRET: string;
-		CLOUDFLARE_ZONE_ID: string;
-		CLOUDFLARE_PURGE_API_TOKEN: string;
 		DOMAIN: string;
-		VITE_UMAMI_WEBSITE_ID: string;
+		UMAMI_WEBSITE_ID: string;
 		UMAMI_SRC: string;
-		PAGEVIEW_SALT: string;
+		UMAMI_API_URL: string;
+		UMAMI_API_KEY: string;
+		UMAMI_USERNAME: string;
+		UMAMI_PASSWORD: string;
 		TURNSTILE_SECRET_KEY: string;
 		GITHUB_TOKEN: string;
 		RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
@@ -55,7 +57,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "ADMIN_EMAIL" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET" | "CLOUDFLARE_ZONE_ID" | "CLOUDFLARE_PURGE_API_TOKEN" | "DOMAIN" | "VITE_UMAMI_WEBSITE_ID" | "UMAMI_SRC" | "PAGEVIEW_SALT" | "TURNSTILE_SECRET_KEY" | "GITHUB_TOKEN">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "ADMIN_EMAIL" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET" | "DOMAIN" | "UMAMI_WEBSITE_ID" | "UMAMI_SRC" | "UMAMI_API_URL" | "UMAMI_API_KEY" | "UMAMI_USERNAME" | "UMAMI_PASSWORD" | "TURNSTILE_SECRET_KEY" | "GITHUB_TOKEN">> {}
 }
 
 // Begin runtime types

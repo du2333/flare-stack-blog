@@ -62,6 +62,9 @@
       }
     ]
   },
+  "triggers": {
+    "crons": ["15 0 * * *"]
+  },
   "migrations": [
     {
       "tag": "rate-limiter-v1",

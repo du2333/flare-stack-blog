@@ -99,6 +99,13 @@
       "when": 1776988800000,
       "tag": "0013_comment_body_plain_text",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1787532454317,
+      "tag": "0014_drop_page_views",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { CACHE_CONTROL } from "@/lib/constants";
+import { clientEnv } from "@/lib/env/client.env";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
@@ -19,13 +20,25 @@ export const Route = createFileRoute("/_public")({
   headers: () => {
     return CACHE_CONTROL.public;
   },
-  head: ({ loaderData }) => ({
-    links: (loaderData?.preloadImages ?? []).map((href) => ({
-      rel: "preload" as const,
-      as: "image",
-      href,
-    })),
-  }),
+  head: ({ loaderData }) => {
+    const env = clientEnv();
+    return {
+      links: (loaderData?.preloadImages ?? []).map((href) => ({
+        rel: "preload" as const,
+        as: "image",
+        href,
+      })),
+      scripts: env.VITE_UMAMI_WEBSITE_ID
+        ? [
+            {
+              src: "/stats.js",
+              defer: true,
+              "data-website-id": env.VITE_UMAMI_WEBSITE_ID,
+            },
+          ]
+        : [],
+    };
+  },
 });
 
 function PublicLayout() {

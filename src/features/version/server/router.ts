@@ -1,4 +1,4 @@
-import * as VersionService from "@/features/version/service/version.service";
+import { versionChecker } from "@/features/version/service/version.service";
 import { adminProcedure } from "@/lib/orpc/procedure";
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
 
@@ -15,7 +15,7 @@ const check = adminProcedure
     tags: ["Admin Version"],
   })
   .handler(({ context, errors }) =>
-    unwrapResult(VersionService.checkForUpdate(context), {
+    unwrapResult(versionChecker.check(context), {
       FETCH_FAILED: () => {
         throw errors.FETCH_FAILED();
       },
@@ -31,7 +31,7 @@ const forceCheck = adminProcedure
     tags: ["Admin Version"],
   })
   .handler(({ context, errors }) =>
-    unwrapResult(VersionService.checkForUpdate(context, true), {
+    unwrapResult(versionChecker.refresh(context), {
       FETCH_FAILED: () => {
         throw errors.FETCH_FAILED();
       },

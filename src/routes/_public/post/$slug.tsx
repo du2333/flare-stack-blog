@@ -1,9 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
-import { orpcClient } from "@/lib/orpc";
 import { PostPage } from "@/features/posts/components/post-page";
 import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
 import { RELATED_POSTS_LIMIT } from "@/features/posts/components/related-posts";
@@ -85,18 +83,6 @@ export const Route = createFileRoute("/_public/post/$slug")({
 function RouteComponent() {
   const { slug } = Route.useParams();
   const { data: post } = useSuspenseQuery(postBySlugQuery(slug));
-
-  useEffect(() => {
-    if (!post?.id) return;
-    try {
-      const key = `pv:${post.id}`;
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-    } catch {
-      // Safari private mode / storage disabled — record anyway
-    }
-    void orpcClient.pageviews.record({ postId: post.id });
-  }, [post?.id]);
 
   if (!post) throw notFound();
 

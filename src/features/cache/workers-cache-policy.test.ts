@@ -85,6 +85,12 @@ describe("purgeOptionsFor", () => {
     });
   });
 
+  it("purges post lists when popularity changes", () => {
+    expect(purgeOptionsFor("post-popularity.updated", {})).toEqual({
+      tags: ["posts"],
+    });
+  });
+
   it("purges encoded slug tags", () => {
     expect(purgeOptionsFor("post.deleted", { slug: "你好" })).toEqual({
       tags: ["posts", `post:${encodeURIComponent("你好")}`],

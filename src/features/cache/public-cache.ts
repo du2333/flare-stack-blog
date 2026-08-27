@@ -269,6 +269,10 @@ export function defineEntry<
 }
 
 export const invalidate = {
+  async postPopularityUpdated(context: InvalidateContext) {
+    await run("post-popularity.updated", context, {});
+    await purgeWorkersCache(purgeOptionsFor("post-popularity.updated", {}));
+  },
   async postPublished(context: InvalidateContext, params: { slug: string }) {
     await run("post.published", context, params);
     await purgeWorkersCache(purgeOptionsFor("post.published", params));

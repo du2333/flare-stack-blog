@@ -40,8 +40,8 @@ Deeply integrated with D1, R2, KV, Queues, and other Serverless services.
 - **Full-Text Search** — High-performance search powered by Orama.
 - **Media Library** — R2 object storage for image management and optimization.
 - **Authentication** — GitHub OAuth login with role-based access control.
-- **MCP Server** — Connect AI clients through OAuth to manage posts, comments, tags, friend links, media, and analytics.
-- **Analytics** — Umami integration for visitor metrics and top posts.
+- **MCP Server** — Connect AI clients through OAuth to manage posts, comments, tags, friend links, and media.
+- **Analytics** — Umami handles visitor analytics; a daily sync supplies homepage popular-post ordering.
 - **SEO Enhancements** — Canonical URLs, Schema.org structured data, RSS, Sitemap, and Robots support.
 
 ## Tech Stack
@@ -164,8 +164,6 @@ Please refer to the **[Flare Stack Blog Deployment Guide](./deployment-guide.en.
 | `ADMIN_EMAIL`                | Runtime | Administrator's email address                                        |
 | `GITHUB_CLIENT_ID`           | Runtime | GitHub OAuth Client ID                                               |
 | `GITHUB_CLIENT_SECRET`       | Runtime | GitHub OAuth Client Secret                                           |
-| `CLOUDFLARE_ZONE_ID`         | Runtime | Cloudflare Zone ID                                                   |
-| `CLOUDFLARE_PURGE_API_TOKEN` | Runtime | API token with Purge CDN permissions                                 |
 | `DOMAIN`                     | Runtime | Blog's domain (e.g., `blog.example.com`)                             |
 
 ### Optional
@@ -176,10 +174,13 @@ Please refer to the **[Flare Stack Blog Deployment Guide](./deployment-guide.en.
 | `VITE_TURNSTILE_SITE_KEY` | Build-time | Cloudflare Turnstile Site Key.                                                                           |
 | `GITHUB_TOKEN`            | Runtime    | GitHub API Token (for version updates checking to avoid rate limits).                                    |
 | `LOCALE`                  | Runtime    | Default language: `zh` or `en`. Default: `zh`. Used for emails, webhooks, and background task messaging. |
-| `CDN_DOMAIN`              | Runtime    | Standalone CDN domain (e.g., `cdn.example.com`), preferentially used during purge.                       |
-| `PAGEVIEW_SALT`           | Runtime    | Salt for anonymizing pageview visitor hashes. Generate with `openssl rand -hex 16`.                      |
-| `UMAMI_SRC`               | Runtime    | Umami client-side tracking proxy URL (e.g., `https://cloud.umami.is`).                                   |
-| `VITE_UMAMI_WEBSITE_ID`   | Build-time | Umami Website ID (client-side tracking).                                                                 |
+| `UMAMI_SRC`               | Runtime    | Umami tracking proxy URL and the default API base for self-hosted installations.                         |
+| `VITE_UMAMI_WEBSITE_ID`   | Build-time | Umami Website ID used by client-side tracking.                                                           |
+| `UMAMI_WEBSITE_ID`        | Runtime    | Umami Website ID used by Worker popularity sync. It should match the client ID.                           |
+| `UMAMI_API_URL`           | Runtime    | Optional API URL override. Cloud defaults to `https://api.umami.is/v1`; self-hosted defaults to `${UMAMI_SRC}/api`. |
+| `UMAMI_API_KEY`           | Runtime    | Umami Cloud API key. Do not set it with self-hosted credentials.                                        |
+| `UMAMI_USERNAME`          | Runtime    | Self-hosted Umami username. Must be set with `UMAMI_PASSWORD`.                                          |
+| `UMAMI_PASSWORD`          | Runtime    | Self-hosted Umami password.                                                                              |
 
 ---
 

@@ -3,12 +3,16 @@ import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { loadEnv } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
+import packageJson from "./package.json";
 
 export default defineConfig(async () => {
   const migrationsPath = path.join(__dirname, "migrations");
   const migrations = await readD1Migrations(migrationsPath);
 
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+    },
     plugins: [
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],

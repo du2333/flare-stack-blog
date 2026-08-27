@@ -91,14 +91,6 @@
       }
     }
   ],
-  "post_views_count": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "{formattedCountZh} 次浏览"
-      }
-    }
-  ],
   "format_date": [
     {
       "declarations": ["input date", "local formattedDateZh = date: datetime year=numeric month=long day=numeric"],
@@ -497,12 +489,6 @@
   "admin_overview_title": "概览",
   "admin_overview_heading": "仪表盘",
   "admin_overview_status": "系统运行正常",
-  "admin_overview_refresh_success": "数据已刷新",
-  "admin_overview_range_24h": "24小时",
-  "admin_overview_range_7d": "7天",
-  "admin_overview_range_30d": "30天",
-  "admin_overview_range_90d": "90天",
-  "admin_overview_refresh": "刷新数据",
   "admin_overview_stat_pending_comments": "待审核评论",
   "admin_overview_trend_action_required": "需要处理",
   "admin_overview_trend_all_good": "一切正常",
@@ -512,16 +498,8 @@
   "admin_overview_trend_storage_usage": "存储使用",
   "admin_overview_stat_drafts": "草稿箱",
   "admin_overview_trend_in_progress": "进行中",
-  "admin_overview_traffic_title": "流量概览",
-  "admin_overview_metric_visitors": "访客数",
-  "admin_overview_metric_page_views": "浏览量",
-  "admin_overview_no_traffic": "暂无流量数据",
-  "admin_overview_top_pages_title": "热门内容",
-  "admin_overview_no_top_pages": "暂无数据",
   "admin_overview_activity_title": "系统日志",
   "admin_overview_no_activity": "暂无活动",
-  "admin_overview_last_updated": "最后更新：{time}",
-  "admin_overview_chart_views": "浏览量",
   "admin_overview_activity_anonymous": "匿名用户",
   "admin_overview_activity_comment": "用户 {userName} 在《{postTitle}》下评论了",
   "admin_overview_activity_post_published": "文章《{postTitle}》已发布",
@@ -1290,6 +1268,20 @@
   "settings_maintenance_version_action_view": "查看",
   "settings_maintenance_version_toast_latest": "系统已是最新",
   "settings_maintenance_version_toast_latest_desc": "当前版本 v{version} 为最新版本。",
+  "settings_maintenance_popularity_title": "文章热度同步",
+  "settings_maintenance_popularity_desc": "从 Umami 同步最近 30 个完整 UTC 自然日的文章浏览量，用于首页热门排序。",
+  "settings_maintenance_popularity_status_label": "状态：",
+  "settings_maintenance_popularity_status_ready": "可用",
+  "settings_maintenance_popularity_status_expired": "已过期",
+  "settings_maintenance_popularity_status_unconfigured": "未配置",
+  "settings_maintenance_popularity_status_pending": "等待首次同步",
+  "settings_maintenance_popularity_posts_label": "热门文章数：",
+  "settings_maintenance_popularity_last_success_label": "上次成功：",
+  "settings_maintenance_popularity_window_label": "统计窗口：",
+  "settings_maintenance_popularity_sync_btn": "立即同步",
+  "settings_maintenance_popularity_syncing": "同步中...",
+  "settings_maintenance_popularity_toast_success": "文章热度同步完成",
+  "settings_maintenance_popularity_toast_error": "文章热度同步失败",
   "settings_maintenance_search_title": "重建搜索索引",
   "settings_maintenance_search_desc_short": "全量同步数据库记录至搜索映射表。",
   "settings_maintenance_search_desc_long": "全量同步数据库记录至搜索映射表。建议在手动修改数据库或批量录入后执行。",

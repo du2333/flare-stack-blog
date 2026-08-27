@@ -16,14 +16,15 @@ GITHUB_CLIENT_SECRET=your-github-client-secret
 
 DOMAIN=blog.example.com
 
-# --- Umami 客户端统计（可选，仅用于前端埋点脚本代理） ---
-# VITE_UMAMI_WEBSITE_ID=your-umami-website-id
+# --- Umami 统计与文章热度同步（可选） ---
+# UMAMI_WEBSITE_ID=your-umami-website-id
 # UMAMI_SRC=https://cloud.umami.is
-
-# --- 浏览量统计 ---
-# 用于生成匿名访客标识的固定 salt（SHA-256(IP + UA + salt)），任意非空字符串
-# 生成建议：openssl rand -hex 16
-PAGEVIEW_SALT=your-random-salt-string
+# UMAMI_API_URL=https://api.umami.is/v1
+# Umami Cloud 使用 API Key
+# UMAMI_API_KEY=your-umami-cloud-api-key
+# 自托管 Umami 使用用户名和密码，不要与 UMAMI_API_KEY 同时配置
+# UMAMI_USERNAME=your-umami-username
+# UMAMI_PASSWORD=your-umami-password
 
 # --- Turnstile 人机验证 ---
 # 测试key见：https://developers.cloudflare.com/turnstile/troubleshooting/testing/

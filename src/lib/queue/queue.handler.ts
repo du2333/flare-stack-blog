@@ -1,5 +1,4 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
-import { handlePageviewMessages } from "@/features/pageview/api/pageview.consumer";
 import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -8,11 +7,6 @@ export async function handleQueueBatch(
   env: Env,
   ctx: ExecutionContext,
 ) {
-  const pageviewBatch: {
-    data: { postId: number; visitorHash: string };
-    message: Message;
-  }[] = [];
-
   for (const message of batch.messages) {
     const parsed = queueMessageSchema.safeParse(message.body);
     if (!parsed.success) {
@@ -45,9 +39,6 @@ export async function handleQueueBatch(
         case "WEBHOOK":
           await handleWebhookMessage({ env }, event.data, message.id);
           break;
-        case "PAGEVIEW":
-          pageviewBatch.push({ data: event.data, message });
-          continue;
         default:
           event satisfies never;
           throw new Error("Unknown queue message type");
@@ -62,25 +53,6 @@ export async function handleQueueBatch(
         }),
       );
       message.retry();
-    }
-  }
-
-  if (pageviewBatch.length > 0) {
-    try {
-      await handlePageviewMessages(
-        { env },
-        pageviewBatch.map((item) => item.data),
-      );
-      for (const item of pageviewBatch) item.message.ack();
-    } catch (error) {
-      console.error(
-        JSON.stringify({
-          message: "pageview batch processing failed",
-          count: pageviewBatch.length,
-          error: error instanceof Error ? error.message : "unknown error",
-        }),
-      );
-      for (const item of pageviewBatch) item.message.retry();
     }
   }
 }

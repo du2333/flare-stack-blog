@@ -76,13 +76,25 @@ _Avoid_: Orama index
 The cached public read surface for published content and public lists.
 _Avoid_: KV cache, CDN cache, sync hash
 
-**Traffic Metrics**:
-Public-site viewing data used for dashboard traffic charts, view counts, top pages, and popular posts.
-_Avoid_: Analytics, Pageview
+**Post Popularity Snapshot**:
+A periodically refreshed ranking of **Published Posts** that received public views during the previous 30 complete calendar days. It orders eligible Posts by view count for public presentation and is not a general-purpose record of site traffic.
+_Avoid_: Traffic Metrics, Analytics, Pageview
 
 **Webhook Endpoint**:
 A configured external URL that receives selected admin **Notification Events**.
 _Avoid_: Webhook, callback URL
+
+**Application Release**:
+A stable Flare Stack Blog release published by the official upstream project and identified by a `vMAJOR.MINOR.PATCH` version. Fork releases, prereleases, and unreleased commits are not **Application Releases**.
+_Avoid_: Version, latest commit, prerelease
+
+**Running Application Release**:
+The **Application Release** version embedded in the deployed CMS build. It identifies deployed application code, not a **Post Revision**.
+_Avoid_: Current version, build commit, Post version
+
+**Available Update**:
+The state in which the newest **Application Release** has a greater semantic version than the **Running Application Release**.
+_Avoid_: New commit, fork update
 
 ## Relationships
 
@@ -117,8 +129,10 @@ _Avoid_: Webhook, callback URL
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
-- **Traffic Metrics** can rank **Published Posts** as popular posts.
+- A **Post Popularity Snapshot** ranks **Published Posts** for public presentation.
+- A **Post Popularity Snapshot** older than seven days does not rank **Published Posts**.
 - A **Webhook Endpoint** receives selected admin **Notification Events**.
+- An **Available Update** is determined only from official stable **Application Releases**.
 
 ## Example dialogue
 
@@ -130,4 +144,4 @@ _Avoid_: Webhook, callback URL
 - "Article" may appear in Chinese product discussion as "文章", but glossary, issues, and implementation planning should use **Post**.
 - "Category" is not a current Flare Stack Blog concept; use **Tag** for non-hierarchical grouping.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
-- "Version" in product talk about drafts and publishing means the **Public Content Snapshot** or a **Post Revision**, not a second **Post**.
+- "Version" is ambiguous. For Post content, use **Public Content Snapshot** or **Post Revision**. For deployed CMS code, use **Application Release** or **Running Application Release**.

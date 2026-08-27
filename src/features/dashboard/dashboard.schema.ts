@@ -14,49 +14,11 @@ export const ActivityLogItemSchema = z.object({
   rootId: z.number().optional(),
 });
 
-export const TrafficDataSchema = z.object({
-  date: z.number(),
-  views: z.number(),
-});
-
-const MetricSchema = z.object({
-  value: z.number(),
-  prev: z.number().optional(),
-});
-
 export const DashboardResponseSchema = z.object({
   stats: DashboardStatsSchema,
   activities: z.array(ActivityLogItemSchema),
-  trafficByRange: z
-    .record(
-      z.enum(["24h", "7d", "30d", "90d"]),
-      z.object({
-        traffic: z.array(TrafficDataSchema),
-        overview: z
-          .object({
-            visitors: MetricSchema,
-            pageViews: MetricSchema,
-          })
-          .optional(),
-        topPages: z
-          .array(
-            z.object({
-              slug: z.string(),
-              title: z.string(),
-              views: z.number(),
-            }),
-          )
-          .optional(),
-        lastUpdated: z.number(),
-      }),
-    )
-    .optional(),
 });
 
 export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
 export type ActivityLogItem = z.infer<typeof ActivityLogItemSchema>;
-export type TrafficData = z.infer<typeof TrafficDataSchema>;
 export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
-export type DashboardRange = "24h" | "7d" | "30d" | "90d";
-
-export const ALL_RANGES: Array<DashboardRange> = ["24h", "7d", "30d", "90d"];

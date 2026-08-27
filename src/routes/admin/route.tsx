@@ -10,6 +10,7 @@ import { SideBar } from "@/components/admin/side-bar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Toaster from "@/components/ui/toaster";
 import { sessionQuery } from "@/features/auth/queries";
+import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 import "@/styles/admin-theme.css";
@@ -47,6 +48,7 @@ export const Route = createFileRoute("/admin")({
 function AdminLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+  useVersionCheck();
 
   return (
     <div className="h-screen overflow-hidden bg-background text-foreground flex relative font-sans admin-layout">

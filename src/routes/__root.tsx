@@ -11,7 +11,6 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
-import { clientEnv } from "@/lib/env/client.env";
 import { getLocale } from "@/paraglide/runtime";
 import appCss from "@/styles.css?url";
 
@@ -43,8 +42,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     return { siteConfig: context.siteConfig };
   },
   head: ({ loaderData }) => {
-    const env = clientEnv();
-
     return {
       meta: [
         {
@@ -111,15 +108,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           href: "/feed.json",
         },
       ],
-      scripts: env.VITE_UMAMI_WEBSITE_ID
-        ? [
-            {
-              src: "/stats.js",
-              defer: true,
-              "data-website-id": env.VITE_UMAMI_WEBSITE_ID,
-            },
-          ]
-        : [],
     };
   },
   shellComponent: RootDocument,

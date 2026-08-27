@@ -1,4 +1,5 @@
 import { CacheMaintenance } from "@/features/cache/components/cache-maintenance";
+import { PostPopularityMaintenance } from "@/features/post-popularity/components/post-popularity-maintenance";
 import { SearchMaintenance } from "@/features/search/components/search-maintenance";
 import { VersionMaintenance } from "@/features/version/components/version-maintenance";
 
@@ -8,6 +9,8 @@ export function MaintenanceSection() {
       <section className="border border-border/30 bg-background/50 p-8">
         <VersionMaintenance />
       </section>
+
+      <PostPopularityMaintenance />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
         <SearchMaintenance />

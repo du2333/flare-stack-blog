@@ -4,6 +4,8 @@ import {
   applyWorkersCachePolicy,
   workersCacheKey,
 } from "@/features/cache/workers-cache-policy";
+import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
+import { getDb } from "@/lib/db";
 import { handleQueueBatch } from "@/lib/queue/queue.handler";
 import { extractLocaleFromRequest } from "@/paraglide/runtime";
 import { paraglideMiddleware } from "@/paraglide/server";
@@ -48,5 +50,9 @@ export default {
   },
   async queue(batch, env, ctx) {
     await handleQueueBatch(batch, env, ctx);
+  },
+  async scheduled(_controller, env) {
+    const result = await postPopularityService.sync({ env, db: getDb(env) });
+    if (result.error) throw new Error("Post popularity sync failed");
   },
 } satisfies ExportedHandler<Env>;

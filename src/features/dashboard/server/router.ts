@@ -1,6 +1,4 @@
-import * as kvStore from "@/features/cache/kv-store";
 import * as DashboardService from "@/features/dashboard/service/dashboard.service";
-import { PAGEVIEW_CACHE_KEYS } from "@/features/pageview/pageview.schema";
 import { adminProcedure } from "@/lib/orpc/procedure";
 
 const stats = adminProcedure
@@ -12,19 +10,6 @@ const stats = adminProcedure
   })
   .handler(({ context }) => DashboardService.getDashboardStats(context));
 
-const refresh = adminProcedure
-  .route({
-    method: "POST",
-    path: "/admin/dashboard/refresh",
-    summary: "Refresh dashboard traffic cache",
-    tags: ["Admin Dashboard"],
-  })
-  .handler(async ({ context }) => {
-    await kvStore.remove(context, PAGEVIEW_CACHE_KEYS.traffic);
-    return DashboardService.getDashboardStats(context);
-  });
-
 export default {
   stats,
-  refresh,
 };

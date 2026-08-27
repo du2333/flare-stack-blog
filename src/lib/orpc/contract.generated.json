@@ -781,28 +781,28 @@
       }
     }
   },
-  "pageviews": {
-    "record": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "POST",
-          "path": "/pageviews",
-          "summary": "Record a post page view",
-          "tags": ["Pageviews"]
-        }
-      }
-    },
-    "counts": {
+  "postPopularity": {
+    "status": {
       "~orpc": {
         "errorMap": {},
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/pageviews",
-          "summary": "Get view counts by slug",
-          "tags": ["Pageviews"]
+          "path": "/admin/post-popularity",
+          "summary": "Get post popularity sync status",
+          "tags": ["Admin Post Popularity"]
+        }
+      }
+    },
+    "sync": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/post-popularity/sync",
+          "summary": "Sync post popularity from Umami",
+          "tags": ["Admin Post Popularity"]
         }
       }
     }
@@ -816,18 +816,6 @@
           "method": "GET",
           "path": "/admin/dashboard",
           "summary": "Get dashboard stats",
-          "tags": ["Admin Dashboard"]
-        }
-      }
-    },
-    "refresh": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "POST",
-          "path": "/admin/dashboard/refresh",
-          "summary": "Refresh dashboard traffic cache",
           "tags": ["Admin Dashboard"]
         }
       }

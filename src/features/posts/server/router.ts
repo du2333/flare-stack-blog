@@ -26,7 +26,7 @@ import {
 } from "@/features/posts/schema/post-revisions.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
-import * as PageviewService from "@/features/pageview/service/pageview.service";
+import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import { adminProcedure, publicProcedure } from "@/lib/orpc/procedure";
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
 
@@ -100,7 +100,7 @@ const popular = publicProcedure
   .input(z.object({ limit: z.number().int().min(1).max(20).optional() }))
   .output(z.array(PostItemSchema))
   .handler(({ context, input }) =>
-    PageviewService.getPopularPosts(context, input.limit),
+    postPopularityService.getPopular(context, input.limit),
   );
 
 const adminList = adminProcedure

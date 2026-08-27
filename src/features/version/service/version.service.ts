@@ -1,120 +1,151 @@
 import * as kvStore from "@/features/cache/kv-store";
-import type { UpdateCheckResult } from "@/features/version/version.schema";
+import type {
+  ApplicationRelease,
+  UpdateCheckResult,
+} from "@/features/version/version.schema";
 import {
+  ApplicationReleaseSchema,
   GitHubReleaseSchema,
+  RunningApplicationReleaseVersionSchema,
   UpdateCheckResultSchema,
   VERSION_CACHE_KEYS,
 } from "@/features/version/version.schema";
+import { ms } from "@/lib/duration";
 import { serverEnv } from "@/lib/env/server.env";
 import type { Result } from "@/lib/errors";
 import { err, ok } from "@/lib/errors";
 
 const GITHUB_REPO = "du2333/flare-stack-blog";
+const RELEASE_CACHE_TTL = "6h";
+const GITHUB_REQUEST_TIMEOUT = ms("5s");
+
+type VersionContext = BaseContext & { executionCtx: ExecutionContext };
+type FetchLatestRelease = (
+  context: VersionContext,
+) => Promise<ApplicationRelease>;
 
 type CheckForUpdateResult = Result<
   UpdateCheckResult,
   { reason: "FETCH_FAILED" }
 >;
 
-/**
- * 检查版本更新
- * @param context
- * @param force 是否强制跳过缓存直接检查
- */
-export async function checkForUpdate(
-  context: BaseContext & { executionCtx: ExecutionContext },
-  force = false,
-): Promise<CheckForUpdateResult> {
-  const fetcher = async () => {
-    const headers: Record<string, string> = {
-      "User-Agent": "flare-stack-blog",
-      Accept: "application/vnd.github.v3+json",
-    };
+export type VersionChecker = {
+  check: (context: VersionContext) => Promise<CheckForUpdateResult>;
+  refresh: (context: VersionContext) => Promise<CheckForUpdateResult>;
+};
 
-    const githubToken = serverEnv(context.env).GITHUB_TOKEN;
-    if (githubToken) {
-      headers.Authorization = `Bearer ${githubToken}`;
-    }
+export function createVersionChecker({
+  getCurrentVersion,
+  fetchLatestRelease,
+}: {
+  getCurrentVersion: () => string;
+  fetchLatestRelease: FetchLatestRelease;
+}): VersionChecker {
+  async function resolve(
+    context: VersionContext,
+    refresh: boolean,
+  ): Promise<CheckForUpdateResult> {
+    try {
+      const runningVersion =
+        RunningApplicationReleaseVersionSchema.parse(getCurrentVersion());
+      const fetcher = async () =>
+        ApplicationReleaseSchema.parse(await fetchLatestRelease(context));
+      let latestRelease: ApplicationRelease;
 
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
-      { headers },
-    );
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new Error(
-        `GitHub API error: ${response.status} ${response.statusText}${body ? ` - ${body.slice(0, 500)}` : ""}`,
-      );
-    }
-
-    const json = await response.json();
-    const data = GitHubReleaseSchema.parse(json);
-    const latestVersion = data.tag_name; // 比如 "v0.6.0"
-    const currentVersion = __APP_VERSION__;
-
-    return {
-      latestVersion,
-      currentVersion,
-      hasUpdate: isNewer(latestVersion, currentVersion),
-      releaseUrl: data.html_url,
-      publishedAt: data.published_at,
-      checkedAt: Date.now(),
-    };
-  };
-
-  try {
-    let data: UpdateCheckResult;
-
-    if (force) {
-      data = await fetcher();
-      context.executionCtx.waitUntil(
-        kvStore.put(
+      if (refresh) {
+        latestRelease = await fetcher();
+        context.executionCtx.waitUntil(
+          kvStore.put(
+            context,
+            VERSION_CACHE_KEYS.latestRelease,
+            JSON.stringify(latestRelease),
+            { ttl: RELEASE_CACHE_TTL },
+          ),
+        );
+      } else {
+        latestRelease = await kvStore.remember(
           context,
-          VERSION_CACHE_KEYS.updateCheck,
-          JSON.stringify(data),
-          { ttl: "5m" },
-        ),
-      );
-    } else {
-      data = await kvStore.remember(
-        context,
-        VERSION_CACHE_KEYS.updateCheck,
-        UpdateCheckResultSchema,
-        fetcher,
-        { ttl: "5m" },
-      );
-    }
+          VERSION_CACHE_KEYS.latestRelease,
+          ApplicationReleaseSchema,
+          fetcher,
+          { ttl: RELEASE_CACHE_TTL },
+        );
+      }
 
-    return ok(data);
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        message: "version check failed",
-        error: error instanceof Error ? error.message : String(error),
-      }),
-    );
-    return err({ reason: "FETCH_FAILED" });
+      return ok(
+        UpdateCheckResultSchema.parse({
+          latestVersion: latestRelease.version,
+          currentVersion: runningVersion,
+          hasUpdate: isNewer(latestRelease.version, runningVersion),
+          releaseUrl: latestRelease.releaseUrl,
+        }),
+      );
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          message: "version check failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      return err({ reason: "FETCH_FAILED" });
+    }
   }
+
+  return {
+    check: (context) => resolve(context, false),
+    refresh: (context) => resolve(context, true),
+  };
+}
+
+async function fetchLatestReleaseFromGitHub(
+  context: VersionContext,
+): Promise<ApplicationRelease> {
+  const headers: Record<string, string> = {
+    "User-Agent": "flare-stack-blog",
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+  const githubToken = serverEnv(context.env).GITHUB_TOKEN;
+  if (githubToken) {
+    headers.Authorization = `Bearer ${githubToken}`;
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+    {
+      headers,
+      signal: AbortSignal.timeout(GITHUB_REQUEST_TIMEOUT),
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(
+      `GitHub API error: ${response.status} ${response.statusText}${body ? ` - ${body.slice(0, 500)}` : ""}`,
+    );
+  }
+
+  const data = GitHubReleaseSchema.parse(await response.json());
+  return {
+    version: data.tag_name,
+    releaseUrl: data.html_url,
+  };
 }
 
 function isNewer(latest: string, current: string) {
-  const l = latest
-    .replace(/^v/, "")
-    .split(".")
-    .map((v) => parseInt(v, 10) || 0);
-  const c = current
-    .replace(/^v/, "")
-    .split(".")
-    .map((v) => parseInt(v, 10) || 0);
+  const latestParts = latest.slice(1).split(".").map(Number);
+  const currentParts = current.split(".").map(Number);
 
-  // 长度补齐
-  const length = Math.max(l.length, c.length);
-  for (let i = 0; i < length; i++) {
-    const lPart = l[i] || 0;
-    const cPart = c[i] || 0;
+  for (let i = 0; i < 3; i++) {
+    const lPart = latestParts[i] ?? 0;
+    const cPart = currentParts[i] ?? 0;
     if (lPart > cPart) return true;
     if (lPart < cPart) return false;
   }
   return false;
 }
+
+export const versionChecker = createVersionChecker({
+  getCurrentVersion: () => __APP_VERSION__,
+  fetchLatestRelease: fetchLatestReleaseFromGitHub,
+});

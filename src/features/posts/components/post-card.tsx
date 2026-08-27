@@ -1,14 +1,5 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import {
-  Calendar,
-  ChevronRight,
-  Clock,
-  Eye,
-  Flame,
-  Pin,
-  Tag,
-} from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar, ChevronRight, Clock, Flame, Pin, Tag } from "lucide-react";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -17,17 +8,9 @@ interface PostCardProps {
   post: PostItem;
   pinned?: boolean;
   popular?: boolean;
-  views?: number;
-  isLoadingViews?: boolean;
 }
 
-export function PostCard({
-  post,
-  pinned,
-  popular,
-  views,
-  isLoadingViews,
-}: PostCardProps) {
+export function PostCard({ post, pinned, popular }: PostCardProps) {
   const tagNames = (post.tags ?? []).map((t) => t.name);
 
   return (
@@ -132,25 +115,12 @@ export function PostCard({
           {post.summary ?? ""}
         </div>
 
-        {/* Read time and Views */}
+        {/* Read time */}
         <div className="text-sm fuwari-text-50 flex items-center gap-4 [&_svg]:shrink-0">
           <span className="inline-flex items-center gap-1.5">
             <Clock size={14} />
             {m.read_time({ count: post.readTimeInMinutes })}
           </span>
-          {isLoadingViews ? (
-            <span className="inline-flex items-center gap-1.5">
-              <Eye size={15} />
-              <Skeleton className="h-3.5 w-8 rounded bg-black/10 dark:bg-white/10" />
-            </span>
-          ) : (
-            views !== undefined && (
-              <span className="inline-flex items-center gap-1.5">
-                <Eye size={15} />
-                {views.toLocaleString()}
-              </span>
-            )
-          )}
         </div>
       </div>
 

@@ -25,6 +25,32 @@ export const pinnedPosts = defineEntry({
   load: (context) => PostRepo.findPinnedPosts(context.db),
 });
 
+export const popularPosts = defineEntry({
+  name: "posts.popular",
+  namespace: "posts:popular",
+  key: ({
+    limit,
+    snapshotVersion,
+  }: {
+    limit: number;
+    snapshotVersion: number;
+    postIds: number[];
+  }) => ["posts", "popular", snapshotVersion, limit],
+  schema: PostItemSchema.array(),
+  ttl: "7d",
+  invalidatedBy: [...POST_PUBLIC_REASONS, "post-popularity.updated"],
+  load: async (context, { limit, postIds }) => {
+    const posts = await PostRepo.findPostsByIds(context.db, postIds);
+    const postById = new Map(posts.map((post) => [post.id, post]));
+    return postIds
+      .flatMap((postId) => {
+        const post = postById.get(postId);
+        return post ? [post] : [];
+      })
+      .slice(0, limit);
+  },
+});
+
 export const postsList = defineEntry({
   name: "posts.list",
   namespace: "posts:list",

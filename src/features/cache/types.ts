@@ -5,6 +5,7 @@ export type CacheKey =
 export type PublicCacheReason =
   | "post.published"
   | "post.deleted"
+  | "post-popularity.updated"
   | "tag.changed"
   | "friend-links.changed"
   | "site-config.changed";

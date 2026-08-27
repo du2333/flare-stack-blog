@@ -94,15 +94,6 @@
       }
     }
   ],
-  "post_views_count": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "{formattedCountEn} view",
-        "count=*": "{formattedCountEn} views"
-      }
-    }
-  ],
   "format_date": [
     {
       "declarations": ["input date", "local formattedDateEn = date: datetime year=numeric month=2-digit day=2-digit"],
@@ -504,12 +495,6 @@
   "admin_overview_title": "Overview",
   "admin_overview_heading": "Dashboard",
   "admin_overview_status": "System Operational",
-  "admin_overview_refresh_success": "Data refreshed",
-  "admin_overview_range_24h": "24h",
-  "admin_overview_range_7d": "7d",
-  "admin_overview_range_30d": "30d",
-  "admin_overview_range_90d": "90d",
-  "admin_overview_refresh": "Refresh Data",
   "admin_overview_stat_pending_comments": "Pending",
   "admin_overview_trend_action_required": "Action needed",
   "admin_overview_trend_all_good": "All good",
@@ -519,16 +504,8 @@
   "admin_overview_trend_storage_usage": "Used",
   "admin_overview_stat_drafts": "Drafts",
   "admin_overview_trend_in_progress": "In progress",
-  "admin_overview_traffic_title": "Traffic",
-  "admin_overview_metric_visitors": "Visitors",
-  "admin_overview_metric_page_views": "Views",
-  "admin_overview_no_traffic": "No traffic data",
-  "admin_overview_top_pages_title": "Top Content",
-  "admin_overview_no_top_pages": "No data",
   "admin_overview_activity_title": "Activity Log",
   "admin_overview_no_activity": "No recent activity",
-  "admin_overview_last_updated": "Last updated: {time}",
-  "admin_overview_chart_views": "Views",
   "admin_overview_activity_anonymous": "Anonymous",
   "admin_overview_activity_comment": "{userName} commented on \"{postTitle}\"",
   "admin_overview_activity_post_published": "\"{postTitle}\" published",
@@ -1298,6 +1275,20 @@
   "settings_maintenance_version_action_view": "View",
   "settings_maintenance_version_toast_latest": "System is Up-to-Date",
   "settings_maintenance_version_toast_latest_desc": "Current version v{version} is the latest.",
+  "settings_maintenance_popularity_title": "Post Popularity Sync",
+  "settings_maintenance_popularity_desc": "Sync post pageviews for the previous 30 complete UTC days from Umami for homepage popular-post ordering.",
+  "settings_maintenance_popularity_status_label": "Status:",
+  "settings_maintenance_popularity_status_ready": "Ready",
+  "settings_maintenance_popularity_status_expired": "Expired",
+  "settings_maintenance_popularity_status_unconfigured": "Not configured",
+  "settings_maintenance_popularity_status_pending": "Waiting for first sync",
+  "settings_maintenance_popularity_posts_label": "Popular posts:",
+  "settings_maintenance_popularity_last_success_label": "Last success:",
+  "settings_maintenance_popularity_window_label": "Window:",
+  "settings_maintenance_popularity_sync_btn": "Sync now",
+  "settings_maintenance_popularity_syncing": "Syncing...",
+  "settings_maintenance_popularity_toast_success": "Post popularity sync completed",
+  "settings_maintenance_popularity_toast_error": "Post popularity sync failed",
   "settings_maintenance_search_title": "Rebuild Search Index",
   "settings_maintenance_search_desc_short": "Full sync of database records to the search mapping table.",
   "settings_maintenance_search_desc_long": "Full sync of database records to the search mapping table. Recommended after manual database modifications or batch entries.",

@@ -42,7 +42,7 @@
 - **全文搜索** — 基于 Orama 的高性能搜索
 - **媒体库** — R2 对象存储，图片管理与优化
 - **用户认证** — GitHub OAuth 登录，权限控制
-- **数据统计** — Umami 集成，访问分析与热门文章
+- **数据统计** — Umami 负责访问分析，系统每日同步文章热度用于首页排序
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
 
 ## 技术栈
@@ -174,9 +174,13 @@ src/
 | `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
 | `ROUTE`                   | CI/CD  | 设为 `1` 时，GitHub Actions 部署自动改用 Cloudflare `routes` 模式                                        |
 | `ZONE_NAME`               | CI/CD  | 可选。仅在 `ROUTE=1` 且 Zone 不是从 `DOMAIN` 自动推导结果时填写                                           |
-| `PAGEVIEW_SALT`           | 运行时 | 浏览量统计的访客匿名化 salt，运行 `openssl rand -hex 16` 生成                                             |
-| `UMAMI_SRC`               | 运行时 | Umami 客户端埋点代理 URL（如 `https://cloud.umami.is`）                                                   |
-| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | Umami Website ID（客户端埋点）                                                                            |
+| `UMAMI_SRC`               | 运行时 | Umami 埋点代理地址；自托管模式下也作为默认 API 基础地址                                                   |
+| `VITE_UMAMI_WEBSITE_ID`   | 构建时 | 客户端埋点使用的 Umami Website ID                                                                         |
+| `UMAMI_WEBSITE_ID`        | 运行时 | Worker 热度同步使用的 Umami Website ID，应与客户端 ID 一致                                                |
+| `UMAMI_API_URL`           | 运行时 | 可选 API 地址覆盖；Cloud 默认 `https://api.umami.is/v1`，自托管默认 `${UMAMI_SRC}/api`                    |
+| `UMAMI_API_KEY`           | 运行时 | Umami Cloud API Key，与自托管用户名/密码二选一                                                            |
+| `UMAMI_USERNAME`          | 运行时 | 自托管 Umami 用户名，需与 `UMAMI_PASSWORD` 同时配置                                                       |
+| `UMAMI_PASSWORD`          | 运行时 | 自托管 Umami 密码                                                                                          |
 
 ---
 

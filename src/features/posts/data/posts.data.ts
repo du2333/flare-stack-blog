@@ -334,6 +334,28 @@ export async function findPostsBySlugs(db: DB, slugs: string[]) {
   return hydratePublicPosts(db, rows);
 }
 
+export async function findPostsByIds(db: DB, ids: number[]) {
+  if (ids.length === 0) return [];
+
+  const rows = await db
+    .select({
+      id: PostsTable.id,
+      status: PostsTable.status,
+      createdAt: PostsTable.createdAt,
+      updatedAt: PostsTable.updatedAt,
+      publicSnapshotJson: PostsTable.publicSnapshotJson,
+    })
+    .from(PostsTable)
+    .where(
+      and(
+        isNotNull(PostsTable.publicSnapshotJson),
+        inArray(PostsTable.id, ids),
+      ),
+    );
+
+  return hydratePublicPosts(db, rows);
+}
+
 export async function findPostBySlug(
   db: DB,
   slug: string,
