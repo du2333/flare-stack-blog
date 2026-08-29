@@ -8,6 +8,7 @@ import {
   LogOut,
   Tag,
   User,
+  VolumeX,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -94,6 +95,12 @@ export function SideBar({
       path: "/admin/friend-links",
       icon: Link2,
       label: m.admin_sidebar_friend_links(),
+      exact: false,
+    },
+    {
+      path: "/admin/muted-users",
+      icon: VolumeX,
+      label: m.admin_sidebar_muted_users(),
       exact: false,
     },
   ] satisfies Array<NavItem>;

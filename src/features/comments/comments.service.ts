@@ -9,6 +9,8 @@ import { publicCommentUrl } from "@/features/comments/comment-url";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
+import * as MutedUserRepo from "@/features/muted-users/data/muted-users.data";
+import { isMuted } from "@/features/muted-users/muted-users";
 import * as PostService from "@/features/posts/services/posts.service";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
@@ -21,26 +23,39 @@ async function requirePublishedPost(context: DbContext, postId: number) {
   return post;
 }
 
+async function viewerMuted(
+  context: DbContext & { session?: AuthContext["session"] | null },
+) {
+  const sessionUser = context.session?.user;
+  if (!sessionUser || sessionUser.role === "admin") {
+    return false;
+  }
+  const actor = await MutedUserRepo.findUserById(context.db, sessionUser.id);
+  return isMuted(actor?.mutedAt);
+}
+
 export async function getRootCommentsByPostId(
-  context: DbContext,
+  context: DbContext & { session?: AuthContext["session"] | null },
   data: GetCommentsByPostIdInput,
 ) {
   const post = await requirePublishedPost(context, data.postId);
   if (!post) {
-    return { items: [], total: 0 };
+    return { items: [], total: 0, viewerMuted: false };
   }
 
-  const [items, total] = await Promise.all([
+  const [items, total, muted] = await Promise.all([
     CommentRepo.getRootCommentsByPostId(context.db, data.postId, {
       offset: data.offset,
       limit: data.limit,
     }),
     CommentRepo.getPublishedRootCommentsCount(context.db, data.postId),
+    viewerMuted(context),
   ]);
 
   return {
     items: await withReplyCountsAndPreviews(context.db, data.postId, items),
     total,
+    viewerMuted: muted,
   };
 }
 
@@ -142,6 +157,16 @@ export async function createComment(
   }
   if (!post.hasPublicSnapshot) {
     return err({ reason: "POST_NOT_PUBLISHED" });
+  }
+
+  if (context.session.user.role !== "admin") {
+    const actor = await MutedUserRepo.findUserById(
+      context.db,
+      context.session.user.id,
+    );
+    if (isMuted(actor?.mutedAt)) {
+      return err({ reason: "USER_MUTED" });
+    }
   }
 
   let rootId: number | null = null;

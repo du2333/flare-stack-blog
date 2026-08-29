@@ -23,6 +23,7 @@ export const CommentUserSchema = z.object({
   name: z.string().nullable(),
   image: z.string().nullable(),
   role: z.string().nullable(),
+  mutedAt: coercedDate.nullable(),
 });
 
 export const CommentWithUserSchema = CommentSelectSchema.extend({
@@ -79,6 +80,7 @@ export const RootCommentWithReplyCountSchema = CommentWithUserSchema.extend({
 export const GetRootCommentsResponseSchema = z.object({
   items: z.array(RootCommentWithReplyCountSchema),
   total: z.number(),
+  viewerMuted: z.boolean(),
 });
 
 // Authed User API Schemas

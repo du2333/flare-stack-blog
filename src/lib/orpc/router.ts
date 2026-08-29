@@ -9,6 +9,7 @@ import dashboardRouter from "@/features/dashboard/server/router";
 import emailRouter from "@/features/email/server/router";
 import friendLinksRouter from "@/features/friend-links/server/router";
 import mediaRouter from "@/features/media/server/router";
+import mutedUsersRouter from "@/features/muted-users/server/router";
 import postPopularityRouter from "@/features/post-popularity/server/router";
 import postsRouter from "@/features/posts/server/router";
 import searchRouter from "@/features/search/server/router";
@@ -21,6 +22,7 @@ export const router = {
   tags: tagsRouter,
   comments: commentsRouter,
   media: mediaRouter,
+  mutedUsers: mutedUsersRouter,
   config: configRouter,
   friendLinks: friendLinksRouter,
   email: emailRouter,

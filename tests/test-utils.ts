@@ -35,6 +35,7 @@ export function createMockSession(
     banned: false,
     banReason: null,
     banExpires: null,
+    mutedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -69,6 +70,7 @@ export function createMockAdminSession(): AuthContext["session"] {
       banned: false,
       banReason: null,
       banExpires: null,
+      mutedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     },

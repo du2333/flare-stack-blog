@@ -25,7 +25,10 @@ function invalidateCommentViews(
   });
 }
 
-export function useComments(postId?: number) {
+export function useComments(
+  postId?: number,
+  options: { onMuted?: () => void } = {},
+) {
   const queryClient = useQueryClient();
 
   const createCommentMutation = useMutation({
@@ -37,6 +40,10 @@ export function useComments(postId?: number) {
     onError: (error) => {
       handleORPCError(error, {
         defined: {
+          USER_MUTED: () => {
+            options.onMuted?.();
+            toast.error(m.comments_toast_muted());
+          },
           ROOT_COMMENT_NOT_FOUND: () => {
             toast.error(m.comments_toast_deleted_refresh());
           },

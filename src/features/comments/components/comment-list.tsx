@@ -33,6 +33,9 @@ interface CommentListProps {
   postId: number;
   onReply?: (rootId: number, commentId: number, userName: string) => void;
   onDelete?: (commentId: number) => void;
+  onMute?: (userId: string, userName: string) => void;
+  onUnmute?: (userId: string, userName: string) => void;
+  canReply?: boolean;
   replyTarget?: { rootId: number; commentId: number; userName: string } | null;
   onCancelReply?: () => void;
   onSubmitReply?: (content: string) => Promise<void>;
@@ -47,6 +50,9 @@ export const CommentList = ({
   postId,
   onReply,
   onDelete,
+  onMute,
+  onUnmute,
+  canReply = true,
   replyTarget,
   onCancelReply,
   onSubmitReply,
@@ -102,6 +108,9 @@ export const CommentList = ({
           onToggleExpand={() => toggleExpand(root.id)}
           onReply={onReply}
           onDelete={onDelete}
+          onMute={onMute}
+          onUnmute={onUnmute}
+          canReply={canReply}
           replyTarget={replyTarget}
           onCancelReply={onCancelReply}
           onSubmitReply={onSubmitReply}
@@ -124,6 +133,9 @@ interface RootCommentWithRepliesProps {
   onToggleExpand: () => void;
   onReply?: (rootId: number, commentId: number, userName: string) => void;
   onDelete?: (commentId: number) => void;
+  onMute?: (userId: string, userName: string) => void;
+  onUnmute?: (userId: string, userName: string) => void;
+  canReply?: boolean;
   replyTarget?: { rootId: number; commentId: number; userName: string } | null;
   onCancelReply?: () => void;
   onSubmitReply?: (content: string) => Promise<void>;
@@ -140,6 +152,9 @@ function RootCommentWithReplies({
   onToggleExpand,
   onReply,
   onDelete,
+  onMute,
+  onUnmute,
+  canReply = true,
   replyTarget,
   onCancelReply,
   onSubmitReply,
@@ -216,6 +231,9 @@ function RootCommentWithReplies({
           }
         }}
         onDelete={onDelete}
+        onMute={onMute}
+        onUnmute={onUnmute}
+        canReply={canReply}
         highlightCommentId={revealCommentId}
         className={showThread ? "pb-2 border-b-0" : ""}
       />
@@ -265,6 +283,9 @@ function RootCommentWithReplies({
                       }
                     }}
                     onDelete={onDelete}
+                    onMute={onMute}
+                    onUnmute={onUnmute}
+                    canReply={canReply}
                     isReply
                     replyToName={reply.replyTo?.name}
                     highlightCommentId={revealCommentId}

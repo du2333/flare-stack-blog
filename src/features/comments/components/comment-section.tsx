@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useComments } from "@/features/comments/hooks/use-comments";
+import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
 import { useScrollToComment } from "@/features/comments/hooks/use-scroll-to-comment";
 import {
   commentThreadQuery,
@@ -43,8 +44,12 @@ export function CommentSection({ postId }: CommentSectionProps) {
       : listed;
   const totalCount = data?.pages[0]?.total ?? 0;
 
-  const { createComment, deleteComment, isCreating, isDeleting } =
-    useComments(postId);
+  const [locallyMuted, setLocallyMuted] = useState(false);
+  const { createComment, deleteComment, isCreating, isDeleting } = useComments(
+    postId,
+    { onMuted: () => setLocallyMuted(true) },
+  );
+  const { muteUser, unmuteUser, isMuting, isUnmuting } = useMutedUsers(postId);
 
   const [replyTarget, setReplyTarget] = useState<{
     rootId: number;
@@ -60,6 +65,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
     (thread && commentId != null ? { rootId: thread.id, commentId } : null);
 
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [pendingMute, setPendingMute] = useState<{
+    kind: "mute" | "unmute";
+    userId: string;
+    userName: string;
+  } | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const {
     isPending: turnstilePending,
@@ -139,6 +149,20 @@ export function CommentSection({ postId }: CommentSectionProps) {
     }
   };
 
+  const handleConfirmMute = async () => {
+    if (!pendingMute) return;
+    if (pendingMute.kind === "mute") {
+      await muteUser({ userId: pendingMute.userId });
+    } else {
+      await unmuteUser({ userId: pendingMute.userId });
+    }
+    setPendingMute(null);
+  };
+
+  const viewerMuted = locallyMuted || (data?.pages[0]?.viewerMuted ?? false);
+  const canCompose = !!session && !viewerMuted;
+  const canReply = !viewerMuted;
+
   if (isLoading || !data) {
     return <CommentSectionSkeleton />;
   }
@@ -149,7 +173,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
         {m.comments_count({ count: totalCount })}
       </h2>
 
-      {session ? (
+      {session && viewerMuted ? (
+        <p className="text-sm fuwari-text-30 py-4">
+          {m.comments_muted_message()}
+        </p>
+      ) : session ? (
         <CommentEditor
           onSubmit={handleCreateComment}
           isSubmitting={isCreating && !replyTarget}
@@ -186,14 +214,21 @@ export function CommentSection({ postId }: CommentSectionProps) {
           })
         }
         onDelete={(id) => setCommentToDelete(id)}
-        replyTarget={replyTarget}
+        onMute={(userId, userName) =>
+          setPendingMute({ kind: "mute", userId, userName })
+        }
+        onUnmute={(userId, userName) =>
+          setPendingMute({ kind: "unmute", userId, userName })
+        }
+        canReply={canReply}
+        replyTarget={viewerMuted ? null : replyTarget}
         onCancelReply={() => setReplyTarget(null)}
         onSubmitReply={handleCreateReply}
         isSubmittingReply={isCreating}
         revealRootId={reveal?.rootId}
         revealCommentId={reveal?.commentId}
         challenge={
-          replyTarget && session ? (
+          replyTarget && canCompose ? (
             <div ref={turnstileRef}>
               <Turnstile {...turnstileProps} />
             </div>
@@ -222,6 +257,30 @@ export function CommentSection({ postId }: CommentSectionProps) {
         confirmLabel={m.comments_delete_confirm()}
         isDanger={true}
         isLoading={isDeleting}
+      />
+
+      <CommentConfirmationModal
+        isOpen={!!pendingMute}
+        onClose={() => setPendingMute(null)}
+        onConfirm={handleConfirmMute}
+        title={
+          pendingMute?.kind === "unmute"
+            ? m.comments_unmute_title()
+            : m.comments_mute_title()
+        }
+        message={
+          pendingMute?.kind === "unmute"
+            ? m.comments_unmute_desc({ name: pendingMute.userName })
+            : m.comments_mute_desc({
+                name: pendingMute?.userName ?? "",
+              })
+        }
+        confirmLabel={
+          pendingMute?.kind === "unmute"
+            ? m.comments_unmute_confirm()
+            : m.comments_mute_confirm()
+        }
+        isLoading={isMuting || isUnmuting}
       />
     </div>
   );

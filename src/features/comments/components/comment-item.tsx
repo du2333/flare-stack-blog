@@ -1,6 +1,7 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { memo, useMemo } from "react";
 import type { CommentWithUser } from "@/features/comments/comments.schema";
+import { isMuted } from "@/features/muted-users/muted-users";
 import { authClient } from "@/lib/auth/auth.client";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -10,6 +11,9 @@ interface CommentItemProps {
   comment: CommentWithUser;
   onReply?: (rootId: number, commentId: number, userName: string) => void;
   onDelete?: (commentId: number) => void;
+  onMute?: (userId: string, userName: string) => void;
+  onUnmute?: (userId: string, userName: string) => void;
+  canReply?: boolean;
   isReply?: boolean;
   replyToName?: string | null;
   highlightCommentId?: number;
@@ -21,6 +25,9 @@ export const CommentItem = memo(
     comment,
     onReply,
     onDelete,
+    onMute,
+    onUnmute,
+    canReply = true,
     isReply,
     replyToName,
     highlightCommentId,
@@ -33,6 +40,13 @@ export const CommentItem = memo(
     const isAuthor = session?.user.id === comment.userId;
     const isAdmin = session?.user.role === "admin";
     const isBlogger = comment.user?.role === "admin";
+    const authorId = comment.user?.id;
+    const canModerateUser =
+      isAdmin && !!authorId && comment.user?.role !== "admin";
+    const authorMuted = isMuted(comment.user?.mutedAt);
+    const showReply = comment.status !== "deleted" && canReply;
+    const showDelete = comment.status !== "deleted" && (isAuthor || isAdmin);
+    const showActions = showReply || showDelete || canModerateUser;
 
     const renderedContent = useMemo(() => {
       if (comment.status === "deleted") {
@@ -118,28 +132,49 @@ export const CommentItem = memo(
 
           {renderedContent}
 
-          {comment.status !== "deleted" && (
+          {showActions && (
             <div className="flex items-center gap-4 pt-1">
-              <button
-                onClick={() => {
-                  const rootId = comment.rootId ?? comment.id;
-                  onReply?.(
-                    rootId,
-                    comment.id,
-                    comment.user?.name || m.comments_item_unknown_user(),
-                  );
-                }}
-                className="text-xs fuwari-text-30 hover:text-(--fuwari-primary) transition-colors font-medium"
-              >
-                {m.comments_item_reply()}
-              </button>
+              {showReply && (
+                <button
+                  onClick={() => {
+                    const rootId = comment.rootId ?? comment.id;
+                    onReply?.(
+                      rootId,
+                      comment.id,
+                      comment.user?.name || m.comments_item_unknown_user(),
+                    );
+                  }}
+                  className="text-xs fuwari-text-30 hover:text-(--fuwari-primary) transition-colors font-medium"
+                >
+                  {m.comments_item_reply()}
+                </button>
+              )}
 
-              {(isAuthor || isAdmin) && (
+              {showDelete && (
                 <button
                   onClick={() => onDelete?.(comment.id)}
                   className="text-xs fuwari-text-30 hover:text-red-500 transition-colors font-medium"
                 >
                   {m.comments_item_delete()}
+                </button>
+              )}
+
+              {canModerateUser && authorId && (
+                <button
+                  onClick={() => {
+                    const userName =
+                      comment.user?.name || m.comments_item_unknown_user();
+                    if (authorMuted) {
+                      onUnmute?.(authorId, userName);
+                    } else {
+                      onMute?.(authorId, userName);
+                    }
+                  }}
+                  className="text-xs fuwari-text-30 hover:text-red-500 transition-colors font-medium"
+                >
+                  {authorMuted
+                    ? m.comments_item_unmute()
+                    : m.comments_item_mute()}
                 </button>
               )}
             </div>

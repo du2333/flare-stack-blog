@@ -64,8 +64,12 @@ _Avoid_: Alert, message
 A signed-in person who can interact with the blog through comments, profile, and submissions.
 _Avoid_: Account
 
+**Muted User**:
+A **User** an **Admin** has stopped from creating **Comments**. They remain a **User**: they can sign in, edit their profile, submit **Friend Links**, and delete their own **Comments**. Muting applies to every **Post** and lasts until an **Admin** unmutes them.
+_Avoid_: Banned user, blocked user, silenced user, banned
+
 **Admin**:
-A **User** with content-management permissions for posts, comments, media, tags, settings, and friend-link review.
+A **User** with content-management permissions for posts, comments, media, tags, settings, friend-link review, and muting **Users**.
 _Avoid_: Owner
 
 **Search Index**:
@@ -113,7 +117,13 @@ _Avoid_: New commit, fork update
 - A **Published Post** has a publication date for display and listing order. The date is a past or current server date, never a future date. First publication without a date uses server time.
 - A **Post Revision** belongs to exactly one **Post**.
 - A **Comment Thread** belongs to exactly one **Post**.
-- A **User** can create a **Comment** only if that **Post** has a **Public Content Snapshot**.
+- A **User** can create a **Comment** only if that **Post** has a **Public Content Snapshot** and the **User** is not a **Muted User**.
+- A **Muted User** cannot create a **Comment**.
+- Muting a **User** does not change their existing **Comments**.
+- An **Admin** mutes or unmutes a **User** from that **User**'s **Comment** on the public **Post** page, including a deleted **Comment** placeholder, when the **Comment** still identifies a **User**.
+- An **Admin** cannot mute an **Admin**.
+- Other readers are not shown that a **User** is a **Muted User**.
+- An **Admin** can list current **Muted Users** in order to unmute them. That list is not a **User** directory and does not show **Comment** history.
 - Unpublishing a **Post** does not delete its **Comments**. They are not shown on the public site while the **Post** is a **Draft Post**, and they reappear when it is published again.
 - Public listings and counts of **Comments** exclude deleted **Comments**, except that a deleted root remains visible as a placeholder when its thread still has published replies, and a deleted reply remains visible as a placeholder in a visible thread.
 - A **Reply** notifies the author of the targeted **Comment**, not the rest of the **Comment Thread**. A new root **Comment** by a non-**Admin** notifies the **Admin**.
@@ -124,7 +134,7 @@ _Avoid_: New commit, fork update
 - Public blog pages consume **Site Config** when rendering.
 - A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.
 - A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
-- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, and **Friend Links**.
+- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, **Friend Links**, and **Muted Users**.
 - A **User** can create **Comments** and submit **Friend Links**.
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.

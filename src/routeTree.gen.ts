@@ -41,6 +41,7 @@ import { Route as ImagesSplatRouteImport } from './routes/images.$'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
 import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
+import { Route as AdminMutedUsersIndexRouteImport } from './routes/admin/muted-users/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
@@ -204,6 +205,11 @@ const AdminMediaIndexRoute = AdminMediaIndexRouteImport.update({
   path: '/media/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminMutedUsersIndexRoute = AdminMutedUsersIndexRouteImport.update({
+  id: '/muted-users/',
+  path: '/muted-users/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
+  '/admin/muted-users/': typeof AdminMutedUsersIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
+  '/admin/muted-users': typeof AdminMutedUsersIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
+  '/admin/muted-users/': typeof AdminMutedUsersIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/admin/friend-links/'
     | '/admin/media/'
+    | '/admin/muted-users/'
     | '/admin/posts/'
     | '/admin/settings/'
     | '/admin/tags/'
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/admin/friend-links'
     | '/admin/media'
+    | '/admin/muted-users'
     | '/admin/posts'
     | '/admin/settings'
     | '/admin/tags'
@@ -446,6 +457,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/admin/friend-links/'
     | '/admin/media/'
+    | '/admin/muted-users/'
     | '/admin/posts/'
     | '/admin/settings/'
     | '/admin/tags/'
@@ -696,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMediaIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/muted-users/': {
+      id: '/admin/muted-users/'
+      path: '/muted-users'
+      fullPath: '/admin/muted-users/'
+      preLoaderRoute: typeof AdminMutedUsersIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/posts/': {
       id: '/admin/posts/'
       path: '/'
@@ -809,6 +828,7 @@ interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminFriendLinksIndexRoute: typeof AdminFriendLinksIndexRoute
   AdminMediaIndexRoute: typeof AdminMediaIndexRoute
+  AdminMutedUsersIndexRoute: typeof AdminMutedUsersIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminTagsIndexRoute: typeof AdminTagsIndexRoute
 }
@@ -818,6 +838,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminFriendLinksIndexRoute: AdminFriendLinksIndexRoute,
   AdminMediaIndexRoute: AdminMediaIndexRoute,
+  AdminMutedUsersIndexRoute: AdminMutedUsersIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminTagsIndexRoute: AdminTagsIndexRoute,
 }

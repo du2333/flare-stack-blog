@@ -45,6 +45,10 @@ const commentErrors = {
     status: 400,
     message: "Comments require a published post.",
   },
+  USER_MUTED: {
+    status: 403,
+    message: "Muted users cannot create comments.",
+  },
 } as const;
 
 const roots = optionalSessionProcedure
@@ -127,6 +131,9 @@ const create = authProcedure
       },
       POST_NOT_PUBLISHED: () => {
         throw errors.POST_NOT_PUBLISHED();
+      },
+      USER_MUTED: () => {
+        throw errors.USER_MUTED();
       },
     }),
   );

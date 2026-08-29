@@ -481,6 +481,44 @@
       }
     }
   },
+  "mutedUsers": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/muted-users",
+          "summary": "List currently muted users",
+          "tags": ["Admin Muted Users"]
+        }
+      }
+    },
+    "mute": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/muted-users",
+          "summary": "Mute a user",
+          "tags": ["Admin Muted Users"]
+        }
+      }
+    },
+    "unmute": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "DELETE",
+          "path": "/admin/muted-users/{userId}",
+          "summary": "Unmute a user",
+          "tags": ["Admin Muted Users"]
+        }
+      }
+    }
+  },
   "config": {
     "siteConfig": {
       "~orpc": {

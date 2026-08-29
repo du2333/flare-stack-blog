@@ -13,6 +13,15 @@ export function createAuthConfig() {
         maxAge: 5 * 60,
       },
     },
+    user: {
+      additionalFields: {
+        mutedAt: {
+          type: "date",
+          required: false,
+          input: false,
+        },
+      },
+    },
     plugins: [admin()],
   } satisfies BetterAuthOptions;
 }

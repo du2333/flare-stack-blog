@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { createPostPopularityService } from "./service/post-popularity.service";
 
 describe("post popularity service", () => {
@@ -88,7 +89,10 @@ describe("post popularity service", () => {
   });
 
   it("uses a fresh snapshot to load Posts in ranked order", async () => {
-    const getPopularPosts = vi.fn(async () => [{ id: 7 }, { id: 3 }]);
+    const getPopularPosts = vi.fn(
+      async (): Promise<PostItem[]> =>
+        [{ id: 7 }, { id: 3 }] as Array<PostItem>,
+    );
     const syncedAt = Date.parse("2026-08-22T00:15:00.000Z");
     const service = createPostPopularityService({
       now: () => new Date("2026-08-23T00:15:00.000Z"),
