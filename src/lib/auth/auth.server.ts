@@ -7,9 +7,7 @@ import { AuthEmail } from "@/features/email/templates/AuthEmail";
 import { createAuthConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
-import type { Locale } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
-import { getLocale } from "@/paraglide/runtime";
 
 async function checkEmailRateLimit(
   env: Env,
@@ -35,14 +33,6 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
   } = serverEnv(env);
-
-  function getAuthEmailLocale(): Locale {
-    try {
-      return getLocale();
-    } catch {
-      return LOCALE;
-    }
-  }
 
   return betterAuth({
     ...createAuthConfig(),
@@ -81,16 +71,15 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
         );
         if (!allowed) return;
 
-        const locale = getAuthEmailLocale();
         const emailHtml = renderToStaticMarkup(
-          AuthEmail({ locale, type: "reset-password", url }),
+          AuthEmail({ locale: LOCALE, type: "reset-password", url }),
         );
 
         await env.QUEUE.send({
           type: "EMAIL",
           data: {
             to: user.email,
-            subject: m.email_auth_reset_subject({}, { locale }),
+            subject: m.email_auth_reset_subject({}, { locale: LOCALE }),
             html: emailHtml,
           },
         });
@@ -106,16 +95,15 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
         );
         if (!allowed) return;
 
-        const locale = getAuthEmailLocale();
         const emailHtml = renderToStaticMarkup(
-          AuthEmail({ locale, type: "verification", url }),
+          AuthEmail({ locale: LOCALE, type: "verification", url }),
         );
 
         await env.QUEUE.send({
           type: "EMAIL",
           data: {
             to: user.email,
-            subject: m.email_auth_verification_subject({}, { locale }),
+            subject: m.email_auth_verification_subject({}, { locale: LOCALE }),
             html: emailHtml,
           },
         });

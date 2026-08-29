@@ -171,7 +171,7 @@ src/
 | `TURNSTILE_SECRET_KEY`    | 运行时 | Cloudflare Turnstile 人机验证 Secret Key                                                                  |
 | `VITE_TURNSTILE_SITE_KEY` | 构建时 | Cloudflare Turnstile Site Key                                                                             |
 | `GITHUB_TOKEN`            | 运行时 | GitHub API Token（版本更新检查，避免限流）                                                                |
-| `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；通知邮件、Webhook 文本和后台异步任务文案会使用该语言               |
+| `LOCALE`                  | 运行时 | 默认语言，支持 `zh` / `en`，默认 `zh`；认证邮件、通知邮件、Webhook 文本和后台异步任务文案会使用该语言；页面 UI 语言仍由 cookie 切换 |
 | `ROUTE`                   | CI/CD  | 设为 `1` 时，GitHub Actions 部署自动改用 Cloudflare `routes` 模式                                        |
 | `ZONE_NAME`               | CI/CD  | 可选。仅在 `ROUTE=1` 且 Zone 不是从 `DOMAIN` 自动推导结果时填写                                           |
 | `UMAMI_SRC`               | 运行时 | Umami 埋点代理地址；自托管模式下也作为默认 API 基础地址                                                   |

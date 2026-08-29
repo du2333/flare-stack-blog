@@ -173,7 +173,7 @@ Please refer to the **[Flare Stack Blog Deployment Guide](./deployment-guide.en.
 | `TURNSTILE_SECRET_KEY`    | Runtime    | Cloudflare Turnstile Secret Key for CAPTCHA.                                                             |
 | `VITE_TURNSTILE_SITE_KEY` | Build-time | Cloudflare Turnstile Site Key.                                                                           |
 | `GITHUB_TOKEN`            | Runtime    | GitHub API Token (for version updates checking to avoid rate limits).                                    |
-| `LOCALE`                  | Runtime    | Default language: `zh` or `en`. Default: `zh`. Used for emails, webhooks, and background task messaging. |
+| `LOCALE`                  | Runtime    | Default language: `zh` or `en`. Default: `zh`. Used for auth emails, notification emails, webhooks, and background task copy. The page UI language still follows the locale cookie. |
 | `UMAMI_SRC`               | Runtime    | Umami tracking proxy URL and the default API base for self-hosted installations.                         |
 | `VITE_UMAMI_WEBSITE_ID`   | Build-time | Umami Website ID used by client-side tracking.                                                           |
 | `UMAMI_WEBSITE_ID`        | Runtime    | Umami Website ID used by Worker popularity sync. It should match the client ID.                           |
