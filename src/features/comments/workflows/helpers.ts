@@ -89,14 +89,13 @@ export async function sendReplyNotification(
             ? "comment.reply_to_admin_published"
             : "comment.reply_to_user_published",
         data: {
-          to: replyToAuthor.email,
           postTitle: post.title,
           replierName,
           replyPreview: `${replyPreview}${replyPreview.length >= 100 ? "..." : ""}`,
           commentUrl,
-          unsubscribeUrl,
         },
       },
+      { to: replyToAuthor.email, unsubscribeUrl },
     );
 
     console.log(

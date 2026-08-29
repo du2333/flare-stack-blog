@@ -3,7 +3,7 @@ import type { SiteConfig, SystemConfig } from "@/features/config/config.schema";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
-import { NOTIFICATION_WEBHOOK_EVENTS } from "@/features/webhook/webhook.schema";
+import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
 
 const DEFAULT_SMTP_PORT = 465;
 const RESEND_SMTP_HOST = "smtp.resend.com";
@@ -75,6 +75,32 @@ export function resolveSiteConfig(
   });
 }
 
+export function resolveWebhookEndpoint(
+  notification: SystemConfig["notification"] | null | undefined,
+): WebhookEndpoint {
+  const currentUrl = notification?.webhook?.url?.trim() ?? "";
+  const currentSecret = notification?.webhook?.secret ?? "";
+  if (currentUrl) {
+    return {
+      url: currentUrl,
+      secret: currentSecret,
+    };
+  }
+
+  const legacy = notification?.webhooks?.[0];
+  if (legacy) {
+    return {
+      url: legacy.url?.trim() ?? "",
+      secret: legacy.secret ?? currentSecret,
+    };
+  }
+
+  return {
+    url: "",
+    secret: currentSecret,
+  };
+}
+
 export function resolveSystemConfig(
   config: SystemConfig | null | undefined,
 ): SystemConfig {
@@ -83,28 +109,15 @@ export function resolveSystemConfig(
     ...config,
     email: resolveEmailConfig(config),
     notification: {
-      ...DEFAULT_CONFIG.notification,
-      ...config?.notification,
       admin: {
-        ...DEFAULT_CONFIG.notification?.admin,
-        ...config?.notification?.admin,
         channels: {
-          ...DEFAULT_CONFIG.notification?.admin?.channels,
-          ...config?.notification?.admin?.channels,
+          email: config?.notification?.admin?.channels?.email ?? true,
         },
       },
       user: {
-        ...DEFAULT_CONFIG.notification?.user,
-        ...config?.notification?.user,
+        emailEnabled: config?.notification?.user?.emailEnabled ?? true,
       },
-      webhooks: (
-        config?.notification?.webhooks ?? DEFAULT_CONFIG.notification?.webhooks
-      )?.map((endpoint) => ({
-        ...endpoint,
-        events: endpoint.events.filter((event) =>
-          (NOTIFICATION_WEBHOOK_EVENTS as readonly string[]).includes(event),
-        ),
-      })),
+      webhook: resolveWebhookEndpoint(config?.notification),
     },
     site: resolveSiteConfig(config),
   };

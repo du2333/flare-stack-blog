@@ -57,7 +57,7 @@ Public-facing site identity and presentation personalization used by the rendere
 _Avoid_: System settings
 
 **Notification Event**:
-A comment or friend-link domain event that is delivered through configured email and webhook channels.
+A comment or friend-link domain event. Email and a **Webhook Endpoint** can deliver it; the event itself does not include the recipient mailbox.
 _Avoid_: Alert, message
 
 **User**:
@@ -85,7 +85,7 @@ A periodically refreshed ranking of **Published Posts** that received public vie
 _Avoid_: Traffic Metrics, Analytics, Pageview
 
 **Webhook Endpoint**:
-A configured external URL that receives selected admin **Notification Events**.
+A configured external URL that receives admin **Notification Events**.
 _Avoid_: Webhook, callback URL
 
 **Application Release**:
@@ -131,8 +131,10 @@ _Avoid_: New commit, fork update
 - A **Media** item referenced by a **Post** cannot be deleted from the media library.
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
+- **System Config** may include one **Webhook Endpoint**.
 - Public blog pages consume **Site Config** when rendering.
-- A **Notification Event** can be delivered through email or **Webhook Endpoints** according to **System Config**.
+- A **Notification Event** can be delivered through email or a **Webhook Endpoint** according to **System Config**.
+- A **Notification Event** does not include the email recipient.
 - A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
 - An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, **Friend Links**, and **Muted Users**.
 - A **User** can create **Comments** and submit **Friend Links**.
@@ -141,7 +143,7 @@ _Avoid_: New commit, fork update
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
 - A **Post Popularity Snapshot** ranks **Published Posts** for public presentation.
 - A **Post Popularity Snapshot** older than seven days does not rank **Published Posts**.
-- A **Webhook Endpoint** receives selected admin **Notification Events**.
+- A **Webhook Endpoint** receives admin **Notification Events**.
 - An **Available Update** is determined only from official stable **Application Releases**.
 
 ## Example dialogue

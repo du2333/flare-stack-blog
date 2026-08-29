@@ -9,7 +9,6 @@ export function useWebhookConnection() {
 
   return {
     testWebhook: mutation.mutateAsync,
-    testingEndpointId: mutation.variables?.endpoint.id,
     isTesting: mutation.isPending,
   };
 }

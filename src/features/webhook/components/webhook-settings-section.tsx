@@ -1,76 +1,46 @@
-import { Globe, Plus } from "lucide-react";
-import { useState } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { Eye, EyeOff, Globe, Loader2, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
-import type { NotificationWebhookEventType } from "@/features/webhook/webhook.schema";
 import { m } from "@/paraglide/messages";
-import { WebhookDocPanel } from "./webhook-doc-panel";
-import { WebhookEndpointCard } from "./webhook-endpoint-card";
-import { createWebhookEndpoint } from "./webhook-settings.helpers";
 
 export function WebhookSettingsSection() {
-  const [visibleSecrets, setVisibleSecrets] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [visibleSecret, setVisibleSecret] = useState(false);
   const {
     register,
-    control,
     watch,
     setValue,
     getValues,
     formState: { errors },
   } = useFormContext<SystemConfig>();
-  const { testWebhook, isTesting, testingEndpointId } = useWebhookConnection();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "notification.webhooks",
-  });
+  const { testWebhook, isTesting } = useWebhookConnection();
 
-  const webhookFields = watch("notification.webhooks") ?? [];
-  const adminWebhookEnabled =
-    watch("notification.admin.channels.webhook") ?? true;
-  const enabledCount = webhookFields.filter(
-    (endpoint) => endpoint.enabled,
-  ).length;
+  const url = watch("notification.webhook.url") ?? "";
+  const secret = watch("notification.webhook.secret") ?? "";
+  const canTest = Boolean(url.trim() && secret.trim());
+  const fieldError = errors.notification?.webhook;
 
-  const toggleSecretVisibility = (index: number) => {
-    setVisibleSecrets((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  };
-
-  const toggleEvent = (
-    endpointIndex: number,
-    eventType: NotificationWebhookEventType,
-    checked: boolean,
-  ) => {
-    const current = webhookFields[endpointIndex]?.events ?? [];
-    const next = checked
-      ? [...new Set([...current, eventType])]
-      : current.filter((event) => event !== eventType);
-
-    setValue(`notification.webhooks.${endpointIndex}.events`, next, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
+  useEffect(() => {
+    if (secret.trim()) return;
+    setValue("notification.webhook.secret", crypto.randomUUID(), {
+      shouldDirty: false,
     });
-  };
+  }, [secret, setValue]);
 
-  const handleTestWebhook = async (endpointIndex: number) => {
-    const endpoint = getValues(`notification.webhooks.${endpointIndex}`);
-
-    if (!endpoint) {
+  const handleTestWebhook = async () => {
+    const endpoint = getValues("notification.webhook");
+    if (!endpoint?.url.trim() || !endpoint.secret.trim()) {
       return;
     }
 
     try {
       await testWebhook({
-        endpoint,
+        url: endpoint.url.trim(),
+        secret: endpoint.secret,
       });
       toast.success(m.settings_webhook_toast_test_sent());
     } catch (error) {
@@ -86,109 +56,89 @@ export function WebhookSettingsSection() {
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <WebhookDocPanel />
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {m.settings_webhook_doc()}
+      </p>
 
-      <div className="border border-border/30 bg-background/50 overflow-hidden divide-y divide-border/20">
-        <div className="p-8 space-y-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-muted/40 rounded-sm">
-                <Globe size={16} className="text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <h5 className="text-sm font-medium text-foreground">
-                  {m.settings_webhook_endpoints_title()}
-                </h5>
-                <p className="text-sm text-muted-foreground">
-                  {m.settings_webhook_endpoints_summary({
-                    enabledCount,
-                    totalCount: fields.length,
-                  })}
-                </p>
-              </div>
+      <div className="overflow-hidden divide-y divide-border/20 border border-border/30 bg-background/50">
+        <div className="space-y-8 p-8">
+          <div className="flex items-center gap-4">
+            <div className="rounded-sm bg-muted/40 p-2">
+              <Globe size={16} className="text-muted-foreground" />
             </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => append(createWebhookEndpoint())}
-              className="h-10 px-6 rounded-none text-[10px] font-mono uppercase tracking-[0.2em]"
-            >
-              <Plus size={12} className="mr-3" />
-              {m.settings_webhook_btn_add()}
-            </Button>
+            <h5 className="text-sm font-medium text-foreground">
+              {m.settings_webhook_endpoint_title()}
+            </h5>
           </div>
 
-          <label className="flex items-center gap-4 border border-border/20 bg-muted/10 p-4 cursor-pointer hover:bg-muted/20 transition-colors">
-            <Checkbox
-              checked={adminWebhookEnabled}
-              onCheckedChange={(checked) =>
-                setValue("notification.admin.channels.webhook", checked, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                })
-              }
-            />
-            <div className="space-y-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">
-                {m.settings_webhook_global_enable_label()}
-              </p>
-              <p className="text-sm text-muted-foreground break-all">
-                {m.settings_webhook_global_enable_desc()}
-              </p>
+          <div className="grid grid-cols-1 gap-x-12 gap-y-8 xl:grid-cols-2">
+            <div className="space-y-3">
+              <label className="text-sm text-muted-foreground">
+                {m.settings_webhook_endpoint_field_url()}
+              </label>
+              <Input
+                {...register("notification.webhook.url")}
+                placeholder={m.settings_webhook_endpoint_field_url_ph()}
+                className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 text-sm"
+              />
+              {fieldError?.url?.message && (
+                <p className="text-xs text-red-500">
+                  ! {fieldError.url.message}
+                </p>
+              )}
             </div>
-          </label>
 
-          {fields.length === 0 ? (
-            <div className="border border-dashed border-border/40 bg-muted/5 p-10 text-center">
-              <p className="text-sm font-serif text-foreground">
-                {m.settings_webhook_empty_title()}
+            <div className="space-y-3">
+              <label className="text-sm text-muted-foreground">
+                {m.settings_webhook_endpoint_field_secret()}
+              </label>
+              <div className="relative">
+                <Input
+                  type={visibleSecret ? "text" : "password"}
+                  {...register("notification.webhook.secret")}
+                  placeholder={m.settings_webhook_endpoint_field_secret_ph()}
+                  className="w-full rounded-none border border-border/30 bg-muted/10 px-4 py-6 pr-12 text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setVisibleSecret((prev) => !prev)}
+                  className="absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 rounded-none text-muted-foreground/40 hover:text-foreground"
+                >
+                  {visibleSecret ? <EyeOff size={15} /> : <Eye size={15} />}
+                </Button>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {m.settings_webhook_endpoint_field_secret_hint()}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {m.settings_webhook_empty_desc()}
-              </p>
+              {fieldError?.secret?.message && (
+                <p className="text-xs text-red-500">
+                  ! {fieldError.secret.message}
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="space-y-8">
-              {fields.map((field, index) => {
-                const endpoint = webhookFields[index] ?? field;
-                const fieldError = errors.notification?.webhooks?.[index];
+          </div>
+        </div>
 
-                return (
-                  <WebhookEndpointCard<SystemConfig>
-                    key={field.id}
-                    index={index}
-                    endpoint={endpoint}
-                    register={register}
-                    visibleSecret={!!visibleSecrets[index]}
-                    fieldError={fieldError}
-                    isTesting={isTesting}
-                    testingEndpointId={testingEndpointId}
-                    onTest={() => handleTestWebhook(index)}
-                    onRemove={() => remove(index)}
-                    onToggleEnabled={(checked) =>
-                      setValue(
-                        `notification.webhooks.${index}.enabled`,
-                        checked,
-                        {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        },
-                      )
-                    }
-                    onToggleSecretVisibility={() =>
-                      toggleSecretVisibility(index)
-                    }
-                    onToggleEvent={(eventType, checked) =>
-                      toggleEvent(index, eventType, checked)
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
+        <div className="flex flex-col items-start justify-between gap-4 bg-muted/10 p-6 px-8 sm:flex-row sm:items-center">
+          <p className="text-xs text-muted-foreground">
+            {m.settings_webhook_test_hint()}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleTestWebhook}
+            disabled={isTesting || !canTest}
+            className="h-10 rounded-none px-6 text-[10px] font-mono uppercase tracking-[0.15em]"
+          >
+            {isTesting ? (
+              <Loader2 size={12} className="mr-2 animate-spin" />
+            ) : (
+              <Send size={12} className="mr-2" />
+            )}
+            {m.settings_webhook_endpoint_btn_test()}
+          </Button>
         </div>
       </div>
     </div>

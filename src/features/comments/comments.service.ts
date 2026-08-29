@@ -237,16 +237,19 @@ export async function createComment(
     const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
     const commentPreview = data.content.slice(0, 100);
     const commenterName = context.session.user.name;
-    await publishNotificationEvent(context, {
-      type: "comment.admin_root_created",
-      data: {
-        to: ADMIN_EMAIL,
-        postTitle: post.title,
-        commenterName,
-        commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
-        commentUrl: publicCommentUrl(DOMAIN, post.slug, comment.id),
+    await publishNotificationEvent(
+      context,
+      {
+        type: "comment.admin_root_created",
+        data: {
+          postTitle: post.title,
+          commenterName,
+          commentPreview: `${commentPreview}${commentPreview.length >= 100 ? "..." : ""}`,
+          commentUrl: publicCommentUrl(DOMAIN, post.slug, comment.id),
+        },
       },
-    });
+      { to: ADMIN_EMAIL },
+    );
   }
 
   return ok(comment);

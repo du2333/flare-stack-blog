@@ -28,7 +28,6 @@ export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
 const commentAdminRootCreatedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),
   data: z.object({
-    to: z.string(),
     postTitle: z.string(),
     commenterName: z.string(),
     commentPreview: z.string(),
@@ -39,31 +38,26 @@ const commentAdminRootCreatedNotificationSchema = z.object({
 const commentReplyToAdminPublishedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED),
   data: z.object({
-    to: z.string(),
     postTitle: z.string(),
     replierName: z.string(),
     replyPreview: z.string(),
     commentUrl: z.string(),
-    unsubscribeUrl: z.string(),
   }),
 });
 
 const commentReplyToUserPublishedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED),
   data: z.object({
-    to: z.string(),
     postTitle: z.string(),
     replierName: z.string(),
     replyPreview: z.string(),
     commentUrl: z.string(),
-    unsubscribeUrl: z.string(),
   }),
 });
 
 const friendLinkSubmittedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_SUBMITTED),
   data: z.object({
-    to: z.string(),
     siteName: z.string(),
     siteUrl: z.string(),
     description: z.string(),
@@ -75,7 +69,6 @@ const friendLinkSubmittedNotificationSchema = z.object({
 const friendLinkApprovedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_APPROVED),
   data: z.object({
-    to: z.string(),
     siteName: z.string(),
     blogUrl: z.string(),
   }),
@@ -84,7 +77,6 @@ const friendLinkApprovedNotificationSchema = z.object({
 const friendLinkRejectedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.FRIEND_LINK_REJECTED),
   data: z.object({
-    to: z.string(),
     siteName: z.string(),
     rejectionReason: z.string().optional(),
   }),
@@ -102,3 +94,8 @@ export const notificationEventSchema = z.discriminatedUnion("type", [
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
 export type NotificationEventType = z.infer<typeof notificationEventTypeSchema>;
 export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
+
+export type NotificationDelivery = {
+  to: string;
+  unsubscribeUrl?: string;
+};

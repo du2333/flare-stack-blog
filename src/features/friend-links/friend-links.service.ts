@@ -43,17 +43,20 @@ export async function submitFriendLink(
 
   // Notify admin via email
   const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
-  await publishNotificationEvent(context, {
-    type: "friend_link.submitted",
-    data: {
-      to: ADMIN_EMAIL,
-      siteName: data.siteName,
-      siteUrl: data.siteUrl,
-      description: data.description || "",
-      submitterName: context.session.user.name,
-      reviewUrl: `https://${DOMAIN}/admin/friend-links`,
+  await publishNotificationEvent(
+    context,
+    {
+      type: "friend_link.submitted",
+      data: {
+        siteName: data.siteName,
+        siteUrl: data.siteUrl,
+        description: data.description || "",
+        submitterName: context.session.user.name,
+        reviewUrl: `https://${DOMAIN}/admin/friend-links`,
+      },
     },
-  });
+    { to: ADMIN_EMAIL },
+  );
 
   return ok(friendLink);
 }
@@ -138,14 +141,17 @@ export async function approveFriendLink(
   // Notify submitter if contactEmail exists
   if (friendLink.contactEmail) {
     const { DOMAIN } = serverEnv(context.env);
-    await publishNotificationEvent(context, {
-      type: "friend_link.approved",
-      data: {
-        to: friendLink.contactEmail,
-        siteName: friendLink.siteName,
-        blogUrl: `https://${DOMAIN}`,
+    await publishNotificationEvent(
+      context,
+      {
+        type: "friend_link.approved",
+        data: {
+          siteName: friendLink.siteName,
+          blogUrl: `https://${DOMAIN}`,
+        },
       },
-    });
+      { to: friendLink.contactEmail },
+    );
   }
 
   return ok(updated);
@@ -174,14 +180,17 @@ export async function rejectFriendLink(
 
   // Notify submitter if contactEmail exists
   if (friendLink.contactEmail) {
-    await publishNotificationEvent(context, {
-      type: "friend_link.rejected",
-      data: {
-        to: friendLink.contactEmail,
-        siteName: friendLink.siteName,
-        rejectionReason: data.rejectionReason,
+    await publishNotificationEvent(
+      context,
+      {
+        type: "friend_link.rejected",
+        data: {
+          siteName: friendLink.siteName,
+          rejectionReason: data.rejectionReason,
+        },
       },
-    });
+      { to: friendLink.contactEmail },
+    );
   }
 
   return ok(updated);

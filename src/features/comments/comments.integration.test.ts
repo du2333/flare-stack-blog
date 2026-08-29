@@ -619,19 +619,12 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: true,
-                webhook: true,
               },
             },
-            webhooks: [
-              {
-                id: "dual-channel-endpoint",
-                name: "Dual Channel Endpoint",
-                url: "https://example.com/webhook",
-                enabled: true,
-                secret: "secret",
-                events: ["comment.admin_root_created"],
-              },
-            ],
+            webhook: {
+              url: "https://example.com/webhook",
+              secret: "secret",
+            },
           },
         });
 
@@ -659,19 +652,12 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: false,
-                webhook: true,
               },
             },
-            webhooks: [
-              {
-                id: "admin-webhook",
-                name: "Admin Webhook",
-                url: "https://example.com/webhook",
-                enabled: true,
-                secret: "secret",
-                events: ["comment.admin_root_created"],
-              },
-            ],
+            webhook: {
+              url: "https://example.com/webhook",
+              secret: "secret",
+            },
           },
         });
 
@@ -687,17 +673,19 @@ describe("Comments Integration", () => {
           expect.objectContaining({
             type: "WEBHOOK",
             data: expect.objectContaining({
-              endpointId: "admin-webhook",
               url: "https://example.com/webhook",
               event: expect.objectContaining({
                 type: "comment.admin_root_created",
+                data: expect.not.objectContaining({
+                  to: expect.anything(),
+                }),
               }),
             }),
           }),
         );
       });
 
-      it("should only enqueue webhook for endpoints subscribed to the event", async () => {
+      it("should send webhook from the first legacy endpoint even if that row filtered events", async () => {
         await ConfigService.updateSystemConfig(adminContext, {
           ...DEFAULT_CONFIG,
           notification: {
@@ -705,25 +693,25 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: false,
-                webhook: true,
+                webhook: false,
               },
             },
             webhooks: [
               {
-                id: "matched-endpoint",
-                name: "Matched Endpoint",
-                url: "https://example.com/matched",
+                id: "legacy-first",
+                name: "Legacy First",
+                url: "https://example.com/legacy",
                 enabled: true,
-                secret: "secret-1",
-                events: ["comment.admin_root_created"],
+                secret: "legacy-secret",
+                events: ["friend_link.submitted"],
               },
               {
-                id: "unmatched-endpoint",
-                name: "Unmatched Endpoint",
-                url: "https://example.com/unmatched",
+                id: "legacy-second",
+                name: "Legacy Second",
+                url: "https://example.com/other",
                 enabled: true,
-                secret: "secret-2",
-                events: ["friend_link.submitted"],
+                secret: "other-secret",
+                events: ["comment.admin_root_created"],
               },
             ],
           },
@@ -733,7 +721,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: "Only matched webhook should receive",
+          content: "Legacy webhook config",
         });
 
         expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
@@ -741,8 +729,8 @@ describe("Comments Integration", () => {
           expect.objectContaining({
             type: "WEBHOOK",
             data: expect.objectContaining({
-              endpointId: "matched-endpoint",
-              url: "https://example.com/matched",
+              url: "https://example.com/legacy",
+              secret: "legacy-secret",
               event: expect.objectContaining({
                 type: "comment.admin_root_created",
               }),
@@ -751,7 +739,7 @@ describe("Comments Integration", () => {
         );
       });
 
-      it("should not enqueue webhook for disabled endpoints", async () => {
+      it("should not enqueue webhook when the URL is empty", async () => {
         await ConfigService.updateSystemConfig(adminContext, {
           ...DEFAULT_CONFIG,
           notification: {
@@ -759,19 +747,12 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: false,
-                webhook: true,
               },
             },
-            webhooks: [
-              {
-                id: "disabled-endpoint",
-                name: "Disabled Endpoint",
-                url: "https://example.com/disabled",
-                enabled: false,
-                secret: "secret",
-                events: ["comment.admin_root_created"],
-              },
-            ],
+            webhook: {
+              url: "",
+              secret: "secret",
+            },
           },
         });
 
@@ -779,7 +760,7 @@ describe("Comments Integration", () => {
 
         await CommentService.createComment(userContext, {
           postId,
-          content: "Comment with disabled webhook",
+          content: "Comment with empty webhook URL",
         });
 
         expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
@@ -929,7 +910,6 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: false,
-                webhook: false,
               },
             },
           },
@@ -962,19 +942,12 @@ describe("Comments Integration", () => {
             admin: {
               channels: {
                 email: false,
-                webhook: true,
               },
             },
-            webhooks: [
-              {
-                id: "admin-reply-webhook",
-                name: "Admin Reply Webhook",
-                enabled: true,
-                url: "https://example.com/reply-webhook",
-                secret: "secret",
-                events: ["comment.reply_to_admin_published"],
-              },
-            ],
+            webhook: {
+              url: "https://example.com/reply-webhook",
+              secret: "secret",
+            },
           },
         });
         await EmailData.unsubscribe(
@@ -1004,12 +977,10 @@ describe("Comments Integration", () => {
           expect.objectContaining({
             type: "WEBHOOK",
             data: expect.objectContaining({
-              endpointId: "admin-reply-webhook",
               url: "https://example.com/reply-webhook",
               event: expect.objectContaining({
                 type: "comment.reply_to_admin_published",
                 data: expect.objectContaining({
-                  to: "admin@example.com",
                   postTitle: "Test Post",
                   replierName: "Test User",
                   replyPreview: "User reply to unsubscribed admin",

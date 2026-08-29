@@ -22,7 +22,6 @@ export const emailMessageSchema = z.object({
 export const webhookMessageSchema = z.object({
   type: z.literal("WEBHOOK"),
   data: z.object({
-    endpointId: z.string(),
     url: z.url(),
     secret: z.string(),
     event: notificationEventSchema,

@@ -5,7 +5,10 @@ import {
   type SiteConfigInput,
   SiteConfigInputSchema,
 } from "@/features/config/site-config.schema";
-import { webhookEndpointSchema } from "@/features/webhook/webhook.schema";
+import {
+  legacyWebhookEndpointSchema,
+  webhookEndpointSchema,
+} from "@/features/webhook/webhook.schema";
 import type { Messages } from "@/lib/i18n";
 
 export const SystemConfigSchema = z.object({
@@ -37,18 +40,40 @@ export const SystemConfigSchema = z.object({
           emailEnabled: z.boolean().optional(),
         })
         .optional(),
-      webhooks: z.array(webhookEndpointSchema).optional(),
+      webhook: webhookEndpointSchema.optional(),
+      webhooks: z.array(legacyWebhookEndpointSchema).optional(),
     })
     .optional(),
   site: SiteConfigInputSchema.optional(),
 });
 
 export const createSystemConfigFormSchema = (messages: Messages) =>
-  z.object({
-    email: SystemConfigSchema.shape.email,
-    notification: SystemConfigSchema.shape.notification,
-    site: createSiteConfigInputFormSchema(messages).optional(),
-  });
+  z
+    .object({
+      email: SystemConfigSchema.shape.email,
+      notification: SystemConfigSchema.shape.notification,
+      site: createSiteConfigInputFormSchema(messages).optional(),
+    })
+    .superRefine((data, ctx) => {
+      const url = data.notification?.webhook?.url?.trim() ?? "";
+      if (!url) return;
+
+      if (!z.url().safeParse(url).success) {
+        ctx.addIssue({
+          code: "custom",
+          message: messages.settings_webhook_url_invalid(),
+          path: ["notification", "webhook", "url"],
+        });
+      }
+
+      if (!data.notification?.webhook?.secret?.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          message: messages.settings_webhook_secret_required(),
+          path: ["notification", "webhook", "secret"],
+        });
+      }
+    });
 
 export type SystemConfig = z.infer<typeof SystemConfigSchema>;
 export type {
@@ -69,13 +94,15 @@ export const DEFAULT_CONFIG: SystemConfig = {
     admin: {
       channels: {
         email: true,
-        webhook: true,
       },
     },
     user: {
       emailEnabled: true,
     },
-    webhooks: [],
+    webhook: {
+      url: "",
+      secret: "",
+    },
   },
   site: blogConfig satisfies SiteConfigInput,
 };

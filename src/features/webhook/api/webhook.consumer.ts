@@ -1,4 +1,3 @@
-import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 import type { NotificationEvent } from "@/features/notification/notification.schema";
 import { serverEnv } from "@/lib/env/server.env";
 import type { Locale } from "@/lib/i18n";
@@ -6,7 +5,10 @@ import type { WebhookMessage } from "@/lib/queue/queue.schema";
 import { m } from "@/paraglide/messages";
 import { baseLocale } from "@/paraglide/runtime";
 
-function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
+export function createPlainTextMessage(
+  event: NotificationEvent,
+  locale: Locale,
+) {
   switch (event.type) {
     case "comment.admin_root_created":
       return m.email_webhook_comment_admin_root_message(
@@ -63,16 +65,6 @@ function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
   }
 }
 
-function createRenderedEmail(event: NotificationEvent, locale: Locale) {
-  const email = createEmailMessageFromNotification(event, locale);
-
-  return {
-    subject: email.subject,
-    message: createPlainTextMessage(event, locale),
-    html: email.html,
-  };
-}
-
 export function createWebhookBody(
   messageId: string,
   event: NotificationEvent,
@@ -85,10 +77,9 @@ export function createWebhookBody(
     id: messageId,
     type: event.type,
     timestamp: new Date().toISOString(),
-    source: "flare-stack-blog",
     test: options?.isTest ?? false,
     data: event.data,
-    ...createRenderedEmail(event, locale),
+    message: createPlainTextMessage(event, locale),
   };
 }
 

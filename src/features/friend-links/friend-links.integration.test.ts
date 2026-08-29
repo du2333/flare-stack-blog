@@ -79,19 +79,12 @@ describe("FriendLinkService", () => {
           admin: {
             channels: {
               email: false,
-              webhook: true,
             },
           },
-          webhooks: [
-            {
-              id: "friend-link-webhook",
-              name: "Friend Link Webhook",
-              url: "https://example.com/webhook",
-              enabled: true,
-              secret: "secret",
-              events: ["friend_link.submitted"],
-            },
-          ],
+          webhook: {
+            url: "https://example.com/webhook",
+            secret: "secret",
+          },
         },
       });
 
@@ -108,7 +101,7 @@ describe("FriendLinkService", () => {
         expect.objectContaining({
           type: "WEBHOOK",
           data: expect.objectContaining({
-            endpointId: "friend-link-webhook",
+            url: "https://example.com/webhook",
             event: expect.objectContaining({
               type: "friend_link.submitted",
             }),
@@ -117,7 +110,7 @@ describe("FriendLinkService", () => {
       );
     });
 
-    it("should only send webhook to endpoints subscribed to friend link submission", async () => {
+    it("should not send webhook when the URL is empty", async () => {
       await ConfigService.updateSystemConfig(adminContext, {
         ...DEFAULT_CONFIG,
         notification: {
@@ -125,83 +118,21 @@ describe("FriendLinkService", () => {
           admin: {
             channels: {
               email: false,
-              webhook: true,
             },
           },
-          webhooks: [
-            {
-              id: "matched-friend-link-endpoint",
-              name: "Matched Friend Link Endpoint",
-              url: "https://example.com/friend-link",
-              enabled: true,
-              secret: "secret-1",
-              events: ["friend_link.submitted"],
-            },
-            {
-              id: "unmatched-friend-link-endpoint",
-              name: "Unmatched Friend Link Endpoint",
-              url: "https://example.com/comment",
-              enabled: true,
-              secret: "secret-2",
-              events: ["comment.admin_root_created"],
-            },
-          ],
+          webhook: {
+            url: "",
+            secret: "secret",
+          },
         },
       });
 
       vi.mocked(userContext.env.QUEUE.send).mockClear();
 
       await FriendLinkService.submitFriendLink(userContext, {
-        siteName: "Webhook Filter Site",
-        siteUrl: "https://webhook-filter.com",
-        contactEmail: "contact@webhook-filter.com",
-      });
-
-      expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
-      expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "WEBHOOK",
-          data: expect.objectContaining({
-            endpointId: "matched-friend-link-endpoint",
-            url: "https://example.com/friend-link",
-            event: expect.objectContaining({
-              type: "friend_link.submitted",
-            }),
-          }),
-        }),
-      );
-    });
-
-    it("should not send webhook to disabled endpoints", async () => {
-      await ConfigService.updateSystemConfig(adminContext, {
-        ...DEFAULT_CONFIG,
-        notification: {
-          ...DEFAULT_CONFIG.notification,
-          admin: {
-            channels: {
-              email: false,
-              webhook: true,
-            },
-          },
-          webhooks: [
-            {
-              id: "disabled-friend-link-endpoint",
-              name: "Disabled Friend Link Endpoint",
-              url: "https://example.com/disabled",
-              enabled: false,
-              secret: "secret",
-              events: ["friend_link.submitted"],
-            },
-          ],
-        },
-      });
-
-      vi.mocked(userContext.env.QUEUE.send).mockClear();
-
-      await FriendLinkService.submitFriendLink(userContext, {
-        siteName: "Disabled Webhook Site",
-        siteUrl: "https://disabled-webhook.com",
-        contactEmail: "contact@disabled-webhook.com",
+        siteName: "Empty Webhook Site",
+        siteUrl: "https://empty-webhook.com",
+        contactEmail: "contact@empty-webhook.com",
       });
 
       expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
