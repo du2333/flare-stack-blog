@@ -1,15 +1,17 @@
+import { DashboardOverviewSchema } from "@/features/dashboard/dashboard.schema";
 import * as DashboardService from "@/features/dashboard/service/dashboard.service";
 import { adminProcedure } from "@/lib/orpc/procedure";
 
-const stats = adminProcedure
+const overview = adminProcedure
   .route({
     method: "GET",
     path: "/admin/dashboard",
-    summary: "Get dashboard stats",
+    summary: "Get admin overview inbox",
     tags: ["Admin Dashboard"],
   })
-  .handler(({ context }) => DashboardService.getDashboardStats(context));
+  .output(DashboardOverviewSchema)
+  .handler(({ context }) => DashboardService.getDashboardOverview(context));
 
 export default {
-  stats,
+  overview,
 };

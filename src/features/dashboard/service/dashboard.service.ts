@@ -1,70 +1,58 @@
-import { publicCommentPath } from "@/features/comments/comment-url";
 import * as DashboardRepo from "@/features/dashboard/data/dashboard.data";
-import * as MediaRepo from "@/features/media/data/media.data";
-import { m } from "@/paraglide/messages";
+import {
+  commentSnippet,
+  DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
+  DASHBOARD_RECENT_COMMENTS_LIMIT,
+  DASHBOARD_RECENT_POSTS_LIMIT,
+  popularityAlertFromStatus,
+} from "@/features/dashboard/dashboard";
+import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
+import * as FriendLinkRepo from "@/features/friend-links/data/friend-links.data";
+import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 
-export async function getDashboardStats(
-  context: DbContext & { executionCtx: ExecutionContext },
-) {
+export async function getDashboardOverview(
+  context: DbContext,
+): Promise<DashboardOverview> {
   const { db } = context;
 
-  const [
-    publishedPosts,
-    drafts,
-    mediaSize,
-    recentComments,
-    recentPosts,
-    recentUsers,
-  ] = await Promise.all([
-    DashboardRepo.getPublishedPostsCount(db),
-    DashboardRepo.getDraftsCount(db),
-    MediaRepo.getTotalMediaSize(db),
-    DashboardRepo.getRecentComments(db, 10),
-    DashboardRepo.getRecentPosts(db, 10),
-    DashboardRepo.getRecentUsers(db, 10),
-  ]);
-
-  const activities = [
-    ...recentComments
-      .filter((c) => c.posts !== null)
-      .map((c) => ({
-        type: "comment" as const,
-        text: m.admin_overview_activity_comment({
-          userName: c.user?.name || m.admin_overview_activity_anonymous(),
-          postTitle: c.posts!.title,
-        }),
-        time: c.comments.createdAt,
-        link: publicCommentPath(c.posts!.slug, c.comments.id),
-      })),
-    ...recentPosts.map((p) => ({
-      type: "post" as const,
-      text: m.admin_overview_activity_post_published({
-        postTitle: p.title,
+  const [popularityStatus, recentPosts, pendingItems, pendingTotal, comments] =
+    await Promise.all([
+      postPopularityService.getStatus(context),
+      DashboardRepo.listRecentPosts(db, DASHBOARD_RECENT_POSTS_LIMIT),
+      FriendLinkRepo.getAllFriendLinks(db, {
+        status: "pending",
+        limit: DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
       }),
-      time: p.publishedAt,
-      link: `/post/${p.slug}`,
-    })),
-    ...recentUsers.map((u) => ({
-      type: "user" as const,
-      text: m.admin_overview_activity_user_registered({
-        userName: u.name,
-      }),
-      time: u.createdAt,
-    })),
-  ]
-    .sort((a, b) => {
-      const timeA = a.time ? new Date(a.time).getTime() : 0;
-      const timeB = b.time ? new Date(b.time).getTime() : 0;
-      return timeB - timeA;
-    })
-    .slice(0, 10);
+      FriendLinkRepo.getAllFriendLinksCount(db, { status: "pending" }),
+      DashboardRepo.listRecentVisitorComments(
+        db,
+        DASHBOARD_RECENT_COMMENTS_LIMIT,
+      ),
+    ]);
 
   return {
-    stats: {
-      publishedPosts,
-      drafts,
-      mediaSize,
+    popularityAlert: popularityAlertFromStatus(popularityStatus),
+    recentPosts,
+    pendingFriendLinks: {
+      items: pendingItems.map((item) => ({
+        id: item.id,
+        siteName: item.siteName,
+        createdAt: item.createdAt,
+      })),
+      remainingCount: Math.max(0, pendingTotal - pendingItems.length),
     },
-    activities,
+    recentComments: comments.flatMap((comment) => {
+      if (!comment.postSlug) return [];
+      return [
+        {
+          id: comment.id,
+          userName: comment.userName,
+          postTitle: comment.postTitle,
+          postSlug: comment.postSlug,
+          snippet: commentSnippet(comment.content),
+          createdAt: comment.createdAt,
+        },
+      ];
+    }),
   };
 }

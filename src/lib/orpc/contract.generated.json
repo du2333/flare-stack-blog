@@ -846,14 +846,14 @@
     }
   },
   "dashboard": {
-    "stats": {
+    "overview": {
       "~orpc": {
         "errorMap": {},
         "meta": {},
         "route": {
           "method": "GET",
           "path": "/admin/dashboard",
-          "summary": "Get dashboard stats",
+          "summary": "Get admin overview inbox",
           "tags": ["Admin Dashboard"]
         }
       }

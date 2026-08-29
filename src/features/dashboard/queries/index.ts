@@ -1,3 +1,3 @@
 import { orpc } from "@/lib/orpc";
 
-export const dashboardStatsQuery = orpc.dashboard.stats.queryOptions();
+export const dashboardOverviewQuery = orpc.dashboard.overview.queryOptions();

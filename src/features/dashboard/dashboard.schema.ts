@@ -1,24 +1,37 @@
 import { z } from "zod";
 
-export const DashboardStatsSchema = z.object({
-  publishedPosts: z.number(),
-  drafts: z.number(),
-  mediaSize: z.number(),
+const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
+
+export const DashboardRecentPostSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+  status: z.enum(["draft", "published"]),
+  updatedAt: coercedDate,
 });
 
-export const ActivityLogItemSchema = z.object({
-  type: z.enum(["comment", "post", "user"]),
-  text: z.string(),
-  time: z.date().nullable(),
-  link: z.string().optional(),
-  rootId: z.number().optional(),
+export const DashboardPendingFriendLinkSchema = z.object({
+  id: z.number().int().positive(),
+  siteName: z.string(),
+  createdAt: coercedDate,
 });
 
-export const DashboardResponseSchema = z.object({
-  stats: DashboardStatsSchema,
-  activities: z.array(ActivityLogItemSchema),
+export const DashboardRecentCommentSchema = z.object({
+  id: z.number().int().positive(),
+  userName: z.string().nullable(),
+  postTitle: z.string(),
+  postSlug: z.string(),
+  snippet: z.string(),
+  createdAt: coercedDate,
 });
 
-export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
-export type ActivityLogItem = z.infer<typeof ActivityLogItemSchema>;
-export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
+export const DashboardOverviewSchema = z.object({
+  popularityAlert: z.enum(["failed", "expired"]).nullable(),
+  recentPosts: z.array(DashboardRecentPostSchema),
+  pendingFriendLinks: z.object({
+    items: z.array(DashboardPendingFriendLinkSchema),
+    remainingCount: z.number().int().nonnegative(),
+  }),
+  recentComments: z.array(DashboardRecentCommentSchema),
+});
+
+export type DashboardOverview = z.infer<typeof DashboardOverviewSchema>;

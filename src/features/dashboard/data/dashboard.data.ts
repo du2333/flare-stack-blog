@@ -1,45 +1,40 @@
-import { count, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { CommentsTable, PostsTable, user as UserTable } from "@/lib/db/schema";
 
-export async function getPublishedPostsCount(db: DB) {
-  const [result] = await db
-    .select({ count: count() })
-    .from(PostsTable)
-    .where(eq(PostsTable.status, "published"));
-  return result.count;
-}
-
-export async function getDraftsCount(db: DB) {
-  const [result] = await db
-    .select({ count: count() })
-    .from(PostsTable)
-    .where(eq(PostsTable.status, "draft"));
-  return result.count;
-}
-
-export async function getRecentComments(db: DB, limit = 5) {
+export async function listRecentPosts(db: DB, limit: number) {
   return db
-    .select()
-    .from(CommentsTable)
-    .orderBy(desc(CommentsTable.createdAt))
-    .limit(limit)
-    .leftJoin(UserTable, eq(CommentsTable.userId, UserTable.id))
-    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id));
-}
-
-export async function getRecentPosts(db: DB, limit = 5) {
-  return db
-    .select()
+    .select({
+      id: PostsTable.id,
+      title: PostsTable.title,
+      status: PostsTable.status,
+      updatedAt: PostsTable.updatedAt,
+    })
     .from(PostsTable)
-    .where(eq(PostsTable.status, "published"))
-    .orderBy(desc(PostsTable.publishedAt))
+    .orderBy(desc(PostsTable.updatedAt), desc(PostsTable.id))
     .limit(limit);
 }
 
-export async function getRecentUsers(db: DB, limit = 5) {
+export async function listRecentVisitorComments(db: DB, limit: number) {
   return db
-    .select()
-    .from(UserTable)
-    .orderBy(desc(UserTable.createdAt))
+    .select({
+      id: CommentsTable.id,
+      content: CommentsTable.content,
+      createdAt: CommentsTable.createdAt,
+      userName: UserTable.name,
+      postTitle: sql<string>`coalesce(json_extract(${PostsTable.publicSnapshotJson}, '$.title'), ${PostsTable.title})`,
+      postSlug: PostsTable.publicSlug,
+    })
+    .from(CommentsTable)
+    .innerJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(UserTable, eq(CommentsTable.userId, UserTable.id))
+    .where(
+      and(
+        eq(CommentsTable.status, "published"),
+        isNotNull(PostsTable.publicSnapshotJson),
+        isNotNull(PostsTable.publicSlug),
+        or(isNull(UserTable.role), ne(UserTable.role, "admin")),
+      ),
+    )
+    .orderBy(desc(CommentsTable.createdAt))
     .limit(limit);
 }

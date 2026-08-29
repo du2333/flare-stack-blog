@@ -8,9 +8,10 @@ import {
   Mail,
   Webhook,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MaintenanceSection } from "@/features/config/components/maintenance-section";
@@ -28,8 +29,15 @@ import { WebhookSettingsSection } from "@/features/webhook/components/webhook-se
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
+const SETTINGS_TABS = ["site", "email", "webhook", "maintenance"] as const;
+
+const searchSchema = z.object({
+  tab: z.enum(SETTINGS_TABS).optional().default("site").catch("site"),
+});
+
 export const Route = createFileRoute("/admin/settings/")({
   ssr: false,
+  validateSearch: searchSchema,
   component: RouteComponent,
   loader: () => ({
     title: m.settings_admin_title(),
@@ -44,9 +52,10 @@ export const Route = createFileRoute("/admin/settings/")({
 });
 
 function RouteComponent() {
+  const { tab } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { settings, saveSettings, isLoading } = useSystemSetting();
   const { testEmailConnection } = useEmailConnection();
-  const [activeTab, setActiveTab] = useState("site");
   const formRef = useRef<HTMLFormElement>(null);
   const hasMountedRef = useRef(false);
   const tabItems = [
@@ -107,7 +116,7 @@ function RouteComponent() {
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [activeTab]);
+  }, [tab]);
 
   const onSubmit = async (data: SystemConfig) => {
     try {
@@ -162,15 +171,20 @@ function RouteComponent() {
 
         {/* Main Content with Tabs */}
         <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
+          value={tab}
+          onValueChange={(value) => {
+            navigate({
+              search: { tab: value as (typeof SETTINGS_TABS)[number] },
+              replace: true,
+            });
+          }}
           className="flex flex-col lg:grid lg:grid-cols-[220px_1fr] gap-8 lg:gap-16 items-start"
         >
           <div className="sticky top-0 z-40 w-full self-start border-b border-border/20 bg-background/96 pt-0.5 pb-2 backdrop-blur-md shadow-[0_12px_30px_-24px_rgba(15,23,42,0.55)] lg:border-b-0 lg:bg-transparent lg:pt-0 lg:pb-0 lg:backdrop-blur-none lg:shadow-none">
             <div className="overflow-x-auto no-scrollbar">
               <TabsList className="mx-auto flex w-max min-w-full flex-row justify-center rounded-2xl border border-border/25 bg-background/90 p-1.5 gap-1.5 transition-all duration-300 lg:w-full lg:min-w-0 lg:flex-col lg:justify-start lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:gap-1.5 lg:border-r lg:border-border/20 lg:pr-6">
                 {tabItems.map(({ value, icon: Icon, label }) => {
-                  const isActive = activeTab === value;
+                  const isActive = tab === value;
 
                   return (
                     <TabsTrigger
