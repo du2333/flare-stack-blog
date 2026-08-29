@@ -88,7 +88,7 @@ describe("post popularity service", () => {
   });
 
   it("uses a fresh snapshot to load Posts in ranked order", async () => {
-    const getPopularPosts = vi.fn(async () => []);
+    const getPopularPosts = vi.fn(async () => [{ id: 7 }, { id: 3 }]);
     const syncedAt = Date.parse("2026-08-22T00:15:00.000Z");
     const service = createPostPopularityService({
       now: () => new Date("2026-08-23T00:15:00.000Z"),
@@ -114,8 +114,10 @@ describe("post popularity service", () => {
       executionCtx: ExecutionContext;
     };
 
-    await service.getPopular(context, 2);
-
+    await expect(service.getPopular(context, 2)).resolves.toEqual([
+      { id: 7, viewCount: 12 },
+      { id: 3, viewCount: 8 },
+    ]);
     expect(getPopularPosts).toHaveBeenCalledWith(context, {
       limit: 2,
       snapshotVersion: syncedAt,

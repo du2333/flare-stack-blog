@@ -10,6 +10,7 @@ import {
   getPostPopularityWindow,
   isPostPopularitySnapshotUsable,
   POST_POPULARITY_MAX_AGE_MS,
+  withViewCounts,
   type PostPopularityMetric,
   type PostPopularityWindow,
   type PublishedPostPopularityRef,
@@ -193,14 +194,23 @@ export function createPostPopularityService(dependencies: Dependencies) {
       return [];
     }
 
-    return dependencies.getPopularPosts(context, {
+    const posts = await dependencies.getPopularPosts(context, {
       limit,
       snapshotVersion: snapshot.syncedAt,
       postIds: snapshot.entries.map((entry) => entry.postId),
     });
+    return withViewCounts(posts, snapshot, dependencies.now().getTime());
   }
 
-  return { getStatus, sync, getPopular };
+  async function attachViewCounts<T extends { id: number }>(
+    context: BaseContext,
+    posts: T[],
+  ): Promise<Array<T & { viewCount?: number }>> {
+    const snapshot = await dependencies.readSnapshot(context.env);
+    return withViewCounts(posts, snapshot, dependencies.now().getTime());
+  }
+
+  return { getStatus, sync, getPopular, attachViewCounts };
 }
 
 export const postPopularityService = createPostPopularityService({

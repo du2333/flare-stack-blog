@@ -1,5 +1,13 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { Calendar, ChevronRight, Clock, Flame, Pin, Tag } from "lucide-react";
+import {
+  Calendar,
+  ChevronRight,
+  Clock,
+  Eye,
+  Flame,
+  Pin,
+  Tag,
+} from "lucide-react";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -121,6 +129,12 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             <Clock size={14} />
             {m.read_time({ count: post.readTimeInMinutes })}
           </span>
+          {post.viewCount !== undefined && (
+            <span className="inline-flex items-center gap-1.5">
+              <Eye size={14} />
+              {m.post_views_count({ count: post.viewCount })}
+            </span>
+          )}
         </div>
       </div>
 

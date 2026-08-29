@@ -108,3 +108,21 @@ export function isPostPopularitySnapshotUsable(
 ): boolean {
   return now - snapshot.syncedAt <= POST_POPULARITY_MAX_AGE_MS;
 }
+
+export function withViewCounts<T extends { id: number }>(
+  posts: T[],
+  snapshot: PostPopularitySnapshot | null,
+  now = Date.now(),
+): Array<T & { viewCount?: number }> {
+  if (!snapshot || !isPostPopularitySnapshotUsable(snapshot, now)) {
+    return posts;
+  }
+
+  const scores = new Map(
+    snapshot.entries.map((entry) => [entry.postId, entry.score]),
+  );
+  return posts.map((post) => ({
+    ...post,
+    viewCount: scores.get(post.id) ?? 0,
+  }));
+}

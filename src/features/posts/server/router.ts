@@ -56,7 +56,16 @@ const list = publicProcedure
   })
   .input(GetPostsCursorInputSchema)
   .output(PostListResponseSchema)
-  .handler(({ context, input }) => PostService.getPostsCursor(context, input));
+  .handler(async ({ context, input }) => {
+    const result = await PostService.getPostsCursor(context, input);
+    return {
+      ...result,
+      items: await postPopularityService.attachViewCounts(
+        context,
+        result.items,
+      ),
+    };
+  });
 
 const bySlug = publicProcedure
   .route({
@@ -78,7 +87,12 @@ const related = publicProcedure
   })
   .input(FindRelatedPostsInputSchema)
   .output(z.array(PostItemSchema))
-  .handler(({ context, input }) => PostService.getRelatedPosts(context, input));
+  .handler(async ({ context, input }) =>
+    postPopularityService.attachViewCounts(
+      context,
+      await PostService.getRelatedPosts(context, input),
+    ),
+  );
 
 const pinned = publicProcedure
   .route({
@@ -88,7 +102,12 @@ const pinned = publicProcedure
     tags: ["Posts"],
   })
   .output(z.array(PostItemSchema))
-  .handler(({ context }) => PostService.getPinnedPosts(context));
+  .handler(async ({ context }) =>
+    postPopularityService.attachViewCounts(
+      context,
+      await PostService.getPinnedPosts(context),
+    ),
+  );
 
 const popular = publicProcedure
   .route({

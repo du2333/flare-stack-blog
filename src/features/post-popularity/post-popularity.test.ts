@@ -4,6 +4,7 @@ import {
   getPostPopularityWindow,
   isPostPopularitySnapshotUsable,
   postSlugFromPath,
+  withViewCounts,
 } from "./post-popularity";
 
 describe("post popularity", () => {
@@ -89,5 +90,23 @@ describe("post popularity", () => {
         Date.parse("2026-08-30T00:15:00.001Z"),
       ),
     ).toBe(false);
+  });
+
+  it("attaches snapshot scores to posts when the snapshot is usable", () => {
+    const snapshot = {
+      entries: [{ postId: 1, score: 9 }],
+      windowStart: Date.parse("2026-07-24T00:00:00.000Z"),
+      windowEnd: Date.parse("2026-08-22T23:59:59.999Z"),
+      syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+    };
+    const now = Date.parse("2026-08-23T12:00:00.000Z");
+
+    expect(withViewCounts([{ id: 1 }, { id: 2 }], snapshot, now)).toEqual([
+      { id: 1, viewCount: 9 },
+      { id: 2, viewCount: 0 },
+    ]);
+    expect(
+      withViewCounts([{ id: 1 }], snapshot, now + 8 * 24 * 60 * 60 * 1000),
+    ).toEqual([{ id: 1 }]);
   });
 });

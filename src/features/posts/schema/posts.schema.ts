@@ -36,6 +36,7 @@ export const PostItemSchema = PostSelectSchema.omit({
 }).extend({
   tags: z.array(TagSelectSchema).optional(),
   readTimeInMinutes: z.number().int().min(1),
+  viewCount: z.number().int().nonnegative().optional(),
 });
 export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
