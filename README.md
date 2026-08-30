@@ -42,6 +42,7 @@
 - **全文搜索** — 基于 Orama 的高性能搜索
 - **媒体库** — R2 对象存储，图片管理与优化
 - **用户认证** — GitHub OAuth 登录，权限控制
+- **API Key** — Admin 签发钥匙给 AI 或脚本，用 `x-api-key` 调用现有 `/api`
 - **数据统计** — Umami 负责访问分析，系统每日同步文章热度用于首页排序
 - **SEO 增强** — Canonical URL、Schema.org 结构化数据、RSS / Sitemap / Robots
 

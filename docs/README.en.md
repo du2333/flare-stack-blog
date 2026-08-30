@@ -40,7 +40,7 @@ Deeply integrated with D1, R2, KV, Queues, and other Serverless services.
 - **Full-Text Search** — High-performance search powered by Orama.
 - **Media Library** — R2 object storage for image management and optimization.
 - **Authentication** — GitHub OAuth login with role-based access control.
-- **MCP Server** — Connect AI clients through OAuth to manage posts, comments, tags, friend links, and media.
+- **API Keys** — An Admin issues keys so AI clients or scripts can call the existing `/api` with `x-api-key`.
 - **Analytics** — Umami handles visitor analytics; a daily sync supplies homepage popular-post ordering.
 - **SEO Enhancements** — Canonical URLs, Schema.org structured data, RSS, Sitemap, and Robots support.
 

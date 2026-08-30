@@ -1,9 +1,14 @@
 import { createAuthMiddleware } from "@better-auth/core/api";
 import { APIError } from "@better-auth/core/error";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { getSessionFromCtx } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AuthEmail } from "@/features/email/templates/AuthEmail";
+import {
+  inspectApiKeyManagementAccess,
+  isApiKeyManagementPath,
+} from "@/lib/auth/api-key-guard";
 import { createAuthConfig } from "@/lib/auth/auth.config";
 import * as authSchema from "@/lib/db/schema/auth.table";
 import { serverEnv } from "@/lib/env/server.env";
@@ -44,18 +49,44 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/sign-up/email") return;
+        if (ctx.path === "/sign-up/email") {
+          const email =
+            typeof ctx.body?.email === "string" ? ctx.body.email.trim() : "";
+          if (!email) return;
 
-        const email =
-          typeof ctx.body?.email === "string" ? ctx.body.email.trim() : "";
-        if (!email) return;
+          const allowed = await checkEmailRateLimit(env, "email-signup", email);
+          if (!allowed) {
+            throw APIError.from("BAD_REQUEST", {
+              code: "RATE_LIMITED",
+              message: "Too many sign up attempts",
+            });
+          }
+        }
 
-        const allowed = await checkEmailRateLimit(env, "email-signup", email);
-        if (allowed) return;
+        if (!isApiKeyManagementPath(ctx.path)) return;
 
-        throw APIError.from("BAD_REQUEST", {
-          code: "RATE_LIMITED",
-          message: "Too many sign up attempts",
+        const headers = ctx.headers ?? ctx.request?.headers ?? null;
+        const hasApiKeyHeader = Boolean(headers?.get("x-api-key"));
+        let role: string | null = null;
+        if (ctx.request && !hasApiKeyHeader) {
+          const session = await getSessionFromCtx(ctx);
+          const user = session?.user as { role?: string | null } | undefined;
+          role = user?.role ?? null;
+        }
+        const denial = inspectApiKeyManagementAccess({
+          path: ctx.path,
+          headers,
+          isHttpRequest: Boolean(ctx.request),
+          role,
+        });
+        if (!denial.denied) return;
+
+        throw APIError.from("FORBIDDEN", {
+          code: denial.code,
+          message:
+            denial.code === "API_KEY_CANNOT_MANAGE_API_KEYS"
+              ? "API keys cannot manage API keys"
+              : "Only an Admin can manage API keys",
         });
       }),
     },

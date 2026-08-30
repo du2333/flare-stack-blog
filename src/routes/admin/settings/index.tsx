@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   Check,
   Hammer,
+  KeyRound,
   LayoutTemplate,
   Loader2,
   Mail,
@@ -23,13 +24,20 @@ import {
   DEFAULT_CONFIG,
 } from "@/features/config/config.schema";
 import { useSystemSetting } from "@/features/config/hooks/use-system-setting";
+import { ApiKeySettingsSection } from "@/features/api-keys/components/api-key-settings-section";
 import { EmailServiceSection } from "@/features/email/components/email-service-section";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
 import { WebhookSettingsSection } from "@/features/webhook/components/webhook-settings-section";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-const SETTINGS_TABS = ["site", "email", "webhook", "maintenance"] as const;
+const SETTINGS_TABS = [
+  "site",
+  "email",
+  "webhook",
+  "api-keys",
+  "maintenance",
+] as const;
 
 const searchSchema = z.object({
   tab: z.enum(SETTINGS_TABS).optional().default("site").catch("site"),
@@ -56,7 +64,7 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
   const { settings, saveSettings, isLoading } = useSystemSetting();
   const { testEmailConnection } = useEmailConnection();
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const hasMountedRef = useRef(false);
   const tabItems = [
     {
@@ -75,12 +83,18 @@ function RouteComponent() {
       label: m.settings_tab_webhook(),
     },
     {
+      value: "api-keys",
+      icon: KeyRound,
+      label: m.settings_tab_api_keys(),
+    },
+    {
       value: "maintenance",
       icon: Hammer,
       label: m.settings_tab_maintenance(),
     },
   ] as const;
 
+  const isApiKeysTab = tab === "api-keys";
   const methods = useForm<SystemConfig>({
     resolver: zodResolver(createSystemConfigFormSchema(m)),
     defaultValues: DEFAULT_CONFIG,
@@ -139,9 +153,8 @@ function RouteComponent() {
 
   return (
     <FormProvider {...methods}>
-      <form
+      <div
         ref={formRef}
-        onSubmit={handleSubmit(onSubmit)}
         className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000 lg:space-y-12"
       >
         {/* Header Area */}
@@ -155,18 +168,21 @@ function RouteComponent() {
             </p>
           </div>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting || !isDirty}
-            className="hidden sm:flex h-11 px-8 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-all font-mono text-[11px] uppercase tracking-[0.2em] font-medium disabled:opacity-50 shadow-lg shadow-foreground/5"
-          >
-            {isSubmitting ? (
-              <Loader2 size={14} className="animate-spin mr-3" />
-            ) : (
-              <Check size={14} className="mr-3" />
-            )}
-            {isSubmitting ? m.settings_btn_saving() : m.settings_btn_save()}
-          </Button>
+          {isApiKeysTab ? null : (
+            <Button
+              type="submit"
+              form="system-config-form"
+              disabled={isSubmitting || !isDirty}
+              className="hidden sm:flex h-11 px-8 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-all font-mono text-[11px] uppercase tracking-[0.2em] font-medium disabled:opacity-50 shadow-lg shadow-foreground/5"
+            >
+              {isSubmitting ? (
+                <Loader2 size={14} className="animate-spin mr-3" />
+              ) : (
+                <Check size={14} className="mr-3" />
+              )}
+              {isSubmitting ? m.settings_btn_saving() : m.settings_btn_save()}
+            </Button>
+          )}
         </div>
 
         {/* Main Content with Tabs */}
@@ -222,61 +238,81 @@ function RouteComponent() {
           </div>
 
           <div className="flex-1 min-w-0 space-y-12 pt-2 lg:pt-0">
-            <TabsContent value="site" className="mt-0 space-y-10">
+            <TabsContent value="api-keys" className="mt-0 space-y-10">
               <div className="space-y-2 pb-6 border-b border-border/30">
                 <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  {m.settings_site_title()}
+                  {m.settings_api_keys_title()}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {m.settings_site_desc()}
+                  {m.settings_api_keys_desc()}
                 </p>
               </div>
-              <SiteSettingsSection />
+              <ApiKeySettingsSection />
             </TabsContent>
 
-            <TabsContent value="email" className="mt-0 space-y-10">
-              <div className="space-y-2 pb-6 border-b border-border/30">
-                <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  {m.settings_email_title()}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {m.settings_email_desc()}
-                </p>
-              </div>
-              <EmailServiceSection testEmailConnection={testEmailConnection} />
-            </TabsContent>
+            <form
+              id="system-config-form"
+              onSubmit={handleSubmit(onSubmit)}
+              className="contents"
+            >
+              <TabsContent value="site" className="mt-0 space-y-10">
+                <div className="space-y-2 pb-6 border-b border-border/30">
+                  <h2 className="text-2xl font-serif font-medium tracking-tight">
+                    {m.settings_site_title()}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {m.settings_site_desc()}
+                  </p>
+                </div>
+                <SiteSettingsSection />
+              </TabsContent>
 
-            <TabsContent value="webhook" className="mt-0 space-y-10">
-              <div className="space-y-2 pb-6 border-b border-border/30">
-                <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  {m.settings_webhook_title()}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {m.settings_webhook_desc()}
-                </p>
-              </div>
-              <WebhookSettingsSection />
-            </TabsContent>
+              <TabsContent value="email" className="mt-0 space-y-10">
+                <div className="space-y-2 pb-6 border-b border-border/30">
+                  <h2 className="text-2xl font-serif font-medium tracking-tight">
+                    {m.settings_email_title()}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {m.settings_email_desc()}
+                  </p>
+                </div>
+                <EmailServiceSection
+                  testEmailConnection={testEmailConnection}
+                />
+              </TabsContent>
 
-            <TabsContent value="maintenance" className="mt-0 space-y-10">
-              <div className="space-y-2 pb-6 border-b border-border/30">
-                <h2 className="text-2xl font-serif font-medium tracking-tight">
-                  {m.settings_maintenance_title()}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {m.settings_maintenance_desc()}
-                </p>
-              </div>
-              <MaintenanceSection />
-            </TabsContent>
+              <TabsContent value="webhook" className="mt-0 space-y-10">
+                <div className="space-y-2 pb-6 border-b border-border/30">
+                  <h2 className="text-2xl font-serif font-medium tracking-tight">
+                    {m.settings_webhook_title()}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {m.settings_webhook_desc()}
+                  </p>
+                </div>
+                <WebhookSettingsSection />
+              </TabsContent>
+
+              <TabsContent value="maintenance" className="mt-0 space-y-10">
+                <div className="space-y-2 pb-6 border-b border-border/30">
+                  <h2 className="text-2xl font-serif font-medium tracking-tight">
+                    {m.settings_maintenance_title()}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {m.settings_maintenance_desc()}
+                  </p>
+                </div>
+                <MaintenanceSection />
+              </TabsContent>
+            </form>
           </div>
         </Tabs>
 
-        {/* Floating Action Button for Mobile */}
-        {isDirty && (
+        {isDirty && !isApiKeysTab ? (
           <div className="fixed bottom-8 right-6 z-50 sm:hidden animate-in fade-in zoom-in slide-in-from-bottom-10 duration-500">
             <Button
               type="submit"
+              form="system-config-form"
               disabled={isSubmitting}
               className="h-14 w-14 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all shadow-2xl flex items-center justify-center p-0"
             >
@@ -287,8 +323,8 @@ function RouteComponent() {
               )}
             </Button>
           </div>
-        )}
-      </form>
+        ) : null}
+      </div>
     </FormProvider>
   );
 }

@@ -69,8 +69,12 @@ A **User** an **Admin** has stopped from creating **Comments**. They remain a **
 _Avoid_: Banned user, blocked user, silenced user, banned
 
 **Admin**:
-A **User** with content-management permissions for posts, comments, media, tags, settings, friend-link review, and muting **Users**.
+A **User** with content-management permissions for posts, comments, media, tags, settings, friend-link review, muting **Users**, and **API Keys**.
 _Avoid_: Owner
+
+**API Key**:
+A secret an **Admin** issues so a caller can authenticate as that **Admin** on the HTTP API without a browser session. It carries that Admin's content-management permissions, but it cannot create or revoke **API Keys**.
+_Avoid_: Token, bearer, service account, machine user, OAuth client
 
 **Search Index**:
 The public search read model built from **Published Posts**.
@@ -136,7 +140,11 @@ _Avoid_: New commit, fork update
 - A **Notification Event** can be delivered through email or a **Webhook Endpoint** according to **System Config**.
 - A **Notification Event** does not include the email recipient.
 - A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
-- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, **Friend Links**, and **Muted Users**.
+- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, **Friend Links**, **Muted Users**, and **API Keys**.
+- An **API Key** belongs to exactly one **Admin**.
+- An **Admin** can have zero or more **API Keys**.
+- An **API Key** authenticates as its owning **Admin** and has that Admin's content-management permissions.
+- An **API Key** cannot create or revoke **API Keys**. Only a signed-in **Admin** in the admin UI can.
 - A **User** can create **Comments** and submit **Friend Links**.
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.

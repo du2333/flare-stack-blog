@@ -38,6 +38,17 @@ export const openAPIHandler = new OpenAPIHandler(router, {
         info: {
           title: "Flare Stack Blog API",
           version: "1.0.0",
+          description:
+            "Admin routes accept a browser session cookie or an Admin API Key in the x-api-key header.",
+        },
+        components: {
+          securitySchemes: {
+            apiKey: {
+              type: "apiKey",
+              in: "header",
+              name: "x-api-key",
+            },
+          },
         },
       },
     }),
