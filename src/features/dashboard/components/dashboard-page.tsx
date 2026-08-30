@@ -12,7 +12,10 @@ export function DashboardPage() {
   const showComments = recentComments.length > 0;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-300 mx-auto">
+    <div
+      data-admin-legacy
+      className="space-y-8 animate-in fade-in duration-500 max-w-300 mx-auto"
+    >
       <header className="border-b border-border/30 pb-6">
         <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
           {m.admin_overview_heading()}

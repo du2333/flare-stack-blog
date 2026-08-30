@@ -145,7 +145,7 @@ function RouteComponent() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8 pb-20">
+      <div data-admin-legacy className="space-y-8 pb-20">
         <SectionSkeleton />
       </div>
     );
@@ -155,6 +155,7 @@ function RouteComponent() {
     <FormProvider {...methods}>
       <div
         ref={formRef}
+        data-admin-legacy
         className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000 lg:space-y-12"
       >
         {/* Header Area */}

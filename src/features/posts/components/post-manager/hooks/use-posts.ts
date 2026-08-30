@@ -1,60 +1,39 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  adminPostsCountQuery,
-  adminPostsQuery,
-} from "@/features/posts/queries";
+import { adminPostsQuery } from "@/features/posts/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
-import type {
-  PostListItem,
-  SortDirection,
-  SortField,
-  StatusFilter,
-} from "../types";
+import type { PostListItem, SortField, StatusFilter } from "../types";
 import { statusFilterToApi } from "../types";
 
 interface UsePostsOptions {
   page: number;
   status: StatusFilter;
-  sortDir: SortDirection;
   sortBy: SortField;
   search: string;
 }
 
-export function usePosts({
-  page,
-  status,
-  sortDir,
-  sortBy,
-  search,
-}: UsePostsOptions) {
+export function usePosts({ page, status, sortBy, search }: UsePostsOptions) {
   const apiStatus = statusFilterToApi(status);
 
   const listParams = {
     offset: (page - 1) * ADMIN_ITEMS_PER_PAGE,
     limit: ADMIN_ITEMS_PER_PAGE,
     status: apiStatus,
-    sortDir,
+    sortDir: "DESC" as const,
     sortBy,
-    search: search || undefined,
-  };
-
-  const countParams = {
-    status: apiStatus,
     search: search || undefined,
   };
 
   const postsQuery = useQuery(adminPostsQuery(listParams));
 
-  const countQuery = useQuery(adminPostsCountQuery(countParams));
-
-  const totalPages = Math.ceil((countQuery.data ?? 0) / ADMIN_ITEMS_PER_PAGE);
+  const totalCount = postsQuery.data?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / ADMIN_ITEMS_PER_PAGE);
 
   return {
-    posts: postsQuery.data ?? [],
-    totalCount: countQuery.data ?? 0,
+    posts: postsQuery.data?.items ?? [],
+    totalCount,
     totalPages,
     isPending: postsQuery.isPending,
     error: postsQuery.error,
@@ -75,7 +54,6 @@ export function useDeletePost({ onSuccess }: UseDeletePostOptions = {}) {
     },
     onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
-      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.count.key() });
       toast.success(m.admin_posts_toast_delete_success(), {
         description: m.admin_posts_toast_delete_success_desc({
           title: post.title,

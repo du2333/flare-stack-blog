@@ -101,7 +101,6 @@ function EditPost() {
     });
     queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() });
     queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
-    queryClient.invalidateQueries({ queryKey: orpc.posts.admin.count.key() });
     queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
     queryClient.invalidateQueries({ queryKey: orpc.media.linkedKeys.key() });
   };

@@ -1,6 +1,9 @@
 export function PostEditorSkeleton() {
   return (
-    <div className="fixed inset-0 z-80 flex flex-col bg-background overflow-hidden animate-pulse">
+    <div
+      data-admin-legacy
+      className="fixed inset-0 z-80 flex flex-col bg-background overflow-hidden animate-pulse"
+    >
       {/* Header Skeleton */}
       <header className="h-20 flex items-center justify-between px-8 shrink-0 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2">

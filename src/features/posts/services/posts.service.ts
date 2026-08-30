@@ -222,6 +222,20 @@ export async function generateSlug(
 }
 
 export async function createEmptyPost(context: DbContext) {
+  try {
+    const existing = await PostRepo.findReusableEmptyDraft(context.db);
+    if (existing) {
+      return { id: existing.id };
+    }
+  } catch (error) {
+    console.warn(
+      JSON.stringify({
+        event: "reuse_empty_draft_failed",
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
+  }
+
   const { slug } = await generateSlug(context, { title: "" });
 
   const post = await PostRepo.insertPost(context.db, {
@@ -232,9 +246,23 @@ export async function createEmptyPost(context: DbContext) {
     contentJson: null,
   });
 
-  // No cache/index operations for drafts
-
   return { id: post.id };
+}
+
+export async function listAdminPostsPage(
+  context: DbContext,
+  data: GetPostsInput,
+) {
+  const [items, total] = await Promise.all([
+    getPosts(context, data),
+    getPostsCount(context, {
+      status: data.status,
+      publicOnly: data.publicOnly,
+      search: data.search,
+      sortBy: data.sortBy,
+    }),
+  ]);
+  return { items, total };
 }
 
 export async function getPosts(context: DbContext, data: GetPostsInput) {

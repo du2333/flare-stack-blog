@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 interface AdminPaginationProps {
@@ -11,7 +11,6 @@ interface AdminPaginationProps {
   onPageChange: (page: number) => void;
 }
 
-/** Generate smart page numbers with ellipsis */
 function getPageNumbers(
   currentPage: number,
   totalPages: number,
@@ -62,8 +61,8 @@ export function AdminPagination({
   const endItem = Math.min(startItem + currentPageItemCount - 1, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-8 border-t border-border/30 mt-8">
-      <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+      <div className="text-sm fuwari-text-50">
         {m.admin_pagination_info({
           startItem,
           endItem,
@@ -71,54 +70,45 @@ export function AdminPagination({
         })}
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Previous Button */}
-        <Button
-          variant="outline"
-          size="icon"
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="h-8 w-8 rounded-none border-border/30 hover:bg-foreground hover:text-background hover:border-foreground transition-all disabled:opacity-20"
+          className="fuwari-btn-regular rounded-xl h-8 w-8 text-sm disabled:opacity-40"
         >
-          <span className="font-mono text-xs font-bold">{"<"}</span>
-        </Button>
+          {"<"}
+        </button>
 
-        {/* Page Numbers */}
-        <div className="flex items-center gap-1 px-2">
-          {pageNumbers.map((pageNumber, index) => (
-            <React.Fragment key={index}>
-              {pageNumber === "..." ? (
-                <div className="w-8 text-center text-[10px] text-muted-foreground font-mono">
-                  ...
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onPageChange(pageNumber)}
-                  className={`h-8 w-8 p-0 rounded-none font-mono text-xs transition-colors ${
-                    currentPage === pageNumber
-                      ? "bg-foreground text-background font-bold hover:bg-foreground hover:text-background"
-                      : "text-muted-foreground hover:text-foreground hover:bg-transparent underline decoration-border/30 hover:decoration-foreground underline-offset-4"
-                  }`}
-                >
-                  {pageNumber}
-                </Button>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
+        {pageNumbers.map((pageNumber, index) => (
+          <React.Fragment key={index}>
+            {pageNumber === "..." ? (
+              <div className="w-8 text-center text-sm fuwari-text-50">...</div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onPageChange(pageNumber)}
+                className={cn(
+                  "rounded-xl h-8 w-8 text-sm",
+                  currentPage === pageNumber
+                    ? "fuwari-btn-primary"
+                    : "fuwari-btn-regular",
+                )}
+              >
+                {pageNumber}
+              </button>
+            )}
+          </React.Fragment>
+        ))}
 
-        {/* Next Button */}
-        <Button
-          variant="outline"
-          size="icon"
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="h-8 w-8 rounded-none border-border/30 hover:bg-foreground hover:text-background hover:border-foreground transition-all disabled:opacity-20"
+          className="fuwari-btn-regular rounded-xl h-8 w-8 text-sm disabled:opacity-40"
         >
-          <span className="font-mono text-xs font-bold">{">"}</span>
-        </Button>
+          {">"}
+        </button>
       </div>
     </div>
   );

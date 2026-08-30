@@ -1,8 +1,5 @@
 import { ClientOnly, useNavigate } from "@tanstack/react-router";
-import { Edit3, MoreVertical, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Dropdown from "@/components/ui/dropdown";
+import { Pin, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { PostListItem } from "../types";
@@ -22,134 +19,69 @@ export function PostRow({ post, onDelete }: PostRowProps) {
     });
   };
 
+  const isPublished = post.status === "published";
+
   return (
-    <div className="group px-4 py-4 flex flex-col md:grid md:grid-cols-12 gap-4 items-center hover:bg-muted/30 transition-all duration-200 relative border-b border-border/30 last:border-0">
-      {/* Main Content: Info Block */}
-      <div
-        className="md:col-span-6 min-w-0 cursor-pointer group/title w-full flex flex-col gap-1"
+    <div className="px-4 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 border-b border-(--fuwari-input-border) last:border-0">
+      <button
+        type="button"
         onClick={handleEdit}
+        className="min-w-0 flex-1 text-left"
       >
-        {/* Metadata Header: ID */}
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-muted-foreground text-[10px] tracking-widest">
-            #{post.id.toString().padStart(3, "0")}
+        <div className="flex items-center gap-2 flex-wrap">
+          {post.pinnedAt ? (
+            <span className="inline-flex items-center gap-1 text-xs text-(--fuwari-primary)">
+              <Pin size={12} strokeWidth={1.5} />
+              {m.admin_posts_pinned()}
+            </span>
+          ) : null}
+          <span
+            className={
+              isPublished
+                ? "text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                : "text-xs px-2 py-0.5 rounded-full bg-(--fuwari-btn-regular-bg) fuwari-text-50"
+            }
+          >
+            {isPublished
+              ? m.admin_posts_status_published()
+              : m.admin_posts_status_draft()}
           </span>
         </div>
-
-        {/* Title */}
-        <h3 className="font-serif font-medium text-lg text-foreground tracking-tight group-hover/title:underline underline-offset-4 decoration-border/50 transition-all truncate">
-          {post.title}
+        <h3 className="mt-1 font-medium text-base fuwari-text-90 truncate">
+          {post.title.trim() || m.common_untitled()}
         </h3>
-
-        {/* Summary */}
-        <p className="text-xs text-muted-foreground truncate max-w-3xl font-mono opacity-70">
+        <p className="text-sm fuwari-text-50 truncate">
           {post.summary || m.admin_posts_no_summary()}
         </p>
-      </div>
+        <p className="mt-1 text-xs fuwari-text-30">
+          {isPublished
+            ? m.admin_posts_time_published()
+            : m.admin_posts_time_modified()}{" "}
+          <ClientOnly fallback="-">
+            {isPublished
+              ? formatDate(post.publishedAt || post.createdAt)
+              : formatDate(post.updatedAt)}
+          </ClientOnly>
+        </p>
+      </button>
 
-      {/* Middle side: Status */}
-      <div className="md:col-span-3 flex items-center gap-4">
-        <StatusBadge status={post.status} />
-      </div>
-
-      {/* Right Side: Date & Actions (Desktop Split) */}
-      <div className="w-full flex items-center gap-6 mt-2 md:mt-0 md:contents">
-        {/* Smart Date Display */}
-        <div className="md:col-span-2 flex flex-col items-start gap-1 md:justify-self-start">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            <span className="opacity-50">
-              {post.status === "published"
-                ? m.admin_posts_time_published()
-                : m.admin_posts_time_modified()}
-            </span>
-            <ClientOnly fallback={<span>-</span>}>
-              {post.status === "published"
-                ? formatDate(post.publishedAt || post.createdAt)
-                : formatDate(post.updatedAt)}
-            </ClientOnly>
-          </div>
-        </div>
-
-        {/* Actions (Desktop Only) */}
-        <div className="hidden md:flex md:col-span-1 items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit();
-            }}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-transparent rounded-none"
-            title={m.admin_posts_action_edit()}
-          >
-            <Edit3 size={14} strokeWidth={1.5} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-transparent rounded-none"
-            title={m.admin_posts_action_delete()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(post);
-            }}
-          >
-            <Trash2 size={14} strokeWidth={1.5} />
-          </Button>
-        </div>
-
-        {/* Mobile Dropdown (Hidden on Desktop) */}
-        <div className="md:hidden ml-auto">
-          <Dropdown
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground rounded-none"
-              >
-                <MoreVertical size={16} />
-              </Button>
-            }
-            items={[
-              {
-                label: m.admin_posts_action_edit_post(),
-                icon: <Edit3 size={14} strokeWidth={1.5} />,
-                onClick: handleEdit,
-              },
-              {
-                label: m.admin_posts_action_delete_post(),
-                icon: <Trash2 size={14} strokeWidth={1.5} />,
-                onClick: () => onDelete(post),
-                danger: true,
-              },
-            ]}
-          />
-        </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={handleEdit}
+          className="fuwari-btn-regular rounded-xl h-9 px-3 text-sm"
+        >
+          {m.admin_posts_action_edit()}
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(post)}
+          className="rounded-xl h-9 px-3 text-sm fuwari-text-50 hover:text-destructive"
+          title={m.admin_posts_action_delete()}
+        >
+          <Trash2 size={16} strokeWidth={1.5} />
+        </button>
       </div>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <Badge
-      variant="outline"
-      className={
-        "text-[9px] px-2 py-0.5 uppercase tracking-widest font-mono font-normal rounded-none border border-border/50 shadow-none bg-transparent " +
-        (status === "published"
-          ? "text-emerald-600 border-emerald-500/30"
-          : status === "draft"
-            ? "text-muted-foreground border-border"
-            : "text-amber-600 border-amber-500/30")
-      }
-    >
-      [{" "}
-      {status === "published"
-        ? m.admin_posts_status_published()
-        : status === "draft"
-          ? m.admin_posts_status_draft()
-          : m.admin_posts_status_pending()}{" "}
-      ]
-    </Badge>
   );
 }

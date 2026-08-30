@@ -15,7 +15,10 @@ export function MutedUsersPage() {
   } | null>(null);
 
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div
+      data-admin-legacy
+      className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+    >
       <div className="space-y-1 border-b border-border/30 pb-6">
         <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
           {m.muted_users_title()}

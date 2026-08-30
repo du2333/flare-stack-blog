@@ -138,6 +138,23 @@ export const GetPostsCountInputSchema = GetPostsInputSchema.omit({
   sortDir: true,
 });
 
+export const AdminPostListItemSchema = z.object({
+  id: z.number().int(),
+  title: z.string(),
+  summary: z.string().nullable(),
+  slug: z.string(),
+  status: z.enum(["draft", "published"]),
+  publishedAt: coercedDateNullable,
+  pinnedAt: coercedDateNullable,
+  createdAt: coercedDate,
+  updatedAt: coercedDate,
+});
+
+export const AdminPostListPageSchema = z.object({
+  items: z.array(AdminPostListItemSchema),
+  total: z.number().int().nonnegative(),
+});
+
 export const FindPostByIdInputSchema = z.object({ id: z.number() });
 
 export const UpdatePostInputSchema = z.object({

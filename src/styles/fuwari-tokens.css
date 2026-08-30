@@ -1,0 +1,156 @@
+/* Shared Fuwari color and control tokens. Not a Tailwind entry. */
+
+@layer base {
+  :root {
+    --fuwari-radius-large: 1rem;
+    --fuwari-hue: 250;
+
+    --fuwari-primary: oklch(0.7 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.65 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.6 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.95 0.01 var(--fuwari-hue));
+    --fuwari-card-bg: white;
+    --fuwari-btn-content: oklch(0.55 0.12 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.85 0.08 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.98 0.01 var(--fuwari-hue));
+    --fuwari-enter-btn-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-enter-btn-bg-hover: var(--fuwari-btn-regular-bg-hover);
+    --fuwari-enter-btn-bg-active: var(--fuwari-btn-regular-bg-active);
+    --fuwari-meta-divider: rgba(0, 0, 0, 0.2);
+    --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(0, 0, 0, 0.07);
+    --fuwari-input-border: rgba(0, 0, 0, 0.1);
+  }
+
+  .dark {
+    --fuwari-primary: oklch(0.75 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.8 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.85 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.16 0.014 var(--fuwari-hue));
+    --fuwari-card-bg: oklch(0.23 0.015 var(--fuwari-hue));
+    --fuwari-btn-content: oklch(0.75 0.1 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.33 0.035 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.38 0.04 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.43 0.045 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.3 0.035 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.27 0.025 var(--fuwari-hue));
+    --fuwari-meta-divider: rgba(255, 255, 255, 0.2);
+    --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(255, 255, 255, 0.05);
+    --fuwari-input-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer components {
+  .fuwari-card-base {
+    border-radius: var(--fuwari-radius-large);
+    overflow: hidden;
+    background-color: var(--fuwari-card-bg);
+    transition:
+      background-color 0.3s,
+      color 0.3s;
+  }
+
+  .fuwari-btn-regular {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .fuwari-btn-regular:hover {
+    background-color: var(--fuwari-btn-regular-bg-hover);
+  }
+  .fuwari-btn-regular:active {
+    background-color: var(--fuwari-btn-regular-bg-active);
+  }
+  .dark .fuwari-btn-regular {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .fuwari-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-primary);
+    color: white;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      opacity 0.2s;
+  }
+  .fuwari-btn-primary:hover {
+    background-color: var(--fuwari-primary-hover);
+  }
+  .fuwari-btn-primary:active {
+    background-color: var(--fuwari-primary-active);
+  }
+  .fuwari-btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .dark .fuwari-btn-primary {
+    color: rgb(0 0 0 / 0.75);
+  }
+
+  .fuwari-text-90 {
+    color: rgb(0 0 0 / 0.9);
+  }
+  .dark .fuwari-text-90 {
+    color: rgb(255 255 255 / 0.9);
+  }
+
+  .fuwari-text-75 {
+    color: rgb(0 0 0 / 0.75);
+  }
+  .dark .fuwari-text-75 {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .fuwari-text-50 {
+    color: rgb(0 0 0 / 0.5);
+  }
+  .dark .fuwari-text-50 {
+    color: rgb(255 255 255 / 0.5);
+  }
+
+  .fuwari-text-30 {
+    color: rgb(0 0 0 / 0.3);
+  }
+  .dark .fuwari-text-30 {
+    color: rgb(255 255 255 / 0.3);
+  }
+
+  .fuwari-expand-animation {
+    position: relative;
+    z-index: 0;
+  }
+  .fuwari-expand-animation::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    scale: 0.85;
+    z-index: -1;
+    transition:
+      scale 0.2s ease-out,
+      background-color 0.2s;
+  }
+  .fuwari-expand-animation:hover::before {
+    scale: 1;
+    background-color: var(--fuwari-btn-plain-bg-hover);
+  }
+  .fuwari-expand-animation:active::before {
+    background-color: var(--fuwari-btn-plain-bg-active);
+  }
+}

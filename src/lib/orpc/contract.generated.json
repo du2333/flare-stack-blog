@@ -73,18 +73,6 @@
           }
         }
       },
-      "count": {
-        "~orpc": {
-          "errorMap": {},
-          "meta": {},
-          "route": {
-            "method": "GET",
-            "path": "/admin/posts/count",
-            "summary": "Count posts for admin",
-            "tags": ["Admin Posts"]
-          }
-        }
-      },
       "get": {
         "~orpc": {
           "errorMap": {},
@@ -116,7 +104,7 @@
           "route": {
             "method": "POST",
             "path": "/admin/posts",
-            "summary": "Create an empty draft post",
+            "summary": "Get or create an empty draft post",
             "tags": ["Admin Posts"]
           }
         }

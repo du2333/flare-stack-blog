@@ -23,7 +23,6 @@ function invalidatePostEditorQueries(
     orpc.posts.admin.get.key({ input: { id: postId } }),
     orpc.posts.list.key(),
     orpc.posts.admin.list.key(),
-    orpc.posts.admin.count.key(),
     orpc.posts.admin.revisions.key(),
     orpc.tags.admin.key(),
     orpc.media.linkedKeys.key(),

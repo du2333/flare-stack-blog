@@ -1,13 +1,16 @@
 import {
   createFileRoute,
-  Link,
   Outlet,
   redirect,
+  useMatches,
 } from "@tanstack/react-router";
-import { ArrowUpRight, Menu, Settings } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useState } from "react";
+import {
+  AdminChromeProvider,
+  useAdminChrome,
+} from "@/components/admin/admin-chrome";
 import { SideBar } from "@/components/admin/side-bar";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import Toaster from "@/components/ui/toaster";
 import { sessionQuery } from "@/features/auth/queries";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
@@ -45,68 +48,73 @@ export const Route = createFileRoute("/admin")({
   },
 });
 
+function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const title = (matches[i]?.loaderData as { title?: string } | undefined)
+      ?.title;
+    if (typeof title === "string" && title.length > 0) return title;
+  }
+  return "";
+}
+
 function AdminLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
   useVersionCheck();
 
   return (
-    <div className="h-screen overflow-hidden bg-background text-foreground flex relative font-sans admin-layout">
-      <SideBar
-        isMobileSidebarOpen={isMobileSidebarOpen}
-        closeMobileSidebar={closeMobileSidebar}
-      />
+    <AdminChromeProvider>
+      <div className="admin-layout h-screen overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-4 p-4 relative font-sans">
+        <SideBar
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          closeMobileSidebar={closeMobileSidebar}
+        />
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 min-h-0">
-        {/* Top Header */}
-        <header className="h-20 border-b border-border/30 bg-background flex items-center justify-between px-6 md:px-10 sticky top-0 z-30 shrink-0">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-muted/50 rounded-sm transition-colors text-foreground"
-              aria-label={m.admin_layout_open_navigation()}
-            >
-              <Menu size={20} strokeWidth={1.5} />
-            </button>
-            <Breadcrumbs />
+        <main className="flex-1 flex flex-col min-w-0 min-h-0">
+          <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+            <div className="max-w-7xl mx-auto">
+              <Outlet />
+            </div>
           </div>
+        </main>
+        <Toaster />
+      </div>
+    </AdminChromeProvider>
+  );
+}
 
-          <div className="flex items-center gap-6">
-            <Link
-              to="/admin/settings"
-              className="group p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-              title={m.admin_layout_settings()}
-            >
-              <Settings
-                size={18}
-                strokeWidth={1.5}
-                className="group-hover:rotate-45 transition-transform duration-500 ease-in-out"
-              />
-            </Link>
-            <div className="h-4 w-px bg-border/40" />
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-mono font-medium text-muted-foreground hover:text-foreground transition-colors group"
-            >
-              <span>{m.admin_layout_back_to_site()}</span>
-              <ArrowUpRight
-                size={10}
-                strokeWidth={1.5}
-                className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-              />
-            </Link>
-          </div>
-        </header>
+function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const matches = useMatches();
+  const pageTitle = pageTitleFromMatches(matches);
+  const { primaryAction } = useAdminChrome();
 
-        {/* Content Scroll */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-6 md:p-12 custom-scrollbar">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
-          </div>
-        </div>
-      </main>
-      <Toaster />
-    </div>
+  return (
+    <header className="lg:hidden shrink-0 mb-4">
+      <div className="fuwari-card-base flex items-center gap-3 px-3 h-16">
+        <button
+          onClick={onOpenSidebar}
+          className="p-2 rounded-lg fuwari-text-75 hover:text-(--fuwari-primary)"
+          aria-label={m.admin_layout_open_navigation()}
+        >
+          <Menu size={20} strokeWidth={1.5} />
+        </button>
+        <h1 className="flex-1 min-w-0 truncate text-base font-medium fuwari-text-90">
+          {pageTitle}
+        </h1>
+        {primaryAction ? (
+          <button
+            type="button"
+            onClick={primaryAction.onClick}
+            disabled={primaryAction.disabled}
+            className="fuwari-btn-primary rounded-xl h-9 px-3 text-sm font-medium shrink-0"
+          >
+            {primaryAction.label}
+          </button>
+        ) : (
+          <span className="w-9" />
+        )}
+      </div>
+    </header>
   );
 }

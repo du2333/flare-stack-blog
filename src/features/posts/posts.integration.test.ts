@@ -556,6 +556,38 @@ describe("Posts Integration", () => {
       expect(published[0].title).toBe("Published Post");
     });
 
+    it("reuses an empty Draft Post instead of inserting another", async () => {
+      const first = await PostService.createEmptyPost(adminContext);
+      const second = await PostService.createEmptyPost(adminContext);
+      expect(second.id).toBe(first.id);
+    });
+
+    it("inserts a new Draft Post when the previous empty one has a title", async () => {
+      const first = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id: first.id,
+        data: { title: "Kept", slug: "kept-draft" },
+      });
+      const second = await PostService.createEmptyPost(adminContext);
+      expect(second.id).not.toBe(first.id);
+    });
+
+    it("lists admin posts with a total in one page helper", async () => {
+      const { id } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id,
+        data: { title: "Paged", slug: "paged-post" },
+      });
+
+      const page = await PostService.listAdminPostsPage(adminContext, {
+        limit: 12,
+        offset: 0,
+      });
+      expect(page.items).toHaveLength(1);
+      expect(page.total).toBe(1);
+      expect(page.items[0]?.title).toBe("Paged");
+    });
+
     it("should search posts by title keyword", async () => {
       // Create posts with different titles
       const { id: id1 } = await PostService.createEmptyPost(adminContext);
@@ -584,6 +616,38 @@ describe("Posts Integration", () => {
       expect(results).toHaveLength(2);
       expect(results.map((p) => p.title)).toContain("Learn TypeScript");
       expect(results.map((p) => p.title)).toContain("Learn JavaScript");
+    });
+
+    it("should search posts by summary and slug", async () => {
+      const { id: summaryId } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id: summaryId,
+        data: {
+          title: "Alpha",
+          slug: "alpha-slug",
+          summary: "unique-summary-token",
+        },
+      });
+
+      const { id: slugId } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id: slugId,
+        data: {
+          title: "Beta",
+          slug: "unique-slug-token",
+          summary: "other",
+        },
+      });
+
+      const bySummary = await PostService.getPosts(adminContext, {
+        search: "unique-summary-token",
+      });
+      expect(bySummary.map((p) => p.id)).toContain(summaryId);
+
+      const bySlug = await PostService.getPosts(adminContext, {
+        search: "unique-slug-token",
+      });
+      expect(bySlug.map((p) => p.id)).toContain(slugId);
     });
 
     it("should count posts with filters", async () => {
@@ -1058,9 +1122,6 @@ describe("Posts Integration", () => {
     it("deletes multiple revisions for the current post only", async () => {
       const { id: firstPostId } =
         await PostService.createEmptyPost(adminContext);
-      const { id: secondPostId } =
-        await PostService.createEmptyPost(adminContext);
-
       await updatePost({
         id: firstPostId,
         data: {
@@ -1068,6 +1129,8 @@ describe("Posts Integration", () => {
           slug: "first-post-v1",
         },
       });
+      const { id: secondPostId } =
+        await PostService.createEmptyPost(adminContext);
       const firstRevision = unwrap(
         await PostRevisionService.createPostRevision(adminContext, {
           postId: firstPostId,

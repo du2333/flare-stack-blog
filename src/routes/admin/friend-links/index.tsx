@@ -61,7 +61,10 @@ function FriendLinksAdminPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div
+      data-admin-legacy
+      className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+    >
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-border/30 pb-6">
         <div className="space-y-1">

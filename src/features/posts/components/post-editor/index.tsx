@@ -200,7 +200,10 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     : "";
 
   return (
-    <div className="fixed inset-0 z-80 flex flex-col overflow-hidden bg-background">
+    <div
+      data-admin-legacy
+      className="fixed inset-0 z-80 flex flex-col overflow-hidden bg-background"
+    >
       <ConfirmationModal
         isOpen={status === "blocked"}
         onClose={() => reset?.()}

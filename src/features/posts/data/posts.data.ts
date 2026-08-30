@@ -21,6 +21,7 @@ import type {
   PostItem,
   PostListItem,
 } from "@/features/posts/schema/posts.schema";
+import { isPostBodyEmpty } from "@/features/posts/utils/is-post-body-empty";
 import type { PostStatus, PublicPostSnapshot, Tag } from "@/lib/db/schema";
 import { PostsTable, TagsTable } from "@/lib/db/schema";
 
@@ -129,6 +130,27 @@ export async function getPostsCount(
     .from(PostsTable)
     .where(whereClause);
   return totalNumberofPosts[0].count;
+}
+
+export async function findReusableEmptyDraft(db: DB) {
+  const rows = await db
+    .select({
+      id: PostsTable.id,
+      contentJson: PostsTable.contentJson,
+    })
+    .from(PostsTable)
+    .where(
+      and(eq(PostsTable.status, "draft"), sql`trim(${PostsTable.title}) = ''`),
+    )
+    .orderBy(desc(PostsTable.updatedAt))
+    .limit(20);
+
+  for (const row of rows) {
+    if (isPostBodyEmpty(row.contentJson)) {
+      return row;
+    }
+  }
+  return null;
 }
 
 /**

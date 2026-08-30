@@ -1,11 +1,11 @@
 import { z } from "zod";
 import {
+  AdminPostListPageSchema,
   DeletePostInputSchema,
   FindPostByIdInputSchema,
   FindPostBySlugInputSchema,
   FindRelatedPostsInputSchema,
   GenerateSlugInputSchema,
-  GetPostsCountInputSchema,
   GetPostsCursorInputSchema,
   GetPostsInputSchema,
   AdminPostSchema,
@@ -131,17 +131,10 @@ const adminList = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(GetPostsInputSchema)
-  .handler(({ context, input }) => PostService.getPosts(context, input));
-
-const adminCount = adminProcedure
-  .route({
-    method: "GET",
-    path: "/admin/posts/count",
-    summary: "Count posts for admin",
-    tags: ["Admin Posts"],
-  })
-  .input(GetPostsCountInputSchema)
-  .handler(({ context, input }) => PostService.getPostsCount(context, input));
+  .output(AdminPostListPageSchema)
+  .handler(({ context, input }) =>
+    PostService.listAdminPostsPage(context, input),
+  );
 
 const adminGet = adminProcedure
   .errors(postErrors)
@@ -169,7 +162,7 @@ const create = adminProcedure
   .route({
     method: "POST",
     path: "/admin/posts",
-    summary: "Create an empty draft post",
+    summary: "Get or create an empty draft post",
     tags: ["Admin Posts"],
   })
   .handler(({ context }) => PostService.createEmptyPost(context));
@@ -326,7 +319,6 @@ export default {
   popular,
   admin: {
     list: adminList,
-    count: adminCount,
     get: adminGet,
     generateSlug,
     create,

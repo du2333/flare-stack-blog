@@ -59,7 +59,7 @@ export function MediaLibrary() {
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div data-admin-legacy className="space-y-8 pb-20">
       {/* Header Section */}
       <div className="flex justify-between items-end animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both border-b border-border/30 pb-6">
         <div className="space-y-1">

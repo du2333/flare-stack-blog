@@ -1,10 +1,14 @@
 import type { SQL } from "drizzle-orm";
-import { and, asc, desc, eq, like, sql } from "drizzle-orm";
+import { and, asc, desc, eq, or, sql } from "drizzle-orm";
 import type { PostStatus } from "@/lib/db/schema";
 import { PostsTable } from "@/lib/db/schema";
 
 export type SortField = "publishedAt" | "updatedAt";
 export type SortDirection = "ASC" | "DESC";
+
+export function escapeLikeString(str: string) {
+  return str.replace(/[%_\\]/g, "\\$&");
+}
 
 export function buildPostWhereClause(options: {
   status?: PostStatus;
@@ -21,11 +25,17 @@ export function buildPostWhereClause(options: {
     whereClauses.push(sql`${PostsTable.publicSnapshotJson} IS NOT NULL`);
   }
 
-  // Search by title
   if (options.search) {
     const searchTerm = options.search.trim();
     if (searchTerm) {
-      whereClauses.push(like(PostsTable.title, `%${searchTerm}%`));
+      const pattern = `%${escapeLikeString(searchTerm)}%`;
+      whereClauses.push(
+        or(
+          sql`${PostsTable.title} LIKE ${pattern} ESCAPE '\\'`,
+          sql`${PostsTable.summary} LIKE ${pattern} ESCAPE '\\'`,
+          sql`${PostsTable.slug} LIKE ${pattern} ESCAPE '\\'`,
+        ),
+      );
     }
   }
 
