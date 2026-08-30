@@ -348,6 +348,45 @@ describe("MediaService", () => {
       expect(unused.items.some((item) => item.key === media.key)).toBe(false);
     });
 
+    it("locks a Post Cover on the draft and on the public snapshot", async () => {
+      const file = new File(["cover image"], "cover-image.png", {
+        type: "image/png",
+      });
+      const media = unwrap(await MediaService.upload(adminContext, { file }));
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: postId,
+          data: { coverMediaId: media.id },
+        }),
+      );
+
+      expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
+        true,
+      );
+
+      await publishPost(postId);
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: postId,
+          data: { coverMediaId: null },
+        }),
+      );
+
+      expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
+        true,
+      );
+      expect(
+        (await MediaService.deleteImage(adminContext, media.key)).error?.reason,
+      ).toBe("MEDIA_IN_USE");
+
+      unwrap(await PostService.unpublishPost(adminContext, { id: postId }));
+      expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
+        false,
+      );
+    });
+
     it("unlocks snapshot-only images after unpublish if the draft no longer uses them", async () => {
       const file = new File(["unpublish image"], "unpublish-image.png", {
         type: "image/png",

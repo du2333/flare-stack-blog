@@ -8,6 +8,7 @@ type ArticleJsonLdInput = {
     publishedAt?: Date | string | null;
     updatedAt: Date | string;
     tags?: Array<{ name: string }> | undefined;
+    image?: string | null;
   };
 };
 
@@ -79,6 +80,10 @@ export function buildArticleJsonLd({
   const keywords = post.tags?.map((tag) => tag.name).filter(Boolean);
   if (keywords?.length) {
     jsonLd.keywords = keywords;
+  }
+
+  if (post.image) {
+    jsonLd.image = post.image;
   }
 
   return JSON.stringify(jsonLd);

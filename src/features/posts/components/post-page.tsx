@@ -6,6 +6,7 @@ import { ContentRenderer } from "@/features/posts/components/content/content-ren
 import type { PostWithToc } from "@/features/posts/schema/posts.schema";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
+import ZoomableImage from "./content/zoomable-image";
 import { PostMeta } from "./post-meta";
 import { PostSummary } from "./post-summary";
 import { RelatedPosts, RelatedPostsSkeleton } from "./related-posts";
@@ -84,7 +85,25 @@ export function PostPage({ post }: PostPageProps) {
         {/* Metadata */}
         <div>
           <PostMeta post={post} className="mb-5" />
+          {!post.cover && (
+            <div className="border-(--fuwari-meta-divider) border-dashed border-b mb-5" />
+          )}
         </div>
+
+        {post.cover && (
+          <div
+            id="post-cover"
+            className="mb-8 rounded-xl overflow-hidden fuwari-onload-animation"
+          >
+            <ZoomableImage
+              src={post.cover.url}
+              alt={post.title}
+              width={post.cover.width ?? undefined}
+              height={post.cover.height ?? undefined}
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        )}
 
         {/* Summary */}
         <PostSummary summary={post.summary} />

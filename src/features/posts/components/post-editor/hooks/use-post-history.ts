@@ -6,6 +6,7 @@ import {
   postRevisionListQuery,
 } from "@/features/posts/queries";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
+import type { PostEditorCover } from "../types";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import {
@@ -47,7 +48,10 @@ export function usePostHistory({
   postId: number;
   isInspecting: boolean;
   onInspectingChange: (isInspecting: boolean) => void;
-  onRestoreApplied: (snapshot: PostRevisionSnapshot) => void;
+  onRestoreApplied: (
+    snapshot: PostRevisionSnapshot,
+    cover: PostEditorCover | null,
+  ) => void;
   beforeRestore?: () => Promise<void>;
 }) {
   const queryClient = useQueryClient();
@@ -113,7 +117,8 @@ export function usePostHistory({
     onSuccess: async () => {
       if (!selectedRevision) return;
 
-      onRestoreApplied(selectedRevision.snapshotJson);
+      const fresh = await orpcClient.posts.admin.get({ id: postId });
+      onRestoreApplied(selectedRevision.snapshotJson, fresh?.cover ?? null);
 
       await invalidatePostEditorQueries(queryClient, postId);
 

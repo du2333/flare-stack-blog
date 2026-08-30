@@ -13,6 +13,18 @@ import { NullableJsonContentSchema } from "./json-content.schema";
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 const coercedDateNullable = coercedDate.nullable();
 
+export const PublicPostCoverSchema = z.object({
+  key: z.string(),
+  url: z.string(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
+});
+
+export const AdminPostCoverSchema = PublicPostCoverSchema.extend({
+  id: z.number().int(),
+  fileName: z.string(),
+});
+
 export const PostSelectSchema = createSelectSchema(PostsTable, {
   publishedAt: coercedDateNullable,
   pinnedAt: coercedDateNullable,
@@ -33,10 +45,12 @@ export const PostUpdateSchema = createUpdateSchema(PostsTable, {
 export const PostItemSchema = PostSelectSchema.omit({
   contentJson: true,
   publicSlug: true,
+  coverMediaId: true,
 }).extend({
   tags: z.array(TagSelectSchema).optional(),
   readTimeInMinutes: z.number().int().min(1),
   viewCount: z.number().int().nonnegative().optional(),
+  cover: PublicPostCoverSchema.nullable().catch(null),
 });
 export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
@@ -44,6 +58,7 @@ export const PostListResponseSchema = z.object({
 });
 export const PostWithTocSchema = PostSelectSchema.omit({
   publicSlug: true,
+  coverMediaId: true,
 })
   .extend({
     tags: z.array(TagSelectSchema).optional(),
@@ -55,6 +70,7 @@ export const PostWithTocSchema = PostSelectSchema.omit({
         level: z.number(),
       }),
     ),
+    cover: PublicPostCoverSchema.nullable().catch(null),
   })
   .nullable();
 
@@ -65,6 +81,7 @@ export const AdminPostSchema = PostSelectSchema.omit({
     tags: z.array(TagSelectSchema).optional(),
     hasPublicSnapshot: z.boolean(),
     serverToday: z.string(),
+    cover: AdminPostCoverSchema.nullable(),
   })
   .nullable();
 

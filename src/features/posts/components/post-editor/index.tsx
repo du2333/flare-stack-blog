@@ -35,6 +35,8 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     tagIds: initialData.tagIds,
     hasPublicSnapshot: initialData.hasPublicSnapshot,
     serverToday: initialData.serverToday,
+    coverMediaId: initialData.coverMediaId,
+    cover: initialData.cover,
   }));
   const [editorContent, setEditorContent] = useState<JSONContent | null>(
     () => normalizePostContent(initialData.contentJson) ?? null,
@@ -91,7 +93,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   }, [getContent]);
 
   const handleRestoreApplied = useCallback(
-    (snapshot: PostRevisionSnapshot) => {
+    (snapshot: PostRevisionSnapshot, cover: PostEditorData["cover"]) => {
       const restoredPost: PostEditorData = {
         title: snapshot.title,
         summary: snapshot.summary ?? "",
@@ -102,6 +104,8 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         tagIds: snapshot.tagIds,
         hasPublicSnapshot: post.hasPublicSnapshot,
         serverToday: post.serverToday,
+        coverMediaId: cover?.id ?? snapshot.coverMediaId ?? null,
+        cover,
       };
 
       editorContentRef.current = restoredPost.contentJson;

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { TagSelector } from "@/features/tags/components/tag-selector";
 import { toLocalDateString } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { PostEditorCover } from "./post-editor-cover";
 import type { PostEditorData } from "./types";
 
 interface PostEditorMetadataProps {
@@ -133,6 +134,11 @@ export function PostEditorMetadata({
             className="w-full resize-none bg-transparent text-xs font-mono leading-relaxed text-foreground placeholder:text-muted-foreground/30 focus:outline-none"
           />
         </div>
+
+        <PostEditorCover
+          cover={post.cover}
+          onChange={(next) => onPostChange(next)}
+        />
       </div>
     </>
   );

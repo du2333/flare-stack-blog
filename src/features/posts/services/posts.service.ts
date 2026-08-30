@@ -1,4 +1,5 @@
 import { invalidate } from "@/features/cache/public-cache";
+import * as MediaRepo from "@/features/media/data/media.data";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
@@ -23,6 +24,7 @@ import type {
 } from "@/features/posts/schema/posts.schema";
 import { normalizePostTagName } from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
+import type { PublicPostCover } from "@/lib/db/schema";
 import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import {
@@ -46,7 +48,37 @@ function stripPublicSnapshot<
   return rest;
 }
 
+async function resolveSnapshotCover(
+  db: DB,
+  coverMediaId: number | null | undefined,
+): Promise<PublicPostCover | null> {
+  if (coverMediaId == null) return null;
+  const media = await MediaRepo.findMediaById(db, coverMediaId);
+  if (!media) return null;
+  return {
+    mediaId: media.id,
+    key: media.key,
+    url: media.url,
+    width: media.width,
+    height: media.height,
+  };
+}
+
+function toAdminCover(
+  media: NonNullable<Awaited<ReturnType<typeof MediaRepo.findMediaById>>>,
+) {
+  return {
+    id: media.id,
+    key: media.key,
+    url: media.url,
+    fileName: media.fileName,
+    width: media.width,
+    height: media.height,
+  };
+}
+
 async function buildPublicSnapshot(
+  db: DB,
   post: NonNullable<Awaited<ReturnType<typeof PostRepo.findPostById>>>,
   contentJson: PublicPostSnapshot["contentJson"],
 ): Promise<PublicPostSnapshot> {
@@ -58,6 +90,7 @@ async function buildPublicSnapshot(
     tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort((a, b) => a - b),
     publishedAt: toIsoOrNull(post.publishedAt) ?? new Date().toISOString(),
     pinnedAt: toIsoOrNull(post.pinnedAt),
+    cover: await resolveSnapshotCover(db, post.coverMediaId),
   };
 }
 
@@ -76,6 +109,7 @@ async function createPublishRevision(
     slug: post.slug,
     publishedAt: post.publishedAt,
     pinnedAt: post.pinnedAt,
+    coverMediaId: post.coverMediaId,
   });
 
   const latestPublish = await PostRevisionRepo.findLatestPostRevision(
@@ -99,6 +133,7 @@ async function createPublishRevision(
       publishedAt: toIsoOrNull(post.publishedAt),
       contentJson: post.contentJson,
       tagIds,
+      coverMediaId: post.coverMediaId ?? null,
     },
   });
 }
@@ -246,8 +281,15 @@ export async function findPostById(
   const post = await PostRepo.findPostById(context.db, data.id);
   if (!post) return null;
 
+  const coverMedia =
+    post.coverMediaId == null
+      ? null
+      : await MediaRepo.findMediaById(context.db, post.coverMediaId);
+
   return {
     ...stripPublicSnapshot(post),
+    coverMediaId: coverMedia ? post.coverMediaId : null,
+    cover: coverMedia ? toAdminCover(coverMedia) : null,
     hasPublicSnapshot: post.publicSnapshotJson != null,
     serverToday: serverUtcDateString(),
   };
@@ -257,6 +299,16 @@ export async function updatePost(
   context: DbContext & { executionCtx: ExecutionContext; env?: Env },
   data: UpdatePostInput,
 ) {
+  if (data.data.coverMediaId != null) {
+    const coverMedia = await MediaRepo.findMediaById(
+      context.db,
+      data.data.coverMediaId,
+    );
+    if (!coverMedia) {
+      return err({ reason: "MEDIA_NOT_FOUND" });
+    }
+  }
+
   const updateData =
     data.data.contentJson !== undefined
       ? {
@@ -273,7 +325,10 @@ export async function updatePost(
     return err({ reason: "POST_NOT_FOUND" });
   }
 
-  if (updateData.contentJson !== undefined) {
+  if (
+    updateData.contentJson !== undefined ||
+    updateData.coverMediaId !== undefined
+  ) {
     await syncPostMedia(context.db, updatedPost.id);
   }
 
@@ -347,7 +402,11 @@ export async function publishPost(
   const highlighted = publishedPost.contentJson
     ? await highlightCodeBlocks(publishedPost.contentJson)
     : null;
-  const snapshot = await buildPublicSnapshot(publishedPost, highlighted);
+  const snapshot = await buildPublicSnapshot(
+    context.db,
+    publishedPost,
+    highlighted,
+  );
   const previousPublicSlug = publishedPost.publicSlug;
   await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
   await syncPostMedia(context.db, publishedPost.id);

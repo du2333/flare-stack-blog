@@ -45,6 +45,7 @@ const postErrors = {
     status: 409,
     message: "This public slug is already in use.",
   },
+  MEDIA_NOT_FOUND: { status: 404, message: "Media not found." },
 } as const;
 
 const list = publicProcedure
@@ -186,6 +187,9 @@ const update = adminProcedure
     unwrapResult(PostService.updatePost(context, input), {
       POST_NOT_FOUND: () => {
         throw errors.POST_NOT_FOUND();
+      },
+      MEDIA_NOT_FOUND: () => {
+        throw errors.MEDIA_NOT_FOUND();
       },
     }),
   );

@@ -139,6 +139,7 @@ describe("Posts Integration", () => {
       });
       expect(storedPost?.publicSnapshotJson).toBeTruthy();
       expect(storedPost?.publicSlug).toBe("legacy-snapshot");
+      expect(storedPost?.publicSnapshotJson?.cover ?? null).toBeNull();
     });
 
     it("should delete a post", async () => {
@@ -870,6 +871,7 @@ describe("Posts Integration", () => {
           ],
         },
         tagIds: [tag.id],
+        coverMediaId: null,
       });
     });
 
@@ -1202,6 +1204,7 @@ describe("Posts Integration", () => {
           ],
         },
         tagIds: [tag.id],
+        coverMediaId: null,
       });
     });
 

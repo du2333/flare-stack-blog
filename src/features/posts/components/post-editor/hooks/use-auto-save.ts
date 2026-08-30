@@ -35,6 +35,7 @@ type MetaSnapshot = {
   publishedAt: number | null;
   pinnedAt: number | null;
   tagIds: string;
+  coverMediaId: number | null;
 };
 
 type SaveResult = "synced" | "dirty" | "failed" | "discarded" | "blocked";
@@ -49,6 +50,7 @@ function toMeta(post: PostEditorData): MetaSnapshot {
     tagIds: persistableTagIds(post.tagIds)
       .sort((left, right) => left - right)
       .join(","),
+    coverMediaId: post.coverMediaId,
   };
 }
 
@@ -60,7 +62,8 @@ function isMetaDirty(curr: MetaSnapshot, prev: MetaSnapshot | null) {
     prev.slug !== curr.slug ||
     prev.publishedAt !== curr.publishedAt ||
     prev.pinnedAt !== curr.pinnedAt ||
-    prev.tagIds !== curr.tagIds
+    prev.tagIds !== curr.tagIds ||
+    prev.coverMediaId !== curr.coverMediaId
   );
 }
 

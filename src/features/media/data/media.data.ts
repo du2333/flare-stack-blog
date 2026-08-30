@@ -13,6 +13,15 @@ export async function insertMedia(
   return inserted;
 }
 
+export async function findMediaById(db: DB, id: number): Promise<Media | null> {
+  const [media] = await db
+    .select()
+    .from(MediaTable)
+    .where(eq(MediaTable.id, id))
+    .limit(1);
+  return media ?? null;
+}
+
 export async function deleteMedia(db: DB, key: string) {
   await db.delete(MediaTable).where(eq(MediaTable.key, key));
 }

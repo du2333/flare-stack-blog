@@ -12,6 +12,14 @@ import { createdAt, id, updatedAt } from "./helper";
 
 export const POST_STATUSES = ["draft", "published"] as const;
 
+export type PublicPostCover = {
+  mediaId: number;
+  key: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+};
+
 export type PublicPostSnapshot = {
   title: string;
   summary: string | null;
@@ -20,6 +28,7 @@ export type PublicPostSnapshot = {
   tagIds: Array<number>;
   publishedAt: string;
   pinnedAt: string | null;
+  cover: PublicPostCover | null;
 };
 
 export const PostsTable = sqliteTable(
@@ -38,6 +47,7 @@ export const PostsTable = sqliteTable(
     status: text("status", { enum: POST_STATUSES }).notNull().default("draft"),
     publishedAt: integer("published_at", { mode: "timestamp" }),
     pinnedAt: integer("pinned_at", { mode: "timestamp" }),
+    coverMediaId: integer("cover_media_id"),
     createdAt,
     updatedAt,
   },
@@ -45,6 +55,7 @@ export const PostsTable = sqliteTable(
     uniqueIndex("posts_public_slug_unique").on(table.publicSlug),
     index("published_at_idx").on(table.publishedAt, table.status),
     index("created_at_idx").on(table.createdAt),
+    index("posts_cover_media_id_idx").on(table.coverMediaId),
   ],
 );
 

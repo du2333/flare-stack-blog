@@ -21,6 +21,7 @@ export async function syncPostMedia(db: DB, postId: number) {
     .select({
       contentJson: PostsTable.contentJson,
       publicSnapshotJson: PostsTable.publicSnapshotJson,
+      coverMediaId: PostsTable.coverMediaId,
     })
     .from(PostsTable)
     .where(eq(PostsTable.id, postId))
@@ -32,6 +33,22 @@ export async function syncPostMedia(db: DB, postId: number) {
     post.contentJson,
     post.publicSnapshotJson?.contentJson,
   );
+  const snapshotCoverKey = post.publicSnapshotJson?.cover?.key;
+  if (snapshotCoverKey) usedKeys.push(snapshotCoverKey);
+
+  const mediaIds = new Set<number>();
+  if (post.coverMediaId != null) mediaIds.add(post.coverMediaId);
+  if (post.publicSnapshotJson?.cover?.mediaId != null) {
+    mediaIds.add(post.publicSnapshotJson.cover.mediaId);
+  }
+
+  if (usedKeys.length > 0) {
+    const mediaRecords = await db
+      .select({ id: MediaTable.id })
+      .from(MediaTable)
+      .where(inArray(MediaTable.key, usedKeys));
+    for (const media of mediaRecords) mediaIds.add(media.id);
+  }
 
   const batchQueries: Array<BatchItem<"sqlite">> = [];
 
@@ -39,20 +56,15 @@ export async function syncPostMedia(db: DB, postId: number) {
     .delete(PostMediaTable)
     .where(eq(PostMediaTable.postId, postId));
 
-  if (usedKeys.length > 0) {
-    const mediaRecords = await db
-      .select({ id: MediaTable.id })
-      .from(MediaTable)
-      .where(inArray(MediaTable.key, usedKeys));
-
-    if (mediaRecords.length > 0) {
-      const newRelations = mediaRecords.map((media) => ({
-        postId,
-        mediaId: media.id,
-      }));
-
-      batchQueries.push(db.insert(PostMediaTable).values(newRelations));
-    }
+  if (mediaIds.size > 0) {
+    batchQueries.push(
+      db.insert(PostMediaTable).values(
+        [...mediaIds].map((mediaId) => ({
+          postId,
+          mediaId,
+        })),
+      ),
+    );
   }
 
   await db.batch([deleteQuery, ...batchQueries]);

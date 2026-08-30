@@ -1,5 +1,14 @@
 import type { JSONContent } from "@tiptap/react";
 
+export interface PostEditorCover {
+  id: number;
+  key: string;
+  url: string;
+  fileName: string;
+  width: number | null;
+  height: number | null;
+}
+
 export interface PostEditorData {
   title: string;
   summary: string;
@@ -10,6 +19,8 @@ export interface PostEditorData {
   tagIds: Array<number>;
   hasPublicSnapshot: boolean;
   serverToday: string;
+  coverMediaId: number | null;
+  cover: PostEditorCover | null;
 }
 
 export interface PostEditorProps {
@@ -29,4 +40,6 @@ export const defaultPostData: PostEditorData = {
   tagIds: [],
   hasPublicSnapshot: false,
   serverToday: "",
+  coverMediaId: null,
+  cover: null,
 };

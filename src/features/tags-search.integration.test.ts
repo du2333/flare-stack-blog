@@ -300,6 +300,7 @@ describe("Tags & Search Integration", () => {
           tagIds: [1],
           publishedAt: new Date().toISOString(),
           pinnedAt: null,
+          cover: null,
         },
       };
 

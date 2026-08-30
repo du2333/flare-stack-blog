@@ -6,6 +6,7 @@ import {
   PostListResponseSchema,
   PostWithTocSchema,
 } from "@/features/posts/schema/posts.schema";
+import { toPublicCover } from "@/features/posts/public-snapshot";
 import { estimateReadTimeMinutes } from "@/features/posts/utils/content";
 import { generateTableOfContents } from "@/features/posts/utils/toc";
 
@@ -109,6 +110,7 @@ export const postBySlug = defineEntry({
       readTimeInMinutes: estimateReadTimeMinutes(post.contentJson),
       tags: post.tags,
       toc: generateTableOfContents(post.contentJson),
+      cover: toPublicCover(post.publicSnapshotJson?.cover),
     };
   },
 });

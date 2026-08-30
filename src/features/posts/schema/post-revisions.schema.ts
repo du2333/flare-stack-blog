@@ -21,6 +21,7 @@ export const PostRevisionSnapshotSchema = z.object({
   publishedAt: z.string().nullable(),
   contentJson: NullableJsonContentSchema,
   tagIds: z.array(z.number().int()),
+  coverMediaId: z.number().int().nullable().default(null),
 });
 
 export const PostRevisionSelectSchema = createSelectSchema(PostRevisionsTable, {

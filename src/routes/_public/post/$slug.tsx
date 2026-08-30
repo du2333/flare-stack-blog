@@ -46,6 +46,10 @@ export const Route = createFileRoute("/_public/post/$slug")({
   head: ({ loaderData }) => {
     const post = loaderData?.post;
     const canonicalHref = loaderData?.canonicalHref ?? "";
+    const coverUrl =
+      post?.cover && canonicalHref
+        ? new URL(post.cover.url, canonicalHref).toString()
+        : undefined;
 
     return {
       meta: [
@@ -60,6 +64,13 @@ export const Route = createFileRoute("/_public/post/$slug")({
         { property: "og:description", content: post?.summary ?? "" },
         { property: "og:type", content: "article" },
         { property: "og:url", content: canonicalHref },
+        ...(coverUrl
+          ? [
+              { property: "og:image", content: coverUrl },
+              { name: "twitter:card", content: "summary_large_image" },
+              { name: "twitter:image", content: coverUrl },
+            ]
+          : []),
       ],
       links: [canonicalLink(canonicalHref)],
       scripts: post
@@ -69,7 +80,10 @@ export const Route = createFileRoute("/_public/post/$slug")({
               children: buildArticleJsonLd({
                 authorName: loaderData.authorName,
                 canonicalHref,
-                post,
+                post: {
+                  ...post,
+                  image: coverUrl,
+                },
               }),
             },
           ]

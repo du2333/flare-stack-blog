@@ -1,7 +1,22 @@
 import type { Tag } from "@/lib/db/schema";
-import type { PublicPostSnapshot } from "@/lib/db/schema/posts.table";
+import type {
+  PublicPostCover,
+  PublicPostSnapshot,
+} from "@/lib/db/schema/posts.table";
 import { estimateReadTimeMinutes } from "@/features/posts/utils/content";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
+
+export function toPublicCover(
+  cover: PublicPostCover | null | undefined,
+): PostItem["cover"] {
+  if (!cover) return null;
+  return {
+    key: cover.key,
+    url: cover.url,
+    width: cover.width,
+    height: cover.height,
+  };
+}
 
 export function toIsoOrNull(
   value: Date | string | null | undefined,
@@ -35,5 +50,6 @@ export function mapSnapshotToPublicPost(
     updatedAt: row.updatedAt,
     readTimeInMinutes: estimateReadTimeMinutes(snapshot.contentJson),
     tags,
+    cover: toPublicCover(snapshot.cover),
   };
 }

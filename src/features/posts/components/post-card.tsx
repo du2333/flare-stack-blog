@@ -20,19 +20,27 @@ interface PostCardProps {
 
 export function PostCard({ post, pinned, popular }: PostCardProps) {
   const tagNames = (post.tags ?? []).map((t) => t.name);
+  const hasCover = Boolean(post.cover);
+  const coverWidth = "28%";
 
   return (
     <div
-      className={`fuwari-card-base flex flex-col w-full rounded-(--fuwari-radius-large) overflow-hidden relative ${
+      className={`fuwari-card-base flex flex-col-reverse md:flex-col w-full rounded-(--fuwari-radius-large) overflow-hidden relative ${
         pinned ? "border-2 border-(--fuwari-primary)/20 shadow-sm" : ""
       }`}
+      style={{ ["--coverWidth" as string]: coverWidth }}
     >
       {pinned && (
         <div className="absolute top-0 right-0 w-32 h-32 bg-(--fuwari-primary) opacity-5 rounded-bl-[100px] -z-10 pointer-events-none" />
       )}
 
-      <div className="pl-6 md:pl-9 pr-6 pt-6 md:pt-7 pb-6 relative w-full md:pr-24">
-        {/* Badge */}
+      <div
+        className={`pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative ${
+          hasCover
+            ? "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]"
+            : "w-full md:w-[calc(100%_-_52px_-_12px)]"
+        }`}
+      >
         {(pinned || popular) && (
           <div className="flex items-center gap-1.5 font-medium text-sm mb-3">
             {pinned ? (
@@ -62,15 +70,10 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           className="transition group w-full block font-bold mb-3 text-3xl fuwari-text-90 hover:text-(--fuwari-primary) active:text-(--fuwari-primary) relative before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--fuwari-primary)"
         >
           {post.title}
-          {
-            <>
-              <ChevronRight className="inline-block md:hidden text-[2rem] text-(--fuwari-primary) align-middle -mt-1 ml-1" />
-              <ChevronRight className="text-(--fuwari-primary) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
-            </>
-          }
+          <ChevronRight className="inline-block md:hidden text-[2rem] text-(--fuwari-primary) align-middle -mt-1 ml-1" />
+          <ChevronRight className="text-(--fuwari-primary) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
         </Link>
 
-        {/* Metadata */}
         <div className="flex flex-wrap fuwari-text-50 items-center gap-4 gap-x-4 gap-y-2 mb-4">
           <div className="flex items-center">
             <div className="fuwari-meta-icon">
@@ -112,7 +115,6 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           )}
         </div>
 
-        {/* Description */}
         <div
           className={`fuwari-text-75 pr-4 wrap-break-word ${
             pinned
@@ -123,7 +125,6 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           {post.summary ?? ""}
         </div>
 
-        {/* Read time */}
         <div className="text-sm fuwari-text-50 flex items-center gap-4 [&_svg]:shrink-0">
           <span className="inline-flex items-center gap-1.5">
             <Clock size={14} />
@@ -138,18 +139,38 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
         </div>
       </div>
 
-      {/* Enter button */}
-      <Link
-        to="/post/$slug"
-        params={{ slug: post.slug }}
-        aria-label={post.title}
-        className="hidden md:flex fuwari-btn-regular w-13 absolute right-3 top-3 bottom-3 rounded-xl active:scale-95"
-      >
-        <ChevronRight
-          className="text-(--fuwari-primary) text-4xl mx-auto"
-          strokeWidth={2}
-        />
-      </Link>
+      {hasCover && post.cover ? (
+        <Link
+          to="/post/$slug"
+          params={{ slug: post.slug }}
+          aria-label={post.title}
+          className="group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+        >
+          <div className="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
+          <div className="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
+            <ChevronRight className="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" />
+          </div>
+          <img
+            src={post.cover.url}
+            alt={post.title}
+            width={post.cover.width ?? undefined}
+            height={post.cover.height ?? undefined}
+            className="w-full h-full object-cover"
+          />
+        </Link>
+      ) : (
+        <Link
+          to="/post/$slug"
+          params={{ slug: post.slug }}
+          aria-label={post.title}
+          className="hidden md:flex fuwari-btn-regular w-13 absolute right-3 top-3 bottom-3 rounded-xl active:scale-95"
+        >
+          <ChevronRight
+            className="text-(--fuwari-primary) text-4xl mx-auto"
+            strokeWidth={2}
+          />
+        </Link>
+      )}
     </div>
   );
 }

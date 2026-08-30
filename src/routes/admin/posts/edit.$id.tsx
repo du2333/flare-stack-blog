@@ -71,6 +71,8 @@ function EditPost() {
     pinnedAt: post.pinnedAt,
     hasPublicSnapshot: post.hasPublicSnapshot,
     serverToday: post.serverToday,
+    coverMediaId: post.coverMediaId,
+    cover: post.cover,
   };
 
   const handleSave = async (data: PostEditorData) => {
@@ -84,6 +86,7 @@ function EditPost() {
           contentJson: data.contentJson,
           publishedAt: data.publishedAt,
           pinnedAt: data.pinnedAt,
+          coverMediaId: data.coverMediaId,
         },
       }),
       orpcClient.tags.admin.setPostTags({
