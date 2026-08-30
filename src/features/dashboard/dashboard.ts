@@ -1,6 +1,9 @@
+import { blogConfig } from "@/blog.config";
 import { jsonCommentToPlainText } from "@/features/comments/comment-body";
+import type { SystemConfig } from "@/features/config/config.schema";
+import { isEmailConfigured } from "@/features/email/service/email.service";
 
-export const DASHBOARD_RECENT_POSTS_LIMIT = 3;
+export const DASHBOARD_RECENT_POSTS_LIMIT = 4;
 export const DASHBOARD_PENDING_FRIEND_LINKS_LIMIT = 5;
 export const DASHBOARD_RECENT_COMMENTS_LIMIT = 8;
 export const DASHBOARD_COMMENT_SNIPPET_LENGTH = 80;
@@ -16,6 +19,20 @@ export function popularityAlertFromStatus(status: {
   if (status.lastError) return "failed";
   if (status.expired) return "expired";
   return null;
+}
+
+export function adminEmailNeedsSetup(config: SystemConfig): boolean {
+  const adminEmailEnabled = config.notification?.admin?.channels?.email ?? true;
+  if (!adminEmailEnabled) return false;
+  return !isEmailConfigured(config.email);
+}
+
+export function siteIdentityIsDefault(
+  site: SystemConfig["site"] | undefined,
+): boolean {
+  const title = site?.title?.trim() ?? "";
+  const author = site?.author?.trim() ?? "";
+  return title === blogConfig.title || author === blogConfig.author;
 }
 
 export function commentSnippet(

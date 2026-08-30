@@ -7,6 +7,7 @@ export async function listRecentPosts(db: DB, limit: number) {
       id: PostsTable.id,
       title: PostsTable.title,
       status: PostsTable.status,
+      pinnedAt: PostsTable.pinnedAt,
       updatedAt: PostsTable.updatedAt,
     })
     .from(PostsTable)

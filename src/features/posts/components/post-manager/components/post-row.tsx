@@ -38,7 +38,7 @@ export function PostRow({ post, onDelete }: PostRowProps) {
           <span
             className={
               isPublished
-                ? "text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                ? "text-xs px-2 py-0.5 rounded-full bg-(--fuwari-success-bg) text-(--fuwari-success-fg)"
                 : "text-xs px-2 py-0.5 rounded-full bg-(--fuwari-btn-regular-bg) fuwari-text-50"
             }
           >

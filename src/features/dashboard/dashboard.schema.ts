@@ -6,12 +6,14 @@ export const DashboardRecentPostSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
   status: z.enum(["draft", "published"]),
+  pinnedAt: coercedDate.nullable(),
   updatedAt: coercedDate,
 });
 
 export const DashboardPendingFriendLinkSchema = z.object({
   id: z.number().int().positive(),
   siteName: z.string(),
+  siteUrl: z.string(),
   createdAt: coercedDate,
 });
 
@@ -26,6 +28,8 @@ export const DashboardRecentCommentSchema = z.object({
 
 export const DashboardOverviewSchema = z.object({
   popularityAlert: z.enum(["failed", "expired"]).nullable(),
+  adminEmailNeedsSetup: z.boolean(),
+  defaultSiteIdentity: z.boolean(),
   recentPosts: z.array(DashboardRecentPostSchema),
   pendingFriendLinks: z.object({
     items: z.array(DashboardPendingFriendLinkSchema),

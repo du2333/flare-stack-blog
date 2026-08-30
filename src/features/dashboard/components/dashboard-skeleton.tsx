@@ -1,39 +1,36 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
 export function DashboardSkeleton() {
   return (
-    <div
-      data-admin-legacy
-      className="space-y-8 animate-in fade-in duration-500 max-w-300 mx-auto"
-    >
-      <header className="border-b border-border/30 pb-6">
-        <Skeleton className="h-9 w-28" />
-      </header>
-
-      <div className="space-y-4">
-        <Skeleton className="h-3 w-20" />
-        <div className="border border-border/30 divide-y divide-border/30">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex justify-between gap-4 px-4 py-4">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-          ))}
-        </div>
+    <div className="space-y-4 animate-pulse">
+      <div className="hidden lg:flex justify-between items-center px-1">
+        <div className="h-8 w-20 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+        <div className="h-10 w-24 rounded-xl bg-(--fuwari-btn-regular-bg)" />
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="flex gap-2 px-1">
+        <div className="h-9 w-28 rounded-full bg-(--fuwari-btn-regular-bg)" />
+        <div className="h-9 w-36 rounded-full bg-(--fuwari-btn-regular-bg)" />
+      </div>
+      <div className="fuwari-card-base p-5 md:p-6 space-y-3">
+        <div className="h-4 w-16 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex justify-between gap-4 rounded-xl px-3 py-3"
+          >
+            <div className="h-5 w-48 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+            <div className="h-4 w-24 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {Array.from({ length: 2 }).map((_, column) => (
-          <div key={column} className="space-y-4">
-            <Skeleton className="h-3 w-24" />
-            <div className="border border-border/30 divide-y divide-border/30">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="px-4 py-4 space-y-2">
-                  <Skeleton className="h-3 w-40" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              ))}
-            </div>
+          <div key={column} className="fuwari-card-base p-5 md:p-6 space-y-3">
+            <div className="h-4 w-20 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="px-3 py-3 space-y-2">
+                <div className="h-4 w-40 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+                <div className="h-4 w-full rounded-lg bg-(--fuwari-btn-regular-bg)" />
+              </div>
+            ))}
           </div>
         ))}
       </div>

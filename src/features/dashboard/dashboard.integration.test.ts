@@ -86,6 +86,24 @@ describe("Dashboard overview", () => {
     const overview = await getDashboardOverview(adminContext);
     expect(overview.pendingFriendLinks.items).toHaveLength(5);
     expect(overview.pendingFriendLinks.remainingCount).toBe(2);
+    expect(overview.pendingFriendLinks.items[0]?.siteUrl).toMatch(
+      /^https:\/\/site-\d+\.example$/,
+    );
+  });
+
+  it("includes pinnedAt on recent posts", async () => {
+    const id = await publishPost("pinned-one");
+    unwrap(
+      await PostService.updatePost(adminContext, {
+        id,
+        data: { pinnedAt: new Date() },
+      }),
+    );
+
+    const overview = await getDashboardOverview(adminContext);
+    expect(
+      overview.recentPosts.find((post) => post.id === id)?.pinnedAt,
+    ).toBeTruthy();
   });
 
   it("lists visitor comments on published posts and skips the rest", async () => {
@@ -157,5 +175,33 @@ describe("Dashboard overview", () => {
 
     const overview = await getDashboardOverview(adminContext);
     expect(overview.popularityAlert).toBe("failed");
+  });
+
+  it("surfaces default site identity and missing admin email", async () => {
+    const overview = await getDashboardOverview(adminContext);
+    expect(overview.adminEmailNeedsSetup).toBe(true);
+    expect(overview.defaultSiteIdentity).toBe(true);
+  });
+
+  it("clears setup flags after email and site identity are set", async () => {
+    await ConfigRepo.upsertSystemConfig(adminContext.db, {
+      ...DEFAULT_CONFIG,
+      email: {
+        host: "smtp.example.com",
+        port: 465,
+        username: "blog",
+        password: "secret",
+        senderAddress: "blog@example.com",
+      },
+      site: {
+        ...DEFAULT_CONFIG.site,
+        title: "冷静的阿矿",
+        author: "阿矿",
+      },
+    });
+
+    const overview = await getDashboardOverview(adminContext);
+    expect(overview.adminEmailNeedsSetup).toBe(false);
+    expect(overview.defaultSiteIdentity).toBe(false);
   });
 });

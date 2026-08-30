@@ -4,6 +4,9 @@
   :root {
     --fuwari-radius-large: 1rem;
     --fuwari-hue: 250;
+    --fuwari-success-hue: 145;
+    --fuwari-warning-hue: 85;
+    --fuwari-danger-hue: 25;
 
     --fuwari-primary: oklch(0.7 0.14 var(--fuwari-hue));
     --fuwari-primary-hover: oklch(0.65 0.14 var(--fuwari-hue));
@@ -25,6 +28,16 @@
     --fuwari-inline-code-color: var(--fuwari-btn-content);
     --fuwari-input-bg: rgba(0, 0, 0, 0.07);
     --fuwari-input-border: rgba(0, 0, 0, 0.1);
+
+    --fuwari-success: oklch(0.7 0.14 var(--fuwari-success-hue));
+    --fuwari-success-fg: oklch(0.45 0.12 var(--fuwari-success-hue));
+    --fuwari-success-bg: oklch(0.95 0.05 var(--fuwari-success-hue));
+    --fuwari-warning: oklch(0.75 0.14 var(--fuwari-warning-hue));
+    --fuwari-warning-fg: oklch(0.5 0.13 var(--fuwari-warning-hue));
+    --fuwari-warning-bg: oklch(0.95 0.07 var(--fuwari-warning-hue));
+    --fuwari-danger: oklch(0.65 0.16 var(--fuwari-danger-hue));
+    --fuwari-danger-fg: oklch(0.5 0.16 var(--fuwari-danger-hue));
+    --fuwari-danger-bg: oklch(0.95 0.05 var(--fuwari-danger-hue));
   }
 
   .dark {
@@ -45,6 +58,16 @@
     --fuwari-inline-code-color: var(--fuwari-btn-content);
     --fuwari-input-bg: rgba(255, 255, 255, 0.05);
     --fuwari-input-border: rgba(255, 255, 255, 0.1);
+
+    --fuwari-success: oklch(0.75 0.12 var(--fuwari-success-hue));
+    --fuwari-success-fg: oklch(0.8 0.1 var(--fuwari-success-hue));
+    --fuwari-success-bg: oklch(0.33 0.05 var(--fuwari-success-hue));
+    --fuwari-warning: oklch(0.8 0.12 var(--fuwari-warning-hue));
+    --fuwari-warning-fg: oklch(0.82 0.1 var(--fuwari-warning-hue));
+    --fuwari-warning-bg: oklch(0.33 0.055 var(--fuwari-warning-hue));
+    --fuwari-danger: oklch(0.72 0.14 var(--fuwari-danger-hue));
+    --fuwari-danger-fg: oklch(0.8 0.1 var(--fuwari-danger-hue));
+    --fuwari-danger-bg: oklch(0.33 0.05 var(--fuwari-danger-hue));
   }
 }
 

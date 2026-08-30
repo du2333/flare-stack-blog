@@ -28,7 +28,7 @@ function getSmtpAuthTypes(): AuthType[] {
   return ["plain", "login", "cram-md5"];
 }
 
-function isEmailConfigured(
+export function isEmailConfigured(
   email:
     | {
         host?: string;
