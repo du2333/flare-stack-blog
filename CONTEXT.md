@@ -17,7 +17,7 @@ A **Post** that has a **Public Content Snapshot** and therefore appears in publi
 _Avoid_: Live article, scheduled post, future post
 
 **Public Content Snapshot**:
-The published state of a **Post** that the public site reads for listing, detail, search, and caching. It includes the public title, summary, slug, content, tags, publication date, and pin state. Editing or autosaving a **Post** does not change it. Publishing replaces it. Unpublishing discards it.
+The published state of a **Post** that the public site reads for listing, detail, search, and caching. It includes the public title, summary, slug, content, tags, publication date, pin state, and **Post Cover**. Editing or autosaving a **Post** does not change it. Publishing replaces it. Unpublishing discards it.
 _Avoid_: publicContentJson, rendered content, cached content, live version, working copy
 
 **Post Revision**:
@@ -43,6 +43,10 @@ _Avoid_: Nested reply
 **Media**:
 An uploaded file tracked by the CMS for reuse in **Posts**.
 _Avoid_: Asset
+
+**Post Cover**:
+The optional cover **Media** of a **Post**. It is not a body image and not the site-wide banner.
+_Avoid_: Banner, thumbnail, featured image, hero, OG image, 封面图
 
 **Friend Link**:
 A submitted or admin-created external site listing that can be approved for display on the public friend-links page.
@@ -110,6 +114,12 @@ _Avoid_: New commit, fork update
 - A **Post** can have zero or more **Post Revisions**.
 - A **Post** can have zero or more **Comment Threads**.
 - A **Post** can reference zero or more **Media** items.
+- A **Post** has zero or one **Post Cover**.
+- A **Post Cover** is a **Media** item.
+- Publishing a **Post** writes its **Post Cover** into the **Public Content Snapshot**. Autosave does not.
+- Clearing a **Post Cover** does not delete the **Media**.
+- A **Media** item may be both a **Post Cover** and a body image of the same **Post**. Clearing the **Post Cover** does not remove that image from the body; removing it from the body does not clear the **Post Cover**.
+- Restoring a **Post Revision** restores its **Post Cover**. If that **Media** no longer exists, the restored **Post** has no usable **Post Cover**.
 - A **Published Post** has a **Public Content Snapshot** for public rendering.
 - A **Draft Post** does not appear in public listing, detail, or search surfaces.
 - Publishing a **Post** replaces its **Public Content Snapshot** from the Post the **Admin** is editing and creates a **Post Revision**. Publishing again is safe: it replaces the snapshot and updates the **Search Index** and **Public Cache**.
@@ -132,7 +142,7 @@ _Avoid_: New commit, fork update
 - Public listings and counts of **Comments** exclude deleted **Comments**, except that a deleted root remains visible as a placeholder when its thread still has published replies, and a deleted reply remains visible as a placeholder in a visible thread.
 - A **Reply** notifies the author of the targeted **Comment**, not the rest of the **Comment Thread**. A new root **Comment** by a non-**Admin** notifies the **Admin**.
 - A **Reply** belongs to exactly one **Comment Thread**.
-- A **Media** item referenced by a **Post** cannot be deleted from the media library.
+- A **Media** item cannot be deleted from the media library while it appears in the editable **Post** or in a **Public Content Snapshot**. **Post Revision**s do not keep **Media** from being deleted.
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
 - **System Config** may include one **Webhook Endpoint**.
@@ -164,4 +174,5 @@ _Avoid_: New commit, fork update
 - "Article" may appear in Chinese product discussion as "文章", but glossary, issues, and implementation planning should use **Post**.
 - "Category" is not a current Flare Stack Blog concept; use **Tag** for non-hierarchical grouping.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
+- "封面图", "banner", "featured image", and "OG image" are not glossary terms. Per-Post cover is **Post Cover**. The site-wide Fuwari banner is **Site Config** `theme.fuwari.homeBg`.
 - "Version" is ambiguous. For Post content, use **Public Content Snapshot** or **Post Revision**. For deployed CMS code, use **Application Release** or **Running Application Release**.

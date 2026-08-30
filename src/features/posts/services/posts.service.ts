@@ -274,9 +274,7 @@ export async function updatePost(
   }
 
   if (updateData.contentJson !== undefined) {
-    context.executionCtx.waitUntil(
-      syncPostMedia(context.db, updatedPost.id, updateData.contentJson),
-    );
+    await syncPostMedia(context.db, updatedPost.id);
   }
 
   return ok(stripPublicSnapshot(updatedPost));
@@ -352,6 +350,7 @@ export async function publishPost(
   const snapshot = await buildPublicSnapshot(publishedPost, highlighted);
   const previousPublicSlug = publishedPost.publicSlug;
   await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
+  await syncPostMedia(context.db, publishedPost.id);
 
   await SearchService.upsert(
     { env: context.env },
@@ -385,6 +384,7 @@ export async function unpublishPost(
   const publicSlug =
     post.publicSlug ?? post.publicSnapshotJson?.slug ?? post.slug;
   await PostRepo.clearPublicSnapshot(context.db, post.id);
+  await syncPostMedia(context.db, post.id);
   await SearchService.deleteIndex(context, { id: post.id });
   await invalidate.postDeleted(context, { slug: publicSlug });
 

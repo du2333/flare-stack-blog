@@ -195,9 +195,7 @@ export async function restorePostRevision(
   }
 
   if (targetSnapshot.contentJson !== undefined) {
-    context.executionCtx.waitUntil(
-      syncPostMedia(context.db, restoredPost.id, targetSnapshot.contentJson),
-    );
+    await syncPostMedia(context.db, restoredPost.id);
   }
 
   return ok({

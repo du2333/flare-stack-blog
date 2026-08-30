@@ -4,23 +4,41 @@ import type { BatchItem } from "drizzle-orm/batch";
 import { extractAllImageKeys } from "@/features/posts/utils/content";
 import { MediaTable, PostMediaTable, PostsTable } from "@/lib/db/schema";
 
-export async function syncPostMedia(
-  db: DB,
-  postId: number,
-  contentJson: JSONContent | null,
+function referencedImageKeys(
+  contentJson: JSONContent | null | undefined,
+  snapshotContentJson: JSONContent | null | undefined,
 ) {
-  // 1. 获取文章中使用的图片 key
-  const usedKeys = extractAllImageKeys(contentJson);
+  return [
+    ...new Set([
+      ...extractAllImageKeys(contentJson ?? null),
+      ...extractAllImageKeys(snapshotContentJson ?? null),
+    ]),
+  ];
+}
 
-  // 2. 准备sql语句
+export async function syncPostMedia(db: DB, postId: number) {
+  const [post] = await db
+    .select({
+      contentJson: PostsTable.contentJson,
+      publicSnapshotJson: PostsTable.publicSnapshotJson,
+    })
+    .from(PostsTable)
+    .where(eq(PostsTable.id, postId))
+    .limit(1);
+
+  if (!post) return;
+
+  const usedKeys = referencedImageKeys(
+    post.contentJson,
+    post.publicSnapshotJson?.contentJson,
+  );
+
   const batchQueries: Array<BatchItem<"sqlite">> = [];
 
-  // 2.1 准备删除文章中已有的图片关联语句
   const deleteQuery = db
     .delete(PostMediaTable)
     .where(eq(PostMediaTable.postId, postId));
 
-  // 3. 如果有引用的图片，先查询图片是否存在
   if (usedKeys.length > 0) {
     const mediaRecords = await db
       .select({ id: MediaTable.id })
@@ -37,7 +55,6 @@ export async function syncPostMedia(
     }
   }
 
-  // 4. 执行批量操作
   await db.batch([deleteQuery, ...batchQueries]);
 }
 
@@ -57,9 +74,6 @@ export async function getPostsByMediaKey(db: DB, key: string) {
   return posts;
 }
 
-/**
- * 检查媒体是否被文章使用
- */
 export async function isMediaInUse(db: DB, key: string): Promise<boolean> {
   const result = await db
     .select({ id: PostMediaTable.postId })
@@ -71,18 +85,14 @@ export async function isMediaInUse(db: DB, key: string): Promise<boolean> {
   return result.length > 0;
 }
 
-/**
- * 批量检查
- */
 export async function getLinkedMediaKeys(
   db: DB,
   keys: Array<string>,
 ): Promise<Array<string>> {
   if (keys.length === 0) return [];
 
-  // 查询哪些 keys 存在于中间表中
   const results = await db
-    .selectDistinct({ key: MediaTable.key }) // 只需要 key
+    .selectDistinct({ key: MediaTable.key })
     .from(MediaTable)
     .innerJoin(PostMediaTable, eq(MediaTable.id, PostMediaTable.mediaId))
     .where(inArray(MediaTable.key, keys));
