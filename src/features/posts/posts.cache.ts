@@ -14,6 +14,7 @@ const POST_PUBLIC_REASONS = [
   "post.published",
   "post.deleted",
   "tag.changed",
+  "category.changed",
 ] as const;
 
 export const pinnedPosts = defineEntry({
@@ -60,24 +61,37 @@ export const postsList = defineEntry({
     limit,
     cursor,
     tagName,
+    categoryName,
+    uncategorized,
   }: {
     limit: number;
     cursor: number;
     tagName?: string;
+    categoryName?: string;
+    uncategorized?: boolean;
     excludePinned?: boolean;
-  }) =>
-    tagName === undefined
-      ? ["posts", "list", limit, cursor, "all"]
-      : ["posts", "list", limit, cursor, "tag", tagName],
+  }) => [
+    "posts",
+    "list",
+    limit,
+    cursor,
+    tagName ?? "all-tags",
+    uncategorized ? "uncategorized" : (categoryName ?? "all-categories"),
+  ],
   schema: PostListResponseSchema,
   ttl: "7d",
   invalidatedBy: POST_PUBLIC_REASONS,
-  load: (context, { limit, cursor, tagName, excludePinned }) =>
+  load: (
+    context,
+    { limit, cursor, tagName, categoryName, uncategorized, excludePinned },
+  ) =>
     PostRepo.getPostsCursor(context.db, {
       cursor,
       limit,
       publicOnly: true,
       tagName,
+      categoryName,
+      uncategorized,
       excludePinned,
     }),
 });
@@ -109,6 +123,7 @@ export const postBySlug = defineEntry({
       contentJson: post.contentJson,
       readTimeInMinutes: estimateReadTimeMinutes(post.contentJson),
       tags: post.tags,
+      category: "category" in post ? (post.category ?? null) : null,
       toc: generateTableOfContents(post.contentJson),
       cover: toPublicCover(post.publicSnapshotJson?.cover),
     };

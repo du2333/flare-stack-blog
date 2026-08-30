@@ -14,6 +14,17 @@ describe("workersCacheKey", () => {
     ).toBe("/posts?tagName=rust");
   });
 
+  it("keeps category and uncategorized filters on the posts list", () => {
+    expect(
+      workersCacheKey(
+        "https://blog.example/posts?categoryName=tech&tagName=rust&foo=1",
+      ),
+    ).toBe("/posts?tagName=rust&categoryName=tech");
+    expect(
+      workersCacheKey("https://blog.example/posts?uncategorized=true&x=1"),
+    ).toBe("/posts?uncategorized=true");
+  });
+
   it("drops comment highlight query on a post page", () => {
     expect(workersCacheKey("https://blog.example/post/hello?comment=9")).toBe(
       "/post/hello",
@@ -99,6 +110,12 @@ describe("purgeOptionsFor", () => {
 
   it("purges posts when tags change", () => {
     expect(purgeOptionsFor("tag.changed", { slugs: ["a", "b"] })).toEqual({
+      tags: ["posts", "post:a", "post:b"],
+    });
+  });
+
+  it("purges posts when categories change", () => {
+    expect(purgeOptionsFor("category.changed", { slugs: ["a", "b"] })).toEqual({
       tags: ["posts", "post:a", "post:b"],
     });
   });

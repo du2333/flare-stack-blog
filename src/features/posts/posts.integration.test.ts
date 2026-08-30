@@ -935,6 +935,7 @@ describe("Posts Integration", () => {
           ],
         },
         tagIds: [tag.id],
+        categoryId: null,
         coverMediaId: null,
       });
     });
@@ -1267,6 +1268,7 @@ describe("Posts Integration", () => {
           ],
         },
         tagIds: [tag.id],
+        categoryId: null,
         coverMediaId: null,
       });
     });

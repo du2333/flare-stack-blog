@@ -298,6 +298,7 @@ describe("Tags & Search Integration", () => {
           slug: "db-post",
           contentJson: { type: "doc", content: [] },
           tagIds: [1],
+          categoryId: null,
           publishedAt: new Date().toISOString(),
           pinnedAt: null,
           cover: null,

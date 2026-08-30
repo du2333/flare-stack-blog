@@ -1,1 +1,1 @@
-export { useDeletePost, usePosts } from "./use-posts";
+export { adminPostsListParams, useDeletePost, usePosts } from "./use-posts";

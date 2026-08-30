@@ -1,6 +1,10 @@
 import { Suspense } from "react";
-import { cn } from "@/lib/utils";
+import {
+  Categories,
+  CategoriesSkeleton,
+} from "@/features/categories/components/category-cloud";
 import { Tags, TagsSkeleton } from "@/features/tags/components/tag-cloud";
+import { cn } from "@/lib/utils";
 import { Profile } from "./profile";
 
 export function Sidebar({ className }: { className?: string }) {
@@ -16,9 +20,14 @@ export function Sidebar({ className }: { className?: string }) {
         className="sticky top-4 fuwari-onload-animation"
         style={{ animationDelay: "150ms" }}
       >
-        <Suspense fallback={<TagsSkeleton />}>
-          <Tags />
-        </Suspense>
+        <div className="flex flex-col gap-4">
+          <Suspense fallback={<CategoriesSkeleton />}>
+            <Categories />
+          </Suspense>
+          <Suspense fallback={<TagsSkeleton />}>
+            <Tags />
+          </Suspense>
+        </div>
       </div>
     </aside>
   );

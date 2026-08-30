@@ -1,8 +1,10 @@
 import "@/features/config/config.cache";
 import "@/features/friend-links/friend-links.cache";
 import "@/features/posts/posts.cache";
+import "@/features/categories/categories.cache";
 import "@/features/tags/tags.cache";
 import cacheRouter from "@/features/cache/server/router";
+import categoriesRouter from "@/features/categories/server/router";
 import commentsRouter from "@/features/comments/server/router";
 import configRouter from "@/features/config/server/router";
 import dashboardRouter from "@/features/dashboard/server/router";
@@ -20,6 +22,7 @@ import webhookRouter from "@/features/webhook/server/router";
 export const router = {
   posts: postsRouter,
   tags: tagsRouter,
+  categories: categoriesRouter,
   comments: commentsRouter,
   media: mediaRouter,
   mutedUsers: mutedUsersRouter,

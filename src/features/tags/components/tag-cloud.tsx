@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { withTagFilter } from "@/features/posts/utils/post-public-search";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { m } from "@/paraglide/messages";
 
@@ -64,7 +65,7 @@ export function Tags() {
           <Link
             key={tag.id}
             to="/posts"
-            search={{ tagName: tag.name }}
+            search={(prev) => withTagFilter(prev, tag.name)}
             className="fuwari-btn-regular h-8 text-sm px-3 rounded-lg flex items-center gap-2"
           >
             <span>{tag.name}</span>

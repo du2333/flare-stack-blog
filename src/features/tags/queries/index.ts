@@ -15,5 +15,7 @@ export function tagsByPostIdQueryOptions(postId: number) {
 }
 
 export function tagsWithCountAdminQueryOptions(options: GetTagsInput = {}) {
-  return orpc.tags.admin.listWithCount.queryOptions({ input: options });
+  return orpc.tags.admin.listWithCount.queryOptions({
+    input: { sortBy: "postCount", sortDir: "desc", ...options },
+  });
 }

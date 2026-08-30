@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { PostManager } from "@/features/posts/components/post-manager";
+import { adminPostsListParams } from "@/features/posts/components/post-manager/hooks";
+import { PostManagerPageSkeleton } from "@/features/posts/components/post-manager/post-manager-skeleton";
+import { adminPostsQuery } from "@/features/posts/queries";
 import type {
   SortField,
   StatusFilter,
@@ -9,6 +12,7 @@ import {
   SORT_FIELDS,
   STATUS_FILTERS,
 } from "@/features/posts/components/post-manager/types";
+import { m } from "@/paraglide/messages";
 
 const searchSchema = z.object({
   page: z.number().int().positive().optional().default(1).catch(1),
@@ -26,6 +30,21 @@ export type PostsSearchParams = z.infer<typeof searchSchema>;
 export const Route = createFileRoute("/admin/posts/")({
   ssr: false,
   validateSearch: searchSchema,
+  pendingComponent: PostManagerPageSkeleton,
+  pendingMs: 0,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      adminPostsQuery(
+        adminPostsListParams({
+          page: 1,
+          status: "ALL",
+          sortBy: "updatedAt",
+          search: "",
+        }),
+      ),
+    );
+    return { title: m.admin_posts_title() };
+  },
   component: PostManagerPage,
 });
 

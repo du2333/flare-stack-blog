@@ -1,5 +1,5 @@
 import { insert, search as oramaSearch, remove } from "@orama/orama";
-import { isNotNull } from "drizzle-orm";
+import { inArray, isNotNull } from "drizzle-orm";
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { createMyDb } from "@/features/search/model/schema";
 import {
@@ -20,7 +20,7 @@ import {
   buildSnippet,
   getMatchedTerms,
 } from "@/features/search/utils/search.utils";
-import { PostsTable } from "@/lib/db/schema";
+import { CategoriesTable, PostsTable } from "@/lib/db/schema";
 
 export async function search(context: DbContext, data: SearchQueryInput) {
   const db = await getOramaDb(context.env);
@@ -76,8 +76,9 @@ export async function upsert(
   } catch {}
 
   const plain = convertToPlainText(data.contentJson ?? null);
+  const indexed = [data.category?.trim(), plain].filter(Boolean).join("\n");
   const content =
-    plain.length > CONTENT_SLICE ? plain.slice(0, CONTENT_SLICE) : plain;
+    indexed.length > CONTENT_SLICE ? indexed.slice(0, CONTENT_SLICE) : indexed;
   const summary =
     data.summary && data.summary.trim().length > 0
       ? data.summary
@@ -126,12 +127,38 @@ export async function rebuildIndex(context: DbContext) {
     },
   });
 
+  const categoryIds = [
+    ...new Set(
+      posts.flatMap((post) => {
+        const categoryId = post.publicSnapshotJson?.categoryId;
+        return categoryId == null ? [] : [categoryId];
+      }),
+    ),
+  ];
+  const categories =
+    categoryIds.length > 0
+      ? await db
+          .select()
+          .from(CategoriesTable)
+          .where(inArray(CategoriesTable.id, categoryIds))
+      : [];
+  const categoriesById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
+
   for (const post of posts) {
     const snapshot = post.publicSnapshotJson;
     if (!snapshot?.title || !snapshot.slug) continue;
     const plain = convertToPlainText(snapshot.contentJson);
+    const categoryName =
+      snapshot.categoryId == null
+        ? null
+        : (categoriesById.get(snapshot.categoryId)?.name ?? null);
+    const indexed = [categoryName, plain].filter(Boolean).join("\n");
     const content =
-      plain.length > CONTENT_SLICE ? plain.slice(0, CONTENT_SLICE) : plain;
+      indexed.length > CONTENT_SLICE
+        ? indexed.slice(0, CONTENT_SLICE)
+        : indexed;
     const summary =
       snapshot.summary && snapshot.summary.trim().length > 0
         ? snapshot.summary

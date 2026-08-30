@@ -23,7 +23,7 @@ import type {
 } from "@/features/posts/schema/posts.schema";
 import { isPostBodyEmpty } from "@/features/posts/utils/is-post-body-empty";
 import type { PostStatus, PublicPostSnapshot, Tag } from "@/lib/db/schema";
-import { PostsTable, TagsTable } from "@/lib/db/schema";
+import { CategoriesTable, PostsTable, TagsTable } from "@/lib/db/schema";
 
 const DEFAULT_PAGE_SIZE = 12;
 const DEFAULT_SITEMAP_BATCH_SIZE = 500;
@@ -44,11 +44,29 @@ async function hydratePublicPosts(
   const tagIds = [
     ...new Set(rows.flatMap((row) => row.publicSnapshotJson?.tagIds ?? [])),
   ];
+  const categoryIds = [
+    ...new Set(
+      rows.flatMap((row) => {
+        const categoryId = row.publicSnapshotJson?.categoryId;
+        return categoryId == null ? [] : [categoryId];
+      }),
+    ),
+  ];
   const tags =
     tagIds.length > 0
       ? await db.select().from(TagsTable).where(inArray(TagsTable.id, tagIds))
       : [];
+  const categories =
+    categoryIds.length > 0
+      ? await db
+          .select()
+          .from(CategoriesTable)
+          .where(inArray(CategoriesTable.id, categoryIds))
+      : [];
   const tagsById = new Map(tags.map((tag) => [tag.id, tag]));
+  const categoriesById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
 
   return rows.flatMap((row) => {
     const snapshot = row.publicSnapshotJson;
@@ -56,7 +74,15 @@ async function hydratePublicPosts(
     const itemTags = snapshot.tagIds
       .map((id) => tagsById.get(id))
       .filter((tag): tag is Tag => !!tag);
-    const item = mapSnapshotToPublicPost(row, itemTags);
+    const itemCategory =
+      snapshot.categoryId == null
+        ? null
+        : (categoriesById.get(snapshot.categoryId) ?? null);
+    const item = mapSnapshotToPublicPost(
+      row,
+      itemTags,
+      itemCategory ? { id: itemCategory.id, name: itemCategory.name } : null,
+    );
     return item ? [item] : [];
   });
 }
@@ -105,6 +131,7 @@ export async function getPosts(
       status: PostsTable.status,
       publishedAt: PostsTable.publishedAt,
       pinnedAt: PostsTable.pinnedAt,
+      categoryId: PostsTable.categoryId,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
     })
@@ -165,6 +192,8 @@ export async function getPostsCursor(
     limit?: number;
     publicOnly?: boolean;
     tagName?: string;
+    categoryName?: string;
+    uncategorized?: boolean;
     excludePinned?: boolean;
   } = {},
 ): Promise<{
@@ -176,6 +205,8 @@ export async function getPostsCursor(
     limit = DEFAULT_PAGE_SIZE,
     publicOnly = true,
     tagName,
+    categoryName,
+    uncategorized,
     excludePinned,
   } = options;
 
@@ -214,6 +245,21 @@ export async function getPostsCursor(
         FROM json_each(json_extract(${PostsTable.publicSnapshotJson}, '$.tagIds'))
         JOIN ${TagsTable} ON ${TagsTable.id} = json_each.value
         WHERE ${TagsTable.name} = ${tagName}
+      )`,
+    );
+  }
+
+  if (uncategorized) {
+    conditions.push(
+      sql`json_extract(${PostsTable.publicSnapshotJson}, '$.categoryId') IS NULL`,
+    );
+  } else if (categoryName) {
+    conditions.push(
+      sql`EXISTS (
+        SELECT 1
+        FROM ${CategoriesTable}
+        WHERE ${CategoriesTable.id} = json_extract(${PostsTable.publicSnapshotJson}, '$.categoryId')
+          AND ${CategoriesTable.name} = ${categoryName}
       )`,
     );
   }
@@ -302,12 +348,12 @@ export async function findPostById(db: DB, id: number) {
           tag: true,
         },
       },
+      category: true,
     },
   });
 
   if (!post) return null;
 
-  // Flatten tags
   const tags = post.postTags.map((pt) => pt.tag);
   const { postTags, ...rest } = post;
   return { ...rest, tags };

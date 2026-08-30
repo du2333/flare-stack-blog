@@ -1,5 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { GetPostsInput } from "@/features/posts/schema/posts.schema";
 import { adminPostsQuery } from "@/features/posts/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
@@ -14,19 +20,27 @@ interface UsePostsOptions {
   search: string;
 }
 
-export function usePosts({ page, status, sortBy, search }: UsePostsOptions) {
-  const apiStatus = statusFilterToApi(status);
-
-  const listParams = {
+export function adminPostsListParams({
+  page,
+  status,
+  sortBy,
+  search,
+}: UsePostsOptions): GetPostsInput {
+  return {
     offset: (page - 1) * ADMIN_ITEMS_PER_PAGE,
     limit: ADMIN_ITEMS_PER_PAGE,
-    status: apiStatus,
-    sortDir: "DESC" as const,
+    status: statusFilterToApi(status),
+    sortDir: "DESC",
     sortBy,
     search: search || undefined,
   };
+}
 
-  const postsQuery = useQuery(adminPostsQuery(listParams));
+export function usePosts({ page, status, sortBy, search }: UsePostsOptions) {
+  const postsQuery = useQuery({
+    ...adminPostsQuery(adminPostsListParams({ page, status, sortBy, search })),
+    placeholderData: keepPreviousData,
+  });
 
   const totalCount = postsQuery.data?.total ?? 0;
   const totalPages = Math.ceil(totalCount / ADMIN_ITEMS_PER_PAGE);

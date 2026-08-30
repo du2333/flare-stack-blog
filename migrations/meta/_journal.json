@@ -127,6 +127,13 @@
       "when": 1788062400000,
       "tag": "0017_post_cover",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1788100000000,
+      "tag": "0018_category",
+      "breakpoints": true
     }
   ]
 }

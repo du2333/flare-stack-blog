@@ -34,6 +34,7 @@ export function mapSnapshotToPublicPost(
     publicSnapshotJson: PublicPostSnapshot | null;
   },
   tags: Array<Tag> = [],
+  category: { id: number; name: string } | null = null,
 ): PostItem | null {
   const snapshot = row.publicSnapshotJson;
   if (!snapshot) return null;
@@ -50,6 +51,7 @@ export function mapSnapshotToPublicPost(
     updatedAt: row.updatedAt,
     readTimeInMinutes: estimateReadTimeMinutes(snapshot.contentJson),
     tags,
+    category,
     cover: toPublicCover(snapshot.cover),
   };
 }

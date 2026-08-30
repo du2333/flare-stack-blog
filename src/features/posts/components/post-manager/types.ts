@@ -3,7 +3,11 @@ import type { Post } from "@/lib/db/schema";
 /** Post without contentJson fields for list views */
 export type PostListItem = Omit<
   Post,
-  "contentJson" | "publicSnapshotJson" | "publicSlug" | "coverMediaId"
+  | "contentJson"
+  | "publicSnapshotJson"
+  | "publicSlug"
+  | "coverMediaId"
+  | "categoryId"
 >;
 
 /** Status filter options for posts list */

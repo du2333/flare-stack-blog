@@ -1,5 +1,10 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { Calendar, Edit, Tag } from "lucide-react";
+import { BookOpen, Calendar, Edit, Tag } from "lucide-react";
+import {
+  withCategoryFilter,
+  withTagFilter,
+  withUncategorizedFilter,
+} from "@/features/posts/utils/post-public-search";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -45,8 +50,29 @@ export function PostMeta({ post, className }: PostMetaProps) {
         </div>
       )}
 
-      {/* Categories / Tags */}
-      {/* We combine them like tags since blog-cms schema uses tags for categorization */}
+      <div className="flex items-center">
+        <div className="fuwari-meta-icon">
+          <BookOpen strokeWidth={1.5} size={20} />
+        </div>
+        {post.category ? (
+          <Link
+            to="/posts"
+            search={(prev) => withCategoryFilter(prev, post.category?.name)}
+            className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+          >
+            {post.category.name}
+          </Link>
+        ) : (
+          <Link
+            to="/posts"
+            search={(prev) => withUncategorizedFilter(prev)}
+            className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+          >
+            {m.post_uncategorized()}
+          </Link>
+        )}
+      </div>
+
       <div className="flex items-center">
         <div className="fuwari-meta-icon">
           <Tag strokeWidth={1.5} size={20} />
@@ -62,7 +88,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
                 )}
                 <Link
                   to="/posts"
-                  search={{ tagName: tag.name }}
+                  search={(prev) => withTagFilter(prev, tag.name)}
                   className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
                 >
                   {tag.name}

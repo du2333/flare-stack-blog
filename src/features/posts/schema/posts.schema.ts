@@ -4,6 +4,7 @@ import {
   createUpdateSchema,
 } from "drizzle-zod";
 import { z } from "zod";
+import { PublicCategorySchema } from "@/features/categories/categories.schema";
 import { TagSelectSchema } from "@/features/tags/tags.schema";
 import type { PostStatus } from "@/lib/db/schema";
 import { PostsTable } from "@/lib/db/schema";
@@ -46,8 +47,10 @@ export const PostItemSchema = PostSelectSchema.omit({
   contentJson: true,
   publicSlug: true,
   coverMediaId: true,
+  categoryId: true,
 }).extend({
   tags: z.array(TagSelectSchema).optional(),
+  category: PublicCategorySchema.nullable().catch(null),
   readTimeInMinutes: z.number().int().min(1),
   viewCount: z.number().int().nonnegative().optional(),
   cover: PublicPostCoverSchema.nullable().catch(null),
@@ -59,9 +62,11 @@ export const PostListResponseSchema = z.object({
 export const PostWithTocSchema = PostSelectSchema.omit({
   publicSlug: true,
   coverMediaId: true,
+  categoryId: true,
 })
   .extend({
     tags: z.array(TagSelectSchema).optional(),
+    category: PublicCategorySchema.nullable().catch(null),
     readTimeInMinutes: z.number().int().min(1),
     toc: z.array(
       z.object({
@@ -91,15 +96,28 @@ export function normalizePostTagName(
   return tagName === "" ? undefined : tagName;
 }
 
+export function normalizePostCategoryName(
+  categoryName: string | undefined,
+): string | undefined {
+  return categoryName === "" ? undefined : categoryName;
+}
+
 export const PostTagNameSchema = z
   .string()
   .transform(normalizePostTagName)
+  .optional();
+
+export const PostCategoryNameSchema = z
+  .string()
+  .transform(normalizePostCategoryName)
   .optional();
 
 export const GetPostsCursorInputSchema = z.object({
   cursor: z.number().optional(),
   limit: z.number().optional(),
   tagName: PostTagNameSchema,
+  categoryName: PostCategoryNameSchema,
+  uncategorized: z.boolean().optional(),
   excludePinned: z.boolean().optional(),
 });
 

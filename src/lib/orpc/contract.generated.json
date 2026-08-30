@@ -309,6 +309,70 @@
       }
     }
   },
+  "categories": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/categories",
+          "summary": "List public categories",
+          "tags": ["Categories"]
+        }
+      }
+    },
+    "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/categories",
+            "summary": "List categories for admin",
+            "tags": ["Admin Categories"]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/categories",
+            "summary": "Create a category",
+            "tags": ["Admin Categories"]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/categories/{id}",
+            "summary": "Update a category",
+            "tags": ["Admin Categories"]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/categories/{id}",
+            "summary": "Delete a category",
+            "tags": ["Admin Categories"]
+          }
+        }
+      }
+    }
+  },
   "comments": {
     "roots": {
       "~orpc": {

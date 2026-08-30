@@ -19,6 +19,7 @@ export interface PostRevisionSnapshot {
   publishedAt: string | null;
   contentJson: JSONContent | null;
   tagIds: Array<number>;
+  categoryId: number | null;
   coverMediaId: number | null;
 }
 

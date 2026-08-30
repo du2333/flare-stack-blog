@@ -126,6 +126,24 @@
     color: rgb(0 0 0 / 0.75);
   }
 
+  .fuwari-btn-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-danger);
+    color: white;
+    transition:
+      opacity 0.2s,
+      background-color 0.2s;
+  }
+  .fuwari-btn-danger:hover {
+    opacity: 0.9;
+  }
+  .fuwari-btn-danger:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   .fuwari-text-90 {
     color: rgb(0 0 0 / 0.9);
   }

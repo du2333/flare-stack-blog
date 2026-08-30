@@ -1,4 +1,5 @@
 import { invalidate } from "@/features/cache/public-cache";
+import * as CategoryRepo from "@/features/categories/data/categories.data";
 import * as MediaRepo from "@/features/media/data/media.data";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
@@ -22,7 +23,10 @@ import type {
   UnpublishPostInput,
   UpdatePostInput,
 } from "@/features/posts/schema/posts.schema";
-import { normalizePostTagName } from "@/features/posts/schema/posts.schema";
+import {
+  normalizePostCategoryName,
+  normalizePostTagName,
+} from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
 import type { PublicPostCover } from "@/lib/db/schema";
 import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
@@ -88,6 +92,7 @@ async function buildPublicSnapshot(
     slug: post.slug,
     contentJson,
     tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort((a, b) => a - b),
+    categoryId: post.categoryId ?? null,
     publishedAt: toIsoOrNull(post.publishedAt) ?? new Date().toISOString(),
     pinnedAt: toIsoOrNull(post.pinnedAt),
     cover: await resolveSnapshotCover(db, post.coverMediaId),
@@ -110,6 +115,7 @@ async function createPublishRevision(
     publishedAt: post.publishedAt,
     pinnedAt: post.pinnedAt,
     coverMediaId: post.coverMediaId,
+    categoryId: post.categoryId ?? null,
   });
 
   const latestPublish = await PostRevisionRepo.findLatestPostRevision(
@@ -133,6 +139,7 @@ async function createPublishRevision(
       publishedAt: toIsoOrNull(post.publishedAt),
       contentJson: post.contentJson,
       tagIds,
+      categoryId: post.categoryId ?? null,
       coverMediaId: post.coverMediaId ?? null,
     },
   });
@@ -149,10 +156,13 @@ export async function getPostsCursor(
   data: GetPostsCursorInput,
 ) {
   const tagName = normalizePostTagName(data.tagName);
+  const categoryName = normalizePostCategoryName(data.categoryName);
   return postsList.get(context, {
     limit: data.limit ?? 10,
     cursor: data.cursor ?? 0,
     tagName,
+    categoryName,
+    uncategorized: data.uncategorized,
     excludePinned: data.excludePinned,
   });
 }
@@ -337,6 +347,16 @@ export async function updatePost(
     }
   }
 
+  if (data.data.categoryId != null) {
+    const category = await CategoryRepo.findCategoryById(
+      context.db,
+      data.data.categoryId,
+    );
+    if (!category) {
+      return err({ reason: "CATEGORY_NOT_FOUND" });
+    }
+  }
+
   const updateData =
     data.data.contentJson !== undefined
       ? {
@@ -448,6 +468,7 @@ export async function publishPost(
       summary: snapshot.summary,
       contentJson: highlighted,
       tags: publishedPost.tags.map((tag) => tag.name),
+      category: publishedPost.category?.name ?? null,
     },
   );
 

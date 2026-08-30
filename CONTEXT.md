@@ -17,7 +17,7 @@ A **Post** that has a **Public Content Snapshot** and therefore appears in publi
 _Avoid_: Live article, scheduled post, future post
 
 **Public Content Snapshot**:
-The published state of a **Post** that the public site reads for listing, detail, search, and caching. It includes the public title, summary, slug, content, tags, publication date, pin state, and **Post Cover**. Editing or autosaving a **Post** does not change it. Publishing replaces it. Unpublishing discards it.
+The published state of a **Post** that the public site reads for listing, detail, search, and caching. It includes the public title, summary, slug, content, tags, **Category**, publication date, pin state, and **Post Cover**. Editing or autosaving a **Post** does not change it. Publishing replaces it. Unpublishing discards it.
 _Avoid_: publicContentJson, rendered content, cached content, live version, working copy
 
 **Post Revision**:
@@ -26,7 +26,11 @@ _Avoid_: Version, history item, backup, auto snapshot
 
 **Tag**:
 A reusable non-hierarchical label that groups **Posts**.
-_Avoid_: Category
+_Avoid_: Label, topic
+
+**Category**:
+An exclusive, non-hierarchical grouping of **Posts**. A **Post** has at most one **Category**.
+_Avoid_: Section, channel, folder, taxonomy, 栏目
 
 **Comment**:
 A user-authored response attached to a **Post**, public as soon as it is created, whose body is text. The author or an **Admin** can delete it from the public post page; deletion keeps a placeholder in the **Comment Thread** instead of removing the row.
@@ -111,6 +115,15 @@ _Avoid_: New commit, fork update
 ## Relationships
 
 - A **Post** can have zero or more **Tags**.
+- A **Post** has at most one **Category**.
+- A **Category** can group zero or more **Posts**.
+- A **Post** with no **Category** is uncategorized. Uncategorized is not a **Category**.
+- Publishing a **Post** writes its **Category** into the **Public Content Snapshot**. Autosave does not. A snapshot with no **Category** is uncategorized.
+- An **Admin** assigns a **Category** by choosing an existing one while editing a **Post**. Editing a **Post** does not create a **Category**.
+- **Categories** and **Tags** are managed on one Admin page.
+- Deleting a **Category** is allowed. **Posts** that had it become uncategorized. A **Public Content Snapshot** whose **Category** no longer exists is uncategorized.
+- A **Category** is identified by a unique name.
+- The public site can list **Published Posts** by **Category**, and can apply a **Category** filter and a **Tag** filter together.
 - A **Post** can have zero or more **Post Revisions**.
 - A **Post** can have zero or more **Comment Threads**.
 - A **Post** can reference zero or more **Media** items.
@@ -120,6 +133,7 @@ _Avoid_: New commit, fork update
 - Clearing a **Post Cover** does not delete the **Media**.
 - A **Media** item may be both a **Post Cover** and a body image of the same **Post**. Clearing the **Post Cover** does not remove that image from the body; removing it from the body does not clear the **Post Cover**.
 - Restoring a **Post Revision** restores its **Post Cover**. If that **Media** no longer exists, the restored **Post** has no usable **Post Cover**.
+- Restoring a **Post Revision** restores its **Category**. If that **Category** no longer exists, the restored **Post** has no **Category**.
 - A **Published Post** has a **Public Content Snapshot** for public rendering.
 - A **Draft Post** does not appear in public listing, detail, or search surfaces.
 - Publishing a **Post** replaces its **Public Content Snapshot** from the Post the **Admin** is editing and creates a **Post Revision**. Publishing again is safe: it replaces the snapshot and updates the **Search Index** and **Public Cache**.
@@ -150,7 +164,7 @@ _Avoid_: New commit, fork update
 - A **Notification Event** can be delivered through email or a **Webhook Endpoint** according to **System Config**.
 - A **Notification Event** does not include the email recipient.
 - A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
-- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Media**, **System Config**, **Friend Links**, **Muted Users**, and **API Keys**.
+- An **Admin** can manage **Posts**, **Comments**, **Tags**, **Categories**, **Media**, **System Config**, **Friend Links**, **Muted Users**, and **API Keys**.
 - An **API Key** belongs to exactly one **Admin**.
 - An **Admin** can have zero or more **API Keys**.
 - An **API Key** authenticates as its owning **Admin** and has that Admin's content-management permissions.
@@ -159,6 +173,9 @@ _Avoid_: New commit, fork update
 - The **Search Index** includes **Published Posts** and excludes **Draft Posts**.
 - Publishing a **Post** updates the **Search Index** from the **Public Content Snapshot**. Unpublishing removes that **Post** from the **Search Index**.
 - Publishing, deleting, or retagging a **Published Post** can update the **Public Cache**.
+- The public sidebar lists **Categories** that appear on at least one **Published Post**, ordered by name. It does not list uncategorized.
+- The **Search Index** includes the **Category** name of a **Published Post**.
+- Renaming a **Category** updates the public label of **Published Posts** that already include that **Category**, without republishing.
 - A **Post Popularity Snapshot** ranks **Published Posts** for public presentation.
 - A **Post Popularity Snapshot** older than seven days does not rank **Published Posts**.
 - A **Webhook Endpoint** receives admin **Notification Events**.
@@ -172,7 +189,7 @@ _Avoid_: New commit, fork update
 ## Flagged ambiguities
 
 - "Article" may appear in Chinese product discussion as "文章", but glossary, issues, and implementation planning should use **Post**.
-- "Category" is not a current Flare Stack Blog concept; use **Tag** for non-hierarchical grouping.
+- Chinese「分类」is **Category**, not **Tag**.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
 - "封面图", "banner", "featured image", and "OG image" are not glossary terms. Per-Post cover is **Post Cover**. The site-wide Fuwari banner is **Site Config** `theme.fuwari.homeBg`.
 - "Version" is ambiguous. For Post content, use **Public Content Snapshot** or **Post Revision**. For deployed CMS code, use **Application Release** or **Running Application Release**.

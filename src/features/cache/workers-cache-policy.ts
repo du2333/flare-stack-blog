@@ -37,8 +37,15 @@ export function workersCacheKey(url: string | URL): string {
   const parsed = typeof url === "string" ? new URL(url) : url;
   const pathname = parsed.pathname;
   if (normalizePathname(pathname) === "/posts") {
+    const params = new URLSearchParams();
     const tagName = parsed.searchParams.get("tagName");
-    return tagName ? `${pathname}?tagName=${tagName}` : pathname;
+    const categoryName = parsed.searchParams.get("categoryName");
+    const uncategorized = parsed.searchParams.get("uncategorized");
+    if (tagName) params.set("tagName", tagName);
+    if (categoryName) params.set("categoryName", categoryName);
+    if (uncategorized === "true") params.set("uncategorized", "true");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   }
   return pathname;
 }
@@ -99,7 +106,7 @@ export function purgeOptionsFor(
   if (reason === "friend-links.changed") {
     return { tags: [FRIEND_LINKS_TAG] };
   }
-  if (reason === "tag.changed") {
+  if (reason === "tag.changed" || reason === "category.changed") {
     const slugs = params.slugs ?? (params.slug ? [params.slug] : []);
     return {
       tags: [...new Set([POSTS_TAG, ...slugs.map(postCacheTag)])],

@@ -1,4 +1,5 @@
 import {
+  normalizePostCategoryName,
   normalizePostTagName,
   type GetPostsInput,
 } from "@/features/posts/schema/posts.schema";
@@ -12,15 +13,24 @@ export function recentPostsQuery(limit: number) {
 }
 
 export function postsInfiniteQueryOptions(
-  filters: { tagName?: string; limit?: number } = {},
+  filters: {
+    tagName?: string;
+    categoryName?: string;
+    uncategorized?: boolean;
+    limit?: number;
+  } = {},
 ) {
   const pageSize = filters.limit ?? 12;
   const tagName = normalizePostTagName(filters.tagName);
+  const categoryName = normalizePostCategoryName(filters.categoryName);
+  const uncategorized = filters.uncategorized === true;
   return orpc.posts.list.infiniteOptions({
     input: (pageParam: number | undefined) => ({
       cursor: pageParam,
       limit: pageSize,
       tagName,
+      categoryName: uncategorized ? undefined : categoryName,
+      uncategorized: uncategorized || undefined,
     }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

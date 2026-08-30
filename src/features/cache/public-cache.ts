@@ -294,6 +294,22 @@ export const invalidate = {
       purgeOptionsFor("tag.changed", slugs.length > 0 ? { slugs } : {}),
     );
   },
+  async categoryChanged(
+    context: InvalidateContext,
+    params?: { slugs?: string[] },
+  ) {
+    const slugs = params?.slugs ?? [];
+    if (slugs.length === 0) {
+      await run("category.changed", context, {});
+    } else {
+      await Promise.all(
+        slugs.map((slug) => run("category.changed", context, { slug })),
+      );
+    }
+    await purgeWorkersCache(
+      purgeOptionsFor("category.changed", slugs.length > 0 ? { slugs } : {}),
+    );
+  },
   async friendLinksChanged(context: InvalidateContext) {
     await run("friend-links.changed", context, {});
     await purgeWorkersCache(purgeOptionsFor("friend-links.changed", {}));

@@ -34,6 +34,7 @@ function toRevisionSnapshot(
     publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
     contentJson: post.contentJson,
     tagIds: [...new Set(post.tags.map((tag) => tag.id))].sort((a, b) => a - b),
+    categoryId: post.categoryId ?? null,
     coverMediaId: post.coverMediaId ?? null,
   };
 }
@@ -47,6 +48,7 @@ async function hashSnapshot(snapshot: PostRevisionSnapshot) {
     slug: snapshot.slug,
     publishedAt: snapshot.publishedAt,
     coverMediaId: snapshot.coverMediaId ?? null,
+    categoryId: snapshot.categoryId ?? null,
   });
 }
 

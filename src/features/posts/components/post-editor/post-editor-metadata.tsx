@@ -2,6 +2,7 @@ import { Loader2, Pin, PinOff, RefreshCw } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { CategorySelect } from "@/features/categories/components/category-select";
 import { TagSelector } from "@/features/tags/components/tag-selector";
 import { toLocalDateString } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -111,6 +112,16 @@ export function PostEditorMetadata({
               )}
             </button>
           </div>
+        </div>
+
+        <div className="col-span-1 space-y-3 md:col-span-3">
+          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            {m.editor_meta_category()}
+          </label>
+          <CategorySelect
+            value={post.categoryId}
+            onChange={(categoryId) => onPostChange({ categoryId })}
+          />
         </div>
 
         <div className="col-span-1 space-y-3 md:col-span-3">

@@ -1,5 +1,6 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
 import {
+  BookOpen,
   Calendar,
   ChevronRight,
   Clock,
@@ -8,6 +9,10 @@ import {
   Pin,
   Tag,
 } from "lucide-react";
+import {
+  withCategoryFilter,
+  withTagFilter,
+} from "@/features/posts/utils/post-public-search";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -88,6 +93,20 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
               </ClientOnly>
             </time>
           </div>
+          {post.category ? (
+            <div className="flex items-center">
+              <div className="fuwari-meta-icon">
+                <BookOpen size={20} strokeWidth={1.5} />
+              </div>
+              <Link
+                to="/posts"
+                search={(prev) => withCategoryFilter(prev, post.category?.name)}
+                className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
+              >
+                {post.category.name}
+              </Link>
+            </div>
+          ) : null}
           {tagNames.length > 0 && (
             <div className="flex items-center">
               <div className="fuwari-meta-icon">
@@ -103,7 +122,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
                     )}
                     <Link
                       to="/posts"
-                      search={{ tagName: name }}
+                      search={(prev) => withTagFilter(prev, name)}
                       className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
                     >
                       {name}

@@ -80,7 +80,9 @@ export function PostsToolbar({
           onClick={() => onSortByChange("updatedAt")}
           className={cn(
             "rounded-xl h-9 px-3 text-sm font-medium",
-            sortBy === "updatedAt" ? "fuwari-btn-primary" : "fuwari-btn-regular",
+            sortBy === "updatedAt"
+              ? "fuwari-btn-primary"
+              : "fuwari-btn-regular",
           )}
         >
           {m.admin_posts_sort_recent_upd()}

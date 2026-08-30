@@ -35,6 +35,7 @@ type MetaSnapshot = {
   publishedAt: number | null;
   pinnedAt: number | null;
   tagIds: string;
+  categoryId: number | null;
   coverMediaId: number | null;
 };
 
@@ -50,6 +51,7 @@ function toMeta(post: PostEditorData): MetaSnapshot {
     tagIds: persistableTagIds(post.tagIds)
       .sort((left, right) => left - right)
       .join(","),
+    categoryId: post.categoryId,
     coverMediaId: post.coverMediaId,
   };
 }
@@ -63,6 +65,7 @@ function isMetaDirty(curr: MetaSnapshot, prev: MetaSnapshot | null) {
     prev.publishedAt !== curr.publishedAt ||
     prev.pinnedAt !== curr.pinnedAt ||
     prev.tagIds !== curr.tagIds ||
+    prev.categoryId !== curr.categoryId ||
     prev.coverMediaId !== curr.coverMediaId
   );
 }

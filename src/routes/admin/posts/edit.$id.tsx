@@ -5,6 +5,7 @@ import { persistableTagIds } from "@/features/posts/components/post-editor/post-
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { postByIdQuery } from "@/features/posts/queries";
+import { categoriesAdminQueryOptions } from "@/features/categories/queries";
 import {
   tagsAdminQueryOptions,
   tagsByPostIdQueryOptions,
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/admin/posts/edit/$id")({
       context.queryClient.ensureQueryData(tagsByPostIdQueryOptions(postId)),
       // Prefetch all tags for the selector
       context.queryClient.prefetchQuery(tagsAdminQueryOptions()),
+      context.queryClient.prefetchQuery(categoriesAdminQueryOptions()),
     ]);
     return { title: post?.title };
   },
@@ -68,6 +70,7 @@ function EditPost() {
     contentJson: post.contentJson,
     publishedAt: post.publishedAt,
     tagIds: tags.map((t) => t.id),
+    categoryId: post.categoryId ?? null,
     pinnedAt: post.pinnedAt,
     hasPublicSnapshot: post.hasPublicSnapshot,
     serverToday: post.serverToday,
@@ -87,6 +90,7 @@ function EditPost() {
           publishedAt: data.publishedAt,
           pinnedAt: data.pinnedAt,
           coverMediaId: data.coverMediaId,
+          categoryId: data.categoryId,
         },
       }),
       orpcClient.tags.admin.setPostTags({
@@ -102,6 +106,7 @@ function EditPost() {
     queryClient.invalidateQueries({ queryKey: orpc.posts.list.key() });
     queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
     queryClient.invalidateQueries({ queryKey: orpc.tags.admin.key() });
+    queryClient.invalidateQueries({ queryKey: orpc.categories.key() });
     queryClient.invalidateQueries({ queryKey: orpc.media.linkedKeys.key() });
   };
 

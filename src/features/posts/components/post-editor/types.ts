@@ -17,6 +17,7 @@ export interface PostEditorData {
   publishedAt: Date | null;
   pinnedAt: Date | null;
   tagIds: Array<number>;
+  categoryId: number | null;
   hasPublicSnapshot: boolean;
   serverToday: string;
   coverMediaId: number | null;
@@ -38,6 +39,7 @@ export const defaultPostData: PostEditorData = {
   publishedAt: null,
   pinnedAt: null,
   tagIds: [],
+  categoryId: null,
   hasPublicSnapshot: false,
   serverToday: "",
   coverMediaId: null,

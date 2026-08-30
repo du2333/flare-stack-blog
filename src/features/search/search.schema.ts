@@ -14,6 +14,7 @@ export const UpsertSearchDocSchema = z.object({
   summary: z.string().nullable().optional(),
   contentJson: NullableJsonContentSchema.optional(),
   tags: z.array(z.string()).optional(),
+  category: z.string().nullable().optional(),
 });
 
 export const DeleteSearchDocSchema = z.object({

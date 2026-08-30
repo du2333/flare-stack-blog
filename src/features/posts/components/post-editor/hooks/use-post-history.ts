@@ -25,6 +25,7 @@ function invalidatePostEditorQueries(
     orpc.posts.admin.list.key(),
     orpc.posts.admin.revisions.key(),
     orpc.tags.admin.key(),
+    orpc.categories.key(),
     orpc.media.linkedKeys.key(),
   ];
 

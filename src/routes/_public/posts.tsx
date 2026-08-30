@@ -11,9 +11,13 @@ import {
   PostsPage,
 } from "@/features/posts/components/posts-page";
 import { PostsPageSkeleton } from "@/features/posts/components/posts-page-skeleton";
+import { categoriesQueryOptions } from "@/features/categories/queries";
 import { postsInfiniteQueryOptions } from "@/features/posts/queries";
-import { PostTagNameSchema } from "@/features/posts/schema/posts.schema";
-import { getNextPostTagFilter } from "@/features/posts/utils/post-tag-filter";
+import {
+  PostCategoryNameSchema,
+  PostTagNameSchema,
+} from "@/features/posts/schema/posts.schema";
+import { withTagFilter } from "@/features/posts/utils/post-public-search";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
@@ -21,19 +25,31 @@ import { m } from "@/paraglide/messages";
 export const Route = createFileRoute("/_public/posts")({
   validateSearch: z.object({
     tagName: PostTagNameSchema,
+    categoryName: PostCategoryNameSchema,
+    uncategorized: z
+      .union([z.boolean(), z.literal("true"), z.literal("false")])
+      .transform((value) => value === true || value === "true")
+      .optional(),
   }),
   component: RouteComponent,
   pendingComponent: PostsSkeleton,
-  loaderDeps: ({ search: { tagName } }) => ({ tagName }),
+  loaderDeps: ({ search }) => ({
+    tagName: search.tagName,
+    categoryName: search.categoryName,
+    uncategorized: search.uncategorized,
+  }),
   loader: async ({ context, deps }) => {
-    const [, , domain, siteConfig] = await Promise.all([
+    const [, , , domain, siteConfig] = await Promise.all([
       context.queryClient.prefetchInfiniteQuery(
         postsInfiniteQueryOptions({
           tagName: deps.tagName,
+          categoryName: deps.categoryName,
+          uncategorized: deps.uncategorized,
           limit: POSTS_PER_PAGE,
         }),
       ),
       context.queryClient.prefetchQuery(tagsQueryOptions),
+      context.queryClient.prefetchQuery(categoriesQueryOptions),
       context.queryClient.ensureQueryData(siteDomainQuery),
       context.queryClient.ensureQueryData(siteConfigQuery),
     ]);
@@ -43,6 +59,8 @@ export const Route = createFileRoute("/_public/posts")({
       description: siteConfig.description,
       canonicalHref: buildCanonicalUrl(domain, "/posts", {
         tagName: deps.tagName,
+        categoryName: deps.categoryName,
+        uncategorized: deps.uncategorized ? "true" : undefined,
       }),
     };
   },
@@ -61,14 +79,19 @@ export const Route = createFileRoute("/_public/posts")({
 });
 
 function RouteComponent() {
-  const { tagName } = Route.useSearch();
+  const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
   const { data: tags } = useSuspenseQuery(tagsQueryOptions);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSuspenseInfiniteQuery(
-      postsInfiniteQueryOptions({ tagName, limit: POSTS_PER_PAGE }),
+      postsInfiniteQueryOptions({
+        tagName: search.tagName,
+        categoryName: search.categoryName,
+        uncategorized: search.uncategorized,
+        limit: POSTS_PER_PAGE,
+      }),
     );
 
   const posts = useMemo(() => {
@@ -77,8 +100,8 @@ function RouteComponent() {
 
   const handleTagClick = (clickedTag?: string) => {
     navigate({
-      search: getNextPostTagFilter(tagName, clickedTag),
-      replace: true, // Replace history to avoid back-button clutter
+      search: withTagFilter(search, clickedTag),
+      replace: true,
     });
   };
 
@@ -86,7 +109,7 @@ function RouteComponent() {
     <PostsPage
       posts={posts}
       tags={tags}
-      selectedTag={tagName}
+      selectedTag={search.tagName}
       onTagClick={handleTagClick}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}

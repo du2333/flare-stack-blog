@@ -46,6 +46,7 @@ const postErrors = {
     message: "This public slug is already in use.",
   },
   MEDIA_NOT_FOUND: { status: 404, message: "Media not found." },
+  CATEGORY_NOT_FOUND: { status: 404, message: "Category not found." },
 } as const;
 
 const list = publicProcedure
@@ -183,6 +184,9 @@ const update = adminProcedure
       },
       MEDIA_NOT_FOUND: () => {
         throw errors.MEDIA_NOT_FOUND();
+      },
+      CATEGORY_NOT_FOUND: () => {
+        throw errors.CATEGORY_NOT_FOUND();
       },
     }),
   );

@@ -7,6 +7,7 @@ export type PublicCacheReason =
   | "post.deleted"
   | "post-popularity.updated"
   | "tag.changed"
+  | "category.changed"
   | "friend-links.changed"
   | "site-config.changed";
 
