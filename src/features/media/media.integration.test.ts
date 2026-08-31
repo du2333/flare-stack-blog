@@ -32,11 +32,11 @@ describe("MediaService", () => {
     // We trust the `r2-sanity.test.ts` (or equivalent verification) matches the platform behavior,
     // and here we focus on Service Logic + DB integration.
 
-    vi.spyOn(Storage, "putToR2").mockImplementation(async (_env, file) => {
-      const key = `mocked-${Date.now()}-${file.name}`;
+    vi.spyOn(Storage, "putToR2").mockImplementation(async (_env, file, key) => {
+      const nextKey = key ?? `mocked-${Date.now()}-${file.name}`;
       return {
-        key,
-        url: `/images/${key}`,
+        key: nextKey,
+        url: `/images/${nextKey}`,
         fileName: file.name,
         mimeType: file.type,
         sizeInBytes: file.size,
@@ -216,6 +216,13 @@ describe("MediaService", () => {
 
       // 5 files with "content X" = roughly 9 bytes each
       expect(totalSize).toBeGreaterThan(0);
+    });
+
+    it("reports library stats including unused count", async () => {
+      const stats = await MediaService.getMediaStats(adminContext);
+      expect(stats.totalCount).toBeGreaterThanOrEqual(5);
+      expect(stats.unusedCount).toBe(stats.totalCount);
+      expect(stats.totalBytes).toBeGreaterThan(0);
     });
 
     it("should update media filename", async () => {
@@ -403,6 +410,102 @@ describe("MediaService", () => {
         false,
       );
       unwrap(await MediaService.deleteImage(adminContext, media.key));
+    });
+
+    it("marks a Post Cover on linked posts", async () => {
+      const file = new File(["cover"], "cover-flag.png", {
+        type: "image/png",
+      });
+      const media = unwrap(await MediaService.upload(adminContext, { file }));
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: postId,
+          data: { coverMediaId: media.id },
+        }),
+      );
+
+      const linked = await MediaService.getLinkedPosts(adminContext, media.key);
+      expect(linked).toHaveLength(1);
+      expect(linked[0].isCover).toBe(true);
+    });
+  });
+
+  describe("Replace and import", () => {
+    it("replaces the file at the same key", async () => {
+      const original = new File(["old"], "old.png", { type: "image/png" });
+      const uploaded = unwrap(
+        await MediaService.upload(adminContext, { file: original }),
+      );
+      const next = new File(["new-bytes"], "new.jpg", { type: "image/jpeg" });
+      const replaced = unwrap(
+        await MediaService.replaceImage(adminContext, {
+          key: uploaded.key,
+          file: next,
+        }),
+      );
+
+      expect(replaced.key).toBe(uploaded.key);
+      expect(replaced.fileName).toBe("new.jpg");
+      expect(replaced.mimeType).toBe("image/jpeg");
+      expect(replaced.sizeInBytes).toBe(next.size);
+      expect(Storage.putToR2).toHaveBeenCalledWith(
+        adminContext.env,
+        next,
+        uploaded.key,
+      );
+    });
+
+    it("imports a public image URL into Media", async () => {
+      const bytes = new Uint8Array([1, 2, 3, 4]);
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(bytes, {
+            status: 200,
+            headers: { "content-type": "image/png" },
+          }),
+        ),
+      );
+
+      const result = unwrap(
+        await MediaService.importFromUrl(adminContext, {
+          url: "https://example.com/photos/sunset.png",
+        }),
+      );
+
+      expect(result.fileName).toBe("sunset.png");
+      expect(result.mimeType).toBe("image/png");
+      vi.unstubAllGlobals();
+    });
+
+    it("rejects a private import URL", async () => {
+      const result = await MediaService.importFromUrl(adminContext, {
+        url: "http://127.0.0.1/secret.png",
+      });
+      expect(result.error?.reason).toBe("MEDIA_INVALID_URL");
+    });
+
+    it("deletes unused media in one pass", async () => {
+      const unused = unwrap(
+        await MediaService.upload(adminContext, {
+          file: new File(["a"], "unused-batch.png", { type: "image/png" }),
+        }),
+      );
+      const used = unwrap(
+        await MediaService.upload(adminContext, {
+          file: new File(["b"], "used-batch.png", { type: "image/png" }),
+        }),
+      );
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(postId, imageDoc(used.key));
+
+      const deleted = unwrap(await MediaService.deleteUnused(adminContext));
+      expect(deleted.count).toBeGreaterThanOrEqual(1);
+
+      const list = await MediaService.getMediaList(adminContext, {});
+      expect(list.items.some((item) => item.key === unused.key)).toBe(false);
+      expect(list.items.some((item) => item.key === used.key)).toBe(true);
     });
   });
 });

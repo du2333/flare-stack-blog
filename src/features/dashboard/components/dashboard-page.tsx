@@ -61,7 +61,10 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <div className="hidden lg:flex justify-between items-center px-1">
+      <div
+        className="hidden lg:flex justify-between items-center px-1 fuwari-onload-animation"
+        style={{ animationDelay: "50ms" }}
+      >
         <h1 className="text-2xl font-medium fuwari-text-90">
           {m.admin_overview_title()}
         </h1>
@@ -82,7 +85,10 @@ export function DashboardPage() {
         defaultSiteIdentity={defaultSiteIdentity}
       />
 
-      <section className="fuwari-card-base p-5 md:p-6 space-y-3">
+      <section
+        className="fuwari-card-base p-5 md:p-6 space-y-3 fuwari-onload-animation"
+        style={{ animationDelay: "100ms" }}
+      >
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-sm font-medium fuwari-text-50">
             {m.admin_overview_continue_writing()}
@@ -138,7 +144,10 @@ export function DashboardPage() {
       </section>
 
       {showFriendLinks || showComments ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 fuwari-onload-animation"
+          style={{ animationDelay: "150ms" }}
+        >
           {showFriendLinks ? (
             <section
               className={cn(
@@ -264,7 +273,10 @@ function AttentionChips({
   }
 
   return (
-    <div className="flex flex-wrap gap-2 px-1">
+    <div
+      className="flex flex-wrap gap-2 px-1 fuwari-onload-animation"
+      style={{ animationDelay: "80ms" }}
+    >
       {pendingTotal > 0 ? (
         <Link
           to="/admin/friend-links"

@@ -106,7 +106,10 @@ export function PostManager({
   };
 
   return (
-    <div className="fuwari-card-base p-5 md:p-6 space-y-6">
+    <div
+      className="fuwari-card-base p-5 md:p-6 space-y-6 fuwari-onload-animation"
+      style={{ animationDelay: "100ms" }}
+    >
       <div className="hidden lg:flex justify-between items-center">
         <h1 className="text-2xl font-medium fuwari-text-90">
           {m.admin_posts_title()}

@@ -32,7 +32,10 @@ export const Route = createFileRoute("/admin/tags/")({
 function TagManagerRoute() {
   return (
     <div className="space-y-4">
-      <h1 className="hidden lg:block text-2xl font-medium fuwari-text-90 px-1">
+      <h1
+        className="hidden lg:block text-2xl font-medium fuwari-text-90 px-1 fuwari-onload-animation"
+        style={{ animationDelay: "50ms" }}
+      >
         {m.taxonomy_manager_title()}
       </h1>
       <div className="grid gap-4 lg:grid-cols-2 items-start">

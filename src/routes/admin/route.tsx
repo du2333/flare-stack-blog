@@ -11,13 +11,11 @@ import {
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
 import { SideBar } from "@/components/admin/side-bar";
-import Toaster from "@/components/ui/toaster";
+import { Toaster } from "@/components/layout/toaster";
 import { sessionQuery } from "@/features/auth/queries";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
-import "@/styles/admin-theme.css";
-import "@/styles/admin.css";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {

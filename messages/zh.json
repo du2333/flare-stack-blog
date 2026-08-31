@@ -708,8 +708,8 @@
   "editor_action_tags_none": "没有生成新的标签",
   "editor_action_tags_error": "生成标签失败",
   "editor_action_unknown_error": "未知错误",
-  "editor_image_upload_failed": "图片上传失败",
-  "editor_image_upload_success_desc": "{name} 已归档保存",
+  "editor_image_upload_failed": "上传失败",
+  "editor_image_upload_success_desc": "上传成功",
   "editor_image_caption_placeholder": "图片说明...",
   "editor_toolbar_heading2": "二级标题",
   "editor_toolbar_heading3": "三级标题",
@@ -730,8 +730,10 @@
   "editor_toolbar_undo": "撤销",
   "editor_toolbar_redo": "重做",
   "editor_insert_link_title": "插入链接",
-  "editor_insert_media_title": "选择媒体",
-  "editor_insert_search_placeholder": "搜索媒体资产...",
+  "editor_insert_media_title": "选择图片",
+  "editor_insert_search_placeholder": "搜索文件名",
+  "editor_insert_image_url": "图片链接",
+  "editor_insert_import": "导入",
   "editor_insert_external_link": "外部链接",
   "editor_insert_target_url": "目标地址",
   "editor_insert_cancel": "取消",
@@ -820,27 +822,55 @@
   "tag_manager_mobile_created": "创建于:",
   "tag_manager_mobile_posts": "文章",
   "media_title": "媒体库",
+  "media_upload": "上传",
+  "media_stats": "{count} 张 · {size}",
+  "media_search_placeholder": "搜索文件名",
+  "media_filter_all": "全部",
+  "media_filter_unused": "未使用",
+  "media_empty": "暂无图片",
+  "media_empty_hint": "拖到这里，或选择图片",
+  "media_choose": "选择图片",
+  "media_drop": "松开以上传",
+  "media_badge_unused": "未使用",
+  "media_badge_cover": "封面",
+  "media_post_count": "{count} 篇",
+  "media_used_in": "用于 {count} 篇文章",
+  "media_copy_link": "复制链接",
+  "media_replace": "替换",
+  "media_delete": "删除",
+  "media_delete_all_unused": "全部删除",
+  "media_delete_title": "删除图片",
+  "media_delete_one": "确定删除「{name}」吗",
+  "media_delete_unused": "确定删除这 {count} 张未使用的图片吗",
+  "media_deleted": "已删除",
+  "media_renamed": "已重命名",
+  "media_copied": "已复制链接",
+  "media_copy_failed": "复制失败",
+  "media_replace_success": "已替换",
+  "media_replace_fail": "替换失败",
+  "media_import_fail": "无法导入这张图片",
+  "media_no_match": "没有匹配的图片",
+  "media_clear_search": "清除搜索",
+  "media_uploading": "正在上传 {current}/{total}",
   "media_stats_assets": [
     {
       "declarations": ["input count", "input size"],
       "match": {
-        "count=*, size=*": "ASSETS / {count} 个文件 / {size} 已使用"
+        "count=*, size=*": "{count} 张 · {size}"
       }
     }
   ],
-  "media_upload_btn": "上传文件",
-  "media_delete_confirm_title": "确认删除",
+  "media_upload_btn": "上传",
+  "media_delete_confirm_title": "删除图片",
   "media_delete_confirm_desc": [
     {
       "declarations": ["input count"],
       "match": {
-        "count=*": "您确定要永久删除这 {count} 个媒体资产吗？此操作无法撤销。"
+        "count=*": "确定删除这 {count} 张图片吗"
       }
     }
   ],
-  "media_delete_confirm_btn": "确认删除",
-  "media_search_placeholder": "检索媒体文件...",
-  "media_filter_unused": "只显示未引用",
+  "media_delete_confirm_btn": "删除",
   "media_deselect_all": "取消全选",
   "media_select_all": "全选",
   "media_delete_selected": [
@@ -854,7 +884,7 @@
   "media_grid_linked": "已引用",
   "media_grid_empty": "未找到媒体资产",
   "media_grid_refresh": "刷新列表",
-  "media_grid_loading": "加载资产中...",
+  "media_grid_loading": "加载中...",
   "media_grid_end": "已加载全部",
   "media_grid_unknown_size": "未知",
   "media_upload_modal_tag": "UPLOAD",
@@ -966,14 +996,7 @@
     }
   ],
   "media_upload_log_complete": "> 上传完成。资产已索引。",
-  "media_upload_success": [
-    {
-      "declarations": ["input name"],
-      "match": {
-        "name=*": "上传完成: {name}"
-      }
-    }
-  ],
+  "media_upload_success": "上传成功",
   "media_upload_log_init": "> 初始化上传握手...",
   "comments_admin_title": "评论管理",
   "comments_admin_tag": "社区管理",

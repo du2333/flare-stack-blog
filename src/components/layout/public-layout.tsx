@@ -1,4 +1,3 @@
-import "@/styles/fuwari.css";
 import { useLocation, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
 import type { PublicLayoutProps } from "@/components/layout/layout-props";

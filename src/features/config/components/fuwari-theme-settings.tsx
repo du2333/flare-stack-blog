@@ -1,4 +1,3 @@
-import "@/styles/fuwari-preview.css";
 import { useFormContext, useWatch } from "react-hook-form";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import { RangeField } from "@/features/config/components/site-settings-fields";

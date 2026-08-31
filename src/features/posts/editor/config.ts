@@ -28,9 +28,7 @@ const ALLOWED_IMAGE_MIME_TYPES = [
 
 async function handleImageUpload(file: File): Promise<ImageUploadResult> {
   const result = await orpcClient.media.upload({ image: file });
-  toast.success(m.media_upload_success({ name: file.name }), {
-    description: m.editor_image_upload_success_desc({ name: file.name }),
-  });
+  toast.success(m.media_upload_success());
 
   return {
     url: result.url,

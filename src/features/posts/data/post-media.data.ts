@@ -75,15 +75,27 @@ export async function getPostsByMediaKey(db: DB, key: string) {
     .select({
       id: PostsTable.id,
       title: PostsTable.title,
-      summary: PostsTable.summary,
       slug: PostsTable.slug,
       status: PostsTable.status,
+      coverMediaId: PostsTable.coverMediaId,
+      snapshot: PostsTable.publicSnapshotJson,
+      mediaId: MediaTable.id,
     })
     .from(PostsTable)
     .innerJoin(PostMediaTable, eq(PostsTable.id, PostMediaTable.postId))
     .innerJoin(MediaTable, eq(MediaTable.id, PostMediaTable.mediaId))
     .where(eq(MediaTable.key, key));
-  return posts;
+
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    status: post.status,
+    isCover:
+      post.coverMediaId === post.mediaId ||
+      post.snapshot?.cover?.key === key ||
+      post.snapshot?.cover?.mediaId === post.mediaId,
+  }));
 }
 
 export async function isMediaInUse(db: DB, key: string): Promise<boolean> {

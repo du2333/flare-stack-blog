@@ -1,5 +1,728 @@
 @import "tailwindcss";
-@import "./styles/shared.css";
 @import "tw-animate-css";
-
+@import "katex/dist/katex.min.css";
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-serif-sc";
+@import "@fontsource-variable/jetbrains-mono";
+@plugin "@tailwindcss/typography";
 @source not "../dist/**/*";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
+@custom-variant system (&:is(.system *));
+
+@theme {
+  --font-sans: "Noto Sans SC Variable", system-ui, sans-serif;
+  --font-serif: "Noto Serif SC Variable", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-background: var(--fuwari-page-bg);
+  --color-foreground: var(--fuwari-fg);
+  --color-muted: var(--fuwari-btn-regular-bg);
+  --color-muted-foreground: var(--fuwari-fg-50);
+  --color-popover: var(--fuwari-card-bg);
+  --color-popover-foreground: var(--fuwari-fg);
+  --color-border: var(--fuwari-input-border);
+  --color-input: var(--fuwari-input-border);
+  --color-primary: var(--fuwari-primary);
+  --color-primary-foreground: white;
+  --color-secondary: var(--fuwari-btn-regular-bg);
+  --color-secondary-foreground: var(--fuwari-btn-content);
+  --color-accent: var(--fuwari-btn-regular-bg);
+  --color-accent-foreground: var(--fuwari-btn-content);
+  --color-ring: var(--fuwari-primary);
+  --color-destructive: var(--fuwari-danger);
+  --color-destructive-foreground: white;
+  --color-card: var(--fuwari-card-bg);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :root {
+    --fuwari-radius-large: 1rem;
+    --fuwari-hue: 250;
+    --fuwari-success-hue: 145;
+    --fuwari-warning-hue: 85;
+    --fuwari-danger-hue: 25;
+    --fuwari-content-delay: 150ms;
+    --fuwari-page-width: 75rem;
+    --fuwari-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+
+    --fuwari-primary: oklch(0.7 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.65 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.6 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.95 0.01 var(--fuwari-hue));
+    --fuwari-card-bg: white;
+    --fuwari-btn-content: oklch(0.55 0.12 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.85 0.08 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.95 0.025 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.98 0.01 var(--fuwari-hue));
+    --fuwari-enter-btn-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-enter-btn-bg-hover: var(--fuwari-btn-regular-bg-hover);
+    --fuwari-enter-btn-bg-active: var(--fuwari-btn-regular-bg-active);
+    --fuwari-meta-divider: rgba(0, 0, 0, 0.2);
+    --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(0, 0, 0, 0.07);
+    --fuwari-input-border: rgba(0, 0, 0, 0.1);
+    --fuwari-fg: rgb(0 0 0 / 0.9);
+    --fuwari-fg-75: rgb(0 0 0 / 0.75);
+    --fuwari-fg-50: rgb(0 0 0 / 0.5);
+    --fuwari-fg-30: rgb(0 0 0 / 0.3);
+    --fuwari-link-underline: color-mix(
+      in oklab,
+      var(--fuwari-primary) 55%,
+      transparent
+    );
+    --fuwari-link-hover: var(--fuwari-primary);
+    --fuwari-codeblock-selection: var(--fuwari-selection-bg);
+    --fuwari-toc-btn-hover: oklch(0.926 0.015 var(--fuwari-hue));
+    --fuwari-toc-btn-active: oklch(0.9 0.015 var(--fuwari-hue));
+
+    --fuwari-success: oklch(0.7 0.14 var(--fuwari-success-hue));
+    --fuwari-success-fg: oklch(0.45 0.12 var(--fuwari-success-hue));
+    --fuwari-success-bg: oklch(0.95 0.05 var(--fuwari-success-hue));
+    --fuwari-warning: oklch(0.75 0.14 var(--fuwari-warning-hue));
+    --fuwari-warning-fg: oklch(0.5 0.13 var(--fuwari-warning-hue));
+    --fuwari-warning-bg: oklch(0.95 0.07 var(--fuwari-warning-hue));
+    --fuwari-danger: oklch(0.65 0.16 var(--fuwari-danger-hue));
+    --fuwari-danger-fg: oklch(0.5 0.16 var(--fuwari-danger-hue));
+    --fuwari-danger-bg: oklch(0.95 0.05 var(--fuwari-danger-hue));
+  }
+
+  .dark {
+    --fuwari-primary: oklch(0.75 0.14 var(--fuwari-hue));
+    --fuwari-primary-hover: oklch(0.8 0.14 var(--fuwari-hue));
+    --fuwari-primary-active: oklch(0.85 0.14 var(--fuwari-hue));
+    --fuwari-page-bg: oklch(0.16 0.014 var(--fuwari-hue));
+    --fuwari-card-bg: oklch(0.23 0.015 var(--fuwari-hue));
+    --fuwari-btn-content: oklch(0.75 0.1 var(--fuwari-hue));
+    --fuwari-btn-regular-bg: oklch(0.33 0.035 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-hover: oklch(0.38 0.04 var(--fuwari-hue));
+    --fuwari-btn-regular-bg-active: oklch(0.43 0.045 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-hover: oklch(0.3 0.035 var(--fuwari-hue));
+    --fuwari-btn-plain-bg-active: oklch(0.27 0.025 var(--fuwari-hue));
+    --fuwari-meta-divider: rgba(255, 255, 255, 0.2);
+    --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
+    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
+    --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-input-bg: rgba(255, 255, 255, 0.05);
+    --fuwari-input-border: rgba(255, 255, 255, 0.1);
+    --fuwari-fg: rgb(255 255 255 / 0.9);
+    --fuwari-fg-75: rgb(255 255 255 / 0.75);
+    --fuwari-fg-50: rgb(255 255 255 / 0.5);
+    --fuwari-fg-30: rgb(255 255 255 / 0.3);
+    --fuwari-toc-btn-hover: oklch(0.22 0.02 var(--fuwari-hue));
+    --fuwari-toc-btn-active: oklch(0.25 0.02 var(--fuwari-hue));
+
+    --fuwari-success: oklch(0.75 0.12 var(--fuwari-success-hue));
+    --fuwari-success-fg: oklch(0.8 0.1 var(--fuwari-success-hue));
+    --fuwari-success-bg: oklch(0.33 0.05 var(--fuwari-success-hue));
+    --fuwari-warning: oklch(0.8 0.12 var(--fuwari-warning-hue));
+    --fuwari-warning-fg: oklch(0.82 0.1 var(--fuwari-warning-hue));
+    --fuwari-warning-bg: oklch(0.33 0.055 var(--fuwari-warning-hue));
+    --fuwari-danger: oklch(0.72 0.14 var(--fuwari-danger-hue));
+    --fuwari-danger-fg: oklch(0.8 0.1 var(--fuwari-danger-hue));
+    --fuwari-danger-bg: oklch(0.33 0.05 var(--fuwari-danger-hue));
+  }
+
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+@layer components {
+  .fuwari-card-base {
+    border-radius: var(--fuwari-radius-large);
+    overflow: hidden;
+    background-color: var(--fuwari-card-bg);
+    transition:
+      background-color 0.3s,
+      color 0.3s;
+  }
+
+  .fuwari-btn-regular {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .fuwari-btn-regular:hover {
+    background-color: var(--fuwari-btn-regular-bg-hover);
+  }
+  .fuwari-btn-regular:active {
+    background-color: var(--fuwari-btn-regular-bg-active);
+  }
+  .dark .fuwari-btn-regular {
+    color: rgb(255 255 255 / 0.75);
+  }
+
+  .fuwari-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-primary);
+    color: white;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      opacity 0.2s;
+  }
+  .fuwari-btn-primary:hover {
+    background-color: var(--fuwari-primary-hover);
+  }
+  .fuwari-btn-primary:active {
+    background-color: var(--fuwari-primary-active);
+  }
+  .fuwari-btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .dark .fuwari-btn-primary {
+    color: rgb(0 0 0 / 0.75);
+  }
+
+  .fuwari-btn-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-danger);
+    color: white;
+    transition:
+      opacity 0.2s,
+      background-color 0.2s;
+  }
+  .fuwari-btn-danger:hover {
+    opacity: 0.9;
+  }
+  .fuwari-btn-danger:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .fuwari-text-90 {
+    color: var(--fuwari-fg);
+  }
+  .fuwari-text-75 {
+    color: var(--fuwari-fg-75);
+  }
+  .fuwari-text-50 {
+    color: var(--fuwari-fg-50);
+  }
+  .fuwari-text-30 {
+    color: var(--fuwari-fg-30);
+  }
+
+  .fuwari-expand-animation {
+    position: relative;
+    z-index: 0;
+  }
+  .fuwari-expand-animation::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    scale: 0.85;
+    z-index: -1;
+    transition:
+      scale 0.2s ease-out,
+      background-color 0.2s;
+  }
+  .fuwari-expand-animation:hover::before {
+    scale: 1;
+    background-color: var(--fuwari-btn-plain-bg-hover);
+  }
+  .fuwari-expand-animation:active::before {
+    background-color: var(--fuwari-btn-plain-bg-active);
+  }
+
+  .fuwari-meta-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+    margin-right: 0.5rem;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .fuwari-timeline-dash {
+    position: relative;
+  }
+  .fuwari-timeline-dash::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+  }
+  .dark .fuwari-timeline-dash::before {
+    border-left: 2px dashed rgba(255, 255, 255, 0.1);
+  }
+
+  .fuwari-code-folding-wrapper {
+    @apply relative transition-[max-height] duration-500 ease-in-out overflow-x-auto overflow-y-hidden;
+  }
+
+  .fuwari-code-mask {
+    @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
+    background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
+    z-index: 10;
+  }
+
+  .fuwari-toc-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  }
+  .dark .fuwari-toc-scrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+  .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  .dark .fuwari-toc-scrollbar:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: none;
+  }
+  .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  .dark .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .dark .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes fuwari-fade-in-up {
+  0% {
+    transform: translateY(2rem);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fuwari-onload-animation {
+  opacity: 0;
+  animation: 300ms fuwari-fade-in-up ease-out forwards;
+}
+
+.theme-transition::view-transition-old(root),
+.theme-transition::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 0.2) transparent;
+}
+.dark .custom-scrollbar {
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(0 0 0 / 0.2);
+  border-radius: 9999px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.2);
+}
+
+::selection {
+  background-color: var(--fuwari-selection-bg);
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-width: 3px;
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-width: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.dark ::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.fuwari-custom-md {
+  --tw-prose-body: rgb(0 0 0 / 0.9);
+  --tw-prose-headings: rgb(0 0 0 / 0.9);
+  --tw-prose-lead: rgb(0 0 0 / 0.75);
+  --tw-prose-links: var(--fuwari-primary);
+  --tw-prose-bold: rgb(0 0 0 / 0.9);
+  --tw-prose-counters: rgb(0 0 0 / 0.5);
+  --tw-prose-bullets: rgb(0 0 0 / 0.3);
+  --tw-prose-hr: var(--fuwari-meta-divider);
+  --tw-prose-quotes: rgb(0 0 0 / 0.75);
+  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
+  --tw-prose-captions: rgb(0 0 0 / 0.5);
+  --tw-prose-code: var(--fuwari-inline-code-color);
+  --tw-prose-pre-code: var(--fuwari-btn-content);
+  --tw-prose-pre-bg: var(--fuwari-card-bg);
+  --tw-prose-th-borders: var(--fuwari-meta-divider);
+  --tw-prose-td-borders: var(--fuwari-meta-divider);
+  color: var(--tw-prose-body);
+
+  h1 {
+    @apply text-3xl font-bold font-sans tracking-normal mt-10 mb-6;
+  }
+  h2 {
+    @apply text-2xl font-bold font-sans tracking-normal mt-10 mb-5;
+  }
+  h3 {
+    @apply text-xl font-bold font-sans tracking-normal mt-8 mb-4;
+  }
+  h4 {
+    @apply text-lg font-bold font-sans tracking-normal mt-6 mb-3;
+  }
+  h5,
+  h6 {
+    @apply text-base font-bold font-sans tracking-normal mt-6 mb-3;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    &:hover::after {
+      content: "#";
+      @apply text-(--fuwari-primary) opacity-50 transition-opacity font-normal no-underline ml-[0.2ch];
+    }
+    .anchor {
+      @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0! no-underline!;
+      .anchor-icon {
+        @apply mx-[0.45ch]!;
+      }
+    }
+    &:hover .anchor {
+      @apply opacity-100!;
+    }
+  }
+
+  a:not(.no-styling) {
+    @apply relative bg-none font-medium text-(--fuwari-primary) underline decoration-(--fuwari-link-underline) decoration-1 decoration-dashed underline-offset-4;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    display: inline-block;
+    &:hover,
+    &:active {
+      @apply decoration-transparent;
+      background: var(--fuwari-btn-plain-bg-hover);
+      border-bottom: 1px dashed var(--fuwari-link-hover);
+      text-decoration: none;
+    }
+  }
+
+  :not(pre) > code {
+    @apply bg-(--fuwari-inline-code-bg) text-(--fuwari-inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
+  }
+  code {
+    font-family:
+      "JetBrains Mono Variable",
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      Liberation Mono,
+      Courier New,
+      monospace;
+    &:before,
+    &:after {
+      content: none;
+    }
+    counter-reset: line;
+    span.line {
+      &:before {
+        @apply text-black/30 mr-4 w-4 inline-block;
+        content: counter(line);
+        counter-increment: line;
+        direction: rtl;
+      }
+      &:last-child:empty,
+      &:last-child:has(> span:empty:only-child) {
+        display: none;
+      }
+    }
+  }
+
+  .expressive-code {
+    @apply my-4;
+    ::selection {
+      @apply bg-(--fuwari-codeblock-selection);
+      color: inherit;
+    }
+  }
+
+  ul,
+  ol {
+    li::marker {
+      @apply text-(--fuwari-primary);
+    }
+  }
+
+  blockquote {
+    @apply not-italic border-transparent relative;
+    font-weight: inherit;
+    &:before {
+      @apply content-[''] absolute -left-1 block transition bg-(--fuwari-btn-regular-bg) h-full w-1 rounded-full;
+    }
+    p:before,
+    p:after {
+      @apply content-none;
+    }
+  }
+
+  .tiptap-mathematics-render,
+  .katex {
+    font-size: 1.1em;
+    color: var(--tw-prose-body);
+  }
+  .tiptap-mathematics-render[data-type="block-math"],
+  .katex-display {
+    margin: 1.5em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+  }
+}
+
+:is(.dark .fuwari-custom-md) {
+  --tw-prose-body: rgb(255 255 255 / 0.9);
+  --tw-prose-headings: rgb(255 255 255 / 0.9);
+  --tw-prose-lead: rgb(255 255 255 / 0.75);
+  --tw-prose-links: var(--fuwari-primary);
+  --tw-prose-bold: rgb(255 255 255 / 0.9);
+  --tw-prose-counters: rgb(255 255 255 / 0.5);
+  --tw-prose-bullets: rgb(255 255 255 / 0.3);
+  --tw-prose-hr: var(--fuwari-meta-divider);
+  --tw-prose-quotes: rgb(255 255 255 / 0.75);
+  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
+  --tw-prose-captions: rgb(255 255 255 / 0.5);
+  --tw-prose-code: var(--fuwari-inline-code-color);
+  --tw-prose-pre-code: var(--fuwari-btn-content);
+  --tw-prose-pre-bg: var(--fuwari-card-bg);
+  --tw-prose-th-borders: var(--fuwari-meta-divider);
+  --tw-prose-td-borders: var(--fuwari-meta-divider);
+}
+:is(.dark .fuwari-custom-md) code span.line:before {
+  @apply text-white/30;
+}
+
+.admin-layout [data-admin-legacy] {
+  font-size: 15px;
+}
+.admin-layout [data-admin-legacy] :is(.text-\[9px\], .text-\[10px\], .text-xs) {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+.admin-layout [data-admin-legacy] .text-sm {
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+}
+.admin-layout [data-admin-legacy] .text-base {
+  font-size: 16px !important;
+}
+.admin-layout [data-admin-legacy] .stat-card .text-2xl {
+  font-size: 1.75rem !important;
+}
+.admin-layout [data-admin-legacy] .tabs-trigger {
+  font-size: 12px !important;
+  padding-bottom: 0.5rem !important;
+}
+.admin-layout [data-admin-legacy] [size="10"],
+.admin-layout [data-admin-legacy] [size="12"],
+.admin-layout [data-admin-legacy] [size="14"] {
+  width: 16px !important;
+  height: 16px !important;
+}
+.admin-layout [data-admin-legacy] .p-6 {
+  padding: 1.75rem !important;
+}
+.admin-layout [data-admin-legacy] .md\:p-12 {
+  padding: 3.5rem !important;
+}
+.admin-layout [data-admin-legacy] .gap-4 {
+  gap: 1.25rem !important;
+}
+.admin-layout .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.admin-layout .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-layout .ProseMirror ul {
+  list-style-type: disc;
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+}
+.admin-layout .ProseMirror ol {
+  list-style-type: decimal;
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+}
+.admin-layout .ProseMirror li {
+  margin: 0.25rem 0;
+}
+.admin-layout .ProseMirror h2 {
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.875rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin: 3.5rem 0 2rem;
+}
+.admin-layout .ProseMirror h3 {
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 3rem 0 1.5rem;
+}
+.admin-layout .ProseMirror h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 2rem 0 1rem;
+}
+.admin-layout .ProseMirror blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--fuwari-input-border);
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.625;
+  color: var(--fuwari-fg-50);
+}
+.admin-layout .ProseMirror code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  padding: 0 0.25rem;
+  border-radius: 0.125rem;
+  background: var(--fuwari-inline-code-bg);
+}
+.admin-layout .ProseMirror a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.admin-layout .tiptap p.is-editor-empty:first-child::before {
+  color: var(--fuwari-fg-30);
+  font-family: var(--font-serif, ui-serif, Georgia, serif);
+  font-style: italic;
+  float: left;
+  height: 0;
+  pointer-events: none;
+  content: attr(data-placeholder);
+}
+.admin-layout .ProseMirror li > p {
+  margin: 0;
+}
+.admin-layout .ProseMirror table {
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+}
+.admin-layout .ProseMirror td,
+.admin-layout .ProseMirror th {
+  border: 1px solid var(--fuwari-input-border);
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 0.5rem 0.625rem;
+  position: relative;
+  vertical-align: top;
+}
+.admin-layout .ProseMirror th {
+  background: var(--fuwari-btn-regular-bg);
+  font-weight: 500;
+  text-align: left;
+  color: var(--fuwari-fg-50);
+}
+.admin-layout .ProseMirror .tiptap-mathematics-render,
+.admin-layout .ProseMirror .katex {
+  font-size: 1.1em;
+  color: inherit;
+}
+.admin-layout .ProseMirror .tiptap-mathematics-render[data-type="block-math"],
+.admin-layout .ProseMirror .katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}

@@ -715,8 +715,8 @@
   "editor_action_tags_none": "No new tags generated",
   "editor_action_tags_error": "Failed to generate tags",
   "editor_action_unknown_error": "Unknown error",
-  "editor_image_upload_failed": "Image upload failed",
-  "editor_image_upload_success_desc": "{name} has been saved to the media library",
+  "editor_image_upload_failed": "Upload failed",
+  "editor_image_upload_success_desc": "Uploaded",
   "editor_image_caption_placeholder": "Add a caption...",
   "editor_toolbar_heading2": "Heading 2",
   "editor_toolbar_heading3": "Heading 3",
@@ -737,8 +737,10 @@
   "editor_toolbar_undo": "Undo",
   "editor_toolbar_redo": "Redo",
   "editor_insert_link_title": "Insert Link",
-  "editor_insert_media_title": "Select Media",
-  "editor_insert_search_placeholder": "Search media assets...",
+  "editor_insert_media_title": "Choose image",
+  "editor_insert_search_placeholder": "Search by filename",
+  "editor_insert_image_url": "Image URL",
+  "editor_insert_import": "Import",
   "editor_insert_external_link": "External Link",
   "editor_insert_target_url": "Target URL",
   "editor_insert_cancel": "Cancel",
@@ -826,28 +828,56 @@
   "tag_manager_inline_cancel": "Cancel",
   "tag_manager_mobile_created": "CREATED:",
   "tag_manager_mobile_posts": "POSTS",
-  "media_title": "Media Library",
+  "media_title": "Media",
+  "media_upload": "Upload",
+  "media_stats": "{count} · {size}",
+  "media_search_placeholder": "Search by filename",
+  "media_filter_all": "All",
+  "media_filter_unused": "Unused",
+  "media_empty": "No images yet",
+  "media_empty_hint": "Drop images here, or choose files",
+  "media_choose": "Choose images",
+  "media_drop": "Drop to upload",
+  "media_badge_unused": "Unused",
+  "media_badge_cover": "Cover",
+  "media_post_count": "{count} posts",
+  "media_used_in": "Used in {count} posts",
+  "media_copy_link": "Copy link",
+  "media_replace": "Replace",
+  "media_delete": "Delete",
+  "media_delete_all_unused": "Delete all unused",
+  "media_delete_title": "Delete image",
+  "media_delete_one": "Delete \"{name}\"?",
+  "media_delete_unused": "Delete {count} unused images?",
+  "media_deleted": "Deleted",
+  "media_renamed": "Renamed",
+  "media_copied": "Link copied",
+  "media_copy_failed": "Couldn't copy",
+  "media_replace_success": "Replaced",
+  "media_replace_fail": "Replace failed",
+  "media_import_fail": "Couldn't import that image",
+  "media_no_match": "No matching images",
+  "media_clear_search": "Clear search",
+  "media_uploading": "Uploading {current}/{total}",
   "media_stats_assets": [
     {
       "declarations": ["input count", "input size"],
       "match": {
-        "count=*, size=*": "ASSETS / {count} Files / {size} Used"
+        "count=*, size=*": "{count} · {size}"
       }
     }
   ],
-  "media_upload_btn": "Upload File",
-  "media_delete_confirm_title": "Confirm Deletion",
+  "media_upload_btn": "Upload",
+  "media_delete_confirm_title": "Delete image",
   "media_delete_confirm_desc": [
     {
       "declarations": ["input count"],
       "match": {
-        "count=*": "Are you sure you want to permanently delete {count} media assets? This action cannot be reversed."
+        "count=*": "Delete {count} images?"
       }
     }
   ],
-  "media_delete_confirm_btn": "Confirm Delete",
-  "media_search_placeholder": "Search media files...",
-  "media_filter_unused": "Unused Only",
+  "media_delete_confirm_btn": "Delete",
   "media_deselect_all": "Deselect All",
   "media_select_all": "Select All",
   "media_delete_selected": [
@@ -861,7 +891,7 @@
   "media_grid_linked": "Linked",
   "media_grid_empty": "No media assets found",
   "media_grid_refresh": "Refresh List",
-  "media_grid_loading": "Loading assets...",
+  "media_grid_loading": "Loading...",
   "media_grid_end": "End of list",
   "media_grid_unknown_size": "Unknown",
   "media_upload_modal_tag": "UPLOAD",
@@ -973,14 +1003,7 @@
     }
   ],
   "media_upload_log_complete": "> Upload complete. Asset indexed.",
-  "media_upload_success": [
-    {
-      "declarations": ["input name"],
-      "match": {
-        "name=*": "Upload complete: {name}"
-      }
-    }
-  ],
+  "media_upload_success": "Uploaded",
   "media_upload_log_init": "> Initializing upload handshake...",
   "comments_admin_title": "Comments",
   "comments_admin_tag": "Moderation",

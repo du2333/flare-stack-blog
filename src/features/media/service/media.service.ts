@@ -4,10 +4,15 @@ import type {
   GetMediaListInput,
   UpdateMediaNameInput,
 } from "@/features/media/media.schema";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE,
+} from "@/features/media/media.schema";
 import { getImageDimensions } from "@/features/media/utils/image-dimensions";
 import {
   buildTransformOptions,
   getContentTypeFromKey,
+  isGifKey,
 } from "@/features/media/utils/media.utils";
 import * as PostMediaRepo from "@/features/posts/data/post-media.data";
 import { CACHE_CONTROL } from "@/lib/constants";
@@ -117,11 +122,153 @@ export async function getTotalMediaSize(context: DbContext) {
   return await MediaRepo.getTotalMediaSize(context.db);
 }
 
+export async function getMediaStats(context: DbContext) {
+  return await MediaRepo.getMediaStats(context.db);
+}
+
 export async function updateMediaName(
   context: DbContext,
   data: UpdateMediaNameInput,
 ) {
   return await MediaRepo.updateMediaName(context.db, data.key, data.name);
+}
+
+export async function replaceImage(
+  context: DbContext,
+  input: { key: string; file: File },
+) {
+  const existing = await MediaRepo.findMediaByKey(context.db, input.key);
+  if (!existing) {
+    return err({ reason: "MEDIA_NOT_FOUND" });
+  }
+
+  const dimensions = getImageDimensions(await input.file.arrayBuffer());
+  await Storage.putToR2(context.env, input.file, input.key);
+  const updated = await MediaRepo.updateMediaFile(context.db, input.key, {
+    fileName: input.file.name || existing.fileName,
+    mimeType: input.file.type || existing.mimeType,
+    sizeInBytes: input.file.size,
+    width: dimensions?.width,
+    height: dimensions?.height,
+  });
+  if (!updated) {
+    return err({ reason: "MEDIA_NOT_FOUND" });
+  }
+  return ok(updated);
+}
+
+export async function deleteUnused(
+  context: DbContext & { executionCtx: ExecutionContext },
+) {
+  const keys = await MediaRepo.getUnusedMediaKeys(context.db);
+  for (const key of keys) {
+    await MediaRepo.deleteMedia(context.db, key);
+    context.executionCtx.waitUntil(
+      Storage.deleteFromR2(context.env, key).catch((deleteError) =>
+        console.error(
+          JSON.stringify({
+            message: "r2 delete failed",
+            key,
+            error:
+              deleteError instanceof Error
+                ? deleteError.message
+                : String(deleteError),
+          }),
+        ),
+      ),
+    );
+  }
+  return ok({ count: keys.length });
+}
+
+export async function importFromUrl(
+  context: DbContext & { executionCtx: ExecutionContext },
+  input: { url: string },
+) {
+  const parsed = parsePublicImageUrl(input.url);
+  if (!parsed) {
+    return err({ reason: "MEDIA_INVALID_URL" });
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(parsed, {
+      redirect: "follow",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch {
+    return err({ reason: "MEDIA_IMPORT_FAILED" });
+  }
+
+  if (!response.ok) {
+    return err({ reason: "MEDIA_IMPORT_FAILED" });
+  }
+
+  const mime = (response.headers.get("content-type") || "")
+    .split(";")[0]
+    .trim()
+    .toLowerCase();
+  if (!ACCEPTED_IMAGE_TYPES.includes(mime)) {
+    return err({ reason: "MEDIA_INVALID" });
+  }
+
+  const buffer = await response.arrayBuffer();
+  if (buffer.byteLength === 0 || buffer.byteLength > MAX_FILE_SIZE) {
+    return err({ reason: "MEDIA_INVALID" });
+  }
+
+  const file = new File([buffer], fileNameFromUrl(parsed, mime), {
+    type: mime,
+  });
+  return upload(context, { file });
+}
+
+function parsePublicImageUrl(raw: string): URL | null {
+  let url: URL;
+  try {
+    url = new URL(raw.trim());
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+
+  const host = url.hostname.toLowerCase();
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host === "::1" ||
+    host === "0.0.0.0" ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal")
+  ) {
+    return null;
+  }
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    const [a, b] = host.split(".").map(Number);
+    if (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168)
+    ) {
+      return null;
+    }
+  }
+  return url;
+}
+
+function fileNameFromUrl(url: URL, mimeType: string) {
+  const last = decodeURIComponent(
+    url.pathname.split("/").filter(Boolean).pop() || "",
+  );
+  if (last && /\.(jpe?g|png|webp|gif)$/i.test(last)) return last;
+  const ext =
+    mimeType === "image/jpeg" || mimeType === "image/jpg"
+      ? "jpg"
+      : mimeType.split("/")[1] || "jpg";
+  return `image.${ext}`;
 }
 
 export async function handleImageRequest(
@@ -162,7 +309,7 @@ export async function handleImageRequest(
   // Miniflare's local Image Resizing encodes AVIF extremely slowly (~30s for a
   // ~1MB hero image). Serve the R2 original in local dev; production still
   // goes through Cloudflare Image Resizing.
-  if (isLoop || wantsOriginal || isLocalDev) {
+  if (isLoop || wantsOriginal || isLocalDev || isGifKey(key)) {
     return await serveOriginal();
   }
 
@@ -212,9 +359,8 @@ export async function handleImageRequest(
     // 使用 new Response(response.body, response) 保持状态码和其它优化头信息
     const newResponse = new Response(response.body, response);
 
-    // 覆盖/补充必要的缓存头
     newResponse.headers.set("Vary", "Accept");
-    Object.entries(CACHE_CONTROL.immutable).forEach(([k, v]) => {
+    Object.entries(CACHE_CONTROL.public).forEach(([k, v]) => {
       newResponse.headers.set(k, v);
     });
 

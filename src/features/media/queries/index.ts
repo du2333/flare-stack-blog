@@ -15,13 +15,6 @@ export function mediaInfiniteQueryOptions(
   });
 }
 
-export function linkedMediaKeysQuery(keys: Array<string>) {
-  return orpc.media.linkedKeys.queryOptions({
-    input: { keys },
-    staleTime: 30000,
-  });
-}
-
 export function linkedPostsQuery(key: string) {
   return orpc.media.linkedPosts.queryOptions({
     input: { key },
@@ -29,4 +22,4 @@ export function linkedPostsQuery(key: string) {
   });
 }
 
-export const totalMediaSizeQuery = orpc.media.totalSize.queryOptions();
+export const mediaStatsQuery = orpc.media.stats.queryOptions();

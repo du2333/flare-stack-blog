@@ -1,9 +1,13 @@
 import type { SQL } from "drizzle-orm";
-import { and, desc, eq, lt, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, inArray, lt, or, sql, sum } from "drizzle-orm";
 import { escapeLikeString } from "@/features/media/data/helper";
-import { MediaTable, PostMediaTable } from "@/lib/db/schema";
+import { MediaTable, PostMediaTable, PostsTable } from "@/lib/db/schema";
 
 export type Media = typeof MediaTable.$inferSelect;
+export type MediaListItem = Media & {
+  postCount: number;
+  isCover: boolean;
+};
 
 export async function insertMedia(
   db: DB,
@@ -22,6 +26,18 @@ export async function findMediaById(db: DB, id: number): Promise<Media | null> {
   return media ?? null;
 }
 
+export async function findMediaByKey(
+  db: DB,
+  key: string,
+): Promise<Media | null> {
+  const [media] = await db
+    .select()
+    .from(MediaTable)
+    .where(eq(MediaTable.key, key))
+    .limit(1);
+  return media ?? null;
+}
+
 export async function deleteMedia(db: DB, key: string) {
   await db.delete(MediaTable).where(eq(MediaTable.key, key));
 }
@@ -33,15 +49,33 @@ export async function updateMediaName(db: DB, key: string, name: string) {
     .where(eq(MediaTable.key, key));
 }
 
+export async function updateMediaFile(
+  db: DB,
+  key: string,
+  data: {
+    fileName: string;
+    mimeType: string;
+    sizeInBytes: number;
+    width: number | null | undefined;
+    height: number | null | undefined;
+  },
+): Promise<Media | null> {
+  const [updated] = await db
+    .update(MediaTable)
+    .set({
+      fileName: data.fileName,
+      mimeType: data.mimeType,
+      sizeInBytes: data.sizeInBytes,
+      width: data.width ?? null,
+      height: data.height ?? null,
+    })
+    .where(eq(MediaTable.key, key))
+    .returning();
+  return updated ?? null;
+}
+
 const DEFAULT_PAGE_SIZE = 20;
 
-/**
- * 获取媒体列表 (Cursor-based pagination)
- * @param cursor - 上一页最后一条记录的 id，用于分页
- * @param limit - 每页数量
- * @param search - 搜索文件名
- * @param unusedOnly - 是否只显示未被引用的媒体
- */
 export async function getMediaList(
   db: DB,
   options?: {
@@ -50,7 +84,7 @@ export async function getMediaList(
     search?: string;
     unusedOnly?: boolean;
   },
-): Promise<{ items: Array<Media>; nextCursor: number | null }> {
+): Promise<{ items: Array<MediaListItem>; nextCursor: number | null }> {
   const {
     cursor,
     limit = DEFAULT_PAGE_SIZE,
@@ -58,7 +92,6 @@ export async function getMediaList(
     unusedOnly,
   } = options ?? {};
 
-  // 构建条件
   const conditions: Array<SQL> = [];
   if (cursor) {
     conditions.push(lt(MediaTable.id, cursor));
@@ -68,61 +101,118 @@ export async function getMediaList(
     conditions.push(sql`${MediaTable.fileName} LIKE ${pattern} ESCAPE '\\'`);
   }
 
-  // 基础查询
-  const baseQuery = db.select().from(MediaTable).$dynamic();
+  let items: Array<Media>;
 
-  // 如果只需要未引用的媒体
   if (unusedOnly) {
-    // 使用 LEFT JOIN 排除存在于 PostMediaTable 中的记录
-    const unusedQuery = db
+    conditions.push(sql`${PostMediaTable.postId} IS NULL`);
+    items = await db
       .select({
         media: MediaTable,
         postMediaId: PostMediaTable.postId,
       })
       .from(MediaTable)
       .leftJoin(PostMediaTable, eq(MediaTable.id, PostMediaTable.mediaId))
-      .$dynamic();
-
-    conditions.push(sql`${PostMediaTable.postId} IS NULL`);
-
-    const items = await unusedQuery
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(MediaTable.id))
       .limit(limit + 1)
       .then((rows) => rows.map((row) => row.media));
-
-    // 判断是否有下一页
-    const hasMore = items.length > limit;
-    if (hasMore) {
-      items.pop(); // 移除多取的一条
-    }
-
-    const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null;
-
-    return { items, nextCursor };
+  } else {
+    items = await db
+      .select()
+      .from(MediaTable)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(MediaTable.id))
+      .limit(limit + 1);
   }
 
-  // 常规查询
-  const items = await baseQuery
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(MediaTable.id))
-    .limit(limit + 1);
-
-  // 判断是否有下一页
   const hasMore = items.length > limit;
   if (hasMore) {
-    items.pop(); // 移除多取的一条
+    items.pop();
   }
 
   const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null;
 
-  return { items, nextCursor };
+  return { items: await withUsage(db, items), nextCursor };
+}
+
+export async function getUnusedMediaKeys(db: DB): Promise<Array<string>> {
+  const rows = await db
+    .select({ key: MediaTable.key })
+    .from(MediaTable)
+    .leftJoin(PostMediaTable, eq(MediaTable.id, PostMediaTable.mediaId))
+    .where(sql`${PostMediaTable.postId} IS NULL`);
+  return rows.map((row) => row.key);
+}
+
+export async function getMediaStats(db: DB) {
+  const [totals] = await db
+    .select({
+      totalCount: count(),
+      totalBytes: sum(MediaTable.sizeInBytes),
+    })
+    .from(MediaTable);
+
+  const [unused] = await db
+    .select({ unusedCount: count() })
+    .from(MediaTable)
+    .leftJoin(PostMediaTable, eq(MediaTable.id, PostMediaTable.mediaId))
+    .where(sql`${PostMediaTable.postId} IS NULL`);
+
+  return {
+    totalCount: Number(totals.totalCount ?? 0),
+    unusedCount: Number(unused.unusedCount ?? 0),
+    totalBytes: Number(totals.totalBytes ?? 0),
+  };
 }
 
 export async function getTotalMediaSize(db: DB) {
-  const [result] = await db
-    .select({ total: sum(MediaTable.sizeInBytes) })
-    .from(MediaTable);
+  const stats = await getMediaStats(db);
+  return stats.totalBytes;
+}
 
-  return Number(result.total ?? 0);
+async function withUsage(
+  db: DB,
+  items: Array<Media>,
+): Promise<Array<MediaListItem>> {
+  if (items.length === 0) return [];
+
+  const ids = items.map((item) => item.id);
+  const [countRows, coverRows] = await Promise.all([
+    db
+      .select({
+        mediaId: PostMediaTable.mediaId,
+        postCount: count(),
+      })
+      .from(PostMediaTable)
+      .where(inArray(PostMediaTable.mediaId, ids))
+      .groupBy(PostMediaTable.mediaId),
+    db
+      .select({
+        coverMediaId: PostsTable.coverMediaId,
+        snapshot: PostsTable.publicSnapshotJson,
+      })
+      .from(PostsTable)
+      .where(
+        or(
+          inArray(PostsTable.coverMediaId, ids),
+          sql`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.mediaId') is not null`,
+        ),
+      ),
+  ]);
+
+  const postCountById = new Map(
+    countRows.map((row) => [row.mediaId, Number(row.postCount)]),
+  );
+  const coverIds = new Set<number>();
+  for (const row of coverRows) {
+    if (row.coverMediaId != null) coverIds.add(row.coverMediaId);
+    const snapshotId = row.snapshot?.cover?.mediaId;
+    if (snapshotId != null) coverIds.add(snapshotId);
+  }
+
+  return items.map((item) => ({
+    ...item,
+    postCount: postCountById.get(item.id) ?? 0,
+    isCover: coverIds.has(item.id),
+  }));
 }

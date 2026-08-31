@@ -1,4 +1,3 @@
-import "@/styles/fuwari.css";
 import { ArrowLeft } from "lucide-react";
 import type { AuthLayoutProps } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";

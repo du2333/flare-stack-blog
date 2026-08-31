@@ -1,9 +1,7 @@
-import { Image as ImageIcon, Loader2, Search, Upload, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { Image as ImageIcon, Loader2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useMediaPicker } from "@/features/media/components/media-library/hooks";
-import type { MediaAsset } from "@/features/media/components/media-library/types";
+import { MediaPicker } from "@/features/media/components/media-library/components";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
@@ -122,125 +120,18 @@ export function PostEditorCover({
           }}
         />
       </div>
-      {pickerOpen && (
-        <CoverPickerModal
-          onClose={() => setPickerOpen(false)}
-          onSelect={(media) => {
-            onChange({
-              coverMediaId: media.id,
-              cover: toCover(media),
-            });
-            setPickerOpen(false);
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-function CoverPickerModal({
-  onClose,
-  onSelect,
-}: {
-  onClose: () => void;
-  onSelect: (media: MediaAsset) => void;
-}) {
-  const {
-    mediaItems,
-    searchQuery,
-    setSearchQuery,
-    loadMore,
-    hasMore,
-    isLoadingMore,
-    isPending,
-  } = useMediaPicker();
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const target = observerTarget.current;
-    if (!target) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, loadMore]);
-
-  return createPortal(
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6">
-      <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={onClose}
+      <MediaPicker
+        open={pickerOpen}
+        title={m.editor_meta_cover_pick()}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(media) => {
+          onChange({
+            coverMediaId: media.id,
+            cover: toCover(media),
+          });
+          setPickerOpen(false);
+        }}
       />
-      <div className="relative w-full max-w-2xl bg-background border border-border shadow-2xl flex flex-col overflow-hidden max-h-[80vh]">
-        <div className="flex justify-between items-center p-6 border-b border-border/50">
-          <span className="text-base font-bold font-mono tracking-wider uppercase">
-            {m.editor_meta_cover_pick()}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground"
-          >
-            <X size={18} strokeWidth={1.5} />
-          </button>
-        </div>
-        <div className="relative shrink-0 border-b border-border/50">
-          <Search
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground"
-            size={14}
-          />
-          <input
-            type="text"
-            placeholder={m.editor_insert_search_placeholder()}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent border-none text-foreground text-sm font-mono pl-12 pr-6 py-4 focus:ring-0 placeholder:text-muted-foreground/40"
-          />
-        </div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-muted/5">
-          {isPending ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div
-                  key={i}
-                  className="aspect-square bg-muted/20 animate-pulse border border-border/20"
-                />
-              ))}
-            </div>
-          ) : mediaItems.length === 0 ? (
-            <div className="h-48 flex flex-col items-center justify-center text-muted-foreground gap-2">
-              <Search size={24} className="opacity-20" />
-              <span className="text-sm font-mono">{m.media_grid_empty()}</span>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 content-start pb-4">
-              {mediaItems.map((media) => (
-                <button
-                  key={media.key}
-                  type="button"
-                  onClick={() => onSelect(media)}
-                  className="relative aspect-square border border-border cursor-pointer overflow-hidden hover:border-foreground"
-                >
-                  <img
-                    src={getOptimizedImageUrl(media.key)}
-                    alt={media.fileName}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-              <div ref={observerTarget} className="col-span-full h-8" />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>,
-    document.body,
+    </div>
   );
 }

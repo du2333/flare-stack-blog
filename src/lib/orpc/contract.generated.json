@@ -472,6 +472,66 @@
         }
       }
     },
+    "importFromUrl": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/media/import",
+          "summary": "Import an image from a URL",
+          "tags": ["Admin Media"]
+        }
+      }
+    },
+    "stats": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/media/stats",
+          "summary": "Get media library stats",
+          "tags": ["Admin Media"]
+        }
+      }
+    },
+    "totalSize": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/media/size",
+          "summary": "Get total media size",
+          "tags": ["Admin Media"]
+        }
+      }
+    },
+    "linkedKeys": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/media/linked-keys",
+          "summary": "Resolve which media keys are linked",
+          "tags": ["Admin Media"]
+        }
+      }
+    },
+    "removeUnused": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "DELETE",
+          "path": "/admin/media/unused",
+          "summary": "Delete unused media",
+          "tags": ["Admin Media"]
+        }
+      }
+    },
     "remove": {
       "~orpc": {
         "errorMap": {},
@@ -496,26 +556,14 @@
         }
       }
     },
-    "linkedKeys": {
+    "replace": {
       "~orpc": {
         "errorMap": {},
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/media/linked-keys",
-          "summary": "Resolve which media keys are linked",
-          "tags": ["Admin Media"]
-        }
-      }
-    },
-    "totalSize": {
-      "~orpc": {
-        "errorMap": {},
-        "meta": {},
-        "route": {
-          "method": "GET",
-          "path": "/admin/media/size",
-          "summary": "Get total media size",
+          "path": "/admin/media/{key}/replace",
+          "summary": "Replace media file",
           "tags": ["Admin Media"]
         }
       }

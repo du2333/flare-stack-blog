@@ -1,173 +1,239 @@
-import { Plus } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+import { useAdminChrome } from "@/components/admin/admin-chrome";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { formatBytes } from "@/lib/utils";
-import { m } from "@/paraglide/messages";
 import {
-  MediaGrid,
-  MediaPreviewModal,
-  MediaToolbar,
-  UploadModal,
-} from "./components";
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE,
+} from "@/features/media/media.schema";
+import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
+import { MediaDetail, MediaGrid, MediaToolbar } from "./components";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import type { MediaAsset } from "./types";
 
 export function MediaLibrary() {
-  // Logic Hooks
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { setPrimaryAction } = useAdminChrome();
+  const [preview, setPreview] = useState<MediaAsset | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<
+    { kind: "one"; asset: MediaAsset } | { kind: "unused" } | null
+  >(null);
+  const [dragging, setDragging] = useState(false);
+  const dragDepth = useRef(0);
+
   const {
     mediaItems,
-    searchQuery,
-    setSearchQuery,
     unusedOnly,
     setUnusedOnly,
-    selectedIds,
-    toggleSelection,
-    selectAll,
-    deleteTarget,
-    isDeleting,
-    requestDelete,
-    confirmDelete,
-    cancelDelete,
     loadMore,
     hasMore,
     isLoadingMore,
     isPending,
-    totalMediaSize,
-    updateAsset,
-    linkedMediaIds,
-    refetch,
+    stats,
+    deleteKeys,
+    deleteUnused,
+    isDeleting,
+    rename,
+    replaceFile,
+    isReplacing,
   } = useMediaLibrary();
+  const { uploadFiles, isUploading, progress } = useMediaUpload();
 
-  const {
-    isOpen: isUploadOpen,
-    setIsOpen: setIsUploadOpen,
-    queue: uploadQueue,
-    isDragging,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    processFiles,
-    reset: resetUpload,
-  } = useMediaUpload();
+  useEffect(() => {
+    setPrimaryAction({
+      label: m.media_upload(),
+      onClick: () => fileRef.current?.click(),
+      disabled: isUploading,
+    });
+    return () => setPrimaryAction(null);
+  }, [isUploading, setPrimaryAction]);
 
-  // View State
-  const [previewAsset, setPreviewAsset] = useState<MediaAsset | null>(null);
+  const openFilePicker = () => fileRef.current?.click();
 
-  const handleDeleteRequest = () => {
-    requestDelete(Array.from(selectedIds));
+  const handleFiles = (list: FileList | Array<File>) => {
+    const files = Array.from(list).filter(
+      (file) =>
+        ACCEPTED_IMAGE_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE,
+    );
+    if (files.length > 0) void uploadFiles(files);
   };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.kind === "one") {
+      await deleteKeys([deleteTarget.asset.key]);
+      setPreview(null);
+    } else {
+      await deleteUnused();
+    }
+    setDeleteTarget(null);
+  };
+
+  const isEmpty = !isPending && mediaItems.length === 0;
+  const isDefaultEmpty = isEmpty && !unusedOnly;
+
   return (
-    <div data-admin-legacy className="space-y-8 pb-20">
-      {/* Header Section */}
-      <div className="flex justify-between items-end animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both border-b border-border/30 pb-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-medium tracking-tight">
-            {m.media_title()}
-          </h1>
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-              {m.media_stats_assets({
-                count: mediaItems.length,
-                size: formatBytes(totalMediaSize ?? 0),
-              })}
-            </p>
-          </div>
-        </div>
-        <Button
-          onClick={() => setIsUploadOpen(true)}
-          className="h-10 px-6 text-[11px] uppercase tracking-[0.2em] font-medium rounded-none gap-2 bg-foreground text-background hover:bg-foreground/90 transition-all border border-foreground"
+    <div
+      className="space-y-4"
+      onDragEnter={(event) => {
+        event.preventDefault();
+        dragDepth.current += 1;
+        setDragging(true);
+      }}
+      onDragOver={(event) => event.preventDefault()}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setDragging(false);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        dragDepth.current = 0;
+        setDragging(false);
+        if (event.dataTransfer.files.length > 0) {
+          handleFiles(event.dataTransfer.files);
+        }
+      }}
+    >
+      <div
+        className="hidden lg:flex justify-between items-center px-1 fuwari-onload-animation"
+        style={{ animationDelay: "50ms" }}
+      >
+        <h1 className="text-2xl font-medium fuwari-text-90">
+          {m.media_title()}
+        </h1>
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={openFilePicker}
+          className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
         >
-          <Plus size={14} />
-          {m.media_upload_btn()}
-        </Button>
+          {m.media_upload()}
+        </button>
       </div>
 
-      <div className="animate-in fade-in duration-1000 delay-100 fill-mode-both space-y-8">
-        {/* Toolbar */}
-        <MediaToolbar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          unusedOnly={unusedOnly}
-          onUnusedOnlyChange={setUnusedOnly}
-          selectedCount={selectedIds.size}
-          totalCount={mediaItems.length}
-          onSelectAll={selectAll}
-          onDelete={handleDeleteRequest}
-        />
+      <div
+        className="fuwari-card-base p-5 md:p-6 space-y-6 relative fuwari-onload-animation"
+        style={{ animationDelay: "100ms" }}
+      >
+        {dragging ? (
+          <div className="absolute inset-0 z-10 rounded-[inherit] border-2 border-dashed border-(--fuwari-primary) bg-(--fuwari-page-bg)/80 grid place-items-center text-sm font-medium text-(--fuwari-primary)">
+            {m.media_drop()}
+          </div>
+        ) : null}
 
-        {/* Media Grid / Partial Skeleton */}
+        {!isDefaultEmpty ? (
+          <MediaToolbar
+            unusedOnly={unusedOnly}
+            onUnusedOnlyChange={setUnusedOnly}
+            unusedCount={stats?.unusedCount ?? 0}
+            totalCount={stats?.totalCount ?? 0}
+            totalBytes={stats?.totalBytes ?? 0}
+            onDeleteUnused={() => setDeleteTarget({ kind: "unused" })}
+          />
+        ) : null}
+
+        {progress ? (
+          <p className="text-sm fuwari-text-50">
+            {m.media_uploading({
+              current: progress.current,
+              total: progress.total,
+            })}
+          </p>
+        ) : null}
+
         {isPending ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="flex flex-col space-y-4 animate-pulse">
-                <div className="aspect-square bg-muted rounded-none" />
-                <div className="space-y-2 px-1">
-                  <div className="h-3 w-3/4 bg-muted rounded-none" />
-                  <div className="flex justify-between">
-                    <div className="h-2 w-1/4 bg-muted rounded-none opacity-50" />
-                    <div className="h-2 w-1/4 bg-muted rounded-none opacity-50" />
-                  </div>
-                </div>
-              </div>
-            ))}
+          <MediaLibraryGridSkeleton />
+        ) : isEmpty ? (
+          <div
+            className={cn(
+              "min-h-80 rounded-2xl border border-dashed border-(--fuwari-input-border) flex flex-col items-center justify-center gap-2 text-center px-6 py-16",
+              isDefaultEmpty && "cursor-pointer",
+            )}
+            onClick={isDefaultEmpty ? openFilePicker : undefined}
+          >
+            <p className="font-medium fuwari-text-75">{m.media_empty()}</p>
+            {isDefaultEmpty ? (
+              <>
+                <p className="text-sm fuwari-text-50">{m.media_empty_hint()}</p>
+                <button
+                  type="button"
+                  className="mt-2 fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
+                >
+                  {m.media_choose()}
+                </button>
+              </>
+            ) : null}
           </div>
         ) : (
           <MediaGrid
             media={mediaItems}
-            selectedIds={selectedIds}
-            onToggleSelect={toggleSelection}
-            onPreview={setPreviewAsset}
+            onSelect={setPreview}
             onLoadMore={loadMore}
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
-            linkedMediaIds={linkedMediaIds}
-            onRefetch={refetch}
           />
         )}
       </div>
 
-      {/* --- Upload Modal --- */}
-      <UploadModal
-        isOpen={isUploadOpen}
-        queue={uploadQueue}
-        isDragging={isDragging}
-        onClose={resetUpload}
-        onFileSelect={processFiles}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      />
-
-      {/* --- Delete Confirmation Modal --- */}
-      <ConfirmationModal
-        isOpen={!!deleteTarget}
-        onClose={cancelDelete}
-        onConfirm={confirmDelete}
-        title={m.media_delete_confirm_title()}
-        message={m.media_delete_confirm_desc({
-          count: deleteTarget?.length ?? 0,
-        })}
-        confirmLabel={m.media_delete_confirm_btn()}
-        isDanger={true}
-        isLoading={isDeleting}
-      />
-
-      {/* --- Preview Modal --- */}
-      <MediaPreviewModal
-        asset={previewAsset}
-        onClose={() => setPreviewAsset(null)}
-        onUpdateName={async (key, name) => {
-          await updateAsset.mutateAsync({ key, name });
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        accept={ACCEPTED_IMAGE_TYPES.join(",")}
+        className="hidden"
+        onChange={(event) => {
+          if (event.target.files) handleFiles(event.target.files);
+          event.target.value = "";
         }}
-        onDelete={async (key) => {
-          const allowed = await requestDelete([key]);
-          if (allowed.length > 0) {
-            confirmDelete(allowed);
+      />
+
+      <MediaDetail
+        asset={preview}
+        onClose={() => setPreview(null)}
+        onRename={(key, name) => rename({ key, name })}
+        onReplace={async (key, file) => {
+          const next = await replaceFile({ key, image: file });
+          if (next) {
+            setPreview((prev) =>
+              prev
+                ? { ...prev, ...next }
+                : { ...next, postCount: 0, isCover: false },
+            );
           }
         }}
+        onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
+        isReplacing={isReplacing}
       />
+
+      <ConfirmationModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+        title={m.media_delete_title()}
+        message={
+          deleteTarget?.kind === "one"
+            ? m.media_delete_one({ name: deleteTarget.asset.fileName })
+            : m.media_delete_unused({ count: stats?.unusedCount ?? 0 })
+        }
+        confirmLabel={m.media_delete()}
+        isDanger
+        isLoading={isDeleting}
+      />
+    </div>
+  );
+}
+
+function MediaLibraryGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-pulse">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="space-y-2">
+          <div className="aspect-square rounded-xl bg-(--fuwari-btn-regular-bg)" />
+          <div className="h-4 w-3/4 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+          <div className="h-3 w-1/2 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+        </div>
+      ))}
     </div>
   );
 }

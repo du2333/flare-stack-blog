@@ -52,7 +52,14 @@ export function extractImageKey(src: string): string | undefined {
  * @param key - R2 key
  * @param width - 可选的宽度限制
  */
+export function isGifKey(key: string, contentType?: string | null) {
+  return key.toLowerCase().endsWith(".gif") || contentType === "image/gif";
+}
+
 export function getOptimizedImageUrl(key: string, width?: number) {
+  if (isGifKey(key)) {
+    return `/images/${key}?original=true`;
+  }
   return `/images/${key}?quality=80${width ? `&width=${width}` : ""}`;
 }
 

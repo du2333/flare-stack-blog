@@ -52,5 +52,10 @@ export const GetMediaListInputSchema = z.object({
   unusedOnly: z.boolean().optional(),
 });
 
+export const ImportMediaUrlInputSchema = z.object({
+  url: z.string().min(1),
+});
+
 export type UpdateMediaNameInput = z.infer<typeof UpdateMediaNameInputSchema>;
 export type GetMediaListInput = z.infer<typeof GetMediaListInputSchema>;
+export type ImportMediaUrlInput = z.infer<typeof ImportMediaUrlInputSchema>;
