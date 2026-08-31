@@ -23,16 +23,7 @@ export function PostPage({ post }: PostPageProps) {
 
   return (
     <div className="relative flex flex-col rounded-(--fuwari-radius-large) py-1 md:py-0 md:bg-transparent gap-4 mb-4 w-full">
-      {/* Table Of Contents (Desktop Floating Right) */}
-      <div
-        className="hidden 2xl:block absolute top-0 h-full pl-4"
-        style={{
-          right: "calc(var(--fuwari-toc-width) * -1)",
-          width: "var(--fuwari-toc-width)",
-        }}
-      >
-        <TableOfContents headers={post.toc} />
-      </div>
+      <TableOfContents headers={post.toc} />
 
       {/* Main Post Container */}
       <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">

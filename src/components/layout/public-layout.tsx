@@ -77,7 +77,7 @@ export function PublicLayout({
           <Sidebar className="order-2 lg:order-1" />
 
           {/* Main Content Column */}
-          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0 overflow-hidden">
+          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0">
             <PageFade>{children}</PageFade>
           </main>
 

@@ -90,6 +90,7 @@
     --fuwari-codeblock-selection: var(--fuwari-selection-bg);
     --fuwari-toc-btn-hover: oklch(0.926 0.015 var(--fuwari-hue));
     --fuwari-toc-btn-active: oklch(0.9 0.015 var(--fuwari-hue));
+    --fuwari-toc-badge-bg: oklch(0.89 0.05 var(--fuwari-hue));
 
     --fuwari-success: oklch(0.7 0.14 var(--fuwari-success-hue));
     --fuwari-success-fg: oklch(0.45 0.12 var(--fuwari-success-hue));
@@ -126,6 +127,7 @@
     --fuwari-fg-30: rgb(255 255 255 / 0.3);
     --fuwari-toc-btn-hover: oklch(0.22 0.02 var(--fuwari-hue));
     --fuwari-toc-btn-active: oklch(0.25 0.02 var(--fuwari-hue));
+    --fuwari-toc-badge-bg: var(--fuwari-btn-regular-bg);
 
     --fuwari-success: oklch(0.75 0.12 var(--fuwari-success-hue));
     --fuwari-success-fg: oklch(0.8 0.1 var(--fuwari-success-hue));
@@ -297,6 +299,14 @@
     @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
     background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
     z-index: 10;
+  }
+
+  .fuwari-hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .fuwari-hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .fuwari-toc-scrollbar {
