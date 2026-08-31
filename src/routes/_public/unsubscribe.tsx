@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { StatusPage } from "@/components/common/status-page";
 import { unsubscribeQuery } from "@/features/email/queries";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
@@ -46,61 +45,46 @@ function UnsubscribePage() {
   );
   const hasFailed = !!error;
 
+  if (!hasValidParams) {
+    return (
+      <StatusPage
+        title={m.unsubscribe_invalid_title()}
+        description={m.unsubscribe_invalid_desc()}
+        action={<HomeLink />}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return <StatusPage title={m.unsubscribe_loading()} />;
+  }
+
+  if (hasFailed) {
+    return (
+      <StatusPage
+        title={m.unsubscribe_failed_title()}
+        description={m.unsubscribe_failed_desc()}
+        action={<HomeLink />}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="max-w-md w-full text-center space-y-8">
-        {!hasValidParams ? (
-          <div className="space-y-6">
-            <AlertCircle className="w-16 h-16 mx-auto text-muted-foreground" />
-            <div className="space-y-2">
-              <h1 className="text-2xl font-serif">
-                {m.unsubscribe_invalid_title()}
-              </h1>
-              <p className="text-muted-foreground">
-                {m.unsubscribe_invalid_desc()}
-              </p>
-            </div>
-            <Button asChild variant="outline" className="rounded-none">
-              <a href="/">{m.unsubscribe_back_home()}</a>
-            </Button>
-          </div>
-        ) : isLoading ? (
-          <div className="space-y-4">
-            <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
-            <h1 className="text-2xl font-serif">{m.unsubscribe_loading()}</h1>
-          </div>
-        ) : hasFailed ? (
-          <div className="space-y-6">
-            <AlertCircle className="w-16 h-16 mx-auto text-red-500" />
-            <div className="space-y-2">
-              <h1 className="text-2xl font-serif text-red-500">
-                {m.unsubscribe_failed_title()}
-              </h1>
-              <p className="text-muted-foreground">
-                {m.unsubscribe_failed_desc()}
-              </p>
-            </div>
-            <Button asChild variant="outline" className="rounded-none">
-              <a href="/">{m.unsubscribe_back_home()}</a>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
-            <div className="space-y-2">
-              <h1 className="text-2xl font-serif">
-                {m.unsubscribe_success_title()}
-              </h1>
-              <p className="text-muted-foreground">
-                {m.unsubscribe_success_desc()}
-              </p>
-            </div>
-            <Button asChild className="rounded-none px-8">
-              <a href="/">{m.unsubscribe_back_home()}</a>
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+    <StatusPage
+      title={m.unsubscribe_success_title()}
+      description={m.unsubscribe_success_desc()}
+      action={<HomeLink />}
+    />
+  );
+}
+
+function HomeLink() {
+  return (
+    <Link
+      to="/"
+      className="fuwari-btn-primary h-10 rounded-xl px-6 text-sm font-medium"
+    >
+      {m.unsubscribe_back_home()}
+    </Link>
   );
 }

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { StatusPage } from "@/components/common/status-page";
 import { PostEditor } from "@/features/posts/components/post-editor";
 import { persistableTagIds } from "@/features/posts/components/post-editor/post-editor.model";
 import { PostEditorSkeleton } from "@/features/posts/components/post-editor/post-editor-skeleton";
@@ -49,16 +50,18 @@ function EditPost() {
 
   if (!post || !tags) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="text-center space-y-4">
-          <h2 className="text-4xl font-serif font-medium">
-            {m.admin_post_edit_not_found_title()}
-          </h2>
-          <p className="text-zinc-400 font-light text-sm">
-            {m.admin_post_edit_not_found_desc({ id: String(postId) })}
-          </p>
-        </div>
-      </div>
+      <StatusPage
+        title={m.admin_post_edit_not_found_title()}
+        description={m.admin_post_edit_not_found_desc({ id: String(postId) })}
+        action={
+          <Link
+            to="/admin/posts"
+            className="fuwari-btn-primary h-10 rounded-xl px-6 text-sm font-medium"
+          >
+            {m.common_back()}
+          </Link>
+        }
+      />
     );
   }
 

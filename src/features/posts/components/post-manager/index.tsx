@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { ErrorPage } from "@/components/common/error-page";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -38,6 +37,7 @@ export function PostManager({
   onResetFilters,
 }: PostManagerProps) {
   const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { setPrimaryAction } = useAdminChrome();
   const [postToDelete, setPostToDelete] = useState<PostListItem | null>(null);
@@ -139,7 +139,16 @@ export function PostManager({
       />
 
       {error ? (
-        <ErrorPage />
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+          <p className="text-sm fuwari-text-50">{m.error_desc()}</p>
+          <button
+            type="button"
+            onClick={() => router.invalidate()}
+            className="fuwari-btn-primary h-10 rounded-xl px-6 text-sm font-medium"
+          >
+            {m.error_retry()}
+          </button>
+        </div>
       ) : isPending ? (
         <PostManagerSkeleton />
       ) : posts.length === 0 ? (
