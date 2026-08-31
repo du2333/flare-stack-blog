@@ -53,7 +53,10 @@ import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/s
 import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/site'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
-import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
+import { Route as AdminPostsEditIdRouteRouteImport } from './routes/admin/posts/edit.$id/route'
+import { Route as AdminPostsEditIdIndexRouteImport } from './routes/admin/posts/edit.$id/index'
+import { Route as AdminPostsEditIdHistoryRouteImport } from './routes/admin/posts/edit.$id/history'
+import { Route as AdminPostsEditIdHistoryRevisionIdRouteImport } from './routes/admin/posts/edit.$id/history_.$revisionId'
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
@@ -276,11 +279,27 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ApiAuthRoute,
 } as any)
-const AdminPostsEditIdRoute = AdminPostsEditIdRouteImport.update({
+const AdminPostsEditIdRouteRoute = AdminPostsEditIdRouteRouteImport.update({
   id: '/edit/$id',
   path: '/edit/$id',
   getParentRoute: () => AdminPostsRouteRoute,
 } as any)
+const AdminPostsEditIdIndexRoute = AdminPostsEditIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminPostsEditIdRouteRoute,
+} as any)
+const AdminPostsEditIdHistoryRoute = AdminPostsEditIdHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AdminPostsEditIdRouteRoute,
+} as any)
+const AdminPostsEditIdHistoryRevisionIdRoute =
+  AdminPostsEditIdHistoryRevisionIdRouteImport.update({
+    id: '/history_/$revisionId',
+    path: '/history/$revisionId',
+    getParentRoute: () => AdminPostsEditIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -324,7 +343,10 @@ export interface FileRoutesByFullPath {
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
-  '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/admin/posts/edit/$id': typeof AdminPostsEditIdRouteRouteWithChildren
+  '/admin/posts/edit/$id/history': typeof AdminPostsEditIdHistoryRoute
+  '/admin/posts/edit/$id/': typeof AdminPostsEditIdIndexRoute
+  '/admin/posts/edit/$id/history/$revisionId': typeof AdminPostsEditIdHistoryRevisionIdRoute
 }
 export interface FileRoutesByTo {
   '/atom.xml': typeof AtomDotxmlRoute
@@ -365,7 +387,9 @@ export interface FileRoutesByTo {
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/tags': typeof AdminTagsIndexRoute
-  '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/admin/posts/edit/$id/history': typeof AdminPostsEditIdHistoryRoute
+  '/admin/posts/edit/$id': typeof AdminPostsEditIdIndexRoute
+  '/admin/posts/edit/$id/history/$revisionId': typeof AdminPostsEditIdHistoryRevisionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -413,7 +437,10 @@ export interface FileRoutesById {
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/tags/': typeof AdminTagsIndexRoute
-  '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
+  '/admin/posts/edit/$id': typeof AdminPostsEditIdRouteRouteWithChildren
+  '/admin/posts/edit/$id/history': typeof AdminPostsEditIdHistoryRoute
+  '/admin/posts/edit/$id/': typeof AdminPostsEditIdIndexRoute
+  '/admin/posts/edit/$id/history_/$revisionId': typeof AdminPostsEditIdHistoryRevisionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -460,6 +487,9 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
+    | '/admin/posts/edit/$id/history'
+    | '/admin/posts/edit/$id/'
+    | '/admin/posts/edit/$id/history/$revisionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/atom.xml'
@@ -500,7 +530,9 @@ export interface FileRouteTypes {
     | '/admin/posts'
     | '/admin/settings'
     | '/admin/tags'
+    | '/admin/posts/edit/$id/history'
     | '/admin/posts/edit/$id'
+    | '/admin/posts/edit/$id/history/$revisionId'
   id:
     | '__root__'
     | '/_public'
@@ -548,6 +580,9 @@ export interface FileRouteTypes {
     | '/admin/settings/'
     | '/admin/tags/'
     | '/admin/posts/edit/$id'
+    | '/admin/posts/edit/$id/history'
+    | '/admin/posts/edit/$id/'
+    | '/admin/posts/edit/$id/history_/$revisionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -880,8 +915,29 @@ declare module '@tanstack/react-router' {
       id: '/admin/posts/edit/$id'
       path: '/edit/$id'
       fullPath: '/admin/posts/edit/$id'
-      preLoaderRoute: typeof AdminPostsEditIdRouteImport
+      preLoaderRoute: typeof AdminPostsEditIdRouteRouteImport
       parentRoute: typeof AdminPostsRouteRoute
+    }
+    '/admin/posts/edit/$id/': {
+      id: '/admin/posts/edit/$id/'
+      path: '/'
+      fullPath: '/admin/posts/edit/$id/'
+      preLoaderRoute: typeof AdminPostsEditIdIndexRouteImport
+      parentRoute: typeof AdminPostsEditIdRouteRoute
+    }
+    '/admin/posts/edit/$id/history': {
+      id: '/admin/posts/edit/$id/history'
+      path: '/history'
+      fullPath: '/admin/posts/edit/$id/history'
+      preLoaderRoute: typeof AdminPostsEditIdHistoryRouteImport
+      parentRoute: typeof AdminPostsEditIdRouteRoute
+    }
+    '/admin/posts/edit/$id/history_/$revisionId': {
+      id: '/admin/posts/edit/$id/history_/$revisionId'
+      path: '/history/$revisionId'
+      fullPath: '/admin/posts/edit/$id/history/$revisionId'
+      preLoaderRoute: typeof AdminPostsEditIdHistoryRevisionIdRouteImport
+      parentRoute: typeof AdminPostsEditIdRouteRoute
     }
   }
 }
@@ -948,14 +1004,32 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface AdminPostsEditIdRouteRouteChildren {
+  AdminPostsEditIdHistoryRoute: typeof AdminPostsEditIdHistoryRoute
+  AdminPostsEditIdIndexRoute: typeof AdminPostsEditIdIndexRoute
+  AdminPostsEditIdHistoryRevisionIdRoute: typeof AdminPostsEditIdHistoryRevisionIdRoute
+}
+
+const AdminPostsEditIdRouteRouteChildren: AdminPostsEditIdRouteRouteChildren = {
+  AdminPostsEditIdHistoryRoute: AdminPostsEditIdHistoryRoute,
+  AdminPostsEditIdIndexRoute: AdminPostsEditIdIndexRoute,
+  AdminPostsEditIdHistoryRevisionIdRoute:
+    AdminPostsEditIdHistoryRevisionIdRoute,
+}
+
+const AdminPostsEditIdRouteRouteWithChildren =
+  AdminPostsEditIdRouteRoute._addFileChildren(
+    AdminPostsEditIdRouteRouteChildren,
+  )
+
 interface AdminPostsRouteRouteChildren {
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
-  AdminPostsEditIdRoute: typeof AdminPostsEditIdRoute
+  AdminPostsEditIdRouteRoute: typeof AdminPostsEditIdRouteRouteWithChildren
 }
 
 const AdminPostsRouteRouteChildren: AdminPostsRouteRouteChildren = {
   AdminPostsIndexRoute: AdminPostsIndexRoute,
-  AdminPostsEditIdRoute: AdminPostsEditIdRoute,
+  AdminPostsEditIdRouteRoute: AdminPostsEditIdRouteRouteWithChildren,
 }
 
 const AdminPostsRouteRouteWithChildren = AdminPostsRouteRoute._addFileChildren(

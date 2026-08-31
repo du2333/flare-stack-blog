@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Hash, Loader2, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { orpcClient } from "@/lib/orpc";
 import type { Tag } from "@/lib/db/schema";
@@ -202,33 +201,30 @@ export function TagSelector({
           }
         }}
         className={cn(
-          "min-h-9 w-full rounded-md border border-input bg-transparent px-2 py-1.5 text-sm shadow-sm transition-colors cursor-text",
-          "focus-within:ring-1 focus-within:ring-ring focus-within:border-ring",
+          "min-h-10 w-full rounded-xl bg-(--fuwari-btn-regular-bg) px-2 py-1.5 text-sm cursor-text",
           (disabled || isInitialLoading) && "cursor-not-allowed opacity-50",
           "flex flex-wrap items-center gap-1.5",
         )}
       >
         {/* Selected Tags */}
         {selectedTags.map((tag) => (
-          <Badge
+          <span
             key={tag.id}
-            variant="secondary"
-            className="h-5 px-1.5 gap-1 text-[10px] items-center bg-secondary hover:bg-secondary/80 transition-colors"
+            className="inline-flex h-7 items-center gap-1 rounded-lg bg-(--fuwari-card-bg) px-2 text-sm text-(--fuwari-btn-content)"
           >
-            <Hash size={10} className="text-muted-foreground/50" />
             <span className="truncate max-w-37.5">{tag.name}</span>
-            <div
-              role="button"
-              className="ml-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 cursor-pointer"
+            <button
+              type="button"
+              className="rounded-full p-0.5 hover:bg-black/5 dark:hover:bg-white/10"
               onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (!disabled) toggleTag(tag.id);
               }}
             >
-              <X size={10} />
-            </div>
-          </Badge>
+              <X size={12} />
+            </button>
+          </span>
         ))}
 
         {/* Input */}
@@ -259,7 +255,7 @@ export function TagSelector({
 
       {/* Dropdown Menu */}
       {open && !disabled && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2">
+        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-xl bg-(--fuwari-card-bg) shadow-md ring-1 ring-(--fuwari-input-border) animate-in fade-in-0 zoom-in-95">
           <div className="max-h-50 w-full overflow-y-auto overflow-x-hidden p-1">
             {/* Create Option */}
             {searchTerm &&

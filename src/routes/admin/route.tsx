@@ -2,6 +2,7 @@ import {
   createFileRoute,
   Outlet,
   redirect,
+  useLocation,
   useMatches,
 } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
@@ -17,6 +18,7 @@ import { sessionQuery } from "@/features/auth/queries";
 import { settingsSectionFromPath } from "@/features/config/components/admin/settings-pages";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin")({
@@ -80,20 +82,35 @@ function AdminLayout() {
   );
 }
 
+function isPostEditorPath(pathname: string) {
+  return /\/admin\/posts\/edit\/[^/]+/.test(pathname);
+}
+
 function AdminMain() {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const fill = isPostEditorPath(pathname);
 
   return (
     <div
       ref={scrollerRef}
-      className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"
+      className={cn(
+        "flex-1 min-h-0",
+        fill
+          ? "flex flex-col overflow-hidden"
+          : "overflow-y-auto custom-scrollbar",
+      )}
     >
-      <div className="w-full">
+      <div className={cn("w-full", fill && "flex min-h-0 flex-1 flex-col")}>
         <PageFade
+          fill={fill}
           includeSearch={false}
-          pathKey={(pathname) =>
-            settingsSectionFromPath(pathname) ? "/admin/settings/*" : pathname
-          }
+          pathKey={(path) => {
+            if (settingsSectionFromPath(path)) return "/admin/settings/*";
+            const edit = path.match(/\/admin\/posts\/edit\/([^/]+)/);
+            if (edit) return `/admin/posts/edit/${edit[1]}`;
+            return path;
+          }}
           onEntered={() => scrollerRef.current?.scrollTo(0, 0)}
         >
           <Outlet />
@@ -106,7 +123,7 @@ function AdminMain() {
 function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const matches = useMatches();
   const pageTitle = pageTitleFromMatches(matches);
-  const { primaryAction } = useAdminChrome();
+  const { primaryAction, mobileTitle } = useAdminChrome();
 
   return (
     <header className="lg:hidden shrink-0 mb-4">
@@ -119,7 +136,7 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           <Menu size={20} strokeWidth={1.5} />
         </button>
         <h1 className="flex-1 min-w-0 truncate text-base font-medium fuwari-text-90">
-          {pageTitle}
+          {mobileTitle ?? pageTitle}
         </h1>
         {primaryAction ? (
           <button

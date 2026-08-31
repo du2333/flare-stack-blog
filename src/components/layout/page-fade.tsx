@@ -9,11 +9,13 @@ export function PageFade({
   includeSearch = true,
   onEntered,
   pathKey,
+  fill = false,
 }: {
   children: React.ReactNode;
   includeSearch?: boolean;
   onEntered?: () => void;
   pathKey?: (pathname: string) => string;
+  fill?: boolean;
 }) {
   const location = useLocation();
   const pathname = pathKey ? pathKey(location.pathname) : location.pathname;
@@ -62,8 +64,17 @@ export function PageFade({
   }, [pageKey, renderedKey]);
 
   return (
-    <div className={cn("fuwari-page-fade", leaving && "is-leaving")}>
-      <div key={stale ? cacheRef.current.key : renderedKey}>
+    <div
+      className={cn(
+        "fuwari-page-fade",
+        leaving && "is-leaving",
+        fill && "flex h-full min-h-0 flex-1 flex-col",
+      )}
+    >
+      <div
+        key={stale ? cacheRef.current.key : renderedKey}
+        className={cn(fill && "flex h-full min-h-0 flex-1 flex-col")}
+      >
         {stale ? cacheRef.current.node : children}
       </div>
     </div>

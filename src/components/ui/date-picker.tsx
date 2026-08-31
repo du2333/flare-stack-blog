@@ -113,13 +113,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
           key={i}
           onClick={() => handleDayClick(i)}
           className={`
-            w-8 h-8 text-[11px] font-mono flex items-center justify-center transition-all relative
+            w-8 h-8 text-xs flex items-center justify-center rounded-lg transition-all relative
             ${
               selected
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                ? "bg-(--fuwari-primary) text-white"
+                : "fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)"
             }
-            ${today && !selected ? "text-foreground font-medium" : ""}
+            ${today && !selected ? "font-medium fuwari-text-90" : ""}
           `}
         >
           {i}
@@ -135,27 +135,23 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      <div
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-            relative w-full bg-transparent border-b border-border/40 text-sm font-light pl-8 pr-4 py-3 cursor-pointer select-none transition-all
-            ${isOpen ? "border-foreground" : "hover:border-foreground/50"}
-        `}
+        className="relative h-10 w-full cursor-pointer rounded-xl bg-(--fuwari-btn-regular-bg) pl-9 pr-3 text-left text-sm fuwari-text-90"
       >
         <CalendarIcon
-          className={`absolute left-0 top-1/2 -translate-y-1/2 transition-colors ${
-            isOpen ? "text-foreground" : "text-muted-foreground/50"
-          }`}
+          className="absolute left-3 top-1/2 -translate-y-1/2 fuwari-text-50"
           size={14}
           strokeWidth={1.5}
         />
-        <span className={value ? "opacity-100" : "opacity-40"}>
+        <span className={value ? "" : "fuwari-text-30"}>
           {value || m.common_select_date()}
         </span>
-      </div>
+      </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 bg-popover border border-border/30 p-4 w-70 animate-in fade-in duration-200">
+        <div className="absolute top-full left-0 z-50 mt-2 w-70 rounded-xl bg-(--fuwari-card-bg) p-4 shadow-md ring-1 ring-(--fuwari-input-border) animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-serif font-medium text-foreground">
@@ -185,7 +181,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             {daysOfWeek.map((d) => (
               <div
                 key={d}
-                className="w-8 text-center text-[9px] font-mono text-muted-foreground/40 uppercase"
+                className="w-8 text-center text-[11px] fuwari-text-30"
               >
                 {d}
               </div>

@@ -14,16 +14,15 @@ import {
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/admin/posts/edit/$id")({
+export const Route = createFileRoute("/admin/posts/edit/$id/")({
   ssr: "data-only",
   component: EditPost,
   pendingComponent: PostEditorSkeleton,
   loader: async ({ context, params }) => {
     const postId = Number(params.id);
-    const [post, _] = await Promise.all([
+    const [post] = await Promise.all([
       context.queryClient.ensureQueryData(postByIdQuery(postId)),
       context.queryClient.ensureQueryData(tagsByPostIdQueryOptions(postId)),
-      // Prefetch all tags for the selector
       context.queryClient.prefetchQuery(tagsAdminQueryOptions()),
       context.queryClient.prefetchQuery(categoriesAdminQueryOptions()),
     ]);
@@ -43,8 +42,6 @@ function EditPost() {
   const postId = Number(id);
   const queryClient = useQueryClient();
 
-  // Use useQuery instead of useSuspenseQuery to prevent flickering on background refetches
-  // Since loader ensures data is in cache, these will have initial data immediately.
   const { data: post } = useQuery(postByIdQuery(postId));
   const { data: tags } = useQuery(tagsByPostIdQueryOptions(postId));
 
@@ -102,7 +99,6 @@ function EditPost() {
       }),
     ]);
 
-    // Invalidate cache to ensure fresh data on next visit
     queryClient.invalidateQueries({
       queryKey: orpc.posts.admin.get.key({ input: { id: postId } }),
     });

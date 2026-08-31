@@ -1,9 +1,7 @@
-import { Image as ImageIcon, Loader2, Upload } from "lucide-react";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { Image as ImageIcon } from "lucide-react";
+import { useState } from "react";
 import { MediaPicker } from "@/features/media/components/media-library/components";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
-import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import type { PostEditorData } from "./types";
 
@@ -38,87 +36,40 @@ export function PostEditorCover({
   }) => void;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleUpload = async (file: File) => {
-    setUploading(true);
-    try {
-      const media = await orpcClient.media.upload({ image: file });
-      onChange({
-        coverMediaId: media.id,
-        cover: toCover(media),
-      });
-    } catch {
-      toast.error(m.editor_image_upload_failed());
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
 
   return (
-    <div className="col-span-1 space-y-3 md:col-span-3">
-      <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-        {m.editor_meta_cover()}
-      </label>
-      <div className="flex items-start gap-4">
-        <div className="h-24 w-40 shrink-0 overflow-hidden border border-border/30 bg-muted/20">
-          {cover ? (
-            <img
-              src={getOptimizedImageUrl(cover.key, 320)}
-              alt={cover.fileName}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
-              <ImageIcon size={20} />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
+      <p className="text-xs fuwari-text-50">{m.editor_meta_cover()}</p>
+      <div className="relative aspect-video overflow-hidden rounded-2xl bg-(--fuwari-btn-regular-bg)">
+        {cover ? (
+          <img
+            src={getOptimizedImageUrl(cover.key, 640)}
+            alt={cover.fileName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center fuwari-text-30">
+            <ImageIcon size={28} strokeWidth={1.5} />
+          </div>
+        )}
+        <div className="absolute right-2 bottom-2 flex gap-1.5">
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="h-8 px-3 text-[10px] font-mono uppercase tracking-widest border border-border/30 text-muted-foreground hover:text-foreground hover:border-foreground/50"
+            className="h-8 rounded-xl bg-black/45 px-3 text-xs font-medium text-white backdrop-blur-sm hover:bg-black/55"
           >
-            {m.editor_meta_cover_pick()}
+            {m.editor_meta_cover_change()}
           </button>
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-            className="h-8 px-3 text-[10px] font-mono uppercase tracking-widest border border-border/30 text-muted-foreground hover:text-foreground hover:border-foreground/50 disabled:opacity-50"
-          >
-            {uploading ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <span className="inline-flex items-center gap-1">
-                <Upload size={12} />
-                {m.editor_meta_cover_upload()}
-              </span>
-            )}
-          </button>
-          {cover && (
+          {cover ? (
             <button
               type="button"
               onClick={() => onChange({ coverMediaId: null, cover: null })}
-              className="h-8 px-3 text-[10px] font-mono uppercase tracking-widest border border-border/30 text-muted-foreground hover:text-destructive hover:border-destructive/40"
+              className="h-8 rounded-xl bg-black/45 px-3 text-xs font-medium text-white backdrop-blur-sm hover:bg-black/55"
             >
               {m.editor_meta_cover_clear()}
             </button>
-          )}
+          ) : null}
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void handleUpload(file);
-          }}
-        />
       </div>
       <MediaPicker
         open={pickerOpen}

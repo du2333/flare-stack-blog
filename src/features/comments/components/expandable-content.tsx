@@ -31,7 +31,7 @@ export function ExpandableContent({
       <div
         ref={contentRef}
         className={cn(
-          "max-w-none text-sm transition-all duration-300",
+          "max-w-none text-sm fuwari-text-90 transition-all duration-300",
           !expanded && "overflow-hidden",
         )}
         style={{
@@ -42,7 +42,7 @@ export function ExpandableContent({
       >
         <CommentBody
           content={content}
-          linkClassName="underline underline-offset-4 decoration-border hover:decoration-foreground transition-all duration-300 break-all"
+          linkClassName="underline underline-offset-4 decoration-(--fuwari-primary)/40 hover:decoration-(--fuwari-primary) text-(--fuwari-primary) transition-all duration-300 break-all"
         />
       </div>
 

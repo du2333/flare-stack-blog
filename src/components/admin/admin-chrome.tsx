@@ -15,15 +15,18 @@ export type AdminPrimaryAction = {
 type AdminChromeValue = {
   primaryAction: AdminPrimaryAction;
   setPrimaryAction: (action: AdminPrimaryAction) => void;
+  mobileTitle: string | null;
+  setMobileTitle: (title: string | null) => void;
 };
 
 const AdminChromeContext = createContext<AdminChromeValue | null>(null);
 
 export function AdminChromeProvider({ children }: { children: ReactNode }) {
   const [primaryAction, setPrimaryAction] = useState<AdminPrimaryAction>(null);
+  const [mobileTitle, setMobileTitle] = useState<string | null>(null);
   const value = useMemo(
-    () => ({ primaryAction, setPrimaryAction }),
-    [primaryAction],
+    () => ({ primaryAction, setPrimaryAction, mobileTitle, setMobileTitle }),
+    [primaryAction, mobileTitle],
   );
 
   return (

@@ -1,18 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
   postRevisionDetailQuery,
   postRevisionListQuery,
 } from "@/features/posts/queries";
-import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
-import type { PostEditorCover } from "../types";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import {
   getDeleteErrorMessage,
   getRestoreErrorMessage,
   type RevisionDetail,
+  type RevisionListItem,
 } from "../post-editor-history.shared";
 
 function invalidatePostEditorQueries(
@@ -40,98 +39,54 @@ function invalidatePostEditorQueries(
 
 export function usePostHistory({
   postId,
-  isInspecting,
-  onInspectingChange,
-  onRestoreApplied,
-  beforeRestore,
+  selectedRevisionId,
+  onRestored,
+  onDeleted,
 }: {
   postId: number;
-  isInspecting: boolean;
-  onInspectingChange: (isInspecting: boolean) => void;
-  onRestoreApplied: (
-    snapshot: PostRevisionSnapshot,
-    cover: PostEditorCover | null,
-  ) => void;
-  beforeRestore?: () => Promise<void>;
+  selectedRevisionId: number | null;
+  onRestored: () => void;
+  onDeleted: (nextRevisionId: number | null) => void;
 }) {
   const queryClient = useQueryClient();
-  const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
-    null,
-  );
   const [confirm, setConfirm] = useState<null | "restore" | "delete">(null);
 
   const revisionsQuery = useQuery({
     ...postRevisionListQuery(postId),
-    enabled: isInspecting,
     refetchOnMount: "always",
   });
 
   const selectedRevisionQuery = useQuery({
     ...postRevisionDetailQuery(postId, selectedRevisionId ?? 0),
-    enabled: isInspecting && selectedRevisionId != null,
+    enabled: selectedRevisionId != null,
     refetchOnMount: "always",
   });
 
+  const revisions: Array<RevisionListItem> = revisionsQuery.data ?? [];
   const selectedRevision: RevisionDetail | null =
     selectedRevisionQuery.data ?? null;
-
-  useEffect(() => {
-    if (!isInspecting) return;
-
-    const revisions = revisionsQuery.data ?? [];
-    if (revisions.length === 0) {
-      setSelectedRevisionId(null);
-      return;
-    }
-
-    const hasSelected = revisions.some(
-      (revision) => revision.id === selectedRevisionId,
-    );
-    if (!hasSelected) {
-      setSelectedRevisionId(revisions[0]?.id ?? null);
-    }
-  }, [isInspecting, revisionsQuery.data, selectedRevisionId]);
-
-  const openHistory = () => {
-    onInspectingChange(true);
-  };
-
-  const exitInspect = () => {
-    setConfirm(null);
-    onInspectingChange(false);
-  };
 
   const restoreMutation = useMutation({
     mutationFn: async () => {
       if (selectedRevisionId == null) {
         throw new Error("REVISION_NOT_SELECTED");
       }
-
-      await beforeRestore?.();
-
       await orpcClient.posts.admin.revisions.restore({
         postId,
         revisionId: selectedRevisionId,
       });
     },
     onSuccess: async () => {
-      if (!selectedRevision) return;
-
-      const fresh = await orpcClient.posts.admin.get({ id: postId });
-      onRestoreApplied(selectedRevision.snapshotJson, fresh?.cover ?? null);
-
       await invalidatePostEditorQueries(queryClient, postId);
-
       const title =
-        selectedRevision.snapshotJson.title.trim() || m.common_untitled();
+        selectedRevision?.snapshotJson.title.trim() || m.common_untitled();
       toast.success(m.editor_history_toast_restore_success(), {
         description: m.editor_history_toast_restore_success_desc({
           title,
         }),
       });
-
       setConfirm(null);
-      onInspectingChange(false);
+      onRestored();
     },
     onError: (error) => {
       toast.error(m.editor_history_toast_restore_failed(), {
@@ -145,28 +100,26 @@ export function usePostHistory({
       if (selectedRevisionId == null) {
         throw new Error("REVISION_NOT_SELECTED");
       }
-
       return await orpcClient.posts.admin.revisions.remove({
         postId,
         revisionIds: [selectedRevisionId],
       });
     },
     onSuccess: async (result) => {
-      const deletedCurrentRevision =
+      const deletedCurrent =
         selectedRevisionId != null &&
         result.deletedIds.includes(selectedRevisionId);
-
-      if (deletedCurrentRevision) {
-        setSelectedRevisionId(null);
-      }
-
       await invalidatePostEditorQueries(queryClient, postId);
-
       toast.success(m.editor_history_toast_delete_success(), {
         description: m.editor_history_toast_delete_success_desc(),
       });
-
       setConfirm(null);
+      if (deletedCurrent) {
+        const remaining = revisions.filter(
+          (revision) => !result.deletedIds.includes(revision.id),
+        );
+        onDeleted(remaining[0]?.id ?? null);
+      }
     },
     onError: (error) => {
       toast.error(m.editor_history_toast_delete_failed(), {
@@ -175,29 +128,30 @@ export function usePostHistory({
     },
   });
 
+  const requestRestore = useCallback(() => {
+    if (selectedRevisionId == null) return;
+    setConfirm("restore");
+  }, [selectedRevisionId]);
+
+  const requestDelete = useCallback(() => {
+    if (selectedRevisionId == null) return;
+    setConfirm("delete");
+  }, [selectedRevisionId]);
+
+  const cancelConfirm = useCallback(() => setConfirm(null), []);
+
   return {
-    isInspecting,
-    revisions: revisionsQuery.data ?? [],
+    revisions,
     isListLoading: revisionsQuery.isLoading,
-    selectedRevisionId,
     selectedRevision,
     isRevisionLoading: selectedRevisionQuery.isLoading,
     isRestoring: restoreMutation.isPending,
     isDeleting: deleteMutation.isPending,
     confirm,
-    openHistory,
-    exitInspect,
-    selectRevision: setSelectedRevisionId,
-    requestRestore: () => {
-      if (selectedRevisionId == null) return;
-      setConfirm("restore");
-    },
-    requestDelete: () => {
-      if (selectedRevisionId == null) return;
-      setConfirm("delete");
-    },
-    cancelConfirm: () => setConfirm(null),
-    confirmRestore: () => restoreMutation.mutate(),
-    confirmDelete: () => deleteMutation.mutate(),
+    requestRestore,
+    requestDelete,
+    cancelConfirm,
+    confirmRestore: restoreMutation.mutate,
+    confirmDelete: deleteMutation.mutate,
   };
 }

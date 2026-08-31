@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Home, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import { SETTINGS_FIELD_CLASS } from "@/features/config/components/admin/settings-pages";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -231,7 +232,7 @@ function StudioPost({
 }
 
 function SocialPills() {
-  const { control, register, watch } = useFormContext<SystemConfig>();
+  const { control, register, watch, setValue } = useFormContext<SystemConfig>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "site.social",
@@ -299,18 +300,25 @@ function SocialPills() {
       {selected !== null && fields[selected] ? (
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
-            <select
-              {...register(`site.social.${selected}.platform`)}
-              className={cn(SETTINGS_FIELD_CLASS, "w-36 shrink-0")}
-            >
-              {SOCIAL_PLATFORM_KEYS.map((key) => (
-                <option key={key} value={key} disabled={taken(key, selected)}>
-                  {key === "custom"
+            <Select
+              className="w-36 shrink-0"
+              value={watch(`site.social.${selected}.platform`) ?? ""}
+              onChange={(next) =>
+                setValue(
+                  `site.social.${selected}.platform`,
+                  next as (typeof SOCIAL_PLATFORM_KEYS)[number],
+                  { shouldDirty: true },
+                )
+              }
+              options={SOCIAL_PLATFORM_KEYS.map((key) => ({
+                value: key,
+                label:
+                  key === "custom"
                     ? m.settings_social_custom()
-                    : SOCIAL_PLATFORMS[key].label}
-                </option>
-              ))}
-            </select>
+                    : SOCIAL_PLATFORMS[key].label,
+                disabled: taken(key, selected),
+              }))}
+            />
             <input
               {...register(`site.social.${selected}.url`)}
               placeholder={m.settings_social_url_ph()}

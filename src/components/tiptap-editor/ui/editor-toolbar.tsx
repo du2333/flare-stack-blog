@@ -50,10 +50,10 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   <button
     onClick={onClick}
     className={clsx(
-      "h-8 w-8 flex items-center justify-center transition-colors duration-200 group relative rounded-none",
+      "h-8 w-8 flex items-center justify-center transition-colors duration-200 group relative rounded-lg",
       isActive
-        ? "bg-foreground text-background"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/20",
+        ? "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
+        : "fuwari-text-50 hover:text-(--fuwari-primary) hover:bg-(--fuwari-btn-regular-bg)",
     )}
     title={label}
     type="button"
@@ -139,7 +139,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 mb-8 py-2 bg-background border-b border-border/50 flex flex-wrap items-center gap-1 px-4">
+    <div className="sticky top-0 z-30 mb-6 flex flex-wrap items-center gap-1 border-b border-(--fuwari-input-border) bg-(--fuwari-card-bg) py-2">
       {/* Headings */}
       <ToolbarButton
         onClick={() =>

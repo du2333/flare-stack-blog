@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { slugify } from "@/features/posts/utils/content";
@@ -92,7 +92,10 @@ export function usePostActions({
     },
   });
 
-  const handlePublish = async () => {
+  const publish = publishMutation.mutate;
+  const unpublish = unpublishMutation.mutate;
+
+  const handlePublish = useCallback(async () => {
     if (processState !== "IDLE") return;
     setProcessState("PROCESSING");
     try {
@@ -106,14 +109,14 @@ export function usePostActions({
       setProcessState("IDLE");
       return;
     }
-    publishMutation.mutate();
-  };
+    publish();
+  }, [flush, processState, publish]);
 
-  const handleUnpublish = () => {
+  const handleUnpublish = useCallback(() => {
     if (processState !== "IDLE") return;
     setProcessState("PROCESSING");
-    unpublishMutation.mutate();
-  };
+    unpublish();
+  }, [processState, unpublish]);
 
   const slugMutation = useMutation({
     mutationFn: (title: string) =>

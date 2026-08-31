@@ -1,122 +1,107 @@
-import { Loader2, RotateCcw, Trash2 } from "lucide-react";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
 import { m } from "@/paraglide/messages";
-import type { PostEditorData } from "./types";
+import { cn } from "@/lib/utils";
+import type { SaveStatus } from "./types";
 
 interface PostEditorHeaderProps {
-  post: PostEditorData;
+  saveStatus: SaveStatus;
+  lastSaved: Date | null;
   processState: "IDLE" | "PROCESSING" | "SUCCESS";
   canPublish: boolean;
+  hasPublicSnapshot: boolean;
   onPublish: () => void;
   onUnpublish: () => void;
-  isInspecting?: boolean;
-  canRestore?: boolean;
-  isRestoring?: boolean;
-  isDeleting?: boolean;
-  onExitHistory?: () => void;
-  onRestore?: () => void;
-  onDelete?: () => void;
+  onOpenInfo: () => void;
+}
+
+function saveLabel(saveStatus: SaveStatus, lastSaved: Date | null) {
+  switch (saveStatus) {
+    case "ERROR":
+      return m.editor_status_save_error();
+    case "SAVING":
+      return m.editor_status_saving();
+    case "PENDING":
+      return m.editor_status_unsaved();
+    default:
+      return lastSaved
+        ? m.editor_status_saved({
+            time: lastSaved.toLocaleTimeString([], {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          })
+        : m.editor_status_synced();
+  }
 }
 
 export function PostEditorHeader({
-  post,
+  saveStatus,
+  lastSaved,
   processState,
   canPublish,
+  hasPublicSnapshot,
   onPublish,
   onUnpublish,
-  isInspecting = false,
-  canRestore = false,
-  isRestoring = false,
-  isDeleting = false,
-  onExitHistory,
-  onRestore,
-  onDelete,
+  onOpenInfo,
 }: PostEditorHeaderProps) {
-  const getPublishButtonColor = () => {
-    if (processState === "SUCCESS") return "text-emerald-500";
-    return "text-foreground hover:text-foreground/80";
-  };
-
-  const getPublishButtonText = () => {
-    if (processState === "PROCESSING") return m.editor_header_processing();
-    if (processState === "SUCCESS") return m.editor_header_success();
-    return m.editor_header_publish();
-  };
+  const busy = processState !== "IDLE";
+  const publishLabel =
+    processState === "PROCESSING"
+      ? m.editor_header_processing()
+      : processState === "SUCCESS"
+        ? m.editor_header_success()
+        : m.editor_header_publish();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/30 bg-background px-6">
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <Breadcrumbs />
-      </div>
-
-      {isInspecting ? (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            className="h-8 rounded-none px-2 text-[10px] font-mono"
-            onClick={onExitHistory}
-          >
-            {m.editor_history_back()}
-          </Button>
-          <Button
-            variant="ghost"
-            className="h-8 rounded-none px-2 text-[10px] font-mono text-destructive hover:text-destructive"
-            disabled={!canRestore || isDeleting || isRestoring}
-            onClick={onDelete}
-          >
-            {isDeleting ? (
-              <Loader2 size={12} className="mr-1 animate-spin" />
-            ) : (
-              <Trash2 size={12} className="mr-1" />
-            )}
-            {m.editor_history_delete_action()}
-          </Button>
-          <Button
-            className="h-8 rounded-none px-3 text-[10px] font-mono"
-            disabled={!canRestore || isRestoring || isDeleting}
-            onClick={onRestore}
-          >
-            {isRestoring ? (
-              <Loader2 size={12} className="mr-1 animate-spin" />
-            ) : (
-              <RotateCcw size={12} className="mr-1" />
-            )}
-            {m.editor_history_restore_this()}
-          </Button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-4">
-            {post.hasPublicSnapshot && (
-              <Button
-                onClick={onUnpublish}
-                disabled={processState !== "IDLE"}
-                variant="ghost"
-                className="h-8 rounded-none px-2 text-[10px] font-mono text-orange-500 transition-colors disabled:opacity-30 hover:bg-transparent hover:text-orange-400"
-              >
-                <span className="mr-2 opacity-50">[</span>
-                {m.editor_header_unpublish()}
-                <span className="ml-2 opacity-50">]</span>
-              </Button>
-            )}
-
-            <Button
-              onClick={onPublish}
-              disabled={processState !== "IDLE" || !canPublish}
-              variant="ghost"
-              className={`
-              h-8 rounded-none px-2 text-[10px] font-mono transition-colors disabled:opacity-30 hover:bg-transparent
-              ${getPublishButtonColor()}
-            `}
-            >
-              <span className="mr-2 opacity-50">[</span>
-              {getPublishButtonText()}
-              <span className="ml-2 opacity-50">]</span>
-            </Button>
-          </div>
-        </div>
-      )}
-    </header>
+    <div className="flex shrink-0 items-center gap-2 px-5 pt-5 pb-3">
+      <Link
+        to="/admin/posts"
+        className="hidden h-9 items-center rounded-xl px-2 text-sm fuwari-text-50 hover:text-(--fuwari-primary) lg:inline-flex"
+      >
+        {m.editor_back_to_posts()}
+      </Link>
+      <p
+        className={cn(
+          "min-w-0 flex-1 truncate text-sm",
+          saveStatus === "ERROR"
+            ? "text-(--fuwari-danger-fg)"
+            : saveStatus === "PENDING"
+              ? "text-(--fuwari-warning-fg)"
+              : "fuwari-text-50",
+        )}
+      >
+        {saveLabel(saveStatus, lastSaved)}
+      </p>
+      <button
+        type="button"
+        onClick={onOpenInfo}
+        className="h-9 rounded-xl px-3 text-sm fuwari-btn-regular lg:hidden"
+      >
+        {m.editor_info_title()}
+      </button>
+      {hasPublicSnapshot ? (
+        <button
+          type="button"
+          onClick={onUnpublish}
+          disabled={busy}
+          className="h-9 rounded-xl px-3 text-sm fuwari-text-50 hover:text-(--fuwari-warning-fg) disabled:opacity-40"
+        >
+          {m.editor_header_unpublish()}
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={onPublish}
+        disabled={busy || !canPublish}
+        className="hidden h-9 items-center rounded-xl px-4 text-sm font-medium fuwari-btn-primary disabled:opacity-40 lg:inline-flex"
+      >
+        {processState === "PROCESSING" ? (
+          <Loader2 size={14} className="mr-1.5 animate-spin" />
+        ) : null}
+        {publishLabel}
+      </button>
+    </div>
   );
 }

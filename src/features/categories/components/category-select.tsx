@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Select } from "@/components/ui/select";
 import { categoriesAdminQueryOptions } from "@/features/categories/queries";
 import { m } from "@/paraglide/messages";
 
@@ -12,21 +13,17 @@ export function CategorySelect({ value, onChange }: CategorySelectProps) {
   const categories = data?.items ?? [];
 
   return (
-    <select
-      value={value ?? ""}
+    <Select
+      value={value == null ? "" : String(value)}
       disabled={isLoading}
-      onChange={(event) => {
-        const next = event.target.value;
-        onChange(next === "" ? null : Number(next));
-      }}
-      className="h-auto w-full max-w-sm border-none bg-transparent p-0 text-xs font-mono text-foreground shadow-none focus:outline-none"
-    >
-      <option value="">{m.editor_meta_uncategorized()}</option>
-      {categories.map((category) => (
-        <option key={category.id} value={category.id}>
-          {category.name}
-        </option>
-      ))}
-    </select>
+      onChange={(next) => onChange(next === "" ? null : Number(next))}
+      options={[
+        { value: "", label: m.editor_meta_uncategorized() },
+        ...categories.map((category) => ({
+          value: String(category.id),
+          label: category.name,
+        })),
+      ]}
+    />
   );
 }
