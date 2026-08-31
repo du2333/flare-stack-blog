@@ -4,7 +4,7 @@ import { ResetPasswordPage } from "@/features/auth/components/reset-password-pag
 import { useResetPasswordForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_auth/reset-link")({
+export const Route = createFileRoute("/_public/_auth/reset-link")({
   validateSearch: z.object({
     token: z.string().optional().catch(undefined),
     error: z.string().optional().catch(undefined),

@@ -5,7 +5,7 @@ import { LoginPage } from "@/features/auth/components/login-page";
 import { useLoginForm, useSocialLogin } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_auth/login")({
+export const Route = createFileRoute("/_public/_auth/login")({
   validateSearch: z.object({
     redirectTo: z.string().optional(),
   }),
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_auth/login")({
 });
 
 function RouteComponent() {
-  const { isEmailConfigured } = useRouteContext({ from: "/_auth" });
+  const { isEmailConfigured } = useRouteContext({ from: "/_public/_auth" });
   const search = Route.useSearch();
   const {
     isPending: turnstilePending,

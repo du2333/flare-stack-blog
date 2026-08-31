@@ -4,7 +4,7 @@ import { VerifyEmailPage } from "@/features/auth/components/verify-email-page";
 import { useVerifyEmail } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_auth/verify-email")({
+export const Route = createFileRoute("/_public/_auth/verify-email")({
   validateSearch: z.object({
     error: z.string().optional().catch(undefined),
   }),

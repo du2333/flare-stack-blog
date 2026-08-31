@@ -9,9 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
-import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
@@ -20,24 +18,26 @@ import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
 import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanifest'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatsDotjsRouteImport } from './routes/stats[.]js'
-import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
-import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
-import { Route as AuthResetLinkRouteImport } from './routes/_auth/reset-link'
-import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicAuthRouteRouteImport } from './routes/_public/_auth/route'
+import { Route as PublicUserRouteRouteImport } from './routes/_public/_user/route'
 import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
 import { Route as PublicPostsRouteImport } from './routes/_public/posts'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
-import { Route as UserProfileRouteImport } from './routes/_user/profile'
-import { Route as UserSubmitFriendLinkRouteImport } from './routes/_user/submit-friend-link'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminPostsRouteRouteImport } from './routes/admin/posts/route'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as ApiAuthRouteImport } from './routes/api.auth'
 import { Route as ApiSendRouteImport } from './routes/api.send'
 import { Route as ImagesSplatRouteImport } from './routes/images.$'
+import { Route as PublicAuthForgotPasswordRouteImport } from './routes/_public/_auth/forgot-password'
+import { Route as PublicAuthLoginRouteImport } from './routes/_public/_auth/login'
+import { Route as PublicAuthRegisterRouteImport } from './routes/_public/_auth/register'
+import { Route as PublicAuthResetLinkRouteImport } from './routes/_public/_auth/reset-link'
+import { Route as PublicAuthVerifyEmailRouteImport } from './routes/_public/_auth/verify-email'
+import { Route as PublicUserProfileRouteImport } from './routes/_public/_user/profile'
+import { Route as PublicUserSubmitFriendLinkRouteImport } from './routes/_public/_user/submit-friend-link'
 import { Route as PublicPostSlugRouteImport } from './routes/_public/post/$slug'
 import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend-links/index'
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
@@ -48,16 +48,8 @@ import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AdminPostsEditIdRouteImport } from './routes/admin/posts/edit.$id'
 
-const AuthRouteRoute = AuthRouteRouteImport.update({
-  id: '/_auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UserRouteRoute = UserRouteRouteImport.update({
-  id: '/_user',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
@@ -100,34 +92,17 @@ const StatsDotjsRoute = StatsDotjsRouteImport.update({
   path: '/stats.js',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthResetLinkRoute = AuthResetLinkRouteImport.update({
-  id: '/reset-link',
-  path: '/reset-link',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
-const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
-  id: '/verify-email',
-  path: '/verify-email',
-  getParentRoute: () => AuthRouteRoute,
-} as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicAuthRouteRoute = PublicAuthRouteRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicUserRouteRoute = PublicUserRouteRouteImport.update({
+  id: '/_user',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
@@ -149,16 +124,6 @@ const PublicUnsubscribeRoute = PublicUnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
   getParentRoute: () => PublicRouteRoute,
-} as any)
-const UserProfileRoute = UserProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => UserRouteRoute,
-} as any)
-const UserSubmitFriendLinkRoute = UserSubmitFriendLinkRouteImport.update({
-  id: '/submit-friend-link',
-  path: '/submit-friend-link',
-  getParentRoute: () => UserRouteRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -190,6 +155,43 @@ const ImagesSplatRoute = ImagesSplatRouteImport.update({
   path: '/images/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicAuthForgotPasswordRoute =
+  PublicAuthForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => PublicAuthRouteRoute,
+  } as any)
+const PublicAuthLoginRoute = PublicAuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicAuthRouteRoute,
+} as any)
+const PublicAuthRegisterRoute = PublicAuthRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => PublicAuthRouteRoute,
+} as any)
+const PublicAuthResetLinkRoute = PublicAuthResetLinkRouteImport.update({
+  id: '/reset-link',
+  path: '/reset-link',
+  getParentRoute: () => PublicAuthRouteRoute,
+} as any)
+const PublicAuthVerifyEmailRoute = PublicAuthVerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => PublicAuthRouteRoute,
+} as any)
+const PublicUserProfileRoute = PublicUserProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PublicUserRouteRoute,
+} as any)
+const PublicUserSubmitFriendLinkRoute =
+  PublicUserSubmitFriendLinkRouteImport.update({
+    id: '/submit-friend-link',
+    path: '/submit-friend-link',
+    getParentRoute: () => PublicUserRouteRoute,
+  } as any)
 const PublicPostSlugRoute = PublicPostSlugRouteImport.update({
   id: '/post/$slug',
   path: '/post/$slug',
@@ -247,22 +249,22 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/reset-link': typeof AuthResetLinkRoute
-  '/verify-email': typeof AuthVerifyEmailRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
-  '/profile': typeof UserProfileRoute
-  '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/forgot-password': typeof PublicAuthForgotPasswordRoute
+  '/login': typeof PublicAuthLoginRoute
+  '/register': typeof PublicAuthRegisterRoute
+  '/reset-link': typeof PublicAuthResetLinkRoute
+  '/verify-email': typeof PublicAuthVerifyEmailRoute
+  '/profile': typeof PublicUserProfileRoute
+  '/submit-friend-link': typeof PublicUserSubmitFriendLinkRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
@@ -274,7 +276,6 @@ export interface FileRoutesByFullPath {
   '/admin/posts/edit/$id': typeof AdminPostsEditIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof PublicIndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -282,22 +283,23 @@ export interface FileRoutesByTo {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/reset-link': typeof AuthResetLinkRoute
-  '/verify-email': typeof AuthVerifyEmailRoute
+  '/': typeof PublicIndexRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
-  '/profile': typeof UserProfileRoute
-  '/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/admin': typeof AdminIndexRoute
+  '/forgot-password': typeof PublicAuthForgotPasswordRoute
+  '/login': typeof PublicAuthLoginRoute
+  '/register': typeof PublicAuthRegisterRoute
+  '/reset-link': typeof PublicAuthResetLinkRoute
+  '/verify-email': typeof PublicAuthVerifyEmailRoute
+  '/profile': typeof PublicUserProfileRoute
+  '/submit-friend-link': typeof PublicUserSubmitFriendLinkRoute
   '/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
@@ -310,9 +312,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_auth': typeof AuthRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
-  '/_user': typeof UserRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
@@ -321,24 +321,26 @@ export interface FileRoutesById {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
+  '/_public/_auth': typeof PublicAuthRouteRouteWithChildren
+  '/_public/_user': typeof PublicUserRouteRouteWithChildren
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
-  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/_auth/login': typeof AuthLoginRoute
-  '/_auth/register': typeof AuthRegisterRoute
-  '/_auth/reset-link': typeof AuthResetLinkRoute
-  '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_public/friend-links': typeof PublicFriendLinksRoute
   '/_public/posts': typeof PublicPostsRoute
   '/_public/search': typeof PublicSearchRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
-  '/_user/profile': typeof UserProfileRoute
-  '/_user/submit-friend-link': typeof UserSubmitFriendLinkRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/_public/_auth/forgot-password': typeof PublicAuthForgotPasswordRoute
+  '/_public/_auth/login': typeof PublicAuthLoginRoute
+  '/_public/_auth/register': typeof PublicAuthRegisterRoute
+  '/_public/_auth/reset-link': typeof PublicAuthResetLinkRoute
+  '/_public/_auth/verify-email': typeof PublicAuthVerifyEmailRoute
+  '/_public/_user/profile': typeof PublicUserProfileRoute
+  '/_public/_user/submit-friend-link': typeof PublicUserSubmitFriendLinkRoute
   '/_public/post/$slug': typeof PublicPostSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
@@ -362,22 +364,22 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stats.js'
     | '/admin/posts'
-    | '/forgot-password'
-    | '/login'
-    | '/register'
-    | '/reset-link'
-    | '/verify-email'
     | '/friend-links'
     | '/posts'
     | '/search'
     | '/unsubscribe'
-    | '/profile'
-    | '/submit-friend-link'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
     | '/images/$'
     | '/admin/'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/reset-link'
+    | '/verify-email'
+    | '/profile'
+    | '/submit-friend-link'
     | '/post/$slug'
     | '/api/auth/$'
     | '/admin/friend-links/'
@@ -389,7 +391,6 @@ export interface FileRouteTypes {
     | '/admin/posts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/atom.xml'
     | '/feed.json'
     | '/robots.txt'
@@ -397,22 +398,23 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
-    | '/forgot-password'
-    | '/login'
-    | '/register'
-    | '/reset-link'
-    | '/verify-email'
+    | '/'
     | '/friend-links'
     | '/posts'
     | '/search'
     | '/unsubscribe'
-    | '/profile'
-    | '/submit-friend-link'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
     | '/images/$'
     | '/admin'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/reset-link'
+    | '/verify-email'
+    | '/profile'
+    | '/submit-friend-link'
     | '/post/$slug'
     | '/api/auth/$'
     | '/admin/friend-links'
@@ -424,9 +426,7 @@ export interface FileRouteTypes {
     | '/admin/posts/edit/$id'
   id:
     | '__root__'
-    | '/_auth'
     | '/_public'
-    | '/_user'
     | '/admin'
     | '/atom.xml'
     | '/feed.json'
@@ -435,24 +435,26 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
+    | '/_public/_auth'
+    | '/_public/_user'
     | '/admin/posts'
-    | '/_auth/forgot-password'
-    | '/_auth/login'
-    | '/_auth/register'
-    | '/_auth/reset-link'
-    | '/_auth/verify-email'
     | '/_public/friend-links'
     | '/_public/posts'
     | '/_public/search'
     | '/_public/unsubscribe'
-    | '/_user/profile'
-    | '/_user/submit-friend-link'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
     | '/images/$'
     | '/_public/'
     | '/admin/'
+    | '/_public/_auth/forgot-password'
+    | '/_public/_auth/login'
+    | '/_public/_auth/register'
+    | '/_public/_auth/reset-link'
+    | '/_public/_auth/verify-email'
+    | '/_public/_user/profile'
+    | '/_public/_user/submit-friend-link'
     | '/_public/post/$slug'
     | '/api/auth/$'
     | '/admin/friend-links/'
@@ -465,9 +467,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthRouteRoute: typeof AuthRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
-  UserRouteRoute: typeof UserRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AtomDotxmlRoute: typeof AtomDotxmlRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
@@ -484,25 +484,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_auth': {
-      id: '/_auth'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_public': {
       id: '/_public'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PublicRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_user': {
-      id: '/_user'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof UserRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -561,46 +547,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsDotjsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/login': {
-      id: '/_auth/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/register': {
-      id: '/_auth/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/reset-link': {
-      id: '/_auth/reset-link'
-      path: '/reset-link'
-      fullPath: '/reset-link'
-      preLoaderRoute: typeof AuthResetLinkRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
-    '/_auth/verify-email': {
-      id: '/_auth/verify-email'
-      path: '/verify-email'
-      fullPath: '/verify-email'
-      preLoaderRoute: typeof AuthVerifyEmailRouteImport
-      parentRoute: typeof AuthRouteRoute
-    }
     '/_public/': {
       id: '/_public/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/_auth': {
+      id: '/_public/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicAuthRouteRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/_user': {
+      id: '/_public/_user'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicUserRouteRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/friend-links': {
@@ -630,20 +595,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof PublicUnsubscribeRouteImport
       parentRoute: typeof PublicRouteRoute
-    }
-    '/_user/profile': {
-      id: '/_user/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof UserProfileRouteImport
-      parentRoute: typeof UserRouteRoute
-    }
-    '/_user/submit-friend-link': {
-      id: '/_user/submit-friend-link'
-      path: '/submit-friend-link'
-      fullPath: '/submit-friend-link'
-      preLoaderRoute: typeof UserSubmitFriendLinkRouteImport
-      parentRoute: typeof UserRouteRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -686,6 +637,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/images/$'
       preLoaderRoute: typeof ImagesSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_public/_auth/forgot-password': {
+      id: '/_public/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicAuthForgotPasswordRouteImport
+      parentRoute: typeof PublicAuthRouteRoute
+    }
+    '/_public/_auth/login': {
+      id: '/_public/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicAuthLoginRouteImport
+      parentRoute: typeof PublicAuthRouteRoute
+    }
+    '/_public/_auth/register': {
+      id: '/_public/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof PublicAuthRegisterRouteImport
+      parentRoute: typeof PublicAuthRouteRoute
+    }
+    '/_public/_auth/reset-link': {
+      id: '/_public/_auth/reset-link'
+      path: '/reset-link'
+      fullPath: '/reset-link'
+      preLoaderRoute: typeof PublicAuthResetLinkRouteImport
+      parentRoute: typeof PublicAuthRouteRoute
+    }
+    '/_public/_auth/verify-email': {
+      id: '/_public/_auth/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof PublicAuthVerifyEmailRouteImport
+      parentRoute: typeof PublicAuthRouteRoute
+    }
+    '/_public/_user/profile': {
+      id: '/_public/_user/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PublicUserProfileRouteImport
+      parentRoute: typeof PublicUserRouteRoute
+    }
+    '/_public/_user/submit-friend-link': {
+      id: '/_public/_user/submit-friend-link'
+      path: '/submit-friend-link'
+      fullPath: '/submit-friend-link'
+      preLoaderRoute: typeof PublicUserSubmitFriendLinkRouteImport
+      parentRoute: typeof PublicUserRouteRoute
     }
     '/_public/post/$slug': {
       id: '/_public/post/$slug'
@@ -753,27 +753,43 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthRouteRouteChildren {
-  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
-  AuthLoginRoute: typeof AuthLoginRoute
-  AuthRegisterRoute: typeof AuthRegisterRoute
-  AuthResetLinkRoute: typeof AuthResetLinkRoute
-  AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
+interface PublicAuthRouteRouteChildren {
+  PublicAuthForgotPasswordRoute: typeof PublicAuthForgotPasswordRoute
+  PublicAuthLoginRoute: typeof PublicAuthLoginRoute
+  PublicAuthRegisterRoute: typeof PublicAuthRegisterRoute
+  PublicAuthResetLinkRoute: typeof PublicAuthResetLinkRoute
+  PublicAuthVerifyEmailRoute: typeof PublicAuthVerifyEmailRoute
 }
 
-const AuthRouteRouteChildren: AuthRouteRouteChildren = {
-  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
-  AuthLoginRoute: AuthLoginRoute,
-  AuthRegisterRoute: AuthRegisterRoute,
-  AuthResetLinkRoute: AuthResetLinkRoute,
-  AuthVerifyEmailRoute: AuthVerifyEmailRoute,
+const PublicAuthRouteRouteChildren: PublicAuthRouteRouteChildren = {
+  PublicAuthForgotPasswordRoute: PublicAuthForgotPasswordRoute,
+  PublicAuthLoginRoute: PublicAuthLoginRoute,
+  PublicAuthRegisterRoute: PublicAuthRegisterRoute,
+  PublicAuthResetLinkRoute: PublicAuthResetLinkRoute,
+  PublicAuthVerifyEmailRoute: PublicAuthVerifyEmailRoute,
 }
 
-const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
-  AuthRouteRouteChildren,
+const PublicAuthRouteRouteWithChildren = PublicAuthRouteRoute._addFileChildren(
+  PublicAuthRouteRouteChildren,
+)
+
+interface PublicUserRouteRouteChildren {
+  PublicUserProfileRoute: typeof PublicUserProfileRoute
+  PublicUserSubmitFriendLinkRoute: typeof PublicUserSubmitFriendLinkRoute
+}
+
+const PublicUserRouteRouteChildren: PublicUserRouteRouteChildren = {
+  PublicUserProfileRoute: PublicUserProfileRoute,
+  PublicUserSubmitFriendLinkRoute: PublicUserSubmitFriendLinkRoute,
+}
+
+const PublicUserRouteRouteWithChildren = PublicUserRouteRoute._addFileChildren(
+  PublicUserRouteRouteChildren,
 )
 
 interface PublicRouteRouteChildren {
+  PublicAuthRouteRoute: typeof PublicAuthRouteRouteWithChildren
+  PublicUserRouteRoute: typeof PublicUserRouteRouteWithChildren
   PublicFriendLinksRoute: typeof PublicFriendLinksRoute
   PublicPostsRoute: typeof PublicPostsRoute
   PublicSearchRoute: typeof PublicSearchRoute
@@ -783,6 +799,8 @@ interface PublicRouteRouteChildren {
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicAuthRouteRoute: PublicAuthRouteRouteWithChildren,
+  PublicUserRouteRoute: PublicUserRouteRouteWithChildren,
   PublicFriendLinksRoute: PublicFriendLinksRoute,
   PublicPostsRoute: PublicPostsRoute,
   PublicSearchRoute: PublicSearchRoute,
@@ -793,20 +811,6 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
-)
-
-interface UserRouteRouteChildren {
-  UserProfileRoute: typeof UserProfileRoute
-  UserSubmitFriendLinkRoute: typeof UserSubmitFriendLinkRoute
-}
-
-const UserRouteRouteChildren: UserRouteRouteChildren = {
-  UserProfileRoute: UserProfileRoute,
-  UserSubmitFriendLinkRoute: UserSubmitFriendLinkRoute,
-}
-
-const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
-  UserRouteRouteChildren,
 )
 
 interface AdminPostsRouteRouteChildren {
@@ -859,9 +863,7 @@ const ApiAuthRouteWithChildren =
   ApiAuthRoute._addFileChildren(ApiAuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthRouteRoute: AuthRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
-  UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AtomDotxmlRoute: AtomDotxmlRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,

@@ -11,7 +11,7 @@ import { hasPasswordQuery } from "@/features/email/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_user/profile")({
+export const Route = createFileRoute("/_public/_user/profile")({
   ssr: false,
   component: ProfilePage,
   loader: async () => {

@@ -6,7 +6,7 @@ import { myFriendLinksQuery } from "@/features/friend-links/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_user/submit-friend-link")({
+export const Route = createFileRoute("/_public/_user/submit-friend-link")({
   ssr: false,
   component: SubmitFriendLinkRoute,
   loader: async () => {

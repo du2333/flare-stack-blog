@@ -1,6 +1,6 @@
 import type { FileRoutesByTo } from "@/routeTree.gen";
 
-/** Layout props passed from public/auth/user routes. */
+/** Layout props passed from public and auth routes. */
 
 export interface NavOption {
   label: string;
@@ -29,9 +29,5 @@ export interface AuthLayoutProps {
 
 export interface UserLayoutProps {
   isAuthenticated: boolean;
-  navOptions: Array<NavOption>;
-  user?: UserInfo;
-  isSessionLoading: boolean;
-  logout: () => Promise<void>;
   children: React.ReactNode;
 }

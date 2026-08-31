@@ -1,10 +1,14 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  useRouteContext,
+} from "@tanstack/react-router";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
-import { ForgotPasswordPage } from "@/features/auth/components/forgot-password-page";
-import { useForgotPasswordForm } from "@/features/auth/hooks";
+import { RegisterPage } from "@/features/auth/components/register-page";
+import { useRegisterForm } from "@/features/auth/hooks";
 import { m } from "@/paraglide/messages";
 
-export const Route = createFileRoute("/_auth/forgot-password")({
+export const Route = createFileRoute("/_public/_auth/register")({
   beforeLoad: ({ context }) => {
     if (!context.isEmailConfigured) {
       throw redirect({ to: "/login" });
@@ -14,24 +18,26 @@ export const Route = createFileRoute("/_auth/forgot-password")({
   head: () => ({
     meta: [
       {
-        title: m.forgot_password_title(),
+        title: m.register_title(),
       },
     ],
   }),
 });
 
 function RouteComponent() {
+  const { isEmailConfigured } = useRouteContext({ from: "/_public/_auth" });
   const {
     isPending: turnstilePending,
     token: turnstileToken,
     reset: resetTurnstile,
     turnstileProps,
-  } = useTurnstile("forgot-password");
+  } = useTurnstile("register");
 
-  const forgotPasswordForm = useForgotPasswordForm({
+  const registerForm = useRegisterForm({
     turnstileToken,
     turnstilePending,
     resetTurnstile,
+    isEmailConfigured,
   });
 
   const turnstileElement = (
@@ -41,12 +47,9 @@ function RouteComponent() {
   );
 
   return (
-    <ForgotPasswordPage
-      forgotPasswordForm={{
-        ...forgotPasswordForm,
-        turnstileProps,
-        turnstilePending,
-      }}
+    <RegisterPage
+      isEmailConfigured={isEmailConfigured}
+      registerForm={{ ...registerForm, turnstileProps }}
       turnstileElement={turnstileElement}
     />
   );

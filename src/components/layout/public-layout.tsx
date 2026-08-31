@@ -1,6 +1,11 @@
-import { useLocation, useRouteContext } from "@tanstack/react-router";
+import {
+  useLocation,
+  useRouteContext,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useState } from "react";
 import type { PublicLayoutProps } from "@/components/layout/layout-props";
+import { cn } from "@/lib/utils";
 import { BackToTop } from "./back-to-top";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
@@ -24,6 +29,10 @@ export function PublicLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const isAuthPage = useRouterState({
+    select: (state) =>
+      state.matches.some((match) => match.routeId.includes("/_auth")),
+  });
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
 
   return (
@@ -70,20 +79,30 @@ export function PublicLayout({
         }}
       >
         <div
-          className="relative mx-auto px-0 md:px-4 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
+          className={cn(
+            "relative mx-auto px-0 md:px-4 pb-8 grid gap-4",
+            isAuthPage
+              ? "grid-cols-1"
+              : "grid-cols-1 lg:grid-cols-[17.5rem_1fr]",
+          )}
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
-          {/* Sidebar Column */}
-          <Sidebar className="order-2 lg:order-1" />
+          {isAuthPage ? null : <Sidebar className="order-2 lg:order-1" />}
 
-          {/* Main Content Column */}
-          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0">
+          <main
+            className={cn(
+              "flex flex-col gap-4 min-w-0",
+              isAuthPage ? "" : "order-1 lg:order-2",
+            )}
+          >
             <PageFade>{children}</PageFade>
           </main>
 
-          {/* Footer Column (Desktop: below main, Mobile: below sidebar) */}
           <div
-            className="order-3 lg:col-start-2 fuwari-onload-animation mt-auto"
+            className={cn(
+              "fuwari-onload-animation mt-auto",
+              isAuthPage ? "" : "order-3 lg:col-start-2",
+            )}
             style={{ animationDelay: "250ms" }}
           >
             <Footer navOptions={navOptions} />

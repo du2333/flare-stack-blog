@@ -1,11 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { Toaster } from "@/components/layout/toaster";
 import { emailConfiguredQuery, sessionQuery } from "@/features/auth/queries";
 import { useNavigateBack } from "@/hooks/use-navigate-back";
 import { CACHE_CONTROL } from "@/lib/constants";
 
-export const Route = createFileRoute("/_auth")({
+export const Route = createFileRoute("/_public/_auth")({
   beforeLoad: async ({ context, location }) => {
     const session = await context.queryClient.fetchQuery(sessionQuery);
     const isEmailConfigured =
@@ -24,13 +23,10 @@ export const Route = createFileRoute("/_auth")({
 });
 
 function RouteComponent() {
-  const navigateBack = useNavigateBack();
+  const navigateBack = useNavigateBack({ fallbackTo: "/" });
   return (
-    <>
-      <AuthLayout onBack={navigateBack}>
-        <Outlet />
-      </AuthLayout>
-      <Toaster />
-    </>
+    <AuthLayout onBack={navigateBack}>
+      <Outlet />
+    </AuthLayout>
   );
 }
