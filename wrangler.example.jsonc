@@ -26,21 +26,21 @@
       "binding": "DB",
       "database_id": "D1_DATABASE_ID",
       "migrations_dir": "migrations",
-      "remote": true
+      // "remote": true
     }
   ],
   "r2_buckets": [
     {
       "bucket_name": "bucket-name-placeholder",
       "binding": "R2",
-      "remote": true
+      // "remote": true
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
       "id": "KV_NAMESPACE_ID",
-      "remote": true
+      // "remote": true
     }
   ],
   "durable_objects": {
