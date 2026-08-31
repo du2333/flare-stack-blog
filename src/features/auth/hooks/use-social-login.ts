@@ -6,7 +6,7 @@ import { getSocialLoginAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { m } from "@/paraglide/messages";
 import { normalizeRedirectUrl } from "./normalize-redirect-url";
 
-export interface UseSocialLoginOptions {
+interface UseSocialLoginOptions {
   redirectTo?: string;
 }
 
@@ -47,5 +47,3 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
     handleGithubLogin,
   };
 }
-
-export type UseSocialLoginReturn = ReturnType<typeof useSocialLogin>;

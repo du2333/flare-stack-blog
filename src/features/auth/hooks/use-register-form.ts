@@ -30,7 +30,7 @@ const createRegisterSchema = (messages: Messages) =>
 
 type RegisterSchema = z.infer<ReturnType<typeof createRegisterSchema>>;
 
-export interface UseRegisterFormOptions {
+interface UseRegisterFormOptions {
   turnstileToken: string | null;
   turnstilePending: boolean;
   resetTurnstile: () => void;
@@ -100,5 +100,3 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
     turnstilePending,
   };
 }
-
-export type UseRegisterFormReturn = ReturnType<typeof useRegisterForm>;

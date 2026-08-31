@@ -62,7 +62,3 @@ export function useNotificationToggle(userId: string | undefined) {
     },
   };
 }
-
-export type UseNotificationToggleReturn = ReturnType<
-  typeof useNotificationToggle
->;

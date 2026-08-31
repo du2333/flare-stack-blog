@@ -25,7 +25,7 @@ type ResetPasswordSchema = z.infer<
   ReturnType<typeof createResetPasswordSchema>
 >;
 
-export interface UseResetPasswordFormOptions {
+interface UseResetPasswordFormOptions {
   token: string | undefined;
 }
 
@@ -75,7 +75,3 @@ export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
     isSubmitting: form.formState.isSubmitting,
   };
 }
-
-export type UseResetPasswordFormReturn = ReturnType<
-  typeof useResetPasswordForm
->;

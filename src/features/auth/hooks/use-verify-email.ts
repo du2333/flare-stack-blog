@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export interface UseVerifyEmailOptions {
+interface UseVerifyEmailOptions {
   error: string | undefined;
 }
 
@@ -29,5 +29,3 @@ export function useVerifyEmail(options: UseVerifyEmailOptions) {
 
   return { status };
 }
-
-export type UseVerifyEmailReturn = ReturnType<typeof useVerifyEmail>;

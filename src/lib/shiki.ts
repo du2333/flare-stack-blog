@@ -38,14 +38,14 @@ const languageLoaders: Record<
   yaml: () => import("shiki/langs/yaml.mjs"),
 };
 
-export const themes = {
+const themes = {
   light: "vitesse-light",
   dark: "vitesse-dark",
 } as const;
 
 let highlighterPromise: Promise<HighlighterCore> | null = null;
 
-export async function getHighlighter() {
+async function getHighlighter() {
   if (!highlighterPromise) {
     // Customizing the background color of vitesse-dark to remove the greenish tint
     // using Zinc-900 (#18181b) to match the dark mode UI
@@ -75,7 +75,7 @@ const aliases: Record<string, string> = {
   md: "markdown",
 };
 
-export async function loadLanguage(lang: string) {
+async function loadLanguage(lang: string) {
   const normalizedLang = aliases[lang] || lang;
 
   const highlighter = await getHighlighter();

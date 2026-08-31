@@ -8,7 +8,7 @@ import { CategoriesTable } from "@/lib/db/schema";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 
-export const CategorySelectSchema = createSelectSchema(CategoriesTable, {
+const CategorySelectSchema = createSelectSchema(CategoriesTable, {
   createdAt: coercedDate,
 });
 export const CategoryInsertSchema = createInsertSchema(CategoriesTable);
@@ -49,9 +49,6 @@ export const GetCategoriesInputSchema = z.object({
   publicOnly: z.boolean().optional(),
 });
 
-export type Category = z.infer<typeof CategorySelectSchema>;
-export type PublicCategory = z.infer<typeof PublicCategorySchema>;
-export type CategoryWithCount = z.infer<typeof CategoryWithCountSchema>;
 export type AdminCategoryList = z.infer<typeof AdminCategoryListSchema>;
 export type CreateCategoryInput = z.infer<typeof CreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof UpdateCategoryInputSchema>;

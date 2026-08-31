@@ -7,11 +7,11 @@ import { vi } from "vitest";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
-export function createTestDb() {
+function createTestDb() {
   return getDb(env);
 }
 
-export function createMockAuth() {
+function createMockAuth() {
   return {
     api: {
       getSession: vi.fn(async () => null),

@@ -61,5 +61,3 @@ export function usePasswordForm() {
     isSubmitting,
   };
 }
-
-export type UsePasswordFormReturn = ReturnType<typeof usePasswordForm>;

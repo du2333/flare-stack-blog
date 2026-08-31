@@ -24,7 +24,7 @@ const createLoginSchema = (messages: Messages) =>
 
 type LoginSchema = z.infer<ReturnType<typeof createLoginSchema>>;
 
-export interface UseLoginFormOptions {
+interface UseLoginFormOptions {
   turnstileToken: string | null;
   turnstilePending: boolean;
   resetTurnstile: () => void;
@@ -171,5 +171,3 @@ export function useLoginForm(options: UseLoginFormOptions) {
     loginSchema,
   };
 }
-
-export type UseLoginFormReturn = ReturnType<typeof useLoginForm>;

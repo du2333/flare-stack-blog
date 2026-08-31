@@ -47,7 +47,7 @@ export const FindPostRevisionByIdInputSchema = z.object({
   revisionId: z.number(),
 });
 
-export const CreatePostRevisionInputSchema = z.object({
+const CreatePostRevisionInputSchema = z.object({
   postId: z.number(),
   reason: z.enum(POST_REVISION_REASONS).optional(),
 });

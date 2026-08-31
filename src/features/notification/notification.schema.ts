@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const NOTIFICATION_CHANNELS = ["email", "webhook"] as const;
 export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
-export const NOTIFICATION_EVENT = {
+const NOTIFICATION_EVENT = {
   COMMENT_ADMIN_ROOT_CREATED: "comment.admin_root_created",
   COMMENT_REPLY_TO_ADMIN_PUBLISHED: "comment.reply_to_admin_published",
   COMMENT_REPLY_TO_USER_PUBLISHED: "comment.reply_to_user_published",

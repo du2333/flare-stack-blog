@@ -14,19 +14,19 @@ import { NullableJsonContentSchema } from "./json-content.schema";
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 const coercedDateNullable = coercedDate.nullable();
 
-export const PublicPostCoverSchema = z.object({
+const PublicPostCoverSchema = z.object({
   key: z.string(),
   url: z.string(),
   width: z.number().int().nullable(),
   height: z.number().int().nullable(),
 });
 
-export const AdminPostCoverSchema = PublicPostCoverSchema.extend({
+const AdminPostCoverSchema = PublicPostCoverSchema.extend({
   id: z.number().int(),
   fileName: z.string(),
 });
 
-export const PostSelectSchema = createSelectSchema(PostsTable, {
+const PostSelectSchema = createSelectSchema(PostsTable, {
   publishedAt: coercedDateNullable,
   pinnedAt: coercedDateNullable,
   createdAt: coercedDate,
@@ -35,7 +35,7 @@ export const PostSelectSchema = createSelectSchema(PostsTable, {
   publicSnapshotJson: true,
 });
 export const PostInsertSchema = createInsertSchema(PostsTable);
-export const PostUpdateSchema = createUpdateSchema(PostsTable, {
+const PostUpdateSchema = createUpdateSchema(PostsTable, {
   contentJson: NullableJsonContentSchema.optional(),
 }).omit({
   publicSnapshotJson: true,
@@ -150,13 +150,13 @@ export const GetPostsInputSchema = z.object({
   sortBy: z.enum(["publishedAt", "updatedAt"]).optional(),
 });
 
-export const GetPostsCountInputSchema = GetPostsInputSchema.omit({
+const GetPostsCountInputSchema = GetPostsInputSchema.omit({
   offset: true,
   limit: true,
   sortDir: true,
 });
 
-export const AdminPostListItemSchema = z.object({
+const AdminPostListItemSchema = z.object({
   id: z.number().int(),
   title: z.string(),
   summary: z.string().nullable(),

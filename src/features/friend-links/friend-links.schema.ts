@@ -5,18 +5,18 @@ import type { Messages } from "@/lib/i18n";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 
-export const FriendLinkSelectSchema = createSelectSchema(FriendLinksTable, {
+const FriendLinkSelectSchema = createSelectSchema(FriendLinksTable, {
   createdAt: coercedDate,
   updatedAt: coercedDate,
 });
 
-export const FriendLinkUserSchema = z.object({
+const FriendLinkUserSchema = z.object({
   id: z.string(),
   name: z.string(),
   image: z.string().nullable(),
 });
 
-export const FriendLinkWithUserSchema = FriendLinkSelectSchema.extend({
+const FriendLinkWithUserSchema = FriendLinkSelectSchema.extend({
   user: FriendLinkUserSchema.nullable(),
 });
 
@@ -155,7 +155,7 @@ export const ApprovedFriendLinksResponseSchema = z.array(
   FriendLinkWithUserSchema,
 );
 
-export const FriendLinkStatusCountsSchema = z.object({
+const FriendLinkStatusCountsSchema = z.object({
   pending: z.number().int().nonnegative(),
   approved: z.number().int().nonnegative(),
   rejected: z.number().int().nonnegative(),

@@ -7,7 +7,7 @@ export const SearchQuerySchema = z.object({
   v: z.string(),
 });
 
-export const UpsertSearchDocSchema = z.object({
+const UpsertSearchDocSchema = z.object({
   id: z.number(),
   slug: z.string().min(1),
   title: z.string().min(1),
@@ -17,7 +17,7 @@ export const UpsertSearchDocSchema = z.object({
   category: z.string().nullable().optional(),
 });
 
-export const DeleteSearchDocSchema = z.object({
+const DeleteSearchDocSchema = z.object({
   id: z.number(),
 });
 

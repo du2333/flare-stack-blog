@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
 import { SOCIAL_PLATFORM_KEYS } from "./utils/social-platforms";
 
-export const SocialLinkSchema = z.object({
+const SocialLinkSchema = z.object({
   platform: z.enum(SOCIAL_PLATFORM_KEYS),
   url: z.string(),
   icon: z.string().optional(),
@@ -131,8 +131,8 @@ function createFuwariThemeSiteConfigInputFormSchema(messages: Messages) {
   });
 }
 
-export const fuwariThemeSiteConfigSchema = createFuwariThemeSiteConfigSchema();
-export const fuwariThemeSiteConfigInputSchema =
+const fuwariThemeSiteConfigSchema = createFuwariThemeSiteConfigSchema();
+const fuwariThemeSiteConfigInputSchema =
   createFuwariThemeSiteConfigInputSchema();
 
 export const FullSiteConfigSchema = z.object({
@@ -201,9 +201,5 @@ export const SiteConfigInputSchema = z.object({
 
 export const SiteConfigSchema = SiteConfigInputSchema;
 
-export type FuwariThemeSiteConfig = z.infer<typeof fuwariThemeSiteConfigSchema>;
-export type FuwariThemeSiteConfigInput = z.infer<
-  typeof fuwariThemeSiteConfigInputSchema
->;
 export type SiteConfig = z.infer<typeof FullSiteConfigSchema>;
 export type SiteConfigInput = z.infer<typeof SiteConfigInputSchema>;

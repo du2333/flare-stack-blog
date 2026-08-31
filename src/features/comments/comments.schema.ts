@@ -18,7 +18,7 @@ export const CommentInsertSchema = createInsertSchema(CommentsTable);
 export const CommentUpdateSchema = createUpdateSchema(CommentsTable);
 
 // User info schema for joined queries
-export const CommentUserSchema = z.object({
+const CommentUserSchema = z.object({
   id: z.string().nullable(),
   name: z.string().nullable(),
   image: z.string().nullable(),
@@ -26,7 +26,7 @@ export const CommentUserSchema = z.object({
   mutedAt: coercedDate.nullable(),
 });
 
-export const CommentWithUserSchema = CommentSelectSchema.extend({
+const CommentWithUserSchema = CommentSelectSchema.extend({
   user: CommentUserSchema.nullable(),
   post: z
     .object({
@@ -58,7 +58,7 @@ export const GetRepliesByRootIdInputSchema = z.object({
   limit: z.number().optional(),
 });
 
-export const ReplyWithUserAndReplyToSchema = CommentWithUserSchema.extend({
+const ReplyWithUserAndReplyToSchema = CommentWithUserSchema.extend({
   replyTo: z
     .object({
       id: z.string().nullable(),
@@ -84,7 +84,7 @@ export const GetRootCommentsResponseSchema = z.object({
 });
 
 // Authed User API Schemas
-export const CommentBodySchema = z.string().trim().min(1);
+const CommentBodySchema = z.string().trim().min(1);
 
 export const CreateCommentInputSchema = z.object({
   postId: z.number(),

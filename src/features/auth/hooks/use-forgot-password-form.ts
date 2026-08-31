@@ -17,7 +17,7 @@ type ForgotPasswordSchema = z.infer<
   ReturnType<typeof createForgotPasswordSchema>
 >;
 
-export interface UseForgotPasswordFormOptions {
+interface UseForgotPasswordFormOptions {
   turnstileToken: string | null;
   turnstilePending: boolean;
   resetTurnstile: () => void;
@@ -71,7 +71,3 @@ export function useForgotPasswordForm(options: UseForgotPasswordFormOptions) {
     turnstilePending,
   };
 }
-
-export type UseForgotPasswordFormReturn = ReturnType<
-  typeof useForgotPasswordForm
->;

@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { z } from "zod";
 
-export const JsonValueSchema: z.ZodType<
+const JsonValueSchema: z.ZodType<
   string | number | boolean | null | Array<unknown> | Record<string, unknown>
 > = z.lazy(() =>
   z.union([
@@ -14,16 +14,16 @@ export const JsonValueSchema: z.ZodType<
   ]),
 );
 
-export const JsonAttrsSchema = z.record(z.string(), JsonValueSchema);
+const JsonAttrsSchema = z.record(z.string(), JsonValueSchema);
 
-export const JsonMarkSchema = z
+const JsonMarkSchema = z
   .object({
     type: z.string(),
     attrs: JsonAttrsSchema.optional(),
   })
   .catchall(JsonValueSchema);
 
-export const JsonContentSchema: z.ZodType<JSONContent> = z.lazy(() =>
+const JsonContentSchema: z.ZodType<JSONContent> = z.lazy(() =>
   z
     .object({
       type: z.string().optional(),

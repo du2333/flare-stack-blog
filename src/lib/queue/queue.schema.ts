@@ -2,7 +2,7 @@ import { z } from "zod";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
 
-export const emailMessageSchema = z.object({
+const emailMessageSchema = z.object({
   type: z.literal("EMAIL"),
   data: z.object({
     to: z.string(),
@@ -19,7 +19,7 @@ export const emailMessageSchema = z.object({
   }),
 });
 
-export const webhookMessageSchema = z.object({
+const webhookMessageSchema = z.object({
   type: z.literal("WEBHOOK"),
   data: z.object({
     url: z.url(),

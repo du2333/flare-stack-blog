@@ -23,7 +23,7 @@ const createProfileSchema = (messages: Messages) =>
 
 type ProfileSchema = z.infer<ReturnType<typeof createProfileSchema>>;
 
-export interface UseProfileFormOptions {
+interface UseProfileFormOptions {
   user: { name: string; image?: string | null } | undefined;
 }
 
@@ -66,5 +66,3 @@ export function useProfileForm(options: UseProfileFormOptions) {
     isSubmitting,
   };
 }
-
-export type UseProfileFormReturn = ReturnType<typeof useProfileForm>;

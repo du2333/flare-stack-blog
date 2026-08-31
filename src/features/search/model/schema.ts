@@ -3,7 +3,7 @@ import { create } from "@orama/orama";
 
 const segmenter = new Intl.Segmenter("zh-CN", { granularity: "word" });
 
-export const chineseTokenizerConfig: Tokenizer = {
+const chineseTokenizerConfig: Tokenizer = {
   language: "chinese",
   tokenize: (text: string) => {
     return Array.from(segmenter.segment(text))
@@ -13,7 +13,7 @@ export const chineseTokenizerConfig: Tokenizer = {
   normalizationCache: new Map(),
 };
 
-export const searchSchema = {
+const searchSchema = {
   id: "string",
   slug: "string",
   title: "string",

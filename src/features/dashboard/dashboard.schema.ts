@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 
-export const DashboardRecentPostSchema = z.object({
+const DashboardRecentPostSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
   status: z.enum(["draft", "published"]),
@@ -10,14 +10,14 @@ export const DashboardRecentPostSchema = z.object({
   updatedAt: coercedDate,
 });
 
-export const DashboardPendingFriendLinkSchema = z.object({
+const DashboardPendingFriendLinkSchema = z.object({
   id: z.number().int().positive(),
   siteName: z.string(),
   siteUrl: z.string(),
   createdAt: coercedDate,
 });
 
-export const DashboardRecentCommentSchema = z.object({
+const DashboardRecentCommentSchema = z.object({
   id: z.number().int().positive(),
   userName: z.string().nullable(),
   postTitle: z.string(),

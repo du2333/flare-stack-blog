@@ -211,10 +211,3 @@ export function PostManager({
     </div>
   );
 }
-
-export {
-  SORT_FIELDS,
-  STATUS_FILTERS,
-  type SortField,
-  type StatusFilter,
-} from "./types";
