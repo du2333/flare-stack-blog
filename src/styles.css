@@ -346,9 +346,48 @@
   }
 }
 
+@keyframes fuwari-banner-in {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .fuwari-onload-animation {
   opacity: 0;
   animation: 300ms fuwari-fade-in-up ease-out forwards;
+}
+
+.fuwari-banner-image {
+  animation: fuwari-banner-in 700ms ease-out both;
+}
+
+.fuwari-page-fade {
+  overflow: hidden;
+  transition:
+    opacity 200ms,
+    transform 200ms;
+}
+.fuwari-page-fade.is-leaving {
+  opacity: 0;
+  transform: translateY(1rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-onload-animation {
+    animation: none;
+    opacity: 1;
+  }
+  .fuwari-banner-image {
+    animation: none;
+  }
+  .fuwari-page-fade {
+    transition: none;
+  }
 }
 
 .theme-transition::view-transition-old(root),

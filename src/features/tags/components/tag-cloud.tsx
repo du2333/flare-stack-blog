@@ -1,13 +1,14 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { Ellipsis } from "lucide-react";
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { withTagFilter } from "@/features/posts/utils/post-public-search";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { m } from "@/paraglide/messages";
 
-const COLLAPSED_MAX_HEIGHT_PX = 160;
+const COLLAPSED_HEIGHT = "7.5rem";
+const COLLAPSE_THRESHOLD = 20;
 
 export function TagsSkeleton() {
   return (
@@ -24,29 +25,14 @@ export function TagsSkeleton() {
 
 export function Tags() {
   const { data: tags } = useSuspenseQuery(tagsQueryOptions);
-
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showToggle, setShowToggle] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      setShowToggle(el.scrollHeight > COLLAPSED_MAX_HEIGHT_PX);
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [tags]);
+  const [expanded, setExpanded] = useState(false);
 
   if (tags.length === 0) return null;
 
+  const collapsed = tags.length >= COLLAPSE_THRESHOLD && !expanded;
+
   return (
-    <div className="fuwari-card-base pb-4 transition-all duration-300">
+    <div className="fuwari-card-base pb-4">
       <div className="font-bold text-lg fuwari-text-90 relative ml-6 mt-4 mb-2">
         <span
           className="absolute -left-4 top-[5.5px] w-1 h-4 rounded-md"
@@ -54,12 +40,9 @@ export function Tags() {
         />
         {m.tags_title()}
       </div>
-
       <div
-        ref={containerRef}
-        className={`px-4 flex flex-wrap gap-2 overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-          isExpanded ? "max-h-250" : "max-h-40"
-        }`}
+        className="px-4 flex flex-wrap gap-2 overflow-hidden"
+        style={collapsed ? { height: COLLAPSED_HEIGHT } : undefined}
       >
         {tags.map((tag) => (
           <Link
@@ -72,22 +55,17 @@ export function Tags() {
           </Link>
         ))}
       </div>
-
-      {showToggle && (
-        <div className="px-4 pt-2 flex justify-center">
+      {collapsed && (
+        <div className="px-4 -mb-2">
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full py-2 flex items-center justify-center gap-1 text-sm fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="rounded-lg w-full h-9 flex items-center justify-center text-black/75 hover:text-(--fuwari-primary) dark:text-white/75 dark:hover:text-(--fuwari-primary) hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition"
           >
-            {isExpanded ? (
-              <>
-                {m.tags_collapse()} <ChevronUp size={16} />
-              </>
-            ) : (
-              <>
-                {m.tags_expand()} <ChevronDown size={16} />
-              </>
-            )}
+            <span className="text-(--fuwari-primary) flex items-center justify-center gap-2 -translate-x-2">
+              <Ellipsis size={28} />
+              {m.widget_more()}
+            </span>
           </button>
         </div>
       )}

@@ -35,9 +35,12 @@ export function PostPage({ post }: PostPageProps) {
       </div>
 
       {/* Main Post Container */}
-      <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full fuwari-onload-animation">
+      <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
         {/* Word count and reading time */}
-        <div className="flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition">
+        <div
+          className="flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition fuwari-onload-animation"
+          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 0ms)" }}
+        >
           <div className="flex flex-row items-center">
             <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
               <FileText strokeWidth={1.5} size={16} />
@@ -69,7 +72,10 @@ export function PostPage({ post }: PostPageProps) {
         </div>
 
         {/* Title */}
-        <div className="relative">
+        <div
+          className="relative fuwari-onload-animation"
+          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
+        >
           <h1
             className="transition w-full block font-bold mb-3
               text-3xl md:text-[2.25rem]/[2.75rem]
@@ -83,7 +89,12 @@ export function PostPage({ post }: PostPageProps) {
         </div>
 
         {/* Metadata */}
-        <div>
+        <div
+          className="fuwari-onload-animation"
+          style={{
+            animationDelay: "calc(var(--fuwari-content-delay) + 100ms)",
+          }}
+        >
           <PostMeta post={post} className="mb-5" />
           {!post.cover && (
             <div className="border-(--fuwari-meta-divider) border-dashed border-b mb-5" />
@@ -94,6 +105,9 @@ export function PostPage({ post }: PostPageProps) {
           <div
             id="post-cover"
             className="mb-8 rounded-xl overflow-hidden fuwari-onload-animation"
+            style={{
+              animationDelay: "calc(var(--fuwari-content-delay) + 175ms)",
+            }}
           >
             <ZoomableImage
               src={post.cover.url}
@@ -109,17 +123,22 @@ export function PostPage({ post }: PostPageProps) {
         <PostSummary summary={post.summary} />
 
         {/* Markdown Content */}
-        <div className="mb-6 prose dark:prose-invert prose-base max-w-none! fuwari-custom-md">
-          <ContentRenderer content={post.contentJson} />
-        </div>
-
-        {/* End of Content Notice */}
-        <div className="my-8 flex items-center justify-center w-full">
-          <div className="h-px w-full bg-linear-to-r from-transparent via-(--fuwari-meta-divider) to-transparent opacity-20" />
-          <span className="mx-4 text-sm font-mono tracking-widest text-(--fuwari-meta-divider) opacity-50 whitespace-nowrap">
-            END
-          </span>
-          <div className="h-px w-full bg-linear-to-r from-(--fuwari-meta-divider) via-transparent to-transparent opacity-20" />
+        <div
+          className="fuwari-onload-animation"
+          style={{
+            animationDelay: "calc(var(--fuwari-content-delay) + 325ms)",
+          }}
+        >
+          <div className="mb-6 prose dark:prose-invert prose-base max-w-none! fuwari-custom-md">
+            <ContentRenderer content={post.contentJson} />
+          </div>
+          <div className="my-8 flex items-center justify-center w-full">
+            <div className="h-px w-full bg-linear-to-r from-transparent via-(--fuwari-meta-divider) to-transparent opacity-20" />
+            <span className="mx-4 text-sm font-mono tracking-widest text-(--fuwari-meta-divider) opacity-50 whitespace-nowrap">
+              END
+            </span>
+            <div className="h-px w-full bg-linear-to-r from-(--fuwari-meta-divider) via-transparent to-transparent opacity-20" />
+          </div>
         </div>
       </div>
 
@@ -139,7 +158,7 @@ export function PostPage({ post }: PostPageProps) {
       {/* Comments Section */}
       <div
         className="fuwari-card-base p-6 fuwari-onload-animation"
-        style={{ animationDelay: "450ms" }}
+        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 450ms)" }}
       >
         <CommentSection postId={post.id} />
       </div>

@@ -19,7 +19,7 @@ export function RelatedPosts({ slug }: RelatedPostsProps) {
   return (
     <div
       className="fuwari-card-base p-6 fuwari-onload-animation"
-      style={{ animationDelay: "300ms" }}
+      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 300ms)" }}
     >
       <h2 className="text-xl font-bold mb-4 fuwari-text-90">
         {m.post_fuwari_related_posts()}

@@ -108,7 +108,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             </div>
           ) : null}
           {tagNames.length > 0 && (
-            <div className="flex items-center">
+            <div className="hidden md:flex items-center">
               <div className="fuwari-meta-icon">
                 <Tag size={20} strokeWidth={1.5} />
               </div>

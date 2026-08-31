@@ -58,7 +58,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
           <Link
             to="/posts"
             search={withCategoryFilter(post.category?.name)}
-            className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+            className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
           >
             {post.category.name}
           </Link>
@@ -66,7 +66,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
           <Link
             to="/posts"
             search={withUncategorizedFilter()}
-            className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+            className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
           >
             {m.post_uncategorized()}
           </Link>
@@ -89,7 +89,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
                 <Link
                   to="/posts"
                   search={withTagFilter(tag.name)}
-                  className="transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+                  className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
                 >
                   {tag.name}
                 </Link>

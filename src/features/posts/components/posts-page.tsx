@@ -43,7 +43,10 @@ export function PostsPage({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="fuwari-onload-animation flex flex-col gap-4">
+    <div
+      className="fuwari-onload-animation flex flex-col gap-4"
+      style={{ animationDelay: "var(--fuwari-content-delay)" }}
+    >
       {posts.length > 0 && <ArchivePanel posts={posts} />}
 
       {/* Infinite Scroll trigger and loading indicator */}

@@ -5,6 +5,7 @@ import { BackToTop } from "./back-to-top";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
+import { PageFade } from "./page-fade";
 import { Sidebar } from "./sidebar";
 
 const BANNER_HEIGHT_HOME = 65;
@@ -50,20 +51,20 @@ export function PublicLayout({
 
       {/* Banner - full width background */}
       <div
-        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out"
+        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-700"
         style={{ height: `${bannerHeightVh}vh` }}
       >
         <img
           src={siteConfig.theme.fuwari.homeBg}
           alt="banner"
           fetchPriority="high"
-          className="w-full h-full object-cover object-center"
+          className="fuwari-banner-image w-full h-full object-cover object-center"
         />
       </div>
 
       {/* Main content - overlaps banner by MAIN_OVERLAP_REM */}
       <div
-        className="relative z-30 transition-[margin-top] duration-300 ease-in-out"
+        className="relative z-30 transition-[margin-top] duration-700"
         style={{
           marginTop: `calc(${bannerHeightVh}vh - ${MAIN_OVERLAP_REM}rem - ${NAVBAR_HEIGHT_REM}rem)`,
         }}
@@ -76,8 +77,8 @@ export function PublicLayout({
           <Sidebar className="order-2 lg:order-1" />
 
           {/* Main Content Column */}
-          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0">
-            {children}
+          <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0 overflow-hidden">
+            <PageFade>{children}</PageFade>
           </main>
 
           {/* Footer Column (Desktop: below main, Mobile: below sidebar) */}
