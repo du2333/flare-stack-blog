@@ -34,7 +34,7 @@ function TagManagerRoute() {
     <div className="space-y-4">
       <h1
         className="hidden lg:block text-2xl font-medium fuwari-text-90 px-1 fuwari-onload-animation"
-        style={{ animationDelay: "50ms" }}
+        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
       >
         {m.taxonomy_manager_title()}
       </h1>

@@ -5,12 +5,13 @@ import {
   useMatches,
 } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   AdminChromeProvider,
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
 import { SideBar } from "@/components/admin/side-bar";
+import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { sessionQuery } from "@/features/auth/queries";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
@@ -70,15 +71,31 @@ function AdminLayout() {
 
         <main className="flex-1 flex flex-col min-w-0 min-h-0">
           <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-            <div className="max-w-7xl mx-auto">
-              <Outlet />
-            </div>
-          </div>
+          <AdminMain />
         </main>
         <Toaster />
       </div>
     </AdminChromeProvider>
+  );
+}
+
+function AdminMain() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      ref={scrollerRef}
+      className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"
+    >
+      <div className="max-w-7xl mx-auto">
+        <PageFade
+          includeSearch={false}
+          onEntered={() => scrollerRef.current?.scrollTo(0, 0)}
+        >
+          <Outlet />
+        </PageFade>
+      </div>
+    </div>
   );
 }
 

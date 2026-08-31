@@ -1,6 +1,9 @@
 export function MediaLibraryPageSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
+    <div
+      className="space-y-4 animate-pulse fuwari-onload-animation"
+      style={{ animationDelay: "var(--fuwari-content-delay)" }}
+    >
       <div className="hidden lg:flex justify-between items-center px-1">
         <div className="h-8 w-24 rounded-lg bg-(--fuwari-btn-regular-bg)" />
         <div className="h-10 w-20 rounded-xl bg-(--fuwari-btn-regular-bg)" />

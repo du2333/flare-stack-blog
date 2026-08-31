@@ -63,7 +63,7 @@ export function DashboardPage() {
     <div className="space-y-4">
       <div
         className="hidden lg:flex justify-between items-center px-1 fuwari-onload-animation"
-        style={{ animationDelay: "50ms" }}
+        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
       >
         <h1 className="text-2xl font-medium fuwari-text-90">
           {m.admin_overview_title()}
@@ -87,7 +87,7 @@ export function DashboardPage() {
 
       <section
         className="fuwari-card-base p-5 md:p-6 space-y-3 fuwari-onload-animation"
-        style={{ animationDelay: "100ms" }}
+        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
       >
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-sm font-medium fuwari-text-50">
@@ -146,7 +146,7 @@ export function DashboardPage() {
       {showFriendLinks || showComments ? (
         <div
           className="grid grid-cols-1 lg:grid-cols-2 gap-4 fuwari-onload-animation"
-          style={{ animationDelay: "150ms" }}
+          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 150ms)" }}
         >
           {showFriendLinks ? (
             <section
@@ -275,7 +275,7 @@ function AttentionChips({
   return (
     <div
       className="flex flex-wrap gap-2 px-1 fuwari-onload-animation"
-      style={{ animationDelay: "80ms" }}
+      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 80ms)" }}
     >
       {pendingTotal > 0 ? (
         <Link

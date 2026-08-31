@@ -1,6 +1,9 @@
 export function TaxonomySkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
+    <div
+      className="space-y-4 animate-pulse fuwari-onload-animation"
+      style={{ animationDelay: "var(--fuwari-content-delay)" }}
+    >
       <div className="hidden lg:block h-8 w-36 rounded-lg bg-(--fuwari-btn-regular-bg) mx-1" />
       <div className="grid gap-4 lg:grid-cols-2 items-start">
         <CategoryPanelSkeleton />

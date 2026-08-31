@@ -4,14 +4,26 @@ import { cn } from "@/lib/utils";
 
 const PAGE_FADE_MS = 200;
 
-export function PageFade({ children }: { children: React.ReactNode }) {
+export function PageFade({
+  children,
+  includeSearch = true,
+  onEntered,
+}: {
+  children: React.ReactNode;
+  includeSearch?: boolean;
+  onEntered?: () => void;
+}) {
   const location = useLocation();
-  const pageKey = `${location.pathname}?${JSON.stringify(location.search)}`;
+  const pageKey = includeSearch
+    ? `${location.pathname}?${JSON.stringify(location.search)}`
+    : location.pathname;
   const [renderedKey, setRenderedKey] = useState(pageKey);
   const [leaving, setLeaving] = useState(false);
   const cacheRef = useRef({ key: pageKey, node: children });
   const latestRef = useRef(children);
+  const onEnteredRef = useRef(onEntered);
   latestRef.current = children;
+  onEnteredRef.current = onEntered;
 
   const stale = pageKey !== renderedKey || leaving;
   if (!stale) {
@@ -31,6 +43,7 @@ export function PageFade({ children }: { children: React.ReactNode }) {
         "--fuwari-content-delay",
         "0ms",
       );
+      onEnteredRef.current?.();
       return;
     }
 
@@ -40,6 +53,7 @@ export function PageFade({ children }: { children: React.ReactNode }) {
       cacheRef.current = { key: pageKey, node: latestRef.current };
       setRenderedKey(pageKey);
       setLeaving(false);
+      onEnteredRef.current?.();
     }, PAGE_FADE_MS);
     return () => window.clearTimeout(t);
   }, [pageKey, renderedKey]);
