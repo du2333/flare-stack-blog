@@ -3,7 +3,7 @@
 @import "katex/dist/katex.min.css";
 @import "@fontsource-variable/noto-sans-sc";
 @import "@fontsource-variable/noto-serif-sc";
-@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
 @plugin "@tailwindcss/typography";
 @source not "../dist/**/*";
 
@@ -636,42 +636,6 @@
   @apply text-white/30;
 }
 
-.admin-layout [data-admin-legacy] {
-  font-size: 15px;
-}
-.admin-layout [data-admin-legacy] :is(.text-\[9px\], .text-\[10px\], .text-xs) {
-  font-size: 13px !important;
-  line-height: 1.4 !important;
-}
-.admin-layout [data-admin-legacy] .text-sm {
-  font-size: 14.5px !important;
-  line-height: 1.5 !important;
-}
-.admin-layout [data-admin-legacy] .text-base {
-  font-size: 16px !important;
-}
-.admin-layout [data-admin-legacy] .stat-card .text-2xl {
-  font-size: 1.75rem !important;
-}
-.admin-layout [data-admin-legacy] .tabs-trigger {
-  font-size: 12px !important;
-  padding-bottom: 0.5rem !important;
-}
-.admin-layout [data-admin-legacy] [size="10"],
-.admin-layout [data-admin-legacy] [size="12"],
-.admin-layout [data-admin-legacy] [size="14"] {
-  width: 16px !important;
-  height: 16px !important;
-}
-.admin-layout [data-admin-legacy] .p-6 {
-  padding: 1.75rem !important;
-}
-.admin-layout [data-admin-legacy] .md\:p-12 {
-  padding: 3.5rem !important;
-}
-.admin-layout [data-admin-legacy] .gap-4 {
-  gap: 1.25rem !important;
-}
 .admin-layout .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

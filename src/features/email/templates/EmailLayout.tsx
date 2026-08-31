@@ -53,7 +53,7 @@ export const EmailLayout = ({
             <header style={{ marginBottom: "40px", textAlign: "center" }}>
               <h2
                 style={{
-                  fontFamily: '"Playfair Display", "Georgia", serif',
+                  fontFamily: '"Noto Serif SC", "Songti SC", Georgia, serif',
                   fontSize: "24px",
                   fontWeight: "500",
                   margin: "0",

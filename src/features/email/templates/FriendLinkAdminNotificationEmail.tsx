@@ -29,7 +29,7 @@ export const FriendLinkAdminNotificationEmail = ({
     >
       <h1
         style={{
-          fontFamily: '"Playfair Display", "Georgia", serif',
+          fontFamily: '"Noto Serif SC", "Songti SC", Georgia, serif',
           fontSize: "20px",
           fontWeight: "500",
           color: "#1a1a1a",
