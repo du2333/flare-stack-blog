@@ -1,13 +1,15 @@
 export function TaxonomySkeleton() {
   return (
     <div
-      className="space-y-4 animate-pulse fuwari-onload-animation"
+      className="fuwari-card-base p-5 md:p-6 space-y-6 animate-pulse fuwari-onload-animation"
       style={{ animationDelay: "var(--fuwari-content-delay)" }}
     >
-      <div className="hidden lg:block h-8 w-36 rounded-lg bg-(--fuwari-btn-regular-bg) mx-1" />
-      <div className="grid gap-4 lg:grid-cols-2 items-start">
+      <div className="hidden lg:block h-8 w-36 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+      <div className="grid gap-8 lg:grid-cols-2 items-start">
         <CategoryPanelSkeleton />
-        <TagPanelSkeleton />
+        <div className="lg:border-l lg:border-(--fuwari-input-border) lg:pl-8">
+          <TagPanelSkeleton />
+        </div>
       </div>
     </div>
   );
@@ -15,7 +17,7 @@ export function TaxonomySkeleton() {
 
 export function CategoryPanelSkeleton() {
   return (
-    <section className="fuwari-card-base p-5 md:p-6 space-y-3">
+    <section className="space-y-3">
       <div className="flex items-baseline justify-between gap-3 px-1">
         <div className="h-4 w-12 rounded-lg bg-(--fuwari-btn-regular-bg)" />
         <div className="h-3 w-10 rounded-lg bg-(--fuwari-btn-regular-bg)" />
@@ -37,7 +39,7 @@ export function CategoryPanelSkeleton() {
 
 export function TagPanelSkeleton() {
   return (
-    <section className="fuwari-card-base p-5 md:p-6 space-y-3">
+    <section className="space-y-3">
       <div className="flex items-baseline justify-between gap-3 px-1">
         <div className="h-4 w-12 rounded-lg bg-(--fuwari-btn-regular-bg)" />
         <div className="h-3 w-16 rounded-lg bg-(--fuwari-btn-regular-bg)" />

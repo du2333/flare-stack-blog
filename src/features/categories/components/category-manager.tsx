@@ -150,10 +150,7 @@ export function CategoryManager() {
   }
 
   return (
-    <section
-      className="fuwari-card-base p-5 md:p-6 space-y-3 fuwari-onload-animation"
-      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
-    >
+    <section className="space-y-3">
       <div className="flex items-baseline justify-between gap-3 px-1">
         <h2 className="text-sm font-medium fuwari-text-50">
           {m.category_manager_title()}

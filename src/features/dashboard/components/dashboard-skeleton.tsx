@@ -1,18 +1,18 @@
 export function DashboardSkeleton() {
   return (
     <div
-      className="space-y-4 animate-pulse fuwari-onload-animation"
+      className="fuwari-card-base p-5 md:p-6 space-y-6 animate-pulse fuwari-onload-animation"
       style={{ animationDelay: "var(--fuwari-content-delay)" }}
     >
-      <div className="hidden lg:flex justify-between items-center px-1">
+      <div className="hidden lg:flex justify-between items-center">
         <div className="h-8 w-20 rounded-lg bg-(--fuwari-btn-regular-bg)" />
         <div className="h-10 w-24 rounded-xl bg-(--fuwari-btn-regular-bg)" />
       </div>
-      <div className="flex gap-2 px-1">
+      <div className="flex gap-2">
         <div className="h-9 w-28 rounded-full bg-(--fuwari-btn-regular-bg)" />
         <div className="h-9 w-36 rounded-full bg-(--fuwari-btn-regular-bg)" />
       </div>
-      <div className="fuwari-card-base p-5 md:p-6 space-y-3">
+      <div className="space-y-3">
         <div className="h-4 w-16 rounded-lg bg-(--fuwari-btn-regular-bg)" />
         {Array.from({ length: 4 }).map((_, i) => (
           <div
@@ -24,9 +24,9 @@ export function DashboardSkeleton() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-(--fuwari-input-border)">
         {Array.from({ length: 2 }).map((_, column) => (
-          <div key={column} className="fuwari-card-base p-5 md:p-6 space-y-3">
+          <div key={column} className="space-y-3">
             <div className="h-4 w-20 rounded-lg bg-(--fuwari-btn-regular-bg)" />
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="px-3 py-3 space-y-2">

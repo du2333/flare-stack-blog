@@ -60,11 +60,11 @@ export function DashboardPage() {
   }, [createLabel, createPost, isCreating, setPrimaryAction]);
 
   return (
-    <div className="space-y-4">
-      <div
-        className="hidden lg:flex justify-between items-center px-1 fuwari-onload-animation"
-        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
-      >
+    <div
+      className="fuwari-card-base p-5 md:p-6 space-y-6 fuwari-onload-animation"
+      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
+    >
+      <div className="hidden lg:flex justify-between items-center">
         <h1 className="text-2xl font-medium fuwari-text-90">
           {m.admin_overview_title()}
         </h1>
@@ -85,10 +85,7 @@ export function DashboardPage() {
         defaultSiteIdentity={defaultSiteIdentity}
       />
 
-      <section
-        className="fuwari-card-base p-5 md:p-6 space-y-3 fuwari-onload-animation"
-        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
-      >
+      <section className="space-y-3">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-sm font-medium fuwari-text-50">
             {m.admin_overview_continue_writing()}
@@ -144,16 +141,10 @@ export function DashboardPage() {
       </section>
 
       {showFriendLinks || showComments ? (
-        <div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 fuwari-onload-animation"
-          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 150ms)" }}
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-(--fuwari-input-border)">
           {showFriendLinks ? (
             <section
-              className={cn(
-                "fuwari-card-base p-5 md:p-6 space-y-3",
-                !showComments && "lg:col-span-2",
-              )}
+              className={cn("space-y-3", !showComments && "lg:col-span-2")}
             >
               <div className="flex items-baseline justify-between gap-3">
                 <h2 className="text-sm font-medium fuwari-text-50">
@@ -209,8 +200,10 @@ export function DashboardPage() {
           {showComments ? (
             <section
               className={cn(
-                "fuwari-card-base p-5 md:p-6 space-y-3",
+                "space-y-3",
                 !showFriendLinks && "lg:col-span-2",
+                showFriendLinks &&
+                  "lg:border-l lg:border-(--fuwari-input-border) lg:pl-8",
               )}
             >
               <h2 className="text-sm font-medium fuwari-text-50">
@@ -273,10 +266,7 @@ function AttentionChips({
   }
 
   return (
-    <div
-      className="flex flex-wrap gap-2 px-1 fuwari-onload-animation"
-      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 80ms)" }}
-    >
+    <div className="flex flex-wrap gap-2">
       {pendingTotal > 0 ? (
         <Link
           to="/admin/friend-links"

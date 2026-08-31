@@ -73,49 +73,44 @@ export function MediaLibrary() {
   const isDefaultEmpty = isEmpty && !unusedOnly;
 
   return (
-    <div
-      className="space-y-4"
-      onDragEnter={(event) => {
-        event.preventDefault();
-        dragDepth.current += 1;
-        setDragging(true);
-      }}
-      onDragOver={(event) => event.preventDefault()}
-      onDragLeave={(event) => {
-        event.preventDefault();
-        dragDepth.current = Math.max(0, dragDepth.current - 1);
-        if (dragDepth.current === 0) setDragging(false);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        dragDepth.current = 0;
-        setDragging(false);
-        if (event.dataTransfer.files.length > 0) {
-          handleFiles(event.dataTransfer.files);
-        }
-      }}
-    >
-      <div
-        className="hidden lg:flex justify-between items-center px-1 fuwari-onload-animation"
-        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
-      >
-        <h1 className="text-2xl font-medium fuwari-text-90">
-          {m.media_title()}
-        </h1>
-        <button
-          type="button"
-          disabled={isUploading}
-          onClick={openFilePicker}
-          className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
-        >
-          {m.media_upload()}
-        </button>
-      </div>
-
+    <div>
       <div
         className="fuwari-card-base p-5 md:p-6 space-y-6 relative fuwari-onload-animation"
         style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
+        onDragEnter={(event) => {
+          event.preventDefault();
+          dragDepth.current += 1;
+          setDragging(true);
+        }}
+        onDragOver={(event) => event.preventDefault()}
+        onDragLeave={(event) => {
+          event.preventDefault();
+          dragDepth.current = Math.max(0, dragDepth.current - 1);
+          if (dragDepth.current === 0) setDragging(false);
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          dragDepth.current = 0;
+          setDragging(false);
+          if (event.dataTransfer.files.length > 0) {
+            handleFiles(event.dataTransfer.files);
+          }
+        }}
       >
+        <div className="hidden lg:flex justify-between items-center">
+          <h1 className="text-2xl font-medium fuwari-text-90">
+            {m.media_title()}
+          </h1>
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={openFilePicker}
+            className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
+          >
+            {m.media_upload()}
+          </button>
+        </div>
+
         {dragging ? (
           <div className="absolute inset-0 z-10 rounded-[inherit] border-2 border-dashed border-(--fuwari-primary) bg-(--fuwari-page-bg)/80 grid place-items-center text-sm font-medium text-(--fuwari-primary)">
             {m.media_drop()}
