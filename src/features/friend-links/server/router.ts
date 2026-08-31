@@ -1,4 +1,5 @@
 import {
+  AdminFriendLinkListResponseSchema,
   ApproveFriendLinkInputSchema,
   CreateFriendLinkInputSchema,
   DeleteFriendLinkInputSchema,
@@ -73,6 +74,7 @@ const adminList = adminProcedure
     tags: ["Admin Friend Links"],
   })
   .input(GetAllFriendLinksInputSchema)
+  .output(AdminFriendLinkListResponseSchema)
   .handler(({ context, input }) =>
     FriendLinkService.getAllFriendLinks(context, input),
   );

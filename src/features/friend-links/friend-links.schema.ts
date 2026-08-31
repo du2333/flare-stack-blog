@@ -155,6 +155,18 @@ export const ApprovedFriendLinksResponseSchema = z.array(
   FriendLinkWithUserSchema,
 );
 
+export const FriendLinkStatusCountsSchema = z.object({
+  pending: z.number().int().nonnegative(),
+  approved: z.number().int().nonnegative(),
+  rejected: z.number().int().nonnegative(),
+});
+
+export const AdminFriendLinkListResponseSchema = z.object({
+  items: z.array(FriendLinkWithUserSchema),
+  total: z.number().int().nonnegative(),
+  counts: FriendLinkStatusCountsSchema,
+});
+
 // === Types ===
 export type SubmitFriendLinkInput = z.infer<typeof SubmitFriendLinkInputSchema>;
 export type CreateFriendLinkInput = z.infer<typeof CreateFriendLinkInputSchema>;
@@ -168,3 +180,6 @@ export type RejectFriendLinkInput = z.infer<typeof RejectFriendLinkInputSchema>;
 export type UpdateFriendLinkInput = z.infer<typeof UpdateFriendLinkInputSchema>;
 export type DeleteFriendLinkInput = z.infer<typeof DeleteFriendLinkInputSchema>;
 export type FriendLinkWithUser = z.infer<typeof FriendLinkWithUserSchema>;
+export type FriendLinkStatusCounts = z.infer<
+  typeof FriendLinkStatusCountsSchema
+>;

@@ -81,6 +81,28 @@ export async function getAllFriendLinksCount(
   return result[0].count;
 }
 
+export async function getFriendLinkStatusCounts(db: DB) {
+  const rows = await db
+    .select({
+      status: FriendLinksTable.status,
+      count: count(),
+    })
+    .from(FriendLinksTable)
+    .groupBy(FriendLinksTable.status);
+
+  const counts = {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  };
+
+  for (const row of rows) {
+    counts[row.status] = row.count;
+  }
+
+  return counts;
+}
+
 export async function getFriendLinksByUserId(db: DB, userId: string) {
   return await db
     .select()

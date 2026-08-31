@@ -430,6 +430,29 @@ describe("FriendLinkService", () => {
       expect(approved).toHaveLength(25);
     });
 
+    it("should include status counts on the admin list", async () => {
+      await FriendLinkService.createFriendLink(adminContext, {
+        siteName: "Approved",
+        siteUrl: "https://approved-count.com",
+      });
+      await FriendLinkService.submitFriendLink(userContext, {
+        siteName: "Pending",
+        siteUrl: "https://pending-count.com",
+        contactEmail: "pending-count@test.com",
+      });
+
+      const list = await FriendLinkService.getAllFriendLinks(adminContext, {
+        status: "pending",
+      });
+
+      expect(list.total).toBe(1);
+      expect(list.counts).toEqual({
+        pending: 1,
+        approved: 1,
+        rejected: 0,
+      });
+    });
+
     it("should get all friend links with status filter", async () => {
       // Setup test data
       await FriendLinkService.createFriendLink(adminContext, {
