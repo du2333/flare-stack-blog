@@ -67,6 +67,7 @@
     --fuwari-btn-regular-bg-active: oklch(0.85 0.08 var(--fuwari-hue));
     --fuwari-btn-plain-bg-hover: oklch(0.95 0.025 var(--fuwari-hue));
     --fuwari-btn-plain-bg-active: oklch(0.98 0.01 var(--fuwari-hue));
+    --fuwari-deep-text: oklch(0.25 0.02 var(--fuwari-hue));
     --fuwari-enter-btn-bg: var(--fuwari-btn-regular-bg);
     --fuwari-enter-btn-bg-hover: var(--fuwari-btn-regular-bg-hover);
     --fuwari-enter-btn-bg-active: var(--fuwari-btn-regular-bg-active);

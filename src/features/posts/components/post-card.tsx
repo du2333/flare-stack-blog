@@ -100,7 +100,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
               </div>
               <Link
                 to="/posts"
-                search={(prev) => withCategoryFilter(prev, post.category?.name)}
+                search={withCategoryFilter(post.category?.name)}
                 className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
               >
                 {post.category.name}
@@ -122,7 +122,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
                     )}
                     <Link
                       to="/posts"
-                      search={(prev) => withTagFilter(prev, name)}
+                      search={withTagFilter(name)}
                       className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
                     >
                       {name}

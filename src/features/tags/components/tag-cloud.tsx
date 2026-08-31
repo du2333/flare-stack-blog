@@ -65,13 +65,10 @@ export function Tags() {
           <Link
             key={tag.id}
             to="/posts"
-            search={(prev) => withTagFilter(prev, tag.name)}
-            className="fuwari-btn-regular h-8 text-sm px-3 rounded-lg flex items-center gap-2"
+            search={withTagFilter(tag.name)}
+            className="fuwari-btn-regular h-8 text-sm px-3 rounded-lg"
           >
-            <span>{tag.name}</span>
-            <span className="bg-black/5 dark:bg-white/10 rounded-md px-1.5 py-0.5 text-xs opacity-70">
-              {tag.postCount}
-            </span>
+            {tag.name}
           </Link>
         ))}
       </div>

@@ -100,7 +100,7 @@ function RouteComponent() {
 
   const handleTagClick = (clickedTag?: string) => {
     navigate({
-      search: withTagFilter(search, clickedTag),
+      search: withTagFilter(clickedTag),
       replace: true,
     });
   };
