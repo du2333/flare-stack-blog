@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
 import {
   ArrowUpRight,
+  Ban,
   FileText,
   Home,
   Image as ImageIcon,
@@ -11,7 +12,6 @@ import {
   Settings,
   Tag,
   User,
-  VolumeX,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -110,7 +110,7 @@ export function SideBar({
     },
     {
       path: "/admin/muted-users",
-      icon: VolumeX,
+      icon: Ban,
       label: m.admin_sidebar_muted_users(),
       exact: false,
     },

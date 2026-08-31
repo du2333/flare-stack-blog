@@ -1,9 +1,8 @@
-import { Copy, Loader2, Trash2 } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SETTINGS_FIELD_CLASS } from "@/features/config/components/admin/settings-pages";
 import { useApiKeys } from "@/features/api-keys/hooks/use-api-keys";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -33,111 +32,89 @@ export function ApiKeySettingsSection() {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        {m.settings_api_keys_doc()}
-      </p>
-
+    <div className="space-y-4">
       {revealedKey ? (
-        <div className="space-y-4 border border-border/30 p-8 bg-background/50">
-          <h5 className="text-sm font-medium text-foreground">
+        <div className="rounded-2xl bg-(--fuwari-success-bg) p-4 space-y-2">
+          <p className="text-sm font-medium text-(--fuwari-success-fg)">
             {m.settings_api_keys_created_title()}
-          </h5>
-          <p className="text-sm text-muted-foreground">
+          </p>
+          <p className="text-xs text-(--fuwari-success-fg)">
             {m.settings_api_keys_created_hint()}
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <code className="min-w-0 flex-1 break-all font-mono text-xs text-foreground">
-              {revealedKey}
-            </code>
-            <Button
+          <code className="block text-xs break-all fuwari-text-90">
+            {revealedKey}
+          </code>
+          <div className="flex gap-2">
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-none font-mono text-[10px] uppercase tracking-widest"
-              onClick={() => handleCopy(revealedKey)}
+              onClick={() => void handleCopy(revealedKey)}
+              className="fuwari-btn-regular rounded-xl h-8 px-3 text-sm font-medium gap-1.5"
             >
-              <Copy size={12} className="mr-2" />
+              <Copy size={12} />
               {m.settings_api_keys_copy()}
-            </Button>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRevealedKey(null)}
+              className="h-8 px-3 text-sm fuwari-text-50"
+            >
+              {m.settings_api_keys_dismiss()}
+            </button>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="rounded-none px-0 font-mono text-[10px] uppercase tracking-widest"
-            onClick={() => setRevealedKey(null)}
-          >
-            {m.settings_api_keys_dismiss()}
-          </Button>
         </div>
       ) : null}
 
-      <div className="space-y-6 border border-border/30 p-8 bg-background/50">
-        <h5 className="text-sm font-medium text-foreground">
-          {m.settings_api_keys_create_title()}
-        </h5>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1 space-y-3">
-            <label className="text-sm text-muted-foreground">
-              {m.settings_api_keys_name_label()}
-            </label>
-            <Input
-              value={name}
-              maxLength={32}
-              placeholder={m.settings_api_keys_name_ph()}
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  void handleCreate();
-                }
-              }}
-            />
-          </div>
-          <Button
-            type="button"
-            disabled={!trimmedName || isCreating}
-            className="h-11 rounded-none px-8 font-mono text-[11px] uppercase tracking-[0.2em]"
-            onClick={() => void handleCreate()}
-          >
-            {isCreating ? (
-              <Loader2 size={14} className="mr-3 animate-spin" />
-            ) : null}
-            {isCreating
-              ? m.settings_api_keys_creating()
-              : m.settings_api_keys_create()}
-          </Button>
-        </div>
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+        <label className="grid gap-1.5 text-sm fuwari-text-50 flex-1 min-w-0">
+          {m.settings_api_keys_name_label()}
+          <input
+            value={name}
+            maxLength={32}
+            placeholder={m.settings_api_keys_name_ph()}
+            onChange={(event) => setName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleCreate();
+              }
+            }}
+            className={SETTINGS_FIELD_CLASS}
+          />
+        </label>
+        <button
+          type="button"
+          disabled={!trimmedName || isCreating}
+          onClick={() => void handleCreate()}
+          className="fuwari-btn-primary rounded-xl h-10 px-4 text-sm font-medium disabled:opacity-50 inline-flex items-center gap-2"
+        >
+          {isCreating ? <Loader2 size={14} className="animate-spin" /> : null}
+          {isCreating
+            ? m.settings_api_keys_creating()
+            : m.settings_api_keys_create()}
+        </button>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground font-mono">
+        <p className="py-10 text-center text-sm fuwari-text-50">
           {m.settings_api_keys_loading()}
         </p>
       ) : keys.length === 0 ? (
-        <div className="py-12 text-center space-y-2">
-          <p className="text-sm text-foreground">
-            {m.settings_api_keys_empty()}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {m.settings_api_keys_empty_hint()}
-          </p>
-        </div>
+        <p className="py-10 text-center text-sm fuwari-text-50">
+          {m.settings_api_keys_empty()}
+        </p>
       ) : (
-        <ul className="divide-y divide-border/30 border border-border/30">
+        <div>
           {keys.map((item) => (
-            <li
+            <div
               key={item.id}
-              className="flex items-center gap-4 px-4 py-4 md:px-6"
+              className="flex items-center gap-3 py-3.5 border-b border-(--fuwari-input-border) last:border-0"
             >
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">
+                <p className="text-sm font-medium fuwari-text-90 truncate">
                   {item.name || m.settings_api_keys_unnamed()}
                 </p>
-                <p className="text-[11px] font-mono text-muted-foreground">
-                  {item.start ? `${item.start}…` : null}
-                  {item.start ? " · " : null}
+                <p className="text-xs fuwari-text-50">
+                  {item.start ? `${item.start}… · ` : null}
                   {m.settings_api_keys_created_at({
                     date: formatDate(item.createdAt, { includeTime: true }),
                   })}
@@ -151,14 +128,13 @@ export function ApiKeySettingsSection() {
                     name: item.name || m.settings_api_keys_unnamed(),
                   })
                 }
-                className="h-8 px-3 text-[10px] font-mono uppercase tracking-widest border border-border/30 text-muted-foreground hover:text-foreground hover:border-foreground transition-colors inline-flex items-center gap-2"
+                className="h-8 px-3 text-sm fuwari-text-50 hover:text-(--fuwari-danger-fg)"
               >
-                <Trash2 size={12} />
                 {m.settings_api_keys_delete()}
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
       <ConfirmationModal

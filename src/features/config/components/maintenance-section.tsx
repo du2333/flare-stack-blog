@@ -5,17 +5,11 @@ import { VersionMaintenance } from "@/features/version/components/version-mainte
 
 export function MaintenanceSection() {
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <section className="border border-border/30 bg-background/50 p-8">
-        <VersionMaintenance />
-      </section>
-
+    <div>
+      <VersionMaintenance />
       <PostPopularityMaintenance />
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-        <SearchMaintenance />
-        <CacheMaintenance />
-      </div>
+      <SearchMaintenance />
+      <CacheMaintenance />
     </div>
   );
 }

@@ -8,15 +8,18 @@ export function PageFade({
   children,
   includeSearch = true,
   onEntered,
+  pathKey,
 }: {
   children: React.ReactNode;
   includeSearch?: boolean;
   onEntered?: () => void;
+  pathKey?: (pathname: string) => string;
 }) {
   const location = useLocation();
+  const pathname = pathKey ? pathKey(location.pathname) : location.pathname;
   const pageKey = includeSearch
-    ? `${location.pathname}?${JSON.stringify(location.search)}`
-    : location.pathname;
+    ? `${pathname}?${JSON.stringify(location.search)}`
+    : pathname;
   const [renderedKey, setRenderedKey] = useState(pageKey);
   const [leaving, setLeaving] = useState(false);
   const cacheRef = useRef({ key: pageKey, node: children });

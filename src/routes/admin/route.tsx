@@ -14,6 +14,7 @@ import { SideBar } from "@/components/admin/side-bar";
 import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { sessionQuery } from "@/features/auth/queries";
+import { settingsSectionFromPath } from "@/features/config/components/admin/settings-pages";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
@@ -90,6 +91,9 @@ function AdminMain() {
       <div className="w-full">
         <PageFade
           includeSearch={false}
+          pathKey={(pathname) =>
+            settingsSectionFromPath(pathname) ? "/admin/settings/*" : pathname
+          }
           onEntered={() => scrollerRef.current?.scrollTo(0, 0)}
         >
           <Outlet />

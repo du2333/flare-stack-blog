@@ -281,8 +281,8 @@ function AttentionChips({
       ) : null}
       {adminEmailNeedsSetup ? (
         <Link
-          to="/admin/settings"
-          search={{ tab: "email" }}
+          from="/"
+          to="/admin/settings/notifications"
           className="inline-flex items-center h-9 px-3.5 rounded-full bg-(--fuwari-warning-bg) text-(--fuwari-warning-fg) text-sm font-medium"
         >
           {m.admin_overview_email_needs_setup()}
@@ -290,8 +290,8 @@ function AttentionChips({
       ) : null}
       {popularityAlert === "expired" ? (
         <Link
-          to="/admin/settings"
-          search={{ tab: "maintenance" }}
+          from="/"
+          to="/admin/settings/maintenance"
           className="inline-flex items-center h-9 px-3.5 rounded-full bg-(--fuwari-warning-bg) text-(--fuwari-warning-fg) text-sm font-medium"
         >
           {m.admin_overview_popularity_expired()}
@@ -299,8 +299,8 @@ function AttentionChips({
       ) : null}
       {popularityAlert === "failed" ? (
         <Link
-          to="/admin/settings"
-          search={{ tab: "maintenance" }}
+          from="/"
+          to="/admin/settings/maintenance"
           className="inline-flex items-center h-9 px-3.5 rounded-full bg-(--fuwari-danger-bg) text-(--fuwari-danger-fg) text-sm font-medium"
         >
           {m.admin_overview_popularity_failed()}
@@ -308,8 +308,8 @@ function AttentionChips({
       ) : null}
       {defaultSiteIdentity ? (
         <Link
-          to="/admin/settings"
-          search={{ tab: "site" }}
+          from="/"
+          to="/admin/settings/site"
           className="inline-flex items-center h-9 px-3.5 rounded-full bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) text-sm font-medium"
         >
           {m.admin_overview_default_site_identity()}
