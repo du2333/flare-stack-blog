@@ -87,7 +87,7 @@ function AdminMain() {
       ref={scrollerRef}
       className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <PageFade
           includeSearch={false}
           onEntered={() => scrollerRef.current?.scrollTo(0, 0)}

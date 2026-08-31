@@ -41,6 +41,11 @@
     scroll-behavior: smooth;
   }
 
+  /* Admin workbench: 16px through laptop width, 18px at 1920, 20px from 2560. */
+  html:has(.admin-layout) {
+    font-size: clamp(16px, 0.3125vw + 12px, 20px);
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
