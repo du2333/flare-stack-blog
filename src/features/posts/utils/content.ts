@@ -150,12 +150,3 @@ export function estimateReadTimeMinutes(doc: JSONContent | null): number {
   const englishWords = textWithoutCjk.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(cjkChars / 400 + englishWords / 200));
 }
-
-export function buildContentPreview(
-  doc: JSONContent | null,
-  maxLength = 1500,
-): string {
-  const preview = convertToPlainText(doc).trim();
-  if (!preview) return "";
-  return preview.slice(0, maxLength);
-}

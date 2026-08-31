@@ -77,15 +77,6 @@ export async function findTagById(db: DB, id: number) {
 }
 
 /**
- * Find a tag by name
- */
-export async function findTagByName(db: DB, name: string) {
-  return await db.query.TagsTable.findFirst({
-    where: eq(TagsTable.name, name),
-  });
-}
-
-/**
  * Insert a new tag
  */
 export async function insertTag(db: DB, data: typeof TagsTable.$inferInsert) {
@@ -185,13 +176,6 @@ export async function nameExists(
     .where(and(...conditions))
     .limit(1);
   return results.length > 0;
-}
-
-/**
- * Delete all tag associations for a post.
- */
-export async function deletePostTagAssociations(db: DB, postId: number) {
-  await db.delete(PostTagsTable).where(eq(PostTagsTable.postId, postId));
 }
 
 /**

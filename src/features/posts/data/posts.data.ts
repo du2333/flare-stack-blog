@@ -380,28 +380,6 @@ export async function findPinnedPosts(db: DB) {
   return hydratePublicPosts(db, rows);
 }
 
-export async function findPostsBySlugs(db: DB, slugs: string[]) {
-  if (slugs.length === 0) return [];
-
-  const rows = await db
-    .select({
-      id: PostsTable.id,
-      status: PostsTable.status,
-      createdAt: PostsTable.createdAt,
-      updatedAt: PostsTable.updatedAt,
-      publicSnapshotJson: PostsTable.publicSnapshotJson,
-    })
-    .from(PostsTable)
-    .where(
-      and(
-        isNotNull(PostsTable.publicSnapshotJson),
-        inArray(PostsTable.publicSlug, slugs),
-      ),
-    );
-
-  return hydratePublicPosts(db, rows);
-}
-
 export async function findPostsByIds(db: DB, ids: number[]) {
   if (ids.length === 0) return [];
 
@@ -658,46 +636,4 @@ export async function getPublicPostsByIds(db: DB, ids: Array<number>) {
     );
 
   return hydratePublicPosts(db, rows);
-}
-
-/**
- * Fetch full post data (including tags and content) for export or other detailed use cases.
- * Uses Drizzle relational queries for efficiency.
- */
-export async function findFullPosts(
-  db: DB,
-  options: {
-    ids?: Array<number>;
-    status?: PostStatus;
-  } = {},
-) {
-  const { ids, status } = options;
-  const conditions = [];
-
-  if (ids && ids.length > 0) {
-    conditions.push(inArray(PostsTable.id, ids));
-  }
-  if (status) {
-    conditions.push(eq(PostsTable.status, status));
-  }
-
-  const results = await db.query.PostsTable.findMany({
-    where: conditions.length > 0 ? and(...conditions) : undefined,
-    with: {
-      postTags: {
-        with: {
-          tag: true,
-        },
-      },
-    },
-    orderBy: [desc(PostsTable.createdAt)],
-  });
-
-  return results.map((post) => {
-    const { postTags, ...rest } = post;
-    return {
-      ...rest,
-      tags: postTags.map((pt) => pt.tag),
-    };
-  });
 }

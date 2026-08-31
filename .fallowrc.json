@@ -1,11 +1,24 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["src/server.ts"],
+  "entry": [
+    "src/server.ts",
+    "src/**/*.test.ts",
+    "scripts/**/*.test.ts"
+  ],
   "dynamicallyLoaded": [
     ".release-it.ts",
     "tests/apply-migrations.ts",
     "tests/mocks/tanstack-start-mock.ts"
   ],
+  "ignoreExports": [
+    {
+      "file": "src/lib/orpc/server-client.ts",
+      "exports": ["createServerORPCClient"]
+    }
+  ],
+  "duplicates": {
+    "ignore": ["src/routeTree.gen.ts"]
+  },
   "rules": {
     "unused-dependencies": "warn"
   },
@@ -19,5 +32,13 @@
       "members": ["alarm", "checkLimit", "hash", "verify"]
     }
   ],
-  "ignorePatterns": ["worker-configuration.d.ts"]
+  "ignorePatterns": [
+    "tmp/**",
+    "dist/**",
+    ".wrangler/**",
+    ".tanstack/**",
+    ".output/**",
+    ".cache/**",
+    "worker-configuration.d.ts"
+  ]
 }

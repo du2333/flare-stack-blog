@@ -1,10 +1,5 @@
-import type { CommentStatus } from "@/lib/db/schema";
 import { orpc } from "@/lib/orpc";
 import { COMMENT_PAGE_SIZE } from "../comment-thread";
-
-export function rootCommentsByPostIdQuery(postId: number) {
-  return orpc.comments.roots.queryOptions({ input: { postId } });
-}
 
 export function rootCommentsByPostIdInfiniteQuery(postId: number) {
   return orpc.comments.roots.infiniteOptions({
@@ -49,10 +44,4 @@ export function commentThreadQuery(postId: number, commentId: number) {
   return orpc.comments.thread.queryOptions({
     input: { postId, id: commentId },
   });
-}
-
-export function myCommentsQuery(
-  options: { offset?: number; limit?: number; status?: CommentStatus } = {},
-) {
-  return orpc.comments.mine.queryOptions({ input: options });
 }

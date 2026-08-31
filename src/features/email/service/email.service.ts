@@ -139,16 +139,6 @@ export async function getReplyNotificationStatus(
   return { enabled: !unsubscribed };
 }
 
-export async function getNotificationConfig(
-  context: DbContext & { executionCtx: ExecutionContext },
-) {
-  const config = await ConfigService.getSystemConfig(context);
-
-  return {
-    userEmailEnabled: config?.notification?.user?.emailEnabled ?? true,
-  };
-}
-
 export async function toggleReplyNotification(
   context: DbContext,
   data: { userId: string; enabled: boolean },
