@@ -1,100 +1,128 @@
 import { useQuery } from "@tanstack/react-query";
+import { ClientOnly } from "@tanstack/react-router";
 import { useState } from "react";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
+import type { MutedUser } from "@/features/muted-users/muted-users.schema";
 import { mutedUsersQuery } from "@/features/muted-users/queries";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { MutedUsersListSkeleton } from "./muted-users-skeleton";
 
 export function MutedUsersPage() {
-  const { data: mutedUsers = [], isLoading } = useQuery(mutedUsersQuery);
+  const {
+    data: mutedUsers = [],
+    isPending,
+    isError,
+  } = useQuery(mutedUsersQuery);
   const { unmuteUser, isUnmuting } = useMutedUsers();
-  const [pending, setPending] = useState<{
-    userId: string;
-    userName: string;
-  } | null>(null);
+  const [pending, setPending] = useState<MutedUser | null>(null);
 
   return (
     <div
-      data-admin-legacy
-      className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000"
+      className="fuwari-card-base p-5 md:p-6 space-y-6 fuwari-onload-animation"
+      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
     >
-      <div className="space-y-1 border-b border-border/30 pb-6">
-        <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
-          {m.muted_users_title()}
-        </h1>
-        <p className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
-          {m.muted_users_tag()}
-        </p>
-      </div>
+      <h1 className="hidden lg:block text-2xl font-medium fuwari-text-90">
+        {m.muted_users_title()}
+      </h1>
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground font-mono">
-          {m.muted_users_loading()}
+      {isError ? (
+        <p className="py-16 text-center text-sm fuwari-text-50">
+          {m.muted_users_toast_error()}
         </p>
+      ) : isPending ? (
+        <MutedUsersListSkeleton />
       ) : mutedUsers.length === 0 ? (
-        <div className="py-20 text-center space-y-2">
-          <p className="text-sm text-foreground">{m.muted_users_empty()}</p>
-          <p className="text-sm text-muted-foreground">
-            {m.muted_users_empty_hint()}
-          </p>
-        </div>
+        <p className="py-16 text-center text-sm fuwari-text-50">
+          {m.muted_users_empty()}
+        </p>
       ) : (
-        <ul className="divide-y divide-border/30 border border-border/30">
+        <div>
           {mutedUsers.map((item) => (
-            <li
+            <MutedUserRow
               key={item.id}
-              className="flex items-center gap-4 px-4 py-4 md:px-6"
-            >
-              <div className="w-9 h-9 shrink-0 border border-border/30 overflow-hidden bg-muted/20 flex items-center justify-center">
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {item.name.slice(0, 1)}
-                  </span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{item.name}</p>
-                <p className="text-[11px] font-mono text-muted-foreground">
-                  {m.muted_users_muted_at({
-                    date: formatDate(item.mutedAt, { includeTime: true }),
-                  })}
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  setPending({ userId: item.id, userName: item.name })
-                }
-                className="h-8 px-3 text-[10px] font-mono uppercase tracking-widest border border-border/30 text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
-              >
-                {m.muted_users_unmute()}
-              </button>
-            </li>
+              user={item}
+              busy={isUnmuting}
+              onUnmute={setPending}
+            />
           ))}
-        </ul>
+        </div>
       )}
 
       <ConfirmationModal
-        isOpen={!!pending}
+        isOpen={pending !== null}
         onClose={() => setPending(null)}
         onConfirm={async () => {
           if (!pending) return;
-          await unmuteUser({ userId: pending.userId });
+          await unmuteUser({ userId: pending.id });
           setPending(null);
         }}
-        title={m.muted_users_unmute_title()}
-        message={m.muted_users_unmute_desc({
-          name: pending?.userName ?? "",
+        title={m.muted_users_unmute()}
+        message={m.muted_users_unmute_message({
+          name: pending?.name ?? "",
         })}
-        confirmLabel={m.muted_users_unmute_confirm()}
+        confirmLabel={m.muted_users_unmute()}
         isLoading={isUnmuting}
       />
     </div>
+  );
+}
+
+function MutedUserRow({
+  user,
+  busy,
+  onUnmute,
+}: {
+  user: MutedUser;
+  busy: boolean;
+  onUnmute: (user: MutedUser) => void;
+}) {
+  return (
+    <div className="px-4 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 border-b border-(--fuwari-input-border) last:border-0">
+      <div className="min-w-0 flex-1 flex gap-3">
+        <Avatar name={user.name} image={user.image} />
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium text-base fuwari-text-90 truncate">
+            {user.name}
+          </h3>
+          <p className="mt-1 text-xs fuwari-text-30">
+            <ClientOnly fallback="-">
+              {m.muted_users_muted_at({
+                date: formatDate(user.mutedAt, { includeTime: true }),
+              })}
+            </ClientOnly>
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => onUnmute(user)}
+        className="fuwari-btn-regular rounded-xl h-9 px-3 text-sm disabled:opacity-50 shrink-0"
+      >
+        {m.muted_users_unmute()}
+      </button>
+    </div>
+  );
+}
+
+function Avatar({ name, image }: { name: string; image: string | null }) {
+  const initial = name.slice(0, 1) || "?";
+
+  if (!image) {
+    return (
+      <div className="w-10 h-10 rounded-full bg-(--fuwari-btn-regular-bg) grid place-items-center text-sm font-medium fuwari-text-50 shrink-0">
+        {initial}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={image}
+      alt=""
+      className="w-10 h-10 rounded-full object-cover shrink-0"
+    />
   );
 }

@@ -460,6 +460,7 @@
   "muted_users_empty": "No one is muted",
   "muted_users_empty_hint": "Mute someone from a public post comment and they will show up here",
   "muted_users_unmute": "Unmute",
+  "muted_users_unmute_message": "Unmute “{name}”",
   "muted_users_unmute_title": "Unmute this user",
   "muted_users_unmute_desc": "Unmute {name}?",
   "muted_users_unmute_confirm": "Unmute",
