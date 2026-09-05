@@ -1,8 +1,4 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import type { CommentStatus } from "@/lib/db/schema";
 import { CommentsTable } from "@/lib/db/schema";
@@ -14,8 +10,6 @@ export const CommentSelectSchema = createSelectSchema(CommentsTable, {
   createdAt: coercedDate,
   updatedAt: coercedDate,
 });
-export const CommentInsertSchema = createInsertSchema(CommentsTable);
-export const CommentUpdateSchema = createUpdateSchema(CommentsTable);
 
 // User info schema for joined queries
 const CommentUserSchema = z.object({

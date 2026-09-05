@@ -1,8 +1,4 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createSelectSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { PublicCategorySchema } from "@/features/categories/categories.schema";
 import { TagSelectSchema } from "@/features/tags/tags.schema";
@@ -34,7 +30,6 @@ const PostSelectSchema = createSelectSchema(PostsTable, {
 }).omit({
   publicSnapshotJson: true,
 });
-export const PostInsertSchema = createInsertSchema(PostsTable);
 const PostUpdateSchema = createUpdateSchema(PostsTable, {
   contentJson: NullableJsonContentSchema.optional(),
 }).omit({
@@ -199,7 +194,5 @@ export type DeletePostInput = z.infer<typeof DeletePostInputSchema>;
 export type PublishPostInput = z.infer<typeof PublishPostInputSchema>;
 export type UnpublishPostInput = z.infer<typeof UnpublishPostInputSchema>;
 export type PostListItem = PostItem;
-
-export type PostListResponse = z.infer<typeof PostListResponseSchema>;
 export type PostItem = z.infer<typeof PostItemSchema>;
 export type PostWithToc = z.infer<typeof PostWithTocSchema>;

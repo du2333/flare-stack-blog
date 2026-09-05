@@ -199,7 +199,5 @@ export const SiteConfigInputSchema = z.object({
     .optional(),
 });
 
-export const SiteConfigSchema = SiteConfigInputSchema;
-
 export type SiteConfig = z.infer<typeof FullSiteConfigSchema>;
 export type SiteConfigInput = z.infer<typeof SiteConfigInputSchema>;

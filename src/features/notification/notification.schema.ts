@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-export const NOTIFICATION_CHANNELS = ["email", "webhook"] as const;
-export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
 const NOTIFICATION_EVENT = {
   COMMENT_ADMIN_ROOT_CREATED: "comment.admin_root_created",
   COMMENT_REPLY_TO_ADMIN_PUBLISHED: "comment.reply_to_admin_published",
@@ -22,8 +20,6 @@ export const USER_NOTIFICATION_EVENTS = [
   NOTIFICATION_EVENT.FRIEND_LINK_APPROVED,
   NOTIFICATION_EVENT.FRIEND_LINK_REJECTED,
 ] as const;
-
-export const notificationEventTypeSchema = z.enum(NOTIFICATION_EVENT);
 
 const commentAdminRootCreatedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),
@@ -92,8 +88,6 @@ export const notificationEventSchema = z.discriminatedUnion("type", [
 ]);
 
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
-export type NotificationEventType = z.infer<typeof notificationEventTypeSchema>;
-export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
 
 export type NotificationDelivery = {
   to: string;

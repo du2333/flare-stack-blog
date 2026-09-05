@@ -1,8 +1,4 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { TagsTable } from "@/lib/db/schema";
 
@@ -12,8 +8,6 @@ const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 export const TagSelectSchema = createSelectSchema(TagsTable, {
   createdAt: coercedDate,
 });
-export const TagInsertSchema = createInsertSchema(TagsTable);
-export const TagUpdateSchema = createUpdateSchema(TagsTable);
 
 export const TagWithCountSchema = TagSelectSchema.extend({
   postCount: z.number(),
@@ -51,13 +45,6 @@ export const GetTagsByPostIdInputSchema = z.object({
   postId: z.number(),
 });
 
-export const GenerateTagsInputSchema = z.object({
-  title: z.string(),
-  summary: z.string().optional(),
-  content: z.string().optional(),
-  existingTags: z.array(z.string()),
-});
-
 // Type exports
 export type Tag = z.infer<typeof TagSelectSchema>;
 export type CreateTagInput = z.infer<typeof CreateTagInputSchema>;
@@ -67,4 +54,3 @@ export type GetTagsInput = z.infer<typeof GetTagsInputSchema>;
 export type SetPostTagsInput = z.infer<typeof SetPostTagsInputSchema>;
 export type GetTagsByPostIdInput = z.infer<typeof GetTagsByPostIdInputSchema>;
 export type TagWithCount = z.infer<typeof TagWithCountSchema>;
-export type GenerateTagsInput = z.infer<typeof GenerateTagsInputSchema>;

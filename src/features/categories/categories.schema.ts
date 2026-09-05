@@ -1,8 +1,4 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { CategoriesTable } from "@/lib/db/schema";
 
@@ -11,8 +7,6 @@ const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 const CategorySelectSchema = createSelectSchema(CategoriesTable, {
   createdAt: coercedDate,
 });
-export const CategoryInsertSchema = createInsertSchema(CategoriesTable);
-export const CategoryUpdateSchema = createUpdateSchema(CategoriesTable);
 
 export const PublicCategorySchema = z.object({
   id: z.number().int(),
@@ -21,11 +15,6 @@ export const PublicCategorySchema = z.object({
 
 export const CategoryWithCountSchema = CategorySelectSchema.extend({
   postCount: z.number(),
-});
-
-export const AdminCategoryListSchema = z.object({
-  items: z.array(CategoryWithCountSchema),
-  uncategorizedPostCount: z.number().int().nonnegative(),
 });
 
 export const CreateCategoryInputSchema = z.object({
@@ -49,7 +38,6 @@ export const GetCategoriesInputSchema = z.object({
   publicOnly: z.boolean().optional(),
 });
 
-export type AdminCategoryList = z.infer<typeof AdminCategoryListSchema>;
 export type CreateCategoryInput = z.infer<typeof CreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof UpdateCategoryInputSchema>;
 export type DeleteCategoryInput = z.infer<typeof DeleteCategoryInputSchema>;

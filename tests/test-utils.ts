@@ -161,22 +161,3 @@ export async function seedUser(
       },
     });
 }
-
-/**
- * Helper to make requests to the Hono app with a mock ExecutionContext
- */
-export async function testRequest<TEnv extends Env = Env>(
-  app: {
-    request: (
-      path: string,
-      options?: RequestInit,
-      env?: TEnv,
-      executionCtx?: ExecutionContext,
-    ) => Promise<Response> | Response;
-  },
-  path: string,
-  options: RequestInit = {},
-  customEnv: TEnv = env as unknown as TEnv,
-) {
-  return app.request(path, options, customEnv, createMockExecutionCtx());
-}

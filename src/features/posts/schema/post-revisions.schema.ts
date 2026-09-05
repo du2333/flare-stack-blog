@@ -1,8 +1,4 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import {
   POST_REVISION_REASONS,
@@ -27,14 +23,6 @@ export const PostRevisionSnapshotSchema = z.object({
 
 export const PostRevisionSelectSchema = createSelectSchema(PostRevisionsTable, {
   createdAt: coercedDate,
-  snapshotJson: PostRevisionSnapshotSchema,
-});
-
-export const PostRevisionInsertSchema = createInsertSchema(PostRevisionsTable, {
-  snapshotJson: PostRevisionSnapshotSchema,
-});
-
-export const PostRevisionUpdateSchema = createUpdateSchema(PostRevisionsTable, {
   snapshotJson: PostRevisionSnapshotSchema,
 });
 
