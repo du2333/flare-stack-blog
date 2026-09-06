@@ -1,11 +1,10 @@
-import type { FileRoutesByTo } from "@/routeTree.gen";
-
 /** Layout props passed from public and auth routes. */
 
 export interface NavOption {
-  label: string;
-  to: keyof FileRoutesByTo;
   id: string;
+  label: string;
+  href: string;
+  external: boolean;
 }
 
 export interface UserInfo {

@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "./language-switcher";
+import { PublicNavLink } from "./public-nav-link";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
@@ -81,16 +82,12 @@ export function Navbar({
 
           <nav className="hidden md:flex items-center gap-1">
             {navOptions.map((option) => (
-              <Link
+              <PublicNavLink
                 key={option.id}
-                to={option.to}
+                option={option}
                 className="fuwari-expand-animation rounded-lg h-11 font-bold px-5 active:scale-95 flex items-center fuwari-text-75 hover:text-(--fuwari-primary)"
-                activeProps={{
-                  className: "!text-[var(--fuwari-primary)]",
-                }}
-              >
-                {option.label}
-              </Link>
+                activeClassName="!text-[var(--fuwari-primary)]"
+              />
             ))}
           </nav>
 

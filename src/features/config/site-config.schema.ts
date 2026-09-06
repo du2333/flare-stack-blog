@@ -1,5 +1,11 @@
 import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
+import {
+  canonicalizeNavHref,
+  isNavHref,
+  NAV_LINK_LABEL_MAX,
+  NAV_LINKS_MAX,
+} from "./utils/nav-links";
 import { SOCIAL_PLATFORM_KEYS } from "./utils/social-platforms";
 
 const SocialLinkSchema = z.object({
@@ -14,6 +20,63 @@ export const FUWARI_THEME_HUE_MAX = 360;
 
 function createSiteTextSchema(max: number) {
   return z.string().trim().max(max);
+}
+
+const NavLinkSchema = z.object({
+  label: createSiteTextSchema(NAV_LINK_LABEL_MAX).pipe(z.string().min(1)),
+  href: z.string().trim().refine(isNavHref, {
+    message: "Please enter a root-relative path or http(s) URL",
+  }),
+});
+
+function createNavLinksFormSchema(messages: Messages) {
+  return z
+    .array(
+      z.object({
+        label: z.string(),
+        href: z.string(),
+      }),
+    )
+    .max(NAV_LINKS_MAX)
+    .transform((links) =>
+      links.map((link) => ({
+        label: link.label.trim(),
+        href: canonicalizeNavHref(link.href),
+      })),
+    )
+    .superRefine((links, ctx) => {
+      links.forEach((link, index) => {
+        if (!link.label && !link.href) return;
+        if (!link.label) {
+          ctx.addIssue({
+            code: "custom",
+            message: messages.settings_site_validation_nav_label_required(),
+            path: [index, "label"],
+          });
+        } else if (link.label.length > NAV_LINK_LABEL_MAX) {
+          ctx.addIssue({
+            code: "custom",
+            message: messages.settings_site_validation_too_long({
+              max: NAV_LINK_LABEL_MAX,
+            }),
+            path: [index, "label"],
+          });
+        }
+        if (!link.href) {
+          ctx.addIssue({
+            code: "custom",
+            message: messages.settings_site_validation_nav_href_required(),
+            path: [index, "href"],
+          });
+        } else if (!isNavHref(link.href)) {
+          ctx.addIssue({
+            code: "custom",
+            message: messages.settings_site_validation_invalid_nav_href(),
+            path: [index, "href"],
+          });
+        }
+      });
+    });
 }
 
 function createSiteTextFormSchema(max: number, messages: Messages) {
@@ -140,6 +203,7 @@ export const FullSiteConfigSchema = z.object({
   author: createSiteTextSchema(80),
   description: createSiteTextSchema(300),
   social: z.array(SocialLinkSchema),
+  navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX),
   icons: z.object({
     faviconSvg: createAssetPathSchema(),
     faviconIco: createAssetPathSchema(),
@@ -159,6 +223,7 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
     author: createSiteTextFormSchema(80, messages).optional(),
     description: createSiteTextFormSchema(300, messages).optional(),
     social: z.array(SocialLinkSchema).optional(),
+    navLinks: createNavLinksFormSchema(messages).optional(),
     icons: z
       .object({
         faviconSvg: createOptionalAssetPathFormSchema(messages).optional(),
@@ -182,6 +247,7 @@ export const SiteConfigInputSchema = z.object({
   author: createSiteTextSchema(80).optional(),
   description: createSiteTextSchema(300).optional(),
   social: z.array(SocialLinkSchema).optional(),
+  navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX).optional(),
   icons: z
     .object({
       faviconSvg: createOptionalAssetPathSchema().optional(),

@@ -1,5 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  useNavigate,
+  useRouteContext,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { PublicLayout as SitePublicLayout } from "@/components/layout/public-layout";
@@ -10,6 +15,7 @@ import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { clientEnv } from "@/lib/env/client.env";
+import { isExternalNavHref } from "@/features/config/utils/nav-links";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
@@ -43,18 +49,26 @@ export const Route = createFileRoute("/_public")({
 
 function PublicLayout() {
   const navigate = useNavigate();
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
   const queryClient = useQueryClient();
 
   const navOptions = [
-    { label: m.nav_home(), to: "/" as const, id: "home" },
-    { label: m.nav_posts(), to: "/posts" as const, id: "posts" },
+    { id: "home", label: m.nav_home(), href: "/", external: false },
+    { id: "posts", label: m.nav_posts(), href: "/posts", external: false },
     {
-      label: m.nav_friend_links(),
-      to: "/friend-links" as const,
       id: "friend-links",
+      label: m.nav_friend_links(),
+      href: "/friend-links",
+      external: false,
     },
+    ...siteConfig.navLinks.map((link, index) => ({
+      id: `custom-${index}`,
+      label: link.label,
+      href: link.href,
+      external: isExternalNavHref(link.href),
+    })),
   ];
 
   const logout = async () => {

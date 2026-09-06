@@ -25,7 +25,6 @@ export function SettingsNav({ current }: { current: SettingsPageId }) {
         return (
           <Link
             key={id}
-            from="/admin/settings"
             to={to}
             className={cn(
               "rounded-xl h-9 px-3 text-sm font-medium",

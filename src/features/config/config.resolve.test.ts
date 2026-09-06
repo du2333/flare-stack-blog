@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
-import { resolveSystemConfig } from "@/features/config/config.resolve";
+import {
+  resolveSiteConfig,
+  resolveSystemConfig,
+} from "@/features/config/config.resolve";
 
 describe("resolveSystemConfig webhook", () => {
   it("keeps a single webhook URL and secret", () => {
@@ -77,5 +80,36 @@ describe("resolveSystemConfig webhook", () => {
     });
     expect(config.notification).not.toHaveProperty("webhooks");
     expect(config.notification?.admin?.channels).toEqual({ email: false });
+  });
+});
+
+describe("resolveSiteConfig navLinks", () => {
+  it("defaults to an empty list", () => {
+    expect(resolveSiteConfig({}).navLinks).toEqual([]);
+  });
+
+  it("keeps valid links and drops the rest", () => {
+    const config = resolveSiteConfig({
+      site: {
+        navLinks: [
+          { label: "About", href: "/post/about" },
+          { label: "GitHub", href: "github.com/du2333" },
+          { label: "Bad", href: "javascript:alert(1)" },
+          { label: "", href: "/posts" },
+          { label: "Extra", href: "/too-many-1" },
+          { label: "Extra", href: "/too-many-2" },
+          { label: "Extra", href: "/too-many-3" },
+          { label: "Extra", href: "/too-many-4" },
+        ],
+      },
+    });
+
+    expect(config.navLinks).toEqual([
+      { label: "About", href: "/post/about" },
+      { label: "GitHub", href: "https://github.com/du2333" },
+      { label: "Extra", href: "/too-many-1" },
+      { label: "Extra", href: "/too-many-2" },
+      { label: "Extra", href: "/too-many-3" },
+    ]);
   });
 });

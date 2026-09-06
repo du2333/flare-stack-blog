@@ -26,15 +26,20 @@ export function useSystemConfigForm() {
     if (settings) reset(settings);
   }, [settings, reset]);
 
-  const onSubmit = handleSubmit(async (data) => {
-    try {
-      await saveSettings(data);
-      reset(data);
-      toast.success(m.settings_toast_save_success());
-    } catch {
-      toast.error(m.settings_toast_save_error());
-    }
-  });
+  const onSubmit = handleSubmit(
+    async (data) => {
+      try {
+        await saveSettings(data);
+        reset(data);
+        toast.success(m.settings_toast_save_success());
+      } catch {
+        toast.error(m.settings_toast_save_error());
+      }
+    },
+    () => {
+      toast.error(m.settings_toast_save_invalid());
+    },
+  );
 
   return {
     methods,

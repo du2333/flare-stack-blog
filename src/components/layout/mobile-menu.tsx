@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
+import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -43,18 +44,13 @@ export function MobileMenu({
           {/* Navigation Items */}
           <nav className="flex flex-col">
             {navOptions.map((item) => (
-              <Link
+              <PublicNavLink
                 key={item.id}
-                to={item.to}
+                option={item}
                 onClick={onClose}
                 className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
-                activeProps={{
-                  className:
-                    "!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]",
-                }}
-              >
-                {item.label}
-              </Link>
+                activeClassName="!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]"
+              />
             ))}
 
             {user?.role === "admin" && (

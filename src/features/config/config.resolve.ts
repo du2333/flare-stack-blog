@@ -2,6 +2,7 @@ import { blogConfig } from "@/blog.config";
 import type { SiteConfig, SystemConfig } from "@/features/config/config.schema";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
+import { normalizeNavLinks } from "@/features/config/utils/nav-links";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
 
@@ -50,6 +51,7 @@ export function resolveSiteConfig(
     author: config?.site?.author ?? blogConfig.author,
     description: config?.site?.description ?? blogConfig.description,
     social: migrateSocial(config?.site?.social),
+    navLinks: normalizeNavLinks(config?.site?.navLinks),
     icons: {
       faviconSvg:
         config?.site?.icons?.faviconSvg || blogConfig.icons.faviconSvg,

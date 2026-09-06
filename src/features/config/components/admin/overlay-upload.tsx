@@ -13,14 +13,17 @@ export function OverlayUpload({
   assetPath,
   accept,
   className,
+  label,
 }: {
   name: FieldPath<SystemConfig>;
   assetPath: string;
   accept: string;
   className?: string;
+  label?: string;
 }) {
-  const { setValue } = useFormContext<SystemConfig>();
+  const { setValue, watch } = useFormContext<SystemConfig>();
   const inputRef = useRef<HTMLInputElement>(null);
+  const currentValue = watch(name);
   const upload = useMutation({
     mutationFn: (file: File) =>
       orpcClient.config.admin.uploadAsset({ file, assetPath }),
@@ -34,6 +37,14 @@ export function OverlayUpload({
       });
     },
   });
+
+  const buttonText = upload.isPending
+    ? m.settings_asset_uploading()
+    : label
+      ? label
+      : currentValue
+        ? m.settings_replace()
+        : m.settings_asset_upload_btn();
 
   return (
     <>
@@ -60,7 +71,7 @@ export function OverlayUpload({
         {upload.isPending ? (
           <Loader2 size={12} className="animate-spin" />
         ) : null}
-        {upload.isPending ? m.settings_asset_uploading() : m.settings_replace()}
+        {buttonText}
       </button>
     </>
   );

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Home, Plus, X } from "lucide-react";
+import { ExternalLink, Home, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Select } from "@/components/ui/select";
@@ -10,6 +10,11 @@ import {
   FUWARI_THEME_HUE_MAX,
   FUWARI_THEME_HUE_MIN,
 } from "@/features/config/site-config.schema";
+import {
+  canonicalizeNavHref,
+  isExternalNavHref,
+  NAV_LINKS_MAX,
+} from "@/features/config/utils/nav-links";
 import {
   SOCIAL_PLATFORM_KEYS,
   SOCIAL_PLATFORMS,
@@ -92,7 +97,7 @@ export function SiteStudio() {
               className="w-full h-full object-cover object-center"
             />
           ) : null}
-          <div className="absolute top-3 left-3 flex items-center gap-2 h-10 px-3 rounded-xl bg-white/90 dark:bg-black/50 backdrop-blur-sm max-w-[min(100%-1.5rem,20rem)]">
+          <div className="absolute top-3 left-3 flex items-center gap-2 h-10 px-3 rounded-xl bg-white/90 dark:bg-black/50 backdrop-blur-sm max-w-[min(100%-1.5rem,20rem)] shadow-xs">
             <Home
               size={16}
               strokeWidth={1.5}
@@ -101,6 +106,7 @@ export function SiteStudio() {
             <input
               {...register("site.title")}
               placeholder={m.settings_site_field_title_ph()}
+              aria-label={m.settings_site_field_title()}
               className="min-w-0 flex-1 bg-transparent text-sm font-medium fuwari-text-90 outline-none"
             />
           </div>
@@ -109,6 +115,11 @@ export function SiteStudio() {
             assetPath="themes/fuwari/home-bg.webp"
             accept={IMAGE_ACCEPT}
             className="absolute top-3 right-3"
+            label={
+              bannerSrc
+                ? m.settings_site_banner_replace()
+                : m.settings_site_banner_upload()
+            }
           />
         </div>
 
@@ -128,6 +139,11 @@ export function SiteStudio() {
               assetPath="themes/fuwari/avatar.png"
               accept={IMAGE_ACCEPT}
               className="absolute -bottom-1 left-1/2 -translate-x-1/2"
+              label={
+                avatarSrc
+                  ? m.settings_site_avatar_replace()
+                  : m.settings_site_avatar_upload()
+              }
             />
           </div>
 
@@ -135,12 +151,14 @@ export function SiteStudio() {
             <input
               {...register("site.author")}
               placeholder={m.settings_site_field_author_ph()}
+              aria-label={m.settings_site_field_author()}
               className="w-full bg-transparent text-xl font-medium fuwari-text-90 outline-none"
             />
             <textarea
               {...register("site.description")}
               rows={2}
               placeholder={m.settings_site_field_description_ph()}
+              aria-label={m.settings_site_field_description()}
               className="w-full bg-transparent text-sm fuwari-text-50 outline-none resize-none leading-relaxed"
             />
             <SocialPills />
@@ -153,11 +171,18 @@ export function SiteStudio() {
         </div>
       </div>
 
-      <label className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <span className="text-sm fuwari-text-50 shrink-0">
-          {m.settings_hue()} {hue}°
-        </span>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="theme-hue-slider"
+            className="text-sm font-medium fuwari-text-75"
+          >
+            {m.settings_hue()}
+          </label>
+          <span className="text-xs font-mono fuwari-text-50">{hue}°</span>
+        </div>
         <input
+          id="theme-hue-slider"
           type="range"
           min={FUWARI_THEME_HUE_MIN}
           max={FUWARI_THEME_HUE_MAX}
@@ -178,13 +203,17 @@ export function SiteStudio() {
               "linear-gradient(to right, oklch(0.7 0.14 0), oklch(0.7 0.14 60), oklch(0.7 0.14 120), oklch(0.7 0.14 180), oklch(0.7 0.14 240), oklch(0.7 0.14 300), oklch(0.7 0.14 360))",
           }}
         />
-      </label>
+        <p className="text-xs fuwari-text-50">{m.settings_hue_hint()}</p>
+      </div>
 
-      <details className="rounded-2xl bg-(--fuwari-btn-regular-bg)/60 p-4">
-        <summary className="text-sm font-medium fuwari-text-75 cursor-pointer">
+      <NavLinksEditor />
+
+      <details className="rounded-2xl bg-(--fuwari-btn-regular-bg)/60 p-4 space-y-3">
+        <summary className="text-sm font-medium fuwari-text-75 cursor-pointer select-none">
           {m.settings_icons()}
         </summary>
-        <div className="mt-4 grid grid-cols-3 sm:grid-cols-6 gap-3">
+        <p className="text-xs fuwari-text-50">{m.settings_icons_hint()}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
           {ICON_FIELDS.map((item) => (
             <IconTile key={item.name} {...item} />
           ))}
@@ -209,24 +238,129 @@ function StudioPost({
   const cover = post?.cover?.url;
 
   return (
-    <div className="fuwari-card-base w-full md:w-72 shrink-0 p-3 shadow-sm flex gap-3">
-      {cover ? (
-        <img
-          src={cover}
-          alt=""
-          className="w-16 h-16 rounded-xl object-cover shrink-0"
-        />
-      ) : (
-        <div className="w-16 h-16 rounded-xl bg-(--fuwari-btn-regular-bg) shrink-0" />
-      )}
-      <div className="min-w-0">
-        <p className="text-sm font-medium fuwari-text-90 line-clamp-2">
-          {title}
+    <div className="fuwari-card-base w-full md:w-72 shrink-0 p-3 shadow-sm flex flex-col justify-between gap-2">
+      <div className="flex items-center justify-between text-[11px] fuwari-text-50">
+        <span>{m.settings_preview_badge()}</span>
+      </div>
+      <div className="flex gap-3 min-w-0">
+        {cover ? (
+          <img
+            src={cover}
+            alt=""
+            className="w-16 h-16 rounded-xl object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-(--fuwari-btn-regular-bg) shrink-0" />
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium fuwari-text-90 line-clamp-2">
+            {title}
+          </p>
+          <p className="mt-1 text-xs fuwari-text-50 line-clamp-2">
+            {summary || fallbackTitle}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavLinksEditor() {
+  const { control, register, setValue, watch, formState } =
+    useFormContext<SystemConfig>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "site.navLinks",
+  });
+  const linkErrors = formState.errors.site?.navLinks;
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-sm font-medium fuwari-text-75">
+          {m.settings_site_nav_title()}
         </p>
-        <p className="mt-1 text-xs fuwari-text-50 line-clamp-2">
-          {summary || fallbackTitle}
+        <p className="mt-1 text-xs fuwari-text-50">
+          {m.settings_site_nav_hint()}
         </p>
       </div>
+
+      <div className="space-y-2">
+        {fields.length > 0 ? (
+          <div className="flex gap-2 px-1 text-[11px] fuwari-text-50">
+            <span className="w-28 shrink-0">{m.settings_site_nav_name()}</span>
+            <span className="min-w-0 flex-1">{m.settings_site_nav_url()}</span>
+            <span className="w-10 shrink-0" />
+          </div>
+        ) : null}
+        {fields.map((field, index) => {
+          const href = watch(`site.navLinks.${index}.href`) ?? "";
+          const canonicalHref = canonicalizeNavHref(href);
+          const labelError = linkErrors?.[index]?.label?.message;
+          const hrefError = linkErrors?.[index]?.href?.message;
+          return (
+            <div key={field.id} className="space-y-1">
+              <div className="flex gap-2">
+                <input
+                  {...register(`site.navLinks.${index}.label`)}
+                  placeholder={m.settings_site_nav_label_ph()}
+                  className={cn(SETTINGS_FIELD_CLASS, "w-28 shrink-0")}
+                />
+                <div className="relative min-w-0 flex-1">
+                  <input
+                    {...register(`site.navLinks.${index}.href`, {
+                      onBlur: (event) => {
+                        const next = canonicalizeNavHref(event.target.value);
+                        if (next !== event.target.value) {
+                          setValue(`site.navLinks.${index}.href`, next, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      },
+                    })}
+                    placeholder={m.settings_site_nav_href_ph()}
+                    className={cn(
+                      SETTINGS_FIELD_CLASS,
+                      isExternalNavHref(canonicalHref) && "pr-10",
+                    )}
+                  />
+                  {isExternalNavHref(canonicalHref) ? (
+                    <ExternalLink
+                      size={14}
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fuwari-text-30"
+                    />
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="h-10 w-10 rounded-xl fuwari-text-50 hover:text-(--fuwari-danger-fg) grid place-items-center shrink-0"
+                  aria-label={m.settings_site_nav_remove()}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              {labelError || hrefError ? (
+                <p className="text-xs text-(--fuwari-danger-fg)">
+                  {hrefError || labelError}
+                </p>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      {fields.length < NAV_LINKS_MAX ? (
+        <button
+          type="button"
+          onClick={() => append({ label: "", href: "" })}
+          className="fuwari-btn-regular rounded-xl h-10 px-3 text-sm gap-1"
+        >
+          <Plus size={14} />
+          {m.settings_site_nav_add()}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -292,67 +426,84 @@ function SocialPills() {
             className="fuwari-btn-regular rounded-xl h-10 px-3 text-sm gap-1"
           >
             <Plus size={14} />
-            {m.settings_add()}
+            {m.settings_social_add()}
           </button>
         ) : null}
       </div>
 
-      {selected !== null && fields[selected] ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Select
-              className="w-36 shrink-0"
-              value={watch(`site.social.${selected}.platform`) ?? ""}
-              onChange={(next) =>
-                setValue(
-                  `site.social.${selected}.platform`,
-                  next as (typeof SOCIAL_PLATFORM_KEYS)[number],
-                  { shouldDirty: true },
-                )
-              }
-              options={SOCIAL_PLATFORM_KEYS.map((key) => ({
-                value: key,
-                label:
-                  key === "custom"
-                    ? m.settings_social_custom()
-                    : SOCIAL_PLATFORMS[key].label,
-                disabled: taken(key, selected),
-              }))}
-            />
-            <input
-              {...register(`site.social.${selected}.url`)}
-              placeholder={m.settings_social_url_ph()}
-              className={SETTINGS_FIELD_CLASS}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                remove(selected);
-                setSelected(null);
-              }}
-              className="h-10 w-10 rounded-xl fuwari-text-50 hover:text-(--fuwari-danger-fg) grid place-items-center shrink-0"
-              aria-label={m.settings_social_remove()}
-            >
-              <X size={16} />
-            </button>
-          </div>
-          {watch(`site.social.${selected}.platform`) === "custom" ? (
-            <div className="flex gap-2">
-              <input
-                {...register(`site.social.${selected}.label`)}
-                placeholder={m.settings_social_label_ph()}
-                className={cn(SETTINGS_FIELD_CLASS, "w-36 shrink-0")}
-              />
-              <OverlayUpload
-                name={`site.social.${selected}.icon`}
-                assetPath={`social/custom-${selected}`}
-                accept=".svg,.png,.webp"
-                className="relative bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content)"
-              />
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+      {selected !== null && fields[selected]
+        ? (() => {
+            const platform = watch(`site.social.${selected}.platform`);
+            const urlPlaceholder =
+              platform === "email"
+                ? m.settings_social_email_ph()
+                : platform === "rss"
+                  ? m.settings_social_rss_ph()
+                  : m.settings_social_url_ph();
+
+            return (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Select
+                    className="w-36 shrink-0"
+                    value={platform ?? ""}
+                    onChange={(next) =>
+                      setValue(
+                        `site.social.${selected}.platform`,
+                        next as (typeof SOCIAL_PLATFORM_KEYS)[number],
+                        { shouldDirty: true },
+                      )
+                    }
+                    options={SOCIAL_PLATFORM_KEYS.map((key) => ({
+                      value: key,
+                      label:
+                        key === "custom"
+                          ? m.settings_social_custom()
+                          : SOCIAL_PLATFORMS[key].label,
+                      disabled: taken(key, selected),
+                    }))}
+                  />
+                  <input
+                    {...register(`site.social.${selected}.url`)}
+                    placeholder={urlPlaceholder}
+                    className={SETTINGS_FIELD_CLASS}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      remove(selected);
+                      setSelected(null);
+                    }}
+                    className="h-10 w-10 rounded-xl fuwari-text-50 hover:text-(--fuwari-danger-fg) grid place-items-center shrink-0"
+                    aria-label={m.settings_social_remove()}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                {platform === "custom" ? (
+                  <div className="flex gap-2">
+                    <input
+                      {...register(`site.social.${selected}.label`)}
+                      placeholder={m.settings_social_label_ph()}
+                      className={cn(SETTINGS_FIELD_CLASS, "w-36 shrink-0")}
+                    />
+                    <OverlayUpload
+                      name={`site.social.${selected}.icon`}
+                      assetPath={`social/custom-${selected}`}
+                      accept=".svg,.png,.webp"
+                      className="relative bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content)"
+                      label={
+                        watch(`site.social.${selected}.icon`)
+                          ? m.settings_replace()
+                          : m.settings_social_custom_icon_upload()
+                      }
+                    />
+                  </div>
+                ) : null}
+              </div>
+            );
+          })()
+        : null}
     </div>
   );
 }
@@ -389,7 +540,9 @@ function IconTile({
           className="absolute inset-x-1 bottom-1 justify-center"
         />
       </div>
-      <p className="text-[11px] fuwari-text-50 truncate">{label()}</p>
+      <p className="text-[11px] fuwari-text-50 truncate" title={label()}>
+        {label()}
+      </p>
     </div>
   );
 }
