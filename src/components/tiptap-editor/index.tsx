@@ -5,6 +5,7 @@ import type {
 } from "@tiptap/react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { normalizeLinkHref } from "@/lib/links/normalize-link-href";
 import { cn } from "@/lib/utils";
 import type { FormulaModalPayload } from "./formula-modal-store";
@@ -28,6 +29,10 @@ interface EditorProps {
   editable?: boolean;
   className?: string;
   contentClassName?: string;
+  documentHeader?: ReactNode;
+  documentClassName?: string;
+  scrollContainerId?: string;
+  toolbarClassName?: string;
 }
 
 export const Editor = memo(function Editor({
@@ -38,6 +43,10 @@ export const Editor = memo(function Editor({
   editable = true,
   className,
   contentClassName,
+  documentHeader,
+  documentClassName,
+  scrollContainerId,
+  toolbarClassName,
 }: EditorProps) {
   const formulaOpenerKeyRef = useRef(Symbol("formula-modal-opener"));
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
@@ -188,6 +197,7 @@ export const Editor = memo(function Editor({
       {editable && (
         <EditorToolbar
           editor={editor}
+          className={toolbarClassName}
           onLinkClick={openLinkModal}
           onImageClick={openImageModal}
           onFormulaInlineClick={() => openFormulaModal("inline")}
@@ -199,10 +209,12 @@ export const Editor = memo(function Editor({
       {editable && <TableMobileBar editor={editor} />}
 
       <div
-        className="relative min-h-125"
+        id={scrollContainerId}
+        className={cn("relative", documentClassName ?? "min-h-125")}
         onMouseDownCapture={markActiveFormulaOpener}
         onFocusCapture={markActiveFormulaOpener}
       >
+        {documentHeader}
         <EditorContent editor={editor} />
       </div>
 

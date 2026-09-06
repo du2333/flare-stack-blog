@@ -1,0 +1,223 @@
+.admin-sidebar {
+  --sidebar-motion: cubic-bezier(0.22, 1, 0.36, 1);
+  --sidebar-icon-column: 4.25rem;
+  position: fixed;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 78vw;
+  max-width: 20rem;
+  overflow: visible;
+  visibility: hidden;
+  transform: translateX(calc(-100% - 1rem));
+  transition:
+    width 340ms var(--sidebar-motion),
+    transform 300ms var(--sidebar-motion),
+    visibility 300ms,
+    background-color 300ms,
+    color 300ms;
+}
+.admin-sidebar.is-open {
+  visibility: visible;
+  transform: translateX(0);
+}
+.admin-sidebar-header {
+  position: relative;
+  padding: 1rem 0.75rem 0.5rem;
+  flex-shrink: 0;
+}
+.admin-sidebar-row {
+  display: grid;
+  grid-template-columns: var(--sidebar-icon-column) minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  border-radius: 0.75rem;
+}
+.admin-sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sidebar-icon-column);
+  flex-shrink: 0;
+}
+.admin-sidebar-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 0.75rem;
+  transition:
+    opacity 180ms ease 70ms,
+    transform 240ms var(--sidebar-motion) 40ms;
+}
+.admin-sidebar-brand {
+  height: 3rem;
+  color: var(--fuwari-primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.admin-sidebar-brand:hover {
+  background: var(--fuwari-btn-regular-bg);
+}
+.admin-sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0.75rem;
+}
+.admin-sidebar-nav > a {
+  display: block;
+  margin-bottom: 0.375rem;
+}
+.admin-sidebar-item {
+  min-height: 2.875rem;
+  color: var(--fuwari-fg-75);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition:
+    background-color 200ms,
+    color 200ms;
+}
+.admin-sidebar-item:hover,
+.admin-sidebar-item.is-active {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-btn-content);
+}
+.admin-sidebar-item.is-active {
+  color: var(--fuwari-primary);
+}
+.admin-sidebar-toggle {
+  display: none;
+  position: absolute;
+  top: 1.75rem;
+  right: -0.875rem;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--fuwari-card-bg);
+  border: 1px solid var(--fuwari-input-border);
+  color: var(--fuwari-fg-50);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.04);
+  transition:
+    color 180ms,
+    background-color 180ms;
+}
+.admin-sidebar-toggle:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.admin-sidebar-mobile-close {
+  position: absolute;
+  right: 0.75rem;
+  top: 1.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  color: var(--fuwari-fg-50);
+  background: var(--fuwari-card-bg);
+}
+.admin-sidebar-header .admin-sidebar-label {
+  padding-right: 2.5rem;
+}
+.admin-sidebar-footer {
+  flex-shrink: 0;
+  padding: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg) 8%, transparent);
+}
+.admin-sidebar-user {
+  height: 3.75rem;
+  margin-bottom: 0.5rem;
+}
+.admin-sidebar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-btn-content);
+}
+.admin-sidebar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-sidebar-actions {
+  display: grid;
+  gap: 0.25rem;
+}
+.admin-sidebar-action {
+  min-height: 2.5rem;
+  font-size: 0.8125rem;
+  color: var(--fuwari-fg-50);
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.admin-sidebar-action:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-btn-content);
+}
+.admin-sidebar-theme > div {
+  justify-self: center;
+}
+.admin-sidebar-logout:hover {
+  background: var(--fuwari-danger-bg);
+  color: var(--fuwari-danger-fg);
+}
+.admin-sidebar :is(a, button):focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    width: 16rem;
+    height: 100%;
+    max-width: none;
+    visibility: visible;
+    transform: none;
+  }
+  .admin-sidebar.is-collapsed {
+    width: 5.75rem;
+  }
+  .admin-sidebar-toggle {
+    display: flex;
+  }
+  .admin-sidebar-mobile-close {
+    display: none;
+  }
+  .admin-sidebar-header .admin-sidebar-label {
+    padding-right: 0.75rem;
+  }
+  .admin-sidebar.is-collapsed .admin-sidebar-label {
+    opacity: 0;
+    transform: translateX(-0.375rem);
+    pointer-events: none;
+    transition-delay: 0ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .admin-sidebar-label {
+    transition: none;
+  }
+}

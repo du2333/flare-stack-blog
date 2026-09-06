@@ -4,15 +4,18 @@ import { inspectExtensions } from "@/features/posts/editor/config";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { m } from "@/paraglide/messages";
+import { PostEditorSummary } from "./post-editor-summary";
 
 export function PostEditorHistoryDocument({
   snapshot,
   isLoading,
   editorKey,
+  viewingTime,
 }: {
   snapshot: PostRevisionSnapshot | null;
   isLoading: boolean;
   editorKey: string;
+  viewingTime: string;
 }) {
   if (isLoading) {
     return (
@@ -32,18 +35,27 @@ export function PostEditorHistoryDocument({
   const title = snapshot.title.trim() || m.common_untitled();
 
   return (
-    <div>
-      <h1 className="mb-4 font-bold text-3xl leading-snug fuwari-text-90 md:text-[2.25rem]/[2.75rem]">
-        {title}
-      </h1>
-      <Editor
-        key={editorKey}
-        className="min-h-0"
-        contentClassName="min-h-0"
-        extensions={inspectExtensions}
-        content={normalizePostContent(snapshot.contentJson) ?? ""}
-        editable={false}
-      />
-    </div>
+    <Editor
+      key={editorKey}
+      className="post-editor-surface"
+      documentClassName="post-editor-document post-history-document custom-scrollbar"
+      documentHeader={
+        <>
+          <h2 className="post-editor-title fuwari-text-90">{title}</h2>
+          <p className="mb-4 text-xs fuwari-text-50">
+            {m.editor_history_banner_title({ time: viewingTime })}
+          </p>
+          <PostEditorSummary
+            categoryId={snapshot.categoryId}
+            tagIds={snapshot.tagIds}
+            hasCover={snapshot.coverMediaId !== null}
+          />
+        </>
+      }
+      contentClassName="min-h-0"
+      extensions={inspectExtensions}
+      content={normalizePostContent(snapshot.contentJson) ?? ""}
+      editable={false}
+    />
   );
 }

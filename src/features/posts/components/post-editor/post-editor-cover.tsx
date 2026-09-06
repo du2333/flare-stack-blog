@@ -40,7 +40,13 @@ export function PostEditorCover({
   return (
     <div className="space-y-2">
       <p className="text-xs fuwari-text-50">{m.editor_meta_cover()}</p>
-      <div className="relative aspect-video overflow-hidden rounded-2xl bg-(--fuwari-btn-regular-bg)">
+      <div
+        className={
+          cover
+            ? "relative aspect-video overflow-hidden rounded-xl bg-(--fuwari-btn-regular-bg)"
+            : "flex items-center justify-between gap-3"
+        }
+      >
         {cover ? (
           <img
             src={getOptimizedImageUrl(cover.key, 640)}
@@ -48,17 +54,28 @@ export function PostEditorCover({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center fuwari-text-30">
-            <ImageIcon size={28} strokeWidth={1.5} />
-          </div>
+          <span className="flex items-center gap-2 text-sm fuwari-text-50">
+            <ImageIcon size={16} strokeWidth={1.5} />
+            {m.editor_meta_cover_empty()}
+          </span>
         )}
-        <div className="absolute right-2 bottom-2 flex gap-1.5">
+        <div
+          className={
+            cover
+              ? "absolute right-2 bottom-2 flex gap-1.5"
+              : "flex shrink-0 gap-1.5"
+          }
+        >
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="h-8 rounded-xl bg-black/45 px-3 text-xs font-medium text-white backdrop-blur-sm hover:bg-black/55"
+            className={
+              cover
+                ? "h-8 rounded-lg bg-black/45 px-3 text-xs font-medium text-white backdrop-blur-sm hover:bg-black/55"
+                : "fuwari-btn-regular h-9 rounded-lg px-3 text-xs"
+            }
           >
-            {m.editor_meta_cover_change()}
+            {cover ? m.editor_meta_cover_change() : m.editor_meta_cover_pick()}
           </button>
           {cover ? (
             <button

@@ -36,7 +36,7 @@ export function PostEditorHistoryList({
   }
 
   return (
-    <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto p-3">
+    <div className="post-history-list custom-scrollbar">
       {revisions.map((revision) => {
         const selected = revision.id === selectedRevisionId;
         return (
@@ -47,16 +47,22 @@ export function PostEditorHistoryList({
               id: String(postId),
               revisionId: String(revision.id),
             }}
+            aria-current={selected ? "page" : undefined}
             className={cn(
-              "block rounded-xl px-3 py-3 text-left transition-colors",
+              "post-history-version",
               selected
-                ? "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
+                ? "is-selected bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
                 : "hover:bg-(--fuwari-btn-regular-bg)/60",
             )}
           >
-            <p className="text-sm font-medium">
-              {getRevisionReasonLabel(revision.reason)} ·{" "}
+            <time
+              dateTime={revision.createdAt.toISOString()}
+              className="block text-sm font-medium"
+            >
               {formatMonthDayTime(revision.createdAt)}
+            </time>
+            <p className="mt-1 text-sm">
+              {getRevisionReasonLabel(revision.reason)}
             </p>
             <p
               className={cn(

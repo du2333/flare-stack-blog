@@ -9,6 +9,8 @@ import {
   LayoutDashboard,
   Link2,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   Tag,
   User,
@@ -20,9 +22,9 @@ import { ThemeToggle } from "@/components/common/theme-toggle";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
-import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { FileRoutesByTo } from "@/routeTree.gen";
+import "./side-bar.css";
 
 interface NavItem {
   path: keyof FileRoutesByTo;
@@ -34,9 +36,13 @@ interface NavItem {
 export function SideBar({
   isMobileSidebarOpen,
   closeMobileSidebar,
+  collapsed,
+  onToggleCollapse,
 }: {
   isMobileSidebarOpen: boolean;
   closeMobileSidebar: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -132,109 +138,139 @@ export function SideBar({
       )}
 
       <aside
-        className={cn(
-          "fuwari-card-base overflow-visible z-70 flex flex-col bg-(--fuwari-card-bg)",
-          "fixed top-4 bottom-4 left-4 w-[78vw] max-w-xs",
-          "transform transition-transform duration-300 ease-in-out",
-          "lg:static lg:top-auto lg:bottom-auto lg:left-auto lg:w-64 lg:h-full lg:translate-x-0 lg:shrink-0",
-          isMobileSidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-[calc(100%+1rem)] lg:translate-x-0",
-        )}
+        id="admin-sidebar"
+        aria-label={m.admin_layout_title()}
+        className={`admin-sidebar fuwari-card-base ${collapsed ? "is-collapsed" : ""} ${isMobileSidebarOpen ? "is-open" : ""}`}
       >
-        <div className="flex items-center justify-between px-3 pt-4 pb-2 shrink-0">
+        <header className="admin-sidebar-header">
           <Link
             to="/admin"
+            title={siteConfig.title}
+            aria-label={siteConfig.title}
             onClick={closeMobileSidebar}
-            className="fuwari-expand-animation rounded-xl flex items-center gap-2 h-12 px-3 min-w-0"
+            className="admin-sidebar-brand admin-sidebar-row"
           >
-            <Home
-              size={22}
-              strokeWidth={1.5}
-              className="text-(--fuwari-primary) shrink-0"
-            />
-            <span className="text-(--fuwari-primary) font-bold text-sm truncate">
-              {siteConfig.title}
+            <span className="admin-sidebar-icon">
+              <Home size={22} strokeWidth={1.5} />
             </span>
+            <span className="admin-sidebar-label">{siteConfig.title}</span>
           </Link>
           <button
+            type="button"
             onClick={closeMobileSidebar}
-            className="lg:hidden p-2 rounded-lg fuwari-text-50 hover:text-(--fuwari-primary)"
+            className="admin-sidebar-mobile-close"
             aria-label={m.admin_sidebar_close_navigation()}
           >
-            <X size={18} strokeWidth={1.5} />
+            <X size={18} />
           </button>
-        </div>
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="admin-sidebar-toggle"
+            aria-controls="admin-sidebar"
+            aria-expanded={!collapsed}
+            aria-label={
+              collapsed ? m.admin_sidebar_expand() : m.admin_sidebar_collapse()
+            }
+            title={
+              collapsed ? m.admin_sidebar_expand() : m.admin_sidebar_collapse()
+            }
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={17} strokeWidth={1.5} />
+            ) : (
+              <PanelLeftClose size={17} strokeWidth={1.5} />
+            )}
+          </button>
+        </header>
 
-        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
+        <nav className="admin-sidebar-nav custom-scrollbar">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
               onClick={closeMobileSidebar}
               activeOptions={{ exact: item.exact, includeSearch: false }}
-              className="block"
+              title={item.label}
+              aria-label={item.label}
             >
               {({ isActive }) => (
                 <div
-                  className={cn(
-                    "flex items-center rounded-xl h-11 px-3 gap-3 w-full text-sm font-medium",
-                    isActive
-                      ? "fuwari-btn-primary justify-start"
-                      : "fuwari-text-75 hover:text-(--fuwari-primary)",
-                  )}
+                  className={`admin-sidebar-row admin-sidebar-item ${isActive ? "is-active" : ""}`}
                 >
-                  <item.icon size={16} strokeWidth={1.5} className="shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="admin-sidebar-icon">
+                    <item.icon size={19} strokeWidth={1.5} />
+                  </span>
+                  <span className="admin-sidebar-label">{item.label}</span>
                 </div>
               )}
             </Link>
           ))}
         </nav>
 
-        <div className="shrink-0 border-t border-(--fuwari-input-border) px-3 py-3">
-          <div className="flex items-center gap-1">
-            <div className="flex items-center gap-3 min-w-0 flex-1 px-1">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-(--fuwari-btn-regular-bg) flex items-center justify-center shrink-0">
+        <footer className="admin-sidebar-footer">
+          <div
+            className="admin-sidebar-row admin-sidebar-user"
+            title={user?.name || m.admin_sidebar_admin_fallback()}
+          >
+            <span className="admin-sidebar-icon">
+              <span className="admin-sidebar-avatar">
                 {user?.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={user.image} alt={user.name} />
                 ) : (
-                  <User size={14} className="opacity-50" />
+                  <User size={16} strokeWidth={1.5} />
                 )}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm fuwari-text-90 truncate">
-                  {user?.name || m.admin_sidebar_admin_fallback()}
-                </span>
-                <span className="text-xs fuwari-text-50">
-                  {user?.role === "admin"
-                    ? m.admin_sidebar_role_admin()
-                    : m.admin_sidebar_role_user()}
-                </span>
-              </div>
+              </span>
+            </span>
+            <div className="admin-sidebar-label">
+              <p className="truncate text-sm font-medium fuwari-text-90">
+                {user?.name || m.admin_sidebar_admin_fallback()}
+              </p>
+              <p className="mt-0.5 text-xs fuwari-text-50">
+                {user?.role === "admin"
+                  ? m.admin_sidebar_role_admin()
+                  : m.admin_sidebar_role_user()}
+              </p>
             </div>
-
+          </div>
+          <div className="admin-sidebar-actions">
             <Link
               to="/"
-              className="w-8 h-8 flex items-center justify-center rounded-lg fuwari-text-50 hover:text-(--fuwari-primary)"
+              className="admin-sidebar-row admin-sidebar-action"
               title={m.admin_layout_back_to_site()}
+              aria-label={m.admin_layout_back_to_site()}
             >
-              <ArrowUpRight size={14} strokeWidth={1.5} />
+              <span className="admin-sidebar-icon">
+                <ArrowUpRight size={18} strokeWidth={1.5} />
+              </span>
+              <span className="admin-sidebar-label">
+                {m.admin_layout_back_to_site()}
+              </span>
             </Link>
-            <ThemeToggle className="size-8" />
+            <ThemeToggle
+              className="admin-sidebar-row admin-sidebar-action admin-sidebar-theme"
+              label={
+                <span className="admin-sidebar-label">
+                  {m.admin_sidebar_appearance()}
+                </span>
+              }
+            />
             <button
+              type="button"
               onClick={() => setShowLogoutConfirm(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg fuwari-text-50 hover:text-destructive"
+              className="admin-sidebar-row admin-sidebar-action admin-sidebar-logout"
               title={m.admin_sidebar_logout()}
+              aria-label={m.admin_sidebar_logout()}
             >
-              <LogOut size={14} strokeWidth={1.5} />
+              <span className="admin-sidebar-icon">
+                <LogOut size={18} strokeWidth={1.5} />
+              </span>
+              <span className="admin-sidebar-label">
+                {m.admin_sidebar_logout()}
+              </span>
             </button>
           </div>
-        </div>
+        </footer>
       </aside>
 
       <ConfirmationModal

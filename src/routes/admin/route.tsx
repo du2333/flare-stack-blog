@@ -62,14 +62,26 @@ function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
 function AdminLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const editorWorkspace = isPostEditorPath(pathname);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => editorWorkspace,
+  );
   useVersionCheck();
 
   return (
     <AdminChromeProvider>
-      <div className="admin-layout h-screen overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-4 p-4 relative font-sans">
+      <div
+        className={cn(
+          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-4 p-4 relative font-sans",
+          editorWorkspace && "admin-editor-layout",
+        )}
+      >
         <SideBar
           isMobileSidebarOpen={isMobileSidebarOpen}
           closeMobileSidebar={closeMobileSidebar}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
         />
 
         <main className="flex-1 flex flex-col min-w-0 min-h-0">

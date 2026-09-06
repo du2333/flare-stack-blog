@@ -8,7 +8,13 @@ import { m } from "@/paraglide/messages";
 
 const themes: Array<UserTheme> = ["light", "dark", "system"];
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({
+  className,
+  label,
+}: {
+  className?: string;
+  label?: React.ReactNode;
+}) {
   const { userTheme, setTheme } = useTheme();
   const ref = React.useRef<HTMLButtonElement>(null);
   const themeLabel =
@@ -96,6 +102,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           <Monitor size={14} strokeWidth={1.5} />
         </span>
       </div>
+      {label}
     </button>
   );
 }

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Check, Loader2, MoreHorizontal } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { m } from "@/paraglide/messages";
 import { cn } from "@/lib/utils";
 import type { SaveStatus } from "./types";
@@ -13,6 +14,8 @@ interface PostEditorHeaderProps {
   onPublish: () => void;
   onUnpublish: () => void;
   onOpenInfo: () => void;
+  infoOpen: boolean;
+  onOpenHistory: () => void;
 }
 
 function saveLabel(saveStatus: SaveStatus, lastSaved: Date | null) {
@@ -45,7 +48,18 @@ export function PostEditorHeader({
   onPublish,
   onUnpublish,
   onOpenInfo,
+  infoOpen,
+  onOpenHistory,
 }: PostEditorHeaderProps) {
+  const menuRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const closeOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node))
+        menuRef.current.open = false;
+    };
+    document.addEventListener("mousedown", closeOutside);
+    return () => document.removeEventListener("mousedown", closeOutside);
+  }, []);
   const busy = processState !== "IDLE";
   const publishLabel =
     processState === "PROCESSING"
@@ -53,18 +67,19 @@ export function PostEditorHeader({
       : processState === "SUCCESS"
         ? m.editor_header_success()
         : m.editor_header_publish();
-
   return (
-    <div className="flex shrink-0 items-center gap-2 px-5 pt-5 pb-3">
+    <header className="post-editor-header">
       <Link
         to="/admin/posts"
-        className="hidden h-9 items-center rounded-xl px-2 text-sm fuwari-text-50 hover:text-(--fuwari-primary) lg:inline-flex"
+        className="post-editor-back hidden lg:inline-flex"
       >
+        <ArrowLeft size={17} />
         {m.editor_back_to_posts()}
       </Link>
       <p
+        role="status"
         className={cn(
-          "min-w-0 flex-1 truncate text-sm",
+          "post-editor-save",
           saveStatus === "ERROR"
             ? "text-(--fuwari-danger-fg)"
             : saveStatus === "PENDING"
@@ -72,36 +87,76 @@ export function PostEditorHeader({
               : "fuwari-text-50",
         )}
       >
-        {saveLabel(saveStatus, lastSaved)}
+        {saveStatus === "SAVING" ? (
+          <Loader2 size={15} className="animate-spin" />
+        ) : saveStatus === "SYNCED" ? (
+          <Check size={15} />
+        ) : null}
+        <span>{saveLabel(saveStatus, lastSaved)}</span>
       </p>
-      <button
-        type="button"
-        onClick={onOpenInfo}
-        className="h-9 rounded-xl px-3 text-sm fuwari-btn-regular lg:hidden"
-      >
-        {m.editor_info_title()}
-      </button>
-      {hasPublicSnapshot ? (
+      <div className="post-editor-header-actions">
         <button
           type="button"
-          onClick={onUnpublish}
-          disabled={busy}
-          className="h-9 rounded-xl px-3 text-sm fuwari-text-50 hover:text-(--fuwari-warning-fg) disabled:opacity-40"
+          onClick={onOpenInfo}
+          aria-expanded={infoOpen}
+          className={cn(
+            "post-editor-text-button",
+            infoOpen && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)",
+          )}
         >
-          {m.editor_header_unpublish()}
+          {m.editor_info_title()}
         </button>
-      ) : null}
-      <button
-        type="button"
-        onClick={onPublish}
-        disabled={busy || !canPublish}
-        className="hidden h-9 items-center rounded-xl px-4 text-sm font-medium fuwari-btn-primary disabled:opacity-40 lg:inline-flex"
-      >
-        {processState === "PROCESSING" ? (
-          <Loader2 size={14} className="mr-1.5 animate-spin" />
-        ) : null}
-        {publishLabel}
-      </button>
-    </div>
+        <button
+          type="button"
+          onClick={onOpenHistory}
+          className="post-editor-text-button"
+        >
+          {m.editor_history_list_title()}
+        </button>
+        <button
+          type="button"
+          onClick={onPublish}
+          disabled={busy || !canPublish}
+          className="hidden h-9 items-center rounded-lg px-5 text-sm font-medium fuwari-btn-primary disabled:opacity-40 lg:inline-flex"
+        >
+          {processState === "PROCESSING" ? (
+            <Loader2 size={14} className="mr-1.5 animate-spin" />
+          ) : null}
+          {publishLabel}
+        </button>
+        {hasPublicSnapshot && (
+          <details
+            ref={menuRef}
+            className="post-editor-more"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.currentTarget.open = false;
+                event.currentTarget.querySelector("summary")?.focus();
+              }
+            }}
+          >
+            <summary
+              className="post-editor-icon-button"
+              aria-label={m.editor_more_actions()}
+              title={m.editor_more_actions()}
+            >
+              <MoreHorizontal size={19} />
+            </summary>
+            <div className="post-editor-more-menu">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  if (menuRef.current) menuRef.current.open = false;
+                  onUnpublish();
+                }}
+              >
+                {m.editor_header_unpublish()}
+              </button>
+            </div>
+          </details>
+        )}
+      </div>
+    </header>
   );
 }

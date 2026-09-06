@@ -9,11 +9,12 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
 import { postRevisionListQuery } from "@/features/posts/queries";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
-import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { useAutoSave, usePostActions } from "./hooks";
 import { PostEditorHeader } from "./post-editor-header";
 import { PostEditorMetadata } from "./post-editor-metadata";
+import { PostEditorInfoPanel } from "./post-editor-info-panel";
+import { PostEditorSummary } from "./post-editor-summary";
 import type { PostEditorData, PostEditorProps } from "./types";
 
 export function PostEditor({ initialData, onSave }: PostEditorProps) {
@@ -21,6 +22,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
   const queryClient = useQueryClient();
   const { setPrimaryAction, setMobileTitle } = useAdminChrome();
   const [infoOpen, setInfoOpen] = useState(false);
+  const closeInfo = useCallback(() => setInfoOpen(false), []);
   const [post, setPost] = useState<PostEditorData>(() => ({
     title: initialData.title,
     summary: initialData.summary,
@@ -171,12 +173,11 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
       isGeneratingSlug={isGeneratingSlug}
       onPostChange={handlePostChange}
       onGenerateSlug={handleGenerateSlug}
-      onOpenHistory={() => void openHistory()}
     />
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-4 lg:flex-row">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <ConfirmationModal
         isOpen={status === "blocked"}
         onClose={() => reset?.()}
@@ -186,12 +187,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
         confirmLabel={m.editor_leave_confirm()}
       />
 
-      <section
-        className={cn(
-          "fuwari-card-base flex min-h-0 flex-1 flex-col overflow-hidden",
-          infoOpen && "hidden lg:flex",
-        )}
-      >
+      <section className="post-editor-workspace fuwari-card-base">
         <PostEditorHeader
           saveStatus={saveStatus}
           lastSaved={lastSaved}
@@ -200,38 +196,44 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
           hasPublicSnapshot={post.hasPublicSnapshot}
           onPublish={handlePublish}
           onUnpublish={handleUnpublish}
-          onOpenInfo={() => setInfoOpen(true)}
+          infoOpen={infoOpen}
+          onOpenInfo={() => setInfoOpen((value) => !value)}
+          onOpenHistory={() => void openHistory()}
         />
-        <div
-          id="post-editor-scroll-container"
-          className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-8 md:px-8"
-        >
-          <TextareaTitle
-            value={post.title}
-            onChange={(title) => handlePostChange({ title })}
-          />
+        <div className="post-editor-body">
           <Editor
             key={editorRenderKey}
-            className="min-h-0"
+            className="post-editor-surface"
+            toolbarClassName="post-editor-toolbar"
+            documentClassName="post-editor-document custom-scrollbar"
+            scrollContainerId="post-editor-scroll-container"
             contentClassName="min-h-50"
+            documentHeader={
+              <>
+                <TextareaTitle
+                  value={post.title}
+                  onChange={(title) => handlePostChange({ title })}
+                />
+                <PostEditorSummary
+                  categoryId={post.categoryId}
+                  tagIds={post.tagIds}
+                  hasCover={Boolean(post.cover)}
+                  onOpenInfo={() => setInfoOpen(true)}
+                />
+              </>
+            }
             extensions={extensions}
             content={editorContent ?? ""}
             onUpdate={handleEditorUpdate}
             onCreated={handleEditorCreated}
           />
         </div>
-      </section>
-
-      <aside
-        className={cn(
-          "fuwari-card-base flex min-h-0 flex-col overflow-hidden",
-          infoOpen
-            ? "flex flex-1"
-            : "hidden lg:flex lg:w-72 lg:shrink-0 xl:w-80",
+        {infoOpen && (
+          <PostEditorInfoPanel onClose={closeInfo}>
+            {metadata}
+          </PostEditorInfoPanel>
         )}
-      >
-        {metadata}
-      </aside>
+      </section>
     </div>
   );
 }
@@ -249,7 +251,8 @@ function TextareaTitle({
       onChange={(e) => onChange(e.target.value)}
       rows={1}
       placeholder={m.editor_title_placeholder()}
-      className="mb-4 w-full resize-none overflow-hidden bg-transparent pt-2 font-bold text-3xl leading-snug fuwari-text-90 outline-none placeholder:fuwari-text-30 md:text-[2.25rem]/[2.75rem]"
+      aria-label={m.editor_title_placeholder()}
+      className="post-editor-title w-full resize-none overflow-hidden bg-transparent fuwari-text-90 outline-none placeholder:fuwari-text-30"
       onInput={(event) => {
         const el = event.currentTarget;
         el.style.height = "auto";

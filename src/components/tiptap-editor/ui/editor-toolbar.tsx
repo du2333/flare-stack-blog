@@ -26,6 +26,7 @@ import type React from "react";
 import { m } from "@/paraglide/messages";
 
 interface EditorToolbarProps {
+  className?: string;
   editor: Editor | null;
   onLinkClick: () => void;
   onImageClick: () => void;
@@ -56,6 +57,8 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
         : "fuwari-text-50 hover:text-(--fuwari-primary) hover:bg-(--fuwari-btn-regular-bg)",
     )}
     title={label}
+    aria-label={label}
+    aria-pressed={isActive}
     type="button"
   >
     <Icon size={14} strokeWidth={isActive ? 2.5 : 2} />
@@ -64,6 +67,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
   editor,
+  className,
   onLinkClick,
   onImageClick,
   onFormulaInlineClick,
@@ -139,7 +143,12 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 mb-6 flex flex-wrap items-center gap-1 border-b border-(--fuwari-input-border) bg-(--fuwari-card-bg) py-2">
+    <div
+      className={clsx(
+        "sticky top-0 z-30 mb-6 flex flex-wrap items-center gap-1 border-b border-(--fuwari-input-border) bg-(--fuwari-card-bg) py-2",
+        className,
+      )}
+    >
       {/* Headings */}
       <ToolbarButton
         onClick={() =>

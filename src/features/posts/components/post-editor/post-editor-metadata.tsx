@@ -1,4 +1,4 @@
-import { ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { CategorySelect } from "@/features/categories/components/category-select";
@@ -14,7 +14,6 @@ interface PostEditorMetadataProps {
   isGeneratingSlug: boolean;
   onPostChange: (updates: Partial<PostEditorData>) => void;
   onGenerateSlug: () => void;
-  onOpenHistory: () => void;
 }
 
 export function PostEditorMetadata({
@@ -22,7 +21,6 @@ export function PostEditorMetadata({
   isGeneratingSlug,
   onPostChange,
   onGenerateSlug,
-  onOpenHistory,
 }: PostEditorMetadataProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -135,15 +133,6 @@ export function PostEditorMetadata({
           />
         </label>
       </div>
-
-      <button
-        type="button"
-        onClick={onOpenHistory}
-        className="flex h-12 shrink-0 items-center justify-between border-t border-(--fuwari-input-border) px-5 text-sm fuwari-text-90 hover:text-(--fuwari-primary)"
-      >
-        {m.editor_history_list_title()}
-        <ChevronRight size={16} className="fuwari-text-30" />
-      </button>
     </div>
   );
 }

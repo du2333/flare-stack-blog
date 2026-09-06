@@ -1,0 +1,438 @@
+/* The Post workspace shares Fuwari tokens, but keeps application/document layout. */
+.post-editor-workspace {
+  --post-editor-rule: color-mix(in srgb, var(--fuwari-fg) 8%, transparent);
+  --post-editor-header-height: 4.75rem;
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.post-editor-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 1rem;
+  min-height: var(--post-editor-header-height);
+  padding: 1rem 1.75rem;
+  border-bottom: 1px solid var(--post-editor-rule);
+}
+.post-editor-back {
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--fuwari-fg-75);
+}
+.post-history-header .post-editor-back {
+  display: inline-flex;
+}
+.post-editor-back:hover,
+.post-editor-text-button:hover,
+.post-editor-icon-button:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-btn-content);
+}
+.post-editor-save {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin-left: auto;
+  font-size: 0.8125rem;
+}
+.post-editor-save span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.post-editor-save svg {
+  flex-shrink: 0;
+}
+.post-editor-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  margin-left: auto;
+}
+.post-editor-text-button {
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  color: var(--fuwari-fg-75);
+}
+.post-editor-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+  color: var(--fuwari-fg-50);
+}
+.post-editor-more {
+  position: relative;
+}
+.post-editor-more > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.post-editor-more > summary::-webkit-details-marker {
+  display: none;
+}
+.post-editor-more-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.375rem);
+  z-index: 50;
+  min-width: 8rem;
+  padding: 0.375rem;
+  border-radius: 0.75rem;
+  background: var(--fuwari-card-bg);
+  border: 1px solid var(--post-editor-rule);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.1);
+}
+.post-editor-more-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  text-align: left;
+  color: var(--fuwari-warning-fg);
+}
+.post-editor-more-menu button:hover {
+  background: var(--fuwari-warning-bg);
+}
+.post-editor-body,
+.post-editor-surface {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.post-editor-toolbar {
+  position: relative;
+  top: auto;
+  z-index: 20;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 0.875rem 2rem;
+  margin: 0;
+  gap: 0.25rem;
+  scrollbar-width: thin;
+  border-color: var(--post-editor-rule);
+  background: color-mix(
+    in srgb,
+    var(--fuwari-btn-regular-bg) 35%,
+    var(--fuwari-card-bg)
+  );
+}
+.post-editor-toolbar > *,
+.post-editor-toolbar button {
+  flex-shrink: 0;
+}
+.post-editor-toolbar button {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.post-editor-toolbar button svg {
+  width: 1rem;
+  height: 1rem;
+}
+.post-editor-document {
+  --document-inset: max(3rem, calc((100% - 66rem) / 2));
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 3.5rem var(--document-inset) 5rem;
+}
+.post-editor-title {
+  margin: 0 0 1rem;
+  padding: 0;
+  font-size: 2.25rem;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.post-editor-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem 1rem;
+  width: 100%;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--post-editor-rule);
+  text-align: left;
+  font-size: 0.8125rem;
+  color: var(--fuwari-fg-50);
+}
+button.post-editor-summary:hover {
+  color: var(--fuwari-primary);
+}
+.post-editor-summary > span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.post-editor-summary svg {
+  flex-shrink: 0;
+}
+.post-editor-summary-tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.post-editor-document .tiptap {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+.post-editor-document .tiptap :is(h2, h3, h4) {
+  font-family: var(--font-sans);
+}
+.post-editor-info-backdrop {
+  position: absolute;
+  z-index: 35;
+  inset: var(--post-editor-header-height) 0 0;
+  background: rgb(20 35 50 / 0.12);
+}
+.post-editor-info-panel {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  top: var(--post-editor-header-height);
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 23rem;
+  background: var(--fuwari-card-bg);
+  border-left: 1px solid var(--post-editor-rule);
+  box-shadow: -6px 0 24px rgb(0 0 0 / 0.05);
+}
+.post-editor-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fuwari-fg-50);
+}
+.post-editor-panel-heading h2 {
+  color: var(--fuwari-fg);
+  font-size: 1rem;
+}
+.post-editor-info-panel > header {
+  border-bottom: 1px solid var(--post-editor-rule);
+}
+.post-editor-info-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 0.875rem 1.5rem;
+  border-top: 1px solid var(--post-editor-rule);
+}
+.post-history-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.post-history-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.post-history-context {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  margin-inline: auto;
+  color: var(--fuwari-fg-50);
+}
+.post-history-context svg {
+  flex-shrink: 0;
+}
+.post-history-context h1 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fuwari-fg-75);
+}
+.post-history-context p {
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+}
+.post-history-document {
+  padding-top: 3.75rem;
+}
+.post-history-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+  flex-shrink: 0;
+  min-height: 0;
+  border-left: 1px solid var(--post-editor-rule);
+  background: color-mix(
+    in srgb,
+    var(--fuwari-page-bg) 25%,
+    var(--fuwari-card-bg)
+  );
+}
+.post-history-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 1.25rem 1.5rem 2rem;
+}
+.post-history-version {
+  position: relative;
+  display: block;
+  border-radius: 0.625rem;
+  padding: 1rem 1.125rem;
+  margin-bottom: 0.75rem;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.post-history-version::before {
+  content: "";
+  position: absolute;
+  left: -0.625rem;
+  top: 0;
+  bottom: -0.75rem;
+  width: 1px;
+  background: var(--post-editor-rule);
+}
+.post-history-version:last-child::before {
+  bottom: calc(100% - 2rem);
+}
+.post-history-version::after {
+  content: "";
+  position: absolute;
+  left: calc(-0.625rem - 3px);
+  top: 1.625rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fuwari-fg-30);
+}
+.post-history-version.is-selected::after {
+  background: var(--fuwari-primary);
+}
+.post-history-delete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--post-editor-rule);
+  font-size: 0.8125rem;
+  color: var(--fuwari-danger-fg);
+}
+.post-history-delete:hover {
+  background: var(--fuwari-danger-bg);
+}
+.post-history-delete:disabled {
+  opacity: 0.4;
+}
+.post-editor-workspace :is(button, a, summary):focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 2px;
+}
+@media (max-width: 1023px) {
+  .admin-editor-layout {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  .admin-editor-layout > main > header {
+    margin-bottom: 0;
+  }
+  .admin-editor-layout > main > header > div {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid var(--fuwari-input-border);
+  }
+  .post-editor-workspace {
+    --post-editor-header-height: 3.75rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .post-editor-header {
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem;
+  }
+  .post-editor-save {
+    margin-left: 0;
+    font-size: 0.75rem;
+  }
+  .post-editor-text-button {
+    padding-inline: 0.5rem;
+    font-size: 0.8125rem;
+  }
+  .post-editor-toolbar {
+    padding: 0.5rem 0.875rem;
+  }
+  .post-editor-document {
+    --document-inset: 1.5rem;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+  .post-editor-title {
+    font-size: 1.75rem;
+  }
+  .post-editor-summary {
+    font-size: 0.75rem;
+    gap: 0.5rem 0.75rem;
+  }
+  .post-editor-document .tiptap {
+    font-size: 1rem;
+  }
+  .post-editor-info-panel {
+    width: min(100%, 25rem);
+  }
+  .post-history-sidebar {
+    display: none;
+  }
+  .post-history-context p,
+  .post-history-context svg {
+    display: none;
+  }
+  .post-history-context h1 {
+    font-size: 0.75rem;
+  }
+  .post-history-header .post-editor-back {
+    font-size: 0.75rem;
+    gap: 0.3rem;
+    padding-inline: 0;
+  }
+}
+@media (max-width: 480px) {
+  .post-editor-info-panel {
+    width: 100%;
+  }
+  .post-editor-save svg {
+    display: none;
+  }
+  .post-editor-save span {
+    max-width: 6.5rem;
+  }
+  .post-history-context {
+    display: none;
+  }
+}
