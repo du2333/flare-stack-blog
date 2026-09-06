@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "bun run orpc:contract && vite build",
+    "build": "bun run orpc:contract && vite build && bun scripts/ssr-chunk-graph.ts",
     "deploy": "bun db:migrate && wrangler deploy",
     "serve": "vite preview",
     "test": "vitest run",

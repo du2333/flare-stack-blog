@@ -34,6 +34,20 @@ const config = defineConfig({
       exclude: [...tanstackSolidDevtools],
     },
   },
+  // workerd throws "Top-level await in module is unsettled" when the SSR
+  // entry dynamically imports a chunk that statically imports that same
+  // entry. Keep the worker graph in one module.
+  environments: {
+    ssr: {
+      build: {
+        rollupOptions: {
+          output: {
+            inlineDynamicImports: true,
+          },
+        },
+      },
+    },
+  },
   plugins: [
     paraglideVitePlugin({
       project: "./project.inlang",
