@@ -34,6 +34,7 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "auth:generate-schema": "bunx @better-auth/cli generate --yes --config auth-cli.ts --output src/lib/db/schema/auth.table.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it",
+    "prerelease": "export GITHUB_TOKEN=$(gh auth token) && release-it --preRelease=beta",
     "prepare": "husky"
   },
   "dependencies": {
