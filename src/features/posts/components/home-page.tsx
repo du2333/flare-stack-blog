@@ -67,7 +67,9 @@ export function HomePage({ posts, pinnedPosts, popularPosts }: HomePageProps) {
               pinned={pinned}
               popular={!pinned && popular}
             />
-            <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/15 last:border-t-0 md:hidden" />
+            {i < mergedPosts.length - 1 && (
+              <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/15 md:hidden" />
+            )}
           </div>
         ))}
         <div

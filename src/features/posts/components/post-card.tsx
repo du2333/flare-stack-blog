@@ -30,15 +30,9 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
 
   return (
     <div
-      className={`fuwari-card-base flex flex-col-reverse md:flex-col w-full rounded-(--fuwari-radius-large) overflow-hidden relative ${
-        pinned ? "border-2 border-(--fuwari-primary)/20 shadow-sm" : ""
-      }`}
+      className="fuwari-card-base flex flex-col-reverse md:flex-col w-full rounded-(--fuwari-radius-large) overflow-hidden relative"
       style={{ ["--coverWidth" as string]: coverWidth }}
     >
-      {pinned && (
-        <div className="absolute top-0 right-0 w-32 h-32 bg-(--fuwari-primary) opacity-5 rounded-bl-[100px] -z-10 pointer-events-none" />
-      )}
-
       <div
         className={`pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative ${
           hasCover
