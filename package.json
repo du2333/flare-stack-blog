@@ -19,7 +19,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
-    "orpc:contract": "bun scripts/generate-orpc-contract.ts && oxfmt src/lib/orpc/contract.generated.json",
+    "orpc:contract": "bun run i18n:compile && bun scripts/generate-orpc-contract.ts && oxfmt src/lib/orpc/contract.generated.json",
     "typecheck": "bun run orpc:contract && ./node_modules/typescript/bin/tsc --noEmit",
     "check": "bun run orpc:contract && oxlint && oxfmt --check && ./node_modules/typescript/bin/tsc --noEmit",
     "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
