@@ -46,8 +46,6 @@
 - **订阅与 SEO**：Canonical、Schema.org、RSS / Atom / JSON Feed、Sitemap、Robots
 - **界面语言**：公开站和管理后台支持中英文切换
 
-<img src="docs/assets/fuwari.png" alt="公开站预览" />
-
 ## 技术栈
 
 | Cloudflare      | 用途           |
@@ -68,7 +66,59 @@
 
 ## 部署指南
 
-图文教程见 **[部署教程](https://blog.dukda.com/post/flare-stack-blog%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)**，另有 **[视频教程](https://www.bilibili.com/video/BV1R4fnBhEs4?p=2)**。
+Fork 本仓库。在 Cloudflare 创建 Worker、D1、KV、R2 和 Queue，名称自定。将 Worker 连接到这个 fork，生产分支选你要自动部署的分支。构建命令 `bun run wrangler:prepare && bun run build`，部署命令 `bun run deploy`。构建镜像已带 Bun；若版本不对，加构建变量 `BUN_VERSION`。
+
+`wrangler.jsonc` 由构建时的 `wrangler:prepare` 生成，不要提交。构建变量里填写 `WORKER_NAME`（须与 Dashboard 中的 Worker 名称一致）、`QUEUE_NAME`（须与你创建的 Queue 名称一致）、`DOMAIN`、`D1_DATABASE_ID`、`KV_NAMESPACE_ID`、`BUCKET_NAME`。
+
+部署完成后，在 Worker「设置 → 变量和机密」填写运行时变量。`keep_vars` 已开启，之后的部署不会清掉这些值。`VITE_*` 写在 Builds 的构建变量里，改完需要重新部署。
+
+### 环境变量
+
+运行时变量写在 `.dev.vars`（本地）或 Worker 机密（生产）。构建时变量写在 `.env`（本地）或 Builds 构建变量（生产）。
+
+**运行时 · 必填**
+
+| 变量                                        | 说明                                                     |
+| :------------------------------------------ | :------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`                        | `openssl rand -hex 32`                                   |
+| `BETTER_AUTH_URL`                           | 站点 URL，如 `https://blog.example.com`                  |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth。当前认证配置需要这两项，即便主要用邮箱登录 |
+| `DOMAIN`                                    | 主机名，如 `blog.example.com`                            |
+
+GitHub OAuth 回调地址：`https://<DOMAIN>/api/auth/callback/github`。
+
+**运行时 · 可选**
+
+| 变量                                | 说明                                              |
+| :---------------------------------- | :------------------------------------------------ |
+| `ENVIRONMENT`                       | 本地用 `dev` 可跳过发信。生产不要设为 `dev`       |
+| `UMAMI_WEBSITE_ID`                  | 与构建时的 `VITE_UMAMI_WEBSITE_ID` 填同一个 id    |
+| `UMAMI_SRC`                         | Umami 脚本源，如 `https://cloud.umami.is`         |
+| `UMAMI_API_URL`                     | 统计 API。Cloud 可省略                            |
+| `UMAMI_API_KEY`                     | Umami Cloud。不要和用户名密码同时配               |
+| `UMAMI_USERNAME` / `UMAMI_PASSWORD` | 自托管 Umami                                      |
+| `TURNSTILE_SECRET_KEY`              | 还需构建时的 `VITE_TURNSTILE_SITE_KEY`            |
+| `GITHUB_TOKEN`                      | 版本检查用，避免 Workers 共享 IP 触发 GitHub 限流 |
+
+**构建时 · 可选**
+
+| 变量                      | 说明             |
+| :------------------------ | :--------------- |
+| `VITE_UMAMI_WEBSITE_ID`   | 公开页埋点       |
+| `VITE_TURNSTILE_SITE_KEY` | 人机验证站点 key |
+
+**构建时 · `wrangler:prepare` 必填**
+
+| 变量 | 说明 |
+| :-- | :-- |
+| `WORKER_NAME` | 须与 Dashboard 中的 Worker 名称一致 |
+| `QUEUE_NAME` | 须与你创建的 Queue 名称一致 |
+| `DOMAIN` | 与运行时相同 |
+| `D1_DATABASE_ID` | D1 数据库 ID |
+| `KV_NAMESPACE_ID` | KV 命名空间 ID |
+| `BUCKET_NAME` | R2 桶名 |
+
+本地 `db:studio` / `db:push` 还用 `.env` 里的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_DATABASE_ID`、`CLOUDFLARE_D1_TOKEN`，它们不进 Worker。
 
 ## 本地开发
 

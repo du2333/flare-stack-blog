@@ -1,6 +1,7 @@
+// Template for `bun run wrangler:prepare`. Placeholders are replaced from env.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "my-blog",
+  "name": "worker-name-placeholder",
   "compatibility_date": "2026-02-17",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "main": "./src/server.ts",
@@ -52,10 +53,10 @@
     ]
   },
   "queues": {
-    "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }],
+    "producers": [{ "binding": "QUEUE", "queue": "queue-name-placeholder" }],
     "consumers": [
       {
-        "queue": "blog-queue",
+        "queue": "queue-name-placeholder",
         "max_batch_size": 10,
         "max_batch_timeout": 5,
         "max_retries": 3
@@ -105,7 +106,7 @@
         }
       ],
       "queues": {
-        "producers": [{ "binding": "QUEUE", "queue": "blog-queue" }]
+        "producers": [{ "binding": "QUEUE", "queue": "queue-name-placeholder" }]
       }
     }
   }
