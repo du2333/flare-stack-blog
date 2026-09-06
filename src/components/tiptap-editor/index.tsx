@@ -65,8 +65,8 @@ export const Editor = memo(function Editor({
     editorProps: {
       attributes: {
         class: cn(
-          "max-w-none focus:outline-none text-lg leading-relaxed min-h-[500px]",
-          !editable && "min-h-0 text-base leading-7",
+          "prose dark:prose-invert prose-base max-w-none! fuwari-custom-md focus:outline-none min-h-[500px]",
+          !editable && "min-h-0",
           contentClassName,
         ),
       },

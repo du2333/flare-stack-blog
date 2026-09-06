@@ -81,6 +81,7 @@
     --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
     --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
     --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-code-bg: var(--fuwari-card-bg);
     --fuwari-input-bg: rgba(0, 0, 0, 0.07);
     --fuwari-input-border: rgba(0, 0, 0, 0.1);
     --fuwari-fg: rgb(0 0 0 / 0.9);
@@ -125,6 +126,7 @@
     --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
     --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
     --fuwari-inline-code-color: var(--fuwari-btn-content);
+    --fuwari-code-bg: var(--fuwari-card-bg);
     --fuwari-input-bg: rgba(255, 255, 255, 0.05);
     --fuwari-input-border: rgba(255, 255, 255, 0.1);
     --fuwari-fg: rgb(255 255 255 / 0.9);
@@ -637,6 +639,10 @@
   @apply text-white/30;
 }
 
+.fuwari-custom-md.ProseMirror :is(h1, h2, h3, h4, h5, h6):hover::after {
+  content: none;
+}
+
 .admin-layout .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -645,65 +651,8 @@
   display: none;
 }
 
-.admin-layout .ProseMirror ul {
-  list-style-type: disc;
-  margin: 1rem 0;
-  padding-left: 1.25rem;
-}
-.admin-layout .ProseMirror ol {
-  list-style-type: decimal;
-  margin: 1rem 0;
-  padding-left: 1.25rem;
-}
-.admin-layout .ProseMirror li {
-  margin: 0.25rem 0;
-}
-.admin-layout .ProseMirror h2 {
-  font-family: var(--font-serif, ui-serif, Georgia, serif);
-  font-size: 1.875rem;
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  margin: 3.5rem 0 2rem;
-}
-.admin-layout .ProseMirror h3 {
-  font-family: var(--font-serif, ui-serif, Georgia, serif);
-  font-size: 1.5rem;
-  font-weight: 500;
-  margin: 3rem 0 1.5rem;
-}
-.admin-layout .ProseMirror h4 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin: 2rem 0 1rem;
-}
-.admin-layout .ProseMirror blockquote {
-  margin: 1.5rem 0;
-  padding-left: 1rem;
-  border-left: 2px solid var(--fuwari-input-border);
-  font-family: var(--font-serif, ui-serif, Georgia, serif);
-  font-size: 1.125rem;
-  font-style: italic;
-  line-height: 1.625;
-  color: var(--fuwari-fg-50);
-}
-.admin-layout .ProseMirror code {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 0.875rem;
-  padding: 0 0.25rem;
-  border-radius: 0.125rem;
-  background: var(--fuwari-inline-code-bg);
-}
-.admin-layout .ProseMirror a {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
 .admin-layout .tiptap p.is-editor-empty:first-child::before {
   color: var(--fuwari-fg-30);
-  font-family: var(--font-serif, ui-serif, Georgia, serif);
-  font-style: italic;
   float: left;
   height: 0;
   pointer-events: none;
@@ -713,36 +662,33 @@
   margin: 0;
 }
 .admin-layout .ProseMirror table {
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  overflow: hidden;
   table-layout: fixed;
   width: 100%;
 }
 .admin-layout .ProseMirror td,
 .admin-layout .ProseMirror th {
-  border: 1px solid var(--fuwari-input-border);
+  position: relative;
   box-sizing: border-box;
   min-width: 1em;
-  padding: 0.5rem 0.625rem;
-  position: relative;
   vertical-align: top;
 }
-.admin-layout .ProseMirror th {
-  background: var(--fuwari-btn-regular-bg);
-  font-weight: 500;
-  text-align: left;
-  color: var(--fuwari-fg-50);
+.admin-layout .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--fuwari-primary);
+  pointer-events: none;
 }
-.admin-layout .ProseMirror .tiptap-mathematics-render,
-.admin-layout .ProseMirror .katex {
-  font-size: 1.1em;
-  color: inherit;
+.admin-layout .ProseMirror.resize-cursor {
+  cursor: col-resize;
 }
-.admin-layout .ProseMirror .tiptap-mathematics-render[data-type="block-math"],
-.admin-layout .ProseMirror .katex-display {
-  margin: 1em 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  text-align: center;
+.admin-layout .ProseMirror .selectedCell::after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  inset: 0;
+  background: var(--fuwari-selection-bg);
+  pointer-events: none;
 }

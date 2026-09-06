@@ -33,13 +33,13 @@ export function PostEditorHistoryDocument({
 
   return (
     <div>
-      <h1 className="mb-4 font-serif text-2xl font-medium leading-snug fuwari-text-90 md:text-3xl">
+      <h1 className="mb-4 font-bold text-3xl leading-snug fuwari-text-90 md:text-[2.25rem]/[2.75rem]">
         {title}
       </h1>
       <Editor
         key={editorKey}
         className="min-h-0"
-        contentClassName="min-h-0 text-base leading-7"
+        contentClassName="min-h-0"
         extensions={inspectExtensions}
         content={normalizePostContent(snapshot.contentJson) ?? ""}
         editable={false}

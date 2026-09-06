@@ -158,7 +158,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         label={m.editor_toolbar_heading3()}
       />
 
-      <div className="h-4 w-px bg-border/50 mx-2"></div>
+      <div className="mx-2 h-4 w-px bg-(--fuwari-meta-divider)"></div>
 
       {/* Formatting */}
       <ToolbarButton
@@ -210,7 +210,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         label={m.editor_toolbar_formula_block()}
       />
 
-      <div className="h-4 w-px bg-border/50 mx-2"></div>
+      <div className="mx-2 h-4 w-px bg-(--fuwari-meta-divider)"></div>
 
       {/* Lists & Blocks */}
       <ToolbarButton
@@ -244,7 +244,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         label={m.editor_toolbar_table()}
       />
 
-      <div className="h-4 w-px bg-border/50 mx-2"></div>
+      <div className="mx-2 h-4 w-px bg-(--fuwari-meta-divider)"></div>
 
       {/* Inserts */}
       <ToolbarButton

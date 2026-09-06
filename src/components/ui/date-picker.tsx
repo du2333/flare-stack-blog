@@ -124,7 +124,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         >
           {i}
           {today && !selected && (
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-px bg-foreground"></div>
+            <div className="absolute bottom-1 left-1/2 h-px w-1 -translate-x-1/2 bg-(--fuwari-primary)"></div>
           )}
         </button>,
       );
@@ -154,7 +154,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <div className="absolute top-full left-0 z-50 mt-2 w-70 rounded-xl bg-(--fuwari-card-bg) p-4 shadow-md ring-1 ring-(--fuwari-input-border) animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-serif font-medium text-foreground">
+            <h4 className="text-sm font-medium fuwari-text-90">
               {viewDate.toLocaleString(localeTag, {
                 month: "long",
                 year: "numeric",
@@ -163,13 +163,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => changeMonth(-1)}
-                className="text-muted-foreground/50 hover:text-foreground transition-colors p-1"
+                className="p-1 fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
               >
                 <ChevronLeft size={14} strokeWidth={1.5} />
               </button>
               <button
                 onClick={() => changeMonth(1)}
-                className="text-muted-foreground/50 hover:text-foreground transition-colors p-1"
+                className="p-1 fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
               >
                 <ChevronRight size={14} strokeWidth={1.5} />
               </button>

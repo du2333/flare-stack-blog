@@ -1,10 +1,11 @@
 import { ClientOnly } from "@tanstack/react-router";
 import katex from "katex";
-import { Sigma, SquareFunction, X } from "lucide-react";
+import { X } from "lucide-react";
 import type React from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 export type FormulaMode = "inline" | "block";
@@ -110,64 +111,56 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
 
   if (!shouldRender) return null;
 
-  const Icon = activeMode === "inline" ? Sigma : SquareFunction;
-
   return createPortal(
     <div
-      className={`fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 ease-out ${
+      className={cn(
+        "fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 ease-out",
         isOpen
           ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
-      }`}
+          : "opacity-0 pointer-events-none",
+      )}
     >
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
-        className={`relative w-full sm:max-w-2xl bg-background border border-border shadow-2xl flex flex-col overflow-hidden rounded-t-xl sm:rounded-none max-h-[90vh] sm:max-h-[85vh] transition-all duration-300 ease-out transform ${
+        className={cn(
+          "relative flex w-full max-h-[90vh] sm:max-h-[85vh] sm:max-w-2xl flex-col overflow-hidden fuwari-card-base p-6 transition-all duration-300 ease-out max-sm:rounded-b-none",
           isOpen
             ? "translate-y-0 scale-100 opacity-100"
-            : "translate-y-4 scale-[0.98] opacity-0"
-        }`}
+            : "translate-y-4 scale-[0.98] opacity-0",
+        )}
       >
-        <div className="flex justify-between items-start sm:items-center gap-2 p-4 sm:p-6 border-b border-border/50 bg-muted/5 shrink-0">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 shrink-0 border border-border bg-background text-foreground">
-                <Icon size={14} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground leading-none mb-0.5">
-                  FORMULA
-                </span>
-                <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase truncate">
-                  {editContext
-                    ? m.editor_formula_edit()
-                    : m.editor_formula_insert()}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-1">
+        <div className="flex shrink-0 items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg font-medium fuwari-text-90">
+              {editContext
+                ? m.editor_formula_edit()
+                : m.editor_formula_insert()}
+            </h2>
+            <div className="mt-3 flex gap-2">
               <button
                 type="button"
                 onClick={() => setActiveMode("inline")}
-                className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
+                className={cn(
+                  "h-8 rounded-xl px-3 text-sm font-medium",
                   activeMode === "inline"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
-                }`}
+                    ? "fuwari-btn-primary"
+                    : "fuwari-btn-regular",
+                )}
               >
                 {m.editor_formula_inline()}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveMode("block")}
-                className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
+                className={cn(
+                  "h-8 rounded-xl px-3 text-sm font-medium",
                   activeMode === "block"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
-                }`}
+                    ? "fuwari-btn-primary"
+                    : "fuwari-btn-regular",
+                )}
               >
                 {m.editor_formula_block()}
               </button>
@@ -176,46 +169,47 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 shrink-0 text-muted-foreground hover:text-foreground transition-colors hover:bg-muted/10 -m-2"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg fuwari-text-50 hover:text-(--fuwari-primary)"
           >
-            <X size={18} strokeWidth={1.5} />
+            <X size={16} />
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 min-h-0 p-4 sm:p-6 gap-4 md:gap-6 overflow-auto">
-          <div className="flex flex-col min-w-0 shrink-0 md:flex-1">
-            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
-              LaTeX
-            </label>
+        <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-auto md:flex-row md:gap-6">
+          <div className="flex min-w-0 shrink-0 flex-col md:flex-1">
+            <label className="mb-2 text-xs fuwari-text-50">LaTeX</label>
             <textarea
               ref={inputRef}
               value={latex}
               onChange={(e) => setLatex(e.target.value)}
               placeholder={m.editor_formula_placeholder()}
-              className="w-full min-h-25 sm:min-h-30 p-3 sm:p-4 font-mono text-base bg-transparent border border-border text-foreground focus:border-foreground focus:outline-none resize-y placeholder:text-muted-foreground/40"
+              className="min-h-25 w-full resize-y rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) p-3 font-mono text-sm fuwari-text-90 outline-none placeholder:fuwari-text-30 focus:border-(--fuwari-primary) sm:min-h-30 sm:p-4"
               spellCheck={false}
             />
           </div>
-          <div className="flex flex-col min-w-0 shrink-0 md:flex-1 md:border-l md:border-border/50 md:pl-6">
-            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
+          <div className="flex min-w-0 shrink-0 flex-col md:flex-1">
+            <label className="mb-2 text-xs fuwari-text-50">
               {m.editor_formula_preview()}
             </label>
             <div
-              className={`min-h-20 sm:min-h-30 p-3 sm:p-4 border border-border flex items-center justify-center overflow-auto ${
-                previewError ? "bg-destructive/5" : "bg-muted/5"
-              }`}
+              className={cn(
+                "flex min-h-20 items-center justify-center overflow-auto rounded-xl border border-(--fuwari-input-border) p-3 sm:min-h-30 sm:p-4",
+                previewError
+                  ? "bg-(--fuwari-danger-bg)"
+                  : "bg-(--fuwari-input-bg)",
+              )}
             >
               {previewError ? (
-                <p className="text-sm font-mono text-destructive wrap-break-word text-center">
+                <p className="text-center text-sm wrap-break-word text-(--fuwari-danger-fg)">
                   {previewError}
                 </p>
               ) : previewHtml ? (
                 <div
-                  className="katex-preview [&_.katex]:text-inherit overflow-x-auto max-w-full"
+                  className="fuwari-custom-md katex-preview max-w-full overflow-x-auto [&_.katex]:text-inherit"
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
               ) : (
-                <p className="text-sm font-mono text-muted-foreground/50">
+                <p className="text-sm fuwari-text-30">
                   {m.editor_formula_preview_empty()}
                 </p>
               )}
@@ -223,24 +217,24 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-0 border-t border-border/50 shrink-0">
-          <span className="hidden sm:inline px-4 text-xs font-mono text-muted-foreground/60">
+        <div className="mt-5 flex shrink-0 items-center justify-end gap-2">
+          <span className="mr-auto hidden text-xs fuwari-text-50 sm:inline">
             {m.editor_formula_shortcut()}
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors border-r border-border/50 active:bg-muted/20"
+            className="fuwari-btn-regular h-10 rounded-xl px-4 text-sm font-medium"
           >
-            [ {m.editor_formula_cancel()} ]
+            {m.editor_formula_cancel()}
           </button>
           <button
             type="button"
             onClick={handleApply}
             disabled={!latex.trim()}
-            className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-xs font-mono font-bold uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-foreground active:bg-foreground/90"
+            className="fuwari-btn-primary h-10 rounded-xl px-4 text-sm font-medium"
           >
-            [ {m.editor_formula_apply()} ]
+            {m.editor_formula_apply()}
           </button>
         </div>
       </div>

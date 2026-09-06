@@ -213,7 +213,7 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
           <Editor
             key={editorRenderKey}
             className="min-h-0"
-            contentClassName="min-h-50 text-base leading-7"
+            contentClassName="min-h-50"
             extensions={extensions}
             content={editorContent ?? ""}
             onUpdate={handleEditorUpdate}
@@ -249,7 +249,7 @@ function TextareaTitle({
       onChange={(e) => onChange(e.target.value)}
       rows={1}
       placeholder={m.editor_title_placeholder()}
-      className="mb-4 w-full resize-none overflow-hidden bg-transparent pt-2 font-serif text-2xl font-medium leading-snug fuwari-text-90 outline-none placeholder:fuwari-text-30 md:text-3xl"
+      className="mb-4 w-full resize-none overflow-hidden bg-transparent pt-2 font-bold text-3xl leading-snug fuwari-text-90 outline-none placeholder:fuwari-text-30 md:text-[2.25rem]/[2.75rem]"
       onInput={(event) => {
         const el = event.currentTarget;
         el.style.height = "auto";

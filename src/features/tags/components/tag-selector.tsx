@@ -231,7 +231,7 @@ export function TagSelector({
         <input
           ref={inputRef}
           type="text"
-          className="flex-1 min-w-20 bg-transparent outline-none placeholder:text-muted-foreground text-sm h-6"
+          className="h-6 min-w-20 flex-1 bg-transparent text-sm outline-none placeholder:fuwari-text-30"
           placeholder={
             selectedTags.length === 0 ? m.tag_selector_search_placeholder() : ""
           }
@@ -247,7 +247,7 @@ export function TagSelector({
 
         {/* Loading Spinner */}
         {(isInitialLoading || createTagMutation.isPending) && (
-          <div className="animate-spin text-muted-foreground mr-1">
+          <div className="mr-1 animate-spin fuwari-text-50">
             <Loader2 size={12} />
           </div>
         )}
@@ -263,21 +263,21 @@ export function TagSelector({
                 (t) => t.name.toLowerCase() === searchTerm.toLowerCase(),
               ) && (
                 <div
-                  className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  className="relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm outline-none fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)/70 hover:fuwari-text-90"
                   onClick={() => createTagMutation.mutate(searchTerm)}
                 >
-                  <Plus className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Plus className="mr-2 h-4 w-4 fuwari-text-50" />
                   <span>{m.tag_selector_create_action({ searchTerm })}</span>
                 </div>
               )}
 
             {/* Filtered List */}
             {isError ? (
-              <div className="p-2 text-xs text-destructive text-center">
+              <div className="p-2 text-center text-xs text-(--fuwari-danger-fg)">
                 <p>{m.tag_selector_load_fail()}</p>
               </div>
             ) : availableTags.length === 0 && !searchTerm ? (
-              <p className="p-2 text-xs text-muted-foreground text-center">
+              <p className="p-2 text-center text-xs fuwari-text-50">
                 {searchTerm
                   ? m.tag_selector_no_match()
                   : m.tag_selector_empty()}
@@ -291,14 +291,14 @@ export function TagSelector({
                   <div
                     key={tag.id}
                     className={cn(
-                      "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
+                      "relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2 text-sm outline-none transition-colors",
                       isSelected
-                        ? "bg-accent/50 text-accent-foreground"
-                        : "hover:bg-accent hover:text-accent-foreground",
+                        ? "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
+                        : "fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)/70 hover:fuwari-text-90",
                     )}
                     onClick={() => toggleTag(tag.id)}
                   >
-                    <Hash className="mr-2 h-4 w-4 text-muted-foreground/50" />
+                    <Hash className="mr-2 h-4 w-4 fuwari-text-30" />
                     <span className="flex-1 truncate">{tag.name}</span>
                     {isSelected && (
                       <Check className="ml-auto h-4 w-4 opacity-50" />

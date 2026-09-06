@@ -3,6 +3,7 @@ import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import DropdownMenu from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { getLanguages } from "./languages";
 
@@ -19,42 +20,42 @@ export function CodeBlockView({ node, updateAttributes }: NodeViewProps) {
   };
 
   return (
-    <NodeViewWrapper className="my-12 group relative max-w-full outline-none [&.ProseMirror-selectednode]:outline-none [&.ProseMirror-selectednode]:ring-0 [&.ProseMirror-selectednode]:shadow-none">
-      <div className="relative rounded-sm border border-zinc-200/40 transition-colors duration-500 hover:border-zinc-300/60 dark:border-zinc-800/40 dark:hover:border-zinc-700/60">
-        <div className="flex select-none items-center justify-between rounded-t-sm border-b border-zinc-200/10 bg-zinc-100 px-4 py-2 dark:border-zinc-800/10 dark:bg-zinc-800">
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-mono font-medium text-muted-foreground/80">
-              <DropdownMenu
-                value={language}
-                onChange={(val) => updateAttributes({ language: val })}
-                options={languages.map((lang) => ({
-                  label: lang.label,
-                  value: lang.value,
-                }))}
-              />
-            </span>
-          </div>
-
+    <NodeViewWrapper className="not-prose group relative my-6 max-w-full outline-none [&.ProseMirror-selectednode]:outline-none [&.ProseMirror-selectednode]:ring-0 [&.ProseMirror-selectednode]:shadow-none">
+      <div className="expressive-code relative overflow-hidden rounded-xl border border-black/10 bg-(--fuwari-code-bg) shadow-sm transition-colors dark:border-white/10">
+        <div
+          contentEditable={false}
+          className="absolute top-2 right-2 z-10 flex items-center gap-1"
+        >
           <button
+            type="button"
             onClick={handleCopy}
-            contentEditable={false}
-            className="flex items-center gap-2 font-mono text-xs text-muted-foreground transition-all duration-300 hover:text-foreground"
+            aria-label={m.common_copy_code()}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent text-gray-400 opacity-0 transition-all duration-300 group-hover:opacity-100",
+              "hover:border-black/10 hover:bg-black/5 hover:text-black dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white",
+              copied && "scale-110 text-green-500 hover:text-green-500",
+            )}
           >
             {copied ? (
-              <span className="animate-in fade-in slide-in-from-right-1 opacity-70">
-                {m.common_copied()}
-              </span>
-            ) : null}
-            <div className="p-0.5 opacity-60">
-              {copied ? <Check size={12} /> : <Copy size={12} />}
-            </div>
+              <Check strokeWidth={2.5} className="h-4 w-4" />
+            ) : (
+              <Copy strokeWidth={2.5} className="h-4 w-4" />
+            )}
           </button>
+          <DropdownMenu
+            value={language}
+            onChange={(val) => updateAttributes({ language: val })}
+            options={languages.map((lang) => ({
+              label: lang.label,
+              value: lang.value,
+            }))}
+          />
         </div>
 
-        <pre className="relative m-0 overflow-x-auto rounded-b-sm custom-scrollbar">
+        <pre className="relative m-0 overflow-x-auto custom-scrollbar">
           <NodeViewContent
             as="div"
-            className="block w-fit min-w-full p-6 font-mono text-sm leading-relaxed whitespace-pre outline-none"
+            className="block w-fit min-w-full px-5 py-4 font-mono text-sm leading-relaxed whitespace-pre outline-none fuwari-text-90"
             spellCheck={false}
           />
         </pre>

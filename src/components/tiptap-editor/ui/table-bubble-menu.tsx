@@ -40,15 +40,15 @@ const MenuButton: React.FC<MenuButtonProps> = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "h-7 w-7 flex items-center justify-center rounded-sm transition-all duration-200",
-      disabled && "opacity-30 cursor-not-allowed",
+      "flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200",
+      disabled && "cursor-not-allowed opacity-30",
       !disabled &&
         !isActive &&
         !isDestructive &&
-        "text-muted-foreground/70 hover:text-foreground hover:bg-muted/50",
-      isActive && "bg-foreground text-background shadow-sm",
+        "fuwari-text-50 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary)",
+      isActive && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)",
       isDestructive &&
-        "text-muted-foreground/70 hover:text-red-500 hover:bg-red-500/10",
+        "fuwari-text-50 hover:bg-(--fuwari-danger-bg) hover:text-(--fuwari-danger-fg)",
     )}
     title={label}
     type="button"
@@ -57,7 +57,9 @@ const MenuButton: React.FC<MenuButtonProps> = ({
   </button>
 );
 
-const Separator = () => <div className="h-3.5 w-px bg-border/40 mx-1" />;
+const Separator = () => (
+  <div className="mx-1 h-4 w-px bg-(--fuwari-meta-divider)" />
+);
 
 export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
   if (!editor) return null;
@@ -73,9 +75,8 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
         placement: "top",
         offset: 8,
       }}
-      className="flex items-center p-1 rounded-md border border-border/60 bg-background/95 backdrop-blur-md shadow-lg gap-0.5"
+      className="flex items-center gap-0.5 rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)"
     >
-      {/* Column Operations */}
       <div className="flex items-center gap-0.5">
         <MenuButton
           onClick={() => editor.chain().focus().addColumnBefore().run()}
@@ -97,7 +98,6 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 
       <Separator />
 
-      {/* Row Operations */}
       <div className="flex items-center gap-0.5">
         <MenuButton
           onClick={() => editor.chain().focus().addRowBefore().run()}
@@ -119,7 +119,6 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 
       <Separator />
 
-      {/* Header Toggles */}
       <div className="flex items-center gap-0.5">
         <MenuButton
           onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
@@ -137,7 +136,6 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 
       <Separator />
 
-      {/* Delete Table */}
       <MenuButton
         onClick={() => editor.chain().focus().deleteTable().run()}
         icon={Trash2}
