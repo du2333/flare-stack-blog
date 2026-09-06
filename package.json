@@ -88,6 +88,7 @@
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
+    "tldts": "^7.4.11",
     "tw-animate-css": "^1.3.6",
     "worker-mailer": "^1.2.1",
     "zod": "~4.3.6"

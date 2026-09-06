@@ -107,8 +107,13 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
 | `D1_DATABASE_ID` | 是 | 第一步创建的 D1 数据库 ID |
 | `KV_NAMESPACE_ID` | 是 | 第一步创建的 KV 命名空间 ID |
 | `BUCKET_NAME` | 是 | 第一步创建的 R2 存储桶名称 |
+| `ROUTE` | 否 | 域名绑定模式。默认使用 Custom Domain；设为 `1` 时切换为 Workers Routes 模式（`DOMAIN/*`） |
+| `ZONE_NAME` | 否 | 配合 `ROUTE` 使用的 Cloudflare 区域根域名（如 `example.com`）；省略时自动从 `DOMAIN` 推导 |
 | `VITE_TURNSTILE_SITE_KEY` | 否 | Cloudflare Turnstile 人机验证站点公钥（Site Key） |
 | `VITE_UMAMI_WEBSITE_ID` | 否 | Umami 统计公开脚本埋点使用的 Website ID |
+
+> [!TIP]
+> **关于域名绑定模式**：默认使用 Cloudflare **Custom Domain**（由 Cloudflare 自动创建与维护 DNS 记录，简单可靠）。如果你的域名已在 Cloudflare 配置了 DNS 橙色云朵代理并希望通过路由规则接管流量，可配置 `ROUTE=1` 启用 **Workers Routes** 模式。
 
 #### 2. 运行时变量与机密（Runtime Variables & Secrets）
 在 Worker 的 **Settings → Variables and Secrets** 中配置（密钥信息建议勾选 Encrypt 设为机密）：
