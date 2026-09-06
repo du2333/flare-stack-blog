@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/flare-stack-blog-logo.png" alt="Flare Stack Blog Logo" width="144">
+
 # Flare Stack Blog
 
 基于 **Cloudflare 边缘生态**打造的高性能全栈博客与 CMS 系统<br>
