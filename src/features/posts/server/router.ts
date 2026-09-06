@@ -3,8 +3,8 @@ import {
   AdminPostListPageSchema,
   DeletePostInputSchema,
   FindPostByIdInputSchema,
+  AdjacentPostsSchema,
   FindPostBySlugInputSchema,
-  FindRelatedPostsInputSchema,
   GenerateSlugInputSchema,
   GetPostsCursorInputSchema,
   GetPostsInputSchema,
@@ -80,20 +80,17 @@ const bySlug = publicProcedure
   .output(PostWithTocSchema)
   .handler(({ context, input }) => PostService.findPostBySlug(context, input));
 
-const related = publicProcedure
+const adjacent = publicProcedure
   .route({
     method: "GET",
-    path: "/posts/{slug}/related",
-    summary: "List related published posts",
+    path: "/posts/{slug}/adjacent",
+    summary: "Get the adjacent published posts by publication date",
     tags: ["Posts"],
   })
-  .input(FindRelatedPostsInputSchema)
-  .output(z.array(PostItemSchema))
-  .handler(async ({ context, input }) =>
-    postPopularityService.attachViewCounts(
-      context,
-      await PostService.getRelatedPosts(context, input),
-    ),
+  .input(FindPostBySlugInputSchema)
+  .output(AdjacentPostsSchema)
+  .handler(({ context, input }) =>
+    PostService.getAdjacentPosts(context, input),
   );
 
 const pinned = publicProcedure
@@ -318,7 +315,7 @@ const deleteRevisions = adminProcedure
 export default {
   list,
   bySlug,
-  related,
+  adjacent,
   pinned,
   popular,
   admin: {

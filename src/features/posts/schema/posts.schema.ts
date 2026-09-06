@@ -120,14 +120,19 @@ export const FindPostBySlugInputSchema = z.object({
   slug: z.string(),
 });
 
-export const FindRelatedPostsInputSchema = z.object({
+export const AdjacentPublicPostSchema = z.object({
   slug: z.string(),
-  limit: z.number().optional(),
+  title: z.string(),
+});
+
+export const AdjacentPostsSchema = z.object({
+  newer: AdjacentPublicPostSchema.nullable(),
+  older: AdjacentPublicPostSchema.nullable(),
 });
 
 export type GetPostsCursorInput = z.infer<typeof GetPostsCursorInputSchema>;
 export type FindPostBySlugInput = z.infer<typeof FindPostBySlugInputSchema>;
-export type FindRelatedPostsInput = z.infer<typeof FindRelatedPostsInputSchema>;
+export type AdjacentPosts = z.infer<typeof AdjacentPostsSchema>;
 
 // Admin API Schemas
 export const GenerateSlugInputSchema = z.object({

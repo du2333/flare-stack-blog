@@ -5,8 +5,7 @@ import { NotFound } from "@/components/common/not-found";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
 import { PostPage } from "@/features/posts/components/post-page";
 import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
-import { RELATED_POSTS_LIMIT } from "@/features/posts/components/related-posts";
-import { postBySlugQuery, relatedPostsQuery } from "@/features/posts/queries";
+import { adjacentPostsQuery, postBySlugQuery } from "@/features/posts/queries";
 import {
   buildArticleJsonLd,
   buildCanonicalUrl,
@@ -22,17 +21,12 @@ export const Route = createFileRoute("/_public/post/$slug")({
   component: RouteComponent,
   notFoundComponent: NotFound,
   loader: async ({ context, params }) => {
-    // 1. Critical: Main post data - use serverFn (executes directly on server, no HTTP)
     const [post, domain, siteConfig] = await Promise.all([
       context.queryClient.ensureQueryData(postBySlugQuery(params.slug)),
       context.queryClient.ensureQueryData(siteDomainQuery),
       context.queryClient.ensureQueryData(siteConfigQuery),
+      context.queryClient.ensureQueryData(adjacentPostsQuery(params.slug)),
     ]);
-
-    // 2. Deferred: Related posts (prefetch only, don't await)
-    void context.queryClient.prefetchQuery(
-      relatedPostsQuery(params.slug, RELATED_POSTS_LIMIT),
-    );
 
     if (!post) throw notFound();
 

@@ -8,13 +8,11 @@ import {
   pinnedPosts,
   postBySlug,
   postsList,
-  relatedPostIds,
 } from "@/features/posts/posts.cache";
 import type {
   DeletePostInput,
   FindPostByIdInput,
   FindPostBySlugInput,
-  FindRelatedPostsInput,
   GenerateSlugInput,
   GetPostsCountInput,
   GetPostsCursorInput,
@@ -174,24 +172,11 @@ export async function findPostBySlug(
   return postBySlug.get(context, { slug: data.slug });
 }
 
-export async function getRelatedPosts(
-  context: DbContext & { executionCtx: ExecutionContext },
-  data: FindRelatedPostsInput,
+export async function getAdjacentPosts(
+  context: DbContext,
+  data: FindPostBySlugInput,
 ) {
-  const cachedIds = await relatedPostIds.get(context, {
-    slug: data.slug,
-    limit: data.limit,
-  });
-
-  if (cachedIds.length === 0) {
-    return [];
-  }
-
-  const posts = await PostRepo.getPublicPostsByIds(context.db, cachedIds);
-
-  return cachedIds
-    .map((id) => posts.find((p) => p.id === id))
-    .filter((p): p is NonNullable<typeof p> => !!p);
+  return PostRepo.findAdjacentPublicPosts(context.db, data.slug);
 }
 
 export async function generateSlug(

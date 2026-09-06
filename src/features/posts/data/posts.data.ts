@@ -1,8 +1,10 @@
 import {
   and,
+  asc,
   count,
   desc,
   eq,
+  gt,
   inArray,
   isNotNull,
   like,
@@ -561,13 +563,7 @@ export async function findSimilarSlugs(
   return results.map((r) => r.slug);
 }
 
-export async function getRelatedPostIds(
-  db: DB,
-  slug: string,
-  options: { limit?: number } = {},
-) {
-  const { limit = 3 } = options;
-
+export async function findAdjacentPublicPosts(db: DB, slug: string) {
   const currentPost = await db.query.PostsTable.findFirst({
     where: and(
       eq(PostsTable.publicSlug, slug),
@@ -576,64 +572,59 @@ export async function getRelatedPostIds(
     columns: { id: true, publicSnapshotJson: true },
   });
 
-  const tagIds = currentPost?.publicSnapshotJson?.tagIds ?? [];
-  if (!currentPost || tagIds.length === 0) {
-    return [];
+  const publishedAt = currentPost?.publicSnapshotJson?.publishedAt;
+  if (!currentPost || !publishedAt) {
+    return { newer: null, older: null };
   }
 
-  const publishedRows = await db
+  const snapshotTitle = sql<string>`json_extract(${PostsTable.publicSnapshotJson}, '$.title')`;
+
+  const [newer] = await db
     .select({
-      id: PostsTable.id,
-      publicSnapshotJson: PostsTable.publicSnapshotJson,
+      slug: PostsTable.publicSlug,
+      title: snapshotTitle,
     })
     .from(PostsTable)
     .where(
       and(
-        ne(PostsTable.id, currentPost.id),
         isNotNull(PostsTable.publicSnapshotJson),
+        isNotNull(PostsTable.publicSlug),
+        or(
+          gt(snapshotPublishedAt, publishedAt),
+          and(
+            eq(snapshotPublishedAt, publishedAt),
+            gt(PostsTable.id, currentPost.id),
+          ),
+        ),
       ),
-    );
+    )
+    .orderBy(asc(snapshotPublishedAt), asc(PostsTable.id))
+    .limit(1);
 
-  const scored = publishedRows
-    .map((row) => {
-      const snapshotTags = row.publicSnapshotJson?.tagIds ?? [];
-      const matchCount = snapshotTags.filter((id) =>
-        tagIds.includes(id),
-      ).length;
-      return {
-        id: row.id,
-        matchCount,
-        publishedAt: row.publicSnapshotJson?.publishedAt ?? "",
-      };
-    })
-    .filter((row) => row.matchCount > 0)
-    .sort((a, b) => {
-      if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
-      return b.publishedAt.localeCompare(a.publishedAt);
-    })
-    .slice(0, limit);
-
-  return scored.map((row) => row.id);
-}
-
-export async function getPublicPostsByIds(db: DB, ids: Array<number>) {
-  if (ids.length === 0) return [];
-
-  const rows = await db
+  const [older] = await db
     .select({
-      id: PostsTable.id,
-      status: PostsTable.status,
-      createdAt: PostsTable.createdAt,
-      updatedAt: PostsTable.updatedAt,
-      publicSnapshotJson: PostsTable.publicSnapshotJson,
+      slug: PostsTable.publicSlug,
+      title: snapshotTitle,
     })
     .from(PostsTable)
     .where(
       and(
-        inArray(PostsTable.id, ids),
         isNotNull(PostsTable.publicSnapshotJson),
+        isNotNull(PostsTable.publicSlug),
+        or(
+          lt(snapshotPublishedAt, publishedAt),
+          and(
+            eq(snapshotPublishedAt, publishedAt),
+            lt(PostsTable.id, currentPost.id),
+          ),
+        ),
       ),
-    );
+    )
+    .orderBy(desc(snapshotPublishedAt), desc(PostsTable.id))
+    .limit(1);
 
-  return hydratePublicPosts(db, rows);
+  return {
+    newer: newer?.slug ? { slug: newer.slug, title: newer.title } : null,
+    older: older?.slug ? { slug: older.slug, title: older.title } : null,
+  };
 }

@@ -49,8 +49,8 @@ export function adminPostsQuery(input: GetPostsInput) {
   return orpc.posts.admin.list.queryOptions({ input });
 }
 
-export function relatedPostsQuery(slug: string, limit?: number) {
-  return orpc.posts.related.queryOptions({ input: { slug, limit } });
+export function adjacentPostsQuery(slug: string) {
+  return orpc.posts.adjacent.queryOptions({ input: { slug } });
 }
 
 export function postRevisionListQuery(postId: number) {

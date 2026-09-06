@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { defineEntry } from "@/features/cache/public-cache";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import {
@@ -128,20 +127,4 @@ export const postBySlug = defineEntry({
       cover: toPublicCover(post.publicSnapshotJson?.cover),
     };
   },
-});
-
-export const relatedPostIds = defineEntry({
-  name: "posts.related",
-  namespace: "posts:related",
-  key: ({ slug, limit }: { slug: string; limit?: number }) => [
-    "posts",
-    "related-ids",
-    slug,
-    limit,
-  ],
-  schema: z.array(z.number()),
-  ttl: "7d",
-  invalidatedBy: POST_PUBLIC_REASONS,
-  load: (context, { slug, limit }) =>
-    PostRepo.getRelatedPostIds(context.db, slug, { limit }),
 });

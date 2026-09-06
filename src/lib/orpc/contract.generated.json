@@ -24,14 +24,14 @@
         }
       }
     },
-    "related": {
+    "adjacent": {
       "~orpc": {
         "errorMap": {},
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{slug}/related",
-          "summary": "List related published posts",
+          "path": "/posts/{slug}/adjacent",
+          "summary": "Get the adjacent published posts by publication date",
           "tags": ["Posts"]
         }
       }

@@ -763,122 +763,74 @@ describe("Posts Integration", () => {
     });
   });
 
-  describe("Related Posts", () => {
-    it("should return related posts ranked by tag match count", async () => {
+  describe("Adjacent Posts", () => {
+    it("returns newer and older published posts by snapshot date", async () => {
       const publicContext = createTestContext();
 
-      // 1. Create Tags
-      const tag1 = unwrap(
-        await TagService.createTag(adminContext, { name: "Tag1" }),
-      );
-      const tag2 = unwrap(
-        await TagService.createTag(adminContext, { name: "Tag2" }),
-      );
-      const tag3 = unwrap(
-        await TagService.createTag(adminContext, { name: "Tag3" }),
-      );
-
-      // 2. Create Main Post (Tags: T1, T2)
-      const { id: mainId } = await PostService.createEmptyPost(adminContext);
+      const { id: olderId } = await PostService.createEmptyPost(adminContext);
       await updatePost({
-        id: mainId,
+        id: olderId,
         data: {
-          title: "Main Post",
-          slug: "main-post",
-          publishedAt: new Date(),
+          title: "Older",
+          slug: "older",
+          publishedAt: new Date("2024-01-01T00:00:00.000Z"),
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: mainId,
-        tagIds: [tag1.id, tag2.id],
-      });
-      unwrap(await PostService.publishPost(adminContext, { id: mainId }));
+      unwrap(await PostService.publishPost(adminContext, { id: olderId }));
 
-      // 3. Create High Relevance Post (Tags: T1, T2) -> 2 matches
-      const { id: highId } = await PostService.createEmptyPost(adminContext);
+      const { id: currentId } = await PostService.createEmptyPost(adminContext);
       await updatePost({
-        id: highId,
+        id: currentId,
         data: {
-          title: "High Relevance",
-          slug: "high-rel",
-          publishedAt: new Date(),
+          title: "Current",
+          slug: "current",
+          publishedAt: new Date("2024-06-01T00:00:00.000Z"),
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: highId,
-        tagIds: [tag1.id, tag2.id],
-      });
-      unwrap(await PostService.publishPost(adminContext, { id: highId }));
+      unwrap(await PostService.publishPost(adminContext, { id: currentId }));
 
-      // 4. Create Low Relevance Post (Tags: T1) -> 1 match
-      const { id: lowId } = await PostService.createEmptyPost(adminContext);
+      const { id: newerId } = await PostService.createEmptyPost(adminContext);
       await updatePost({
-        id: lowId,
+        id: newerId,
         data: {
-          title: "Low Relevance",
-          slug: "low-rel",
-          publishedAt: new Date(),
+          title: "Newer",
+          slug: "newer",
+          publishedAt: new Date("2024-12-01T00:00:00.000Z"),
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: lowId,
-        tagIds: [tag1.id],
-      });
-      unwrap(await PostService.publishPost(adminContext, { id: lowId }));
+      unwrap(await PostService.publishPost(adminContext, { id: newerId }));
 
-      // 5. Create Unrelated Post (Tags: T3) -> 0 matches
-      const { id: unrelatedId } =
+      const { id: pinnedOlderId } =
         await PostService.createEmptyPost(adminContext);
       await updatePost({
-        id: unrelatedId,
+        id: pinnedOlderId,
         data: {
-          title: "Unrelated",
-          slug: "unrelated",
-          publishedAt: new Date(),
+          title: "Pinned Older",
+          slug: "pinned-older",
+          publishedAt: new Date("2023-01-01T00:00:00.000Z"),
+          pinnedAt: new Date("2024-12-31T00:00:00.000Z"),
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: unrelatedId,
-        tagIds: [tag3.id],
-      });
-      unwrap(await PostService.publishPost(adminContext, { id: unrelatedId }));
+      unwrap(
+        await PostService.publishPost(adminContext, { id: pinnedOlderId }),
+      );
 
-      // 6. Create Draft Post (Tags: T1, T2) -> High match but draft
       const { id: draftId } = await PostService.createEmptyPost(adminContext);
       await updatePost({
         id: draftId,
         data: {
-          title: "Draft High Rel",
-          slug: "draft-rel", // Should be ignored
+          title: "Draft Between",
+          slug: "draft-between",
+          publishedAt: new Date("2024-09-01T00:00:00.000Z"),
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: draftId,
-        tagIds: [tag1.id, tag2.id],
+
+      const adjacent = await PostService.getAdjacentPosts(publicContext, {
+        slug: "current",
       });
 
-      // Act: Get Related Posts
-      const related = await PostService.getRelatedPosts(publicContext, {
-        slug: "main-post",
-        limit: 10,
-      });
-
-      // Assert
-      expect(related).toHaveLength(2);
-
-      // Rank 1: High Relevance (2 matches)
-      expect(related[0].title).toBe("High Relevance");
-      expect(related[0].id).toBe(highId);
-
-      // Rank 2: Low Relevance (1 match)
-      expect(related[1].title).toBe("Low Relevance");
-      expect(related[1].id).toBe(lowId);
-
-      // Verify Exclusions
-      const ids = related.map((p) => p.id);
-      expect(ids).not.toContain(unrelatedId);
-      expect(ids).not.toContain(draftId);
-      expect(ids).not.toContain(mainId); // Should not contain itself
+      expect(adjacent.newer).toEqual({ slug: "newer", title: "Newer" });
+      expect(adjacent.older).toEqual({ slug: "older", title: "Older" });
     });
   });
 

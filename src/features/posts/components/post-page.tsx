@@ -1,15 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, FileText, Pencil } from "lucide-react";
-import { Suspense } from "react";
 import { CommentSection } from "@/features/comments/components/comment-section";
 import { ContentRenderer } from "@/features/posts/components/content/content-renderer";
 import type { PostWithToc } from "@/features/posts/schema/posts.schema";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
 import ZoomableImage from "./content/zoomable-image";
+import { PostAdjacentNav } from "./post-adjacent-nav";
 import { PostMeta } from "./post-meta";
 import { PostSummary } from "./post-summary";
-import { RelatedPosts, RelatedPostsSkeleton } from "./related-posts";
 import TableOfContents from "./table-of-contents";
 
 interface PostPageProps {
@@ -133,18 +132,7 @@ export function PostPage({ post }: PostPageProps) {
         </div>
       </div>
 
-      {/* Prev/Next buttons (Mock implementation for layout, actual data would come from the server in an ideal setup) */}
-      <div
-        className="hidden flex-col md:flex-row justify-between gap-4 overflow-hidden w-full fuwari-onload-animation"
-        style={{ animationDelay: "150ms" }}
-      >
-        {/* Note: the backend schema doesn't currently provide prev/next slugs in PostWithToc. Using placeholder layouts to match Fuwari exactly. */}
-      </div>
-
-      {/* Related Posts */}
-      <Suspense fallback={<RelatedPostsSkeleton />}>
-        <RelatedPosts slug={post.slug} />
-      </Suspense>
+      <PostAdjacentNav slug={post.slug} />
 
       {/* Comments Section */}
       <div
