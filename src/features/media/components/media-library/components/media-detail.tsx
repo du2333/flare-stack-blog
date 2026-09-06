@@ -90,7 +90,7 @@ export function MediaDetail({
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-1 h-10 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 text-sm outline-none focus:border-(--fuwari-primary)"
+                className="flex-1 h-10 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 text-sm fuwari-text-90 outline-none focus:border-(--fuwari-primary)"
                 autoFocus
               />
               <button

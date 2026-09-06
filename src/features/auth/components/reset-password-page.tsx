@@ -91,7 +91,7 @@ export function ResetPasswordPage({
       <div className="flex flex-col gap-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* New Password Field */}
-          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
             <label htmlFor="new-password" className="text-sm font-bold ml-1">
               {m.reset_password_new_password()}
             </label>
@@ -101,7 +101,7 @@ export function ResetPasswordPage({
               {...register("password")}
               placeholder={m.login_password_placeholder()}
               disabled={isSubmitting}
-              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
             {errors.password && (
               <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
@@ -111,7 +111,7 @@ export function ResetPasswordPage({
           </div>
 
           {/* Confirm Password Field */}
-          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
             <label
               htmlFor="confirm-password"
               className="text-sm font-bold ml-1"
@@ -124,7 +124,7 @@ export function ResetPasswordPage({
               {...register("confirmPassword")}
               placeholder={m.login_password_placeholder()}
               disabled={isSubmitting}
-              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
             {errors.confirmPassword && (
               <span className="text-xs text-red-500 ml-1 mt-1 font-medium">

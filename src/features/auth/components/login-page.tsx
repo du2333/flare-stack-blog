@@ -71,7 +71,7 @@ export function LoginPage({
         {/* Email Login Form */}
         {isEmailConfigured && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
               <label htmlFor="login-email" className="text-sm font-bold ml-1">
                 {m.login_email_address()}
               </label>
@@ -82,7 +82,7 @@ export function LoginPage({
                 placeholder={m.login_email_placeholder()}
                 autoComplete="username"
                 disabled={isFormDisabled}
-                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
               {errors.email && (
                 <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
@@ -91,7 +91,7 @@ export function LoginPage({
               )}
             </div>
 
-            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
               <div className="flex justify-between items-center ml-1">
                 <label htmlFor="login-password" className="text-sm font-bold">
                   {m.login_password()}
@@ -111,7 +111,7 @@ export function LoginPage({
                 placeholder={m.login_password_placeholder()}
                 autoComplete="current-password"
                 disabled={isFormDisabled}
-                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
               {errors.password && (
                 <span className="text-xs text-red-500 ml-1 mt-1 font-medium">

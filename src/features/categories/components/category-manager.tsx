@@ -193,7 +193,7 @@ export function CategoryManager() {
                     <input
                       value={editingName}
                       onChange={(event) => setEditingName(event.target.value)}
-                      className="flex-1 h-9 px-3 rounded-xl bg-(--fuwari-btn-regular-bg) text-sm outline-none"
+                      className="flex-1 h-9 px-3 rounded-xl bg-(--fuwari-btn-regular-bg) text-sm fuwari-text-90 outline-none"
                     />
                     <button
                       type="submit"

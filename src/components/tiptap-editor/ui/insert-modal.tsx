@@ -56,7 +56,7 @@ function LinkModal({ type, initialUrl, onClose, onSubmit }: InsertModalProps) {
             }
           }}
           placeholder="https://"
-          className="mt-4 w-full h-11 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 text-sm outline-none focus:border-(--fuwari-primary)"
+          className="mt-4 w-full h-11 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 text-sm fuwari-text-90 outline-none focus:border-(--fuwari-primary)"
         />
         <div className="mt-5 flex justify-end gap-2">
           <button

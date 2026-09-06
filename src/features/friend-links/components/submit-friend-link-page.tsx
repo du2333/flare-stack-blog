@@ -110,7 +110,7 @@ export function SubmitFriendLinkPage({
               <input
                 id="siteName"
                 {...form.register("siteName")}
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
                 placeholder={m.friend_link_placeholder_site_name_fuwari()}
               />
               {form.errors.siteName && (
@@ -128,7 +128,7 @@ export function SubmitFriendLinkPage({
               <input
                 {...form.register("siteUrl")}
                 type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
                 placeholder={m.friend_link_placeholder_site_url_fuwari()}
               />
               {form.errors.siteUrl && (
@@ -144,7 +144,7 @@ export function SubmitFriendLinkPage({
               </label>
               <input
                 {...form.register("description")}
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
                 placeholder={m.friend_link_placeholder_description_fuwari()}
               />
               {form.errors.description && (
@@ -161,7 +161,7 @@ export function SubmitFriendLinkPage({
               <input
                 {...form.register("logoUrl")}
                 type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
                 placeholder={m.friend_link_placeholder_logo_url_fuwari()}
               />
               {form.errors.logoUrl && (
@@ -179,7 +179,7 @@ export function SubmitFriendLinkPage({
               <input
                 {...form.register("contactEmail")}
                 type="email"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
                 placeholder={m.friend_link_placeholder_contact_email_fuwari()}
               />
               {form.errors.contactEmail && (

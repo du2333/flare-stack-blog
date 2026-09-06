@@ -120,7 +120,7 @@ export function MediaPicker({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder={m.editor_insert_image_url()}
-              className="flex-1 h-10 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 font-sans text-sm shadow-none focus-visible:border-(--fuwari-primary) focus-visible:ring-0"
+              className="flex-1 h-10 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 font-sans text-sm fuwari-text-90 shadow-none focus-visible:border-(--fuwari-primary) focus-visible:ring-0"
               onKeyDown={(event) => {
                 if (event.key === "Enter") void importUrl();
               }}

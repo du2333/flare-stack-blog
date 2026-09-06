@@ -75,7 +75,7 @@ export function RegisterPage({
       <div className="flex flex-col gap-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Name Field */}
-          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
             <label htmlFor="reg-name" className="text-sm font-bold ml-1">
               {m.register_nickname()}
             </label>
@@ -85,7 +85,7 @@ export function RegisterPage({
               {...register("name")}
               placeholder={m.register_nickname_placeholder()}
               disabled={isFormDisabled}
-              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
             {errors.name && (
               <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
@@ -95,7 +95,7 @@ export function RegisterPage({
           </div>
 
           {/* Email Field */}
-          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+          <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
             <label htmlFor="reg-email" className="text-sm font-bold ml-1">
               {m.login_email_address()}
             </label>
@@ -105,7 +105,7 @@ export function RegisterPage({
               {...register("email")}
               placeholder={m.login_email_placeholder()}
               disabled={isFormDisabled}
-              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+              className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
             />
             {errors.email && (
               <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
@@ -116,7 +116,7 @@ export function RegisterPage({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-4">
             {/* Password Field */}
-            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
               <label htmlFor="reg-password" className="text-sm font-bold ml-1">
                 {m.register_password()}
               </label>
@@ -126,7 +126,7 @@ export function RegisterPage({
                 {...register("password")}
                 placeholder={m.login_password_placeholder()}
                 disabled={isFormDisabled}
-                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
               {errors.password && (
                 <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
@@ -136,7 +136,7 @@ export function RegisterPage({
             </div>
 
             {/* Confirm Password Field */}
-            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors text-(--fuwari-text-50)">
+            <div className="flex flex-col gap-1.5 focus-within:text-(--fuwari-primary) transition-colors fuwari-text-50">
               <label
                 htmlFor="reg-confirm-password"
                 className="text-sm font-bold ml-1"
@@ -149,7 +149,7 @@ export function RegisterPage({
                 {...register("confirmPassword")}
                 placeholder={m.login_password_placeholder()}
                 disabled={isFormDisabled}
-                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 text-(--fuwari-text-90) placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
+                className="w-full bg-(--fuwari-input-bg) border border-(--fuwari-input-border) rounded-xl px-4 py-3 fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30 focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all text-sm outline-none"
               />
               {errors.confirmPassword && (
                 <span className="text-xs text-red-500 ml-1 mt-1 font-medium">
