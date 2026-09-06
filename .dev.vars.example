@@ -8,7 +8,6 @@ ENVIRONMENT=dev
 # --- 认证配置（Better Auth） ---
 BETTER_AUTH_SECRET=your-secret-key-run-openssl-rand-hex-32
 BETTER_AUTH_URL=http://localhost:3000
-ADMIN_EMAIL=your-email@example.com
 
 # --- GitHub OAuth ---
 GITHUB_CLIENT_ID=your-github-client-id

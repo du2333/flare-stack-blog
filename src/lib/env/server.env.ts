@@ -9,7 +9,6 @@ const domainSchema = z
 const serverEnvSchema = z.object({
   BETTER_AUTH_SECRET: z.string(),
   BETTER_AUTH_URL: z.url(),
-  ADMIN_EMAIL: z.email(),
   LOCALE: localeSchema.catch("zh"),
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),

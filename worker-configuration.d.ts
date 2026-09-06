@@ -9,7 +9,6 @@ interface __BaseEnv_Env {
 	ENVIRONMENT: string;
 	BETTER_AUTH_SECRET: string;
 	BETTER_AUTH_URL: string;
-	ADMIN_EMAIL: string;
 	GITHUB_CLIENT_ID: string;
 	GITHUB_CLIENT_SECRET: string;
 	DOMAIN: string;
@@ -36,7 +35,6 @@ declare namespace Cloudflare {
 		ENVIRONMENT: string;
 		BETTER_AUTH_SECRET: string;
 		BETTER_AUTH_URL: string;
-		ADMIN_EMAIL: string;
 		GITHUB_CLIENT_ID: string;
 		GITHUB_CLIENT_SECRET: string;
 		DOMAIN: string;
@@ -57,7 +55,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "ADMIN_EMAIL" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET" | "DOMAIN" | "UMAMI_WEBSITE_ID" | "UMAMI_SRC" | "UMAMI_API_URL" | "UMAMI_API_KEY" | "UMAMI_USERNAME" | "UMAMI_PASSWORD" | "TURNSTILE_SECRET_KEY" | "GITHUB_TOKEN">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET" | "DOMAIN" | "UMAMI_WEBSITE_ID" | "UMAMI_SRC" | "UMAMI_API_URL" | "UMAMI_API_KEY" | "UMAMI_USERNAME" | "UMAMI_PASSWORD" | "TURNSTILE_SECRET_KEY" | "GITHUB_TOKEN">> {}
 }
 
 // Begin runtime types

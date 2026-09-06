@@ -28,7 +28,6 @@ export default defineConfig(async () => {
             BETTER_AUTH_SECRET:
               "a-very-long-test-secret-that-is-at-least-32-chars-long",
             BETTER_AUTH_URL: "http://localhost:3000",
-            ADMIN_EMAIL: "admin@example.com",
             GITHUB_CLIENT_ID: "test-id",
             GITHUB_CLIENT_SECRET: "test-secret",
             DOMAIN: "example.com",

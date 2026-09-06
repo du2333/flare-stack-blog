@@ -51,11 +51,11 @@ export function isEmailConfigured(
 }
 
 export async function testEmailConnection(
-  context: DbContext,
+  context: AuthContext,
   data: TestEmailConnectionInput,
 ) {
   try {
-    const { ADMIN_EMAIL, LOCALE } = serverEnv(context.env);
+    const { LOCALE } = serverEnv(context.env);
     const { host, password, port, senderAddress, senderName, username } = data;
     const security = resolveTransportSecurity(port);
 
@@ -76,7 +76,7 @@ export async function testEmailConnection(
           name: senderName,
           email: senderAddress,
         },
-        to: ADMIN_EMAIL,
+        to: context.session.user.email,
         subject: m.settings_email_test_mail_subject({}, { locale: LOCALE }),
         html: `<p>${m.settings_email_test_mail_body({}, { locale: LOCALE })}</p>`,
       },

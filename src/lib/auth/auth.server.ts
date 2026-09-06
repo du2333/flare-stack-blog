@@ -33,7 +33,6 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
   const {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
-    ADMIN_EMAIL,
     LOCALE,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
@@ -149,7 +148,10 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
       user: {
         create: {
           before: async (user) => {
-            if (user.email === ADMIN_EMAIL) {
+            const existing = await db.query.user.findFirst({
+              columns: { id: true },
+            });
+            if (!existing) {
               return { data: { ...user, role: "admin" } };
             }
             return { data: user };

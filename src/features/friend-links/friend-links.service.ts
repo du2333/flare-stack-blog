@@ -41,22 +41,17 @@ export async function submitFriendLink(
     status: "pending",
   });
 
-  // Notify admin via email
-  const { ADMIN_EMAIL, DOMAIN } = serverEnv(context.env);
-  await publishNotificationEvent(
-    context,
-    {
-      type: "friend_link.submitted",
-      data: {
-        siteName: data.siteName,
-        siteUrl: data.siteUrl,
-        description: data.description || "",
-        submitterName: context.session.user.name,
-        reviewUrl: `https://${DOMAIN}/admin/friend-links`,
-      },
+  const { DOMAIN } = serverEnv(context.env);
+  await publishNotificationEvent(context, {
+    type: "friend_link.submitted",
+    data: {
+      siteName: data.siteName,
+      siteUrl: data.siteUrl,
+      description: data.description || "",
+      submitterName: context.session.user.name,
+      reviewUrl: `https://${DOMAIN}/admin/friend-links`,
     },
-    { to: ADMIN_EMAIL },
-  );
+  });
 
   return ok(friendLink);
 }

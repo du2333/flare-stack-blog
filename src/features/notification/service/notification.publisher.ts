@@ -1,4 +1,5 @@
 import { z } from "zod";
+import * as AuthData from "@/features/auth/data/auth.data";
 import * as ConfigService from "@/features/config/service/config.service";
 import { createEmailMessageFromNotification } from "@/features/email/service/email-message.mapper";
 import type {
@@ -76,7 +77,7 @@ async function enqueueWebhookNotification(
 export async function publishNotificationEvent(
   context: DbContext & { executionCtx: ExecutionContext },
   event: NotificationEvent,
-  delivery: NotificationDelivery,
+  delivery?: NotificationDelivery,
 ) {
   const parsed = notificationEventSchema.parse(event);
   const config = await ConfigService.getSystemConfig(context);
@@ -86,7 +87,7 @@ export async function publishNotificationEvent(
   const webhookEndpoint = configuredWebhookEndpoint(config);
 
   if (isUserNotificationEvent(parsed)) {
-    if (!userEmailEnabled) {
+    if (!userEmailEnabled || !delivery?.to) {
       return;
     }
 
@@ -104,9 +105,19 @@ export async function publishNotificationEvent(
 
   if (isAdminNotificationEvent(parsed)) {
     const deliveries: Array<Promise<void>> = [];
+    let emailed = false;
 
     if (adminEmailEnabled) {
-      deliveries.push(enqueueEmailNotification(context, parsed, delivery));
+      const to = delivery?.to ?? (await AuthData.findAdminEmail(context.db));
+      if (to) {
+        deliveries.push(
+          enqueueEmailNotification(context, parsed, {
+            to,
+            unsubscribeUrl: delivery?.unsubscribeUrl,
+          }),
+        );
+        emailed = true;
+      }
     }
 
     if (webhookEndpoint) {
@@ -121,7 +132,7 @@ export async function publishNotificationEvent(
         message: "Notification published",
         eventType: parsed.type,
         deliveries: {
-          email: adminEmailEnabled,
+          email: emailed,
           webhook: Boolean(webhookEndpoint),
         },
       }),
