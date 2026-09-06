@@ -603,6 +603,31 @@
     }
   }
 
+  .fuwari-table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+  }
+  thead {
+    border-bottom: 1px solid var(--fuwari-meta-divider);
+  }
+  thead th {
+    font-weight: 600;
+    vertical-align: bottom;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--fuwari-meta-divider);
+  }
+  tbody tr:last-child {
+    border-bottom-width: 0;
+  }
+  :is(th, td) > p {
+    margin: 0;
+  }
+
   .tiptap-mathematics-render,
   .katex {
     font-size: 1.1em;
@@ -662,8 +687,9 @@
   margin: 0;
 }
 .admin-layout .ProseMirror table {
-  table-layout: fixed;
   width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
 }
 .admin-layout .ProseMirror td,
 .admin-layout .ProseMirror th {
@@ -671,18 +697,12 @@
   box-sizing: border-box;
   min-width: 1em;
   vertical-align: top;
+  border: 1px solid var(--fuwari-meta-divider);
+  padding: 0.5rem 0.75rem;
 }
-.admin-layout .ProseMirror .column-resize-handle {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: -2px;
-  width: 4px;
-  background-color: var(--fuwari-primary);
-  pointer-events: none;
-}
-.admin-layout .ProseMirror.resize-cursor {
-  cursor: col-resize;
+.admin-layout .ProseMirror th {
+  background: var(--fuwari-btn-regular-bg);
+  font-weight: 600;
 }
 .admin-layout .ProseMirror .selectedCell::after {
   z-index: 2;

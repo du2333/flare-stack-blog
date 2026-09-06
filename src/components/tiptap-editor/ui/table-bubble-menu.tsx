@@ -1,5 +1,6 @@
+import { CellSelection } from "@tiptap/pm/tables";
 import type { Editor } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/react/menus";
+import { useEditorState } from "@tiptap/react";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowDownToLine,
@@ -12,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type React from "react";
+import { useLayoutEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -26,6 +28,7 @@ interface MenuButtonProps {
   isActive?: boolean;
   isDestructive?: boolean;
   disabled?: boolean;
+  size: "sm" | "md";
 }
 
 const MenuButton: React.FC<MenuButtonProps> = ({
@@ -35,12 +38,14 @@ const MenuButton: React.FC<MenuButtonProps> = ({
   isActive,
   isDestructive,
   disabled,
+  size,
 }) => (
   <button
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200",
+      "flex items-center justify-center rounded-lg transition-colors duration-200",
+      size === "md" ? "h-10 w-10" : "h-8 w-8",
       disabled && "cursor-not-allowed opacity-30",
       !disabled &&
         !isActive &&
@@ -53,7 +58,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({
     title={label}
     type="button"
   >
-    <Icon size={14} strokeWidth={isActive ? 2.5 : 2} />
+    <Icon size={size === "md" ? 16 : 14} strokeWidth={isActive ? 2.5 : 2} />
   </button>
 );
 
@@ -61,34 +66,30 @@ const Separator = () => (
   <div className="mx-1 h-4 w-px bg-(--fuwari-meta-divider)" />
 );
 
-export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
-  if (!editor) return null;
-
+function TableControls({
+  editor,
+  size,
+}: {
+  editor: Editor;
+  size: "sm" | "md";
+}) {
   return (
-    <BubbleMenu
-      editor={editor}
-      pluginKey="tableBubbleMenu"
-      shouldShow={({ editor: currentEditor }: { editor: Editor }) =>
-        currentEditor.isActive("table")
-      }
-      options={{
-        placement: "top",
-        offset: 8,
-      }}
-      className="flex items-center gap-0.5 rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)"
-    >
+    <>
       <div className="flex items-center gap-0.5">
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().addColumnBefore().run()}
           icon={ArrowLeftToLine}
           label={m.editor_table_add_col_before()}
         />
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
           icon={ArrowRightToLine}
           label={m.editor_table_add_col_after()}
         />
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().deleteColumn().run()}
           icon={Columns}
           label={m.editor_table_delete_col()}
@@ -100,16 +101,19 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 
       <div className="flex items-center gap-0.5">
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().addRowBefore().run()}
           icon={ArrowUpToLine}
           label={m.editor_table_add_row_before()}
         />
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().addRowAfter().run()}
           icon={ArrowDownToLine}
           label={m.editor_table_add_row_after()}
         />
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().deleteRow().run()}
           icon={Rows}
           label={m.editor_table_delete_row()}
@@ -121,12 +125,14 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 
       <div className="flex items-center gap-0.5">
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
           isActive={editor.isActive("tableHeader")}
           icon={TableIcon}
           label={m.editor_table_toggle_header_col()}
         />
         <MenuButton
+          size={size}
           onClick={() => editor.chain().focus().toggleHeaderRow().run()}
           disabled={!editor.can().toggleHeaderRow()}
           icon={TableIcon}
@@ -137,11 +143,130 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
       <Separator />
 
       <MenuButton
+        size={size}
         onClick={() => editor.chain().focus().deleteTable().run()}
         icon={Trash2}
         label={m.editor_table_delete_table()}
         isDestructive
       />
-    </BubbleMenu>
+    </>
+  );
+}
+
+function selectionInTable(editor: Editor): boolean {
+  if (editor.state.selection instanceof CellSelection) return true;
+  const { $from } = editor.state.selection;
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    if ($from.node(depth).type.name === "table") return true;
+  }
+  return false;
+}
+
+function cellRect(editor: Editor): DOMRect | null {
+  const { selection } = editor.state;
+  let cellPos: number | null = null;
+
+  if (selection instanceof CellSelection) {
+    cellPos = selection.$anchorCell.pos;
+  } else {
+    const { $from } = selection;
+    for (let depth = $from.depth; depth > 0; depth -= 1) {
+      const type = $from.node(depth).type.name;
+      if (type === "tableCell" || type === "tableHeader") {
+        cellPos = $from.before(depth);
+        break;
+      }
+    }
+  }
+
+  if (cellPos == null) return null;
+  const dom = editor.view.nodeDOM(cellPos);
+  if (!(dom instanceof Element)) return null;
+  return dom.getBoundingClientRect();
+}
+
+function useTableSelection(editor: Editor | null) {
+  return (
+    useEditorState({
+      editor,
+      selector: (ctx) => {
+        if (!ctx.editor?.isEditable) {
+          return { active: false, from: 0, to: 0 };
+        }
+        return {
+          active: selectionInTable(ctx.editor),
+          from: ctx.editor.state.selection.from,
+          to: ctx.editor.state.selection.to,
+        };
+      },
+    }) ?? { active: false, from: 0, to: 0 }
+  );
+}
+
+export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
+  const { active, from, to } = useTableSelection(editor);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+
+  useLayoutEffect(() => {
+    if (!editor || !active) {
+      setCoords(null);
+      return;
+    }
+
+    const place = () => {
+      const rect = cellRect(editor);
+      if (!rect) {
+        setCoords(null);
+        return;
+      }
+      setCoords({
+        top: rect.top,
+        left: rect.left + rect.width / 2,
+      });
+    };
+
+    place();
+    const scroller = document.getElementById("post-editor-scroll-container");
+    scroller?.addEventListener("scroll", place, { passive: true });
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      scroller?.removeEventListener("scroll", place);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [editor, active, from, to]);
+
+  if (!editor || !active || !coords) return null;
+
+  return (
+    <div
+      className="pointer-events-none fixed z-50 hidden lg:block"
+      style={{
+        top: coords.top,
+        left: coords.left,
+        transform: "translate(-50%, calc(-100% - 8px))",
+      }}
+    >
+      <div className="pointer-events-auto flex items-center gap-0.5 rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)">
+        <TableControls editor={editor} size="sm" />
+      </div>
+    </div>
   );
 };
+
+export function TableMobileBar({ editor }: { editor: Editor | null }) {
+  const { active } = useTableSelection(editor);
+
+  if (!editor || !active) return null;
+
+  return (
+    <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 lg:hidden">
+      <div className="pointer-events-auto flex items-center justify-center gap-0.5 overflow-x-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)">
+        <TableControls editor={editor} size="md" />
+      </div>
+    </div>
+  );
+}

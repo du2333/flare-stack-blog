@@ -18,7 +18,7 @@ import type { FormulaMode } from "./ui/formula-modal";
 import { FormulaModal } from "./ui/formula-modal";
 import type { ModalType } from "./ui/insert-modal";
 import InsertModal from "./ui/insert-modal";
-import { TableBubbleMenu } from "./ui/table-bubble-menu";
+import { TableBubbleMenu, TableMobileBar } from "./ui/table-bubble-menu";
 
 interface EditorProps {
   content?: JSONContent | string;
@@ -196,6 +196,7 @@ export const Editor = memo(function Editor({
       )}
 
       {editable && <TableBubbleMenu editor={editor} />}
+      {editable && <TableMobileBar editor={editor} />}
 
       <div
         className="relative min-h-125"
