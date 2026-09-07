@@ -444,18 +444,15 @@ export async function publishPost(
   await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
   await syncPostMedia(context.db, publishedPost.id);
 
-  await SearchService.upsert(
-    { env: context.env },
-    {
-      id: publishedPost.id,
-      slug: snapshot.slug,
-      title: snapshot.title,
-      summary: snapshot.summary,
-      contentJson: highlighted,
-      tags: publishedPost.tags.map((tag) => tag.name),
-      category: publishedPost.category?.name ?? null,
-    },
-  );
+  await SearchService.upsert(context, {
+    id: publishedPost.id,
+    slug: snapshot.slug,
+    title: snapshot.title,
+    summary: snapshot.summary,
+    contentJson: highlighted,
+    tags: publishedPost.tags.map((tag) => tag.name),
+    category: publishedPost.category?.name ?? null,
+  });
 
   if (previousPublicSlug && previousPublicSlug !== snapshot.slug) {
     await invalidate.postDeleted(context, { slug: previousPublicSlug });

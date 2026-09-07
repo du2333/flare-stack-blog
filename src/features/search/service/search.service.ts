@@ -1,12 +1,6 @@
-import { insert, search as oramaSearch, remove } from "@orama/orama";
 import { inArray, isNotNull } from "drizzle-orm";
 import { convertToPlainText } from "@/features/posts/utils/content";
-import { createMyDb } from "@/features/search/model/schema";
-import {
-  getOramaDb,
-  getOramaMeta,
-  persistOramaDb,
-} from "@/features/search/model/store";
+import * as SearchRepo from "@/features/search/data/search.data";
 import {
   CONTENT_SLICE,
   SNIPPET_SLICE,
@@ -17,64 +11,16 @@ import type {
   UpsertSearchDocInput,
 } from "@/features/search/search.schema";
 import {
-  buildSnippet,
-  getMatchedTerms,
-} from "@/features/search/utils/search.utils";
+  queryTerms,
+  toFtsMatchQuery,
+  tokenizeForSearch,
+} from "@/features/search/tokenize";
+import { buildSnippet } from "@/features/search/utils/search.utils";
 import { CategoriesTable, PostsTable } from "@/lib/db/schema";
 
-export async function search(context: DbContext, data: SearchQueryInput) {
-  const db = await getOramaDb(context.env);
-  const result = await oramaSearch(db, {
-    term: data.q,
-    limit: Math.min(data.limit, 25),
-  });
-
-  return result.hits.map((hit) => {
-    const { document, score } = hit;
-    const titleHighlight = buildSnippet({
-      text: document.title,
-      terms: getMatchedTerms(hit, "title"),
-      fallbackTerm: data.q,
-    });
-    const summaryHighlight = buildSnippet({
-      text: document.summary,
-      terms: getMatchedTerms(hit, "summary"),
-      fallbackTerm: data.q,
-    });
-    const contentHighlight = buildSnippet({
-      text: document.content,
-      terms: getMatchedTerms(hit, "content"),
-      fallbackTerm: data.q,
-    });
-
-    return {
-      post: {
-        id: document.id,
-        slug: document.slug,
-        title: document.title,
-        summary: document.summary,
-        tags: document.tags,
-      },
-      score,
-      matches: {
-        title: titleHighlight,
-        summary: summaryHighlight,
-        contentSnippet: contentHighlight,
-      },
-    };
-  });
-}
-
-export async function upsert(
-  context: { env: Env },
+function toIndexedDocument(
   data: UpsertSearchDocInput,
-) {
-  const db = await getOramaDb(context.env);
-
-  try {
-    await remove(db, data.id.toString());
-  } catch {}
-
+): Parameters<typeof SearchRepo.upsertSearchDocument>[1] {
   const plain = convertToPlainText(data.contentJson ?? null);
   const indexed = [data.category?.trim(), plain].filter(Boolean).join("\n");
   const content =
@@ -84,37 +30,82 @@ export async function upsert(
       ? data.summary
       : content.slice(0, SNIPPET_SLICE);
 
-  await insert(db, {
-    id: data.id.toString(),
+  return {
+    postId: data.id,
     slug: data.slug,
     title: data.title,
     summary,
     content,
     tags: data.tags ?? [],
-  });
+    tokens: tokenizeForSearch(
+      data.title,
+      summary,
+      content,
+      data.category,
+      ...(data.tags ?? []),
+    ),
+  };
+}
 
-  await persistOramaDb(context.env, db);
+export async function search(context: DbContext, data: SearchQueryInput) {
+  const match = toFtsMatchQuery(data.q);
+  if (!match) return [];
+
+  const rows = await SearchRepo.matchSearchDocuments(
+    context.env,
+    match,
+    Math.min(data.limit, 25),
+  );
+  const terms = queryTerms(data.q);
+
+  return rows.map((row) => ({
+    post: {
+      id: row.postId,
+      slug: row.slug,
+      title: row.title,
+      summary: row.summary,
+      tags: row.tags,
+    },
+    score: 0,
+    matches: {
+      title: buildSnippet({
+        text: row.title,
+        terms,
+        fallbackTerm: data.q,
+      }),
+      summary: buildSnippet({
+        text: row.summary,
+        terms,
+        fallbackTerm: data.q,
+      }),
+      contentSnippet: buildSnippet({
+        text: row.content,
+        terms,
+        fallbackTerm: data.q,
+      }),
+    },
+  }));
+}
+
+export async function upsert(
+  context: { env: Env; db: DB },
+  data: UpsertSearchDocInput,
+) {
+  await SearchRepo.upsertSearchDocument(context.db, toIndexedDocument(data));
   return { id: data.id };
 }
 
 export async function deleteIndex(
-  context: { env: Env },
+  context: { env: Env; db: DB },
   data: DeleteSearchDocInput,
 ) {
-  const db = await getOramaDb(context.env);
-  try {
-    await remove(db, data.id.toString());
-  } catch {}
-  await persistOramaDb(context.env, db);
+  await SearchRepo.deleteSearchDocument(context.db, data.id);
   return { id: data.id };
 }
 
 export async function rebuildIndex(context: DbContext) {
-  const { env, db } = context;
+  const { db } = context;
   const start = Date.now();
-  console.log("[search] Start backfilling index...");
-
-  const searchDb = await createMyDb();
 
   const posts = await db.query.PostsTable.findMany({
     where: isNotNull(PostsTable.publicSnapshotJson),
@@ -146,47 +137,40 @@ export async function rebuildIndex(context: DbContext) {
     categories.map((category) => [category.id, category]),
   );
 
+  const documents = [];
   for (const post of posts) {
     const snapshot = post.publicSnapshotJson;
     if (!snapshot?.title || !snapshot.slug) continue;
-    const plain = convertToPlainText(snapshot.contentJson);
-    const categoryName =
-      snapshot.categoryId == null
-        ? null
-        : (categoriesById.get(snapshot.categoryId)?.name ?? null);
-    const indexed = [categoryName, plain].filter(Boolean).join("\n");
-    const content =
-      indexed.length > CONTENT_SLICE
-        ? indexed.slice(0, CONTENT_SLICE)
-        : indexed;
-    const summary =
-      snapshot.summary && snapshot.summary.trim().length > 0
-        ? snapshot.summary
-        : content.slice(0, SNIPPET_SLICE);
-
     const publishedTagIds = new Set(snapshot.tagIds);
     const tags = post.postTags
       .filter((pt) => publishedTagIds.has(pt.tag.id))
       .map((pt) => pt.tag.name);
+    const categoryName =
+      snapshot.categoryId == null
+        ? null
+        : (categoriesById.get(snapshot.categoryId)?.name ?? null);
 
-    await insert(searchDb, {
-      id: post.id.toString(),
-      title: snapshot.title,
-      slug: snapshot.slug,
-      tags,
-      summary,
-      content,
-    });
+    documents.push(
+      toIndexedDocument({
+        id: post.id,
+        slug: snapshot.slug,
+        title: snapshot.title,
+        summary: snapshot.summary,
+        contentJson: snapshot.contentJson,
+        tags,
+        category: categoryName,
+      }),
+    );
   }
 
-  await persistOramaDb(env, searchDb);
+  await SearchRepo.replaceSearchDocuments(db, documents);
 
   const duration = Date.now() - start;
-  console.log(`[search] Indexed ${posts.length} posts in ${duration}ms`);
+  console.log(`[search] Indexed ${documents.length} posts in ${duration}ms`);
 
-  return { indexed: posts.length, duration };
+  return { indexed: documents.length, duration };
 }
 
 export async function getIndexVersion(context: DbContext) {
-  return await getOramaMeta(context.env);
+  return { version: await SearchRepo.readSearchIndexVersion(context.db) };
 }

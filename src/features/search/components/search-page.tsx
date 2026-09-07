@@ -4,7 +4,7 @@ import { m } from "@/paraglide/messages";
 
 interface SearchResultItem {
   post: {
-    id: string;
+    id: number;
     slug: string;
     title: string;
     summary: string | null;

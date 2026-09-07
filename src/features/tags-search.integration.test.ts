@@ -1,4 +1,3 @@
-import { remove } from "@orama/orama";
 import {
   createAdminTestContext,
   createTestContext,
@@ -7,7 +6,6 @@ import {
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it } from "vitest";
 import * as PostService from "@/features/posts/services/posts.service";
-import { getOramaDb, persistOramaDb } from "@/features/search/model/store";
 import * as SearchService from "@/features/search/service/search.service";
 import * as TagService from "@/features/tags/tags.service";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
@@ -318,12 +316,7 @@ describe("Tags & Search Integration", () => {
         tagId: tagData.id,
       });
 
-      const db = await getOramaDb(context.env);
-      try {
-        await remove(db, postData.id.toString());
-        await persistOramaDb(context.env, db);
-      } catch {}
-
+      await SearchService.deleteIndex(context, { id: postData.id });
       await SearchService.rebuildIndex(context);
 
       const results = await SearchService.search(context, {
@@ -334,6 +327,34 @@ describe("Tags & Search Integration", () => {
       expect(results).toHaveLength(1);
       expect(results[0].post.title).toBe(postData.title);
       expect(results[0].post.tags).toContain("dbtag");
+    });
+
+    it("matches Chinese title terms", async () => {
+      const context = createAdminTestContext();
+      await SearchService.upsert(context, {
+        id: 4,
+        slug: "dark-mode",
+        title: "暗色模式的正确打开方式",
+        summary: "避免主题闪烁",
+        contentJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "用 class 切换主题。" }],
+            },
+          ],
+        },
+        tags: [],
+      });
+
+      const results = await SearchService.search(context, {
+        q: "暗色",
+        v: "1",
+        limit: 10,
+      });
+      expect(results).toHaveLength(1);
+      expect(results[0].post.slug).toBe("dark-mode");
     });
   });
 });

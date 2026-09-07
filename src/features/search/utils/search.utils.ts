@@ -1,12 +1,9 @@
-import type { search } from "@orama/orama";
 import {
   FUZZY_MAX_DISTANCE,
   SCAN_LIMIT,
   SNIPPET_CONTEXT,
   SNIPPET_SLICE,
 } from "@/features/search/search.constants";
-
-type OramaHit = Awaited<ReturnType<typeof search>>["hits"][number];
 
 export function buildSnippet({
   text,
@@ -83,21 +80,6 @@ function escapeHtml(unsafe: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
-
-export function getMatchedTerms(
-  hit: OramaHit,
-  field: "title" | "summary" | "content",
-) {
-  const maybeMatches = (
-    hit as { matches?: Record<string, Array<{ term?: string }>> }
-  ).matches;
-  if (!maybeMatches) return [];
-  const fieldMatches = maybeMatches[field];
-  if (!Array.isArray(fieldMatches)) return [];
-  return fieldMatches
-    .map((m) => m.term)
-    .filter((t): t is string => typeof t === "string" && t.length > 0);
 }
 
 function findExactMatch(
