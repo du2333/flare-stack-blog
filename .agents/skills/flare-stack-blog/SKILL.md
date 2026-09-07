@@ -25,7 +25,7 @@ Done when both fields are read from that file.
 
 ## 2. Contract
 
-GET `{url}/api/spec.json` on this run. Pick operations from that document. Build request URLs from its `servers` entry plus each path. Send header `x-api-key` on every call, including operations that omit `security`. Follow each operation's method, parameters, and body schema. When the spec lists a public read and an admin read for the same job, use the admin one.
+GET `{url}/api/spec.json` on this run. Pick operations from that document. Build request URLs from its `servers` entry plus each path. Send header `x-api-key` on every call, including operations that omit `security`. Follow each operation's method, parameters, body schema, and description. When the spec lists a public read and an admin read for the same job, use the admin one.
 
 Every operation you will call exists in this run's spec.
 
@@ -35,6 +35,8 @@ Carry out the user's intent as Admin. The key has full Admin permissions.
 
 A new **Post** is an empty **Draft Post**. PATCH saves it. Set tags on the tag operations. Upload **Media** if needed. Publish only on request.
 
+Do not invent highlighted HTML. If you publish a **Post** that contains code blocks and you are not sending highlighting produced by the admin editor, tell the user that new or edited code will be unhighlighted on the public site until they publish from the admin editor. Unchanged code blocks keep highlighting already in the **Public Content Snapshot**.
+
 Send the key only in the `x-api-key` header. Quote error bodies as returned. Use the terms below in replies.
 
 Each requested action ends with an HTTP response or a reported error.
@@ -43,7 +45,7 @@ Each requested action ends with an HTTP response or a reported error.
 
 **Post.** The editable document. PATCH updates it. PATCH does not publish.
 
-**Public Content Snapshot.** What the public site reads. Publish replaces it. Unpublish discards it. No snapshot means **Draft Post**; a snapshot means **Published Post**. Publication is immediate.
+**Public Content Snapshot.** What the public site reads. Publish replaces it. Unpublish discards it. No snapshot means **Draft Post**; a snapshot means **Published Post**. Publication is immediate. Code-block highlighting in it is produced by the admin editor in the browser, not by the publish API.
 
 **Post Revision.** Created on publish, and immediately before restore. Save does not create one. Restore writes into the editable Post and leaves the Public Content Snapshot as it is.
 

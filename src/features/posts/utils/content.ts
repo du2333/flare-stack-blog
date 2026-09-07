@@ -1,6 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
 import { extractImageKey } from "@/features/media/utils/media.utils";
-import { highlight } from "@/lib/shiki";
 
 export function slugify(text: string | null | undefined) {
   if (!text) return "untitled-log";
@@ -54,41 +53,6 @@ function escapeHtml(value: string) {
 
 export function fallbackCodeHtml(code: string) {
   return `<pre><code>${escapeHtml(code)}</code></pre>`;
-}
-
-export async function highlightCodeBlocks(
-  doc: JSONContent,
-): Promise<JSONContent> {
-  const cloned = structuredClone(doc);
-
-  async function traverse(node: JSONContent) {
-    if (node.type === "codeBlock") {
-      const code = node.content?.map((n) => n.text || "").join("") || "";
-      const lang = node.attrs?.language || "text";
-      try {
-        const html = await highlight(code, lang);
-        node.attrs = { ...node.attrs, highlightedHtml: html };
-      } catch (e) {
-        console.warn(
-          JSON.stringify({
-            event: "code_highlight_failed",
-            lang,
-            error: e instanceof Error ? e.message : String(e),
-          }),
-        );
-        node.attrs = {
-          ...node.attrs,
-          highlightedHtml: fallbackCodeHtml(code),
-        };
-      }
-    }
-    if (node.content) {
-      await Promise.all(node.content.map(traverse));
-    }
-  }
-
-  await traverse(cloned);
-  return cloned;
 }
 
 export function convertToPlainText(doc: JSONContent | null): string {

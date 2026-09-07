@@ -211,6 +211,8 @@ const publishPost = adminProcedure
     method: "POST",
     path: "/admin/posts/{id}/publish",
     summary: "Publish a post",
+    description:
+      "Publishes the post and replaces its public snapshot. This endpoint does not highlight code. Unchanged code keeps highlighting already in the snapshot; new or edited code is published as plain text. Publish from the admin editor if you need highlighted code.",
     tags: ["Admin Posts"],
   })
   .input(PublishPostInputSchema)

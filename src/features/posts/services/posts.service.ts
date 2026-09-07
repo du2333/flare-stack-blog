@@ -27,7 +27,8 @@ import {
 } from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
 import type { PublicPostCover } from "@/lib/db/schema";
-import { highlightCodeBlocks, slugify } from "@/features/posts/utils/content";
+import { applyCodeBlockHighlighting } from "@/features/posts/utils/apply-code-block-highlighting";
+import { slugify } from "@/features/posts/utils/content";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import {
   isFuturePublishDate,
@@ -432,13 +433,15 @@ export async function publishPost(
 
   await createPublishRevision(context, publishedPost);
 
-  const highlighted = publishedPost.contentJson
-    ? await highlightCodeBlocks(publishedPost.contentJson)
-    : null;
+  const snapshotContent = applyCodeBlockHighlighting(
+    publishedPost.contentJson,
+    data.highlightedContentJson,
+    publishedPost.publicSnapshotJson?.contentJson,
+  );
   const snapshot = await buildPublicSnapshot(
     context.db,
     publishedPost,
-    highlighted,
+    snapshotContent,
   );
   const previousPublicSlug = publishedPost.publicSlug;
   await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
@@ -449,7 +452,7 @@ export async function publishPost(
     slug: snapshot.slug,
     title: snapshot.title,
     summary: snapshot.summary,
-    contentJson: highlighted,
+    contentJson: snapshotContent,
     tags: publishedPost.tags.map((tag) => tag.name),
     category: publishedPost.category?.name ?? null,
   });

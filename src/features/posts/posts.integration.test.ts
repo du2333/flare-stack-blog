@@ -1269,14 +1269,14 @@ describe("Posts Integration", () => {
       await seedUser(adminContext.db, adminContext.session.user);
     });
 
-    it("stores highlighted code in the public snapshot", async () => {
+    it("does not generate code highlighting on API publish", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       unwrap(
         await PostService.updatePost(adminContext, {
           id,
           data: {
-            title: "Highlighted Snapshot",
-            slug: "highlighted-snapshot",
+            title: "Plain Snapshot",
+            slug: "plain-snapshot",
             summary: "already summarized",
             publishedAt: new Date(),
             contentJson: {
@@ -1303,9 +1303,84 @@ describe("Posts Integration", () => {
           (node) => node.type === "codeBlock",
         );
 
-      expect(codeBlock?.attrs?.highlightedHtml).toEqual(
-        expect.stringContaining("const"),
+      expect(codeBlock?.attrs?.highlightedHtml).toBeUndefined();
+    });
+
+    it("stores editor-supplied highlighting and keeps it when the code is unchanged", async () => {
+      const { id } = await PostService.createEmptyPost(adminContext);
+      const contentJson = {
+        type: "doc" as const,
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Server draft" }],
+          },
+          {
+            type: "codeBlock",
+            attrs: { language: "ts" },
+            content: [{ type: "text", text: "const answer = 42;" }],
+          },
+        ],
+      };
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id,
+          data: {
+            title: "Highlighted Snapshot",
+            slug: "highlighted-snapshot",
+            summary: "already summarized",
+            publishedAt: new Date(),
+            contentJson,
+          },
+        }),
       );
+
+      unwrap(
+        await PostService.publishPost(adminContext, {
+          id,
+          highlightedContentJson: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Forged body" }],
+              },
+              {
+                type: "codeBlock",
+                attrs: {
+                  language: "ts",
+                  highlightedHtml: "<pre>highlighted</pre>",
+                },
+                content: [{ type: "text", text: "const answer = 42;" }],
+              },
+            ],
+          },
+        }),
+      );
+
+      const first = await adminContext.db.query.PostsTable.findFirst({
+        where: eq(PostsTable.id, id),
+      });
+      expect(
+        first?.publicSnapshotJson?.contentJson?.content?.[0],
+      ).toMatchObject({
+        type: "paragraph",
+        content: [{ type: "text", text: "Server draft" }],
+      });
+      expect(
+        first?.publicSnapshotJson?.contentJson?.content?.[1]?.attrs
+          ?.highlightedHtml,
+      ).toBe("<pre>highlighted</pre>");
+
+      unwrap(await PostService.publishPost(adminContext, { id }));
+
+      const second = await adminContext.db.query.PostsTable.findFirst({
+        where: eq(PostsTable.id, id),
+      });
+      expect(
+        second?.publicSnapshotJson?.contentJson?.content?.[1]?.attrs
+          ?.highlightedHtml,
+      ).toBe("<pre>highlighted</pre>");
     });
 
     it("shows the first Published Post after rotating an empty public list", async () => {
