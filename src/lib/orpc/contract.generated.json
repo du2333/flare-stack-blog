@@ -141,7 +141,7 @@
             "method": "POST",
             "path": "/admin/posts/{id}/publish",
             "summary": "Publish a post",
-            "description": "Publishes the post and replaces its public snapshot. This endpoint does not highlight code. Unchanged code keeps highlighting already in the snapshot; new or edited code is published as plain text. Publish from the admin editor if you need highlighted code.",
+            "description": "Publishes the post and generates or updates its Public Content Snapshot. Note: Server-side syntax highlighting is not performed here; newly added or edited code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.",
             "tags": ["Admin Posts"]
           }
         }
@@ -804,7 +804,7 @@
         "route": {
           "method": "GET",
           "path": "/email/configured",
-          "summary": "Whether email is configured",
+          "summary": "Check if email is configured",
           "tags": ["Email"]
         }
       }
@@ -876,7 +876,7 @@
         "route": {
           "method": "GET",
           "path": "/me/has-password",
-          "summary": "Whether the current user has a password",
+          "summary": "Check if the current user has a password",
           "tags": ["Auth"]
         }
       }
@@ -954,7 +954,7 @@
         "route": {
           "method": "GET",
           "path": "/admin/dashboard",
-          "summary": "Get admin overview inbox",
+          "summary": "Get admin dashboard overview",
           "tags": ["Admin Dashboard"]
         }
       }

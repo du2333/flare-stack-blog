@@ -212,7 +212,7 @@ const publishPost = adminProcedure
     path: "/admin/posts/{id}/publish",
     summary: "Publish a post",
     description:
-      "Publishes the post and replaces its public snapshot. This endpoint does not highlight code. Unchanged code keeps highlighting already in the snapshot; new or edited code is published as plain text. Publish from the admin editor if you need highlighted code.",
+      "Publishes the post and generates or updates its Public Content Snapshot. Note: Server-side syntax highlighting is not performed here; newly added or edited code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.",
     tags: ["Admin Posts"],
   })
   .input(PublishPostInputSchema)

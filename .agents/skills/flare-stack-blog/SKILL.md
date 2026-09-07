@@ -6,50 +6,46 @@ disable-model-invocation: true
 
 # Flare Stack Blog
 
-Operate a running CMS as Admin. The spec defines the API. This file covers process and domain rules.
+Operate a deployed Flare Stack Blog instance as an Admin over its HTTP API. The OpenAPI specification (`/api/spec.json`) defines available endpoints, schemas, and parameters; this guide covers credentials, operational workflows, and domain rules.
 
 ## 1. Credentials
 
-Config path: `$XDG_CONFIG_HOME/flare-stack-blog/config.toml`, or `~/.config/flare-stack-blog/config.toml` if `XDG_CONFIG_HOME` is unset.
+Configuration file path: `$XDG_CONFIG_HOME/flare-stack-blog/config.toml` (or `~/.config/flare-stack-blog/config.toml` if `XDG_CONFIG_HOME` is unset).
 
 ```toml
 url = "https://example.com"
 api_key = "fsb_..."
 ```
 
-`url` is the site origin: scheme plus host, no path, no trailing slash.
+- `url`: Site origin (`scheme://host`), without a path or trailing slash.
+- `api_key`: Admin API Key starting with `fsb_`.
 
-If the file is missing or a field is empty, ask the user for origin and API Key, create the directory, write this file with mode `600`, and continue. If the user gives a new origin or key later, overwrite the file. Once stored, replies to the user omit the key.
+If the file is missing or either field is empty, prompt the user for the site origin and Admin API Key, create the parent directory if needed, write the file with `0600` permissions, and proceed. If the user provides a new origin or key later, update the file.
 
-Done when both fields are read from that file.
+**Security**:
+- Send the key only in the `x-api-key` HTTP header.
+- Never echo, print, or leak the API Key in messages to the user.
+
+Do not proceed with API calls until both fields are resolved from the configuration file.
 
 ## 2. Contract
 
-GET `{url}/api/spec.json` on this run. Pick operations from that document. Build request URLs from its `servers` entry plus each path. Send header `x-api-key` on every call, including operations that omit `security`. Follow each operation's method, parameters, body schema, and description. When the spec lists a public read and an admin read for the same job, use the admin one.
+At the start of each session, fetch `{url}/api/spec.json` to inspect available operations:
 
-Every operation you will call exists in this run's spec.
+1. **URL Construction**: Resolve target URLs using the base URL from the `servers` array combined with each route's `path`.
+2. **Authentication**: Attach the `x-api-key` header to every request, even if an operation definition omits an explicit security declaration.
+3. **Schema Compliance**: Adhere strictly to each operation's HTTP method, path/query parameters, request body schema, and description.
+4. **Admin Preference**: When both public and admin endpoints exist for the same entity (e.g. posts, tags, categories), always use the admin endpoint.
 
-## 3. Act
+All callable operations are defined within the runtime OpenAPI specification.
 
-Carry out the user's intent as Admin. The key has full Admin permissions.
+## 3. Domain Rules & Invariants
 
-A new **Post** is an empty **Draft Post**. PATCH saves it. Set tags on the tag operations. Upload **Media** if needed. Publish only on request.
+Carry out the user's intent as Admin, respecting these domain constraints:
 
-Do not invent highlighted HTML. If you publish a **Post** that contains code blocks and you are not sending highlighting produced by the admin editor, tell the user that new or edited code will be unhighlighted on the public site until they publish from the admin editor. Unchanged code blocks keep highlighting already in the **Public Content Snapshot**.
-
-Send the key only in the `x-api-key` header. Quote error bodies as returned. Use the terms below in replies.
-
-Each requested action ends with an HTTP response or a reported error.
-
-## Domain
-
-**Post.** The editable document. PATCH updates it. PATCH does not publish.
-
-**Public Content Snapshot.** What the public site reads. Publish replaces it. Unpublish discards it. No snapshot means **Draft Post**; a snapshot means **Published Post**. Publication is immediate. Code-block highlighting in it is produced by the admin editor in the browser, not by the publish API.
-
-**Post Revision.** Created on publish, and immediately before restore. Save does not create one. Restore writes into the editable Post and leaves the Public Content Snapshot as it is.
-
-**contentJson.** A TipTap JSON document, not Markdown and not a string. Match an existing Post from GET, or send:
+- **Publishing Intent**: Saving or updating a **Post** modifies the draft; a post only appears on the public site after being published to create or update its **Public Content Snapshot**. Follow the user's intent directly—publish if they ask to publish, keep as a draft if they ask for a draft, and proactively ask for clarification if their intent is unclear.
+- **Code Block Highlighting**: Do not invent or inject pre-rendered syntax-highlighted HTML. Syntax highlighting is generated client-side by Shiki in the web admin editor. When publishing a **Post** with new or modified code blocks via API, inform the user that these code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.
+- **Content Format (`contentJson`)**: Rich text must be a TipTap / ProseMirror JSON document object, not Markdown and not a raw HTML string. Match an existing post payload from the spec / GET, or send:
 
 ```json
 {
@@ -63,14 +59,33 @@ Each requested action ends with an HTTP response or a reported error.
 }
 ```
 
-**Comment.** Plain text, public as soon as created. Delete keeps a placeholder in the **Comment Thread**.
+- **Media Protection**: Media referenced by any post cannot be deleted.
+- **Execution & Reporting**: Quote error response bodies verbatim when an operation fails. Conclude each requested action with an HTTP status summary or a clear error report, using the domain terms below.
 
-**Muted User.** Cannot create Comments. Still a User. An Admin cannot be muted.
+## Domain Glossary
 
-**Friend Link.** Only an approved one appears on the public page.
+**Post.** The editable content entity. Saving updates the draft; publication updates the public site.
 
-**Media.** Upload is multipart (`image` in the spec). A Media item referenced by a Post cannot be deleted.
+**Draft Post.** A **Post** without a **Public Content Snapshot**. Editable in admin workflows; never visible on the public site.
 
-**System Config.** Site-wide operational settings, including **Site Config** and at most one **Webhook Endpoint**.
+**Published Post.** A **Post** with an active **Public Content Snapshot**. Immediately visible on the public site, in public listings, and in search indexing. Publication is immediate.
 
-**API Key.** Authenticates as the issuing Admin. Issue and revoke keys in the admin UI.
+**Public Content Snapshot.** The published state read by readers and public caches. Publishing replaces it; unpublishing discards it. Code-block syntax highlighting is pre-rendered into the snapshot by the browser editor, not the publish API.
+
+**Post Revision.** A historical snapshot created automatically upon publish and immediately prior to restoring an earlier revision. Saving or autosaving a draft does not create a revision. Restoring a revision updates the draft post and leaves the live snapshot untouched until published again.
+
+**Category.** An exclusive, non-hierarchical classification for **Posts** (a post has at most one category).
+
+**Tag.** A reusable, non-hierarchical label grouping multiple **Posts**. Managed independently and associated with posts.
+
+**Comment.** User-authored plain text attached to a post, visible immediately upon creation. Deletion retains a placeholder in the **Comment Thread** when replies exist.
+
+**Muted User.** A user blocked by an Admin from creating comments. Remains a registered user with profile and friend-link capabilities. Admins cannot be muted.
+
+**Friend Link.** An external site recommendation displayed on the public friend-links page once approved by an Admin.
+
+**Media.** Uploaded image assets tracked by the CMS. Cannot be deleted while referenced by any post.
+
+**System Config.** CMS-wide operational settings, including **Site Config** (branding and presentation) and notification settings (email, webhook endpoint).
+
+**API Key.** A secret credential issued by an Admin granting programmatic access over the HTTP API. Issue and revoke keys in the admin dashboard.

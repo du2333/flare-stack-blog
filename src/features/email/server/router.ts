@@ -24,7 +24,7 @@ const configured = publicProcedure
   .route({
     method: "GET",
     path: "/email/configured",
-    summary: "Whether email is configured",
+    summary: "Check if email is configured",
     tags: ["Email"],
   })
   .handler(({ context }) => AuthService.getIsEmailConfigured(context));
@@ -114,7 +114,7 @@ const hasPassword = authProcedure
   .route({
     method: "GET",
     path: "/me/has-password",
-    summary: "Whether the current user has a password",
+    summary: "Check if the current user has a password",
     tags: ["Auth"],
   })
   .handler(({ context }) => AuthService.userHasPassword(context));

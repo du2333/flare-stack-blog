@@ -6,7 +6,7 @@ const overview = adminProcedure
   .route({
     method: "GET",
     path: "/admin/dashboard",
-    summary: "Get admin overview inbox",
+    summary: "Get admin dashboard overview",
     tags: ["Admin Dashboard"],
   })
   .output(DashboardOverviewSchema)
