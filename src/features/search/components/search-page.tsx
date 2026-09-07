@@ -20,6 +20,7 @@ interface SearchResultItem {
 
 interface SearchPageProps {
   query: string;
+  searchedQuery: string;
   results: Array<SearchResultItem>;
   isSearching: boolean;
   onQueryChange: (query: string) => void;
@@ -29,6 +30,7 @@ interface SearchPageProps {
 
 export function SearchPage({
   query,
+  searchedQuery,
   results,
   isSearching,
   onQueryChange,
@@ -98,82 +100,85 @@ export function SearchPage({
           </div>
         )}
 
-        {query.trim() !== "" && !isSearching && results.length === 0 && (
-          <div
-            className="fuwari-card-base p-12 flex flex-col items-center justify-center text-center fuwari-onload-animation"
-            style={{ animationDelay: "200ms" }}
-          >
-            <div className="w-16 h-16 rounded-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center mb-4 text-(--fuwari-btn-content)">
-              <Search size={24} strokeWidth={1.5} />
-            </div>
-            <h3 className="text-lg font-bold fuwari-text-75 mb-2">
-              {m.search_no_results()}
-            </h3>
-            <p className="text-sm fuwari-text-50">
-              {m.search_no_results_with_query({ query })}
-            </p>
-          </div>
-        )}
-
-        {results.map((result, index) => (
-          <button
-            key={result.post.id}
-            onClick={() => onSelectPost(result.post.slug)}
-            className="fuwari-card-base p-6 text-left w-full group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col gap-3 fuwari-onload-animation outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary)/50"
-            style={{ animationDelay: `${200 + index * 50}ms` }}
-          >
-            {/* Title with highlighting */}
-            <h2
-              className="text-xl font-bold fuwari-text-90 group-hover:text-(--fuwari-primary) transition-colors"
-              style={{
-                viewTransitionName: `post-title-${result.post.slug}`,
-              }}
-              dangerouslySetInnerHTML={{
-                __html: result.matches.title || result.post.title,
-              }}
-            />
-
-            {/* Summary with highlighting */}
-            <p
-              className="text-sm fuwari-text-75 line-clamp-3 leading-relaxed"
-              dangerouslySetInnerHTML={{
-                __html:
-                  result.matches.summary ||
-                  result.post.summary ||
-                  result.matches.contentSnippet ||
-                  "",
-              }}
-            />
-
-            {/* Tags */}
-            {result.post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2 mt-auto">
-                {result.post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs font-mono text-(--fuwari-btn-content) bg-(--fuwari-btn-regular-bg) px-2 py-1 rounded-md"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+        {searchedQuery.trim() !== "" &&
+          !isSearching &&
+          results.length === 0 && (
+            <div
+              className="fuwari-card-base p-12 flex flex-col items-center justify-center text-center fuwari-onload-animation"
+              style={{ animationDelay: "200ms" }}
+            >
+              <div className="w-16 h-16 rounded-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center mb-4 text-(--fuwari-btn-content)">
+                <Search size={24} strokeWidth={1.5} />
               </div>
-            )}
+              <h3 className="text-lg font-bold fuwari-text-75 mb-2">
+                {m.search_no_results()}
+              </h3>
+              <p className="text-sm fuwari-text-50">
+                {m.search_no_results_with_query({ query: searchedQuery })}
+              </p>
+            </div>
+          )}
 
-            {/* Embedded highlighting styles for the dynamically injected HTML */}
-            <style
-              dangerouslySetInnerHTML={{
-                __html: `
+        {query.trim() !== "" &&
+          results.map((result, index) => (
+            <button
+              key={result.post.id}
+              onClick={() => onSelectPost(result.post.slug)}
+              className="fuwari-card-base p-6 text-left w-full group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col gap-3 fuwari-onload-animation outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary)/50"
+              style={{ animationDelay: `${200 + index * 50}ms` }}
+            >
+              {/* Title with highlighting */}
+              <h2
+                className="text-xl font-bold fuwari-text-90 group-hover:text-(--fuwari-primary) transition-colors"
+                style={{
+                  viewTransitionName: `post-title-${result.post.slug}`,
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: result.matches.title || result.post.title,
+                }}
+              />
+
+              {/* Summary with highlighting */}
+              <p
+                className="text-sm fuwari-text-75 line-clamp-3 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    result.matches.summary ||
+                    result.post.summary ||
+                    result.matches.contentSnippet ||
+                    "",
+                }}
+              />
+
+              {/* Tags */}
+              {result.post.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2 mt-auto">
+                  {result.post.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs font-mono text-(--fuwari-btn-content) bg-(--fuwari-btn-regular-bg) px-2 py-1 rounded-md"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Embedded highlighting styles for the dynamically injected HTML */}
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: `
               #search-card-${result.post.id} mark {
                 background-color: transparent;
                 color: var(--fuwari-primary);
                 font-weight: 600;
               }
             `,
-              }}
-            />
-            <div id={`search-card-${result.post.id}`} className="hidden" />
-          </button>
-        ))}
+                }}
+              />
+              <div id={`search-card-${result.post.id}`} className="hidden" />
+            </button>
+          ))}
 
         {/* Global highlighting style for all result cards */}
         <style

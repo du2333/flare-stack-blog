@@ -36,35 +36,33 @@ export const Route = createFileRoute("/_public/search")({
 function SearchRoute() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-
-  const [query, setQuery] = useState(search.q || "");
-
-  useEffect(() => {
-    if (search.q !== undefined && search.q !== query) {
-      setQuery(search.q);
-    }
-  }, [search.q]);
-
+  const urlQuery = search.q || "";
+  const [query, setQuery] = useState(urlQuery);
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
-    if (debouncedQuery !== (search.q || "")) {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          q: debouncedQuery || undefined,
-        }),
-        replace: true,
-      });
+    if (urlQuery !== query && urlQuery !== debouncedQuery) {
+      setQuery(urlQuery);
     }
-  }, [debouncedQuery, navigate, search.q]);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    if (debouncedQuery === urlQuery) return;
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        q: debouncedQuery || undefined,
+      }),
+      replace: true,
+    });
+  }, [debouncedQuery, navigate, urlQuery]);
 
   const { data: meta } = useQuery({
     ...searchMetaQuery,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: results, isLoading: isSearching } = useQuery({
+  const { data: results, isFetching } = useQuery({
     ...searchDocsQueryOptions(debouncedQuery, meta?.version || "init"),
     enabled: debouncedQuery.length > 0 && !!meta?.version,
     staleTime: Infinity,
@@ -72,6 +70,7 @@ function SearchRoute() {
   });
 
   const searchResults = useMemo(() => results ?? [], [results]);
+  const isSearching = debouncedQuery.length > 0 && isFetching;
 
   const handleQueryChange = (newQuery: string) => {
     setQuery(newQuery);
@@ -88,6 +87,7 @@ function SearchRoute() {
   return (
     <SearchPage
       query={query}
+      searchedQuery={debouncedQuery}
       results={searchResults}
       isSearching={isSearching}
       onQueryChange={handleQueryChange}

@@ -95,7 +95,9 @@ export function PublicLayout({
               isAuthPage ? "" : "order-1 lg:order-2",
             )}
           >
-            <PageFade>{children}</PageFade>
+            <PageFade includeSearch={location.pathname !== "/search"}>
+              {children}
+            </PageFade>
           </main>
 
           <div
