@@ -27,10 +27,11 @@ function SettingsLayout() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const page = settingsSectionFromPath(pathname);
 
-  if (!page) return <Outlet />;
-
   return (
-    <SettingsSectionFrame title={TITLES[page]()} nav={page}>
+    <SettingsSectionFrame
+      title={page ? TITLES[page]() : m.settings_header_title()}
+      nav={page}
+    >
       <Outlet />
     </SettingsSectionFrame>
   );

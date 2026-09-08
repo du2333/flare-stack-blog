@@ -14,7 +14,7 @@ export function SettingsSectionFrame({
   children,
 }: {
   title: string;
-  nav: SettingsPageId;
+  nav: SettingsPageId | null;
   children: ReactNode;
 }) {
   const { methods, isLoading, isSubmitting, isDirty, onSubmit } =
@@ -24,6 +24,10 @@ export function SettingsSectionFrame({
     typeof hueRaw === "number" && !Number.isNaN(hueRaw) ? hueRaw : 250;
   const needsSave = nav === "site" || nav === "notify";
   useLiveDocumentHue(hue, isDirty, isLoading);
+
+  // An outgoing child can still render after the pathname points to the
+  // directory. Keep its form context alive for the entire settings layout.
+  if (!nav) return <FormProvider {...methods}>{children}</FormProvider>;
 
   return (
     <FormProvider {...methods}>
