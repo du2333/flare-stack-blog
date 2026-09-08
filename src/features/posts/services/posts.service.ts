@@ -249,16 +249,22 @@ export async function listAdminPostsPage(
   context: DbContext,
   data: GetPostsInput,
 ) {
-  const [items, total] = await Promise.all([
+  const [items, statusCounts] = await Promise.all([
     getPosts(context, data),
-    getPostsCount(context, {
-      status: data.status,
+    PostRepo.getAdminPostStatusCounts(context.db, {
       publicOnly: data.publicOnly,
       search: data.search,
-      sortBy: data.sortBy,
     }),
   ]);
-  return { items, total };
+  const total =
+    data.status === "draft"
+      ? statusCounts.draft
+      : data.status === "published"
+        ? statusCounts.published
+        : data.status
+          ? 0
+          : statusCounts.draft + statusCounts.published;
+  return { items, total, statusCounts };
 }
 
 export async function getPosts(context: DbContext, data: GetPostsInput) {

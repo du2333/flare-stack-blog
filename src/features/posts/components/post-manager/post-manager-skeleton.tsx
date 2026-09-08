@@ -1,44 +1,55 @@
-import { memo } from "react";
+import "./post-manager.css";
 
-export const PostRowSkeleton = memo(() => (
-  <div className="px-4 py-4 flex flex-col gap-2 border-b border-(--fuwari-input-border) animate-pulse">
-    <div className="h-4 w-16 rounded-full bg-(--fuwari-btn-regular-bg)" />
-    <div className="h-5 w-3/4 rounded-lg bg-(--fuwari-btn-regular-bg)" />
-    <div className="h-4 w-1/2 rounded-lg bg-(--fuwari-btn-regular-bg)" />
-  </div>
-));
-
-PostRowSkeleton.displayName = "PostRowSkeleton";
+export function PostRowSkeleton() {
+  return (
+    <tr aria-hidden="true">
+      <td colSpan={4}>
+        <div className="flex items-center gap-8 animate-pulse py-2">
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-2/3 rounded bg-(--fuwari-btn-regular-bg)" />
+            <div className="h-3 w-1/3 rounded bg-(--fuwari-btn-regular-bg)" />
+          </div>
+          <div className="h-5 w-14 rounded-full bg-(--fuwari-btn-regular-bg)" />
+          <div className="hidden sm:block h-4 w-24 rounded bg-(--fuwari-btn-regular-bg)" />
+        </div>
+      </td>
+    </tr>
+  );
+}
 
 export function PostManagerSkeleton() {
   return (
-    <div>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <PostRowSkeleton key={i} />
+    <>
+      {[1, 2, 3, 4, 5].map((id) => (
+        <PostRowSkeleton key={id} />
       ))}
-    </div>
+    </>
   );
 }
 
 export function PostManagerPageSkeleton() {
   return (
-    <div
-      className="fuwari-card-base p-5 md:p-6 space-y-6 animate-pulse fuwari-onload-animation"
-      style={{ animationDelay: "var(--fuwari-content-delay)" }}
-    >
-      <div className="hidden lg:flex justify-between items-center">
-        <div className="h-8 w-28 rounded-lg bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-10 w-24 rounded-xl bg-(--fuwari-btn-regular-bg)" />
+    <div className="post-manager fuwari-card-base" aria-busy="true">
+      <div className="post-list-heading animate-pulse">
+        <div className="h-8 w-28 rounded bg-(--fuwari-btn-regular-bg)" />
+        <div className="h-10 w-24 rounded bg-(--fuwari-btn-regular-bg)" />
       </div>
-      <div className="h-11 w-full rounded-xl bg-(--fuwari-btn-regular-bg)" />
-      <div className="flex flex-wrap gap-2">
-        <div className="h-9 w-16 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-20 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-16 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-24 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-24 rounded-xl bg-(--fuwari-btn-regular-bg)" />
+      <div className="flex gap-6 h-12 items-center animate-pulse">
+        {[1, 2, 3].map((id) => (
+          <div
+            key={id}
+            className="h-4 w-16 rounded bg-(--fuwari-btn-regular-bg)"
+          />
+        ))}
       </div>
-      <PostManagerSkeleton />
+      <div className="post-list-controls">
+        <div className="h-11 w-80 rounded-lg bg-(--fuwari-btn-regular-bg) animate-pulse" />
+      </div>
+      <table className="post-list-table">
+        <tbody>
+          <PostManagerSkeleton />
+        </tbody>
+      </table>
     </div>
   );
 }

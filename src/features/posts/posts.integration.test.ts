@@ -588,6 +588,62 @@ describe("Posts Integration", () => {
       expect(page.items[0]?.title).toBe("Paged");
     });
 
+    it("counts all matching statuses independently of the selected status and page", async () => {
+      await createPublishedPost("Matched published", "matched-published");
+      for (const [title, slug, summary] of [
+        ["Draft one", "draft-one", "matched summary"],
+        ["Draft two", "matched-slug", ""],
+        ["Unrelated", "unrelated", ""],
+      ]) {
+        const { id } = await PostService.createEmptyPost(adminContext);
+        await updatePost({ id, data: { title, slug, summary } });
+      }
+      const page = await PostService.listAdminPostsPage(adminContext, {
+        search: "matched",
+        status: "draft",
+        offset: 1,
+        limit: 1,
+      });
+      expect(page.items).toHaveLength(1);
+      expect(page.total).toBe(2);
+      expect(page.statusCounts).toEqual({ draft: 2, published: 1 });
+      const publicPage = await PostService.listAdminPostsPage(adminContext, {
+        search: "matched",
+        publicOnly: true,
+        limit: 1,
+      });
+      expect(publicPage.total).toBe(1);
+      expect(publicPage.statusCounts).toEqual({ draft: 0, published: 1 });
+      const beyond = await PostService.listAdminPostsPage(adminContext, {
+        search: "matched",
+        offset: 50,
+        limit: 12,
+      });
+      expect(beyond.items).toEqual([]);
+      expect(beyond.total).toBe(3);
+      expect(beyond.statusCounts).toEqual({ draft: 2, published: 1 });
+    });
+
+    it("returns zero status facets for no matches and treats wildcard searches literally", async () => {
+      const { id } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id,
+        data: { title: "100%_literal", slug: "literal" },
+      });
+      const literal = await PostService.listAdminPostsPage(adminContext, {
+        search: "%_",
+      });
+      expect(literal.statusCounts).toEqual({ draft: 1, published: 0 });
+      const empty = await PostService.listAdminPostsPage(adminContext, {
+        search: "missing",
+      });
+      expect(empty).toMatchObject({
+        items: [],
+        total: 0,
+        statusCounts: { draft: 0, published: 0 },
+      });
+    });
+
     it("should search posts by title keyword", async () => {
       // Create posts with different titles
       const { id: id1 } = await PostService.createEmptyPost(adminContext);

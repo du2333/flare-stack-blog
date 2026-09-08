@@ -1,0 +1,553 @@
+/* Content-list layout; colors remain shared with the Fuwari workbench. */
+.post-manager {
+  --list-rule: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  padding: 30px 34px 20px;
+  min-height: calc(100dvh - 52px);
+}
+.post-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.post-list-heading h1 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  color: var(--fuwari-fg);
+}
+.post-list-heading p {
+  font-size: 14px;
+  margin-top: 8px;
+  color: var(--fuwari-fg-50);
+}
+.post-list-create {
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.post-list-tabs {
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid var(--list-rule);
+}
+.post-list-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 6px;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  color: var(--fuwari-fg-75);
+}
+.post-list-tabs button span {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.post-list-tabs button.selected {
+  border-bottom-color: var(--fuwari-primary);
+  color: var(--fuwari-primary);
+  font-weight: 500;
+}
+.post-list-tabs button:hover {
+  color: var(--fuwari-primary);
+}
+.post-list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 0 23px;
+}
+.post-list-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(390px, 100%);
+  border: 1px solid var(--list-rule);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 0 13px;
+  color: var(--fuwari-fg-50);
+  background: color-mix(
+    in srgb,
+    var(--fuwari-page-bg) 25%,
+    var(--fuwari-card-bg)
+  );
+}
+.post-list-search:focus-within {
+  border-color: var(--fuwari-primary);
+  box-shadow: 0 0 0 2px var(--fuwari-btn-regular-bg);
+}
+.post-list-search svg {
+  flex-shrink: 0;
+}
+.post-list-search input {
+  min-width: 0;
+  flex: 1;
+  width: 100%;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--fuwari-fg-75);
+}
+.post-list-search button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 32px;
+}
+.post-list-sort {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--fuwari-fg-75);
+}
+.post-list-sort .post-list-sort-trigger {
+  gap: 8px;
+  border: 1px solid var(--list-rule);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--fuwari-card-bg);
+  color: var(--fuwari-fg-75);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  text-transform: none;
+  cursor: pointer;
+}
+.post-list-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.post-list-title-col {
+  width: 57%;
+}
+.post-list-status-col {
+  width: 13%;
+}
+.post-list-date-col {
+  width: 17%;
+}
+.post-list-actions-col {
+  width: 13%;
+}
+.post-list-table th {
+  height: 44px;
+  text-align: left;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fuwari-fg-50);
+  border-bottom: 1px solid var(--list-rule);
+}
+.post-list-table td {
+  height: 76px;
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--list-rule);
+  vertical-align: middle;
+}
+.post-list-table tr {
+  transition: background-color 150ms;
+}
+.post-list-table tbody tr:hover,
+.post-list-table tbody tr:focus-within {
+  background: color-mix(in srgb, var(--fuwari-btn-regular-bg) 60%, transparent);
+}
+.post-list-title-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.post-list-pin {
+  width: 20px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  color: var(--fuwari-primary);
+}
+.post-list-title-link {
+  display: block;
+  min-width: 0;
+}
+.post-list-title-link strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--fuwari-fg);
+  overflow-wrap: anywhere;
+}
+.post-list-title-link:hover strong {
+  color: var(--fuwari-primary);
+}
+.post-list-title-link > span {
+  display: block;
+  margin-top: 4px;
+  color: var(--fuwari-fg-50);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.post-list-status {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.post-list-status.published {
+  background: var(--fuwari-success-bg);
+  color: var(--fuwari-success-fg);
+}
+.post-list-status.draft {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-btn-content);
+}
+.post-list-date {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fuwari-fg-50);
+  white-space: nowrap;
+}
+.post-list-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  font-size: 13px;
+  color: var(--fuwari-primary);
+}
+.post-list-row-actions > a {
+  padding: 8px 0;
+  white-space: nowrap;
+}
+.post-list-menu {
+  position: relative;
+}
+.post-list-menu > button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 34px;
+  border-radius: 7px;
+  color: var(--fuwari-fg-50);
+}
+.post-list-menu > button:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.post-list-menu [role="menu"] {
+  position: absolute;
+  top: calc(100% + 3px);
+  right: 0;
+  min-width: 130px;
+  border: 1px solid var(--list-rule);
+  padding: 5px;
+  border-radius: 9px;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 0.08);
+  background: var(--fuwari-card-bg);
+  z-index: 20;
+}
+.post-list-menu [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  color: var(--fuwari-danger-fg);
+  white-space: nowrap;
+}
+.post-list-menu [role="menuitem"]:hover {
+  background: var(--fuwari-danger-bg);
+}
+.post-list-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 55px;
+  padding-top: 8px;
+  font-size: 13px;
+  color: var(--fuwari-fg-50);
+}
+.post-list-footer nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+.post-list-footer nav button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+.post-list-footer nav button:disabled {
+  opacity: 0.3;
+}
+.post-list-reset {
+  color: var(--fuwari-primary);
+}
+.post-list-empty {
+  padding: 90px 20px;
+  text-align: center;
+  color: var(--fuwari-fg-50);
+}
+.post-list-empty > svg {
+  margin: 0 auto 20px;
+  color: var(--fuwari-primary);
+}
+.post-list-empty h2 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--fuwari-fg-75);
+}
+.post-list-empty p {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.post-list-empty button {
+  color: var(--fuwari-primary);
+  margin-top: 22px;
+  font-size: 14px;
+}
+.post-delete-dialog {
+  margin: auto;
+  width: min(420px, calc(100vw - 32px));
+  border: 0;
+  border-radius: 16px;
+  padding: 26px;
+  background: var(--fuwari-card-bg);
+  color: var(--fuwari-fg);
+}
+.post-delete-dialog::backdrop {
+  background: rgb(20 35 50 / 0.28);
+}
+.post-delete-dialog h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+.post-delete-dialog p {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--fuwari-fg-75);
+}
+.post-delete-dialog > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.post-manager :is(button, a, input, select):focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.post-manager .post-list-search input:focus-visible {
+  outline: none;
+}
+.post-list-mobile-date-label {
+  display: none;
+}
+@media (max-width: 1200px) {
+  .post-manager {
+    padding: 25px 24px 18px;
+  }
+  .post-list-title-col {
+    width: 50%;
+  }
+  .post-list-status-col {
+    width: 15%;
+  }
+  .post-list-date-col {
+    width: 20%;
+  }
+  .post-list-actions-col {
+    width: 15%;
+  }
+  .post-list-row-actions {
+    gap: 9px;
+  }
+}
+@media (max-width: 1023px) {
+  .post-list-heading .post-list-create {
+    display: none;
+  }
+  .post-list-heading h1 {
+    display: none;
+  }
+  .post-list-heading {
+    margin-bottom: 10px;
+  }
+  .post-list-heading p {
+    margin-top: 0;
+  }
+  .post-manager {
+    min-height: calc(100dvh - 120px);
+  }
+}
+@media (max-width: 620px) {
+  .post-manager {
+    padding: 20px 18px;
+  }
+  .post-list-tabs {
+    gap: 24px;
+  }
+  .post-list-tabs button {
+    gap: 7px;
+  }
+  .post-list-controls {
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 20px 0;
+  }
+  .post-list-search {
+    width: 100%;
+  }
+  .post-list-sort {
+    margin-left: auto;
+    font-size: 13px;
+  }
+  .post-list-sort .post-list-sort-trigger {
+    min-height: 36px;
+  }
+  .post-list-table,
+  .post-list-table tbody {
+    display: block;
+  }
+  .post-list-table colgroup {
+    display: none;
+  }
+  .post-list-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .post-list-table tr {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 11px 10px;
+    padding: 17px 0;
+    border-bottom: 1px solid var(--list-rule);
+  }
+  .post-list-table td {
+    display: block;
+    height: auto;
+    padding: 0;
+    border: 0;
+  }
+  .post-list-table td:first-child {
+    grid-column: 1/-1;
+  }
+  .post-list-title-cell {
+    gap: 8px;
+  }
+  .post-list-pin {
+    width: 16px;
+  }
+  .post-list-pin svg {
+    width: 15px;
+  }
+  .post-list-title-link strong {
+    font-size: 15px;
+  }
+  .post-list-title-link > span {
+    font-size: 11px;
+  }
+  .post-list-table td:nth-child(2) {
+    padding-left: 24px;
+  }
+  .post-list-date {
+    font-size: 11px;
+    align-self: center;
+  }
+  .post-list-mobile-date-label {
+    display: inline;
+  }
+  .post-list-row-actions {
+    gap: 5px;
+  }
+  .post-list-status {
+    font-size: 11px;
+    min-height: 22px;
+    padding: 0 7px;
+  }
+  .post-list-row-actions > a {
+    font-size: 12px;
+  }
+  .post-list-menu > button {
+    height: 26px;
+    width: 26px;
+  }
+  .post-list-empty {
+    padding: 60px 10px;
+  }
+  .post-list-footer {
+    font-size: 12px;
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-list-table tr {
+    transition: none;
+  }
+}
+.post-list-table tbody tr:nth-last-child(-n + 2) .post-list-menu [role="menu"] {
+  top: auto;
+  bottom: calc(100% + 3px);
+}
+.post-list-title-link strong {
+  font-size: 15px;
+}
+.post-list-title-link > span,
+.post-list-date {
+  font-size: 13px;
+}
+@media (max-width: 620px) {
+  .post-list-title-link > span,
+  .post-list-date {
+    font-size: 11px;
+  }
+}
+
+.post-delete-dialog-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+}
+.post-delete-dialog button:disabled {
+  opacity: 0.5;
+}
+.post-list-footer {
+  flex-wrap: wrap;
+}
+.post-list-footer > div {
+  flex: 1;
+  width: 100%;
+  padding-top: 0;
+}
+.post-list-search input::-webkit-search-cancel-button {
+  display: none;
+}

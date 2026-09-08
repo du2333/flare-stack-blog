@@ -161,6 +161,22 @@ export async function getPostsCount(
   return totalNumberofPosts[0].count;
 }
 
+/** Status facets use the same search predicate as the paginated Admin list. */
+export async function getAdminPostStatusCounts(
+  db: DB,
+  options: { publicOnly?: boolean; search?: string } = {},
+) {
+  const rows = await db
+    .select({ status: PostsTable.status, count: count() })
+    .from(PostsTable)
+    .where(buildPostWhereClause(options))
+    .groupBy(PostsTable.status);
+  return {
+    draft: rows.find((row) => row.status === "draft")?.count ?? 0,
+    published: rows.find((row) => row.status === "published")?.count ?? 0,
+  };
+}
+
 export async function findReusableEmptyDraft(db: DB) {
   const rows = await db
     .select({

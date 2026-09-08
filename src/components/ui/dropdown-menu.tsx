@@ -20,6 +20,8 @@ interface DropdownMenuProps {
   options: Array<DropdownOption>;
   onChange: (value: string) => void;
   className?: string;
+  triggerClassName?: string;
+  ariaLabel?: string;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -27,6 +29,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   options,
   onChange,
   className = "",
+  triggerClassName,
+  ariaLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -80,13 +84,32 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (
+      isOpen &&
+      menuStyle &&
+      !menuRef.current?.contains(document.activeElement)
+    ) {
+      const selected = menuRef.current?.querySelector<HTMLButtonElement>(
+        '[aria-checked="true"]',
+      );
+      (selected ?? menuRef.current?.querySelector("button"))?.focus();
+    }
+  }, [isOpen, menuStyle]);
+
   return (
     <div className={cn("relative", className)}>
       <button
         ref={triggerRef}
         type="button"
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 rounded-lg bg-(--fuwari-primary)/10 px-2 py-0.5 font-mono text-xs font-bold uppercase text-(--fuwari-primary)"
+        className={cn(
+          "flex items-center gap-1 rounded-lg bg-(--fuwari-primary)/10 px-2 py-0.5 font-mono text-xs font-bold uppercase text-(--fuwari-primary)",
+          triggerClassName,
+        )}
       >
         <span>{selectedOption.label}</span>
         <ChevronDown
@@ -102,16 +125,42 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         ? createPortal(
             <div
               ref={menuRef}
+              role="menu"
+              aria-label={ariaLabel}
               className="z-80 max-h-64 overflow-y-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border) custom-scrollbar"
               style={menuStyle}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsOpen(false);
+                  triggerRef.current?.focus();
+                }
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  const buttons = Array.from(
+                    menuRef.current?.querySelectorAll("button") ?? [],
+                  );
+                  const index = buttons.indexOf(
+                    document.activeElement as HTMLButtonElement,
+                  );
+                  const direction = event.key === "ArrowDown" ? 1 : -1;
+                  buttons[
+                    (index + direction + buttons.length) % buttons.length
+                  ]?.focus();
+                }
+              }}
             >
               {options.map((option) => (
                 <button
                   key={option.value}
                   type="button"
+                  role="menuitemradio"
+                  aria-checked={value === option.value}
                   onClick={() => {
                     onChange(option.value);
                     setIsOpen(false);
+                    triggerRef.current?.focus();
                   }}
                   className={cn(
                     "flex w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",

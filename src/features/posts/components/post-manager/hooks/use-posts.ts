@@ -49,6 +49,10 @@ export function usePosts({ page, status, sortBy, search }: UsePostsOptions) {
     posts: postsQuery.data?.items ?? [],
     totalCount,
     totalPages,
+    statusCounts: postsQuery.data?.statusCounts,
+    isFetching: postsQuery.isFetching,
+    isPlaceholderData: postsQuery.isPlaceholderData,
+    refetch: postsQuery.refetch,
     isPending: postsQuery.isPending,
     error: postsQuery.error,
   };
@@ -66,8 +70,10 @@ export function useDeletePost({ onSuccess }: UseDeletePostOptions = {}) {
       await orpcClient.posts.admin.remove({ id: post.id });
       return post;
     },
-    onSuccess: (post) => {
-      queryClient.invalidateQueries({ queryKey: orpc.posts.admin.list.key() });
+    onSuccess: async (post) => {
+      await queryClient.invalidateQueries({
+        queryKey: orpc.posts.admin.list.key(),
+      });
       toast.success(m.admin_posts_toast_delete_success(), {
         description: m.admin_posts_toast_delete_success_desc({
           title: post.title,

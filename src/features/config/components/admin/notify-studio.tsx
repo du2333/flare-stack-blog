@@ -4,6 +4,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { SETTINGS_FIELD_CLASS } from "@/features/config/components/admin/settings-pages";
 import type { SystemConfig } from "@/features/config/config.schema";
+import type { TestEmailConnectionInput } from "@/features/email/email.schema";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";
 import { useWebhookConnection } from "@/features/webhook/hooks/use-webhook-connection";
 import { cn } from "@/lib/utils";
@@ -19,11 +20,16 @@ export function NotifyStudio() {
 }
 
 function EmailChannel() {
-  const { register, setValue, control } = useFormContext<SystemConfig>();
+  const { register, setValue, control, getValues } =
+    useFormContext<SystemConfig>();
   const { testEmailConnection } = useEmailConnection();
   const [openAccount, setOpenAccount] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    input: TestEmailConnectionInput;
+    success: boolean;
+  } | null>(null);
   const email = useWatch({ control, name: "email" });
   const adminOn =
     useWatch({ control, name: "notification.admin.channels.email" }) ?? true;
@@ -37,6 +43,27 @@ function EmailChannel() {
     host && email?.username?.trim() && email?.password?.trim() && senderAddress,
   );
 
+  const testInput = emailTestInput(email);
+  // Results describe only the exact values tested, including an in-flight edit.
+  const matchesTest =
+    testResult !== null && sameEmailInput(testResult.input, testInput);
+  const connectionStatus = testing
+    ? "testing"
+    : !configured
+      ? "unconfigured"
+      : matchesTest
+        ? testResult.success
+          ? "verified"
+          : "failed"
+        : "configured";
+  const connectionLabels = {
+    testing: m.settings_connection_testing(),
+    unconfigured: m.settings_connection_unconfigured(),
+    configured: m.settings_connection_configured(),
+    verified: m.settings_connection_verified(),
+    failed: m.settings_connection_failed(),
+  };
+
   useEffect(() => {
     if (!configured) setOpenAccount(true);
   }, [configured]);
@@ -45,22 +72,21 @@ function EmailChannel() {
     if (!configured || testing) return;
     setTesting(true);
     try {
-      await testEmailConnection({
-        host,
-        port: email?.port || 465,
-        username: email?.username || "",
-        password: email?.password || "",
-        senderAddress,
-        senderName: email?.senderName,
-      });
-      toast.success(m.settings_email_test_status_success());
+      await testEmailConnection(testInput);
+      setTestResult({ input: testInput, success: true });
+      if (sameEmailInput(testInput, emailTestInput(getValues("email")))) {
+        toast.success(m.settings_email_test_status_success());
+      }
     } catch (error) {
-      toast.error(m.settings_email_test_status_error(), {
-        description:
-          error instanceof Error
-            ? error.message
-            : m.settings_email_unknown_error(),
-      });
+      setTestResult({ input: testInput, success: false });
+      if (sameEmailInput(testInput, emailTestInput(getValues("email")))) {
+        toast.error(m.settings_email_test_status_error(), {
+          description:
+            error instanceof Error
+              ? error.message
+              : m.settings_email_unknown_error(),
+        });
+      }
     } finally {
       setTesting(false);
     }
@@ -83,14 +109,17 @@ function EmailChannel() {
           </button>
         </div>
         <span
+          role="status"
           className={cn(
             "shrink-0 h-6 px-2 rounded-full text-xs grid place-items-center",
-            configured
+            connectionStatus === "verified"
               ? "bg-(--fuwari-success-bg) text-(--fuwari-success-fg)"
-              : "bg-(--fuwari-btn-regular-bg) fuwari-text-50",
+              : connectionStatus === "failed"
+                ? "bg-(--fuwari-danger-bg) text-(--fuwari-danger-fg)"
+                : "bg-(--fuwari-btn-regular-bg) fuwari-text-50",
           )}
         >
-          {configured ? m.settings_connected() : m.settings_not_connected()}
+          {connectionLabels[connectionStatus]}
         </span>
       </div>
 
@@ -205,6 +234,33 @@ function EmailChannel() {
         {m.settings_email_test_btn_send()}
       </button>
     </section>
+  );
+}
+
+function emailTestInput(
+  email: SystemConfig["email"],
+): TestEmailConnectionInput {
+  return {
+    host: email?.host?.trim() || "",
+    port: email?.port || 465,
+    username: email?.username || "",
+    password: email?.password || "",
+    senderAddress: email?.senderAddress?.trim() || "",
+    senderName: email?.senderName,
+  };
+}
+
+function sameEmailInput(
+  left: TestEmailConnectionInput,
+  right: TestEmailConnectionInput,
+) {
+  return (
+    left.host === right.host &&
+    left.port === right.port &&
+    left.username === right.username &&
+    left.password === right.password &&
+    left.senderAddress === right.senderAddress &&
+    left.senderName === right.senderName
   );
 }
 

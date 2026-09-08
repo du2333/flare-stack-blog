@@ -1,87 +1,119 @@
-import { ClientOnly, useNavigate } from "@tanstack/react-router";
-import { Pin, Trash2 } from "lucide-react";
+import { ClientOnly, Link } from "@tanstack/react-router";
+import { MoreHorizontal, Pin, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import type { PostListItem } from "../types";
+import type { PostListItem, SortField } from "../types";
 
 interface PostRowProps {
   post: PostListItem;
-  onDelete: (post: PostListItem) => void;
+  sortBy: SortField;
+  onDelete: (post: PostListItem, trigger: HTMLButtonElement | null) => void;
 }
 
-export function PostRow({ post, onDelete }: PostRowProps) {
-  const navigate = useNavigate();
-
-  const handleEdit = () => {
-    navigate({
-      to: "/admin/posts/edit/$id",
-      params: { id: String(post.id) },
-    });
-  };
-
-  const isPublished = post.status === "published";
-
+export function PostRow({ post, sortBy, onDelete }: PostRowProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const title = post.title.trim() || m.common_untitled();
+  const date = post[sortBy];
+  useEffect(() => {
+    if (!menuOpen) return;
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    const outside = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", outside);
+    return () => document.removeEventListener("mousedown", outside);
+  }, [menuOpen]);
   return (
-    <div className="px-4 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 border-b border-(--fuwari-input-border) last:border-0">
-      <button
-        type="button"
-        onClick={handleEdit}
-        className="min-w-0 flex-1 text-left"
-      >
-        <div className="flex items-center gap-2 flex-wrap">
-          {post.pinnedAt ? (
-            <span className="inline-flex items-center gap-1 text-xs text-(--fuwari-primary)">
-              <Pin size={12} strokeWidth={1.5} />
-              {m.admin_posts_pinned()}
-            </span>
-          ) : null}
-          <span
-            className={
-              isPublished
-                ? "text-xs px-2 py-0.5 rounded-full bg-(--fuwari-success-bg) text-(--fuwari-success-fg)"
-                : "text-xs px-2 py-0.5 rounded-full bg-(--fuwari-btn-regular-bg) fuwari-text-50"
-            }
-          >
-            {isPublished
-              ? m.admin_posts_status_published()
-              : m.admin_posts_status_draft()}
+    <tr>
+      <td>
+        <div className="post-list-title-cell">
+          <span className="post-list-pin">
+            {post.pinnedAt && (
+              <Pin size={18} aria-label={m.admin_posts_pinned()} />
+            )}
           </span>
+          <Link
+            to="/admin/posts/edit/$id"
+            params={{ id: String(post.id) }}
+            className="post-list-title-link"
+          >
+            <strong>{title}</strong>
+            <span>{post.slug || m.admin_posts_slug_empty()}</span>
+          </Link>
         </div>
-        <h3 className="mt-1 font-medium text-base fuwari-text-90 truncate">
-          {post.title.trim() || m.common_untitled()}
-        </h3>
-        <p className="text-sm fuwari-text-50 truncate">
-          {post.summary || m.admin_posts_no_summary()}
-        </p>
-        <p className="mt-1 text-xs fuwari-text-30">
-          {isPublished
+      </td>
+      <td>
+        <span className={`post-list-status ${post.status}`}>
+          {post.status === "published"
+            ? m.admin_posts_status_published()
+            : m.admin_posts_status_draft()}
+        </span>
+      </td>
+      <td className="post-list-date">
+        <span className="post-list-mobile-date-label">
+          {sortBy === "publishedAt"
             ? m.admin_posts_time_published()
             : m.admin_posts_time_modified()}{" "}
-          <ClientOnly fallback="-">
-            {isPublished
-              ? formatDate(post.publishedAt || post.createdAt)
-              : formatDate(post.updatedAt)}
-          </ClientOnly>
-        </p>
-      </button>
-
-      <div className="flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          onClick={handleEdit}
-          className="fuwari-btn-regular rounded-xl h-9 px-3 text-sm"
-        >
-          {m.admin_posts_action_edit()}
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(post)}
-          className="rounded-xl h-9 px-3 text-sm fuwari-text-50 hover:text-destructive"
-          title={m.admin_posts_action_delete()}
-        >
-          <Trash2 size={16} strokeWidth={1.5} />
-        </button>
-      </div>
-    </div>
+        </span>
+        {date ? (
+          <time dateTime={date.toISOString()}>
+            <ClientOnly fallback="—">{formatDate(date)}</ClientOnly>
+          </time>
+        ) : (
+          "—"
+        )}
+      </td>
+      <td>
+        <div className="post-list-row-actions">
+          <Link
+            to="/admin/posts/edit/$id"
+            params={{ id: String(post.id) }}
+            aria-label={m.admin_posts_edit_named({ title })}
+          >
+            {m.admin_posts_action_edit()}
+          </Link>
+          <div
+            ref={menuRef}
+            className="post-list-menu"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.stopPropagation();
+                setMenuOpen(false);
+                triggerRef.current?.focus();
+              }
+            }}
+          >
+            <button
+              ref={triggerRef}
+              type="button"
+              aria-label={m.admin_posts_more_named({ title })}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((value) => !value)}
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            {menuOpen && (
+              <div role="menu" aria-label={m.admin_posts_more_named({ title })}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDelete(post, triggerRef.current);
+                  }}
+                >
+                  <Trash2 size={15} />
+                  {m.admin_posts_action_delete_post()}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+    </tr>
   );
 }

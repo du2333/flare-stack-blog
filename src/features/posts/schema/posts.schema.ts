@@ -168,9 +168,18 @@ const AdminPostListItemSchema = z.object({
   updatedAt: coercedDate,
 });
 
+export const AdminPostStatusCountsSchema = z.object({
+  draft: z.number().int().nonnegative(),
+  published: z.number().int().nonnegative(),
+});
+export type AdminPostStatusCounts = z.infer<typeof AdminPostStatusCountsSchema>;
+
 export const AdminPostListPageSchema = z.object({
   items: z.array(AdminPostListItemSchema),
   total: z.number().int().nonnegative(),
+  statusCounts: AdminPostStatusCountsSchema.describe(
+    "Counts matching search and publicOnly before status filtering or pagination.",
+  ),
 });
 
 export const FindPostByIdInputSchema = z.object({ id: z.number() });

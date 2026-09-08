@@ -47,8 +47,11 @@ export function SettingsDirectory() {
         to="notify"
         title={m.settings_nav_notify()}
         hint={m.settings_dest_notify_hint()}
-        pill={emailOn ? m.settings_connected() : m.settings_not_connected()}
-        pillOn={emailOn}
+        pill={
+          emailOn
+            ? m.settings_connection_configured()
+            : m.settings_connection_unconfigured()
+        }
       >
         <div className="h-24 rounded-xl bg-(--fuwari-btn-regular-bg) grid place-items-center">
           <Mail size={28} className="text-(--fuwari-primary)" />
@@ -89,14 +92,12 @@ function Dest({
   title,
   hint,
   pill,
-  pillOn,
   children,
 }: {
   to: SettingsPageId;
   title: string;
   hint: string;
   pill?: string;
-  pillOn?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -107,16 +108,10 @@ function Dest({
     >
       <div className="w-[42%] max-w-44 shrink-0">{children}</div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <p className="text-base font-medium fuwari-text-90">{title}</p>
           {pill ? (
-            <span
-              className={
-                pillOn
-                  ? "h-5 px-1.5 rounded-full text-[11px] bg-(--fuwari-success-bg) text-(--fuwari-success-fg)"
-                  : "h-5 px-1.5 rounded-full text-[11px] bg-(--fuwari-btn-regular-bg) fuwari-text-50"
-              }
-            >
+            <span className="h-5 shrink-0 whitespace-nowrap px-1.5 rounded-full text-[11px] bg-(--fuwari-btn-regular-bg) fuwari-text-50">
               {pill}
             </span>
           ) : null}

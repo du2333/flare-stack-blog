@@ -199,6 +199,7 @@ export function MediaLibrary() {
         }}
         onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
         isReplacing={isReplacing}
+        preventClose={deleteTarget !== null}
       />
 
       <ConfirmationModal

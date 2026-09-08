@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { linkedPostsQuery } from "@/features/media/queries";
@@ -16,6 +17,7 @@ export function MediaDetail({
   onReplace,
   onDelete,
   isReplacing,
+  preventClose = false,
 }: {
   asset: MediaAsset | null;
   onClose: () => void;
@@ -23,6 +25,7 @@ export function MediaDetail({
   onReplace: (key: string, file: File) => Promise<void>;
   onDelete: (asset: MediaAsset) => void;
   isReplacing: boolean;
+  preventClose?: boolean;
 }) {
   const isMounted = !!asset;
   const shouldRender = useDelayUnmount(isMounted, 200);
@@ -30,6 +33,46 @@ export function MediaDetail({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef(onClose);
+  const dismissibleRef = useRef(false);
+  closeRef.current = onClose;
+  dismissibleRef.current = isMounted && !preventClose;
+
+  useEffect(() => {
+    if (!shouldRender) return;
+    const previous = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!dismissibleRef.current || event.defaultPrevented) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeRef.current();
+      } else if (event.key === "Tab") {
+        const controls = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), a[href], input:not([type="file"]):not(:disabled), [tabindex="0"]',
+          ) ?? [],
+        ).filter((element) => element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (previous?.isConnected) previous.focus();
+    };
+  }, [shouldRender]);
 
   useEffect(() => {
     if (asset) {
@@ -61,13 +104,26 @@ export function MediaDetail({
     >
       <div
         className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={preventClose ? undefined : onClose}
       />
       <div
+        ref={dialogRef}
         role="dialog"
+        aria-label={active.fileName}
         aria-modal="true"
         className="relative w-full max-w-[1400px] h-[calc(100dvh-1.5rem)] md:h-[calc(100dvh-3rem)] fuwari-card-base grid grid-rows-[minmax(0,1fr)_minmax(12rem,auto)] md:grid-rows-none md:grid-cols-[minmax(0,1fr)_22rem] overflow-hidden fuwari-onload-animation"
       >
+        <button
+          ref={closeButtonRef}
+          type="button"
+          onClick={onClose}
+          disabled={preventClose}
+          aria-label={m.common_close()}
+          title={m.common_close()}
+          className="absolute top-3 right-3 z-10 size-10 grid place-items-center rounded-xl bg-(--fuwari-card-bg) fuwari-text-50 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) focus-visible:outline-2 focus-visible:outline-(--fuwari-primary) disabled:opacity-50"
+        >
+          <X size={20} strokeWidth={1.5} />
+        </button>
         <div className="bg-(--fuwari-btn-regular-bg) p-4 md:p-8 flex items-center justify-center min-h-0">
           <img
             src={getOptimizedImageUrl(active.key)}
@@ -78,7 +134,7 @@ export function MediaDetail({
         <div className="p-5 md:p-6 flex flex-col min-h-0 overflow-y-auto">
           {editing ? (
             <form
-              className="flex gap-2"
+              className="flex gap-2 pr-10"
               onSubmit={async (event) => {
                 event.preventDefault();
                 if (!name.trim()) return;
@@ -104,7 +160,7 @@ export function MediaDetail({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="text-left text-lg font-medium fuwari-text-90 break-all"
+              className="pr-10 text-left text-lg font-medium fuwari-text-90 break-all"
             >
               {active.fileName}
             </button>
