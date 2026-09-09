@@ -21,11 +21,12 @@ interface __BaseEnv_Env {
 	TURNSTILE_SECRET_KEY: string;
 	GITHUB_TOKEN: string;
 	RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
+	POST_PUBLISHER: DurableObjectNamespace<import("./src/server").PostPublisher>;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
 		mainModule: typeof import("./src/server");
-		durableNamespaces: "RateLimiter";
+		durableNamespaces: "RateLimiter" | "PostPublisher";
 	}
 	interface TestEnv {
 		KV: KVNamespace;
@@ -47,6 +48,7 @@ declare namespace Cloudflare {
 		TURNSTILE_SECRET_KEY: string;
 		GITHUB_TOKEN: string;
 		RATE_LIMITER: DurableObjectNamespace<import("./src/server").RateLimiter>;
+		POST_PUBLISHER: DurableObjectNamespace<import("./src/server").PostPublisher>;
 	}
 	interface Env extends __BaseEnv_Env {}
 }

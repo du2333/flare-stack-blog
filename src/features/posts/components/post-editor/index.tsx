@@ -81,7 +81,6 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
     setPost,
     setError,
     flush,
-    getContent,
   });
 
   const handleEditorCreated = useCallback((editor: TiptapEditor | null) => {

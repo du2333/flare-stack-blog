@@ -44,7 +44,6 @@ All callable operations are defined within the runtime OpenAPI specification.
 Carry out the user's intent as Admin, respecting these domain constraints:
 
 - **Publishing Intent**: Saving or updating a **Post** modifies the draft; a post only appears on the public site after being published to create or update its **Public Content Snapshot**. Follow the user's intent directly—publish if they ask to publish, keep as a draft if they ask for a draft, and proactively ask for clarification if their intent is unclear.
-- **Code Block Highlighting**: Do not invent or inject pre-rendered syntax-highlighted HTML. Syntax highlighting is generated client-side by Shiki in the web admin editor. When publishing a **Post** with new or modified code blocks via API, inform the user that these code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.
 - **Content Format (`contentJson`)**: Rich text must be a TipTap / ProseMirror JSON document object, not Markdown and not a raw HTML string. Match an existing post payload from the spec / GET, or send:
 
 ```json
@@ -70,7 +69,7 @@ Carry out the user's intent as Admin, respecting these domain constraints:
 
 **Published Post.** A **Post** with an active **Public Content Snapshot**. Immediately visible on the public site, in public listings, and in search indexing. Publication is immediate.
 
-**Public Content Snapshot.** The published state read by readers and public caches. Publishing replaces it; unpublishing discards it. Code-block syntax highlighting is pre-rendered into the snapshot by the browser editor, not the publish API.
+**Public Content Snapshot.** The published state read by readers and public caches. Publishing replaces it; unpublishing discards it.
 
 **Post Revision.** A historical snapshot created automatically upon publish and immediately prior to restoring an earlier revision. Saving or autosaving a draft does not create a revision. Restoring a revision updates the draft post and leaves the live snapshot untouched until published again.
 

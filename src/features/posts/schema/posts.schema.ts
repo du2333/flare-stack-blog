@@ -193,9 +193,6 @@ export const DeletePostInputSchema = z.object({ id: z.number() });
 
 export const PublishPostInputSchema = z.object({
   id: z.number(),
-  highlightedContentJson: NullableJsonContentSchema.optional().describe(
-    "Optional highlighted document produced by the admin editor. Omit this field when calling the API directly.",
-  ),
 });
 
 export const UnpublishPostInputSchema = z.object({

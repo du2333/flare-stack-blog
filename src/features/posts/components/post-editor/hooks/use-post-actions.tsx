@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { JSONContent } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
-import type { PublishPostInput } from "@/features/posts/schema/posts.schema";
 import { slugify } from "@/features/posts/utils/content";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -19,7 +17,6 @@ interface UsePostActionsOptions {
   setPost: React.Dispatch<React.SetStateAction<PostEditorData>>;
   setError: (error: string | null) => void;
   flush: () => Promise<void>;
-  getContent: () => JSONContent | null;
 }
 
 export function usePostActions({
@@ -28,7 +25,6 @@ export function usePostActions({
   setPost,
   setError,
   flush,
-  getContent,
 }: UsePostActionsOptions) {
   const queryClient = useQueryClient();
 
@@ -63,8 +59,7 @@ export function usePostActions({
   };
 
   const publishMutation = useMutation({
-    mutationFn: (input: PublishPostInput) =>
-      orpcClient.posts.admin.publish(input),
+    mutationFn: () => orpcClient.posts.admin.publish({ id: postId }),
     onSuccess: () => {
       toast.success(m.editor_header_publish());
       setPost((prev) => ({ ...prev, hasPublicSnapshot: true }));
@@ -113,24 +108,8 @@ export function usePostActions({
       setProcessState("IDLE");
       return;
     }
-    let highlightedContentJson: PublishPostInput["highlightedContentJson"];
-    try {
-      const content = getContent();
-      if (content) {
-        const { highlightCodeBlocks } =
-          await import("@/features/posts/utils/highlight-code-blocks");
-        highlightedContentJson = await highlightCodeBlocks(content);
-      }
-    } catch (error) {
-      console.warn(
-        JSON.stringify({
-          event: "code_highlight_failed",
-          error: error instanceof Error ? error.message : String(error),
-        }),
-      );
-    }
-    publishMutation.mutate({ id: postId, highlightedContentJson });
-  }, [flush, getContent, postId, processState, publishMutation]);
+    publishMutation.mutate();
+  }, [flush, processState, publishMutation]);
 
   const handleUnpublish = useCallback(() => {
     if (processState !== "IDLE") return;

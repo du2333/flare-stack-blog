@@ -141,7 +141,7 @@
             "method": "POST",
             "path": "/admin/posts/{id}/publish",
             "summary": "Publish a post",
-            "description": "Publishes the post and generates or updates its Public Content Snapshot. Note: Server-side syntax highlighting is not performed here; newly added or edited code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.",
+            "description": "Publishes the post and generates or updates its Public Content Snapshot. Code blocks are highlighted on the server and stored in the snapshot.",
             "tags": ["Admin Posts"]
           }
         }

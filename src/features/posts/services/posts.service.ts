@@ -27,7 +27,7 @@ import {
 } from "@/features/posts/schema/posts.schema";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
 import type { PublicPostCover } from "@/lib/db/schema";
-import { applyCodeBlockHighlighting } from "@/features/posts/utils/apply-code-block-highlighting";
+
 import { slugify } from "@/features/posts/utils/content";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import {
@@ -439,9 +439,10 @@ export async function publishPost(
 
   await createPublishRevision(context, publishedPost);
 
-  const snapshotContent = applyCodeBlockHighlighting(
+  const { highlightSnapshotContent } =
+    await import("@/features/posts/utils/highlight-code-blocks");
+  const snapshotContent = await highlightSnapshotContent(
     publishedPost.contentJson,
-    data.highlightedContentJson,
     publishedPost.publicSnapshotJson?.contentJson,
   );
   const snapshot = await buildPublicSnapshot(

@@ -40,12 +40,10 @@ function takeHtml(map: Map<string, Array<string>>, key: string) {
 
 export function applyCodeBlockHighlighting(
   draft: JSONContent | null,
-  fromRequest: JSONContent | null | undefined,
   fromSnapshot: JSONContent | null | undefined,
 ): JSONContent | null {
   if (!draft) return null;
 
-  const requestHtml = collectHighlightedHtml(fromRequest);
   const snapshotHtml = collectHighlightedHtml(fromSnapshot);
   const cloned = structuredClone(draft);
 
@@ -53,9 +51,7 @@ export function applyCodeBlockHighlighting(
     if (node.type === "codeBlock") {
       const attrs = { ...node.attrs };
       delete attrs.highlightedHtml;
-      const html =
-        takeHtml(requestHtml, codeBlockKey(node)) ??
-        takeHtml(snapshotHtml, codeBlockKey(node));
+      const html = takeHtml(snapshotHtml, codeBlockKey(node));
       node.attrs = html ? { ...attrs, highlightedHtml: html } : attrs;
     }
     node.content?.forEach(walk);

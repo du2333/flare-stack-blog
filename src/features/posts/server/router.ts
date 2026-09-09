@@ -27,6 +27,7 @@ import {
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
+import { getPostPublisher } from "@/lib/do/post-publisher-binding";
 import { adminProcedure, publicProcedure } from "@/lib/orpc/procedure";
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
 
@@ -212,12 +213,15 @@ const publishPost = adminProcedure
     path: "/admin/posts/{id}/publish",
     summary: "Publish a post",
     description:
-      "Publishes the post and generates or updates its Public Content Snapshot. Note: Server-side syntax highlighting is not performed here; newly added or edited code blocks will display as plain code on the public site until re-published from the web admin editor. Unchanged code blocks retain existing highlighting from the active snapshot.",
+      "Publishes the post and generates or updates its Public Content Snapshot. Code blocks are highlighted on the server and stored in the snapshot.",
     tags: ["Admin Posts"],
   })
   .input(PublishPostInputSchema)
-  .handler(({ context, input, errors }) =>
-    unwrapResult(PostService.publishPost(context, input), {
+  .handler(async ({ context, input, errors }) => {
+    const result = await getPostPublisher(context.env, input.id).publish(
+      input.id,
+    );
+    return unwrapResult<{ success: boolean }>(result, {
       POST_NOT_FOUND: () => {
         throw errors.POST_NOT_FOUND();
       },
@@ -227,8 +231,8 @@ const publishPost = adminProcedure
       PUBLIC_SLUG_TAKEN: () => {
         throw errors.PUBLIC_SLUG_TAKEN();
       },
-    }),
-  );
+    });
+  });
 
 const unpublishPost = adminProcedure
   .errors(postErrors)
@@ -239,13 +243,16 @@ const unpublishPost = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(UnpublishPostInputSchema)
-  .handler(({ context, input, errors }) =>
-    unwrapResult(PostService.unpublishPost(context, input), {
+  .handler(async ({ context, input, errors }) => {
+    const result = await getPostPublisher(context.env, input.id).unpublish(
+      input.id,
+    );
+    return unwrapResult<{ success: boolean }>(result, {
       POST_NOT_FOUND: () => {
         throw errors.POST_NOT_FOUND();
       },
-    }),
-  );
+    });
+  });
 
 const listRevisions = adminProcedure
   .route({

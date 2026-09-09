@@ -15,6 +15,7 @@ import * as PostRevisionService from "@/features/posts/services/post-revisions.s
 import * as PostService from "@/features/posts/services/posts.service";
 import * as TagService from "@/features/tags/tags.service";
 import { PostRevisionsTable, PostsTable } from "@/lib/db/schema";
+import { getPostPublisher } from "@/lib/do/post-publisher-binding";
 
 import { unwrap } from "@/lib/errors";
 
@@ -1325,44 +1326,7 @@ describe("Posts Integration", () => {
       await seedUser(adminContext.db, adminContext.session.user);
     });
 
-    it("does not generate code highlighting on API publish", async () => {
-      const { id } = await PostService.createEmptyPost(adminContext);
-      unwrap(
-        await PostService.updatePost(adminContext, {
-          id,
-          data: {
-            title: "Plain Snapshot",
-            slug: "plain-snapshot",
-            summary: "already summarized",
-            publishedAt: new Date(),
-            contentJson: {
-              type: "doc",
-              content: [
-                {
-                  type: "codeBlock",
-                  attrs: { language: "ts" },
-                  content: [{ type: "text", text: "const answer = 42;" }],
-                },
-              ],
-            },
-          },
-        }),
-      );
-
-      unwrap(await PostService.publishPost(adminContext, { id }));
-
-      const updatedPost = await adminContext.db.query.PostsTable.findFirst({
-        where: eq(PostsTable.id, id),
-      });
-      const codeBlock =
-        updatedPost?.publicSnapshotJson?.contentJson?.content?.find(
-          (node) => node.type === "codeBlock",
-        );
-
-      expect(codeBlock?.attrs?.highlightedHtml).toBeUndefined();
-    });
-
-    it("stores editor-supplied highlighting and keeps it when the code is unchanged", async () => {
+    it("highlights code blocks on publish and keeps them when the code is unchanged", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       const contentJson = {
         type: "doc" as const,
@@ -1391,28 +1355,7 @@ describe("Posts Integration", () => {
         }),
       );
 
-      unwrap(
-        await PostService.publishPost(adminContext, {
-          id,
-          highlightedContentJson: {
-            type: "doc",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Forged body" }],
-              },
-              {
-                type: "codeBlock",
-                attrs: {
-                  language: "ts",
-                  highlightedHtml: "<pre>highlighted</pre>",
-                },
-                content: [{ type: "text", text: "const answer = 42;" }],
-              },
-            ],
-          },
-        }),
-      );
+      unwrap(await PostService.publishPost(adminContext, { id }));
 
       const first = await adminContext.db.query.PostsTable.findFirst({
         where: eq(PostsTable.id, id),
@@ -1423,10 +1366,10 @@ describe("Posts Integration", () => {
         type: "paragraph",
         content: [{ type: "text", text: "Server draft" }],
       });
-      expect(
+      const firstHtml =
         first?.publicSnapshotJson?.contentJson?.content?.[1]?.attrs
-          ?.highlightedHtml,
-      ).toBe("<pre>highlighted</pre>");
+          ?.highlightedHtml;
+      expect(firstHtml).toEqual(expect.stringContaining("shiki"));
 
       unwrap(await PostService.publishPost(adminContext, { id }));
 
@@ -1436,7 +1379,30 @@ describe("Posts Integration", () => {
       expect(
         second?.publicSnapshotJson?.contentJson?.content?.[1]?.attrs
           ?.highlightedHtml,
-      ).toBe("<pre>highlighted</pre>");
+      ).toBe(firstHtml);
+    });
+
+    it("publishes through the per-post Durable Object", async () => {
+      const { id } = await PostService.createEmptyPost(adminContext);
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id,
+          data: {
+            title: "DO Publish",
+            slug: "do-publish",
+            summary: "via durable object",
+            publishedAt: new Date(),
+          },
+        }),
+      );
+
+      unwrap(await getPostPublisher(adminContext.env, id).publish(id));
+
+      const published = await adminContext.db.query.PostsTable.findFirst({
+        where: eq(PostsTable.id, id),
+      });
+      expect(published?.status).toBe("published");
+      expect(published?.publicSlug).toBe("do-publish");
     });
 
     it("shows the first Published Post after rotating an empty public list", async () => {

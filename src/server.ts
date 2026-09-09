@@ -10,6 +10,7 @@ import { handleQueueBatch } from "@/lib/queue/queue.handler";
 import { extractLocaleFromRequest } from "@/paraglide/runtime";
 import { paraglideMiddleware } from "@/paraglide/server";
 
+export { PostPublisher } from "@/lib/do/post-publisher";
 export { RateLimiter } from "@/lib/do/rate-limiter";
 
 declare module "@tanstack/react-start" {

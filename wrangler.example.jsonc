@@ -49,6 +49,10 @@
       {
         "name": "RATE_LIMITER",
         "class_name": "RateLimiter"
+      },
+      {
+        "name": "POST_PUBLISHER",
+        "class_name": "PostPublisher"
       }
     ]
   },
@@ -78,6 +82,10 @@
     {
       "tag": "password-hasher-v2",
       "deleted_classes": ["PasswordHasher"]
+    },
+    {
+      "tag": "post-publisher-v1",
+      "new_sqlite_classes": ["PostPublisher"]
     }
   ],
   "env": {
@@ -87,6 +95,10 @@
           {
             "name": "RATE_LIMITER",
             "class_name": "RateLimiter"
+          },
+          {
+            "name": "POST_PUBLISHER",
+            "class_name": "PostPublisher"
           }
         ]
       },
