@@ -17,7 +17,7 @@ import { m } from "@/paraglide/messages";
 export function useMediaLibrary() {
   const queryClient = useQueryClient();
   const navigate = useNavigate({ from: "/admin/media/" });
-  const { unused } = useSearch({ from: "/admin/media/" });
+  const { unused, view } = useSearch({ from: "/admin/media/" });
 
   const setUnusedOnly = (val: boolean) => {
     navigate({
@@ -25,10 +25,18 @@ export function useMediaLibrary() {
     });
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
-    useInfiniteQuery({
-      ...mediaInfiniteQueryOptions("", unused ?? false),
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+    isError,
+    isFetchNextPageError,
+    refetch,
+  } = useInfiniteQuery({
+    ...mediaInfiniteQueryOptions("", unused ?? false),
+  });
 
   const mediaItems = data?.pages.flatMap((page) => page.items) ?? [];
   const { data: stats } = useQuery(mediaStatsQuery);
@@ -59,15 +67,6 @@ export function useMediaLibrary() {
     },
   });
 
-  const renameMutation = useMutation({
-    mutationFn: (payload: { key: string; name: string }) =>
-      orpcClient.media.updateName(payload),
-    onSuccess: async () => {
-      await invalidate();
-      toast.success(m.media_renamed());
-    },
-  });
-
   const replaceMutation = useMutation({
     mutationFn: (payload: { key: string; image: File }) =>
       orpcClient.media.replace(payload),
@@ -88,17 +87,22 @@ export function useMediaLibrary() {
 
   return {
     mediaItems,
+    view: view ?? "grid",
+    setView: (view: "grid" | "list") =>
+      navigate({ search: (prev) => ({ ...prev, view }), replace: true }),
     unusedOnly: unused ?? false,
     setUnusedOnly,
     loadMore,
     hasMore: hasNextPage ?? false,
     isLoadingMore: isFetchingNextPage,
     isPending,
+    isError,
+    isFetchNextPageError,
+    refetch,
     stats,
     deleteKeys: deleteMutation.mutateAsync,
     deleteUnused: deleteUnusedMutation.mutateAsync,
     isDeleting: deleteMutation.isPending || deleteUnusedMutation.isPending,
-    rename: renameMutation.mutateAsync,
     replaceFile: replaceMutation.mutateAsync,
     isReplacing: replaceMutation.isPending,
   };

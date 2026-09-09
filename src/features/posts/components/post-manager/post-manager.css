@@ -1,52 +1,54 @@
 /* Content-list layout; colors remain shared with the Fuwari workbench. */
 .post-manager {
+  --admin-unit: clamp(1px, 0.07vw, 1.5px);
   --list-rule: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
-  padding: 30px 34px 20px;
+  padding: calc(30 * var(--admin-unit)) calc(34 * var(--admin-unit))
+    calc(20 * var(--admin-unit));
   min-height: calc(100dvh - 52px);
 }
 .post-list-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: calc(24 * var(--admin-unit));
 }
 .post-list-heading h1 {
-  font-size: 28px;
+  font-size: calc(28 * var(--admin-unit));
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: -0.02em;
   color: var(--fuwari-fg);
 }
 .post-list-heading p {
-  font-size: 14px;
-  margin-top: 8px;
+  font-size: calc(14 * var(--admin-unit));
+  margin-top: calc(8 * var(--admin-unit));
   color: var(--fuwari-fg-50);
 }
 .post-list-create {
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 20px;
-  border-radius: 9px;
-  font-size: 14px;
+  gap: calc(8 * var(--admin-unit));
+  min-height: calc(44 * var(--admin-unit));
+  padding: 0 calc(20 * var(--admin-unit));
+  border-radius: calc(9 * var(--admin-unit));
+  font-size: calc(14 * var(--admin-unit));
   font-weight: 500;
 }
 .post-list-tabs {
   display: flex;
-  gap: 32px;
+  gap: calc(32 * var(--admin-unit));
   border-bottom: 1px solid var(--list-rule);
 }
 .post-list-tabs button {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 46px;
-  padding: 0 6px;
+  gap: calc(12 * var(--admin-unit));
+  min-height: calc(46 * var(--admin-unit));
+  padding: 0 calc(6 * var(--admin-unit));
   border-bottom: 2px solid transparent;
-  font-size: 14px;
+  font-size: calc(14 * var(--admin-unit));
   color: var(--fuwari-fg-75);
 }
 .post-list-tabs button span {
-  font-size: 13px;
+  font-size: calc(13 * var(--admin-unit));
   font-variant-numeric: tabular-nums;
 }
 .post-list-tabs button.selected {
@@ -61,18 +63,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 26px 0 23px;
+  gap: calc(24 * var(--admin-unit));
+  padding: calc(26 * var(--admin-unit)) 0 calc(23 * var(--admin-unit));
 }
 .post-list-search {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: min(390px, 100%);
+  gap: calc(12 * var(--admin-unit));
+  width: min(calc(390 * var(--admin-unit)), 100%);
   border: 1px solid var(--list-rule);
-  border-radius: 8px;
-  min-height: 44px;
-  padding: 0 13px;
+  border-radius: calc(8 * var(--admin-unit));
+  min-height: calc(44 * var(--admin-unit));
+  padding: 0 calc(13 * var(--admin-unit));
   color: var(--fuwari-fg-50);
   background: color-mix(
     in srgb,
@@ -93,29 +95,29 @@
   width: 100%;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: calc(14 * var(--admin-unit));
   color: var(--fuwari-fg-75);
 }
 .post-list-search button {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 32px;
+  width: calc(24 * var(--admin-unit));
+  height: calc(32 * var(--admin-unit));
 }
 .post-list-sort {
   display: flex;
-  gap: 12px;
+  gap: calc(12 * var(--admin-unit));
   align-items: center;
-  font-size: 14px;
+  font-size: calc(14 * var(--admin-unit));
   white-space: nowrap;
   color: var(--fuwari-fg-75);
 }
 .post-list-sort .post-list-sort-trigger {
-  gap: 8px;
+  gap: calc(8 * var(--admin-unit));
   border: 1px solid var(--list-rule);
-  border-radius: 8px;
-  min-height: 44px;
-  padding: 0 12px;
+  border-radius: calc(8 * var(--admin-unit));
+  min-height: calc(44 * var(--admin-unit));
+  padding: 0 calc(12 * var(--admin-unit));
   background: var(--fuwari-card-bg);
   color: var(--fuwari-fg-75);
   font-family: inherit;
@@ -142,17 +144,17 @@
   width: 13%;
 }
 .post-list-table th {
-  height: 44px;
+  height: calc(44 * var(--admin-unit));
   text-align: left;
-  padding: 0 12px;
-  font-size: 13px;
+  padding: 0 calc(12 * var(--admin-unit));
+  font-size: calc(13 * var(--admin-unit));
   font-weight: 500;
   color: var(--fuwari-fg-50);
   border-bottom: 1px solid var(--list-rule);
 }
 .post-list-table td {
-  height: 76px;
-  padding: 13px 12px;
+  height: calc(76 * var(--admin-unit));
+  padding: calc(13 * var(--admin-unit)) calc(12 * var(--admin-unit));
   border-bottom: 1px solid var(--list-rule);
   vertical-align: middle;
 }
@@ -166,11 +168,11 @@
 .post-list-title-cell {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: calc(12 * var(--admin-unit));
   min-width: 0;
 }
 .post-list-pin {
-  width: 20px;
+  width: calc(20 * var(--admin-unit));
   flex-shrink: 0;
   padding-top: 2px;
   color: var(--fuwari-primary);
@@ -181,7 +183,7 @@
 }
 .post-list-title-link strong {
   display: block;
-  font-size: 14px;
+  font-size: calc(14 * var(--admin-unit));
   font-weight: 600;
   line-height: 1.5;
   color: var(--fuwari-fg);
@@ -194,7 +196,7 @@
   display: block;
   margin-top: 4px;
   color: var(--fuwari-fg-50);
-  font-size: 12px;
+  font-size: calc(12 * var(--admin-unit));
   line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -202,13 +204,13 @@
 }
 .post-list-status {
   display: inline-flex;
-  min-height: 24px;
+  min-height: calc(24 * var(--admin-unit));
   align-items: center;
   justify-content: center;
-  padding: 1px 10px;
-  font-size: 12px;
+  padding: 1px calc(10 * var(--admin-unit));
+  font-size: calc(12 * var(--admin-unit));
   font-weight: 500;
-  border-radius: 20px;
+  border-radius: calc(20 * var(--admin-unit));
   white-space: nowrap;
 }
 .post-list-status.published {
@@ -220,7 +222,7 @@
   color: var(--fuwari-btn-content);
 }
 .post-list-date {
-  font-size: 12px;
+  font-size: calc(12 * var(--admin-unit));
   font-variant-numeric: tabular-nums;
   color: var(--fuwari-fg-50);
   white-space: nowrap;
@@ -228,12 +230,12 @@
 .post-list-row-actions {
   display: flex;
   align-items: center;
-  gap: 17px;
-  font-size: 13px;
+  gap: calc(17 * var(--admin-unit));
+  font-size: calc(13 * var(--admin-unit));
   color: var(--fuwari-primary);
 }
 .post-list-row-actions > a {
-  padding: 8px 0;
+  padding: calc(8 * var(--admin-unit)) 0;
   white-space: nowrap;
 }
 .post-list-menu {
@@ -242,9 +244,9 @@
 .post-list-menu > button {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 34px;
-  border-radius: 7px;
+  width: calc(30 * var(--admin-unit));
+  height: calc(34 * var(--admin-unit));
+  border-radius: calc(7 * var(--admin-unit));
   color: var(--fuwari-fg-50);
 }
 .post-list-menu > button:hover {
@@ -255,21 +257,21 @@
   position: absolute;
   top: calc(100% + 3px);
   right: 0;
-  min-width: 130px;
+  min-width: calc(130 * var(--admin-unit));
   border: 1px solid var(--list-rule);
   padding: 5px;
-  border-radius: 9px;
-  box-shadow: 0 5px 18px rgb(0 0 0 / 0.08);
+  border-radius: calc(9 * var(--admin-unit));
+  box-shadow: 0 5px calc(18 * var(--admin-unit)) rgb(0 0 0 / 0.08);
   background: var(--fuwari-card-bg);
   z-index: 20;
 }
 .post-list-menu [role="menuitem"] {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px;
+  gap: calc(8 * var(--admin-unit));
+  padding: calc(10 * var(--admin-unit));
   width: 100%;
-  border-radius: 6px;
+  border-radius: calc(6 * var(--admin-unit));
   color: var(--fuwari-danger-fg);
   white-space: nowrap;
 }
@@ -279,24 +281,24 @@
 .post-list-footer {
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-height: 55px;
-  padding-top: 8px;
-  font-size: 13px;
+  gap: calc(20 * var(--admin-unit));
+  min-height: calc(55 * var(--admin-unit));
+  padding-top: calc(8 * var(--admin-unit));
+  font-size: calc(13 * var(--admin-unit));
   color: var(--fuwari-fg-50);
 }
 .post-list-footer nav {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: calc(14 * var(--admin-unit));
   margin-left: auto;
 }
 .post-list-footer nav button {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: calc(32 * var(--admin-unit));
+  height: calc(32 * var(--admin-unit));
+  border-radius: calc(6 * var(--admin-unit));
 }
 .post-list-footer nav button:disabled {
   opacity: 0.3;
@@ -305,55 +307,27 @@
   color: var(--fuwari-primary);
 }
 .post-list-empty {
-  padding: 90px 20px;
+  padding: calc(90 * var(--admin-unit)) calc(20 * var(--admin-unit));
   text-align: center;
   color: var(--fuwari-fg-50);
 }
 .post-list-empty > svg {
-  margin: 0 auto 20px;
+  margin: 0 auto calc(20 * var(--admin-unit));
   color: var(--fuwari-primary);
 }
 .post-list-empty h2 {
-  font-size: 18px;
+  font-size: calc(18 * var(--admin-unit));
   font-weight: 500;
   color: var(--fuwari-fg-75);
 }
 .post-list-empty p {
-  font-size: 14px;
-  margin-top: 10px;
+  font-size: calc(14 * var(--admin-unit));
+  margin-top: calc(10 * var(--admin-unit));
 }
 .post-list-empty button {
   color: var(--fuwari-primary);
-  margin-top: 22px;
-  font-size: 14px;
-}
-.post-delete-dialog {
-  margin: auto;
-  width: min(420px, calc(100vw - 32px));
-  border: 0;
-  border-radius: 16px;
-  padding: 26px;
-  background: var(--fuwari-card-bg);
-  color: var(--fuwari-fg);
-}
-.post-delete-dialog::backdrop {
-  background: rgb(20 35 50 / 0.28);
-}
-.post-delete-dialog h2 {
-  font-size: 20px;
-  font-weight: 600;
-}
-.post-delete-dialog p {
-  margin-top: 14px;
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--fuwari-fg-75);
-}
-.post-delete-dialog > div {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  margin-top: calc(22 * var(--admin-unit));
+  font-size: calc(14 * var(--admin-unit));
 }
 .post-manager :is(button, a, input, select):focus-visible {
   outline: 2px solid var(--fuwari-primary);
@@ -367,7 +341,8 @@
 }
 @media (max-width: 1200px) {
   .post-manager {
-    padding: 25px 24px 18px;
+    padding: calc(25 * var(--admin-unit)) calc(24 * var(--admin-unit))
+      calc(18 * var(--admin-unit));
   }
   .post-list-title-col {
     width: 50%;
@@ -382,7 +357,7 @@
     width: 15%;
   }
   .post-list-row-actions {
-    gap: 9px;
+    gap: calc(9 * var(--admin-unit));
   }
 }
 @media (max-width: 1023px) {
@@ -393,7 +368,7 @@
     display: none;
   }
   .post-list-heading {
-    margin-bottom: 10px;
+    margin-bottom: calc(10 * var(--admin-unit));
   }
   .post-list-heading p {
     margin-top: 0;
@@ -404,28 +379,28 @@
 }
 @media (max-width: 620px) {
   .post-manager {
-    padding: 20px 18px;
+    padding: calc(20 * var(--admin-unit)) calc(18 * var(--admin-unit));
   }
   .post-list-tabs {
-    gap: 24px;
+    gap: calc(24 * var(--admin-unit));
   }
   .post-list-tabs button {
-    gap: 7px;
+    gap: calc(7 * var(--admin-unit));
   }
   .post-list-controls {
     flex-wrap: wrap;
-    gap: 14px;
-    padding: 20px 0;
+    gap: calc(14 * var(--admin-unit));
+    padding: calc(20 * var(--admin-unit)) 0;
   }
   .post-list-search {
     width: 100%;
   }
   .post-list-sort {
     margin-left: auto;
-    font-size: 13px;
+    font-size: calc(13 * var(--admin-unit));
   }
   .post-list-sort .post-list-sort-trigger {
-    min-height: 36px;
+    min-height: calc(36 * var(--admin-unit));
   }
   .post-list-table,
   .post-list-table tbody {
@@ -445,8 +420,8 @@
   .post-list-table tr {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 11px 10px;
-    padding: 17px 0;
+    gap: calc(11 * var(--admin-unit)) calc(10 * var(--admin-unit));
+    padding: calc(17 * var(--admin-unit)) 0;
     border-bottom: 1px solid var(--list-rule);
   }
   .post-list-table td {
@@ -459,25 +434,25 @@
     grid-column: 1/-1;
   }
   .post-list-title-cell {
-    gap: 8px;
+    gap: calc(8 * var(--admin-unit));
   }
   .post-list-pin {
-    width: 16px;
+    width: calc(16 * var(--admin-unit));
   }
   .post-list-pin svg {
-    width: 15px;
+    width: calc(15 * var(--admin-unit));
   }
   .post-list-title-link strong {
-    font-size: 15px;
+    font-size: calc(15 * var(--admin-unit));
   }
   .post-list-title-link > span {
-    font-size: 11px;
+    font-size: calc(11 * var(--admin-unit));
   }
   .post-list-table td:nth-child(2) {
-    padding-left: 24px;
+    padding-left: calc(24 * var(--admin-unit));
   }
   .post-list-date {
-    font-size: 11px;
+    font-size: calc(11 * var(--admin-unit));
     align-self: center;
   }
   .post-list-mobile-date-label {
@@ -487,23 +462,23 @@
     gap: 5px;
   }
   .post-list-status {
-    font-size: 11px;
-    min-height: 22px;
-    padding: 0 7px;
+    font-size: calc(11 * var(--admin-unit));
+    min-height: calc(22 * var(--admin-unit));
+    padding: 0 calc(7 * var(--admin-unit));
   }
   .post-list-row-actions > a {
-    font-size: 12px;
+    font-size: calc(12 * var(--admin-unit));
   }
   .post-list-menu > button {
-    height: 26px;
-    width: 26px;
+    height: calc(26 * var(--admin-unit));
+    width: calc(26 * var(--admin-unit));
   }
   .post-list-empty {
-    padding: 60px 10px;
+    padding: calc(60 * var(--admin-unit)) calc(10 * var(--admin-unit));
   }
   .post-list-footer {
-    font-size: 12px;
-    gap: 12px;
+    font-size: calc(12 * var(--admin-unit));
+    gap: calc(12 * var(--admin-unit));
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -516,30 +491,19 @@
   bottom: calc(100% + 3px);
 }
 .post-list-title-link strong {
-  font-size: 15px;
+  font-size: calc(15 * var(--admin-unit));
 }
 .post-list-title-link > span,
 .post-list-date {
-  font-size: 13px;
+  font-size: calc(13 * var(--admin-unit));
 }
 @media (max-width: 620px) {
   .post-list-title-link > span,
   .post-list-date {
-    font-size: 11px;
+    font-size: calc(11 * var(--admin-unit));
   }
 }
 
-.post-delete-dialog-actions button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.5rem;
-}
-.post-delete-dialog button:disabled {
-  opacity: 0.5;
-}
 .post-list-footer {
   flex-wrap: wrap;
 }
@@ -550,4 +514,49 @@
 }
 .post-list-search input::-webkit-search-cancel-button {
   display: none;
+}
+
+.post-manager svg[width="12"] {
+  width: calc(12 * var(--admin-unit));
+  height: calc(12 * var(--admin-unit));
+}
+
+.post-manager svg[width="14"] {
+  width: calc(14 * var(--admin-unit));
+  height: calc(14 * var(--admin-unit));
+}
+
+.post-manager svg[width="16"] {
+  width: calc(16 * var(--admin-unit));
+  height: calc(16 * var(--admin-unit));
+}
+
+.post-manager svg[width="17"] {
+  width: calc(17 * var(--admin-unit));
+  height: calc(17 * var(--admin-unit));
+}
+
+.post-manager svg[width="18"] {
+  width: calc(18 * var(--admin-unit));
+  height: calc(18 * var(--admin-unit));
+}
+
+.post-manager svg[width="19"] {
+  width: calc(19 * var(--admin-unit));
+  height: calc(19 * var(--admin-unit));
+}
+
+.post-manager svg[width="20"] {
+  width: calc(20 * var(--admin-unit));
+  height: calc(20 * var(--admin-unit));
+}
+
+.post-manager svg[width="24"] {
+  width: calc(24 * var(--admin-unit));
+  height: calc(24 * var(--admin-unit));
+}
+
+.post-manager svg[width="30"] {
+  width: calc(30 * var(--admin-unit));
+  height: calc(30 * var(--admin-unit));
 }

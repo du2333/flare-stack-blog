@@ -1,0 +1,104 @@
+.fuwari-confirmation {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(clamp(420px, 30vw, 520px), calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border: 0;
+  padding: clamp(24px, 1.5vw, 32px);
+  border-radius: 20px;
+  background: var(--fuwari-card-bg);
+  color: var(--fuwari-fg-75);
+  box-shadow: 0 20px 70px rgb(0 0 0 / 0.12);
+  font-size: clamp(15px, 0.88vw, 18px);
+}
+.fuwari-confirmation h2 {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--fuwari-fg-90);
+}
+.fuwari-confirmation p {
+  margin-top: 0.75em;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.fuwari-confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75em;
+  margin-top: 1.4em;
+}
+.fuwari-confirmation-actions button {
+  min-height: 2.75em;
+  padding: 0.65em 1em;
+  gap: 0.5em;
+  border-radius: 12px;
+  font-size: inherit;
+}
+.fuwari-confirmation button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.fuwari-confirmation button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.fuwari-confirmation::backdrop {
+  background: rgb(0 0 0 / 0.25);
+  backdrop-filter: blur(4px);
+}
+.fuwari-confirmation[open][data-state="open"] {
+  animation: fuwari-confirm-enter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fuwari-confirmation[open][data-state="closing"] {
+  animation: fuwari-confirm-exit 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.fuwari-confirmation[data-state="open"]::backdrop {
+  animation: fuwari-confirm-backdrop-in 280ms ease-out both;
+}
+.fuwari-confirmation[data-state="closing"]::backdrop {
+  animation: fuwari-confirm-backdrop-out 200ms ease-in both;
+}
+@keyframes fuwari-confirm-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fuwari-confirm-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes fuwari-confirm-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fuwari-confirm-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-confirmation[open],
+  .fuwari-confirmation::backdrop {
+    animation: none !important;
+  }
+}

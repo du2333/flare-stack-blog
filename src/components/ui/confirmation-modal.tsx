@@ -1,10 +1,10 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
-import type React from "react";
+import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import "./confirmation-modal.css";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -15,87 +15,108 @@ interface ConfirmationModalProps {
   confirmLabel?: string;
   isDanger?: boolean;
   isLoading?: boolean;
+  returnFocus?: () => HTMLElement | null;
+  fallbackFocus?: () => HTMLElement | null;
 }
 
-const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmLabel = m.common_confirm(),
-  isDanger = false,
-  isLoading = false,
-}) => {
+function ConfirmationModalInternal(props: ConfirmationModalProps) {
+  const { isOpen, onClose, onConfirm, isLoading = false, returnFocus } = props;
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  const focusRef = useRef({ returnFocus, fallbackFocus: props.fallbackFocus });
+  focusRef.current = { returnFocus, fallbackFocus: props.fallbackFocus };
+  const content = useRef(props);
+  if (isOpen) content.current = props;
+  const {
+    title,
+    message,
+    confirmLabel = m.common_confirm(),
+    isDanger = false,
+  } = content.current;
+  const titleId = useId();
+  const messageId = useId();
+
   useEffect(() => {
-    if (!isOpen || isLoading) return;
+    const dialog = dialogRef.current!;
+    if (isOpen) {
+      if (!dialog.open) {
+        previousFocus.current = document.activeElement as HTMLElement | null;
+        dialog.showModal();
+      }
+      return;
+    }
+    if (!dialog.open) return;
+    // Keep the top layer and content alive until the exit animation completes.
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? 0
+      : 200;
+    const timer = window.setTimeout(() => {
+      dialog.close();
+      const target =
+        focusRef.current.returnFocus?.() ??
+        (previousFocus.current?.isConnected
+          ? previousFocus.current
+          : focusRef.current.fallbackFocus?.());
+      if (target?.isConnected) target.focus();
+    }, duration);
+    return () => window.clearTimeout(timer);
+  }, [isOpen]);
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, isLoading, onClose]);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    return () => dialog?.close();
+  }, []);
 
   return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-100 flex items-center justify-center p-4 transition-opacity duration-200",
-        isOpen
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none",
-      )}
+    <dialog
+      ref={dialogRef}
+      className="fuwari-confirmation"
+      data-state={isOpen ? "open" : "closing"}
+      aria-labelledby={titleId}
+      aria-describedby={messageId}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (isOpen && !isLoading) onClose();
+      }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget || !isOpen || isLoading)
+          return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (
+          event.clientX < rect.left ||
+          event.clientX > rect.right ||
+          event.clientY < rect.top ||
+          event.clientY > rect.bottom
+        )
+          onClose();
+      }}
     >
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={isLoading ? undefined : () => onClose()}
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirmation-modal-title"
-        className={cn(
-          "relative w-full max-w-[420px] fuwari-card-base p-6 transition-all duration-200",
-          isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
-        )}
-      >
-        <h2
-          id="confirmation-modal-title"
-          className="text-lg font-medium fuwari-text-90"
+      <h2 id={titleId}>{title}</h2>
+      <p id={messageId}>{message}</p>
+      <div className="fuwari-confirmation-actions">
+        <button
+          type="button"
+          disabled={!isOpen || isLoading}
+          onClick={onClose}
+          className="fuwari-btn-regular"
         >
-          {title}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed fuwari-text-75">{message}</p>
-
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => onClose()}
-            disabled={isLoading}
-            className="fuwari-btn-regular rounded-xl h-10 px-4 text-sm font-medium disabled:opacity-50"
-          >
-            {m.common_cancel()}
-          </button>
-          <button
-            type="button"
-            onClick={() => onConfirm()}
-            disabled={isLoading}
-            className={cn(
-              "rounded-xl h-10 px-4 text-sm font-medium gap-2",
-              isDanger ? "fuwari-btn-danger" : "fuwari-btn-primary",
-            )}
-          >
-            {isLoading ? <Loader2 size={14} className="animate-spin" /> : null}
-            <span>{isLoading ? m.common_processing() : confirmLabel}</span>
-          </button>
-        </div>
+          {m.common_cancel()}
+        </button>
+        <button
+          type="button"
+          disabled={!isOpen || isLoading}
+          onClick={onConfirm}
+          className={cn(isDanger ? "fuwari-btn-danger" : "fuwari-btn-primary")}
+        >
+          {isLoading ? <Loader2 size={16} className="animate-spin" /> : null}
+          <span>{isLoading ? m.common_processing() : confirmLabel}</span>
+        </button>
       </div>
-    </div>,
+    </dialog>,
     document.body,
   );
-};
+}
 
 export default function ConfirmationModal(props: ConfirmationModalProps) {
   return (

@@ -1568,5 +1568,22 @@
   "email_webhook_friend_link_submitted_message": "{submitterName} 提交了友链申请：{siteName}（{siteUrl}）",
   "email_webhook_friend_link_approved_message": "{siteName} 的友链申请已通过审核。",
   "email_webhook_friend_link_rejected_message": "{siteName} 的友链申请未通过：{rejectionReason}",
-  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} 的友链申请未通过。"
+  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} 的友链申请未通过。",
+  "media_view_label": "显示方式",
+  "media_view_grid": "网格",
+  "media_view_list": "清单",
+  "media_preview_title": "文件预览",
+  "media_col_image": "图片",
+  "media_col_dimensions": "尺寸",
+  "media_col_usage": "引用",
+  "media_unreferenced": "未引用",
+  "media_unreferenced_empty": "没有未被文章引用的图片",
+  "media_delete_fail": "删除失败，请重试",
+  "media_load_fail": "图片加载失败",
+  "media_load_retry": "重试",
+  "media_load_more": "加载更多",
+  "media_unused_cleanup": "清理未引用图片",
+  "media_unused_confirm": "确定删除这 {count} 张未被文章引用的图片吗？此操作无法撤销。",
+  "media_reference_fail": "无法加载引用信息",
+  "media_image_unavailable": "无法预览图片"
 }

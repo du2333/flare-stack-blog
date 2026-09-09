@@ -1576,5 +1576,22 @@
   "email_webhook_friend_link_submitted_message": "{submitterName} submitted a friend link request: {siteName} ({siteUrl})",
   "email_webhook_friend_link_approved_message": "{siteName} friend link request was approved.",
   "email_webhook_friend_link_rejected_message": "{siteName} friend link request was rejected: {rejectionReason}",
-  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} friend link request was rejected."
+  "email_webhook_friend_link_rejected_message_no_reason": "{siteName} friend link request was rejected.",
+  "media_view_label": "View",
+  "media_view_grid": "Grid",
+  "media_view_list": "List",
+  "media_preview_title": "File preview",
+  "media_col_image": "Image",
+  "media_col_dimensions": "Dimensions",
+  "media_col_usage": "Usage",
+  "media_unreferenced": "Unreferenced",
+  "media_unreferenced_empty": "No images without post references",
+  "media_delete_fail": "Could not delete the images. Try again.",
+  "media_load_fail": "Could not load images",
+  "media_load_retry": "Retry",
+  "media_load_more": "Load more",
+  "media_unused_cleanup": "Remove unreferenced images",
+  "media_unused_confirm": "Delete these {count} images without post references? This cannot be undone.",
+  "media_reference_fail": "Could not load post references",
+  "media_image_unavailable": "Image preview unavailable"
 }

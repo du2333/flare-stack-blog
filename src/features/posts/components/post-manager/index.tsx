@@ -9,7 +9,7 @@ import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 import { PostRow, PostsToolbar } from "./components";
-import { PostDeleteDialog } from "./components/post-delete-dialog";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useDeletePost, usePosts } from "./hooks";
 import { PostManagerSkeleton } from "./post-manager-skeleton";
 import type { PostListItem, SortField, StatusFilter } from "./types";
@@ -262,16 +262,25 @@ export function PostManager({
           )}
         </>
       )}
-      {postToDelete && (
-        <PostDeleteDialog
-          title={postToDelete.title.trim() || m.common_untitled()}
-          busy={deleteMutation.isPending}
-          onClose={() => setPostToDelete(null)}
-          onConfirm={() => deleteMutation.mutate(postToDelete)}
-          returnFocus={deleteTriggerRef.current}
-          fallbackFocus={searchRef.current}
-        />
-      )}
+      <ConfirmationModal
+        isOpen={!!postToDelete}
+        title={m.admin_posts_delete_confirm_title()}
+        message={m.admin_posts_delete_confirm_desc({
+          title: postToDelete?.title.trim() || m.common_untitled(),
+        })}
+        confirmLabel={m.admin_posts_delete_confirm_btn()}
+        isDanger
+        isLoading={deleteMutation.isPending}
+        onClose={() => setPostToDelete(null)}
+        onConfirm={() => {
+          if (postToDelete) deleteMutation.mutate(postToDelete);
+        }}
+        returnFocus={() =>
+          deleteTriggerRef.current?.isConnected
+            ? deleteTriggerRef.current
+            : searchRef.current
+        }
+      />
     </section>
   );
 }

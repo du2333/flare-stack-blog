@@ -1,249 +1,217 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Copy, ExternalLink, FileText, Upload, X } from "lucide-react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE,
+} from "@/features/media/media.schema";
 import { linkedPostsQuery } from "@/features/media/queries";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
-import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { MediaAsset } from "../types";
 
+const compactQuery = "(max-width: 1199px)";
+function subscribeCompact(callback: () => void) {
+  const query = window.matchMedia(compactQuery);
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+
 export function MediaDetail({
   asset,
   onClose,
-  onRename,
   onReplace,
   onDelete,
   isReplacing,
   preventClose = false,
 }: {
-  asset: MediaAsset | null;
+  asset: MediaAsset;
   onClose: () => void;
-  onRename: (key: string, name: string) => Promise<void>;
   onReplace: (key: string, file: File) => Promise<void>;
   onDelete: (asset: MediaAsset) => void;
   isReplacing: boolean;
   preventClose?: boolean;
 }) {
-  const isMounted = !!asset;
-  const shouldRender = useDelayUnmount(isMounted, 200);
-  const [active, setActive] = useState<MediaAsset | null>(asset);
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState("");
+  const compact = useSyncExternalStore(
+    subscribeCompact,
+    () => window.matchMedia(compactQuery).matches,
+    () => false,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const busy = isReplacing;
   const closeRef = useRef(onClose);
-  const dismissibleRef = useRef(false);
   closeRef.current = onClose;
-  dismissibleRef.current = isMounted && !preventClose;
+  const {
+    data: linkedPosts = [],
+    isPending,
+    isError,
+    refetch,
+  } = useQuery(linkedPostsQuery(asset.key));
 
   useEffect(() => {
-    if (!shouldRender) return;
-    const previous = document.activeElement as HTMLElement | null;
-    closeButtonRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!dismissibleRef.current || event.defaultPrevented) return;
-      if (event.key === "Escape") {
+    if (!compact) return;
+    const dialog = dialogRef.current!;
+    dialog.showModal();
+    return () => dialog.close();
+  }, [compact]);
+
+  useEffect(() => {
+    if (compact || preventClose || busy) return;
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !event.defaultPrevented) {
         event.preventDefault();
-        event.stopPropagation();
         closeRef.current();
-      } else if (event.key === "Tab") {
-        const controls = Array.from(
-          dialogRef.current?.querySelectorAll<HTMLElement>(
-            'button:not(:disabled), a[href], input:not([type="file"]):not(:disabled), [tabindex="0"]',
-          ) ?? [],
-        ).filter((element) => element.getClientRects().length > 0);
-        const first = controls[0];
-        const last = controls.at(-1);
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
       }
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      if (previous?.isConnected) previous.focus();
-    };
-  }, [shouldRender]);
+    document.addEventListener("keydown", dismiss);
+    return () => document.removeEventListener("keydown", dismiss);
+  }, [compact, preventClose, busy]);
 
-  useEffect(() => {
-    if (asset) {
-      setActive(asset);
-      setName(asset.fileName);
-      setEditing(false);
-    }
-  }, [asset]);
-
-  const { data: linkedPosts = [] } = useQuery(
-    linkedPostsQuery(active?.key || ""),
-  );
-
-  if (!shouldRender || !active) return null;
-
-  const unused = active.postCount === 0;
-  const facts = [
-    formatBytes(active.sizeInBytes),
-    active.width && active.height ? `${active.width}×${active.height}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <div
-      className={`fixed inset-0 z-100 flex items-center justify-center p-3 md:p-6 ${
-        isMounted ? "pointer-events-auto" : "pointer-events-none opacity-0"
-      }`}
-    >
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={preventClose ? undefined : onClose}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-label={active.fileName}
-        aria-modal="true"
-        className="relative w-full max-w-[1400px] h-[calc(100dvh-1.5rem)] md:h-[calc(100dvh-3rem)] fuwari-card-base grid grid-rows-[minmax(0,1fr)_minmax(12rem,auto)] md:grid-rows-none md:grid-cols-[minmax(0,1fr)_22rem] overflow-hidden fuwari-onload-animation"
-      >
+  const content = (
+    <>
+      <header className="media-inspector-header">
+        <h2>{m.media_preview_title()}</h2>
         <button
-          ref={closeButtonRef}
           type="button"
-          onClick={onClose}
-          disabled={preventClose}
           aria-label={m.common_close()}
-          title={m.common_close()}
-          className="absolute top-3 right-3 z-10 size-10 grid place-items-center rounded-xl bg-(--fuwari-card-bg) fuwari-text-50 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) focus-visible:outline-2 focus-visible:outline-(--fuwari-primary) disabled:opacity-50"
+          disabled={preventClose || busy}
+          onClick={onClose}
         >
-          <X size={20} strokeWidth={1.5} />
+          <X size={19} />
         </button>
-        <div className="bg-(--fuwari-btn-regular-bg) p-4 md:p-8 flex items-center justify-center min-h-0">
-          <img
-            src={getOptimizedImageUrl(active.key)}
-            alt={active.fileName}
-            className="max-h-full max-w-full object-contain rounded-xl"
-          />
-        </div>
-        <div className="p-5 md:p-6 flex flex-col min-h-0 overflow-y-auto">
-          {editing ? (
-            <form
-              className="flex gap-2 pr-10"
-              onSubmit={async (event) => {
-                event.preventDefault();
-                if (!name.trim()) return;
-                await onRename(active.key, name.trim());
-                setActive({ ...active, fileName: name.trim() });
-                setEditing(false);
-              }}
-            >
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="flex-1 h-10 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) px-3 text-sm fuwari-text-90 outline-none focus:border-(--fuwari-primary)"
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="fuwari-btn-primary rounded-xl h-10 px-3 text-sm"
-              >
-                {m.common_confirm()}
-              </button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="pr-10 text-left text-lg font-medium fuwari-text-90 break-all"
-            >
-              {active.fileName}
-            </button>
-          )}
-
-          <p className="mt-1 text-sm fuwari-text-50">{facts}</p>
-          <p className="mt-4 text-sm fuwari-text-50">
-            {unused
-              ? m.media_badge_unused()
-              : m.media_used_in({
-                  count: linkedPosts.length || active.postCount,
-                })}
-          </p>
-
-          {linkedPosts.length > 0 ? (
-            <div className="mt-3 space-y-2">
-              {linkedPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  to="/admin/posts/edit/$id"
-                  params={{ id: String(post.id) }}
-                  className="flex items-center gap-2 rounded-xl bg-(--fuwari-btn-regular-bg) px-3 py-2.5 text-sm"
-                >
-                  <span className="min-w-0 truncate">{post.title}</span>
-                  {post.isCover ? (
-                    <span className="ml-auto shrink-0 text-xs text-(--fuwari-btn-content)">
-                      {m.media_badge_cover()}
-                    </span>
-                  ) : null}
-                </Link>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="mt-auto pt-6 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const absolute = active.url.startsWith("http")
-                    ? active.url
-                    : `${window.location.origin}${active.url}`;
-                  await navigator.clipboard.writeText(absolute);
-                  toast.success(m.media_copied());
-                } catch {
-                  toast.error(m.media_copy_failed());
-                }
-              }}
-              className="fuwari-btn-regular rounded-xl h-10 px-4 text-sm font-medium"
-            >
-              {m.media_copy_link()}
-            </button>
-            <button
-              type="button"
-              disabled={isReplacing}
-              onClick={() => fileRef.current?.click()}
-              className="fuwari-btn-regular rounded-xl h-10 px-4 text-sm font-medium"
-            >
-              {m.media_replace()}
-            </button>
-            {unused ? (
-              <button
-                type="button"
-                onClick={() => onDelete(active)}
-                className="h-10 px-4 text-sm font-medium text-(--fuwari-danger-fg)"
-              >
-                {m.media_delete()}
-              </button>
-            ) : null}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void onReplace(active.key, file);
-                event.target.value = "";
-              }}
-            />
-          </div>
-        </div>
+      </header>
+      <div className="media-inspector-preview">
+        <img src={getOptimizedImageUrl(asset.key)} alt={asset.fileName} />
       </div>
-    </div>
+      <div className="media-inspector-name">
+        <span>{asset.fileName}</span>
+      </div>
+      <p className="media-inspector-facts">
+        {asset.width && asset.height
+          ? `${asset.width} × ${asset.height} · `
+          : ""}
+        {formatBytes(asset.sizeInBytes)}
+      </p>
+      <section className="media-inspector-usage">
+        <h3>
+          {asset.postCount
+            ? m.media_used_in({ count: asset.postCount })
+            : m.media_unreferenced()}
+        </h3>
+        {isPending ? (
+          <p>{m.media_grid_loading()}</p>
+        ) : isError ? (
+          <p>
+            {m.media_reference_fail()}{" "}
+            <button type="button" onClick={() => void refetch()}>
+              {m.media_load_retry()}
+            </button>
+          </p>
+        ) : (
+          linkedPosts.map((post) => (
+            <Link
+              key={post.id}
+              to="/admin/posts/edit/$id"
+              params={{ id: String(post.id) }}
+              className="media-reference"
+            >
+              <FileText size={16} />
+              <span>{post.title}</span>
+              {post.isCover ? <small>{m.media_badge_cover()}</small> : null}
+              <ExternalLink size={14} />
+            </Link>
+          ))
+        )}
+      </section>
+      <div className="media-inspector-actions">
+        <button
+          type="button"
+          className="fuwari-btn-regular"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(
+                new URL(asset.url, window.location.origin).href,
+              );
+              toast.success(m.media_copied());
+            } catch {
+              toast.error(m.media_copy_failed());
+            }
+          }}
+        >
+          <Copy size={16} />
+          {m.media_copy_link()}
+        </button>
+        <button
+          type="button"
+          className="fuwari-btn-regular"
+          disabled={busy}
+          onClick={() => fileRef.current?.click()}
+        >
+          <Upload size={16} />
+          {isReplacing ? m.common_processing() : m.media_replace()}
+        </button>
+      </div>
+      {asset.postCount === 0 ? (
+        <button
+          type="button"
+          className="media-inspector-delete"
+          disabled={busy}
+          onClick={() => onDelete(asset)}
+        >
+          {m.media_delete()}
+        </button>
+      ) : null}
+      <input
+        ref={fileRef}
+        type="file"
+        accept={ACCEPTED_IMAGE_TYPES.join(",")}
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (!file) return;
+          if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+            toast.error(m.media_validation_file_invalid_type());
+            return;
+          }
+          if (file.size > MAX_FILE_SIZE) {
+            toast.error(m.media_validation_file_too_large());
+            return;
+          }
+          void onReplace(asset.key, file).catch(() => {});
+        }}
+      />
+    </>
+  );
+  return compact ? (
+    createPortal(
+      <dialog
+        ref={dialogRef}
+        className="media-inspector media-inspector-dialog"
+        aria-label={m.media_preview_title()}
+        onCancel={(event) => {
+          event.preventDefault();
+          if (!preventClose && !busy) {
+            onClose();
+          }
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget && !preventClose && !busy)
+            onClose();
+        }}
+      >
+        {content}
+      </dialog>,
+      document.body,
+    )
+  ) : (
+    <aside className="media-inspector" aria-label={m.media_preview_title()}>
+      {content}
+    </aside>
   );
 }

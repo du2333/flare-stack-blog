@@ -5,6 +5,7 @@ import { MediaLibraryPageSkeleton } from "@/features/media/components/media-libr
 import { m } from "@/paraglide/messages";
 
 const mediaSearchSchema = z.object({
+  view: z.enum(["grid", "list"]).optional().catch(undefined),
   unused: z.boolean().optional().catch(false),
 });
 
