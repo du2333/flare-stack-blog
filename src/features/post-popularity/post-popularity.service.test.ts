@@ -33,7 +33,10 @@ describe("post popularity service", () => {
       getPopularPosts: vi.fn(async () => []),
     });
 
-    const result = await service.sync({ env: {} } as DbContext);
+    const result = await service.sync({
+      env: {},
+      executionCtx: {},
+    } as DbContext & { executionCtx: ExecutionContext });
 
     expect(result.error).toBeNull();
     expect(writeSnapshot).toHaveBeenCalledWith(
@@ -76,7 +79,10 @@ describe("post popularity service", () => {
       getPopularPosts: vi.fn(async () => []),
     });
 
-    const result = await service.sync({ env: {} } as DbContext);
+    const result = await service.sync({
+      env: {},
+      executionCtx: {},
+    } as DbContext & { executionCtx: ExecutionContext });
 
     expect(result).toEqual({ data: null, error: { reason: "SYNC_FAILED" } });
     expect(writeStatus).toHaveBeenCalledWith(expect.anything(), {

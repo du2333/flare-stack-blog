@@ -2,6 +2,14 @@ import type { WorkersCachePurgeTarget } from "./workers-cache-policy";
 
 const TAGS_PER_PURGE = 100;
 
+export type WorkersCachePurgeContext = {
+  exports: {
+    App: {
+      purgeCache: (target: WorkersCachePurgeTarget) => Promise<void>;
+    };
+  };
+};
+
 export function hasWorkersCachePurge(cache: { purge?: unknown }): cache is {
   purge: (options: CachePurgeOptions) => Promise<CachePurgeResult>;
 } {
@@ -18,9 +26,11 @@ async function assertPurge(result: CachePurgeResult) {
   );
 }
 
-export async function purgeWorkersCache(target: WorkersCachePurgeTarget) {
-  const { cache } = await import("cloudflare:workers");
-  if (!hasWorkersCachePurge(cache)) return;
+export async function applyWorkersCachePurge(
+  cache: { purge?: unknown } | undefined,
+  target: WorkersCachePurgeTarget,
+) {
+  if (!cache || !hasWorkersCachePurge(cache)) return;
 
   if ("purgeEverything" in target) {
     await assertPurge(await cache.purge(target));
@@ -35,4 +45,11 @@ export async function purgeWorkersCache(target: WorkersCachePurgeTarget) {
       await cache.purge({ tags: tags.slice(i, i + TAGS_PER_PURGE) }),
     );
   }
+}
+
+export async function purgeWorkersCache(
+  ctx: WorkersCachePurgeContext,
+  target: WorkersCachePurgeTarget,
+) {
+  await ctx.exports.App.purgeCache(target);
 }

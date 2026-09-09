@@ -296,9 +296,9 @@ describe("Infra Integration", () => {
     it("should purge Workers Cache tags when a post is published", async () => {
       const context = createTestContext();
       await invalidate.postPublished(context, { slug: "hello" });
-      expect(purgeWorkersCache).toHaveBeenCalledWith({
-        tags: ["posts", "post:hello"],
-      });
+      expect(vi.mocked(purgeWorkersCache).mock.calls.at(-1)?.slice(1)).toEqual([
+        { tags: ["posts", "post:hello"] },
+      ]);
     });
 
     it("should fail invalidate when Workers Cache purge is rejected", async () => {

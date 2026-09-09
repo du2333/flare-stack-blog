@@ -1,8 +1,10 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 import handler from "@tanstack/react-start/server-entry";
+import { applyWorkersCachePurge } from "@/features/cache/workers-cache";
 import {
   applyWorkersCachePolicy,
   workersCacheKey,
+  type WorkersCachePurgeTarget,
 } from "@/features/cache/workers-cache-policy";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import { getDb } from "@/lib/db";
@@ -40,6 +42,11 @@ export class App extends WorkerEntrypoint<Env, AppProps> {
     );
     return applyWorkersCachePolicy(request, response);
   }
+
+  async purgeCache(target: WorkersCachePurgeTarget) {
+    const { cache } = await import("cloudflare:workers");
+    await applyWorkersCachePurge(this.ctx.cache ?? cache, target);
+  }
 }
 
 export default {
@@ -52,8 +59,12 @@ export default {
   async queue(batch, env, ctx) {
     await handleQueueBatch(batch, env, ctx);
   },
-  async scheduled(_controller, env) {
-    const result = await postPopularityService.sync({ env, db: getDb(env) });
+  async scheduled(_controller, env, ctx) {
+    const result = await postPopularityService.sync({
+      env,
+      db: getDb(env),
+      executionCtx: ctx,
+    });
     if (result.error) throw new Error("Post popularity sync failed");
   },
 } satisfies ExportedHandler<Env>;

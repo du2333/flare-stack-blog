@@ -82,7 +82,7 @@ export async function getTagsByPostId(
  */
 
 async function invalidateTagRelatedCache(
-  context: DbContext,
+  context: DbContext & { executionCtx: ExecutionContext },
   affectedPosts: Array<{ id: number; slug: string }>,
 ) {
   await invalidate.tagChanged(context, {

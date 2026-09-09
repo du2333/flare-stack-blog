@@ -45,7 +45,9 @@ type Dependencies = {
   writeSnapshot: (env: Env, snapshot: PostPopularitySnapshot) => Promise<void>;
   readStatus: (env: Env) => Promise<PostPopularityStatusRecord | null>;
   writeStatus: (env: Env, status: PostPopularityStatusRecord) => Promise<void>;
-  invalidate: (context: BaseContext) => Promise<void>;
+  invalidate: (
+    context: DbContext & { executionCtx: ExecutionContext },
+  ) => Promise<void>;
   getPopularPosts: (
     context: PopularityReadContext,
     params: {
@@ -113,7 +115,9 @@ export function createPostPopularityService(dependencies: Dependencies) {
     });
   }
 
-  async function sync(context: DbContext): Promise<SyncResult> {
+  async function sync(
+    context: DbContext & { executionCtx: ExecutionContext },
+  ): Promise<SyncResult> {
     const now = dependencies.now();
     const attemptedAt = now.getTime();
     const window = getPostPopularityWindow(now);

@@ -10,7 +10,7 @@ import type {
 import { err, ok } from "@/lib/errors";
 
 async function invalidateCategoryRelatedCache(
-  context: DbContext,
+  context: DbContext & { executionCtx: ExecutionContext },
   affectedPosts: Array<{ id: number; slug: string | null }>,
 ) {
   await invalidate.categoryChanged(context, {
