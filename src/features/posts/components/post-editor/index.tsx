@@ -233,11 +233,9 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
             />
           </CodeBlockHighlightProvider>
         </div>
-        {infoOpen && (
-          <PostEditorInfoPanel onClose={closeInfo}>
-            {metadata}
-          </PostEditorInfoPanel>
-        )}
+        <PostEditorInfoPanel open={infoOpen} onClose={closeInfo}>
+          {metadata}
+        </PostEditorInfoPanel>
       </section>
     </div>
   );

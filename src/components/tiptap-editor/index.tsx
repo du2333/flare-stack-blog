@@ -220,6 +220,7 @@ export const Editor = memo(function Editor({
 
       {editable && (
         <InsertModal
+          returnFocus={() => editor?.view.dom ?? null}
           type={modalOpen}
           initialUrl={modalInitialUrl}
           onClose={() => setModalOpen(null)}
@@ -229,6 +230,7 @@ export const Editor = memo(function Editor({
 
       {editable && (
         <FormulaModal
+          returnFocus={() => editor?.view.dom ?? null}
           isOpen={formulaModalOpen}
           mode={formulaPayload.mode}
           initialLatex={formulaPayload.initialLatex}

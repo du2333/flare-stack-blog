@@ -3,8 +3,7 @@ import katex from "katex";
 import { X } from "lucide-react";
 import type React from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -23,6 +22,7 @@ interface FormulaModalProps {
   /** When editing existing node: { pos, type }. When inserting: null. */
   editContext: { pos: number; type: FormulaMode } | null;
   onClose: () => void;
+  returnFocus?: () => HTMLElement | null;
   onApply: (
     latex: string,
     mode: FormulaMode,
@@ -48,8 +48,8 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
   editContext,
   onClose,
   onApply,
+  returnFocus,
 }) => {
-  const shouldRender = useDelayUnmount(isOpen, 300);
   const [latex, setLatex] = useState(initialLatex);
   const [activeMode, setActiveMode] = useState<FormulaMode>(mode);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -91,10 +91,6 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      }
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         if (latex.trim()) onApply(latex.trim(), activeMode, editContext);
@@ -109,29 +105,16 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
     if (trimmed) onApply(trimmed, activeMode, editContext);
   }, [latex, activeMode, editContext, onApply]);
 
-  if (!shouldRender) return null;
-
-  return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 ease-out",
-        isOpen
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none",
-      )}
+  return (
+    <FuwariModal
+      open={isOpen}
+      onClose={onClose}
+      returnFocus={returnFocus}
+      initialFocus={() => inputRef.current}
+      label={editContext ? m.editor_formula_edit() : m.editor_formula_insert()}
+      className="fuwari-modal-wide"
     >
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div
-        className={cn(
-          "relative flex w-full max-h-[90vh] sm:max-h-[85vh] sm:max-w-2xl flex-col overflow-hidden fuwari-card-base p-6 transition-all duration-300 ease-out max-sm:rounded-b-none",
-          isOpen
-            ? "translate-y-0 scale-100 opacity-100"
-            : "translate-y-4 scale-[0.98] opacity-0",
-        )}
-      >
+      <div className="flex max-h-[85dvh] min-h-0 flex-col p-6">
         <div className="flex shrink-0 items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-medium fuwari-text-90">
@@ -169,6 +152,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label={m.common_close()}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg fuwari-text-50 hover:text-(--fuwari-primary)"
           >
             <X size={16} />
@@ -238,8 +222,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </FuwariModal>
   );
 };
 

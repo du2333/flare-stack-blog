@@ -107,6 +107,7 @@
   min-width: 0;
 }
 .media-gallery {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
@@ -588,4 +589,69 @@ aside.media-inspector {
 :is(.media-workspace, .media-inspector) svg[width="30"] {
   width: calc(30 * var(--admin-unit));
   height: calc(30 * var(--admin-unit));
+}
+
+/* Both grid tracks exist before opening, allowing the inspector space to interpolate. */
+.media-workspace-body {
+  grid-template-columns: minmax(0, 1fr) 0px;
+  gap: 0;
+  transition:
+    grid-template-columns var(--fuwari-motion-panel) var(--fuwari-motion-ease),
+    gap var(--fuwari-motion-panel) var(--fuwari-motion-ease);
+}
+.media-panel-slot {
+  min-width: 0;
+  overflow: clip;
+  align-self: stretch;
+}
+.media-panel-slot > .media-inspector {
+  width: calc(330 * var(--admin-unit));
+}
+.media-workspace-toolbar {
+  transition: margin-right var(--fuwari-motion-panel) var(--fuwari-motion-ease);
+}
+aside.media-inspector[data-state="open"] {
+  animation: media-detail-in var(--fuwari-motion-panel)
+    var(--fuwari-motion-ease) both;
+}
+aside.media-inspector[data-state="closing"] {
+  animation: media-detail-out var(--fuwari-motion-panel)
+    var(--fuwari-motion-ease) both;
+}
+@keyframes media-detail-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes media-detail-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+@media (max-width: 1199px) {
+  .media-workspace-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .media-panel-slot {
+    display: contents;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .media-workspace-body,
+  .media-workspace-toolbar {
+    transition: none;
+  }
+  aside.media-inspector[data-state] {
+    animation: none;
+  }
 }

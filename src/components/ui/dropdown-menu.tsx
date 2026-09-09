@@ -8,6 +8,7 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { cn } from "@/lib/utils";
 
 interface DropdownOption {
@@ -33,6 +34,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   ariaLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const present = useMotionPresence(isOpen, MOTION.popover);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
@@ -41,7 +43,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     options.find((opt) => opt.value === value) || options[0];
 
   useLayoutEffect(() => {
-    if (!isOpen) {
+    if (!present) {
       setMenuStyle(null);
       return;
     }
@@ -60,7 +62,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         width: 11 * 16,
         top: openUp ? undefined : rect.bottom + gap,
         bottom: openUp ? window.innerHeight - rect.top + gap : undefined,
-      });
+        transformOrigin: openUp ? "bottom right" : "top right",
+        "--popover-offset": openUp ? "4px" : "-4px",
+      } as CSSProperties);
     };
 
     update();
@@ -70,7 +74,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       window.removeEventListener("resize", update);
       document.removeEventListener("scroll", update, true);
     };
-  }, [isOpen]);
+  }, [present]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -121,13 +125,16 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         />
       </button>
 
-      {isOpen && menuStyle
+      {present && menuStyle
         ? createPortal(
             <div
               ref={menuRef}
               role="menu"
+              data-state={isOpen ? "open" : "closing"}
+              inert={!isOpen}
+              aria-hidden={!isOpen}
               aria-label={ariaLabel}
-              className="z-80 max-h-64 overflow-y-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border) custom-scrollbar"
+              className="fuwari-popover-motion z-80 max-h-64 overflow-y-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border) custom-scrollbar"
               style={menuStyle}
               onKeyDown={(event) => {
                 if (event.key === "Escape") {

@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
@@ -20,6 +21,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const present = useMotionPresence(isOpen, MOTION.popover);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Parse initial value or default to today
@@ -134,9 +136,21 @@ const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div
+      className={`relative ${className}`}
+      ref={containerRef}
+      onKeyDown={(event) => {
+        if (isOpen && event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          setIsOpen(false);
+          containerRef.current?.querySelector("button")?.focus();
+        }
+      }}
+    >
       <button
         type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className="relative h-10 w-full cursor-pointer rounded-xl bg-(--fuwari-btn-regular-bg) pl-9 pr-3 text-left text-sm fuwari-text-90"
       >
@@ -150,8 +164,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
         </span>
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-70 rounded-xl bg-(--fuwari-card-bg) p-4 shadow-md ring-1 ring-(--fuwari-input-border) animate-in fade-in duration-200">
+      {present && (
+        <div
+          data-state={isOpen ? "open" : "closing"}
+          inert={!isOpen}
+          className="fuwari-popover-motion absolute top-full left-0 z-50 mt-2 w-70 rounded-xl bg-(--fuwari-card-bg) p-4 shadow-md ring-1 ring-(--fuwari-input-border)"
+        >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-medium fuwari-text-90">

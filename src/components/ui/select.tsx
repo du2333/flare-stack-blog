@@ -8,6 +8,7 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { cn } from "@/lib/utils";
 
 export type SelectOption = {
@@ -32,6 +33,7 @@ export function Select({
   placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const present = useMotionPresence(open, MOTION.popover);
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -48,7 +50,7 @@ export function Select({
   }, [open, selectedIndex]);
 
   useLayoutEffect(() => {
-    if (!open) {
+    if (!present) {
       setMenuStyle(null);
       return;
     }
@@ -67,6 +69,7 @@ export function Select({
         width: rect.width,
         top: openUp ? undefined : rect.bottom + gap,
         bottom: openUp ? window.innerHeight - rect.top + gap : undefined,
+        transformOrigin: openUp ? "bottom left" : "top left",
       });
     };
 
@@ -77,7 +80,7 @@ export function Select({
       window.removeEventListener("resize", update);
       document.removeEventListener("scroll", update, true);
     };
-  }, [open]);
+  }, [present]);
 
   useEffect(() => {
     if (!open) return;
@@ -142,14 +145,17 @@ export function Select({
           )}
         />
       </button>
-      {open && menuStyle
+      {present && menuStyle
         ? createPortal(
             <div
               ref={menuRef}
               id={listId}
               role="listbox"
+              data-state={open ? "open" : "closing"}
+              inert={!open}
+              aria-hidden={!open}
               style={menuStyle}
-              className="z-80 max-h-64 overflow-y-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border) custom-scrollbar"
+              className="fuwari-popover-motion z-80 max-h-64 overflow-y-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border) custom-scrollbar"
             >
               {options.map((option, index) => {
                 const active = index === activeIndex;

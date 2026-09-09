@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/motion.css";
 @import "tw-animate-css";
 @import "katex/dist/katex.min.css";
 @import "@fontsource-variable/noto-sans-sc";

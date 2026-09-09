@@ -6,6 +6,7 @@ import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { orpcClient } from "@/lib/orpc";
 import type { Tag } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 
 interface TagSelectorProps {
@@ -20,6 +21,7 @@ export function TagSelector({
   disabled,
 }: TagSelectorProps) {
   const [open, setOpen] = useState(false);
+  const present = useMotionPresence(open && !disabled, MOTION.popover);
   const [searchTerm, setSearchTerm] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -240,7 +242,14 @@ export function TagSelector({
             setSearchTerm(e.target.value);
             setOpen(true);
           }}
-          onKeyDown={handleKeyDown}
+          aria-expanded={open}
+          onKeyDown={(event) => {
+            if (open && event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
+              setOpen(false);
+            } else handleKeyDown(event);
+          }}
           onFocus={() => !isInitialLoading && setOpen(true)}
           disabled={disabled || isInitialLoading}
         />
@@ -254,8 +263,12 @@ export function TagSelector({
       </div>
 
       {/* Dropdown Menu */}
-      {open && !disabled && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-xl bg-(--fuwari-card-bg) shadow-md ring-1 ring-(--fuwari-input-border) animate-in fade-in-0 zoom-in-95">
+      {present && (
+        <div
+          data-state={open && !disabled ? "open" : "closing"}
+          inert={!open || disabled}
+          className="fuwari-popover-motion absolute top-full left-0 z-50 mt-1 w-full rounded-xl bg-(--fuwari-card-bg) shadow-md ring-1 ring-(--fuwari-input-border)"
+        >
           <div className="max-h-50 w-full overflow-y-auto overflow-x-hidden p-1">
             {/* Create Option */}
             {searchTerm &&

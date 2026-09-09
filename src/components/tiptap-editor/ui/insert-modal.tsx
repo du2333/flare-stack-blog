@@ -1,9 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
+import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { MediaPicker } from "@/features/media/components/media-library/components";
-import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { m } from "@/paraglide/messages";
 
 export type ModalType = "LINK" | "IMAGE" | null;
@@ -11,28 +10,35 @@ export type ModalType = "LINK" | "IMAGE" | null;
 interface InsertModalProps {
   type: ModalType;
   initialUrl?: string;
+  returnFocus?: () => HTMLElement | null;
   onClose: () => void;
   onSubmit: (url: string, attrs?: { width?: number; height?: number }) => void;
 }
 
-function LinkModal({ type, initialUrl, onClose, onSubmit }: InsertModalProps) {
+function LinkModal({
+  type,
+  initialUrl,
+  onClose,
+  onSubmit,
+  returnFocus,
+}: InsertModalProps) {
   const isMounted = type === "LINK";
-  const shouldRender = useDelayUnmount(isMounted, 200);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [inputUrl, setInputUrl] = useState(initialUrl ?? "");
 
   useEffect(() => {
     if (type === "LINK") setInputUrl(initialUrl ?? "");
   }, [initialUrl, type]);
 
-  if (!shouldRender) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-md fuwari-card-base p-6">
+  return (
+    <FuwariModal
+      open={isMounted}
+      onClose={onClose}
+      label={m.editor_insert_link_title()}
+      initialFocus={() => inputRef.current}
+      returnFocus={returnFocus}
+    >
+      <div className="p-6">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-lg font-medium fuwari-text-90">
             {m.editor_insert_link_title()}
@@ -40,12 +46,15 @@ function LinkModal({ type, initialUrl, onClose, onSubmit }: InsertModalProps) {
           <button
             type="button"
             onClick={onClose}
+            aria-label={m.common_close()}
             className="h-8 w-8 grid place-items-center rounded-lg fuwari-text-50"
           >
             <X size={16} />
           </button>
         </div>
         <input
+          ref={inputRef}
+          aria-label={m.editor_insert_link_title()}
           autoFocus
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
@@ -80,19 +89,20 @@ function LinkModal({ type, initialUrl, onClose, onSubmit }: InsertModalProps) {
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </FuwariModal>
   );
 }
 
 function InsertModalInternal(props: InsertModalProps) {
-  if (props.type === "IMAGE") {
-    return (
+  return (
+    <>
+      <LinkModal {...props} />
       <MediaPicker
-        open
+        open={props.type === "IMAGE"}
         title={m.editor_insert_media_title()}
         allowUrlImport
         onClose={props.onClose}
+        returnFocus={props.returnFocus}
         onSelect={(media) => {
           props.onSubmit(media.url, {
             width: media.width || undefined,
@@ -101,10 +111,8 @@ function InsertModalInternal(props: InsertModalProps) {
           props.onClose();
         }}
       />
-    );
-  }
-
-  return <LinkModal {...props} />;
+    </>
+  );
 }
 
 export default function InsertModal(props: InsertModalProps) {

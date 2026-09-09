@@ -1,0 +1,79 @@
+.fuwari-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 0;
+  padding: 0;
+  width: min(28rem, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border-radius: var(--radius-large, 20px);
+  background: var(--fuwari-card-bg);
+  color: var(--fuwari-fg-75);
+  box-shadow: 0 20px 70px rgb(0 0 0 / 0.12);
+}
+.fuwari-modal::backdrop {
+  background: rgb(0 0 0 / 0.25);
+  backdrop-filter: blur(4px);
+}
+.fuwari-modal[open][data-state="open"] {
+  animation: fuwari-modal-in var(--fuwari-motion-modal-in)
+    var(--fuwari-motion-ease) both;
+}
+.fuwari-modal[open][data-state="closing"] {
+  animation: fuwari-modal-out var(--fuwari-motion-modal-out) ease-in both;
+}
+.fuwari-modal[data-state="open"]::backdrop {
+  animation: fuwari-backdrop-in var(--fuwari-motion-modal-in) ease-out both;
+}
+.fuwari-modal[data-state="closing"]::backdrop {
+  animation: fuwari-backdrop-out var(--fuwari-motion-modal-out) ease-in both;
+}
+.fuwari-modal-content {
+  min-height: 0;
+}
+.fuwari-modal-wide {
+  width: min(42rem, calc(100% - 32px));
+}
+@keyframes fuwari-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fuwari-modal-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes fuwari-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fuwari-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-modal[open],
+  .fuwari-modal::backdrop {
+    animation: none !important;
+  }
+}

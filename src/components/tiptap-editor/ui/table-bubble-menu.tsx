@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useLayoutEffect, useState } from "react";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -210,10 +211,11 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
   );
 
   useLayoutEffect(() => {
-    if (!editor || !active) {
+    if (!editor) {
       setCoords(null);
       return;
     }
+    if (!active) return;
 
     const place = () => {
       const rect = cellRect(editor);
@@ -239,7 +241,8 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
     };
   }, [editor, active, from, to]);
 
-  if (!editor || !active || !coords) return null;
+  const present = useMotionPresence(active && !!coords, MOTION.popover);
+  if (!editor || !present || !coords) return null;
 
   return (
     <div
@@ -250,7 +253,11 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
         transform: "translate(-50%, calc(-100% - 8px))",
       }}
     >
-      <div className="pointer-events-auto flex items-center gap-0.5 rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)">
+      <div
+        data-state={active ? "open" : "closing"}
+        inert={!active}
+        className="fuwari-popover-motion pointer-events-auto flex items-center gap-0.5 rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)"
+      >
         <TableControls editor={editor} size="sm" />
       </div>
     </div>
@@ -260,11 +267,16 @@ export const TableBubbleMenu: React.FC<TableBubbleMenuProps> = ({ editor }) => {
 export function TableMobileBar({ editor }: { editor: Editor | null }) {
   const { active } = useTableSelection(editor);
 
-  if (!editor || !active) return null;
+  const present = useMotionPresence(active, MOTION.modal);
+  if (!editor || !present) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 lg:hidden">
-      <div className="pointer-events-auto flex items-center justify-center gap-0.5 overflow-x-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)">
+      <div
+        data-state={active ? "open" : "closing"}
+        inert={!active}
+        className="fuwari-edge-motion pointer-events-auto flex items-center justify-center gap-0.5 overflow-x-auto rounded-xl bg-(--fuwari-card-bg) p-1 shadow-md ring-1 ring-(--fuwari-input-border)"
+      >
         <TableControls editor={editor} size="md" />
       </div>
     </div>

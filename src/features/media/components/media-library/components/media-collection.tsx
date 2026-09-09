@@ -1,8 +1,9 @@
 import { ImageOff } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { useMediaGridMotion } from "../hooks/use-media-grid-motion";
 import type { MediaAsset } from "../types";
 import type { MediaView } from "./media-toolbar";
 
@@ -35,6 +36,11 @@ export function MediaCollection({
   selectedKey?: string;
   onSelect: (asset: MediaAsset, trigger: HTMLButtonElement) => void;
 }) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  useMediaGridMotion(
+    gridRef,
+    `${view}:${items.map((item) => item.key).join(",")}`,
+  );
   const usage = (asset: MediaAsset) =>
     asset.postCount
       ? m.media_post_count({ count: asset.postCount })
@@ -79,7 +85,7 @@ export function MediaCollection({
       </div>
     );
   return (
-    <div className="media-gallery">
+    <div className="media-gallery" ref={gridRef}>
       {items.map((asset) => (
         <button
           key={asset.key}

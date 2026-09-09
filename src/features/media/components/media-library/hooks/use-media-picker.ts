@@ -2,10 +2,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { mediaInfiniteQueryOptions } from "@/features/media/queries";
 
-export function useMediaPicker() {
+export function useMediaPicker(enabled = true) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
     useInfiniteQuery({
       ...mediaInfiniteQueryOptions(),
+      enabled,
     });
 
   const mediaItems = useMemo(() => {

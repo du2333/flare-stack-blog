@@ -436,3 +436,61 @@ button.post-editor-summary:hover {
     display: none;
   }
 }
+
+/* Editing stays live; only mounts and explicit workspace changes animate. */
+.post-editor-document {
+  animation: fuwari-content-in var(--fuwari-motion-content)
+    var(--fuwari-motion-ease) both;
+}
+.post-editor-info-panel[data-state="open"] {
+  animation: post-info-in var(--fuwari-motion-panel) var(--fuwari-motion-ease)
+    both;
+}
+.post-editor-info-panel[data-state="closing"] {
+  animation: post-info-out var(--fuwari-motion-panel) var(--fuwari-motion-ease)
+    both;
+}
+.post-editor-info-backdrop[data-state="open"] {
+  animation: fuwari-backdrop-in var(--fuwari-motion-panel) ease-out both;
+}
+.post-editor-info-backdrop[data-state="closing"] {
+  animation: fuwari-backdrop-out var(--fuwari-motion-panel) ease-out both;
+  pointer-events: none;
+}
+@keyframes post-info-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes post-info-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-editor-document,
+  .post-editor-info-panel,
+  .post-editor-info-backdrop {
+    animation: none !important;
+  }
+}
+
+.post-history-list {
+  animation: fuwari-content-in var(--fuwari-motion-content)
+    var(--fuwari-motion-ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-history-list {
+    animation: none;
+  }
+}

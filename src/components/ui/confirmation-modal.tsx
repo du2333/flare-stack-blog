@@ -1,7 +1,7 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useEffect, useId, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useId } from "react";
+import { FuwariModal } from "./fuwari-modal";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import "./confirmation-modal.css";
@@ -20,77 +20,28 @@ interface ConfirmationModalProps {
 }
 
 function ConfirmationModalInternal(props: ConfirmationModalProps) {
-  const { isOpen, onClose, onConfirm, isLoading = false, returnFocus } = props;
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const previousFocus = useRef<HTMLElement | null>(null);
-  const focusRef = useRef({ returnFocus, fallbackFocus: props.fallbackFocus });
-  focusRef.current = { returnFocus, fallbackFocus: props.fallbackFocus };
-  const content = useRef(props);
-  if (isOpen) content.current = props;
   const {
+    isOpen,
+    onClose,
+    onConfirm,
     title,
     message,
-    confirmLabel = m.common_confirm(),
+    isLoading = false,
     isDanger = false,
-  } = content.current;
+    confirmLabel = m.common_confirm(),
+  } = props;
   const titleId = useId();
   const messageId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current!;
-    if (isOpen) {
-      if (!dialog.open) {
-        previousFocus.current = document.activeElement as HTMLElement | null;
-        dialog.showModal();
-      }
-      return;
-    }
-    if (!dialog.open) return;
-    // Keep the top layer and content alive until the exit animation completes.
-    const duration = window.matchMedia("(prefers-reduced-motion: reduce)")
-      .matches
-      ? 0
-      : 200;
-    const timer = window.setTimeout(() => {
-      dialog.close();
-      const target =
-        focusRef.current.returnFocus?.() ??
-        (previousFocus.current?.isConnected
-          ? previousFocus.current
-          : focusRef.current.fallbackFocus?.());
-      if (target?.isConnected) target.focus();
-    }, duration);
-    return () => window.clearTimeout(timer);
-  }, [isOpen]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    return () => dialog?.close();
-  }, []);
-
-  return createPortal(
-    <dialog
-      ref={dialogRef}
+  return (
+    <FuwariModal
+      open={isOpen}
+      onClose={onClose}
+      busy={isLoading}
       className="fuwari-confirmation"
-      data-state={isOpen ? "open" : "closing"}
-      aria-labelledby={titleId}
-      aria-describedby={messageId}
-      onCancel={(event) => {
-        event.preventDefault();
-        if (isOpen && !isLoading) onClose();
-      }}
-      onClick={(event) => {
-        if (event.target !== event.currentTarget || !isOpen || isLoading)
-          return;
-        const rect = event.currentTarget.getBoundingClientRect();
-        if (
-          event.clientX < rect.left ||
-          event.clientX > rect.right ||
-          event.clientY < rect.top ||
-          event.clientY > rect.bottom
-        )
-          onClose();
-      }}
+      labelledBy={titleId}
+      describedBy={messageId}
+      returnFocus={props.returnFocus}
+      fallbackFocus={props.fallbackFocus}
     >
       <h2 id={titleId}>{title}</h2>
       <p id={messageId}>{message}</p>
@@ -113,8 +64,7 @@ function ConfirmationModalInternal(props: ConfirmationModalProps) {
           <span>{isLoading ? m.common_processing() : confirmLabel}</span>
         </button>
       </div>
-    </dialog>,
-    document.body,
+    </FuwariModal>
   );
 }
 

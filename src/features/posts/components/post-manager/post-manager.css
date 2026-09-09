@@ -560,3 +560,13 @@
   width: calc(30 * var(--admin-unit));
   height: calc(30 * var(--admin-unit));
 }
+
+.post-list-empty {
+  animation: fuwari-content-in var(--fuwari-motion-content)
+    var(--fuwari-motion-ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-list-empty {
+    animation: none;
+  }
+}

@@ -1,0 +1,104 @@
+:root {
+  --fuwari-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fuwari-motion-panel: 320ms;
+  --fuwari-motion-content: 180ms;
+  --fuwari-motion-popup-in: 180ms;
+  --fuwari-motion-popup-out: 120ms;
+  --fuwari-motion-modal-in: 280ms;
+  --fuwari-motion-modal-out: 200ms;
+}
+.fuwari-popover-motion[data-state="open"] {
+  animation: fuwari-popover-in var(--fuwari-motion-popup-in)
+    var(--fuwari-motion-ease) both;
+}
+.fuwari-popover-motion[data-state="closing"] {
+  animation: fuwari-popover-out var(--fuwari-motion-popup-out) ease-in both;
+  pointer-events: none;
+}
+.fuwari-edge-motion[data-state="open"] {
+  animation: fuwari-edge-in var(--fuwari-motion-panel) var(--fuwari-motion-ease)
+    both;
+}
+.fuwari-edge-motion[data-state="closing"] {
+  animation: fuwari-edge-out var(--fuwari-motion-modal-out) ease-in both;
+  pointer-events: none;
+}
+.fuwari-content-enter {
+  animation: fuwari-content-in var(--fuwari-motion-content)
+    var(--fuwari-motion-ease) both;
+}
+@keyframes fuwari-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--popover-offset, -4px)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fuwari-popover-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--popover-offset, -4px)) scale(0.98);
+  }
+}
+@keyframes fuwari-edge-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fuwari-edge-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes fuwari-content-in {
+  from {
+    opacity: 0.25;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-popover-motion,
+  .fuwari-edge-motion,
+  .fuwari-content-enter {
+    animation: none !important;
+  }
+}
+
+.fuwari-toolbar-button {
+  transition:
+    background-color 150ms,
+    color 150ms,
+    transform 150ms var(--fuwari-motion-ease);
+}
+.fuwari-toolbar-button:active {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-toolbar-button {
+    transition: none;
+  }
+  .fuwari-toolbar-button:active {
+    transform: none;
+  }
+}

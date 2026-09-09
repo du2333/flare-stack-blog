@@ -16,7 +16,11 @@ vi.mock("@tanstack/react-router", () => ({
 
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal("matchMedia", () => ({ matches: false }));
+  vi.stubGlobal("matchMedia", () => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
   HTMLDialogElement.prototype.showModal = function () {
     this.open = true;
   };
@@ -57,9 +61,7 @@ it("keeps the previous content and modal open until exit finishes, then restores
   expect(dialog.textContent).toContain("Delete selected image?");
   expect(dialog.dataset.state).toBe("closing");
   expect(
-    Array.from(dialog.querySelectorAll("button")).every(
-      (button) => button.disabled,
-    ),
+    dialog.querySelector(".fuwari-modal-content")?.hasAttribute("inert"),
   ).toBe(true);
   act(() => vi.advanceTimersByTime(199));
   expect(dialog.open).toBe(true);
@@ -86,7 +88,11 @@ it("cancels pending exit when reopened and blocks Escape while submitting", () =
 });
 
 it("uses unique labels and skips the exit delay for reduced motion", () => {
-  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+  vi.stubGlobal("matchMedia", () => ({
+    matches: true,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
   const initial = props();
   const { rerender } = render(
     createElement(

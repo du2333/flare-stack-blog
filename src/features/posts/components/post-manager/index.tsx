@@ -7,6 +7,7 @@ import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
+import { useContentMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import { PostRow, PostsToolbar } from "./components";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -82,6 +83,12 @@ export function PostManager({
     error,
     refetch,
   } = usePosts({ page, status, sortBy, search });
+  const contentRef = useRef<HTMLDivElement>(null);
+  const motionKey = useRef("");
+  if (!isPlaceholderData)
+    motionKey.current = `${page}:${status}:${sortBy}:${search}:${isPending}:${posts.map((post) => post.id).join(",")}`;
+  useContentMotion(contentRef, motionKey.current);
+
   useEffect(() => {
     if (
       !isPending &&
@@ -175,7 +182,11 @@ export function PostManager({
         </div>
       ) : (
         <>
-          <div className="post-list-table-wrap" aria-busy={isFetching}>
+          <div
+            ref={contentRef}
+            className="post-list-table-wrap"
+            aria-busy={isFetching}
+          >
             <table className="post-list-table">
               <colgroup>
                 <col className="post-list-title-col" />

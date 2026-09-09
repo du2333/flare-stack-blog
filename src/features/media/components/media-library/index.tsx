@@ -4,6 +4,12 @@ import { toast } from "sonner";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
 import { cn, formatBytes } from "@/lib/utils";
+import {
+  MOTION,
+  useContentMotion,
+  useMediaQuery,
+  useMotionPresence,
+} from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import { MediaDetail, MediaToolbar } from "./components";
 import { MediaCollection } from "./components/media-collection";
@@ -50,6 +56,20 @@ export function MediaLibrary() {
     ? (mediaItems.find((item) => item.key === preview.key) ?? preview)
     : null;
 
+  const compact = useMediaQuery("(max-width: 1199px)");
+  const detailPresent = useMotionPresence(
+    !!active,
+    compact ? MOTION.modal : MOTION.panel,
+  );
+  const retained = useRef<MediaAsset | null>(null);
+  if (active) retained.current = active;
+  const detailAsset = active ?? retained.current;
+  const focusPending = useRef(false);
+  useContentMotion(
+    collectionRef,
+    `${view}:${unusedOnly}:${isPending}:${mediaItems.map((item) => item.key).join(",")}`,
+  );
+
   useEffect(() => {
     setPreview(null);
   }, [unusedOnly]);
@@ -65,19 +85,19 @@ export function MediaLibrary() {
 
   const openFilePicker = () => fileRef.current?.click();
   const closePreview = () => {
+    focusPending.current = true;
     setPreview(null);
-    requestAnimationFrame(() => {
-      const selected = collectionRef.current?.querySelector<HTMLButtonElement>(
-        'button[aria-pressed="true"]',
-      );
-      const fallback =
-        collectionRef.current?.querySelector<HTMLButtonElement>("button");
-      (selectedTrigger.current?.isConnected
-        ? selectedTrigger.current
-        : (selected ?? fallback ?? uploadRef.current)
-      )?.focus();
-    });
   };
+  useEffect(() => {
+    if (detailPresent || !focusPending.current) return;
+    focusPending.current = false;
+    const fallback =
+      collectionRef.current?.querySelector<HTMLButtonElement>("button");
+    (selectedTrigger.current?.isConnected
+      ? selectedTrigger.current
+      : (fallback ?? uploadRef.current)
+    )?.focus();
+  }, [detailPresent]);
   const handleFiles = (files: FileList | Array<File>) => {
     if (!isUploading) void uploadFiles(Array.from(files));
   };
@@ -246,23 +266,25 @@ export function MediaLibrary() {
             </>
           )}
         </div>
-        {active ? (
-          <MediaDetail
-            key={active.key}
-            asset={active}
-            onClose={closePreview}
-            onReplace={async (key, file) => {
-              const next = await replaceFile({ key, image: file });
-              if (next)
-                setPreview((previous) =>
-                  previous?.key === key ? { ...previous, ...next } : previous,
-                );
-            }}
-            onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
-            isReplacing={isReplacing}
-            preventClose={deleteTarget !== null}
-          />
-        ) : null}
+        <div className="media-panel-slot">
+          {detailPresent && detailAsset ? (
+            <MediaDetail
+              open={!!active}
+              asset={detailAsset}
+              onClose={closePreview}
+              onReplace={async (key, file) => {
+                const next = await replaceFile({ key, image: file });
+                if (next)
+                  setPreview((previous) =>
+                    previous?.key === key ? { ...previous, ...next } : previous,
+                  );
+              }}
+              onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
+              isReplacing={isReplacing}
+              preventClose={deleteTarget !== null}
+            />
+          ) : null}
+        </div>
       </div>
       {dragging ? (
         <div className="media-drop-overlay">{m.media_drop()}</div>

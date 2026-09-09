@@ -51,7 +51,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   <button
     onClick={onClick}
     className={clsx(
-      "h-8 w-8 flex items-center justify-center transition-colors duration-200 group relative rounded-lg",
+      "fuwari-toolbar-button h-8 w-8 flex items-center justify-center group relative rounded-lg",
       isActive
         ? "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
         : "fuwari-text-50 hover:text-(--fuwari-primary) hover:bg-(--fuwari-btn-regular-bg)",

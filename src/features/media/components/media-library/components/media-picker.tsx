@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,15 +20,17 @@ export function MediaPicker({
   onClose,
   onSelect,
   allowUrlImport = false,
+  returnFocus,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   onSelect: (asset: MediaAsset) => void;
   allowUrlImport?: boolean;
+  returnFocus?: () => HTMLElement | null;
 }) {
   const { mediaItems, loadMore, hasMore, isLoadingMore, isPending } =
-    useMediaPicker();
+    useMediaPicker(open);
   const { uploadFiles, isUploading } = useMediaUpload();
   const fileRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState("");
@@ -37,8 +39,6 @@ export function MediaPicker({
   useEffect(() => {
     if (open) setUrl("");
   }, [open]);
-
-  if (!open) return null;
 
   const importUrl = async () => {
     const trimmed = url.trim();
@@ -62,13 +62,15 @@ export function MediaPicker({
     }
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-2xl max-h-[80vh] fuwari-card-base flex flex-col overflow-hidden fuwari-onload-animation">
+  return (
+    <FuwariModal
+      open={open}
+      onClose={onClose}
+      label={title}
+      returnFocus={returnFocus}
+      className="fuwari-modal-wide"
+    >
+      <div className="flex flex-col max-h-[80dvh] overflow-hidden">
         <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium fuwari-text-90">{title}</h2>
           <div className="flex items-center gap-2">
@@ -83,6 +85,7 @@ export function MediaPicker({
             <button
               type="button"
               onClick={onClose}
+              aria-label={m.common_close()}
               className="h-9 w-9 grid place-items-center rounded-lg fuwari-text-50 hover:text-(--fuwari-primary)"
             >
               <X size={16} />
@@ -150,7 +153,6 @@ export function MediaPicker({
           }}
         />
       </div>
-    </div>,
-    document.body,
+    </FuwariModal>
   );
 }
