@@ -42,6 +42,11 @@ export function normalizePostContent(
       };
     }
 
+    if (node.type === "codeBlock" && node.attrs) {
+      const { highlightedHtml: _highlightedHtml, ...rest } = node.attrs;
+      node.attrs = rest;
+    }
+
     node.content?.forEach(walk);
   }
 

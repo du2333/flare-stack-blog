@@ -141,6 +141,8 @@ const adminGet = adminProcedure
     method: "GET",
     path: "/admin/posts/{id}",
     summary: "Get a post by id",
+    description:
+      "Returns the editable Post. publicSnapshotContentJson is the Public Content Snapshot body, used to preview published code highlighting in the editor. It is not the draft.",
     tags: ["Admin Posts"],
   })
   .input(FindPostByIdInputSchema)

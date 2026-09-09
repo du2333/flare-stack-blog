@@ -80,6 +80,7 @@ export const AdminPostSchema = PostSelectSchema.omit({
   .extend({
     tags: z.array(TagSelectSchema).optional(),
     hasPublicSnapshot: z.boolean(),
+    publicSnapshotContentJson: NullableJsonContentSchema,
     serverToday: z.string(),
     cover: AdminPostCoverSchema.nullable(),
   })

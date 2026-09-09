@@ -321,6 +321,7 @@ export async function findPostById(
     coverMediaId: coverMedia ? post.coverMediaId : null,
     cover: coverMedia ? toAdminCover(coverMedia) : null,
     hasPublicSnapshot: post.publicSnapshotJson != null,
+    publicSnapshotContentJson: post.publicSnapshotJson?.contentJson ?? null,
     serverToday: serverUtcDateString(),
   };
 }

@@ -45,4 +45,22 @@ describe("normalizePostContent", () => {
       height: 400,
     });
   });
+
+  it("strips highlighted HTML from draft code blocks", () => {
+    const result = normalizePostContent({
+      type: "doc",
+      content: [
+        {
+          type: "codeBlock",
+          attrs: {
+            language: "ts",
+            highlightedHtml: "<pre>draft</pre>",
+          },
+          content: [{ type: "text", text: "const answer = 42;" }],
+        },
+      ],
+    });
+
+    expect(result?.content?.[0]?.attrs).toEqual({ language: "ts" });
+  });
 });

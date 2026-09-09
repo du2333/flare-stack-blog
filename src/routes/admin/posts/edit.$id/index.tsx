@@ -73,6 +73,7 @@ function EditPost() {
     categoryId: post.categoryId ?? null,
     pinnedAt: post.pinnedAt,
     hasPublicSnapshot: post.hasPublicSnapshot,
+    publicSnapshotContentJson: post.publicSnapshotContentJson,
     serverToday: post.serverToday,
     coverMediaId: post.coverMediaId,
     cover: post.cover,

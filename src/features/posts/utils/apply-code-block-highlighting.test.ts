@@ -1,6 +1,10 @@
 import type { JSONContent } from "@tiptap/react";
 import { describe, expect, it } from "vitest";
-import { applyCodeBlockHighlighting } from "./apply-code-block-highlighting";
+import {
+  applyCodeBlockHighlighting,
+  codeBlockHighlightKey,
+  snapshotHighlightedHtmlByKey,
+} from "./apply-code-block-highlighting";
 
 function codeDoc(
   blocks: Array<{
@@ -70,5 +74,27 @@ describe("applyCodeBlockHighlighting", () => {
     );
 
     expect(result?.content?.[0]?.attrs?.highlightedHtml).toBeUndefined();
+  });
+});
+
+describe("snapshotHighlightedHtmlByKey", () => {
+  it("indexes snapshot HTML by language and source text", () => {
+    const map = snapshotHighlightedHtmlByKey(
+      codeDoc([
+        {
+          language: "ts",
+          text: "const answer = 42;",
+          highlightedHtml: "<pre>kept</pre>",
+        },
+      ]),
+    );
+
+    expect(map.get(codeBlockHighlightKey("ts", "const answer = 42;"))).toBe(
+      "<pre>kept</pre>",
+    );
+  });
+
+  it("returns an empty map when there is no snapshot", () => {
+    expect(snapshotHighlightedHtmlByKey(null).size).toBe(0);
   });
 });

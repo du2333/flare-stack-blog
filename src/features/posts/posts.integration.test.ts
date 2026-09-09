@@ -54,6 +54,7 @@ describe("Posts Integration", () => {
       expect(post).not.toBeNull();
       expect(post?.status).toBe("draft");
       expect(post?.title).toBe("");
+      expect(post?.publicSnapshotContentJson).toBeNull();
     });
 
     it("should update a post with content", async () => {
@@ -1378,6 +1379,15 @@ describe("Posts Integration", () => {
       });
       expect(
         second?.publicSnapshotJson?.contentJson?.content?.[1]?.attrs
+          ?.highlightedHtml,
+      ).toBe(firstHtml);
+
+      const adminPost = await PostService.findPostById(adminContext, { id });
+      expect(
+        adminPost?.contentJson?.content?.[1]?.attrs?.highlightedHtml,
+      ).toBeUndefined();
+      expect(
+        adminPost?.publicSnapshotContentJson?.content?.[1]?.attrs
           ?.highlightedHtml,
       ).toBe(firstHtml);
     });

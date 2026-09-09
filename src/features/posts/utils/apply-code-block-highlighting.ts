@@ -1,5 +1,9 @@
 import type { JSONContent } from "@tiptap/react";
 
+export function codeBlockHighlightKey(language: unknown, code: string) {
+  return `${String(language || "text")}\0${code}`;
+}
+
 function codeBlockText(node: JSONContent) {
   return node.content?.map((child) => child.text || "").join("") || "";
 }
@@ -9,7 +13,7 @@ function codeBlockLang(node: JSONContent) {
 }
 
 function codeBlockKey(node: JSONContent) {
-  return `${codeBlockLang(node)}\0${codeBlockText(node)}`;
+  return codeBlockHighlightKey(codeBlockLang(node), codeBlockText(node));
 }
 
 function collectHighlightedHtml(doc: JSONContent | null | undefined) {
@@ -29,6 +33,17 @@ function collectHighlightedHtml(doc: JSONContent | null | undefined) {
   }
 
   if (doc) walk(doc);
+  return map;
+}
+
+export function snapshotHighlightedHtmlByKey(
+  doc: JSONContent | null | undefined,
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const [key, list] of collectHighlightedHtml(doc)) {
+    const html = list[0];
+    if (html) map.set(key, html);
+  }
   return map;
 }
 

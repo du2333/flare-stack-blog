@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Editor } from "@/components/tiptap-editor";
 import { inspectExtensions } from "@/features/posts/editor/config";
+import { CodeBlockHighlightProvider } from "@/features/posts/editor/extensions/code-block/code-block-highlight-context";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { m } from "@/paraglide/messages";
@@ -35,27 +36,29 @@ export function PostEditorHistoryDocument({
   const title = snapshot.title.trim() || m.common_untitled();
 
   return (
-    <Editor
-      key={editorKey}
-      className="post-editor-surface"
-      documentClassName="post-editor-document post-history-document custom-scrollbar"
-      documentHeader={
-        <>
-          <h2 className="post-editor-title fuwari-text-90">{title}</h2>
-          <p className="mb-4 text-xs fuwari-text-50">
-            {m.editor_history_banner_title({ time: viewingTime })}
-          </p>
-          <PostEditorSummary
-            categoryId={snapshot.categoryId}
-            tagIds={snapshot.tagIds}
-            hasCover={snapshot.coverMediaId !== null}
-          />
-        </>
-      }
-      contentClassName="min-h-0"
-      extensions={inspectExtensions}
-      content={normalizePostContent(snapshot.contentJson) ?? ""}
-      editable={false}
-    />
+    <CodeBlockHighlightProvider snapshotContent={null}>
+      <Editor
+        key={editorKey}
+        className="post-editor-surface"
+        documentClassName="post-editor-document post-history-document custom-scrollbar"
+        documentHeader={
+          <>
+            <h2 className="post-editor-title fuwari-text-90">{title}</h2>
+            <p className="mb-4 text-xs fuwari-text-50">
+              {m.editor_history_banner_title({ time: viewingTime })}
+            </p>
+            <PostEditorSummary
+              categoryId={snapshot.categoryId}
+              tagIds={snapshot.tagIds}
+              hasCover={snapshot.coverMediaId !== null}
+            />
+          </>
+        }
+        contentClassName="min-h-0"
+        extensions={inspectExtensions}
+        content={normalizePostContent(snapshot.contentJson) ?? ""}
+        editable={false}
+      />
+    </CodeBlockHighlightProvider>
   );
 }

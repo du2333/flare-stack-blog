@@ -7,6 +7,7 @@ import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { Editor } from "@/components/tiptap-editor";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { extensions } from "@/features/posts/editor/config";
+import { CodeBlockHighlightProvider } from "@/features/posts/editor/extensions/code-block/code-block-highlight-context";
 import { postRevisionListQuery } from "@/features/posts/queries";
 import { normalizePostContent } from "@/features/posts/utils/normalize-content";
 import { m } from "@/paraglide/messages";
@@ -201,32 +202,36 @@ export function PostEditor({ initialData, onSave }: PostEditorProps) {
           onOpenHistory={() => void openHistory()}
         />
         <div className="post-editor-body">
-          <Editor
-            key={editorRenderKey}
-            className="post-editor-surface"
-            toolbarClassName="post-editor-toolbar"
-            documentClassName="post-editor-document custom-scrollbar"
-            scrollContainerId="post-editor-scroll-container"
-            contentClassName="min-h-50"
-            documentHeader={
-              <>
-                <TextareaTitle
-                  value={post.title}
-                  onChange={(title) => handlePostChange({ title })}
-                />
-                <PostEditorSummary
-                  categoryId={post.categoryId}
-                  tagIds={post.tagIds}
-                  hasCover={Boolean(post.cover)}
-                  onOpenInfo={() => setInfoOpen(true)}
-                />
-              </>
-            }
-            extensions={extensions}
-            content={editorContent ?? ""}
-            onUpdate={handleEditorUpdate}
-            onCreated={handleEditorCreated}
-          />
+          <CodeBlockHighlightProvider
+            snapshotContent={initialData.publicSnapshotContentJson}
+          >
+            <Editor
+              key={editorRenderKey}
+              className="post-editor-surface"
+              toolbarClassName="post-editor-toolbar"
+              documentClassName="post-editor-document custom-scrollbar"
+              scrollContainerId="post-editor-scroll-container"
+              contentClassName="min-h-50"
+              documentHeader={
+                <>
+                  <TextareaTitle
+                    value={post.title}
+                    onChange={(title) => handlePostChange({ title })}
+                  />
+                  <PostEditorSummary
+                    categoryId={post.categoryId}
+                    tagIds={post.tagIds}
+                    hasCover={Boolean(post.cover)}
+                    onOpenInfo={() => setInfoOpen(true)}
+                  />
+                </>
+              }
+              extensions={extensions}
+              content={editorContent ?? ""}
+              onUpdate={handleEditorUpdate}
+              onCreated={handleEditorCreated}
+            />
+          </CodeBlockHighlightProvider>
         </div>
         {infoOpen && (
           <PostEditorInfoPanel onClose={closeInfo}>

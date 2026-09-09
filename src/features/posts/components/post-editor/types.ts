@@ -25,7 +25,10 @@ export interface PostEditorData {
 }
 
 export interface PostEditorProps {
-  initialData: PostEditorData & { id: number };
+  initialData: PostEditorData & {
+    id: number;
+    publicSnapshotContentJson?: JSONContent | null;
+  };
   onSave: (data: PostEditorData) => Promise<void>;
 }
 
