@@ -2,9 +2,9 @@
 @import "./styles/motion.css";
 @import "tw-animate-css";
 @import "katex/dist/katex.min.css";
-@import "@fontsource-variable/noto-sans-sc";
-@import "@fontsource-variable/noto-serif-sc";
-@import "@fontsource-variable/jetbrains-mono/wght.css";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
 @plugin "@tailwindcss/typography";
 @source not "../dist/**/*";
 
@@ -13,9 +13,13 @@
 @custom-variant system (&:is(.system *));
 
 @theme {
-  --font-sans: "Noto Sans SC Variable", system-ui, sans-serif;
-  --font-serif: "Noto Serif SC Variable", serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-sans:
+    Roboto, sans-serif, ui-sans-serif, system-ui, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, "Noto Serif SC", "Songti SC", serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-background: var(--fuwari-page-bg);
   --color-foreground: var(--fuwari-fg);

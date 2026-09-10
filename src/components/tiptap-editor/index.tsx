@@ -1,3 +1,4 @@
+import "@fontsource-variable/jetbrains-mono/wght.css";
 import type {
   Extensions,
   JSONContent,
