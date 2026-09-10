@@ -1,3 +1,7 @@
+import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
 import ZoomableImage from "./zoomable-image";
 
 export function ImageDisplay({
@@ -19,7 +23,7 @@ export function ImageDisplay({
         <div className="absolute inset-0 pointer-events-none z-10 bg-transparent dark:bg-black/10 transition-colors duration-300 rounded-xl" />
 
         <ZoomableImage
-          src={src}
+          src={getPublicImageSrc(src, PUBLIC_IMAGE_WIDTH.body)}
           alt={alt}
           width={width}
           height={height}

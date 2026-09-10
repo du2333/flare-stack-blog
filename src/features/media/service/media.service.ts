@@ -12,6 +12,7 @@ import { getImageDimensions } from "@/features/media/utils/image-dimensions";
 import {
   buildTransformOptions,
   getContentTypeFromKey,
+  hasImageTransformParams,
   isGifKey,
 } from "@/features/media/utils/media.utils";
 import * as PostMediaRepo from "@/features/posts/data/post-media.data";
@@ -294,6 +295,9 @@ export async function handleImageRequest(
     object.writeHttpMetadata(headers);
     headers.set("Content-Type", contentType);
     headers.set("ETag", object.httpEtag);
+    Object.entries(CACHE_CONTROL.public).forEach(([k, v]) => {
+      headers.set(k, v);
+    });
 
     return new Response(object.body, { headers });
   };
@@ -309,7 +313,13 @@ export async function handleImageRequest(
   // Miniflare's local Image Resizing encodes AVIF extremely slowly (~30s for a
   // ~1MB hero image). Serve the R2 original in local dev; production still
   // goes through Cloudflare Image Resizing.
-  if (isLoop || wantsOriginal || isLocalDev || isGifKey(key)) {
+  if (
+    isLoop ||
+    wantsOriginal ||
+    isLocalDev ||
+    isGifKey(key) ||
+    !hasImageTransformParams(searchParams)
+  ) {
     return await serveOriginal();
   }
 
@@ -360,7 +370,7 @@ export async function handleImageRequest(
     const newResponse = new Response(response.body, response);
 
     newResponse.headers.set("Vary", "Accept");
-    Object.entries(CACHE_CONTROL.public).forEach(([k, v]) => {
+    Object.entries(CACHE_CONTROL.immutable).forEach(([k, v]) => {
       newResponse.headers.set(k, v);
     });
 

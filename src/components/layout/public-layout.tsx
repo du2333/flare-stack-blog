@@ -5,6 +5,10 @@ import {
 } from "@tanstack/react-router";
 import { useState } from "react";
 import type { PublicLayoutProps } from "@/components/layout/layout-props";
+import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
 import { cn } from "@/lib/utils";
 import { BackToTop } from "./back-to-top";
 import { Footer } from "./footer";
@@ -64,7 +68,10 @@ export function PublicLayout({
         style={{ height: `${bannerHeightVh}vh` }}
       >
         <img
-          src={siteConfig.theme.fuwari.homeBg}
+          src={getPublicImageSrc(
+            siteConfig.theme.fuwari.homeBg,
+            PUBLIC_IMAGE_WIDTH.banner,
+          )}
           alt="banner"
           fetchPriority="high"
           className="fuwari-banner-image w-full h-full object-cover object-center"

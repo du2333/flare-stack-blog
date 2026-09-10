@@ -10,6 +10,10 @@ import {
   Tag,
 } from "lucide-react";
 import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
+import {
   withCategoryFilter,
   withTagFilter,
 } from "@/features/posts/utils/post-public-search";
@@ -164,7 +168,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             <ChevronRight className="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" />
           </div>
           <img
-            src={post.cover.url}
+            src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.cover)}
             alt={post.title}
             width={post.cover.width ?? undefined}
             height={post.cover.height ?? undefined}

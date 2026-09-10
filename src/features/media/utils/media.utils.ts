@@ -56,11 +56,42 @@ export function isGifKey(key: string, contentType?: string | null) {
   return key.toLowerCase().endsWith(".gif") || contentType === "image/gif";
 }
 
+export const PUBLIC_IMAGE_WIDTH = {
+  banner: 1600,
+  cover: 800,
+  body: 800,
+  avatar: 400,
+} as const;
+
+export function getOriginalImageUrl(key: string) {
+  return `/images/${key}`;
+}
+
+export function hasImageTransformParams(searchParams: URLSearchParams) {
+  return (
+    searchParams.has("width") ||
+    searchParams.has("height") ||
+    searchParams.has("quality") ||
+    searchParams.has("fit")
+  );
+}
+
 export function getOptimizedImageUrl(key: string, width?: number) {
   if (isGifKey(key)) {
     return `/images/${key}?original=true`;
   }
   return `/images/${key}?quality=80${width ? `&width=${width}` : ""}`;
+}
+
+export function getPublicImageSrc(src: string, width: number) {
+  const key = extractImageKey(src);
+  if (!key) return src;
+  const version = new URL(src, "http://dummy.com").searchParams.get("v");
+  const optimized = getOptimizedImageUrl(key, width);
+  if (!version) return optimized;
+  const next = new URL(optimized, "http://dummy.com");
+  next.searchParams.set("v", version);
+  return `${next.pathname}${next.search}`;
 }
 
 export function buildTransformOptions(

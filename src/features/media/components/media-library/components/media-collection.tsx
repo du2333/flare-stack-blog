@@ -1,6 +1,6 @@
 import { ImageOff } from "lucide-react";
 import { useRef, useState } from "react";
-import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
+import { getOriginalImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { useMediaGridMotion } from "../hooks/use-media-grid-motion";
@@ -15,7 +15,7 @@ export function MediaThumbnail({ asset }: { asset: MediaAsset }) {
         <ImageOff size={24} aria-label={m.media_image_unavailable()} />
       ) : (
         <img
-          src={getOptimizedImageUrl(asset.key, 480)}
+          src={getOriginalImageUrl(asset.key)}
           alt=""
           loading="lazy"
           onError={() => setFailed(true)}

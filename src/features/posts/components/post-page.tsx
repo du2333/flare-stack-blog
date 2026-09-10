@@ -1,5 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Clock, FileText, Pencil } from "lucide-react";
+import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
 import { CommentSection } from "@/features/comments/components/comment-section";
 import { ContentRenderer } from "@/features/posts/components/content/content-renderer";
 import type { PostWithToc } from "@/features/posts/schema/posts.schema";
@@ -100,7 +104,7 @@ export function PostPage({ post }: PostPageProps) {
             }}
           >
             <ZoomableImage
-              src={post.cover.url}
+              src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.cover)}
               alt={post.title}
               width={post.cover.width ?? undefined}
               height={post.cover.height ?? undefined}

@@ -1,5 +1,9 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
 import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
+import {
   resolveSocialHref,
   SOCIAL_PLATFORMS,
 } from "@/features/config/utils/social-platforms";
@@ -17,7 +21,10 @@ export function Profile() {
       >
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/30 group-active:bg-black/50 transition-colors pointer-events-none" />
         <img
-          src={siteConfig.theme.fuwari.avatar}
+          src={getPublicImageSrc(
+            siteConfig.theme.fuwari.avatar,
+            PUBLIC_IMAGE_WIDTH.avatar,
+          )}
           alt=""
           className="w-full h-auto aspect-square object-cover"
         />

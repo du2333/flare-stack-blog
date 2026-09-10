@@ -15,7 +15,7 @@ import {
   MAX_FILE_SIZE,
 } from "@/features/media/media.schema";
 import { linkedPostsQuery } from "@/features/media/queries";
-import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
+import { getOriginalImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { MediaAsset } from "../types";
@@ -85,7 +85,7 @@ export function MediaDetail({
       <div ref={contentRef}>
         <div className="media-inspector-preview">
           <img
-            src={getOptimizedImageUrl(asset.key)}
+            src={getOriginalImageUrl(asset.key)}
             alt={asset.fileName}
             onLoad={(event) => {
               if (open && !reduced)
