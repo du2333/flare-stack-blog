@@ -1,0 +1,47 @@
+.admin-list-region {
+  position: relative;
+}
+@media (max-height: 540px) {
+  .admin-list-region {
+    display: block;
+    overflow-y: auto;
+  }
+  .admin-list-region > div,
+  .admin-list-region .fuwari-page-fade,
+  .admin-list-region .fuwari-page-fade > div {
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+  .admin-list-region :is(.post-manager, .media-workspace) {
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+  .admin-list-region :is(.post-list-scroll, .media-browser) {
+    height: auto;
+    overflow: visible;
+  }
+  .admin-list-region .post-list-table th {
+    position: static;
+  }
+  .admin-list-region .media-workspace-body {
+    min-height: auto;
+  }
+  .admin-list-region .media-panel-slot {
+    min-height: 0;
+  }
+  .admin-list-region aside.media-inspector {
+    position: sticky;
+    top: 0;
+    height: auto;
+    max-height: calc(100dvh - 48px);
+  }
+}
+@media (max-height: 540px) {
+  .admin-list-region .media-table-scroll {
+    overflow-x: auto;
+  }
+}

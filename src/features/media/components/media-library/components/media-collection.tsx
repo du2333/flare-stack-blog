@@ -59,7 +59,11 @@ export function MediaCollection({
           </thead>
           <tbody>
             {items.map((asset) => (
-              <tr key={asset.key} data-selected={asset.key === selectedKey}>
+              <tr
+                key={asset.key}
+                data-media-key={asset.key}
+                data-selected={asset.key === selectedKey}
+              >
                 <td>
                   <button
                     type="button"
@@ -91,6 +95,7 @@ export function MediaCollection({
           key={asset.key}
           type="button"
           className="media-gallery-item"
+          data-media-key={asset.key}
           aria-pressed={asset.key === selectedKey}
           onClick={(event) => onSelect(asset, event.currentTarget)}
         >

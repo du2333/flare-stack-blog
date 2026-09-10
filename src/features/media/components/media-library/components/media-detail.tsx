@@ -41,6 +41,11 @@ export function MediaDetail({
   const compact = useMediaQuery("(max-width: 1199px)");
   const contentRef = useRef<HTMLDivElement>(null);
   useContentMotion(contentRef, `${asset.key}:${compact}`);
+  useEffect(() => {
+    const inspector =
+      contentRef.current?.closest<HTMLElement>(".media-inspector");
+    if (inspector) inspector.scrollTop = 0;
+  }, [asset.key]);
   const fileRef = useRef<HTMLInputElement>(null);
   const busy = isReplacing;
   const closeRef = useRef(onClose);

@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { isAdminContentWorkspace } from "@/components/admin/content-workspace";
 import { NotFound } from "@/components/common/not-found";
 import { ErrorPage } from "./components/common/error-page";
 import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
@@ -24,7 +25,9 @@ export function getRouter() {
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: ErrorPage,
     defaultViewTransition: false,
-    scrollRestoration: true,
+    // These data-driven lists restore their own inner scroll position after loading.
+    scrollRestoration: ({ location }) =>
+      !isAdminContentWorkspace(location.pathname),
   });
 
   // First hydration is not a client navigation. Leaving next=true makes

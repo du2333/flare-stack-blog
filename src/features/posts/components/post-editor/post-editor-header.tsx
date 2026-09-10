@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Loader2, MoreHorizontal } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { readPostListLocation } from "../post-manager/list-position";
 import { m } from "@/paraglide/messages";
 import { cn } from "@/lib/utils";
 import type { SaveStatus } from "./types";
@@ -51,6 +52,7 @@ export function PostEditorHeader({
   infoOpen,
   onOpenHistory,
 }: PostEditorHeaderProps) {
+  const [returnLocation] = useState(readPostListLocation);
   const menuRef = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     const closeOutside = (event: MouseEvent) => {
@@ -71,6 +73,7 @@ export function PostEditorHeader({
     <header className="post-editor-header">
       <Link
         to="/admin/posts"
+        search={returnLocation}
         className="post-editor-back hidden lg:inline-flex"
       >
         <ArrowLeft size={17} />

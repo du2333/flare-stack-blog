@@ -11,6 +11,7 @@ import { useContentMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import { PostRow, PostsToolbar } from "./components";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { useListScroll } from "./hooks/use-list-scroll";
 import { useDeletePost, usePosts } from "./hooks";
 import { PostManagerSkeleton } from "./post-manager-skeleton";
 import type { PostListItem, SortField, StatusFilter } from "./types";
@@ -83,7 +84,13 @@ export function PostManager({
     error,
     refetch,
   } = usePosts({ page, status, sortBy, search });
-  const contentRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLTableSectionElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useListScroll(
+    scrollRef,
+    { page, status, sortBy, search },
+    !isPending && !isPlaceholderData && !error,
+  );
   const motionKey = useRef("");
   if (!isPlaceholderData)
     motionKey.current = `${page}:${status}:${sortBy}:${search}:${isPending}:${posts.map((post) => post.id).join(",")}`;
@@ -173,106 +180,114 @@ export function PostManager({
         sortBy={sortBy}
         onSortByChange={onSortByChange}
       />
-      {error ? (
-        <div className="post-list-empty">
-          <p>{m.error_desc()}</p>
-          <button type="button" onClick={() => void refetch()}>
-            {m.error_retry()}
-          </button>
-        </div>
-      ) : (
-        <>
-          <div
-            ref={contentRef}
-            className="post-list-table-wrap"
-            aria-busy={isFetching}
-          >
-            <table className="post-list-table">
-              <colgroup>
-                <col className="post-list-title-col" />
-                <col className="post-list-status-col" />
-                <col className="post-list-date-col" />
-                <col className="post-list-actions-col" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">{m.admin_posts_col_title()}</th>
-                  <th scope="col">{m.admin_posts_filter_status()}</th>
-                  <th scope="col">
-                    {sortBy === "updatedAt"
-                      ? m.admin_posts_sort_recent_upd()
-                      : m.admin_posts_sort_recent_pub()}
-                  </th>
-                  <th scope="col">{m.admin_posts_col_actions()}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isPending ? (
-                  <PostManagerSkeleton />
-                ) : (
-                  posts.map((post) => (
-                    <PostRow
-                      key={post.id}
-                      post={post}
-                      sortBy={sortBy}
-                      onDelete={(target, trigger) => {
-                        deleteTriggerRef.current = trigger;
-                        setPostToDelete(target);
-                      }}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div
+        ref={scrollRef}
+        className="post-list-scroll custom-scrollbar"
+        data-scroll-restoration-id="admin-post-list"
+        role="region"
+        aria-label={m.admin_posts_title()}
+        tabIndex={0}
+      >
+        {error ? (
+          <div className="post-list-empty">
+            <p>{m.error_desc()}</p>
+            <button type="button" onClick={() => void refetch()}>
+              {m.error_retry()}
+            </button>
           </div>
-          {!isPending && posts.length === 0 && (
-            <div className="post-list-empty">
-              <Search size={30} aria-hidden="true" />
-              <p>
-                {isEmptyLibrary
-                  ? m.admin_posts_empty_library()
-                  : m.admin_posts_no_match()}
-              </p>
-              <button
-                type="button"
-                disabled={isCreating}
-                onClick={() => (isEmptyLibrary ? createPost() : resetFilters())}
-              >
-                {isEmptyLibrary ? createLabel : m.admin_posts_clear_filters()}
-              </button>
+        ) : (
+          <>
+            <div className="post-list-table-wrap" aria-busy={isFetching}>
+              <table className="post-list-table">
+                <colgroup>
+                  <col className="post-list-title-col" />
+                  <col className="post-list-status-col" />
+                  <col className="post-list-date-col" />
+                  <col className="post-list-actions-col" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col">{m.admin_posts_col_title()}</th>
+                    <th scope="col">{m.admin_posts_filter_status()}</th>
+                    <th scope="col">
+                      {sortBy === "updatedAt"
+                        ? m.admin_posts_sort_recent_upd()
+                        : m.admin_posts_sort_recent_pub()}
+                    </th>
+                    <th scope="col">{m.admin_posts_col_actions()}</th>
+                  </tr>
+                </thead>
+                <tbody ref={contentRef}>
+                  {isPending ? (
+                    <PostManagerSkeleton />
+                  ) : (
+                    posts.map((post) => (
+                      <PostRow
+                        key={post.id}
+                        post={post}
+                        sortBy={sortBy}
+                        onDelete={(target, trigger) => {
+                          deleteTriggerRef.current = trigger;
+                          setPostToDelete(target);
+                        }}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-          )}
-          {!isPending && (
-            <footer className="post-list-footer">
-              {totalPages <= 1 ? (
+            {!isPending && posts.length === 0 && (
+              <div className="post-list-empty">
+                <Search size={30} aria-hidden="true" />
                 <p>
-                  {hasContentFilter
-                    ? m.admin_posts_results({ count: totalCount })
-                    : m.admin_posts_total({ count: totalCount })}
+                  {isEmptyLibrary
+                    ? m.admin_posts_empty_library()
+                    : m.admin_posts_no_match()}
                 </p>
-              ) : (
-                <AdminPagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  totalItems={totalCount}
-                  itemsPerPage={ADMIN_ITEMS_PER_PAGE}
-                  currentPageItemCount={posts.length}
-                  onPageChange={onPageChange}
-                />
-              )}
-              {hasActiveFilters && (
                 <button
                   type="button"
-                  className="post-list-reset"
-                  onClick={resetFilters}
+                  disabled={isCreating}
+                  onClick={() =>
+                    isEmptyLibrary ? createPost() : resetFilters()
+                  }
                 >
-                  {m.admin_posts_clear_filters()}
+                  {isEmptyLibrary ? createLabel : m.admin_posts_clear_filters()}
                 </button>
-              )}
-            </footer>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {!isPending && !error && (
+        <footer className="post-list-footer">
+          {totalPages <= 1 ? (
+            <p>
+              {hasContentFilter
+                ? m.admin_posts_results({ count: totalCount })
+                : m.admin_posts_total({ count: totalCount })}
+            </p>
+          ) : (
+            <AdminPagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={ADMIN_ITEMS_PER_PAGE}
+              currentPageItemCount={posts.length}
+              onPageChange={onPageChange}
+            />
           )}
-        </>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="post-list-reset"
+              onClick={resetFilters}
+            >
+              {m.admin_posts_clear_filters()}
+            </button>
+          )}
+        </footer>
       )}
+
       <ConfirmationModal
         isOpen={!!postToDelete}
         title={m.admin_posts_delete_confirm_title()}

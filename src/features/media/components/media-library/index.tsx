@@ -15,6 +15,7 @@ import { MediaDetail, MediaToolbar } from "./components";
 import { MediaCollection } from "./components/media-collection";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
+import { useMediaScroll } from "./hooks/use-media-scroll";
 import { MediaCollectionSkeleton } from "./media-library-skeleton";
 import type { MediaAsset } from "./types";
 import "./media-library.css";
@@ -23,6 +24,7 @@ export function MediaLibrary() {
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLButtonElement>(null);
   const collectionRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const selectedTrigger = useRef<HTMLButtonElement | null>(null);
   const { setPrimaryAction } = useAdminChrome();
   const [preview, setPreview] = useState<MediaAsset | null>(null);
@@ -66,8 +68,14 @@ export function MediaLibrary() {
   const detailAsset = active ?? retained.current;
   const focusPending = useRef(false);
   useContentMotion(
-    collectionRef,
+    contentRef,
     `${view}:${unusedOnly}:${isPending}:${mediaItems.map((item) => item.key).join(",")}`,
+  );
+
+  const captureAnchor = useMediaScroll(
+    collectionRef,
+    `${view}:${!!active}`,
+    String(unusedOnly),
   );
 
   useEffect(() => {
@@ -85,6 +93,7 @@ export function MediaLibrary() {
 
   const openFilePicker = () => fileRef.current?.click();
   const closePreview = () => {
+    captureAnchor(preview?.key);
     focusPending.current = true;
     setPreview(null);
   };
@@ -96,7 +105,7 @@ export function MediaLibrary() {
     (selectedTrigger.current?.isConnected
       ? selectedTrigger.current
       : (fallback ?? uploadRef.current)
-    )?.focus();
+    )?.focus({ preventScroll: true });
   }, [detailPresent]);
   const handleFiles = (files: FileList | Array<File>) => {
     if (!isUploading) void uploadFiles(Array.from(files));
@@ -172,7 +181,10 @@ export function MediaLibrary() {
         unusedCount={stats?.unusedCount}
         totalCount={stats?.totalCount}
         view={view}
-        onViewChange={setView}
+        onViewChange={(next) => {
+          captureAnchor(preview?.key);
+          setView(next);
+        }}
       />
       {progress ? (
         <p role="status" className="media-upload-progress">
@@ -184,87 +196,94 @@ export function MediaLibrary() {
       ) : null}
       <div className={cn("media-workspace-body", active && "has-preview")}>
         <div
-          className="media-browser"
+          className="media-browser custom-scrollbar"
+          data-scroll-restoration-id="admin-media-list"
+          role="region"
+          aria-label={m.media_title()}
+          tabIndex={0}
           ref={collectionRef}
           aria-busy={isPending}
         >
-          {isPending ? (
-            <MediaCollectionSkeleton view={view} />
-          ) : isError && !mediaItems.length ? (
-            <div className="media-empty" role="alert">
-              <p>{m.media_load_fail()}</p>
-              <button
-                type="button"
-                className="fuwari-btn-regular"
-                onClick={() => void refetch()}
-              >
-                {m.media_load_retry()}
-              </button>
-            </div>
-          ) : isEmpty ? (
-            <div className="media-empty">
-              <p>
-                {unusedOnly ? m.media_unreferenced_empty() : m.media_empty()}
-              </p>
-              <span>{!unusedOnly ? m.media_empty_hint() : null}</span>
-              <button
-                type="button"
-                className="fuwari-btn-regular"
-                onClick={
-                  unusedOnly ? () => setUnusedOnly(false) : openFilePicker
-                }
-              >
-                {unusedOnly ? m.media_filter_all() : m.media_choose()}
-              </button>
-            </div>
-          ) : (
-            <>
-              <MediaCollection
-                items={mediaItems}
-                view={view}
-                selectedKey={active?.key}
-                onSelect={(asset, trigger) => {
-                  selectedTrigger.current = trigger;
-                  setPreview(asset);
-                }}
-              />
-              <footer className="media-browser-footer">
-                {isError && !isFetchNextPageError ? (
-                  <button
-                    type="button"
-                    className="fuwari-btn-regular"
-                    onClick={() => void refetch()}
-                  >
-                    {m.media_load_retry()}
-                  </button>
-                ) : hasMore || isFetchNextPageError ? (
-                  <button
-                    type="button"
-                    className="fuwari-btn-regular"
-                    disabled={isLoadingMore}
-                    onClick={loadMore}
-                  >
-                    {isLoadingMore
-                      ? m.media_grid_loading()
-                      : isFetchNextPageError
-                        ? m.media_load_retry()
-                        : m.media_load_more()}
-                  </button>
-                ) : (
-                  <span>{m.media_grid_end()}</span>
-                )}
-                {unusedOnly && !!stats?.unusedCount ? (
-                  <button
-                    type="button"
-                    className="media-cleanup"
-                    onClick={() => setDeleteTarget({ kind: "unused" })}
-                  >
-                    {m.media_unused_cleanup()}
-                  </button>
-                ) : null}
-              </footer>
-            </>
-          )}
+          <div ref={contentRef} className="media-browser-content">
+            {isPending ? (
+              <MediaCollectionSkeleton view={view} />
+            ) : isError && !mediaItems.length ? (
+              <div className="media-empty" role="alert">
+                <p>{m.media_load_fail()}</p>
+                <button
+                  type="button"
+                  className="fuwari-btn-regular"
+                  onClick={() => void refetch()}
+                >
+                  {m.media_load_retry()}
+                </button>
+              </div>
+            ) : isEmpty ? (
+              <div className="media-empty">
+                <p>
+                  {unusedOnly ? m.media_unreferenced_empty() : m.media_empty()}
+                </p>
+                <span>{!unusedOnly ? m.media_empty_hint() : null}</span>
+                <button
+                  type="button"
+                  className="fuwari-btn-regular"
+                  onClick={
+                    unusedOnly ? () => setUnusedOnly(false) : openFilePicker
+                  }
+                >
+                  {unusedOnly ? m.media_filter_all() : m.media_choose()}
+                </button>
+              </div>
+            ) : (
+              <>
+                <MediaCollection
+                  items={mediaItems}
+                  view={view}
+                  selectedKey={active?.key}
+                  onSelect={(asset, trigger) => {
+                    if (!active) captureAnchor(asset.key);
+                    selectedTrigger.current = trigger;
+                    setPreview(asset);
+                  }}
+                />
+                <footer className="media-browser-footer">
+                  {isError && !isFetchNextPageError ? (
+                    <button
+                      type="button"
+                      className="fuwari-btn-regular"
+                      onClick={() => void refetch()}
+                    >
+                      {m.media_load_retry()}
+                    </button>
+                  ) : hasMore || isFetchNextPageError ? (
+                    <button
+                      type="button"
+                      className="fuwari-btn-regular"
+                      disabled={isLoadingMore}
+                      onClick={loadMore}
+                    >
+                      {isLoadingMore
+                        ? m.media_grid_loading()
+                        : isFetchNextPageError
+                          ? m.media_load_retry()
+                          : m.media_load_more()}
+                    </button>
+                  ) : (
+                    <span>{m.media_grid_end()}</span>
+                  )}
+                  {unusedOnly && !!stats?.unusedCount ? (
+                    <button
+                      type="button"
+                      className="media-cleanup"
+                      onClick={() => setDeleteTarget({ kind: "unused" })}
+                    >
+                      {m.media_unused_cleanup()}
+                    </button>
+                  ) : null}
+                </footer>
+              </>
+            )}
+          </div>
         </div>
         <div className="media-panel-slot">
           {detailPresent && detailAsset ? (

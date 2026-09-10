@@ -655,3 +655,70 @@ aside.media-inspector[data-state="closing"] {
     animation: none;
   }
 }
+
+.media-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.media-workspace-header,
+.media-workspace-toolbar,
+.media-upload-progress {
+  flex-shrink: 0;
+}
+.media-workspace-body {
+  flex: 1;
+  min-height: 0;
+}
+.media-browser {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+  padding: 4px 6px 8px 4px;
+  margin: -4px -6px -8px -4px;
+}
+.media-browser-content {
+  position: relative;
+  min-width: 0;
+}
+.media-table-scroll {
+  overflow: visible;
+}
+.media-panel-slot {
+  min-height: 0;
+}
+aside.media-inspector {
+  position: static;
+  top: auto;
+  height: 100%;
+  max-height: none;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 4px;
+}
+.media-inspector-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--fuwari-card-bg);
+}
+@media (max-width: 600px) {
+  .media-workspace-toolbar {
+    column-gap: 8px;
+    row-gap: 10px;
+  }
+  .media-workspace-tabs {
+    gap: 12px;
+  }
+  .media-workspace-tabs button {
+    gap: 5px;
+    padding-inline: 0;
+  }
+}

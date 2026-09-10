@@ -253,19 +253,7 @@
   background: var(--fuwari-btn-regular-bg);
   color: var(--fuwari-primary);
 }
-.post-list-menu [role="menu"] {
-  position: absolute;
-  top: calc(100% + 3px);
-  right: 0;
-  min-width: calc(130 * var(--admin-unit));
-  border: 1px solid var(--list-rule);
-  padding: 5px;
-  border-radius: calc(9 * var(--admin-unit));
-  box-shadow: 0 5px calc(18 * var(--admin-unit)) rgb(0 0 0 / 0.08);
-  background: var(--fuwari-card-bg);
-  z-index: 20;
-}
-.post-list-menu [role="menuitem"] {
+.post-row-menu [role="menuitem"] {
   display: flex;
   align-items: center;
   gap: calc(8 * var(--admin-unit));
@@ -275,7 +263,7 @@
   color: var(--fuwari-danger-fg);
   white-space: nowrap;
 }
-.post-list-menu [role="menuitem"]:hover {
+.post-row-menu [role="menuitem"]:hover {
   background: var(--fuwari-danger-bg);
 }
 .post-list-footer {
@@ -486,10 +474,6 @@
     transition: none;
   }
 }
-.post-list-table tbody tr:nth-last-child(-n + 2) .post-list-menu [role="menu"] {
-  top: auto;
-  bottom: calc(100% + 3px);
-}
 .post-list-title-link strong {
   font-size: calc(15 * var(--admin-unit));
 }
@@ -569,4 +553,74 @@
   .post-list-empty {
     animation: none;
   }
+}
+
+/* Header, controls and pagination stay outside the independently scrolling rows. */
+.post-manager {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.post-list-heading,
+.post-list-tabs,
+.post-list-controls,
+.post-list-footer {
+  flex-shrink: 0;
+}
+.post-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+  padding: 0 4px 4px;
+  margin-inline: -4px;
+}
+.post-list-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--fuwari-card-bg);
+}
+.post-list-footer {
+  border-top: 1px solid var(--list-rule);
+  padding-top: calc(12 * var(--admin-unit));
+}
+@media (max-width: 620px) {
+  .post-list-controls {
+    padding: 12px 0;
+    gap: 8px;
+  }
+  .post-list-footer > div {
+    gap: 8px;
+  }
+  .post-list-footer {
+    padding-top: 10px;
+  }
+}
+
+.post-row-menu {
+  --admin-unit: clamp(1px, 0.07vw, 1.5px);
+  position: fixed;
+  z-index: 80;
+  min-width: calc(150 * var(--admin-unit));
+  padding: 5px;
+  border: 1px solid var(--fuwari-input-border);
+  border-radius: calc(9 * var(--admin-unit));
+  background: var(--fuwari-card-bg);
+  box-shadow: 0 5px 18px rgb(0 0 0 / 0.08);
+  font-size: calc(13 * var(--admin-unit));
+}
+.post-row-menu button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: -2px;
+}
+.post-list-footer > div > div:last-child {
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
 }

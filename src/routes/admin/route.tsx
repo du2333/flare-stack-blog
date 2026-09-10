@@ -5,6 +5,8 @@ import {
   useLocation,
   useMatches,
 } from "@tanstack/react-router";
+import { isAdminContentWorkspace } from "@/components/admin/content-workspace";
+import "@/components/admin/content-workspace.css";
 import { Menu } from "lucide-react";
 import { useRef, useState } from "react";
 import {
@@ -101,13 +103,18 @@ function isPostEditorPath(pathname: string) {
 function AdminMain() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const pathname = useLocation({ select: (location) => location.pathname });
-  const fill = isPostEditorPath(pathname);
+  const contentWorkspace = isAdminContentWorkspace(pathname);
+  const fill = isPostEditorPath(pathname) || contentWorkspace;
 
   return (
     <div
       ref={scrollerRef}
+      data-scroll-restoration-id={
+        contentWorkspace ? "admin-content-outer" : undefined
+      }
       className={cn(
         "flex-1 min-h-0",
+        contentWorkspace && "admin-list-region",
         fill
           ? "flex flex-col overflow-hidden"
           : "overflow-y-auto custom-scrollbar",
@@ -123,7 +130,9 @@ function AdminMain() {
             if (edit) return `/admin/posts/edit/${edit[1]}`;
             return path;
           }}
-          onEntered={() => scrollerRef.current?.scrollTo(0, 0)}
+          onEntered={() => {
+            if (!contentWorkspace) scrollerRef.current?.scrollTo(0, 0);
+          }}
         >
           <Outlet />
         </PageFade>
