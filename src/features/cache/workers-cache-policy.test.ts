@@ -34,6 +34,20 @@ describe("workersCacheKey", () => {
   it("drops the search query", () => {
     expect(workersCacheKey("https://blog.example/search?q=kv")).toBe("/search");
   });
+
+  it("keeps image transform query so variants do not share a cache entry", () => {
+    expect(
+      workersCacheKey(
+        "https://blog.example/images/cover.png?quality=80&width=800&utm=1",
+      ),
+    ).toBe("/images/cover.png?quality=80&width=800");
+    expect(workersCacheKey("https://blog.example/images/cover.png")).toBe(
+      "/images/cover.png",
+    );
+    expect(
+      workersCacheKey("https://blog.example/images/loop.gif?original=true"),
+    ).toBe("/images/loop.gif?original=true");
+  });
 });
 
 describe("workersCachePolicy", () => {

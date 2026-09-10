@@ -47,6 +47,15 @@ export function workersCacheKey(url: string | URL): string {
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
   }
+  if (pathname.startsWith("/images/")) {
+    const params = new URLSearchParams();
+    for (const name of ["original", "quality", "width", "height", "fit", "v"]) {
+      const value = parsed.searchParams.get(name);
+      if (value) params.set(name, value);
+    }
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }
   return pathname;
 }
 
