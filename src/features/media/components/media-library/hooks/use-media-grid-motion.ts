@@ -1,5 +1,8 @@
 import { useLayoutEffect, type RefObject } from "react";
-import { MOTION, useReducedMotion } from "@/hooks/use-motion";
+import { useReducedMotion } from "@/hooks/use-motion";
+
+// Keep the inspector's presence aligned with --media-layout-duration in CSS.
+export const MEDIA_LAYOUT_DURATION = 420;
 
 /** Animate only column-count changes; ordinary width interpolation stays in CSS. */
 export function useMediaGridMotion(
@@ -17,8 +20,6 @@ export function useMediaGridMotion(
           element,
           x: element.offsetLeft,
           y: element.offsetTop,
-          width: element.offsetWidth,
-          height: element.offsetHeight,
         }),
       );
     const columnCount = () =>
@@ -35,7 +36,7 @@ export function useMediaGridMotion(
         );
         const moves = next.map((item) => {
           const old = oldByElement.get(item.element);
-          if (!old || !item.width || !item.height) return null;
+          if (!old) return null;
           const matrix = new DOMMatrixReadOnly(
             getComputedStyle(item.element).transform,
           );
@@ -43,30 +44,26 @@ export function useMediaGridMotion(
             item,
             x: old.x - item.x + matrix.e,
             y: old.y - item.y + matrix.f,
-            sx: (old.width / item.width) * matrix.a,
-            sy: (old.height / item.height) * matrix.d,
           };
         });
         for (const move of moves) {
           if (!move) continue;
-          const { item, x, y, sx, sy } = move;
+          const { item, x, y } = move;
           animations.get(item.element)?.cancel();
           animations.set(
             item.element,
             item.element.animate(
               [
                 {
-                  transform: `translate(${x}px, ${y}px) scale(${sx}, ${sy})`,
-                  transformOrigin: "top left",
+                  transform: `translate(${x}px, ${y}px)`,
                 },
                 {
-                  transform: "translate(0, 0) scale(1)",
-                  transformOrigin: "top left",
+                  transform: "translate(0, 0)",
                 },
               ],
               {
-                duration: MOTION.content,
-                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                duration: 320,
+                easing: "cubic-bezier(0.25, 0.8, 0.25, 1)",
               },
             ),
           );

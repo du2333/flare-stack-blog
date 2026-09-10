@@ -3,6 +3,8 @@
   --admin-unit: clamp(1px, 0.07vw, 1.5px);
 }
 .media-workspace {
+  --media-layout-duration: 420ms;
+  --media-layout-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --media-rule: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
   position: relative;
   min-height: calc(100dvh - 32px);
@@ -596,8 +598,8 @@ aside.media-inspector {
   grid-template-columns: minmax(0, 1fr) 0px;
   gap: 0;
   transition:
-    grid-template-columns var(--fuwari-motion-panel) var(--fuwari-motion-ease),
-    gap var(--fuwari-motion-panel) var(--fuwari-motion-ease);
+    grid-template-columns var(--media-layout-duration) var(--media-layout-ease),
+    gap var(--media-layout-duration) var(--media-layout-ease);
 }
 .media-panel-slot {
   min-width: 0;
@@ -608,15 +610,15 @@ aside.media-inspector {
   width: calc(330 * var(--admin-unit));
 }
 .media-workspace-toolbar {
-  transition: margin-right var(--fuwari-motion-panel) var(--fuwari-motion-ease);
+  transition: margin-right var(--media-layout-duration) var(--media-layout-ease);
 }
 aside.media-inspector[data-state="open"] {
-  animation: media-detail-in var(--fuwari-motion-panel)
-    var(--fuwari-motion-ease) both;
+  animation: media-detail-in var(--media-layout-duration)
+    var(--media-layout-ease) both;
 }
 aside.media-inspector[data-state="closing"] {
-  animation: media-detail-out var(--fuwari-motion-panel)
-    var(--fuwari-motion-ease) both;
+  animation: media-detail-out var(--media-layout-duration)
+    var(--media-layout-ease) both;
 }
 @keyframes media-detail-in {
   from {

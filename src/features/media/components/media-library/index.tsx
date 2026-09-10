@@ -16,6 +16,7 @@ import { MediaCollection } from "./components/media-collection";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import { useMediaScroll } from "./hooks/use-media-scroll";
+import { MEDIA_LAYOUT_DURATION } from "./hooks/use-media-grid-motion";
 import { MediaCollectionSkeleton } from "./media-library-skeleton";
 import type { MediaAsset } from "./types";
 import "./media-library.css";
@@ -61,7 +62,7 @@ export function MediaLibrary() {
   const compact = useMediaQuery("(max-width: 1199px)");
   const detailPresent = useMotionPresence(
     !!active,
-    compact ? MOTION.modal : MOTION.panel,
+    compact ? MOTION.modal : MEDIA_LAYOUT_DURATION,
   );
   const retained = useRef<MediaAsset | null>(null);
   if (active) retained.current = active;
