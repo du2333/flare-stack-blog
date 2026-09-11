@@ -14,7 +14,13 @@
     min-height: 100%;
     overflow: visible;
   }
-  .admin-list-region :is(.post-manager, .media-workspace, .taxonomy-workspace) {
+  .admin-list-region
+    :is(
+      .post-manager,
+      .media-workspace,
+      .taxonomy-workspace,
+      .friend-workspace
+    ) {
     display: block;
     height: auto;
     min-height: 100%;
@@ -26,7 +32,9 @@
       .media-browser,
       .taxonomy-scroll,
       .taxonomy-nav-scroll,
-      .taxonomy-post-scroll
+      .taxonomy-post-scroll,
+      .friend-queue-scroll,
+      .friend-detail-scroll
     ) {
     height: auto;
     overflow: visible;

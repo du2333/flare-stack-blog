@@ -87,6 +87,7 @@ export const createCreateFriendLinkSchema = (m: Messages) =>
 
 // === Admin inputs ===
 export const GetAllFriendLinksInputSchema = z.object({
+  search: z.string().max(200).optional(),
   offset: z.number().optional(),
   limit: z.number().optional(),
   status: z.enum(["pending", "approved", "rejected"]).optional(),

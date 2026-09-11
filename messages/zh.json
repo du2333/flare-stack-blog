@@ -1596,5 +1596,17 @@
   "taxonomy_current_empty": "当前没有归属到这里的文章。",
   "taxonomy_public_empty": "当前没有公开版本使用这个分类或标签。",
   "taxonomy_usage_summary": "当前归属 {current} 篇 · 公开使用 {public} 篇",
-  "taxonomy_posts_search": "搜索关联文章"
+  "taxonomy_posts_search": "搜索关联文章",
+  "friend_review_hint": "查看申请，决定哪些站点出现在你的友链页",
+  "friend_review_queue": "申请列表",
+  "friend_review_search": "搜索站点名称或域名",
+  "friend_review_no_results": "没有匹配的站点",
+  "friend_review_details": "站点详情",
+  "friend_review_visit": "访问网站",
+  "friend_review_applicant": "申请人",
+  "friend_review_no_description": "暂未填写简介",
+  "friend_review_preview": "公开展示预览",
+  "friend_review_preview_hint": "通过后将以这些资料展示在前台友链页",
+  "friend_review_previous": "上一条",
+  "friend_review_next": "下一条"
 }

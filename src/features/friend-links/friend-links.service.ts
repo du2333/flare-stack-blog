@@ -100,18 +100,16 @@ export async function getAllFriendLinks(
   context: DbContext,
   data: GetAllFriendLinksInput,
 ) {
-  const [items, counts] = await Promise.all([
+  const [items, counts, total] = await Promise.all([
     FriendLinkRepo.getAllFriendLinks(context.db, {
+      search: data.search,
       offset: data.offset,
       limit: data.limit,
       status: data.status,
     }),
     FriendLinkRepo.getFriendLinkStatusCounts(context.db),
+    FriendLinkRepo.getAllFriendLinksCount(context.db, data),
   ]);
-
-  const total = data.status
-    ? counts[data.status]
-    : counts.pending + counts.approved + counts.rejected;
 
   return { items, total, counts };
 }

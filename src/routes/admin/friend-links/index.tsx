@@ -10,6 +10,7 @@ import { m } from "@/paraglide/messages";
 const STATUSES = ["pending", "approved", "rejected"] as const;
 
 const searchSchema = z.object({
+  search: z.string().max(200).optional().default("").catch(""),
   status: z.enum(STATUSES).optional().default("pending").catch("pending"),
   page: z.number().int().positive().optional().default(1).catch(1),
 });
@@ -42,16 +43,20 @@ export const Route = createFileRoute("/admin/friend-links/")({
 });
 
 function FriendLinksAdminPage() {
-  const { status, page } = Route.useSearch();
+  const { status, page, search } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   return (
     <FriendLinkManager
+      search={search}
+      onSearchChange={(search) =>
+        navigate({ search: { status, page: 1, search }, replace: true })
+      }
       status={status}
       page={page}
       onStatusChange={(next: FriendLinkStatus) =>
         navigate({
-          search: { status: next, page: 1 },
+          search: { status: next, page: 1, search: "" },
         })
       }
       onPageChange={(next) =>

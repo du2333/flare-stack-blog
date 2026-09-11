@@ -1,5 +1,5 @@
 export function isAdminContentWorkspace(pathname: string) {
-  return /^\/admin\/(posts|media|tags)\/?$/.test(pathname);
+  return /^\/admin\/(posts|media|tags|friend-links)\/?$/.test(pathname);
 }
 
 // Keep this breakpoint aligned with content-workspace.css.

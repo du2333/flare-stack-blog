@@ -1,9 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { FuwariModal } from "@/components/ui/fuwari-modal";
 import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
-import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 interface FriendLinkRejectDialogProps {
@@ -27,37 +26,15 @@ function FriendLinkRejectDialogInternal({
     if (open) setReason("");
   }, [open, link?.id]);
 
-  useEffect(() => {
-    if (!open || isSaving) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, isSaving, onClose]);
-
-  return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-100 flex items-center justify-center p-4 transition-opacity duration-200",
-        open
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none",
-      )}
+  return (
+    <FuwariModal
+      open={open}
+      onClose={onClose}
+      busy={isSaving}
+      labelledBy="friend-link-reject-title"
+      className="max-w-[440px]"
     >
-      <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
-        onClick={isSaving ? undefined : onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="friend-link-reject-title"
-        className={cn(
-          "relative w-full max-w-[420px] fuwari-card-base p-6 transition-all duration-200",
-          open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
-        )}
-      >
+      <div className="p-6">
         <h2
           id="friend-link-reject-title"
           className="text-lg font-medium fuwari-text-90"
@@ -104,8 +81,7 @@ function FriendLinkRejectDialogInternal({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </FuwariModal>
   );
 }
 

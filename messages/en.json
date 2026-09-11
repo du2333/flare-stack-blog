@@ -1604,5 +1604,17 @@
   "taxonomy_current_empty": "No posts are currently assigned here.",
   "taxonomy_public_empty": "No public versions currently use this category or tag.",
   "taxonomy_usage_summary": "Current assignment: {current} posts · Public usage: {public} posts",
-  "taxonomy_posts_search": "Search related posts"
+  "taxonomy_posts_search": "Search related posts",
+  "friend_review_hint": "Review submissions and choose the sites to feature.",
+  "friend_review_queue": "Submissions",
+  "friend_review_search": "Search sites or domains",
+  "friend_review_no_results": "No matching sites",
+  "friend_review_details": "Site details",
+  "friend_review_visit": "Visit website",
+  "friend_review_applicant": "Submitted by",
+  "friend_review_no_description": "No description provided",
+  "friend_review_preview": "Public display preview",
+  "friend_review_preview_hint": "Once approved, these details appear on your friend links page.",
+  "friend_review_previous": "Previous",
+  "friend_review_next": "Next"
 }

@@ -10,7 +10,12 @@ export function approvedFriendLinksQuery() {
 }
 
 export function allFriendLinksQuery(
-  options: { offset?: number; limit?: number; status?: FriendLinkStatus } = {},
+  options: {
+    search?: string;
+    offset?: number;
+    limit?: number;
+    status?: FriendLinkStatus;
+  } = {},
 ) {
   return orpc.friendLinks.admin.list.queryOptions({ input: options });
 }

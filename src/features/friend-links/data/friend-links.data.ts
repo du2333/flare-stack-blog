@@ -1,8 +1,13 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { FriendLinkStatus } from "@/lib/db/schema";
 import { FriendLinksTable, user } from "@/lib/db/schema";
 
 const DEFAULT_PAGE_SIZE = 20;
+function searchCondition(search?: string) {
+  const value = search?.trim().toLowerCase();
+  if (!value) return undefined;
+  return sql`(instr(lower(${FriendLinksTable.siteName}), ${value}) > 0 or instr(lower(${FriendLinksTable.siteUrl}), ${value}) > 0)`;
+}
 
 export async function insertFriendLink(
   db: DB,
@@ -27,11 +32,14 @@ export async function getAllFriendLinks(
     offset?: number;
     limit?: number | null;
     status?: FriendLinkStatus;
+    search?: string;
   } = {},
 ) {
   const { offset = 0, limit = DEFAULT_PAGE_SIZE, status } = options;
   const conditions = [];
   if (status) conditions.push(eq(FriendLinksTable.status, status));
+  const search = searchCondition(options.search);
+  if (search) conditions.push(search);
 
   const query = db
     .select({
@@ -55,7 +63,7 @@ export async function getAllFriendLinks(
     .from(FriendLinksTable)
     .leftJoin(user, eq(FriendLinksTable.userId, user.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(FriendLinksTable.createdAt));
+    .orderBy(desc(FriendLinksTable.createdAt), desc(FriendLinksTable.id));
 
   const items =
     limit == null
@@ -67,12 +75,14 @@ export async function getAllFriendLinks(
 
 export async function getAllFriendLinksCount(
   db: DB,
-  options: { status?: FriendLinkStatus } = {},
+  options: { status?: FriendLinkStatus; search?: string } = {},
 ) {
   const conditions = [];
   if (options.status)
     conditions.push(eq(FriendLinksTable.status, options.status));
 
+  const search = searchCondition(options.search);
+  if (search) conditions.push(search);
   const result = await db
     .select({ count: count() })
     .from(FriendLinksTable)
@@ -108,7 +118,7 @@ export async function getFriendLinksByUserId(db: DB, userId: string) {
     .select()
     .from(FriendLinksTable)
     .where(eq(FriendLinksTable.userId, userId))
-    .orderBy(desc(FriendLinksTable.createdAt));
+    .orderBy(desc(FriendLinksTable.createdAt), desc(FriendLinksTable.id));
 }
 
 export async function updateFriendLink(

@@ -48,8 +48,8 @@ export function useAdminFriendLinks() {
   const createMutation = useMutation({
     mutationFn: (input: CreateFriendLinkInput) =>
       orpcClient.friendLinks.admin.create(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
       toast.success(m.friend_links_toast_create_success());
     },
   });
@@ -57,8 +57,8 @@ export function useAdminFriendLinks() {
   const updateMutation = useMutation({
     mutationFn: (input: UpdateFriendLinkInput) =>
       orpcClient.friendLinks.admin.update(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
       toast.success(m.friend_links_toast_update_success());
     },
     onError: (error) => {
@@ -76,8 +76,8 @@ export function useAdminFriendLinks() {
   const approveMutation = useMutation({
     mutationFn: (input: ApproveFriendLinkInput) =>
       orpcClient.friendLinks.admin.approve(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
       toast.success(m.friend_links_toast_approve_success());
     },
     onError: (error) => {
@@ -95,8 +95,8 @@ export function useAdminFriendLinks() {
   const rejectMutation = useMutation({
     mutationFn: (input: RejectFriendLinkInput) =>
       orpcClient.friendLinks.admin.reject(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
       toast.success(m.friend_links_toast_reject_success());
     },
     onError: (error) => {
@@ -114,8 +114,8 @@ export function useAdminFriendLinks() {
   const deleteMutation = useMutation({
     mutationFn: (input: DeleteFriendLinkInput) =>
       orpcClient.friendLinks.admin.remove(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: orpc.friendLinks.key() });
       toast.success(m.friend_links_toast_delete_success());
     },
     onError: (error) => {

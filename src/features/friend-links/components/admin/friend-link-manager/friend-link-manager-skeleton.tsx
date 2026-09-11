@@ -1,3 +1,4 @@
+import "./friend-link-manager.css";
 export function FriendLinkManagerSkeleton() {
   return (
     <div>
@@ -21,19 +22,25 @@ export function FriendLinkManagerSkeleton() {
 export function FriendLinkManagerPageSkeleton() {
   return (
     <div
-      className="fuwari-card-base p-5 md:p-6 space-y-6 animate-pulse fuwari-onload-animation"
-      style={{ animationDelay: "var(--fuwari-content-delay)" }}
+      className="friend-workspace fuwari-card-base animate-pulse"
+      aria-hidden="true"
     >
-      <div className="hidden lg:flex justify-between items-center">
-        <div className="h-8 w-28 rounded-lg bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-10 w-16 rounded-xl bg-(--fuwari-btn-regular-bg)" />
+      <div className="friend-header">
+        <div className="h-8 w-36 rounded-lg bg-(--fuwari-btn-regular-bg)" />
       </div>
-      <div className="flex flex-wrap gap-2">
-        <div className="h-9 w-20 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-20 rounded-xl bg-(--fuwari-btn-regular-bg)" />
-        <div className="h-9 w-20 rounded-xl bg-(--fuwari-btn-regular-bg)" />
+      <div className="friend-tabs py-4">
+        <div className="h-6 w-64 rounded-lg bg-(--fuwari-btn-regular-bg)" />
       </div>
-      <FriendLinkManagerSkeleton />
+      <div className="friend-body">
+        <div className="friend-queue">
+          <FriendLinkManagerSkeleton />
+        </div>
+        <div className="friend-detail p-8 gap-8">
+          <div className="h-20 w-20 rounded-full bg-(--fuwari-btn-regular-bg)" />
+          <div className="h-5 w-1/2 rounded-lg bg-(--fuwari-btn-regular-bg)" />
+          <div className="h-32 rounded-xl bg-(--fuwari-btn-regular-bg)" />
+        </div>
+      </div>
     </div>
   );
 }

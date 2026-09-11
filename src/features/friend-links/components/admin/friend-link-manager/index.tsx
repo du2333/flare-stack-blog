@@ -15,9 +15,9 @@ import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { FriendLinkFormDialog } from "./friend-link-form-dialog";
-import { FriendLinkManagerSkeleton } from "./friend-link-manager-skeleton";
 import { FriendLinkRejectDialog } from "./friend-link-reject-dialog";
-import { FriendLinkRow } from "./friend-link-row";
+import { FriendLinkReview } from "./friend-link-review";
+import "./friend-link-manager.css";
 
 const STATUSES: Array<FriendLinkStatus> = ["pending", "approved", "rejected"];
 
@@ -32,6 +32,8 @@ interface FriendLinkManagerProps {
   page: number;
   onStatusChange: (status: FriendLinkStatus) => void;
   onPageChange: (page: number) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
 }
 
 export function FriendLinkManager({
@@ -39,6 +41,8 @@ export function FriendLinkManager({
   page,
   onStatusChange,
   onPageChange,
+  search,
+  onSearchChange,
 }: FriendLinkManagerProps) {
   const navigate = useNavigate();
   const { setPrimaryAction } = useAdminChrome();
@@ -51,6 +55,7 @@ export function FriendLinkManager({
   const { data, isPending, isError } = useQuery(
     allFriendLinksQuery({
       status,
+      search,
       limit: ADMIN_ITEMS_PER_PAGE,
       offset: (page - 1) * ADMIN_ITEMS_PER_PAGE,
     }),
@@ -94,6 +99,10 @@ export function FriendLinkManager({
     return () => setPrimaryAction(null);
   }, [setPrimaryAction]);
 
+  useEffect(() => {
+    if (data && page > totalPages) onPageChange(totalPages);
+  }, [data, page, totalPages, onPageChange]);
+
   const emptyCopy = {
     pending: m.friend_links_empty_pending(),
     approved: m.friend_links_empty_approved(),
@@ -101,33 +110,28 @@ export function FriendLinkManager({
   }[status];
 
   return (
-    <div
-      className="fuwari-card-base p-5 md:p-6 space-y-6 fuwari-onload-animation"
-      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
-    >
-      <div className="hidden lg:flex justify-between items-center">
-        <h1 className="text-2xl font-medium fuwari-text-90">
-          {m.friend_links_admin_title()}
-        </h1>
+    <div className="friend-workspace fuwari-card-base">
+      <header className="friend-header">
+        <div>
+          <h1>{m.friend_links_admin_title()}</h1>
+          <p>{m.friend_review_hint()}</p>
+        </div>
         <button
           type="button"
           onClick={openCreate}
-          className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
+          className="fuwari-btn-regular friend-button"
         >
           {m.friend_links_admin_add()}
         </button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
+      </header>
+      <nav className="friend-tabs" aria-label={m.friend_links_admin_title()}>
         {STATUSES.map((item) => (
           <button
             key={item}
             type="button"
+            aria-current={status === item ? "page" : undefined}
             onClick={() => onStatusChange(item)}
-            className={cn(
-              "rounded-xl h-9 px-3 text-sm font-medium inline-flex items-center gap-1.5",
-              status === item ? "fuwari-btn-primary" : "fuwari-btn-regular",
-            )}
+            className={cn(status === item && "active")}
           >
             {
               {
@@ -135,51 +139,29 @@ export function FriendLinkManager({
                 approved: m.friend_links_tab_approved(),
                 rejected: m.friend_links_tab_rejected(),
               }[item]
-            }
-            <span className="text-xs tabular-nums opacity-80">
-              {counts[item]}
-            </span>
+            }{" "}
+            <span>{counts[item]}</span>
           </button>
         ))}
-      </div>
-
-      {isError ? (
-        <p className="py-16 text-center text-sm fuwari-text-50">
-          {m.friend_links_admin_load_fail()}
-        </p>
-      ) : isPending ? (
-        <FriendLinkManagerSkeleton />
-      ) : items.length === 0 ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3 fuwari-text-50">
-          <p>{emptyCopy}</p>
-          {status === "approved" ? (
-            <button
-              type="button"
-              onClick={openCreate}
-              className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
-            >
-              {m.friend_links_admin_add()}
-            </button>
-          ) : null}
-        </div>
-      ) : (
-        <>
-          <div>
-            {items.map((link) => (
-              <FriendLinkRow
-                key={link.id}
-                link={link}
-                busy={busy}
-                onApprove={(item) => approve({ id: item.id })}
-                onReject={setRejecting}
-                onEdit={(item) => {
-                  setEditing(item);
-                  setFormOpen(true);
-                }}
-                onDelete={setDeleting}
-              />
-            ))}
-          </div>
+      </nav>
+      <FriendLinkReview
+        key={status}
+        items={items}
+        busy={busy}
+        loading={isPending}
+        error={isError}
+        emptyCopy={emptyCopy}
+        search={search}
+        onSearchChange={onSearchChange}
+        page={page}
+        onApprove={(item) => approve({ id: item.id })}
+        onReject={setRejecting}
+        onEdit={(item) => {
+          setEditing(item);
+          setFormOpen(true);
+        }}
+        onDelete={setDeleting}
+        pagination={
           <AdminPagination
             currentPage={page}
             totalPages={totalPages}
@@ -188,8 +170,8 @@ export function FriendLinkManager({
             currentPageItemCount={items.length}
             onPageChange={onPageChange}
           />
-        </>
-      )}
+        }
+      />
 
       <FriendLinkFormDialog
         open={formOpen}
