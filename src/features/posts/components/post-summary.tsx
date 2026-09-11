@@ -11,7 +11,10 @@ export function PostSummary({ summary }: PostSummaryProps) {
   return (
     <div
       className="mb-4 md:mb-6 rounded-2xl bg-(--fuwari-primary)/5 border border-black/5 dark:border-white/10 p-4 md:p-5 flex items-start gap-3 md:gap-4 transition-all hover:bg-(--fuwari-primary)/10 fuwari-onload-animation backdrop-blur-sm"
-      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 250ms)" }}
+      style={{
+        animationDelay:
+          "calc(var(--fuwari-content-delay) + 250ms * var(--fuwari-stagger, 1))",
+      }}
     >
       <div className="shrink-0 text-(--fuwari-primary) bg-(--fuwari-primary)/10 p-2 md:p-2.5 rounded-xl flex items-center justify-center mt-0.5">
         <Quote className="w-4 h-4 md:w-4.5 md:h-4.5" />

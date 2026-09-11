@@ -7,6 +7,7 @@ export default function AppDevtools() {
     <TanStackDevtools
       config={{
         position: "bottom-right",
+        triggerMode: "fixed",
       }}
       plugins={[
         {

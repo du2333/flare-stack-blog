@@ -48,11 +48,13 @@ export function PageFade({
         "--fuwari-content-delay",
         "0ms",
       );
+      document.documentElement.style.setProperty("--fuwari-stagger", "0");
       onEnteredRef.current?.();
       return;
     }
 
     document.documentElement.style.setProperty("--fuwari-content-delay", "0ms");
+    document.documentElement.style.setProperty("--fuwari-stagger", "0");
     setLeaving(true);
     const t = window.setTimeout(() => {
       cacheRef.current = { key: pageKey, node: latestRef.current };

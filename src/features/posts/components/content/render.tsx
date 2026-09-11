@@ -1,8 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { Children } from "react";
-import { MathFormula } from "@/components/content/math-formula";
+import { Children, type ReactNode } from "react";
 import { schemaExtensions } from "@/features/posts/editor/schema";
 import { parseImageSize } from "@/features/posts/utils/normalize-content";
 import {
@@ -12,7 +11,13 @@ import {
 import { CodeBlock } from "@/features/posts/components/content/code-block";
 import { ImageDisplay } from "@/features/posts/components/content/image-display";
 
-export function renderReact(content: JSONContent) {
+export function renderReact(
+  content: JSONContent,
+  math?: {
+    inline: (latex: string) => ReactNode;
+    block: (latex: string) => ReactNode;
+  },
+) {
   return renderToReactElement({
     extensions: schemaExtensions,
     content: withUniqueHeadingIds(content),
@@ -98,11 +103,26 @@ export function renderReact(content: JSONContent) {
         },
         inlineMath: ({ node }) => {
           const latex = (node.attrs as { latex?: string }).latex ?? "";
-          return <MathFormula latex={latex} mode="inline" />;
+          return math ? (
+            math.inline(latex)
+          ) : (
+            <span className="tiptap-mathematics-render" data-type="inline-math">
+              {latex}
+            </span>
+          );
         },
         blockMath: ({ node }) => {
           const latex = (node.attrs as { latex?: string }).latex ?? "";
-          return <MathFormula latex={latex} mode="block" />;
+          return math ? (
+            math.block(latex)
+          ) : (
+            <div
+              className="tiptap-mathematics-render katex-display"
+              data-type="block-math"
+            >
+              {latex}
+            </div>
+          );
         },
       },
     },

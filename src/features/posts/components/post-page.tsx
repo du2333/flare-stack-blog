@@ -19,6 +19,10 @@ interface PostPageProps {
   post: Exclude<PostWithToc, null>;
 }
 
+function enterDelay(extraMs: number) {
+  return `calc(var(--fuwari-content-delay) + ${extraMs}ms * var(--fuwari-stagger, 1))`;
+}
+
 export function PostPage({ post }: PostPageProps) {
   const { data: session } = authClient.useSession();
   // Approximate word count
@@ -33,7 +37,7 @@ export function PostPage({ post }: PostPageProps) {
         {/* Word count and reading time */}
         <div
           className="flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition fuwari-onload-animation"
-          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 0ms)" }}
+          style={{ animationDelay: enterDelay(0) }}
         >
           <div className="flex flex-row items-center">
             <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
@@ -68,7 +72,7 @@ export function PostPage({ post }: PostPageProps) {
         {/* Title */}
         <div
           className="relative fuwari-onload-animation"
-          style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
+          style={{ animationDelay: enterDelay(50) }}
         >
           <h1
             className="transition w-full block font-bold mb-3
@@ -86,7 +90,7 @@ export function PostPage({ post }: PostPageProps) {
         <div
           className="fuwari-onload-animation"
           style={{
-            animationDelay: "calc(var(--fuwari-content-delay) + 100ms)",
+            animationDelay: enterDelay(100),
           }}
         >
           <PostMeta post={post} className="mb-5" />
@@ -100,7 +104,7 @@ export function PostPage({ post }: PostPageProps) {
             id="post-cover"
             className="mb-8 rounded-xl overflow-hidden fuwari-onload-animation"
             style={{
-              animationDelay: "calc(var(--fuwari-content-delay) + 175ms)",
+              animationDelay: enterDelay(175),
             }}
           >
             <ZoomableImage
@@ -122,7 +126,7 @@ export function PostPage({ post }: PostPageProps) {
         <div
           className="fuwari-onload-animation"
           style={{
-            animationDelay: "calc(var(--fuwari-content-delay) + 325ms)",
+            animationDelay: enterDelay(325),
           }}
         >
           <div className="mb-6 prose dark:prose-invert prose-base max-w-none! fuwari-custom-md">
@@ -143,7 +147,7 @@ export function PostPage({ post }: PostPageProps) {
       {/* Comments Section */}
       <div
         className="fuwari-card-base p-6 fuwari-onload-animation"
-        style={{ animationDelay: "calc(var(--fuwari-content-delay) + 450ms)" }}
+        style={{ animationDelay: enterDelay(450) }}
       >
         <CommentSection postId={post.id} />
       </div>

@@ -98,7 +98,7 @@ export const Route = createFileRoute("/_public/post/$slug")({
     };
   },
   pendingComponent: () => <PostPageSkeleton />,
-  pendingMs: 1000,
+  pendingMs: 0,
 });
 
 function RouteComponent() {

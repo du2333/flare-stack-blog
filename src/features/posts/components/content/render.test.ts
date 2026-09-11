@@ -49,9 +49,10 @@ describe("renderReact tables", () => {
     expect(html).not.toContain("width:");
   });
 
-  it("renders inline and block math from the public schema", () => {
+  it("renders inline and block math from the public schema", async () => {
+    const { renderReactWithMath } = await import("./render-math");
     const html = renderToStaticMarkup(
-      renderReact({
+      renderReactWithMath({
         type: "doc",
         content: [
           {
@@ -66,5 +67,23 @@ describe("renderReact tables", () => {
     expect(html).toContain('data-type="inline-math"');
     expect(html).toContain('data-type="block-math"');
     expect(html).toContain("katex");
+  });
+
+  it("does not require KaTeX to print math node latex", () => {
+    const html = renderToStaticMarkup(
+      renderReact({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "inlineMath", attrs: { latex: "x^2" } }],
+          },
+        ],
+      }),
+    );
+
+    expect(html).toContain('data-type="inline-math"');
+    expect(html).toContain("x^2");
+    expect(html).not.toContain("katex");
   });
 });
