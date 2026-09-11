@@ -8,18 +8,27 @@ function invalidateMuteViews(
   queryClient: ReturnType<typeof useQueryClient>,
   postId?: number,
 ) {
-  queryClient.invalidateQueries({ queryKey: orpc.mutedUsers.list.key() });
+  const invalidations = [
+    queryClient.invalidateQueries({ queryKey: orpc.mutedUsers.list.key() }),
+  ];
   if (postId) {
-    queryClient.invalidateQueries({
-      queryKey: orpc.comments.roots.key({ input: { postId } }),
-    });
-    queryClient.invalidateQueries({
-      queryKey: orpc.comments.replies.key({ input: { postId } }),
-    });
-    queryClient.invalidateQueries({
-      queryKey: orpc.comments.thread.key({ input: { postId } }),
-    });
+    invalidations.push(
+      queryClient.invalidateQueries({
+        queryKey: orpc.comments.roots.key({ input: { postId } }),
+      }),
+    );
+    invalidations.push(
+      queryClient.invalidateQueries({
+        queryKey: orpc.comments.replies.key({ input: { postId } }),
+      }),
+    );
+    invalidations.push(
+      queryClient.invalidateQueries({
+        queryKey: orpc.comments.thread.key({ input: { postId } }),
+      }),
+    );
   }
+  return Promise.all(invalidations);
 }
 
 export function useMutedUsers(postId?: number) {
@@ -28,8 +37,8 @@ export function useMutedUsers(postId?: number) {
   const muteMutation = useMutation({
     mutationFn: (input: { userId: string }) =>
       orpcClient.mutedUsers.mute(input),
-    onSuccess: () => {
-      invalidateMuteViews(queryClient, postId);
+    onSuccess: async () => {
+      await invalidateMuteViews(queryClient, postId);
       toast.success(m.comments_toast_mute_success());
     },
     onError: (error) => {
@@ -52,8 +61,8 @@ export function useMutedUsers(postId?: number) {
   const unmuteMutation = useMutation({
     mutationFn: (input: { userId: string }) =>
       orpcClient.mutedUsers.unmute(input),
-    onSuccess: () => {
-      invalidateMuteViews(queryClient, postId);
+    onSuccess: async () => {
+      await invalidateMuteViews(queryClient, postId);
       toast.success(m.comments_toast_unmute_success());
     },
     onError: (error) => {

@@ -1614,5 +1614,19 @@
   "dashboard_first_post": "从第一篇文章开始",
   "dashboard_recent_edits": "最近编辑",
   "dashboard_tasks": "待办事项",
-  "dashboard_pending_links": "{count} 条友链申请待审核"
+  "dashboard_pending_links": "{count} 条友链申请待审核",
+  "muted_manager_hint": "管理被禁言的用户，必要时恢复其评论权限。",
+  "muted_manager_count": "{count} 人",
+  "muted_manager_search": "搜索用户名",
+  "muted_manager_clear": "清除搜索",
+  "muted_manager_sort": "排序",
+  "muted_manager_recent": "最近禁言",
+  "muted_manager_oldest": "最早禁言",
+  "muted_manager_name": "用户名",
+  "muted_manager_retry": "重新加载",
+  "muted_manager_no_results": "没有匹配的用户",
+  "muted_manager_search_hint": "换个关键词，或清除搜索查看全部名单。",
+  "muted_manager_empty_hint": "需要禁言时，可以从文章评论中的用户操作菜单处理。",
+  "muted_manager_results": "显示 {shown} 人，共 {total} 人",
+  "muted_manager_unmute_named": "解除 {name} 的禁言"
 }

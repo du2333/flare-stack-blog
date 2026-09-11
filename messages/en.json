@@ -1622,5 +1622,19 @@
   "dashboard_first_post": "Start with your first post",
   "dashboard_recent_edits": "Recently edited",
   "dashboard_tasks": "Needs attention",
-  "dashboard_pending_links": "{count} friend link applications to review"
+  "dashboard_pending_links": "{count} friend link applications to review",
+  "muted_manager_hint": "Manage muted users and restore their ability to comment.",
+  "muted_manager_count": "{count} users",
+  "muted_manager_search": "Search usernames",
+  "muted_manager_clear": "Clear search",
+  "muted_manager_sort": "Sort",
+  "muted_manager_recent": "Newest first",
+  "muted_manager_oldest": "Oldest first",
+  "muted_manager_name": "Username",
+  "muted_manager_retry": "Try again",
+  "muted_manager_no_results": "No matching users",
+  "muted_manager_search_hint": "Try another name or clear the search to see everyone.",
+  "muted_manager_empty_hint": "You can mute a user from their comment’s action menu.",
+  "muted_manager_results": "Showing {shown} of {total} users",
+  "muted_manager_unmute_named": "Unmute {name}"
 }
