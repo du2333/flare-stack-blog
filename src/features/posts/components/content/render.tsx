@@ -3,7 +3,7 @@ import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Children } from "react";
 import { MathFormula } from "@/components/content/math-formula";
-import { schemaExtensions } from "@/features/posts/editor/config";
+import { schemaExtensions } from "@/features/posts/editor/schema";
 import { parseImageSize } from "@/features/posts/utils/normalize-content";
 import {
   clampHeadingLevel,

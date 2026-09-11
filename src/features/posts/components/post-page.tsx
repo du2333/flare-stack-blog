@@ -109,6 +109,8 @@ export function PostPage({ post }: PostPageProps) {
               width={post.cover.width ?? undefined}
               height={post.cover.height ?? undefined}
               className="w-full h-auto object-cover"
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
         )}

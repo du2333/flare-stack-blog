@@ -1,4 +1,5 @@
 import { ClientOnly } from "@tanstack/react-router";
+import "katex/dist/katex.min.css";
 import katex from "katex";
 import { X } from "lucide-react";
 import type React from "react";

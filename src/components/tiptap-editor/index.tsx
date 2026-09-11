@@ -1,4 +1,5 @@
 import "@fontsource-variable/jetbrains-mono/wght.css";
+import "katex/dist/katex.min.css";
 import type {
   Extensions,
   JSONContent,

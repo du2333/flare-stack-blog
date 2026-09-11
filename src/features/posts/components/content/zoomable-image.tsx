@@ -175,6 +175,8 @@ export default function ZoomableImage({
   width,
   height,
   className,
+  loading = "lazy",
+  fetchPriority,
   ...props
 }: ZoomableImageProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -208,7 +210,8 @@ export default function ZoomableImage({
           alt={alt}
           width={width}
           height={height}
-          loading="lazy"
+          loading={loading}
+          fetchPriority={fetchPriority}
           className={cn(
             className,
             "transition-all duration-500 will-change-transform m-0 p-0",

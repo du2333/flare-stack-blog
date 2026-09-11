@@ -73,7 +73,7 @@ export function PublicLayout({
             PUBLIC_IMAGE_WIDTH.banner,
           )}
           alt="banner"
-          fetchPriority="high"
+          fetchPriority={isHomePage ? "high" : "auto"}
           className="fuwari-banner-image w-full h-full object-cover object-center"
         />
       </div>

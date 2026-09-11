@@ -9,7 +9,6 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { PublicLayout as SitePublicLayout } from "@/components/layout/public-layout";
 import { Toaster } from "@/components/layout/toaster";
-import { getHomeBackgroundPreloadImages } from "@/components/layout/preload-images";
 import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -19,21 +18,13 @@ import { isExternalNavHref } from "@/features/config/utils/nav-links";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
-  loader: ({ context }) => ({
-    preloadImages: getHomeBackgroundPreloadImages(context.siteConfig),
-  }),
   component: PublicLayout,
   headers: () => {
     return CACHE_CONTROL.public;
   },
-  head: ({ loaderData }) => {
+  head: () => {
     const env = clientEnv();
     return {
-      links: (loaderData?.preloadImages ?? []).map((href) => ({
-        rel: "preload" as const,
-        as: "image",
-        href,
-      })),
       scripts: env.VITE_UMAMI_WEBSITE_ID
         ? [
             {

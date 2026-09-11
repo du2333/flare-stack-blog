@@ -28,6 +28,25 @@ export function slugify(text: string | null | undefined) {
   return cleaned || "untitled-log";
 }
 
+export function jsonContentHasType(
+  doc: JSONContent | null | undefined,
+  types: string | ReadonlyArray<string>,
+): boolean {
+  if (!doc) return false;
+  const wanted = typeof types === "string" ? new Set([types]) : new Set(types);
+
+  function walk(node: JSONContent): boolean {
+    if (node.type && wanted.has(node.type)) return true;
+    if (!node.content) return false;
+    for (const child of node.content) {
+      if (walk(child)) return true;
+    }
+    return false;
+  }
+
+  return walk(doc);
+}
+
 export function extractAllImageKeys(doc: JSONContent | null): Array<string> {
   const keys: Array<string> = [];
 

@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { getHomeBackgroundPreloadImages } from "@/components/layout/preload-images";
 import { siteDomainQuery } from "@/features/config/queries";
 import {
   HomePage,
@@ -27,10 +28,18 @@ export const Route = createFileRoute("/_public/")({
 
     return {
       canonicalHref: buildCanonicalUrl(domain, "/"),
+      preloadImages: getHomeBackgroundPreloadImages(context.siteConfig),
     };
   },
   head: ({ loaderData }) => ({
-    links: [canonicalLink(loaderData?.canonicalHref ?? "/")],
+    links: [
+      canonicalLink(loaderData?.canonicalHref ?? "/"),
+      ...(loaderData?.preloadImages ?? []).map((href) => ({
+        rel: "preload" as const,
+        as: "image",
+        href,
+      })),
+    ],
   }),
   pendingComponent: HomePageSkeleton,
   component: HomeRoute,

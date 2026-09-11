@@ -1,4 +1,3 @@
-import "@fontsource-variable/jetbrains-mono/wght.css";
 import type { JSONContent } from "@tiptap/react";
 import { useMemo } from "react";
 import { renderReact } from "@/features/posts/components/content/render";
