@@ -1616,5 +1616,11 @@
   "friend_review_preview": "Public display preview",
   "friend_review_preview_hint": "Once approved, these details appear on your friend links page.",
   "friend_review_previous": "Previous",
-  "friend_review_next": "Next"
+  "friend_review_next": "Next",
+  "dashboard_intro": "A place to write, connect, and share.",
+  "dashboard_resume": "Continue editing",
+  "dashboard_first_post": "Start with your first post",
+  "dashboard_recent_edits": "Recently edited",
+  "dashboard_tasks": "Needs attention",
+  "dashboard_pending_links": "{count} friend link applications to review"
 }

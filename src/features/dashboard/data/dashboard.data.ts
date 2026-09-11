@@ -22,6 +22,7 @@ export async function listRecentVisitorComments(db: DB, limit: number) {
       content: CommentsTable.content,
       createdAt: CommentsTable.createdAt,
       userName: UserTable.name,
+      userImage: UserTable.image,
       postTitle: sql<string>`coalesce(json_extract(${PostsTable.publicSnapshotJson}, '$.title'), ${PostsTable.title})`,
       postSlug: PostsTable.publicSlug,
     })

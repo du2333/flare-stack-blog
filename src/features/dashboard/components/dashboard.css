@@ -1,0 +1,455 @@
+.dashboard-workspace {
+  --dashboard-unit: clamp(1px, 0.07vw, 1.5px);
+  --dashboard-rule: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  padding: calc(28 * var(--dashboard-unit));
+  color: var(--fuwari-fg-90);
+  min-width: 0;
+}
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: calc(28 * var(--dashboard-unit));
+}
+.dashboard-header h1 {
+  font-size: calc(28 * var(--dashboard-unit));
+  font-weight: 700;
+  line-height: 1.35;
+}
+.dashboard-header p {
+  margin-top: 8px;
+  color: var(--fuwari-fg-50);
+  font-size: calc(14 * var(--dashboard-unit));
+}
+.dashboard-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: calc(42 * var(--dashboard-unit));
+  padding: 10px calc(20 * var(--dashboard-unit));
+  border-radius: 12px;
+  flex-shrink: 0;
+  font-size: calc(14 * var(--dashboard-unit));
+  font-weight: 500;
+}
+.dashboard-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: calc(24 * var(--dashboard-unit));
+}
+.dashboard-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: calc(24 * var(--dashboard-unit));
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--fuwari-btn-regular-bg) 65%,
+    var(--fuwari-card-bg)
+  );
+}
+.dashboard-resume-copy {
+  min-width: 0;
+}
+.dashboard-eyebrow {
+  color: var(--fuwari-fg-50);
+  font-size: calc(13 * var(--dashboard-unit));
+  margin-bottom: 12px;
+}
+.dashboard-resume-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.dashboard-resume h2 {
+  font-size: calc(23 * var(--dashboard-unit));
+  line-height: 1.45;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.dashboard-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--fuwari-fg-50);
+  font-size: calc(12 * var(--dashboard-unit));
+  margin-top: 10px;
+}
+.dashboard-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fuwari-primary);
+}
+.dashboard-recent {
+  border-top: 1px solid var(--dashboard-rule);
+  padding-top: calc(20 * var(--dashboard-unit));
+}
+.dashboard-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: calc(14 * var(--dashboard-unit));
+}
+.dashboard-section-heading h2 {
+  font-weight: 650;
+  font-size: calc(19 * var(--dashboard-unit));
+}
+.dashboard-recent .dashboard-section-heading h2 {
+  font-size: calc(14 * var(--dashboard-unit));
+}
+.dashboard-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fuwari-primary);
+  font-size: calc(13 * var(--dashboard-unit));
+  flex-shrink: 0;
+}
+.dashboard-posts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+.dashboard-post {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  height: 100%;
+}
+.dashboard-post-copy {
+  min-width: 0;
+  flex: 1;
+}
+.dashboard-post-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.dashboard-post-title strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(14 * var(--dashboard-unit));
+  font-weight: 550;
+}
+.dashboard-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: calc(42 * var(--dashboard-unit));
+  height: calc(42 * var(--dashboard-unit));
+  border-radius: 50%;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.dashboard-activity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border-top: 1px solid var(--dashboard-rule);
+  padding-top: calc(24 * var(--dashboard-unit));
+  gap: calc(28 * var(--dashboard-unit));
+}
+.dashboard-activity-split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+.dashboard-activity-split .dashboard-comments {
+  border-left: 1px solid var(--dashboard-rule);
+  padding-left: calc(28 * var(--dashboard-unit));
+}
+.dashboard-task-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: calc(14 * var(--dashboard-unit));
+  padding: 8px 12px 16px;
+}
+.dashboard-task-summary svg {
+  color: var(--fuwari-primary);
+}
+.dashboard-list li + li {
+  border-top: 1px solid var(--dashboard-rule);
+}
+.dashboard-link-row,
+.dashboard-comment {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: calc(16 * var(--dashboard-unit)) 10px;
+  border-radius: 10px;
+}
+.dashboard-row-copy {
+  flex: 1;
+  min-width: 0;
+}
+.dashboard-row-copy strong {
+  font-size: calc(14 * var(--dashboard-unit));
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.dashboard-link-row .dashboard-row-copy strong {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dashboard-link-row p {
+  font-size: calc(12 * var(--dashboard-unit));
+  margin-top: 5px;
+  color: var(--fuwari-fg-50);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dashboard-time {
+  color: var(--fuwari-fg-50);
+  font-size: calc(12 * var(--dashboard-unit));
+  flex-shrink: 0;
+}
+.dashboard-review-all {
+  margin: 14px 10px 0;
+}
+.dashboard-comment {
+  align-items: flex-start;
+}
+.dashboard-comment-byline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+.dashboard-comment-snippet {
+  font-size: calc(14 * var(--dashboard-unit));
+  line-height: 1.75;
+  margin-top: 8px;
+  color: var(--fuwari-fg-75);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dashboard-comment-source {
+  color: var(--fuwari-primary);
+  font-size: calc(12 * var(--dashboard-unit));
+  line-height: 1.6;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+}
+.dashboard-comment-source svg {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.dashboard-notices {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+.dashboard-notices a {
+  height: auto;
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.6;
+  font-size: calc(13 * var(--dashboard-unit));
+}
+.dashboard-workspace a,
+.dashboard-workspace button {
+  transition:
+    background-color 0.22s ease,
+    color 0.22s ease;
+}
+.dashboard-post:hover,
+.dashboard-link-row:hover,
+.dashboard-comment:hover,
+.dashboard-task-summary:hover {
+  background: var(--fuwari-btn-regular-bg);
+}
+.dashboard-workspace :is(a, button):focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .dashboard-workspace {
+    padding: 22px;
+  }
+  .dashboard-activity-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-activity-split .dashboard-comments {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--dashboard-rule);
+    padding-top: 24px;
+  }
+  .dashboard-recent {
+    order: 3;
+  }
+  .dashboard-resume {
+    gap: 18px;
+    padding: 20px;
+  }
+  .dashboard-posts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 540px) {
+  .dashboard-workspace {
+    padding: 18px;
+  }
+  .dashboard-header {
+    margin-bottom: 20px;
+  }
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+  .dashboard-header > button {
+    display: none;
+  }
+  .dashboard-header p {
+    font-size: 13px;
+  }
+  .dashboard-resume {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .dashboard-resume h2 {
+    font-size: 21px;
+  }
+  .dashboard-resume .dashboard-button {
+    align-self: flex-end;
+  }
+  .dashboard-comment-byline {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .dashboard-link-row {
+    flex-wrap: wrap;
+  }
+  .dashboard-link-row .dashboard-time {
+    margin-left: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-workspace a,
+  .dashboard-workspace button {
+    transition: none;
+  }
+}
+
+/* Bound desktop content to the workspace; headings stay outside each scroller. */
+@media (min-width: 901px) and (min-height: 541px) {
+  .dashboard-workspace {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .dashboard-header,
+  .dashboard-resume,
+  .dashboard-section-heading {
+    flex-shrink: 0;
+  }
+  .dashboard-header {
+    margin-bottom: clamp(12px, 2vh, 28px);
+  }
+  .dashboard-layout {
+    flex: 1;
+    min-height: 0;
+    gap: clamp(12px, 2vh, 24px);
+  }
+  .dashboard-resume {
+    padding: clamp(14px, 2vh, 24px);
+  }
+  .dashboard-resume-title h2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dashboard-recent {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 0 1 auto;
+    max-height: 24%;
+    padding-top: 12px;
+  }
+  .dashboard-posts {
+    overflow-y: auto;
+    min-height: 0;
+    align-content: start;
+  }
+  .dashboard-activity {
+    flex: 1;
+    min-height: 0;
+    padding-top: 16px;
+  }
+  .dashboard-tasks,
+  .dashboard-comments {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .dashboard-task-scroll,
+  .dashboard-comments > .dashboard-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .dashboard-posts,
+  .dashboard-task-scroll,
+  .dashboard-comments > .dashboard-list {
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding-right: 6px;
+  }
+}
+/* Stacked layouts retain natural scrolling when three fixed panels cannot fit. */
+@media (max-width: 900px), (max-height: 540px) {
+  .admin-list-region:has(.dashboard-workspace) {
+    display: block;
+    overflow-y: auto;
+  }
+  .admin-list-region:has(.dashboard-workspace) > div,
+  .admin-list-region:has(.dashboard-workspace) .fuwari-page-fade,
+  .admin-list-region:has(.dashboard-workspace) .fuwari-page-fade > div {
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+}
+
+.dashboard-identity {
+  overflow: hidden;
+}
+.dashboard-identity img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dashboard-identity img.dashboard-favicon {
+  object-fit: contain;
+  padding: 8px;
+}

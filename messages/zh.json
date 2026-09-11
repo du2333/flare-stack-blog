@@ -1608,5 +1608,11 @@
   "friend_review_preview": "公开展示预览",
   "friend_review_preview_hint": "通过后将以这些资料展示在前台友链页",
   "friend_review_previous": "上一条",
-  "friend_review_next": "下一条"
+  "friend_review_next": "下一条",
+  "dashboard_intro": "专注创作，记录和分享生活中的思考",
+  "dashboard_resume": "继续编辑",
+  "dashboard_first_post": "从第一篇文章开始",
+  "dashboard_recent_edits": "最近编辑",
+  "dashboard_tasks": "待办事项",
+  "dashboard_pending_links": "{count} 条友链申请待审核"
 }

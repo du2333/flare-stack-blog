@@ -14,12 +14,14 @@ const DashboardPendingFriendLinkSchema = z.object({
   id: z.number().int().positive(),
   siteName: z.string(),
   siteUrl: z.string(),
+  logoUrl: z.string().nullable(),
   createdAt: coercedDate,
 });
 
 const DashboardRecentCommentSchema = z.object({
   id: z.number().int().positive(),
   userName: z.string().nullable(),
+  userImage: z.string().nullable(),
   postTitle: z.string(),
   postSlug: z.string(),
   snippet: z.string(),

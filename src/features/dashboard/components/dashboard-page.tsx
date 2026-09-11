@@ -4,7 +4,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { ClientOnly, Link, useNavigate } from "@tanstack/react-router";
-import { Pin } from "lucide-react";
+import { ArrowRight, FileText, Pin, Plus } from "lucide-react";
 import { useEffect } from "react";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
 import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
@@ -12,9 +12,14 @@ import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { cn, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import "./dashboard.css";
+import { DashboardIdentity } from "./dashboard-identity";
 
 export function DashboardPage() {
-  const { data } = useSuspenseQuery(dashboardOverviewQuery);
+  const { data } = useSuspenseQuery({
+    ...dashboardOverviewQuery,
+    refetchOnMount: "always",
+  });
   const {
     popularityAlert,
     adminEmailNeedsSetup,
@@ -59,226 +64,273 @@ export function DashboardPage() {
     return () => setPrimaryAction(null);
   }, [createLabel, createPost, isCreating, setPrimaryAction]);
 
+  const [latest, ...otherPosts] = recentPosts;
+  const showTasks =
+    showFriendLinks ||
+    adminEmailNeedsSetup ||
+    defaultSiteIdentity ||
+    !!popularityAlert;
+
   return (
-    <div
-      className="fuwari-card-base p-5 md:p-6 space-y-6 fuwari-onload-animation"
-      style={{ animationDelay: "calc(var(--fuwari-content-delay) + 100ms)" }}
-    >
-      <div className="hidden lg:flex justify-between items-center">
-        <h1 className="text-2xl font-medium fuwari-text-90">
-          {m.admin_overview_title()}
-        </h1>
+    <div className="dashboard-workspace fuwari-card-base">
+      <header className="dashboard-header">
+        <div>
+          <h1>{m.admin_overview_title()}</h1>
+          <p>{m.dashboard_intro()}</p>
+        </div>
         <button
           type="button"
           onClick={() => createPost()}
           disabled={isCreating}
-          className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
+          className="dashboard-button fuwari-btn-regular"
         >
+          <Plus size={18} />
           {createLabel}
         </button>
-      </div>
-
-      <AttentionChips
-        pendingTotal={pendingTotal}
-        popularityAlert={popularityAlert}
-        adminEmailNeedsSetup={adminEmailNeedsSetup}
-        defaultSiteIdentity={defaultSiteIdentity}
-      />
-
-      <section className="space-y-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-sm font-medium fuwari-text-50">
-            {m.admin_overview_continue_writing()}
-          </h2>
-          <Link
-            to="/admin/posts"
-            className="text-sm text-(--fuwari-primary) shrink-0"
-          >
-            {m.admin_overview_all_posts()}
-          </Link>
-        </div>
-        {recentPosts.length > 0 ? (
-          <ul>
-            {recentPosts.map((post) => (
-              <li key={post.id}>
-                <Link
-                  to="/admin/posts/edit/$id"
-                  params={{ id: String(post.id) }}
-                  className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 rounded-xl px-3 py-3 hover:bg-(--fuwari-btn-regular-bg) transition-colors"
-                >
-                  <span className="min-w-0 text-base fuwari-text-90 sm:truncate">
-                    {post.title.trim() || m.common_untitled()}
-                  </span>
-                  <span className="shrink-0 flex items-center gap-2 text-xs fuwari-text-50">
-                    {post.pinnedAt ? (
-                      <span className="inline-flex items-center gap-1 text-(--fuwari-primary)">
-                        <Pin size={12} strokeWidth={1.5} />
-                        {m.admin_posts_pinned()}
-                      </span>
-                    ) : null}
-                    <StatusPill published={post.status === "published"} />
-                    <ClientOnly fallback="-">
-                      {formatTimeAgo(post.updatedAt)}
-                    </ClientOnly>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="px-3 py-8 flex flex-col items-center gap-3 fuwari-text-50">
-            <p>{m.admin_posts_empty_library()}</p>
-            <button
-              type="button"
-              onClick={() => createPost()}
-              disabled={isCreating}
-              className="fuwari-btn-primary rounded-xl h-10 px-5 text-sm font-medium"
-            >
-              {createLabel}
-            </button>
-          </div>
-        )}
-      </section>
-
-      {showFriendLinks || showComments ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-(--fuwari-input-border)">
-          {showFriendLinks ? (
-            <section
-              className={cn("space-y-3", !showComments && "lg:col-span-2")}
-            >
-              <div className="flex items-baseline justify-between gap-3">
-                <h2 className="text-sm font-medium fuwari-text-50">
-                  {m.admin_overview_pending_friend_links()}
-                </h2>
-                <Link
-                  to="/admin/friend-links"
-                  search={{ status: "pending", page: 1 }}
-                  className="text-sm text-(--fuwari-primary) shrink-0"
-                >
-                  {m.admin_overview_review_friend_links()}
-                </Link>
+      </header>
+      <div className="dashboard-layout">
+        <section
+          className="dashboard-resume"
+          aria-label={m.admin_overview_continue_writing()}
+        >
+          {latest ? (
+            <>
+              <div className="dashboard-resume-copy">
+                <p className="dashboard-eyebrow">
+                  {m.admin_overview_continue_writing()}
+                </p>
+                <div className="dashboard-resume-title">
+                  <h2>{latest.title.trim() || m.common_untitled()}</h2>
+                  <StatusPill published={latest.status === "published"} />
+                </div>
+                <p className="dashboard-meta">
+                  <FileText size={16} />
+                  <ClientOnly fallback="—">
+                    {formatTimeAgo(latest.updatedAt)}
+                  </ClientOnly>
+                </p>
               </div>
-              <ul>
-                {pendingFriendLinks.items.map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      to="/admin/friend-links"
-                      search={{ status: "pending", page: 1 }}
-                      className="block rounded-xl px-3 py-3 hover:bg-(--fuwari-btn-regular-bg) transition-colors"
-                    >
-                      <div className="flex items-baseline justify-between gap-3">
-                        <span className="min-w-0 truncate text-sm fuwari-text-90">
-                          {item.siteName}
-                        </span>
-                        <span className="shrink-0 text-xs fuwari-text-50">
-                          <ClientOnly fallback="-">
-                            {formatTimeAgo(item.createdAt)}
-                          </ClientOnly>
-                        </span>
+              <Link
+                to="/admin/posts/edit/$id"
+                params={{ id: String(latest.id) }}
+                className="dashboard-button fuwari-btn-primary"
+              >
+                {m.dashboard_resume()}
+                <ArrowRight size={18} />
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="dashboard-resume-copy">
+                <h2>{m.dashboard_first_post()}</h2>
+                <p>{m.admin_posts_empty_library()}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => createPost()}
+                disabled={isCreating}
+                className="dashboard-button fuwari-btn-primary"
+              >
+                <Plus size={18} />
+                {createLabel}
+              </button>
+            </>
+          )}
+        </section>
+        {otherPosts.length > 0 && (
+          <section className="dashboard-recent">
+            <div className="dashboard-section-heading">
+              <h2>{m.dashboard_recent_edits()}</h2>
+              <Link to="/admin/posts" className="dashboard-text-link">
+                {m.admin_overview_all_posts()}
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+            <ul className="dashboard-posts">
+              {otherPosts.map((post) => (
+                <li key={post.id}>
+                  <Link
+                    to="/admin/posts/edit/$id"
+                    params={{ id: String(post.id) }}
+                    className="dashboard-post"
+                  >
+                    <span className="dashboard-icon">
+                      <FileText size={22} />
+                    </span>
+                    <div className="dashboard-post-copy">
+                      <div className="dashboard-post-title">
+                        <strong>
+                          {post.title.trim() || m.common_untitled()}
+                        </strong>
+                        <StatusPill published={post.status === "published"} />
                       </div>
-                      <p className="mt-0.5 truncate text-xs fuwari-text-50">
-                        {item.siteUrl}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              {pendingFriendLinks.remainingCount > 0 ? (
-                <Link
-                  to="/admin/friend-links"
-                  search={{ status: "pending", page: 1 }}
-                  className="inline-block px-3 text-sm text-(--fuwari-primary)"
-                >
-                  {m.admin_overview_friend_links_remaining({
-                    count: pendingFriendLinks.remainingCount,
-                  })}
-                </Link>
-              ) : null}
-            </section>
-          ) : null}
-
-          {showComments ? (
-            <section
-              className={cn(
-                "space-y-3",
-                !showFriendLinks && "lg:col-span-2",
-                showFriendLinks &&
-                  "lg:border-l lg:border-(--fuwari-input-border) lg:pl-8",
-              )}
-            >
-              <h2 className="text-sm font-medium fuwari-text-50">
-                {m.admin_overview_recent_comments()}
-              </h2>
-              <ul>
-                {recentComments.map((comment) => (
-                  <li key={comment.id}>
-                    <Link
-                      to="/post/$slug"
-                      params={{ slug: comment.postSlug }}
-                      search={{ comment: comment.id }}
-                      className="block rounded-xl px-3 py-3 hover:bg-(--fuwari-btn-regular-bg) transition-colors space-y-1"
-                    >
-                      {comment.snippet ? (
-                        <p className="text-sm fuwari-text-90 line-clamp-2">
-                          {comment.snippet}
-                        </p>
-                      ) : null}
-                      <p className="text-xs fuwari-text-50">
-                        {comment.userName ||
-                          m.admin_overview_activity_anonymous()}
-                        {" · "}
-                        {comment.postTitle}
-                        {" · "}
-                        <ClientOnly fallback="-">
-                          {formatTimeAgo(comment.createdAt)}
+                      <p className="dashboard-meta">
+                        {post.pinnedAt && (
+                          <span className="dashboard-pin">
+                            <Pin size={12} />
+                            {m.admin_posts_pinned()}
+                          </span>
+                        )}
+                        <ClientOnly fallback="—">
+                          {formatTimeAgo(post.updatedAt)}
                         </ClientOnly>
                       </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-        </div>
-      ) : null}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {(showTasks || showComments) && (
+          <div
+            className={cn(
+              "dashboard-activity",
+              showTasks && showComments && "dashboard-activity-split",
+            )}
+          >
+            {showTasks && (
+              <section className="dashboard-tasks">
+                <div className="dashboard-section-heading">
+                  <h2>{m.dashboard_tasks()}</h2>
+                </div>
+                <div className="dashboard-task-scroll">
+                  {showFriendLinks && (
+                    <>
+                      <Link
+                        to="/admin/friend-links"
+                        search={{ status: "pending", page: 1 }}
+                        className="dashboard-task-summary"
+                      >
+                        <span>
+                          {m.dashboard_pending_links({ count: pendingTotal })}
+                        </span>
+                        <ArrowRight size={17} />
+                      </Link>
+                      <ul className="dashboard-list">
+                        {pendingFriendLinks.items.map((item) => (
+                          <li key={item.id}>
+                            <Link
+                              to="/admin/friend-links"
+                              search={{
+                                status: "pending",
+                                page: 1,
+                                search: item.siteUrl,
+                              }}
+                              className="dashboard-link-row"
+                            >
+                              <DashboardIdentity
+                                kind="site"
+                                image={item.logoUrl}
+                                siteUrl={item.siteUrl}
+                              />
+                              <div className="dashboard-row-copy">
+                                <strong>{item.siteName}</strong>
+                                <p>{siteHost(item.siteUrl)}</p>
+                              </div>
+                              <time className="dashboard-time">
+                                <ClientOnly fallback="—">
+                                  {formatTimeAgo(item.createdAt)}
+                                </ClientOnly>
+                              </time>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        to="/admin/friend-links"
+                        search={{ status: "pending", page: 1 }}
+                        className="dashboard-text-link dashboard-review-all"
+                      >
+                        {m.admin_overview_review_friend_links()}
+                        <ArrowRight size={16} />
+                      </Link>
+                    </>
+                  )}
+                  <AttentionChips
+                    popularityAlert={popularityAlert}
+                    adminEmailNeedsSetup={adminEmailNeedsSetup}
+                    defaultSiteIdentity={defaultSiteIdentity}
+                  />
+                </div>
+              </section>
+            )}
+            {showComments && (
+              <section className="dashboard-comments">
+                <div className="dashboard-section-heading">
+                  <h2>{m.admin_overview_recent_comments()}</h2>
+                </div>
+                <ul className="dashboard-list">
+                  {recentComments.map((comment) => (
+                    <li key={comment.id}>
+                      <Link
+                        to="/post/$slug"
+                        params={{ slug: comment.postSlug }}
+                        search={{ comment: comment.id }}
+                        className="dashboard-comment"
+                      >
+                        <DashboardIdentity
+                          kind="user"
+                          image={comment.userImage}
+                        />
+                        <div className="dashboard-row-copy">
+                          <div className="dashboard-comment-byline">
+                            <strong>
+                              {comment.userName ||
+                                m.admin_overview_activity_anonymous()}
+                            </strong>
+                            <time className="dashboard-time">
+                              <ClientOnly fallback="—">
+                                {formatTimeAgo(comment.createdAt)}
+                              </ClientOnly>
+                            </time>
+                          </div>
+                          {comment.snippet && (
+                            <p className="dashboard-comment-snippet">
+                              {comment.snippet}
+                            </p>
+                          )}
+                          <p className="dashboard-comment-source">
+                            {comment.postTitle}
+                            <ArrowRight size={14} />
+                          </p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
+function siteHost(url: string) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
 function AttentionChips({
-  pendingTotal,
   popularityAlert,
   adminEmailNeedsSetup,
   defaultSiteIdentity,
 }: {
-  pendingTotal: number;
   popularityAlert: DashboardOverview["popularityAlert"];
   adminEmailNeedsSetup: boolean;
   defaultSiteIdentity: boolean;
 }) {
-  if (
-    pendingTotal === 0 &&
-    !popularityAlert &&
-    !adminEmailNeedsSetup &&
-    !defaultSiteIdentity
-  ) {
+  if (!popularityAlert && !adminEmailNeedsSetup && !defaultSiteIdentity) {
     return null;
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {pendingTotal > 0 ? (
-        <Link
-          to="/admin/friend-links"
-          search={{ status: "pending", page: 1 }}
-          className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) text-sm font-medium"
-        >
-          {m.admin_overview_pending_friend_links()}
-          <span className="min-w-5 h-5 px-1.5 rounded-full bg-(--fuwari-primary) text-white dark:text-black/75 text-xs grid place-items-center">
-            {pendingTotal}
-          </span>
-        </Link>
-      ) : null}
+    <div className="dashboard-notices">
       {adminEmailNeedsSetup ? (
         <Link
           from="/"

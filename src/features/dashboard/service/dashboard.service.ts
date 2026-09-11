@@ -52,6 +52,7 @@ export async function getDashboardOverview(
         id: item.id,
         siteName: item.siteName,
         siteUrl: item.siteUrl,
+        logoUrl: item.logoUrl,
         createdAt: item.createdAt,
       })),
       remainingCount: Math.max(0, pendingTotal - pendingItems.length),
@@ -62,6 +63,7 @@ export async function getDashboardOverview(
         {
           id: comment.id,
           userName: comment.userName,
+          userImage: comment.userImage,
           postTitle: comment.postTitle,
           postSlug: comment.postSlug,
           snippet: commentSnippet(comment.content),
