@@ -1,8 +1,20 @@
 import type { JSONContent } from "@tiptap/react";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { extractAllImageKeys } from "@/features/posts/utils/content";
-import { MediaTable, PostMediaTable, PostsTable } from "@/lib/db/schema";
+import {
+  MediaTable,
+  PostMediaTable,
+  PostsTable,
+  type PublicPostSnapshot,
+} from "@/lib/db/schema";
+
+export type PostMediaSource = {
+  id: number;
+  contentJson: JSONContent | null;
+  publicSnapshotJson: PublicPostSnapshot | null;
+  coverMediaId: number | null;
+};
 
 function referencedImageKeys(
   contentJson: JSONContent | null | undefined,
@@ -16,19 +28,12 @@ function referencedImageKeys(
   ];
 }
 
-export async function syncPostMedia(db: DB, postId: number) {
-  const [post] = await db
-    .select({
-      contentJson: PostsTable.contentJson,
-      publicSnapshotJson: PostsTable.publicSnapshotJson,
-      coverMediaId: PostsTable.coverMediaId,
-    })
-    .from(PostsTable)
-    .where(eq(PostsTable.id, postId))
-    .limit(1);
+function sameMediaIdSet(existing: Array<number>, next: Set<number>) {
+  if (existing.length !== next.size) return false;
+  return existing.every((mediaId) => next.has(mediaId));
+}
 
-  if (!post) return;
-
+export async function syncPostMedia(db: DB, post: PostMediaSource) {
   const usedKeys = referencedImageKeys(
     post.contentJson,
     post.publicSnapshotJson?.contentJson,
@@ -50,24 +55,32 @@ export async function syncPostMedia(db: DB, postId: number) {
     for (const media of mediaRecords) mediaIds.add(media.id);
   }
 
-  const batchQueries: Array<BatchItem<"sqlite">> = [];
+  const existing = await db
+    .select({ mediaId: PostMediaTable.mediaId })
+    .from(PostMediaTable)
+    .where(eq(PostMediaTable.postId, post.id));
+  const existingIds = existing.map((row) => row.mediaId);
+  if (sameMediaIdSet(existingIds, mediaIds)) return;
 
-  const deleteQuery = db
-    .delete(PostMediaTable)
-    .where(eq(PostMediaTable.postId, postId));
-
+  const statements: Array<BatchItem<"sqlite">> = [];
+  if (existingIds.length > 0) {
+    statements.push(
+      db.delete(PostMediaTable).where(eq(PostMediaTable.postId, post.id)),
+    );
+  }
   if (mediaIds.size > 0) {
-    batchQueries.push(
+    statements.push(
       db.insert(PostMediaTable).values(
         [...mediaIds].map((mediaId) => ({
-          postId,
+          postId: post.id,
           mediaId,
         })),
       ),
     );
   }
-
-  await db.batch([deleteQuery, ...batchQueries]);
+  const [head, ...rest] = statements;
+  if (!head) return;
+  await db.batch([head, ...rest]);
 }
 
 export async function getPostsByMediaKey(db: DB, key: string) {
@@ -78,7 +91,12 @@ export async function getPostsByMediaKey(db: DB, key: string) {
       slug: PostsTable.slug,
       status: PostsTable.status,
       coverMediaId: PostsTable.coverMediaId,
-      snapshot: PostsTable.publicSnapshotJson,
+      snapshotCoverKey: sql<
+        string | null
+      >`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.key')`,
+      snapshotCoverMediaId: sql<
+        number | null
+      >`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.mediaId')`,
       mediaId: MediaTable.id,
     })
     .from(PostsTable)
@@ -93,8 +111,9 @@ export async function getPostsByMediaKey(db: DB, key: string) {
     status: post.status,
     isCover:
       post.coverMediaId === post.mediaId ||
-      post.snapshot?.cover?.key === key ||
-      post.snapshot?.cover?.mediaId === post.mediaId,
+      post.snapshotCoverKey === key ||
+      (post.snapshotCoverMediaId != null &&
+        Number(post.snapshotCoverMediaId) === post.mediaId),
   }));
 }
 

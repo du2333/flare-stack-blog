@@ -161,9 +161,8 @@ export async function replaceImage(
 export async function deleteUnused(
   context: DbContext & { executionCtx: ExecutionContext },
 ) {
-  const keys = await MediaRepo.getUnusedMediaKeys(context.db);
+  const keys = await MediaRepo.deleteUnusedMedia(context.db);
   for (const key of keys) {
-    await MediaRepo.deleteMedia(context.db, key);
     context.executionCtx.waitUntil(
       Storage.deleteFromR2(context.env, key).catch((deleteError) =>
         console.error(

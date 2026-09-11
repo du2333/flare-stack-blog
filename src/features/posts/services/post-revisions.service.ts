@@ -211,7 +211,7 @@ export async function restorePostRevision(
     return err({ reason: "POST_NOT_FOUND" });
   }
 
-  await syncPostMedia(context.db, restoredPost.id);
+  await syncPostMedia(context.db, restoredPost);
 
   return ok({
     post: restoredPost,

@@ -388,6 +388,14 @@ describe("MediaService", () => {
         (await MediaService.deleteImage(adminContext, media.key)).error?.reason,
       ).toBe("MEDIA_IN_USE");
 
+      const listed = await MediaService.getMediaList(adminContext, {});
+      expect(listed.items.find((item) => item.key === media.key)?.isCover).toBe(
+        true,
+      );
+      const linked = await MediaService.getLinkedPosts(adminContext, media.key);
+      expect(linked).toHaveLength(1);
+      expect(linked[0].isCover).toBe(true);
+
       unwrap(await PostService.unpublishPost(adminContext, { id: postId }));
       expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
         false,

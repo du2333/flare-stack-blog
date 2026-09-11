@@ -170,6 +170,10 @@ export async function getTotalMediaSize(db: DB) {
   return stats.totalBytes;
 }
 
+const snapshotCoverMediaId = sql<
+  number | null
+>`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.mediaId')`;
+
 async function withUsage(
   db: DB,
   items: Array<Media>,
@@ -189,13 +193,13 @@ async function withUsage(
     db
       .select({
         coverMediaId: PostsTable.coverMediaId,
-        snapshot: PostsTable.publicSnapshotJson,
+        snapshotCoverMediaId,
       })
       .from(PostsTable)
       .where(
         or(
           inArray(PostsTable.coverMediaId, ids),
-          sql`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.mediaId') is not null`,
+          inArray(snapshotCoverMediaId, ids),
         ),
       ),
   ]);
@@ -206,8 +210,9 @@ async function withUsage(
   const coverIds = new Set<number>();
   for (const row of coverRows) {
     if (row.coverMediaId != null) coverIds.add(row.coverMediaId);
-    const snapshotId = row.snapshot?.cover?.mediaId;
-    if (snapshotId != null) coverIds.add(snapshotId);
+    if (row.snapshotCoverMediaId != null) {
+      coverIds.add(Number(row.snapshotCoverMediaId));
+    }
   }
 
   return items.map((item) => ({
@@ -215,4 +220,14 @@ async function withUsage(
     postCount: postCountById.get(item.id) ?? 0,
     isCover: coverIds.has(item.id),
   }));
+}
+
+export async function deleteUnusedMedia(db: DB): Promise<Array<string>> {
+  const rows = await db
+    .delete(MediaTable)
+    .where(
+      sql`not exists (select 1 from ${PostMediaTable} where ${PostMediaTable.mediaId} = ${MediaTable.id})`,
+    )
+    .returning({ key: MediaTable.key });
+  return rows.map((row) => row.key);
 }

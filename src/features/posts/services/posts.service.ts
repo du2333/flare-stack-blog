@@ -370,7 +370,7 @@ export async function updatePost(
     updateData.contentJson !== undefined ||
     updateData.coverMediaId !== undefined
   ) {
-    await syncPostMedia(context.db, updatedPost.id);
+    await syncPostMedia(context.db, updatedPost);
   }
 
   return ok(stripPublicSnapshot(updatedPost));
@@ -452,8 +452,15 @@ export async function publishPost(
     snapshotContent,
   );
   const previousPublicSlug = publishedPost.publicSlug;
-  await PostRepo.writePublicSnapshot(context.db, publishedPost.id, snapshot);
-  await syncPostMedia(context.db, publishedPost.id);
+  const published = await PostRepo.writePublicSnapshot(
+    context.db,
+    publishedPost.id,
+    snapshot,
+  );
+  if (!published) {
+    return err({ reason: "POST_NOT_FOUND" });
+  }
+  await syncPostMedia(context.db, published);
 
   await SearchService.upsert(context, {
     id: publishedPost.id,
@@ -484,8 +491,11 @@ export async function unpublishPost(
 
   const publicSlug =
     post.publicSlug ?? post.publicSnapshotJson?.slug ?? post.slug;
-  await PostRepo.clearPublicSnapshot(context.db, post.id);
-  await syncPostMedia(context.db, post.id);
+  const unpublished = await PostRepo.clearPublicSnapshot(context.db, post.id);
+  if (!unpublished) {
+    return err({ reason: "POST_NOT_FOUND" });
+  }
+  await syncPostMedia(context.db, unpublished);
   await SearchService.deleteIndex(context, { id: post.id });
   await invalidate.postDeleted(context, { slug: publicSlug });
 
