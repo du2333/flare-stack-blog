@@ -1593,5 +1593,16 @@
   "media_unused_cleanup": "Remove unreferenced images",
   "media_unused_confirm": "Delete these {count} images without post references? This cannot be undone.",
   "media_reference_fail": "Could not load post references",
-  "media_image_unavailable": "Image preview unavailable"
+  "media_image_unavailable": "Image preview unavailable",
+  "taxonomy_workspace_hint": "Choose a category or tag to explore its posts.",
+  "taxonomy_scope_current": "Current assignment",
+  "taxonomy_scope_public": "Public usage",
+  "taxonomy_scope_current_hint": "Includes editable content of both draft and published posts.",
+  "taxonomy_scope_public_hint": "Uses the current public version; unpublished edits are not reflected here.",
+  "taxonomy_public_short": "Public {count}",
+  "taxonomy_empty_selection": "Choose a category or tag to see related posts.",
+  "taxonomy_current_empty": "No posts are currently assigned here.",
+  "taxonomy_public_empty": "No public versions currently use this category or tag.",
+  "taxonomy_usage_summary": "Current assignment: {current} posts · Public usage: {public} posts",
+  "taxonomy_posts_search": "Search related posts"
 }

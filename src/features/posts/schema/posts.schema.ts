@@ -141,7 +141,26 @@ export const GenerateSlugInputSchema = z.object({
   excludeId: z.number().optional(),
 });
 
+export const AdminTaxonomyFilterSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("category"),
+    id: z.number().int().positive(),
+    scope: z.enum(["current", "public"]),
+  }),
+  z.object({
+    kind: z.literal("tag"),
+    id: z.number().int().positive(),
+    scope: z.enum(["current", "public"]),
+  }),
+  z.object({
+    kind: z.literal("uncategorized"),
+    scope: z.enum(["current", "public"]),
+  }),
+]);
+export type AdminTaxonomyFilter = z.infer<typeof AdminTaxonomyFilterSchema>;
+
 export const GetPostsInputSchema = z.object({
+  taxonomy: AdminTaxonomyFilterSchema.optional(),
   offset: z.number().optional(),
   limit: z.number().optional(),
   status: z.custom<PostStatus>().optional(),
@@ -179,7 +198,7 @@ export const AdminPostListPageSchema = z.object({
   items: z.array(AdminPostListItemSchema),
   total: z.number().int().nonnegative(),
   statusCounts: AdminPostStatusCountsSchema.describe(
-    "Counts matching search and publicOnly before status filtering or pagination.",
+    "Counts matching search, publicOnly and taxonomy scope before status filtering or pagination.",
   ),
 });
 

@@ -15,11 +15,13 @@ import {
 } from "drizzle-orm";
 import type { SortDirection, SortField } from "@/features/posts/data/helper";
 import {
+  adminPostTextColumns,
   buildPostOrderByClause,
   buildPostWhereClause,
 } from "@/features/posts/data/helper";
 import { mapSnapshotToPublicPost } from "@/features/posts/public-snapshot";
 import type {
+  AdminTaxonomyFilter,
   PostItem,
   PostListItem,
 } from "@/features/posts/schema/posts.schema";
@@ -110,6 +112,7 @@ export async function getPosts(
     status?: PostStatus;
     publicOnly?: boolean;
     search?: string;
+    taxonomy?: AdminTaxonomyFilter;
     sortDir?: SortDirection;
     sortBy?: SortField;
   } = {},
@@ -122,17 +125,24 @@ export async function getPosts(
     ...filters
   } = options;
   const whereClause = buildPostWhereClause(filters);
-  const orderByClause = buildPostOrderByClause(sortDir, sortBy);
+  const publicScope = filters.taxonomy?.scope === "public";
+  const orderByClause = buildPostOrderByClause(sortDir, sortBy, publicScope);
+  const snapshotDate = (field: "publishedAt" | "pinnedAt") =>
+    sql<
+      string | null
+    >`json_extract(${PostsTable.publicSnapshotJson}, ${`$.${field}`})`.mapWith(
+      (value) => (value == null ? null : new Date(value)),
+    );
 
   const posts = await db
     .select({
       id: PostsTable.id,
-      title: PostsTable.title,
-      summary: PostsTable.summary,
-      slug: PostsTable.slug,
+      ...adminPostTextColumns(filters.taxonomy),
       status: PostsTable.status,
-      publishedAt: PostsTable.publishedAt,
-      pinnedAt: PostsTable.pinnedAt,
+      publishedAt: publicScope
+        ? snapshotDate("publishedAt")
+        : PostsTable.publishedAt,
+      pinnedAt: publicScope ? snapshotDate("pinnedAt") : PostsTable.pinnedAt,
       categoryId: PostsTable.categoryId,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
@@ -151,6 +161,7 @@ export async function getPostsCount(
     status?: PostStatus;
     publicOnly?: boolean;
     search?: string;
+    taxonomy?: AdminTaxonomyFilter;
   } = {},
 ) {
   const whereClause = buildPostWhereClause(options);
@@ -164,7 +175,11 @@ export async function getPostsCount(
 /** Status facets use the same search predicate as the paginated Admin list. */
 export async function getAdminPostStatusCounts(
   db: DB,
-  options: { publicOnly?: boolean; search?: string } = {},
+  options: {
+    publicOnly?: boolean;
+    search?: string;
+    taxonomy?: AdminTaxonomyFilter;
+  } = {},
 ) {
   const rows = await db
     .select({ status: PostsTable.status, count: count() })

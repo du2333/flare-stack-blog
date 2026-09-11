@@ -254,6 +254,7 @@ export async function listAdminPostsPage(
     PostRepo.getAdminPostStatusCounts(context.db, {
       publicOnly: data.publicOnly,
       search: data.search,
+      taxonomy: data.taxonomy,
     }),
   ]);
   const total =
@@ -274,6 +275,7 @@ export async function getPosts(context: DbContext, data: GetPostsInput) {
     status: data.status,
     publicOnly: data.publicOnly,
     search: data.search,
+    taxonomy: data.taxonomy,
     sortDir: data.sortDir,
     sortBy: data.sortBy,
   });
@@ -287,6 +289,7 @@ export async function getPostsCount(
     status: data.status,
     publicOnly: data.publicOnly,
     search: data.search,
+    taxonomy: data.taxonomy,
   });
 }
 

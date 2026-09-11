@@ -122,11 +122,15 @@ export async function getAllCategoriesWithCount(
   return await query;
 }
 
-export async function countUncategorizedPosts(db: DB) {
+export async function countUncategorizedPosts(db: DB, publicOnly = false) {
   const [row] = await db
     .select({ postCount: count() })
     .from(PostsTable)
-    .where(isNull(PostsTable.categoryId));
+    .where(
+      publicOnly
+        ? sql`${PostsTable.publicSnapshotJson} IS NOT NULL AND NOT EXISTS (SELECT 1 FROM ${CategoriesTable} WHERE ${CategoriesTable.id} = ${snapshotCategoryId})`
+        : isNull(PostsTable.categoryId),
+    );
   return Number(row?.postCount ?? 0);
 }
 

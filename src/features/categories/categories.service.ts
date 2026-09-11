@@ -31,15 +31,32 @@ export async function getCategories(
   data: GetCategoriesInput = {},
 ) {
   const { sortBy = "name", sortDir = "asc", publicOnly = false } = data;
-  const [items, uncategorizedPostCount] = await Promise.all([
+  const [
+    items,
+    uncategorizedPostCount,
+    publicItems,
+    uncategorizedPublicPostCount,
+  ] = await Promise.all([
     CategoryRepo.getAllCategoriesWithCount(context.db, {
       sortBy,
       sortDir,
       publicOnly,
     }),
     CategoryRepo.countUncategorizedPosts(context.db),
+    CategoryRepo.getAllCategoriesWithCount(context.db, { publicOnly: true }),
+    CategoryRepo.countUncategorizedPosts(context.db, true),
   ]);
-  return { items, uncategorizedPostCount };
+  const publicCounts = new Map(
+    publicItems.map((item) => [item.id, item.postCount]),
+  );
+  return {
+    items: items.map((item) => ({
+      ...item,
+      publicPostCount: publicCounts.get(item.id) ?? 0,
+    })),
+    uncategorizedPostCount,
+    uncategorizedPublicPostCount,
+  };
 }
 
 export const createCategory = async (

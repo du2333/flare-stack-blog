@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, ne, sql } from "drizzle-orm";
+import { and, asc, count, countDistinct, desc, eq, ne, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { PostsTable, PostTagsTable, TagsTable } from "@/lib/db/schema";
 
@@ -33,6 +33,33 @@ export async function getAllTagsWithCount(
   } = {},
 ) {
   const { sortBy = "name", sortDir = "asc", publicOnly = false } = options;
+  if (publicOnly) {
+    const orderFn = sortDir === "asc" ? asc : desc;
+    return await db
+      .select({
+        id: TagsTable.id,
+        name: TagsTable.name,
+        createdAt: TagsTable.createdAt,
+        postCount: countDistinct(PostsTable.id).as("postCount"),
+      })
+      .from(PostsTable)
+      .innerJoin(
+        sql`json_each(${PostsTable.publicSnapshotJson}, '$.tagIds') AS public_tag`,
+        sql`true`,
+      )
+      .innerJoin(TagsTable, eq(TagsTable.id, sql`public_tag.value`))
+      .where(sql`${PostsTable.publicSnapshotJson} IS NOT NULL`)
+      .groupBy(TagsTable.id)
+      .orderBy(
+        orderFn(
+          sortBy === "postCount"
+            ? sql`postCount`
+            : sortBy === "createdAt"
+              ? TagsTable.createdAt
+              : TagsTable.name,
+        ),
+      );
+  }
 
   const query = db
     .select({
@@ -45,14 +72,6 @@ export async function getAllTagsWithCount(
     .leftJoin(PostTagsTable, eq(TagsTable.id, PostTagsTable.tagId))
     .groupBy(TagsTable.id)
     .$dynamic();
-
-  if (publicOnly) {
-    // Only count published posts
-    query
-      .innerJoin(PostsTable, eq(PostTagsTable.postId, PostsTable.id))
-      .where(sql`${PostsTable.publicSnapshotJson} IS NOT NULL`)
-      .having(gt(count(PostTagsTable.postId), 0));
-  }
 
   const orderFn = sortDir === "asc" ? asc : desc;
 
@@ -189,11 +208,10 @@ export async function getPublishedPostsByTagId(db: DB, tagId: number) {
         "slug",
       ),
     })
-    .from(PostTagsTable)
-    .innerJoin(PostsTable, eq(PostTagsTable.postId, PostsTable.id))
+    .from(PostsTable)
     .where(
       and(
-        eq(PostTagsTable.tagId, tagId),
+        sql`EXISTS (SELECT 1 FROM json_each(${PostsTable.publicSnapshotJson}, '$.tagIds') AS public_tag WHERE public_tag.value = ${tagId})`,
         sql`${PostsTable.publicSnapshotJson} IS NOT NULL`,
       ),
     );

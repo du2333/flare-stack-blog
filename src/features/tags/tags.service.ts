@@ -62,7 +62,17 @@ export async function getTagsWithCount(
   data: GetTagsInput = {},
 ) {
   // We don't cache this for now as it's for admin management
-  return await TagRepo.getAllTagsWithCount(context.db, data);
+  const [items, publicItems] = await Promise.all([
+    TagRepo.getAllTagsWithCount(context.db, data),
+    TagRepo.getAllTagsWithCount(context.db, { publicOnly: true }),
+  ]);
+  const publicCounts = new Map(
+    publicItems.map((item) => [item.id, item.postCount]),
+  );
+  return items.map((item) => ({
+    ...item,
+    publicPostCount: publicCounts.get(item.id) ?? 0,
+  }));
 }
 
 /**

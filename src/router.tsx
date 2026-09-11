@@ -25,7 +25,7 @@ export function getRouter() {
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: ErrorPage,
     defaultViewTransition: false,
-    // These data-driven lists restore their own inner scroll position after loading.
+    // These workspaces manage their own inner scroll areas.
     scrollRestoration: ({ location }) =>
       !isAdminContentWorkspace(location.pathname),
   });

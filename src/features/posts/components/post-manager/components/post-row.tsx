@@ -11,15 +11,17 @@ import { createPortal } from "react-dom";
 import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import type { TaxonomyReturn } from "@/components/admin/taxonomy-state";
 import type { PostListItem, SortField } from "../types";
 
 interface PostRowProps {
   post: PostListItem;
   sortBy: SortField;
+  editorState?: () => { taxonomyReturn: TaxonomyReturn };
   onDelete: (post: PostListItem, trigger: HTMLButtonElement | null) => void;
 }
 
-export function PostRow({ post, sortBy, onDelete }: PostRowProps) {
+export function PostRow({ post, sortBy, onDelete, editorState }: PostRowProps) {
   const title = post.title.trim() || m.common_untitled();
   const date = post[sortBy];
   return (
@@ -34,6 +36,7 @@ export function PostRow({ post, sortBy, onDelete }: PostRowProps) {
           <Link
             to="/admin/posts/edit/$id"
             params={{ id: String(post.id) }}
+            state={editorState}
             className="post-list-title-link"
           >
             <strong>{title}</strong>
@@ -67,6 +70,7 @@ export function PostRow({ post, sortBy, onDelete }: PostRowProps) {
           <Link
             to="/admin/posts/edit/$id"
             params={{ id: String(post.id) }}
+            state={editorState}
             aria-label={m.admin_posts_edit_named({ title })}
           >
             {m.admin_posts_action_edit()}

@@ -1585,5 +1585,16 @@
   "media_unused_cleanup": "清理未引用图片",
   "media_unused_confirm": "确定删除这 {count} 张未被文章引用的图片吗？此操作无法撤销。",
   "media_reference_fail": "无法加载引用信息",
-  "media_image_unavailable": "无法预览图片"
+  "media_image_unavailable": "无法预览图片",
+  "taxonomy_workspace_hint": "选中分类或标签，查看对应的文章。",
+  "taxonomy_scope_current": "当前归属",
+  "taxonomy_scope_public": "公开使用",
+  "taxonomy_scope_current_hint": "包含草稿和已发布文章的编辑内容。",
+  "taxonomy_scope_public_hint": "根据当前公开版本显示，未发布的修改不会影响这里。",
+  "taxonomy_public_short": "公开 {count}",
+  "taxonomy_empty_selection": "选择一个分类或标签，查看相关文章。",
+  "taxonomy_current_empty": "当前没有归属到这里的文章。",
+  "taxonomy_public_empty": "当前没有公开版本使用这个分类或标签。",
+  "taxonomy_usage_summary": "当前归属 {current} 篇 · 公开使用 {public} 篇",
+  "taxonomy_posts_search": "搜索关联文章"
 }

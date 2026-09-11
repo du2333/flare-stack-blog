@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Loader2, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { usePostEditorReturn } from "./post-editor-return";
 import { readPostListLocation } from "../post-manager/list-position";
 import { m } from "@/paraglide/messages";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ export function PostEditorHeader({
   infoOpen,
   onOpenHistory,
 }: PostEditorHeaderProps) {
+  const taxonomyReturn = usePostEditorReturn();
   const [returnLocation] = useState(readPostListLocation);
   const menuRef = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -71,14 +73,26 @@ export function PostEditorHeader({
         : m.editor_header_publish();
   return (
     <header className="post-editor-header">
-      <Link
-        to="/admin/posts"
-        search={returnLocation}
-        className="post-editor-back hidden lg:inline-flex"
-      >
-        <ArrowLeft size={17} />
-        {m.editor_back_to_posts()}
-      </Link>
+      {taxonomyReturn ? (
+        <Link
+          to="/admin/tags"
+          search={taxonomyReturn.search}
+          state={{ taxonomyScrollTop: taxonomyReturn.scrollTop }}
+          className="post-editor-back hidden lg:inline-flex"
+        >
+          <ArrowLeft size={17} />
+          {m.taxonomy_manager_title()}
+        </Link>
+      ) : (
+        <Link
+          to="/admin/posts"
+          search={returnLocation}
+          className="post-editor-back hidden lg:inline-flex"
+        >
+          <ArrowLeft size={17} />
+          {m.editor_back_to_posts()}
+        </Link>
+      )}
       <p
         role="status"
         className={cn(
