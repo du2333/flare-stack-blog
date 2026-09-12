@@ -35,7 +35,9 @@ export function PublicLayout({
       state.matches.some((match) => match.routeId.includes("/_auth")),
   });
   const isFocusedPage =
-    isAuthPage || location.pathname === "/submit-friend-link";
+    isAuthPage ||
+    location.pathname === "/submit-friend-link" ||
+    location.pathname === "/profile";
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
 
   return (

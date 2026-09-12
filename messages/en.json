@@ -1694,5 +1694,14 @@
   "friend_apply_failed": "Submission failed. Your details are preserved; please try again.",
   "friend_apply_conflict": "The application status has changed. Go back and refresh before trying again.",
   "friend_apply_choose_site": "Choose a site",
-  "friend_apply_sending": "Submitting…"
+  "friend_apply_sending": "Submitting…",
+  "account_title": "My account",
+  "account_intro": "Manage your public profile and account preferences.",
+  "account_back": "Back to blog",
+  "account_avatar_preview": "Avatar preview",
+  "account_email": "Account email",
+  "account_save": "Save profile",
+  "account_password_hint": "Update your sign-in password here when needed.",
+  "account_change_password": "Change password",
+  "account_retry": "Retry"
 }

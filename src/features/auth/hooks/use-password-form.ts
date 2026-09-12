@@ -1,4 +1,5 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -26,6 +27,10 @@ const createPasswordSchema = (messages: Messages) =>
 type PasswordSchema = z.infer<ReturnType<typeof createPasswordSchema>>;
 
 export function usePasswordForm() {
+  const [feedback, setFeedback] = useState<{
+    error: boolean;
+    message: string;
+  } | null>(null);
   const {
     register,
     handleSubmit,
@@ -36,22 +41,28 @@ export function usePasswordForm() {
   });
 
   const onSubmit = async (data: PasswordSchema) => {
-    const { error } = await authClient.changePassword({
-      newPassword: data.newPassword,
-      currentPassword: data.currentPassword,
-      revokeOtherSessions: true,
-    });
-    if (error) {
-      toast.error(m.profile_toast_update_failed(), {
-        description:
-          getPasswordAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+    setFeedback(null);
+    try {
+      const { error } = await authClient.changePassword({
+        newPassword: data.newPassword,
+        currentPassword: data.currentPassword,
+        revokeOtherSessions: true,
       });
-      return;
+      if (error) {
+        setFeedback({
+          error: true,
+          message:
+            getPasswordAuthErrorMessage(error, m) ??
+            m.auth_error_default_desc(),
+        });
+        return;
+      }
+      toast.success(m.profile_toast_password_updated());
+      setFeedback({ error: false, message: m.profile_toast_security_synced() });
+      reset();
+    } catch {
+      setFeedback({ error: true, message: m.profile_toast_update_failed() });
     }
-    toast.success(m.profile_toast_password_updated(), {
-      description: m.profile_toast_security_synced(),
-    });
-    reset();
   };
 
   return {
@@ -59,5 +70,10 @@ export function usePasswordForm() {
     errors,
     handleSubmit: handleSubmit(onSubmit),
     isSubmitting,
+    feedback,
+    clear: () => {
+      reset();
+      setFeedback(null);
+    },
   };
 }

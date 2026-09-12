@@ -1686,5 +1686,14 @@
   "friend_apply_failed": "提交未成功，填写内容已保留，请稍后重试。",
   "friend_apply_conflict": "申请状态已变化，请返回并刷新状态后再试。",
   "friend_apply_choose_site": "选择站点",
-  "friend_apply_sending": "正在提交…"
+  "friend_apply_sending": "正在提交…",
+  "account_title": "我的账号",
+  "account_intro": "管理你的公开资料与账号偏好。",
+  "account_back": "返回博客",
+  "account_avatar_preview": "头像预览",
+  "account_email": "登录邮箱",
+  "account_save": "保存资料",
+  "account_password_hint": "需要时可在此更新登录密码。",
+  "account_change_password": "修改密码",
+  "account_retry": "重试"
 }

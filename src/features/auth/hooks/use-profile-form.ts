@@ -1,4 +1,5 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -30,33 +31,49 @@ interface UseProfileFormOptions {
 export function useProfileForm(options: UseProfileFormOptions) {
   const { user } = options;
 
+  const [feedback, setFeedback] = useState<{
+    error: boolean;
+    message: string;
+  } | null>(null);
+  const form = useForm<ProfileSchema>({
+    resolver: standardSchemaResolver(createProfileSchema(m)),
+    defaultValues: { name: user?.name || "", image: user?.image || "" },
+  });
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProfileSchema>({
-    resolver: standardSchemaResolver(createProfileSchema(m)),
-    values: {
-      name: user?.name || "",
-      image: user?.image || "",
-    },
-  });
+    reset,
+    watch,
+    formState: { errors, isSubmitting, isDirty },
+  } = form;
+  useEffect(() => {
+    if (!isDirty && !isSubmitting)
+      reset({ name: user?.name || "", image: user?.image || "" });
+    // Session refreshes must not overwrite a draft; only react to incoming profile changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.name, user?.image, reset]);
 
   const onSubmit = async (data: ProfileSchema) => {
-    const { error } = await authClient.updateUser({
-      name: data.name,
-      image: data.image,
-    });
-    if (error) {
-      toast.error(m.profile_toast_update_failed(), {
-        description:
-          getProfileAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+    setFeedback(null);
+    try {
+      const { error } = await authClient.updateUser({
+        name: data.name,
+        image: data.image || "",
       });
-      return;
+      if (error) {
+        setFeedback({
+          error: true,
+          message:
+            getProfileAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+        });
+        return;
+      }
+      reset(data);
+      setFeedback({ error: false, message: m.profile_toast_profile_updated() });
+      toast.success(m.profile_toast_profile_updated());
+    } catch {
+      setFeedback({ error: true, message: m.profile_toast_update_failed() });
     }
-    toast.success(m.profile_toast_profile_updated(), {
-      description: m.profile_toast_name_changed({ name: data.name }),
-    });
   };
 
   return {
@@ -64,5 +81,8 @@ export function useProfileForm(options: UseProfileFormOptions) {
     errors,
     handleSubmit: handleSubmit(onSubmit),
     isSubmitting,
+    isDirty,
+    image: watch("image") || "",
+    feedback,
   };
 }

@@ -14,11 +14,13 @@ export function useNotificationToggle(userId: string | undefined) {
     data: availability,
     isLoading: isAvailabilityLoading,
     error: availabilityError,
+    refetch: reloadAvailability,
   } = useQuery(notificationAvailabilityQuery(!!userId));
   const {
     data: notificationStatus,
     isLoading,
     error: queryError,
+    refetch: reloadStatus,
   } = useQuery(replyNotificationStatusQuery(!!userId));
   const currentEnabled = notificationStatus?.enabled;
 
@@ -41,6 +43,12 @@ export function useNotificationToggle(userId: string | undefined) {
     enabled: currentEnabled,
     isLoading: isLoading || isAvailabilityLoading,
     isPending: mutation.isPending,
+    isError: !!(queryError || availabilityError || mutation.error),
+    reload: () => {
+      void reloadAvailability();
+      void reloadStatus();
+      mutation.reset();
+    },
     toggle: () => {
       if (isLoading || isAvailabilityLoading) {
         toast.message(m.profile_notify_status_loading());

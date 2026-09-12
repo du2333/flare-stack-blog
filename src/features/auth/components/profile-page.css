@@ -1,0 +1,332 @@
+.account-page {
+  width: 100%;
+  max-width: 840px;
+  margin-inline: auto;
+  padding: 32px;
+  color: var(--fuwari-fg);
+}
+.account-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 20px;
+  margin-bottom: 32px;
+}
+.account-heading h1 {
+  position: relative;
+  padding-left: 20px;
+  font-size: 28px;
+  font-weight: 700;
+}
+.account-heading h1::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  width: 5px;
+  height: 1em;
+  border-radius: 4px;
+  background: var(--fuwari-primary);
+}
+.account-heading > a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--fuwari-primary);
+}
+.account-heading > p {
+  grid-column: 1/-1;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--fuwari-fg-50);
+}
+.account-profile {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 32px;
+  padding: 0 20px 30px;
+}
+.account-avatar-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  padding-top: 4px;
+}
+.account-avatar {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.account-page fieldset {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.account-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.account-field label,
+.account-email > span {
+  font-size: 14px;
+  color: var(--fuwari-fg-75);
+  font-weight: 500;
+}
+.account-page .account-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: var(--fuwari-fg);
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 10%,
+    var(--fuwari-card-bg)
+  );
+  border: 1px solid transparent;
+  border-radius: 12px;
+  outline: none;
+  box-shadow: none;
+  transition:
+    background-color 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.account-page .account-field input:hover {
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 15%,
+    var(--fuwari-card-bg)
+  );
+}
+.account-page .account-field input:focus {
+  background: var(--fuwari-btn-regular-bg);
+  border-color: color-mix(in srgb, var(--fuwari-primary) 55%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--fuwari-primary) 12%, transparent);
+}
+.account-field input::placeholder {
+  color: var(--fuwari-fg-30);
+}
+.account-email p {
+  font-size: 14px;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+.account-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.account-save > button {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.account-feedback {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fuwari-primary);
+}
+.account-feedback[data-error="true"] {
+  color: var(--fuwari-danger-fg);
+}
+.account-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.account-page a:focus-visible,
+.account-page button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.account-setting {
+  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+}
+.account-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 20px;
+}
+.account-setting-row h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+.account-setting-row p {
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-top: 6px;
+}
+.account-text-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 44px;
+  color: var(--fuwari-primary);
+  font-size: 14px;
+  border-radius: 8px;
+}
+.account-text-button svg {
+  transition: transform 320ms var(--fuwari-motion-ease);
+}
+.account-chevron-open {
+  transform: rotate(180deg);
+}
+.account-switch {
+  position: relative;
+  width: 48px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+.account-switch::before {
+  content: "";
+  position: absolute;
+  inset: 8px 0;
+  border-radius: 20px;
+  background: var(--fuwari-input-bg);
+  transition: background-color 200ms;
+}
+.account-switch[aria-checked="true"]::before {
+  background: var(--fuwari-primary);
+}
+.account-switch > span {
+  position: absolute;
+  left: 3px;
+  top: 11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: white;
+  color: var(--fuwari-primary);
+  transition: transform 250ms var(--fuwari-motion-ease);
+}
+.account-switch[aria-checked="true"] > span {
+  transform: translateX(20px);
+}
+.account-password-disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 320ms var(--fuwari-motion-ease),
+    opacity 180ms;
+}
+.account-password-disclosure[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.account-password-disclosure > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.account-password-form {
+  padding: 4px 20px 28px;
+}
+.account-password-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.account-footer {
+  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  padding: 20px 20px 0;
+  display: flex;
+  justify-content: center;
+}
+.account-footer button {
+  padding-inline: 12px;
+  transition:
+    background-color 180ms,
+    color 180ms;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--fuwari-danger-fg);
+  border-radius: 8px;
+  font-size: 14px;
+}
+.account-footer button:hover {
+  color: var(--fuwari-danger-fg);
+  background: var(--fuwari-danger-bg);
+}
+@media (max-width: 639px) {
+  .account-page {
+    padding: 24px;
+  }
+  .account-heading {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .account-heading h1 {
+    font-size: 24px;
+  }
+  .account-heading > p {
+    padding-left: 0;
+  }
+  .account-heading > a {
+    font-size: 12px;
+  }
+  .account-profile {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 0 0 24px;
+  }
+  .account-avatar {
+    width: 88px;
+    height: 88px;
+  }
+  .account-page .account-field input {
+    font-size: 16px;
+  }
+  .account-setting-row {
+    padding: 22px 0;
+    gap: 16px;
+  }
+  .account-text-button {
+    font-size: 13px;
+  }
+  .account-password-form {
+    padding: 0 0 24px;
+  }
+  .account-password-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-page .account-field input,
+  .account-text-button svg,
+  .account-switch::before,
+  .account-switch > span,
+  .account-password-disclosure {
+    transition: none;
+  }
+}
