@@ -3,7 +3,6 @@ import {
   useRouteContext,
   useRouterState,
 } from "@tanstack/react-router";
-import { useState } from "react";
 import type { PublicLayoutProps } from "@/components/layout/layout-props";
 import {
   getPublicImageSrc,
@@ -12,7 +11,6 @@ import {
 import { cn } from "@/lib/utils";
 import { BackToTop } from "./back-to-top";
 import { Footer } from "./footer";
-import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
 import { PageFade } from "./page-fade";
 import { Sidebar } from "./sidebar";
@@ -30,7 +28,6 @@ export function PublicLayout({
   logout,
 }: PublicLayoutProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const isAuthPage = useRouterState({
@@ -41,20 +38,12 @@ export function PublicLayout({
 
   return (
     <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
-      <MobileMenu
-        navOptions={navOptions}
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        user={user}
-        logout={logout}
-      />
-
       {/* Top row: Navbar - sticky */}
       <div className="sticky top-0 z-50 pointer-events-none">
         <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-0 md:px-4">
           <Navbar
             navOptions={navOptions}
-            onMenuClick={() => setIsMenuOpen(true)}
+            logout={logout}
             user={user}
             isLoading={isSessionLoading}
             bannerHeightVh={bannerHeightVh}

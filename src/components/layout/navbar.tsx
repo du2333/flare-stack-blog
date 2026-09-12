@@ -1,164 +1,216 @@
-import { Link, useRouteContext } from "@tanstack/react-router";
-import { Home, Menu, Search, UserIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Link, useLocation, useRouteContext } from "@tanstack/react-router";
+import { ChevronDown, Home, Menu, Search, UserIcon, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { NavOption, UserInfo } from "@/components/layout/layout-props";
+import type { NavOption, UserInfo } from "./layout-props";
+import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "./language-switcher";
 import { PublicNavLink } from "./public-nav-link";
+import { MobileMenu } from "./mobile-menu";
+import "./navbar.css";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
-  onMenuClick: () => void;
   isLoading?: boolean;
   user?: UserInfo;
+  logout: () => Promise<void>;
   bannerHeightVh: number;
 }
 
-const NAVBAR_HEIGHT_REM = 4.5;
-const MAIN_OVERLAP_REM = 3.5;
-
 export function Navbar({
-  onMenuClick,
   user,
   navOptions,
   isLoading,
+  logout,
   bannerHeightVh,
 }: NavbarProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
+  const pathname = useLocation({ select: (location) => location.pathname });
   const [isHidden, setIsHidden] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const present = useMotionPresence(open, MOTION.popover);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
+    setOpen(false);
+    setIsHidden(false);
+  }, [pathname]);
+  useEffect(() => {
+    let previous = Math.max(0, window.scrollY);
+    let travel = 0;
     const handleScroll = () => {
-      // Calculate threshold based on banner height and layout
-      const bannerHeightPx = window.innerHeight * (bannerHeightVh / 100);
-      const navbarHeightPx = NAVBAR_HEIGHT_REM * 16;
-      const mainOverlapPx = MAIN_OVERLAP_REM * 16;
-      const extraPaddingPx = 16;
-
-      const threshold =
-        bannerHeightPx - navbarHeightPx - mainOverlapPx - extraPaddingPx;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-      setIsHidden(scrollTop >= threshold);
+      const y = Math.max(0, window.scrollY);
+      const delta = y - previous;
+      previous = y;
+      if (
+        open ||
+        (rootRef.current?.contains(document.activeElement) &&
+          document.activeElement?.matches(":focus-visible")) ||
+        rootRef.current?.querySelector('[aria-expanded="true"]')
+      ) {
+        travel = 0;
+        setIsHidden(false);
+        return;
+      }
+      const threshold = Math.max(
+        72,
+        (window.innerHeight * bannerHeightVh) / 100 - 144,
+      );
+      if (y < threshold) {
+        travel = 0;
+        setIsHidden(false);
+        return;
+      }
+      if (Math.sign(delta) !== Math.sign(travel)) travel = 0;
+      travel += delta;
+      if (Math.abs(travel) >= 12) {
+        setIsHidden(travel > 0);
+        travel = 0;
+      }
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-    // Initial check
-    handleScroll();
-
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [bannerHeightVh]);
+  }, [bannerHeightVh, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current
+      ?.querySelector<HTMLElement>("a, button")
+      ?.focus({ preventScroll: true });
+    const pointer = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        !panelRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target)
+      )
+        setOpen(false);
+    };
+    const key = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus({ preventScroll: true });
+    };
+    const resize = () => setOpen(false);
+    document.addEventListener("pointerdown", pointer);
+    document.addEventListener("keydown", key);
+    window.addEventListener("resize", resize);
+    return () => {
+      document.removeEventListener("pointerdown", pointer);
+      document.removeEventListener("keydown", key);
+      window.removeEventListener("resize", resize);
+    };
+  }, [open]);
+
+  const toggle = (button: HTMLButtonElement, compact: boolean) => {
+    triggerRef.current = button;
+    setMobile(compact);
+    setOpen((value) => !value);
+    setIsHidden(false);
+  };
 
   return (
     <div
+      ref={rootRef}
       id="fuwari-navbar-wrapper"
-      className={`z-50 sticky top-0 transition-all duration-300 ease-in-out ${
-        isHidden
-          ? "-translate-y-16 opacity-0 pointer-events-none"
-          : "translate-y-0 opacity-100"
-      }`}
+      className="public-navbar-wrapper"
+      data-hidden={isHidden && !open}
+      onFocusCapture={() => setIsHidden(false)}
     >
-      <div
-        id="fuwari-navbar"
-        className="fuwari-onload-animation"
-        style={{ animationDelay: "0ms" }}
-      >
-        <div className="fuwari-card-base overflow-visible! rounded-t-none! mx-auto flex items-center justify-between px-4 h-18 max-w-(--fuwari-page-width)">
-          <Link
-            to="/"
-            className="fuwari-expand-animation rounded-lg h-13 px-5 font-bold active:scale-95 flex items-center"
-          >
-            <Home
-              size={28}
-              strokeWidth={1.5}
-              className="text-(--fuwari-primary) mr-2 shrink-0"
+      <div id="fuwari-navbar" className="public-navbar fuwari-card-base">
+        <Link to="/" className="public-brand" title={siteConfig.title}>
+          <Home size={28} strokeWidth={1.5} />
+          <span>{siteConfig.title}</span>
+        </Link>
+        <nav className="public-desktop-links">
+          {navOptions.map((option) => (
+            <PublicNavLink
+              key={option.id}
+              option={option}
+              className="public-nav-link"
+              activeClassName="public-nav-active"
             />
-            <span className="text-(--fuwari-primary) text-base">
-              {siteConfig.title}
-            </span>
+          ))}
+        </nav>
+        <div className="public-nav-tools">
+          <Link
+            to="/search"
+            className="public-nav-search"
+            aria-label={m.nav_search()}
+          >
+            <Search size={18} strokeWidth={1.5} />
+            <span>{m.nav_search()}</span>
           </Link>
-
-          <nav className="hidden md:flex items-center gap-1">
-            {navOptions.map((option) => (
-              <PublicNavLink
-                key={option.id}
-                option={option}
-                className="fuwari-expand-animation rounded-lg h-11 font-bold px-5 active:scale-95 flex items-center fuwari-text-75 hover:text-(--fuwari-primary)"
-                activeClassName="!text-[var(--fuwari-primary)]"
-              />
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-1">
-            <Link
-              to="/search"
-              className="hidden lg:flex items-center h-11 mr-2 rounded-lg bg-black/4 hover:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-95 group w-52"
-              aria-label={m.nav_search()}
-            >
-              <Search
-                size={18}
-                className="ml-3 transition-colors text-black/30 dark:text-white/30 group-hover:text-black/50 dark:group-hover:text-white/50"
-                strokeWidth={1.25}
-              />
-              <span className="ml-2 text-black/50 dark:text-white/50 text-sm bg-transparent outline-none truncate">
-                {m.nav_search()}
-              </span>
-            </Link>
-            <Link
-              to="/search"
-              className="lg:hidden fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
-              aria-label={m.nav_search()}
-            >
-              <Search size={18} strokeWidth={1.25} />
-            </Link>
-            <ThemeToggle className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary) p-0! bg-transparent! [&_svg]:w-4.5! [&_svg]:h-4.5! [&_div]:w-auto! [&_div]:h-auto!" />
-            <LanguageSwitcher className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary) p-0! bg-transparent! [&_svg]:w-4.5! [&_svg]:h-4.5!" />
-            <div className="hidden md:flex items-center">
-              {isLoading ? (
-                <Skeleton className="w-9 h-9 rounded-lg" />
-              ) : user ? (
-                <Link
-                  to="/profile"
-                  className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90"
-                >
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-md object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center">
-                      <UserIcon
-                        size={18}
-                        strokeWidth={1.25}
-                        className="fuwari-text-50"
-                      />
-                    </div>
-                  )}
-                </Link>
-              ) : (
-                <Link
-                  to="/login"
-                  className="fuwari-expand-animation rounded-lg h-11 w-11 flex items-center justify-center active:scale-90 fuwari-text-75 hover:text-(--fuwari-primary)"
-                  aria-label={m.nav_login()}
-                >
-                  <UserIcon size={18} strokeWidth={1.25} />
-                </Link>
-              )}
-            </div>
+          <div className="public-desktop-tools">
+            <ThemeToggle className="public-tool-button" />
+            <LanguageSwitcher className="public-tool-button" />
             <button
-              className="fuwari-expand-animation rounded-lg w-11 h-11 flex items-center justify-center active:scale-90 md:hidden fuwari-text-75 hover:text-(--fuwari-primary)"
-              onClick={onMenuClick}
-              aria-label={m.common_open_menu()}
               type="button"
+              className="public-tool-button public-account-trigger"
+              aria-label={user ? m.profile_title() : m.nav_login_register()}
+              aria-expanded={open && !mobile}
+              aria-controls="public-navigation-panel"
+              onClick={(event) => toggle(event.currentTarget, false)}
             >
-              <Menu size={18} strokeWidth={1.25} />
+              {isLoading ? (
+                <Skeleton className="w-7 h-7 rounded-lg" />
+              ) : user?.image ? (
+                <img src={user.image} alt="" />
+              ) : (
+                <UserIcon size={18} strokeWidth={1.5} />
+              )}
+              <ChevronDown size={12} />
             </button>
           </div>
+          <button
+            type="button"
+            className="public-tool-button public-mobile-trigger"
+            aria-label={
+              open && mobile ? m.common_close() : m.common_open_menu()
+            }
+            aria-expanded={open && mobile}
+            aria-controls="public-navigation-panel"
+            onClick={(event) => toggle(event.currentTarget, true)}
+          >
+            {open && mobile ? (
+              <X size={20} strokeWidth={1.5} />
+            ) : (
+              <Menu size={20} strokeWidth={1.5} />
+            )}
+          </button>
         </div>
+        {present && (
+          <div
+            ref={panelRef}
+            id="public-navigation-panel"
+            className="public-navigation-panel fuwari-popover-motion"
+            data-state={open ? "open" : "closing"}
+            inert={!open}
+            aria-hidden={!open}
+            onBlur={(event) => {
+              if (
+                event.relatedTarget &&
+                !event.currentTarget.contains(event.relatedTarget as Node) &&
+                event.relatedTarget !== triggerRef.current
+              )
+                setOpen(false);
+            }}
+          >
+            <MobileMenu
+              navOptions={navOptions}
+              user={user}
+              isLoading={isLoading}
+              logout={logout}
+              mobile={mobile}
+              onClose={() => setOpen(false)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

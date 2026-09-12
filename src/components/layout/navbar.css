@@ -1,0 +1,313 @@
+.public-navbar-wrapper {
+  position: relative;
+  transition:
+    transform 320ms var(--fuwari-motion-ease),
+    opacity 200ms;
+}
+.public-navbar-wrapper[data-hidden="true"] {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.public-navbar-wrapper:has(:focus-visible) {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+.public-navbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 72px;
+  padding: 0 24px;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  overflow: visible !important;
+}
+.public-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 200px;
+  flex-shrink: 0;
+  color: var(--fuwari-primary);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  min-height: 44px;
+}
+.public-brand svg {
+  flex-shrink: 0;
+}
+.public-brand span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-desktop-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+.public-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 132px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: var(--fuwari-fg-75);
+  font-weight: 700;
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.public-nav-active,
+.public-nav-link:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.public-nav-tools,
+.public-desktop-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.public-nav-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: clamp(100px, 12vw, 180px);
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: var(--fuwari-btn-plain-bg-hover);
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  margin-right: 8px;
+  transition: background-color 180ms;
+}
+.public-nav-search svg {
+  flex-shrink: 0;
+}
+.public-nav-search span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-navbar .public-tool-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fuwari-fg-75);
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.public-navbar .public-account-trigger {
+  width: 52px;
+}
+.public-account-trigger img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.public-tool-button:hover,
+.public-tool-button[aria-expanded="true"],
+.public-nav-search:hover {
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.public-navbar .public-mobile-trigger {
+  display: none;
+}
+.public-navbar a:focus-visible,
+.public-navbar button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.public-navigation-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--fuwari-card-bg);
+  box-shadow: 0 8px 32px #00000012;
+  transform-origin: top right;
+}
+.public-menu-links {
+  display: flex;
+  flex-direction: column;
+}
+.public-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--fuwari-fg-75);
+  font-size: 14px;
+  text-align: left;
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.public-menu-item:hover,
+.public-menu-active {
+  color: var(--fuwari-primary);
+  background: var(--fuwari-btn-regular-bg);
+}
+.public-menu-item svg {
+  flex-shrink: 0;
+}
+.public-menu-item:disabled {
+  opacity: 0.5;
+}
+.public-menu-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--fuwari-fg);
+  font-weight: 700;
+}
+.public-menu-identity img {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.public-menu-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-menu-logout {
+  color: var(--fuwari-fg-50);
+}
+.public-menu-logout:hover {
+  color: var(--fuwari-danger);
+}
+.public-menu-preferences {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 6px;
+  padding: 8px 0;
+  border-block: 1px solid
+    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+}
+.public-menu-theme {
+  min-height: 44px;
+  padding: 8px !important;
+  font-size: 12px !important;
+  border-radius: 8px;
+}
+.public-menu-languages {
+  display: flex;
+  gap: 2px;
+}
+.public-menu-languages button {
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--fuwari-fg-50);
+}
+.public-menu-languages button[aria-pressed="true"] {
+  color: var(--fuwari-primary);
+  background: var(--fuwari-btn-regular-bg);
+}
+.public-menu-loading {
+  padding: 16px;
+}
+.public-menu-loading span {
+  display: block;
+  height: 24px;
+  border-radius: 8px;
+  background: var(--fuwari-btn-regular-bg);
+}
+@media (max-width: 1279px) {
+  .public-navbar {
+    gap: 12px;
+    padding-inline: 16px;
+  }
+  .public-nav-search {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    margin: 0;
+    background: transparent;
+  }
+  .public-nav-search span {
+    display: none;
+  }
+  .public-brand {
+    max-width: 180px;
+  }
+  .public-nav-link {
+    padding-inline: 10px;
+  }
+}
+@media (max-width: 1099px) {
+  .public-desktop-links,
+  .public-desktop-tools {
+    display: none;
+  }
+  .public-navbar .public-mobile-trigger {
+    display: flex;
+  }
+  .public-brand {
+    max-width: none;
+    flex: 1;
+    flex-shrink: 1;
+    margin-right: auto;
+  }
+  .public-navigation-panel {
+    right: 8px;
+  }
+}
+@media (max-width: 639px) {
+  .public-navbar {
+    padding-inline: 24px;
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-navbar-wrapper,
+  .public-nav-link,
+  .public-nav-search,
+  .public-navbar .public-tool-button,
+  .public-menu-item {
+    transition: none;
+  }
+}
+.public-menu-theme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

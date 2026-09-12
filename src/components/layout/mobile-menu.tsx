@@ -1,128 +1,131 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { useState } from "react";
+import { useTheme } from "@/components/common/theme-provider";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
-import { PublicNavLink } from "@/components/layout/public-nav-link";
-import { cn } from "@/lib/utils";
+import { PublicNavLink } from "./public-nav-link";
 import { m } from "@/paraglide/messages";
+import { getLocale, setLocale } from "@/paraglide/runtime";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;
-  isOpen: boolean;
   onClose: () => void;
   user?: UserInfo;
   logout: () => Promise<void>;
+  mobile: boolean;
+  isLoading?: boolean;
 }
 
+/** Shared account actions; the compact navigation also includes links and preferences. */
 export function MobileMenu({
   navOptions,
-  isOpen,
   onClose,
   user,
   logout,
+  mobile,
+  isLoading,
 }: MobileMenuProps) {
+  const [loggingOut, setLoggingOut] = useState(false);
+  const { userTheme } = useTheme();
+  const themeLabel =
+    userTheme === "light"
+      ? m.theme_light()
+      : userTheme === "dark"
+        ? m.theme_dark()
+        : m.theme_system();
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-49 bg-black/20 backdrop-blur-sm transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
-        )}
-        onClick={onClose}
-      />
-
-      {/* Floating Menu Panel */}
-      <div
-        className={cn(
-          "fixed top-20 right-4 z-50 w-64 origin-top-right transition-all duration-300 ease-out transform",
-          isOpen
-            ? "scale-100 opacity-100 translate-y-0"
-            : "scale-95 opacity-0 -translate-y-2 pointer-events-none",
-        )}
-      >
-        <div className="fuwari-card-base p-2 flex flex-col gap-1 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
-          {/* Navigation Items */}
-          <nav className="flex flex-col">
-            {navOptions.map((item) => (
+      {mobile && (
+        <>
+          <nav className="public-menu-links">
+            {navOptions.map((option) => (
               <PublicNavLink
-                key={item.id}
-                option={item}
+                key={option.id}
+                option={option}
                 onClick={onClose}
-                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
-                activeClassName="!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]"
+                className="public-menu-item"
+                activeClassName="public-menu-active"
               />
             ))}
-
-            {user?.role === "admin" && (
-              <Link
-                to="/admin"
-                onClick={onClose}
-                className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
-              >
-                <Settings className="w-4 h-4 mr-3" />
-                {m.profile_admin_dashboard_fuwari()}
-              </Link>
-            )}
           </nav>
-
-          {/* Divider */}
-          <div className="h-px bg-black/5 dark:bg-white/10 my-1 mx-2" />
-
-          {/* User Section */}
-          {user ? (
-            <div className="px-2 pb-1">
-              <div className="flex items-center gap-3 px-2 py-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-(--fuwari-btn-regular-bg) shrink-0">
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-full">
-                      <UserIcon size={14} className="fuwari-text-50" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-sm font-medium truncate fuwari-text-90">
-                    {user.name}
-                  </span>
-                  <Link
-                    to="/profile"
-                    onClick={onClose}
-                    className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) truncate"
-                  >
-                    {m.profile_title()}
-                  </Link>
-                </div>
-                <button
-                  onClick={async () => {
-                    await logout();
-                    onClose();
-                  }}
-                  className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-red-500 hover:text-red-600 transition-colors"
-                  aria-label={m.profile_logout_fuwari()}
-                >
-                  <LogOut size={16} strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-2">
-              <Link
-                to="/login"
-                onClick={onClose}
-                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) active:bg-(--fuwari-btn-regular-bg-active)"
+          <div className="public-menu-preferences">
+            <ThemeToggle className="public-menu-theme" label={themeLabel} />
+            <div
+              className="public-menu-languages"
+              role="group"
+              aria-label={m.common_switch_language()}
+            >
+              <button
+                type="button"
+                aria-pressed={getLocale() === "zh"}
+                onClick={() => setLocale("zh")}
               >
-                <UserIcon size={16} className="mr-2" strokeWidth={1.5} />
-                {m.nav_login_register()}
-              </Link>
+                中文
+              </button>
+              <button
+                type="button"
+                aria-pressed={getLocale() === "en"}
+                onClick={() => setLocale("en")}
+              >
+                English
+              </button>
             </div>
-          )}
+          </div>
+        </>
+      )}
+      {isLoading ? (
+        <div className="public-menu-loading" aria-busy="true">
+          <span className="animate-pulse" />
         </div>
-      </div>
+      ) : user ? (
+        <>
+          <div className="public-menu-identity">
+            {user.image ? (
+              <img src={user.image} alt="" />
+            ) : (
+              <UserIcon size={24} />
+            )}
+            <span>{user.name}</span>
+          </div>
+          <Link to="/profile" onClick={onClose} className="public-menu-item">
+            <UserIcon size={18} />
+            {m.profile_title()}
+          </Link>
+          {user.role === "admin" && (
+            <Link to="/admin" onClick={onClose} className="public-menu-item">
+              <Settings size={18} />
+              {m.profile_admin_dashboard_fuwari()}
+            </Link>
+          )}
+          <button
+            type="button"
+            disabled={loggingOut}
+            className="public-menu-item public-menu-logout"
+            onClick={async () => {
+              setLoggingOut(true);
+              try {
+                await logout();
+                onClose();
+              } finally {
+                setLoggingOut(false);
+              }
+            }}
+          >
+            <LogOut size={18} />
+            {m.profile_logout_fuwari()}
+          </button>
+        </>
+      ) : (
+        <Link
+          to="/login"
+          onClick={onClose}
+          className="public-menu-item public-menu-active"
+        >
+          <UserIcon size={18} />
+          {m.nav_login_register()}
+        </Link>
+      )}
     </>
   );
 }
