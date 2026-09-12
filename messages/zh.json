@@ -1702,5 +1702,13 @@
   "login_email_register": "使用邮箱注册",
   "login_show_password": "显示密码",
   "login_hide_password": "隐藏密码",
-  "auth_verify_retry_hint": "返回登录页，使用邮箱和密码登录后，可重新发送验证邮件。"
+  "auth_verify_retry_hint": "返回登录页，使用邮箱和密码登录后，可重新发送验证邮件。",
+  "search_page_heading": "搜索文章",
+  "search_clear": "清空搜索",
+  "search_loading": "正在搜索…",
+  "search_failed": "搜索暂时不可用",
+  "search_retry_hint": "无法加载搜索结果，请重试。",
+  "search_retry": "重新搜索",
+  "search_result_count": "显示 {count} 条搜索结果",
+  "search_empty_hint": "试试更简短的关键词，或检查是否有错别字。"
 }

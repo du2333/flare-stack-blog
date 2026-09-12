@@ -1,0 +1,235 @@
+.public-search {
+  width: 100%;
+  padding: 32px;
+  color: var(--fuwari-fg);
+}
+.public-search > h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.public-search-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding-inline: 16px 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--fuwari-fg-50);
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 10%,
+    var(--fuwari-card-bg)
+  );
+  transition:
+    background-color 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.public-search-field:focus-within {
+  background: var(--fuwari-btn-regular-bg);
+  border-color: color-mix(in srgb, var(--fuwari-primary) 50%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--fuwari-primary) 12%, transparent);
+}
+.public-search .public-search-field input {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  font-size: 18px;
+  padding: 12px 0;
+  color: var(--fuwari-fg);
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+.public-search-field input::-webkit-search-cancel-button {
+  appearance: none;
+}
+.public-search-field input::placeholder {
+  color: var(--fuwari-fg-30);
+}
+.public-search-field > svg {
+  flex-shrink: 0;
+}
+.public-search-field button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: var(--fuwari-fg-50);
+  transition:
+    color 180ms,
+    background-color 180ms;
+}
+.public-search-field button:hover {
+  color: var(--fuwari-primary);
+  background: var(--fuwari-btn-regular-bg-hover);
+}
+.public-search-caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  margin-block: 20px 12px;
+  font-size: 14px;
+  color: var(--fuwari-fg-50);
+  line-height: 1.7;
+}
+.public-search-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  transition: opacity 180ms;
+}
+.public-search-results[data-updating="true"] {
+  opacity: 0.55;
+}
+.public-search-results li {
+  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+}
+.public-search-result {
+  display: block;
+  position: relative;
+  padding: 24px 28px 24px 0;
+  border-radius: 8px;
+}
+.public-search-result h2 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  transition: color 180ms;
+}
+.public-search-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--fuwari-fg-75);
+  overflow-wrap: anywhere;
+}
+.public-search mark {
+  color: var(--fuwari-primary);
+  background: transparent;
+  font-weight: 600;
+}
+.public-search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.public-search-tags span {
+  font-size: 12px;
+  color: var(--fuwari-btn-content);
+  background: var(--fuwari-btn-regular-bg);
+  border-radius: 6px;
+  padding: 3px 8px;
+  overflow-wrap: anywhere;
+}
+.public-search-arrow {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  color: var(--fuwari-primary);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 180ms,
+    transform 250ms var(--fuwari-motion-ease);
+}
+.public-search-result:hover h2,
+.public-search-result:focus-visible h2 {
+  color: var(--fuwari-primary);
+}
+.public-search-result:hover .public-search-arrow,
+.public-search-result:focus-visible .public-search-arrow {
+  opacity: 1;
+  transform: none;
+}
+.public-search a:focus-visible,
+.public-search button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.public-search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 44px 12px;
+  text-align: center;
+  color: var(--fuwari-fg-50);
+}
+.public-search-empty > svg {
+  color: var(--fuwari-primary);
+  margin-bottom: 4px;
+}
+.public-search-empty h2 {
+  color: var(--fuwari-fg-75);
+  font-size: 18px;
+  font-weight: 500;
+}
+.public-search-empty p {
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.public-search-empty button {
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.public-search-skeleton {
+  display: grid;
+  gap: 16px;
+  padding-block: 28px;
+}
+.public-search-skeleton span {
+  height: 18px;
+  border-radius: 6px;
+  background: var(--fuwari-btn-regular-bg);
+}
+.public-search-skeleton span:first-child {
+  width: 65%;
+  height: 24px;
+}
+.public-search-skeleton span:last-child {
+  width: 80%;
+}
+@media (max-width: 639px) {
+  .public-search {
+    padding: 24px;
+  }
+  .public-search > h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .public-search .public-search-field input {
+    font-size: 16px;
+  }
+  .public-search-result h2 {
+    font-size: 18px;
+  }
+  .public-search-result {
+    padding-block: 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-search-field,
+  .public-search-field button,
+  .public-search-results,
+  .public-search-result h2,
+  .public-search-arrow {
+    transition: none;
+  }
+}

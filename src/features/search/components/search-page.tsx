@@ -1,6 +1,9 @@
-import { ArrowLeft, Keyboard, Loader2, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, Loader2, Search, X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useContentMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
+import "./search-page.css";
 
 interface SearchResultItem {
   post: {
@@ -8,7 +11,7 @@ interface SearchResultItem {
     slug: string;
     title: string;
     summary: string | null;
-    tags: Array<string>;
+    tags: string[];
   };
   score: number;
   matches: {
@@ -17,183 +20,192 @@ interface SearchResultItem {
     contentSnippet: string | null;
   };
 }
-
 interface SearchPageProps {
   query: string;
   searchedQuery: string;
-  results: Array<SearchResultItem>;
+  results: SearchResultItem[];
   isSearching: boolean;
+  hasError: boolean;
   onQueryChange: (query: string) => void;
-  onSelectPost: (slug: string) => void;
-  onBack: () => void;
+  onCompositionChange: (composing: boolean) => void;
+  onRetry: () => void;
 }
-
 export function SearchPage({
   query,
   searchedQuery,
   results,
   isSearching,
+  hasError,
   onQueryChange,
-  onSelectPost,
-  onBack,
+  onCompositionChange,
+  onRetry,
 }: SearchPageProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const hasQuery = query.trim().length > 0;
   useEffect(() => {
-    // Small delay to ensure the page has transitioned before focusing
-    const timer = setTimeout(() => inputRef.current?.focus(), 150);
-    return () => clearTimeout(timer);
+    // Avoid opening the software keyboard automatically on touch devices.
+    if (window.matchMedia("(pointer: fine)").matches)
+      inputRef.current?.focus({ preventScroll: true });
   }, []);
-
+  useContentMotion(
+    resultsRef,
+    !hasQuery
+      ? "empty"
+      : isSearching
+        ? "loading"
+        : hasError
+          ? "error"
+          : `${searchedQuery}:${results.map((result) => result.post.id).join(",")}`,
+  );
+  const clear = () => {
+    onQueryChange("");
+    inputRef.current?.focus();
+  };
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 pb-12">
-      {/* Header Area */}
-      <div
-        className="fuwari-card-base p-6 md:p-8 flex items-center gap-4 fuwari-onload-animation"
-        style={{ animationDelay: "100ms" }}
-      >
-        <button
-          onClick={onBack}
-          className="group flex items-center justify-center w-10 h-10 rounded-xl bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) transition-colors shrink-0"
-          title={m.search_back()}
-        >
-          <ArrowLeft
-            size={18}
-            className="group-hover:-translate-x-0.5 transition-transform"
-          />
-        </button>
-
-        <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-4 w-5 h-5 fuwari-text-30 pointer-events-none" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-            placeholder={m.search_placeholder()}
-            className="w-full pl-12 pr-12 py-3 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:border-(--fuwari-primary)/50 focus:bg-(--fuwari-primary)/5 transition-all fuwari-text-90 text-lg md:text-xl placeholder:text-black/30 dark:placeholder:text-white/30"
-          />
-          {isSearching && (
-            <div className="absolute right-4 w-5 h-5 fuwari-text-50 pointer-events-none flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
-          )}
-        </div>
+    <section className="public-search fuwari-card-base">
+      <h1>{m.search_page_heading()}</h1>
+      <div role="search" className="public-search-field">
+        <Search size={20} strokeWidth={1.5} aria-hidden="true" />
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          aria-label={m.search_placeholder()}
+          placeholder={m.search_placeholder()}
+          onChange={(event) => onQueryChange(event.target.value)}
+          onCompositionStart={() => onCompositionChange(true)}
+          onCompositionEnd={() => onCompositionChange(false)}
+        />
+        {query && (
+          <button type="button" onClick={clear} aria-label={m.search_clear()}>
+            <X size={18} />
+          </button>
+        )}
       </div>
-
-      {/* Results Area */}
-      <div className="flex flex-col gap-4">
-        {query.trim() === "" && (
-          <div
-            className="fuwari-card-base p-16 flex flex-col items-center justify-center text-center fuwari-onload-animation"
-            style={{ animationDelay: "200ms" }}
-          >
-            <div className="w-20 h-20 rounded-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center mb-6 text-(--fuwari-btn-content)">
-              <Keyboard size={32} strokeWidth={1.5} />
-            </div>
-            <h3 className="text-xl font-bold fuwari-text-75 mb-3">
-              {m.search_fuwari_intro_title()}
-            </h3>
-            <p className="text-sm fuwari-text-50 max-w-sm">
-              {m.search_fuwari_intro_desc()}
-            </p>
+      <p className="public-search-caption" role="status" aria-live="polite">
+        {hasQuery ? (
+          isSearching ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              {m.search_loading()}
+            </>
+          ) : hasError ? (
+            m.search_failed()
+          ) : (
+            m.search_result_count({ count: results.length })
+          )
+        ) : (
+          m.search_fuwari_intro_desc()
+        )}
+      </p>
+      <div ref={resultsRef} aria-busy={isSearching}>
+        {!hasQuery ? (
+          <div className="public-search-empty">
+            <Search size={28} strokeWidth={1.5} />
+            <h2>{m.search_fuwari_intro_title()}</h2>
+          </div>
+        ) : hasError ? (
+          <div className="public-search-empty">
+            <p>{m.search_retry_hint()}</p>
+            <button
+              type="button"
+              className="fuwari-btn-regular"
+              onClick={onRetry}
+            >
+              {m.search_retry()}
+            </button>
+          </div>
+        ) : results.length ? (
+          <ul className="public-search-results" data-updating={isSearching}>
+            {results.map((result) => (
+              <li key={result.post.id}>
+                <Link
+                  to="/post/$slug"
+                  params={{ slug: result.post.slug }}
+                  className="public-search-result"
+                >
+                  <h2>
+                    <Highlighted
+                      html={result.matches.title}
+                      fallback={result.post.title}
+                    />
+                  </h2>
+                  <p className="public-search-excerpt">
+                    <Highlighted
+                      html={
+                        result.matches.summary ||
+                        (!result.post.summary
+                          ? result.matches.contentSnippet
+                          : null)
+                      }
+                      fallback={result.post.summary || ""}
+                    />
+                  </p>
+                  {result.post.tags.length > 0 && (
+                    <div className="public-search-tags">
+                      {result.post.tags.map((tag) => (
+                        <span key={tag}>#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  <ChevronRight
+                    className="public-search-arrow"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : isSearching ? (
+          <div className="public-search-skeleton" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        ) : (
+          <div className="public-search-empty">
+            <Search size={28} strokeWidth={1.5} />
+            <h2>{m.search_no_results()}</h2>
+            <p>{m.search_no_results_with_query({ query: searchedQuery })}</p>
+            <p>{m.search_empty_hint()}</p>
           </div>
         )}
-
-        {searchedQuery.trim() !== "" &&
-          !isSearching &&
-          results.length === 0 && (
-            <div
-              className="fuwari-card-base p-12 flex flex-col items-center justify-center text-center fuwari-onload-animation"
-              style={{ animationDelay: "200ms" }}
-            >
-              <div className="w-16 h-16 rounded-full bg-(--fuwari-btn-regular-bg) flex items-center justify-center mb-4 text-(--fuwari-btn-content)">
-                <Search size={24} strokeWidth={1.5} />
-              </div>
-              <h3 className="text-lg font-bold fuwari-text-75 mb-2">
-                {m.search_no_results()}
-              </h3>
-              <p className="text-sm fuwari-text-50">
-                {m.search_no_results_with_query({ query: searchedQuery })}
-              </p>
-            </div>
-          )}
-
-        {query.trim() !== "" &&
-          results.map((result, index) => (
-            <button
-              key={result.post.id}
-              onClick={() => onSelectPost(result.post.slug)}
-              className="fuwari-card-base p-6 text-left w-full group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col gap-3 fuwari-onload-animation outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary)/50"
-              style={{ animationDelay: `${200 + index * 50}ms` }}
-            >
-              {/* Title with highlighting */}
-              <h2
-                className="text-xl font-bold fuwari-text-90 group-hover:text-(--fuwari-primary) transition-colors"
-                style={{
-                  viewTransitionName: `post-title-${result.post.slug}`,
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: result.matches.title || result.post.title,
-                }}
-              />
-
-              {/* Summary with highlighting */}
-              <p
-                className="text-sm fuwari-text-75 line-clamp-3 leading-relaxed"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    result.matches.summary ||
-                    result.post.summary ||
-                    result.matches.contentSnippet ||
-                    "",
-                }}
-              />
-
-              {/* Tags */}
-              {result.post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2 mt-auto">
-                  {result.post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs font-mono text-(--fuwari-btn-content) bg-(--fuwari-btn-regular-bg) px-2 py-1 rounded-md"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Embedded highlighting styles for the dynamically injected HTML */}
-              <style
-                dangerouslySetInnerHTML={{
-                  __html: `
-              #search-card-${result.post.id} mark {
-                background-color: transparent;
-                color: var(--fuwari-primary);
-                font-weight: 600;
-              }
-            `,
-                }}
-              />
-              <div id={`search-card-${result.post.id}`} className="hidden" />
-            </button>
-          ))}
-
-        {/* Global highlighting style for all result cards */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-          .fuwari-card-base mark {
-            background-color: transparent;
-            color: var(--fuwari-primary);
-            font-weight: 600;
-            padding: 0 0.1em;
-          }
-        `,
-          }}
-        />
       </div>
-    </div>
+    </section>
   );
+}
+
+const entities: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#039;": "'",
+};
+function decode(text: string) {
+  return text.replace(
+    /&(?:amp|lt|gt|quot|#039);/g,
+    (entity) => entities[entity],
+  );
+}
+/** Render only the search API's mark delimiters; titles and excerpts remain text. */
+function Highlighted({
+  html,
+  fallback,
+}: {
+  html: string | null;
+  fallback: string;
+}) {
+  if (!html) return fallback;
+  return html
+    .split(/(<mark>.*?<\/mark>)/gs)
+    .map((part, index) =>
+      part.startsWith("<mark>") && part.endsWith("</mark>") ? (
+        <mark key={index}>{decode(part.slice(6, -7))}</mark>
+      ) : (
+        decode(part)
+      ),
+    );
 }

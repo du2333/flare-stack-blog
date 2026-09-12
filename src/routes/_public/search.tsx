@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { SearchPage } from "@/features/search/components/search-page";
 import {
@@ -39,6 +39,8 @@ function SearchRoute() {
   const urlQuery = search.q || "";
   const [query, setQuery] = useState(urlQuery);
   const debouncedQuery = useDebounce(query, 300);
+  const [composing, setComposing] = useState(false);
+  const term = debouncedQuery.trim();
 
   useEffect(() => {
     if (urlQuery !== query && urlQuery !== debouncedQuery) {
@@ -47,7 +49,7 @@ function SearchRoute() {
   }, [urlQuery]);
 
   useEffect(() => {
-    if (debouncedQuery === urlQuery) return;
+    if (composing || debouncedQuery === urlQuery) return;
     navigate({
       search: (prev) => ({
         ...prev,
@@ -55,44 +57,40 @@ function SearchRoute() {
       }),
       replace: true,
     });
-  }, [debouncedQuery, navigate, urlQuery]);
+  }, [debouncedQuery, navigate, urlQuery, composing]);
 
-  const { data: meta } = useQuery({
+  const metaQuery = useQuery({
     ...searchMetaQuery,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: results, isFetching } = useQuery({
-    ...searchDocsQueryOptions(debouncedQuery, meta?.version || "init"),
-    enabled: debouncedQuery.length > 0 && !!meta?.version,
+  const resultQuery = useQuery({
+    ...searchDocsQueryOptions(term, metaQuery.data?.version || "init"),
+    enabled: term.length > 0 && !!metaQuery.data?.version && !composing,
     staleTime: Infinity,
     placeholderData: keepPreviousData,
   });
 
-  const searchResults = useMemo(() => results ?? [], [results]);
-  const isSearching = debouncedQuery.length > 0 && isFetching;
-
-  const handleQueryChange = (newQuery: string) => {
-    setQuery(newQuery);
-  };
-
-  const handleSelectPost = (slug: string) => {
-    navigate({ to: "/post/$slug", params: { slug } });
-  };
-
-  const handleBack = () => {
-    navigate({ to: "/" });
-  };
+  const waitingForInput = query.trim() !== term || composing;
+  const hasError =
+    !waitingForInput && (metaQuery.isError || resultQuery.isError);
+  const isSearching =
+    query.trim().length > 0 &&
+    !hasError &&
+    (waitingForInput || metaQuery.isPending || resultQuery.isFetching);
 
   return (
     <SearchPage
       query={query}
-      searchedQuery={debouncedQuery}
-      results={searchResults}
+      searchedQuery={term}
+      results={resultQuery.data ?? []}
       isSearching={isSearching}
-      onQueryChange={handleQueryChange}
-      onSelectPost={handleSelectPost}
-      onBack={handleBack}
+      hasError={hasError}
+      onQueryChange={setQuery}
+      onCompositionChange={setComposing}
+      onRetry={() => {
+        void (metaQuery.isError ? metaQuery.refetch() : resultQuery.refetch());
+      }}
     />
   );
 }

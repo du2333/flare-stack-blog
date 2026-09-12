@@ -1710,5 +1710,13 @@
   "login_email_register": "Register with email",
   "login_show_password": "Show password",
   "login_hide_password": "Hide password",
-  "auth_verify_retry_hint": "Return to sign in with your email and password to request a new verification email."
+  "auth_verify_retry_hint": "Return to sign in with your email and password to request a new verification email.",
+  "search_page_heading": "Search posts",
+  "search_clear": "Clear search",
+  "search_loading": "Searching…",
+  "search_failed": "Search is temporarily unavailable",
+  "search_retry_hint": "Could not load search results. Please try again.",
+  "search_retry": "Retry search",
+  "search_result_count": "Showing {count} search results",
+  "search_empty_hint": "Try a shorter keyword or check the spelling."
 }
