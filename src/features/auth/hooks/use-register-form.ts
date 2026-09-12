@@ -51,29 +51,35 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
   const queryClient = useQueryClient();
   const registerSchema = createRegisterSchema(m);
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<RegisterSchema>({
     resolver: standardSchemaResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterSchema) => {
-    const { error } = await authClient.signUp.email({
-      email: data.email,
-      password: data.password,
-      name: data.name,
-      callbackURL: `${window.location.origin}/verify-email`,
-      fetchOptions: {
-        headers: { "X-Turnstile-Token": turnstileToken || "" },
-      },
-    });
-
-    resetTurnstile();
-
-    if (error) {
-      toast.error(m.register_toast_failed(), {
-        description:
-          getRegisterAuthErrorMessage(error, m) ?? m.register_error_default(),
+    setSubmitError(null);
+    try {
+      const { error } = await authClient.signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        callbackURL: `${window.location.origin}/verify-email`,
+        fetchOptions: {
+          headers: { "X-Turnstile-Token": turnstileToken || "" },
+        },
       });
+
+      if (error) {
+        setSubmitError(
+          getRegisterAuthErrorMessage(error, m) ?? m.register_error_default(),
+        );
+        return;
+      }
+    } catch {
+      setSubmitError(m.register_error_default());
       return;
+    } finally {
+      resetTurnstile();
     }
 
     resetAuthBoundQueries(queryClient);
@@ -96,6 +102,7 @@ export function useRegisterForm(options: UseRegisterFormOptions) {
     errors: form.formState.errors,
     handleSubmit: form.handleSubmit(onSubmit),
     isSubmitting: form.formState.isSubmitting,
+    submitError,
     isSuccess,
     turnstilePending,
   };

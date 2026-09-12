@@ -1695,5 +1695,12 @@
   "account_save": "保存资料",
   "account_password_hint": "需要时可在此更新登录密码。",
   "account_change_password": "修改密码",
-  "account_retry": "重试"
+  "account_retry": "重试",
+  "login_github_continue": "使用 GitHub 继续",
+  "login_email_alternative": "或使用邮箱",
+  "login_email_submit": "邮箱登录",
+  "login_email_register": "使用邮箱注册",
+  "login_show_password": "显示密码",
+  "login_hide_password": "隐藏密码",
+  "auth_verify_retry_hint": "返回登录页，使用邮箱和密码登录后，可重新发送验证邮件。"
 }

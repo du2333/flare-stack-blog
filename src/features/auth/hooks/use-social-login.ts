@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
 import { authClient } from "@/lib/auth/auth.client";
 import { getSocialLoginAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -14,6 +13,7 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
   const { redirectTo } = options;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const previousLocation = usePreviousLocation();
   const callbackURL = normalizeRedirectUrl(redirectTo, previousLocation);
 
@@ -21,28 +21,28 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
     if (isLoading) return;
 
     setIsLoading(true);
-
-    const { error } = await authClient.signIn.social({
-      provider: "github",
-      errorCallbackURL: `${window.location.origin}/login`,
-      callbackURL,
-    });
-
-    if (error) {
-      toast.error(m.login_toast_social_failed(), {
-        description:
-          getSocialLoginAuthErrorMessage(error, m) ??
-          m.auth_error_default_desc(),
+    setErrorMessage(null);
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "github",
+        errorCallbackURL: `${window.location.origin}/login`,
+        callbackURL,
       });
+      if (error)
+        setErrorMessage(
+          getSocialLoginAuthErrorMessage(error, m) ??
+            m.auth_error_default_desc(),
+        );
+    } catch {
+      setErrorMessage(m.auth_error_default_desc());
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setIsLoading(false);
   };
 
   return {
     isLoading,
+    errorMessage,
     turnstilePending: false,
     handleGithubLogin,
   };

@@ -39,6 +39,13 @@ export function useLoginForm(options: UseLoginFormOptions) {
     "IDLE",
   );
 
+  const [loginError, setLoginError] = useState<{
+    message: string;
+    email: string;
+    unverified: boolean;
+  } | null>(null);
+  const [isResending, setIsResending] = useState(false);
+  const [resendFeedback, setResendFeedback] = useState<string | null>(null);
   const navigate = useNavigate();
   const previousLocation = usePreviousLocation();
   const queryClient = useQueryClient();
@@ -83,34 +90,36 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
   const onSubmit = async (data: LoginSchema) => {
     setLoginStep("VERIFYING");
-
-    const { error } = await authClient.signIn.email({
-      email: data.email,
-      password: data.password,
-      fetchOptions: {
-        headers: { "X-Turnstile-Token": turnstileToken || "" },
-      },
-    });
-
-    resetTurnstile();
-
-    if (error) {
+    setLoginError(null);
+    setResendFeedback(null);
+    try {
+      const { error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+        fetchOptions: {
+          headers: { "X-Turnstile-Token": turnstileToken || "" },
+        },
+      });
+      if (error) {
+        setLoginStep("IDLE");
+        setLoginError({
+          message:
+            getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+          email: data.email,
+          unverified: isEmailNotVerifiedError(error),
+        });
+        return;
+      }
+    } catch {
       setLoginStep("IDLE");
-      const description =
-        getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc();
-
-      toast.error(m.login_error_default(), {
-        description,
-        action: isEmailNotVerifiedError(error)
-          ? {
-              label: m.login_resend_verification(),
-              onClick: () => {
-                void handleResendVerification();
-              },
-            }
-          : undefined,
+      setLoginError({
+        message: m.auth_error_default_desc(),
+        email: data.email,
+        unverified: false,
       });
       return;
+    } finally {
+      resetTurnstile();
     }
 
     resetAuthBoundQueries(queryClient);
@@ -135,31 +144,33 @@ export function useLoginForm(options: UseLoginFormOptions) {
       return;
     }
 
-    const loadingToast = toast.loading(m.login_toast_sending_verification());
-
-    const { error } = await authClient.sendVerificationEmail({
-      email: currentEmailValue,
-      callbackURL: `${window.location.origin}/verify-email`,
-      fetchOptions: {
-        headers: { "X-Turnstile-Token": currentTurnstileToken || "" },
-      },
-    });
-
-    resetTurnstile();
-    toast.dismiss(loadingToast);
-
-    if (error) {
-      const description =
-        getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc();
-      toast.error(m.login_toast_send_failed(), {
-        description,
-      });
+    if (
+      isResending ||
+      !loginError?.unverified ||
+      loginError.email !== currentEmailValue
+    )
       return;
+    setIsResending(true);
+    setResendFeedback(null);
+    try {
+      const { error } = await authClient.sendVerificationEmail({
+        email: currentEmailValue,
+        callbackURL: `${window.location.origin}/verify-email`,
+        fetchOptions: {
+          headers: { "X-Turnstile-Token": currentTurnstileToken || "" },
+        },
+      });
+      setResendFeedback(
+        error
+          ? (getLoginAuthErrorMessage(error, m) ?? m.auth_error_default_desc())
+          : m.login_toast_check_inbox(),
+      );
+    } catch {
+      setResendFeedback(m.login_toast_send_failed());
+    } finally {
+      resetTurnstile();
+      setIsResending(false);
     }
-
-    toast.success(m.login_toast_verification_sent(), {
-      description: m.login_toast_check_inbox(),
-    });
   };
 
   return {
@@ -169,5 +180,9 @@ export function useLoginForm(options: UseLoginFormOptions) {
     loginStep,
     isSubmitting: form.formState.isSubmitting,
     loginSchema,
+    loginError: loginError?.email === emailValue ? loginError : null,
+    resendFeedback: loginError?.email === emailValue ? resendFeedback : null,
+    isResending,
+    resendVerification: handleResendVerification,
   };
 }

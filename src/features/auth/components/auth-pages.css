@@ -1,0 +1,215 @@
+.auth-frame:has(.auth-page) {
+  max-width: 480px;
+}
+.auth-card:has(.auth-page) {
+  padding: 24px 32px 32px;
+}
+.auth-card:has(.auth-page) > button {
+  margin-bottom: 16px;
+}
+.auth-page {
+  display: grid;
+  gap: 22px;
+  color: var(--fuwari-fg);
+}
+.auth-heading {
+  text-align: center;
+}
+.auth-heading h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.auth-heading p {
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-top: 8px;
+}
+.auth-action {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  gap: 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.auth-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.auth-page a:focus-visible,
+.auth-page button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--fuwari-fg-50);
+  font-size: 12px;
+  margin-block: 2px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+}
+.auth-form {
+  display: grid;
+  gap: 18px;
+}
+.auth-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.auth-field label {
+  color: var(--fuwari-fg-75);
+  font-size: 14px;
+  font-weight: 500;
+}
+.auth-password-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.auth-password-label a {
+  color: var(--fuwari-primary);
+  font-size: 12px;
+  padding-block: 4px;
+}
+.auth-page .auth-field input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 12px 16px;
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 10%,
+    var(--fuwari-card-bg)
+  );
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--fuwari-fg);
+  font-size: 15px;
+  outline: none;
+  box-shadow: none;
+  transition:
+    background-color 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.auth-page .auth-field input:hover {
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 15%,
+    var(--fuwari-card-bg)
+  );
+}
+.auth-page .auth-field input:focus {
+  background: var(--fuwari-btn-regular-bg);
+  border-color: color-mix(in srgb, var(--fuwari-primary) 55%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--fuwari-primary) 12%, transparent);
+}
+.auth-page .auth-field input::placeholder {
+  color: var(--fuwari-fg-30);
+}
+.auth-error,
+.auth-feedback {
+  color: var(--fuwari-danger-fg);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.auth-feedback {
+  padding: 12px 14px;
+  background: var(--fuwari-danger-bg);
+  border-radius: 12px;
+}
+.auth-feedback button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  color: var(--fuwari-primary);
+  font-weight: 500;
+}
+.auth-note {
+  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.auth-verification {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.auth-register {
+  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  padding-top: 20px;
+  text-align: center;
+  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.auth-register a {
+  color: var(--fuwari-primary);
+}
+@media (max-width: 639px) {
+  .auth-card:has(.auth-page) {
+    padding: 24px;
+  }
+  .auth-page .auth-field input {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-page .auth-field input {
+    transition: none;
+  }
+}
+.auth-form fieldset {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.auth-status {
+  padding-top: 8px;
+  text-align: center;
+}
+.auth-status-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-inline: auto;
+  border-radius: 16px;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.auth-status-icon[data-error="true"] {
+  background: var(--fuwari-danger-bg);
+  color: var(--fuwari-danger-fg);
+}
+.auth-status-actions {
+  display: grid;
+  gap: 16px;
+}
+.auth-status-link,
+.auth-feedback a {
+  color: var(--fuwari-primary);
+  font-size: 14px;
+}
+.auth-feedback a {
+  display: inline-block;
+  margin-top: 8px;
+}
+.auth-status .auth-heading p {
+  overflow-wrap: anywhere;
+}

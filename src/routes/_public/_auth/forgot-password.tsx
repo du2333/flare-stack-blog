@@ -44,7 +44,6 @@ function RouteComponent() {
     <ForgotPasswordPage
       forgotPasswordForm={{
         ...forgotPasswordForm,
-        turnstileProps,
         turnstilePending,
       }}
       turnstileElement={turnstileElement}

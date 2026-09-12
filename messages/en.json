@@ -1703,5 +1703,12 @@
   "account_save": "Save profile",
   "account_password_hint": "Update your sign-in password here when needed.",
   "account_change_password": "Change password",
-  "account_retry": "Retry"
+  "account_retry": "Retry",
+  "login_github_continue": "Continue with GitHub",
+  "login_email_alternative": "Or use email",
+  "login_email_submit": "Sign in with email",
+  "login_email_register": "Register with email",
+  "login_show_password": "Show password",
+  "login_hide_password": "Hide password",
+  "auth_verify_retry_hint": "Return to sign in with your email and password to request a new verification email."
 }

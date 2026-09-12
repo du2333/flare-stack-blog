@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -32,10 +32,11 @@ interface UseResetPasswordFormOptions {
 export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
   const { token } = options;
 
-  const navigate = useNavigate();
+  const [isSuccess, setIsSuccess] = useState(false);
   const queryClient = useQueryClient();
   const resetPasswordSchema = createResetPasswordSchema(m);
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<ResetPasswordSchema>({
     resolver: standardSchemaResolver(resetPasswordSchema),
   });
@@ -46,17 +47,22 @@ export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
       return;
     }
 
-    const { error } = await authClient.resetPassword({
-      newPassword: data.password,
-      token,
-    });
-
-    if (error) {
-      toast.error(m.reset_password_toast_failed(), {
-        description:
-          getResetPasswordAuthErrorMessage(error, m) ??
-          m.reset_password_toast_failed_desc(),
+    setSubmitError(null);
+    try {
+      const { error } = await authClient.resetPassword({
+        newPassword: data.password,
+        token,
       });
+
+      if (error) {
+        setSubmitError(
+          getResetPasswordAuthErrorMessage(error, m) ??
+            m.reset_password_toast_failed_desc(),
+        );
+        return;
+      }
+    } catch {
+      setSubmitError(m.reset_password_toast_failed_desc());
       return;
     }
 
@@ -65,7 +71,8 @@ export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
     toast.success(m.reset_password_toast_success(), {
       description: m.reset_password_toast_success_desc(),
     });
-    navigate({ to: "/login" });
+    form.reset();
+    setIsSuccess(true);
   };
 
   return {
@@ -73,5 +80,7 @@ export function useResetPasswordForm(options: UseResetPasswordFormOptions) {
     errors: form.formState.errors,
     handleSubmit: form.handleSubmit(onSubmit),
     isSubmitting: form.formState.isSubmitting,
+    submitError,
+    isSuccess,
   };
 }

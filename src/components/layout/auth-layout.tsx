@@ -1,3 +1,4 @@
+import "@/features/auth/components/auth-pages.css";
 import { ArrowLeft } from "lucide-react";
 import type { AuthLayoutProps } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";
@@ -6,10 +7,10 @@ export function AuthLayout({ onBack, children }: AuthLayoutProps) {
   return (
     <div className="w-full flex justify-center">
       <div
-        className="w-full max-w-md fuwari-onload-animation"
+        className="auth-frame w-full max-w-md fuwari-onload-animation"
         style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
       >
-        <div className="fuwari-card-base p-8 md:p-10 w-full">
+        <div className="auth-card fuwari-card-base p-8 md:p-10 w-full">
           <button
             type="button"
             onClick={onBack}

@@ -206,10 +206,12 @@
   white-space: nowrap;
 }
 .public-menu-logout {
-  color: var(--fuwari-fg-50);
+  color: var(--fuwari-danger-fg);
 }
-.public-menu-logout:hover {
-  color: var(--fuwari-danger);
+.public-menu-logout:hover,
+.public-menu-logout:focus-visible {
+  color: var(--fuwari-danger-fg);
+  background: var(--fuwari-danger-bg);
 }
 .public-menu-preferences {
   display: flex;

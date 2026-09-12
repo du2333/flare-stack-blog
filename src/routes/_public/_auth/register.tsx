@@ -49,7 +49,7 @@ function RouteComponent() {
   return (
     <RegisterPage
       isEmailConfigured={isEmailConfigured}
-      registerForm={{ ...registerForm, turnstileProps }}
+      registerForm={registerForm}
       turnstileElement={turnstileElement}
     />
   );

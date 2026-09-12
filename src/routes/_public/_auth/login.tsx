@@ -53,7 +53,6 @@ function RouteComponent() {
       isEmailConfigured={isEmailConfigured}
       loginForm={{
         ...loginForm,
-        turnstileProps,
         turnstilePending,
       }}
       socialLogin={socialLogin}
