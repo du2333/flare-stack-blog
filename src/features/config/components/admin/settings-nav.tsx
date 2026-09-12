@@ -1,3 +1,4 @@
+import { useConfigEditing } from "./config-editing";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   SETTINGS_PAGE_IDS,
@@ -15,23 +16,36 @@ const LABELS: Record<SettingsPageId, () => string> = {
 };
 
 export function SettingsNav({ current }: { current: SettingsPageId }) {
+  const { dirtySections } = useConfigEditing();
   const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="settings-tabs">
       {SETTINGS_PAGE_IDS.map((id) => {
         const to = SETTINGS_PAGE_TO[id];
         const active = current === id || pathname === to;
+        const dirty =
+          id === "site"
+            ? dirtySections?.site
+            : id === "notify"
+              ? dirtySections?.notifications
+              : false;
         return (
           <Link
             key={id}
             to={to}
-            className={cn(
-              "rounded-xl h-9 px-3 text-sm font-medium",
-              active ? "fuwari-btn-primary" : "fuwari-btn-regular",
-            )}
+            aria-current={active ? "page" : undefined}
+            className={cn("settings-tab", active && "active")}
           >
             {LABELS[id]()}
+            {dirty && (
+              <span
+                className="ml-1.5 text-xs"
+                aria-label={m.settings_config_unsaved()}
+              >
+                *
+              </span>
+            )}
           </Link>
         );
       })}

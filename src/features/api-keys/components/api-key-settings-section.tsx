@@ -1,149 +1,258 @@
-import { Copy, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { ClientOnly } from "@tanstack/react-router";
+import { Copy, KeyRound, Loader2, Plus } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { SETTINGS_FIELD_CLASS } from "@/features/config/components/admin/settings-pages";
 import { useApiKeys } from "@/features/api-keys/hooks/use-api-keys";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import "./api-key-settings.css";
 
 export function ApiKeySettingsSection() {
-  const { keys, isLoading, createKey, isCreating, deleteKey, isDeleting } =
-    useApiKeys();
+  const {
+    keys,
+    isLoading,
+    isError,
+    reload,
+    createKey,
+    isCreating,
+    deleteKey,
+    isDeleting,
+  } = useApiKeys();
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
     name: string;
   } | null>(null);
-
-  const trimmedName = name.trim();
-
-  const handleCreate = async () => {
-    if (!trimmedName || isCreating) return;
-    const created = await createKey(trimmedName);
-    setName("");
-    setRevealedKey(created.key);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const createRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    if (isCreating) return;
+    setOpen(false);
+    setRevealedKey(null);
   };
-
-  const handleCopy = async (value: string) => {
-    await navigator.clipboard.writeText(value);
-    toast.success(m.settings_api_keys_copied());
+  const create = async () => {
+    if (!name.trim() || isCreating) return;
+    try {
+      const created = await createKey(name.trim());
+      setRevealedKey(created.key);
+      setName("");
+    } catch {
+      /* Mutation displays the failure. */
+    }
   };
-
   return (
-    <div className="space-y-4">
-      {revealedKey ? (
-        <div className="rounded-2xl bg-(--fuwari-success-bg) p-4 space-y-2">
-          <p className="text-sm font-medium text-(--fuwari-success-fg)">
-            {m.settings_api_keys_created_title()}
-          </p>
-          <p className="text-xs text-(--fuwari-success-fg)">
-            {m.settings_api_keys_created_hint()}
-          </p>
-          <code className="block text-xs break-all fuwari-text-90">
-            {revealedKey}
-          </code>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => void handleCopy(revealedKey)}
-              className="fuwari-btn-regular rounded-xl h-8 px-3 text-sm font-medium gap-1.5"
-            >
-              <Copy size={12} />
-              {m.settings_api_keys_copy()}
-            </button>
-            <button
-              type="button"
-              onClick={() => setRevealedKey(null)}
-              className="h-8 px-3 text-sm fuwari-text-50"
-            >
-              {m.settings_api_keys_dismiss()}
-            </button>
-          </div>
+    <div className="settings-keys">
+      <div className="settings-section-heading">
+        <div>
+          <h2>{m.settings_nav_api_keys()}</h2>
+          <p className="settings-muted">{m.settings_design_keys_hint()}</p>
         </div>
-      ) : null}
-
-      <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
-        <label className="grid gap-1.5 text-sm fuwari-text-50 flex-1 min-w-0">
-          {m.settings_api_keys_name_label()}
-          <input
-            value={name}
-            maxLength={32}
-            placeholder={m.settings_api_keys_name_ph()}
-            onChange={(event) => setName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                void handleCreate();
-              }
-            }}
-            className={SETTINGS_FIELD_CLASS}
-          />
-        </label>
         <button
+          ref={createRef}
           type="button"
-          disabled={!trimmedName || isCreating}
-          onClick={() => void handleCreate()}
-          className="fuwari-btn-primary rounded-xl h-10 px-4 text-sm font-medium disabled:opacity-50 inline-flex items-center gap-2"
+          className="settings-button fuwari-btn-primary"
+          onClick={() => {
+            setName("");
+            setRevealedKey(null);
+            setOpen(true);
+          }}
         >
-          {isCreating ? <Loader2 size={14} className="animate-spin" /> : null}
-          {isCreating
-            ? m.settings_api_keys_creating()
-            : m.settings_api_keys_create()}
+          <Plus size={16} />
+          {m.settings_api_keys_create()}
         </button>
       </div>
-
-      {isLoading ? (
-        <p className="py-10 text-center text-sm fuwari-text-50">
-          {m.settings_api_keys_loading()}
-        </p>
-      ) : keys.length === 0 ? (
-        <p className="py-10 text-center text-sm fuwari-text-50">
-          {m.settings_api_keys_empty()}
-        </p>
-      ) : (
-        <div>
-          {keys.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 py-3.5 border-b border-(--fuwari-input-border) last:border-0"
+      <div className="settings-key-list" aria-busy={isLoading}>
+        {isError ? (
+          <div className="settings-key-empty">
+            <p>{m.settings_design_load_failed()}</p>
+            <button
+              type="button"
+              className="settings-button fuwari-btn-regular"
+              onClick={() => void reload()}
             >
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium fuwari-text-90 truncate">
-                  {item.name || m.settings_api_keys_unnamed()}
+              {m.settings_design_retry()}
+            </button>
+          </div>
+        ) : isLoading ? (
+          <p className="settings-key-empty">{m.settings_api_keys_loading()}</p>
+        ) : keys.length === 0 ? (
+          <div className="settings-key-empty">
+            <KeyRound size={30} />
+            <p>{m.settings_api_keys_empty()}</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>{m.settings_api_keys_name_label()}</th>
+                <th>{m.settings_design_key_prefix()}</th>
+                <th>{m.settings_design_created_at()}</th>
+                <th>
+                  <span className="sr-only">
+                    {m.settings_api_keys_delete()}
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((key) => (
+                <tr key={key.id}>
+                  <td>
+                    <strong>{key.name || m.settings_api_keys_unnamed()}</strong>
+                  </td>
+                  <td>
+                    <code>{key.start ? `${key.start}…` : "—"}</code>
+                  </td>
+                  <td>
+                    <ClientOnly fallback="—">
+                      {formatDate(key.createdAt, { includeTime: true })}
+                    </ClientOnly>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      className="settings-key-revoke"
+                      onClick={() =>
+                        setPendingDelete({
+                          id: key.id,
+                          name: key.name || m.settings_api_keys_unnamed(),
+                        })
+                      }
+                    >
+                      {m.settings_api_keys_delete()}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <footer className="settings-key-footer">
+        <p>
+          {m.settings_api_keys_created_hint()}
+          <br />
+          {m.settings_design_immediate()}
+        </p>
+        <span>
+          {isLoading || isError
+            ? "—"
+            : m.settings_design_key_count({ count: keys.length })}
+        </span>
+      </footer>
+      <ClientOnly>
+        <FuwariModal
+          open={open}
+          onClose={close}
+          busy={isCreating}
+          labelledBy="create-api-key-title"
+          initialFocus={() => inputRef.current}
+          returnFocus={() => createRef.current}
+        >
+          <div className="p-6">
+            <h2
+              id="create-api-key-title"
+              className="text-lg font-semibold fuwari-text-90"
+            >
+              {revealedKey
+                ? m.settings_api_keys_created_title()
+                : m.settings_api_keys_create()}
+            </h2>
+            {revealedKey ? (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm fuwari-text-50">
+                  {m.settings_api_keys_created_hint()}
                 </p>
-                <p className="text-xs fuwari-text-50">
-                  {item.start ? `${item.start}… · ` : null}
-                  {m.settings_api_keys_created_at({
-                    date: formatDate(item.createdAt, { includeTime: true }),
-                  })}
-                </p>
+                <code className="block break-all rounded-xl bg-(--fuwari-btn-regular-bg) p-4 text-sm">
+                  {revealedKey}
+                </code>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="settings-button fuwari-btn-regular"
+                    onClick={close}
+                  >
+                    {m.settings_api_keys_dismiss()}
+                  </button>
+                  <button
+                    type="button"
+                    className="settings-button fuwari-btn-primary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(revealedKey);
+                        toast.success(m.settings_api_keys_copied());
+                      } catch {
+                        toast.error(m.settings_design_copy_failed());
+                      }
+                    }}
+                  >
+                    <Copy size={16} />
+                    {m.settings_api_keys_copy()}
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  setPendingDelete({
-                    id: item.id,
-                    name: item.name || m.settings_api_keys_unnamed(),
-                  })
-                }
-                className="h-8 px-3 text-sm fuwari-text-50 hover:text-(--fuwari-danger-fg)"
+            ) : (
+              <form
+                className="mt-5 space-y-5"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void create();
+                }}
               >
-                {m.settings_api_keys_delete()}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
+                <label className="grid gap-2 text-sm fuwari-text-75">
+                  {m.settings_api_keys_name_label()}
+                  <input
+                    ref={inputRef}
+                    value={name}
+                    disabled={isCreating}
+                    maxLength={32}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder={m.settings_api_keys_name_ph()}
+                    className={SETTINGS_FIELD_CLASS}
+                  />
+                </label>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={close}
+                    disabled={isCreating}
+                    className="settings-button fuwari-btn-regular"
+                  >
+                    {m.common_cancel()}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!name.trim() || isCreating}
+                    className="settings-button fuwari-btn-primary"
+                  >
+                    {isCreating && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    {m.settings_api_keys_create()}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </FuwariModal>
+      </ClientOnly>
       <ConfirmationModal
         isOpen={!!pendingDelete}
         onClose={() => setPendingDelete(null)}
         onConfirm={async () => {
-          if (!pendingDelete) return;
-          await deleteKey(pendingDelete.id);
-          setPendingDelete(null);
+          if (!pendingDelete || isDeleting) return;
+          try {
+            await deleteKey(pendingDelete.id);
+            setPendingDelete(null);
+          } catch {
+            /* Keep the dialog for retry. */
+          }
         }}
         title={m.settings_api_keys_delete_title()}
         message={m.settings_api_keys_delete_desc({
@@ -152,6 +261,7 @@ export function ApiKeySettingsSection() {
         confirmLabel={m.settings_api_keys_delete_confirm()}
         isDanger
         isLoading={isDeleting}
+        fallbackFocus={() => createRef.current}
       />
     </div>
   );

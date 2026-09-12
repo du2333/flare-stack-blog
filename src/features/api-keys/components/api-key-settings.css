@@ -1,0 +1,106 @@
+.settings-workspace[data-section="api-keys"] .settings-body {
+  display: flex;
+  overflow: hidden;
+}
+.settings-keys {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.settings-key-list {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.settings-key-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(14 * var(--settings-unit, 1px));
+}
+.settings-key-list th {
+  text-align: left;
+  position: sticky;
+  top: 0;
+  background: var(--fuwari-card-bg);
+  font-weight: 500;
+  color: var(--fuwari-fg-50);
+}
+.settings-key-list th,
+.settings-key-list td {
+  padding: 18px 12px;
+  border-bottom: 1px solid var(--settings-rule);
+}
+.settings-key-list td:first-child {
+  overflow-wrap: anywhere;
+  max-width: 280px;
+}
+.settings-key-list td:not(:first-child) {
+  white-space: nowrap;
+}
+.settings-key-list td:last-child {
+  text-align: right;
+}
+.settings-key-list code,
+.settings-key-list td:nth-child(3) {
+  color: var(--fuwari-fg-50);
+  font-size: calc(12 * var(--settings-unit, 1px));
+}
+.settings-key-revoke {
+  padding: 8px 12px;
+  border-radius: 9px;
+  color: var(--fuwari-fg-50);
+}
+.settings-key-revoke:hover {
+  color: var(--fuwari-danger-fg);
+  background: var(--fuwari-danger-bg);
+}
+.settings-key-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--settings-rule);
+  color: var(--fuwari-fg-50);
+  font-size: 12px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+.settings-key-footer span {
+  white-space: nowrap;
+}
+.settings-key-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+}
+@media (max-width: 600px) {
+  .settings-key-list th,
+  .settings-key-list td {
+    padding: 14px 8px;
+  }
+  .settings-key-list th:nth-child(2),
+  .settings-key-list td:nth-child(2) {
+    display: none;
+  }
+  .settings-key-footer {
+    flex-wrap: wrap;
+  }
+}
+@media (max-height: 540px) {
+  .settings-workspace[data-section="api-keys"] .settings-body,
+  .settings-keys {
+    display: block;
+    overflow: visible;
+  }
+  .settings-key-list {
+    overflow-x: auto;
+  }
+}

@@ -655,6 +655,7 @@
             "method": "GET",
             "path": "/admin/config",
             "summary": "Get system config",
+            "description": "Returns a fresh database snapshot with redacted secrets and independent site/notification revisions. Internal runtime and public Site Config formats are unchanged.",
             "tags": ["Admin Config"]
           }
         }
@@ -667,6 +668,7 @@
             "method": "PATCH",
             "path": "/admin/config",
             "summary": "Update system config",
+            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
             "tags": ["Admin Config"]
           }
         }
@@ -679,6 +681,7 @@
             "method": "POST",
             "path": "/admin/config/assets",
             "summary": "Upload a site asset",
+            "description": "Uploads immediately to the selected object-storage path. Discarding an unsaved settings draft does not revert uploaded image content.",
             "tags": ["Admin Config"]
           }
         }
@@ -866,6 +869,7 @@
           "method": "POST",
           "path": "/admin/email/test",
           "summary": "Send a test email",
+          "description": "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
           "tags": ["Admin Email"]
         }
       }
@@ -1010,6 +1014,7 @@
           "method": "POST",
           "path": "/admin/webhooks/test",
           "summary": "Send a test webhook",
+          "description": "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
           "tags": ["Admin Webhooks"]
         }
       }

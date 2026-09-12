@@ -1,7 +1,7 @@
-export function isAdminContentWorkspace(pathname: string) {
+export function isAdminWorkspace(pathname: string) {
   return (
-    /^\/admin\/?$/.test(pathname) ||
-    /^\/admin\/(posts|media|tags|friend-links|muted-users)\/?$/.test(pathname)
+    /^\/admin(?:\/|$)/.test(pathname) &&
+    !pathname.startsWith("/admin/posts/edit/")
   );
 }
 

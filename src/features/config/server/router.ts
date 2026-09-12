@@ -4,7 +4,11 @@ import {
   SITE_ASSET_MAX_FILE_SIZE,
   parseSiteAssetUploadInput,
 } from "@/features/config/config.asset.schema";
-import { SystemConfigSchema } from "@/features/config/config.schema";
+import {
+  UpdateConfigSectionSchema,
+  AdminConfigSnapshotSchema,
+  CONFIG_ERRORS,
+} from "@/features/config/config.admin.schema";
 import * as ConfigService from "@/features/config/service/config.service";
 import { serverEnv } from "@/lib/env/server.env";
 import { m } from "@/paraglide/messages";
@@ -29,22 +33,30 @@ const siteDomain = publicProcedure
   .handler(({ context }) => serverEnv(context.env).DOMAIN);
 
 const getSystem = adminProcedure
+  .errors(CONFIG_ERRORS)
+  .output(AdminConfigSnapshotSchema)
   .route({
     method: "GET",
     path: "/admin/config",
     summary: "Get system config",
+    description:
+      "Returns a fresh database snapshot with redacted secrets and independent site/notification revisions. Internal runtime and public Site Config formats are unchanged.",
     tags: ["Admin Config"],
   })
-  .handler(({ context }) => ConfigService.getSystemConfig(context));
+  .handler(({ context }) => ConfigService.getAdminConfig(context));
 
 const updateSystem = adminProcedure
+  .errors(CONFIG_ERRORS)
+  .output(AdminConfigSnapshotSchema)
   .route({
     method: "PATCH",
     path: "/admin/config",
     summary: "Update system config",
+    description:
+      "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
     tags: ["Admin Config"],
   })
-  .input(SystemConfigSchema)
+  .input(UpdateConfigSectionSchema)
   .handler(({ context, input }) =>
     ConfigService.updateSystemConfig(context, input),
   );
@@ -54,6 +66,8 @@ const uploadAsset = adminProcedure
     method: "POST",
     path: "/admin/config/assets",
     summary: "Upload a site asset",
+    description:
+      "Uploads immediately to the selected object-storage path. Discarding an unsaved settings draft does not revert uploaded image content.",
     tags: ["Admin Config"],
   })
   .input(

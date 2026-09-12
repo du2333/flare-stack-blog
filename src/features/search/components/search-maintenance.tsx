@@ -41,6 +41,23 @@ export function SearchMaintenance() {
           <p className="text-xs fuwari-text-50">
             {m.settings_maintenance_search_desc_short()}
           </p>
+          {rebuildSearchIndexMutation.isSuccess && (
+            <p role="status" className="settings-operation-result">
+              {m.settings_maintenance_search_toast_success({
+                duration: rebuildSearchIndexMutation.data.duration,
+                indexed: rebuildSearchIndexMutation.data.indexed,
+              })}
+            </p>
+          )}
+          {rebuildSearchIndexMutation.isError && (
+            <p
+              role="alert"
+              className="settings-operation-result"
+              data-error="true"
+            >
+              {rebuildSearchIndexMutation.error.message}
+            </p>
+          )}
         </div>
         <button
           type="button"

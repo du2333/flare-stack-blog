@@ -27,9 +27,19 @@ vi.mock("@/features/config/queries", () => ({
 }));
 vi.mock("@/features/config/hooks/use-system-setting", async () => {
   const { DEFAULT_CONFIG } = await import("@/features/config/config.schema");
+  const snapshot = {
+    config: DEFAULT_CONFIG,
+    revisions: { site: 0, notifications: 0 },
+    secrets: {
+      emailPasswordConfigured: false,
+      webhookSecretConfigured: false,
+    },
+    schemaVersion: 1,
+  };
   return {
     useSystemSetting: () => ({
-      settings: DEFAULT_CONFIG,
+      snapshot,
+      reload: vi.fn(),
       saveSettings: vi.fn(),
       isLoading: false,
     }),
@@ -37,7 +47,18 @@ vi.mock("@/features/config/hooks/use-system-setting", async () => {
 });
 
 beforeEach(() => {
-  vi.stubGlobal("matchMedia", () => ({ matches: false }));
+  vi.stubGlobal("matchMedia", () => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+  HTMLElement.prototype.scrollTo = vi.fn();
+  Object.defineProperty(HTMLElement.prototype, "animate", {
+    configurable: true,
+    value: vi.fn(() => ({ cancel: vi.fn() })),
+  });
+  HTMLDialogElement.prototype.close = vi.fn();
+  HTMLDialogElement.prototype.showModal = vi.fn();
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => {

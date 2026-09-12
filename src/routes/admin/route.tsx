@@ -5,7 +5,7 @@ import {
   useLocation,
   useMatches,
 } from "@tanstack/react-router";
-import { isAdminContentWorkspace } from "@/components/admin/content-workspace";
+import { isAdminWorkspace } from "@/components/admin/content-workspace";
 import "@/components/admin/content-workspace.css";
 import { Menu } from "lucide-react";
 import { useRef, useState } from "react";
@@ -103,7 +103,7 @@ function isPostEditorPath(pathname: string) {
 function AdminMain() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const pathname = useLocation({ select: (location) => location.pathname });
-  const contentWorkspace = isAdminContentWorkspace(pathname);
+  const contentWorkspace = isAdminWorkspace(pathname);
   const fill = isPostEditorPath(pathname) || contentWorkspace;
 
   return (

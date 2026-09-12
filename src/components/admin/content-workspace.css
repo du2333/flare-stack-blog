@@ -20,7 +20,8 @@
       .media-workspace,
       .taxonomy-workspace,
       .friend-workspace,
-      .muted-workspace
+      .muted-workspace,
+      .settings-workspace
     ) {
     display: block;
     height: auto;
@@ -36,7 +37,8 @@
       .taxonomy-post-scroll,
       .friend-queue-scroll,
       .friend-detail-scroll,
-      .muted-list-scroll
+      .muted-list-scroll,
+      .settings-body
     ) {
     height: auto;
     overflow: visible;

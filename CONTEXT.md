@@ -57,7 +57,7 @@ A submitted or admin-created external site listing that can be approved for disp
 _Avoid_: Blogroll, partner link, link exchange
 
 **System Config**:
-CMS-wide operational settings such as email, notification, and site configuration.
+The single CMS-wide configuration for site presentation and notification delivery. It contains Site Config and delivery settings; API Keys and the results of maintenance operations are separate.
 _Avoid_: Settings
 
 **Site Config**:

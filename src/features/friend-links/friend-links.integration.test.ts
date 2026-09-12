@@ -1,3 +1,4 @@
+import { seedSystemConfig } from "tests/config-fixture";
 import {
   createAdminTestContext,
   createAuthTestContext,
@@ -9,7 +10,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import * as ConfigService from "@/features/config/service/config.service";
 import * as FriendLinkService from "./friend-links.service";
 
 describe("FriendLinkService", () => {
@@ -72,7 +72,7 @@ describe("FriendLinkService", () => {
     });
 
     it("should send admin webhook without email when admin email is disabled", async () => {
-      await ConfigService.updateSystemConfig(adminContext, {
+      await seedSystemConfig(adminContext, {
         ...DEFAULT_CONFIG,
         notification: {
           ...DEFAULT_CONFIG.notification,
@@ -111,7 +111,7 @@ describe("FriendLinkService", () => {
     });
 
     it("should not send webhook when the URL is empty", async () => {
-      await ConfigService.updateSystemConfig(adminContext, {
+      await seedSystemConfig(adminContext, {
         ...DEFAULT_CONFIG,
         notification: {
           ...DEFAULT_CONFIG.notification,
@@ -236,7 +236,7 @@ describe("FriendLinkService", () => {
     });
 
     it("should skip submitter email when user email notifications are disabled", async () => {
-      await ConfigService.updateSystemConfig(adminContext, {
+      await seedSystemConfig(adminContext, {
         ...DEFAULT_CONFIG,
         notification: {
           ...DEFAULT_CONFIG.notification,
@@ -292,7 +292,7 @@ describe("FriendLinkService", () => {
     });
 
     it("should skip rejection email when user email notifications are disabled", async () => {
-      await ConfigService.updateSystemConfig(adminContext, {
+      await seedSystemConfig(adminContext, {
         ...DEFAULT_CONFIG,
         notification: {
           ...DEFAULT_CONFIG.notification,

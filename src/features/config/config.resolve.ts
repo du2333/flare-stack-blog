@@ -13,7 +13,7 @@ const RESEND_SMTP_USERNAME = "resend";
 function resolveEmailConfig(config: SystemConfig | null | undefined) {
   const email = config?.email;
   const legacyApiKey = email?.apiKey?.trim() || "";
-  const password = email?.password?.trim() || legacyApiKey;
+  const password = email?.password || legacyApiKey;
   const host = email?.host?.trim() || (legacyApiKey ? RESEND_SMTP_HOST : "");
   const username =
     email?.username?.trim() || (legacyApiKey ? RESEND_SMTP_USERNAME : "");

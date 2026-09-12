@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -7,19 +8,15 @@ import { m } from "@/paraglide/messages";
 export function CacheMaintenance() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const mutation = useMutation({
+    mutationFn: () => orpcClient.cache.invalidate(),
+    onSuccess: () =>
+      toast.success(m.settings_maintenance_cache_toast_success()),
+    onError: () => toast.error(m.settings_maintenance_cache_toast_error()),
+  });
   const handleInvalidate = () => {
     setIsModalOpen(false);
-    toast.promise(
-      async () => {
-        await orpcClient.cache.invalidate();
-      },
-      {
-        loading: m.settings_maintenance_cache_toast_loading(),
-        success: m.settings_maintenance_cache_toast_success(),
-        error: (error) =>
-          error.message || m.settings_maintenance_cache_toast_error(),
-      },
-    );
+    mutation.mutate();
   };
 
   return (
@@ -32,13 +29,30 @@ export function CacheMaintenance() {
           <p className="text-xs fuwari-text-50">
             {m.settings_maintenance_cache_desc_short()}
           </p>
+          {mutation.isSuccess && (
+            <p role="status" className="settings-operation-result">
+              {m.settings_maintenance_cache_toast_success()}
+            </p>
+          )}
+          {mutation.isError && (
+            <p
+              role="alert"
+              className="settings-operation-result"
+              data-error="true"
+            >
+              {m.settings_maintenance_cache_toast_error()}
+            </p>
+          )}
         </div>
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="fuwari-btn-danger rounded-xl h-9 px-3 text-sm font-medium shrink-0"
+          disabled={mutation.isPending}
+          className="fuwari-btn-regular rounded-xl h-9 px-3 text-sm font-medium shrink-0"
         >
-          {m.settings_maintenance_cache_btn()}
+          {mutation.isPending
+            ? m.common_processing()
+            : m.settings_maintenance_cache_btn()}
         </button>
       </div>
       <ConfirmationModal

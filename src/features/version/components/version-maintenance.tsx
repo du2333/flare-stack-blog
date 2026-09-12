@@ -48,6 +48,35 @@ export function VersionMaintenance() {
         <p className="text-xs fuwari-text-50">
           {m.settings_maintenance_version_desc({ version: __APP_VERSION__ })}
         </p>
+        {checkUpdateMutation.isSuccess && checkUpdateMutation.data && (
+          <p role="status" className="settings-operation-result">
+            {checkUpdateMutation.data.hasUpdate ? (
+              <a
+                href={checkUpdateMutation.data.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-(--fuwari-primary)"
+              >
+                {m.settings_maintenance_version_toast_new_desc({
+                  version: checkUpdateMutation.data.latestVersion,
+                })}
+              </a>
+            ) : (
+              m.settings_maintenance_version_toast_latest_desc({
+                version: checkUpdateMutation.data.currentVersion,
+              })
+            )}
+          </p>
+        )}
+        {checkUpdateMutation.isError && (
+          <p
+            role="alert"
+            className="settings-operation-result"
+            data-error="true"
+          >
+            {m.settings_maintenance_version_toast_fail()}
+          </p>
+        )}
       </div>
       <button
         type="button"

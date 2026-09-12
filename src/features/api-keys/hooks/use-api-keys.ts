@@ -50,8 +50,8 @@ export function useApiKeys() {
       }
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
     },
     onError: () => {
       toast.error(m.settings_api_keys_toast_create_fail());
@@ -63,8 +63,8 @@ export function useApiKeys() {
       const { error } = await authClient.apiKey.delete({ keyId });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
       toast.success(m.settings_api_keys_toast_delete_success());
     },
     onError: () => {
@@ -75,6 +75,8 @@ export function useApiKeys() {
   return {
     keys: listQuery.data ?? [],
     isLoading: listQuery.isPending && listQuery.data === undefined,
+    isError: listQuery.isError,
+    reload: listQuery.refetch,
     createKey: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     deleteKey: deleteMutation.mutateAsync,

@@ -1,3 +1,4 @@
+import { seedSystemConfig } from "tests/config-fixture";
 import { createTestContext, waitForBackgroundTasks } from "tests/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
@@ -351,7 +352,9 @@ describe("Infra Integration", () => {
 
     it("persists updated site settings", async () => {
       await ConfigService.updateSystemConfig(context, {
-        ...DEFAULT_CONFIG,
+        section: "site",
+        expectedRevision: (await ConfigService.getAdminConfig(context))
+          .revisions.site,
         site: {
           ...DEFAULT_CONFIG.site,
           title: "Updated Site Title",
@@ -429,7 +432,7 @@ describe("Infra Integration", () => {
     });
 
     it("stores the normalized SMTP config without legacy apiKey field", async () => {
-      await ConfigService.updateSystemConfig(context, {
+      await seedSystemConfig(context, {
         ...DEFAULT_CONFIG,
         email: {
           apiKey: "re_legacy_key",

@@ -1,6 +1,7 @@
+import { CONFIG_ERRORS } from "@/features/config/config.admin.schema";
 import { z } from "zod";
 import * as ConfigService from "@/features/config/service/config.service";
-import { TestEmailConnectionSchema } from "@/features/email/email.schema";
+import { AdminTestEmailConnectionSchema } from "@/features/email/email.schema";
 import * as EmailService from "@/features/email/service/email.service";
 import * as AuthService from "@/features/auth/service/auth.service";
 import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
@@ -94,20 +95,32 @@ const toggleReply = authProcedure
   );
 
 const testConnection = adminProcedure
-  .errors(emailErrors)
+  .errors({ ...emailErrors, ...CONFIG_ERRORS })
   .route({
     method: "POST",
     path: "/admin/email/test",
     summary: "Send a test email",
+    description:
+      "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
     tags: ["Admin Email"],
   })
-  .input(TestEmailConnectionSchema)
-  .handler(({ context, input, errors }) =>
-    unwrapResult(EmailService.testEmailConnection(context, input), {
-      SEND_FAILED: () => {
-        throw errors.SEND_FAILED();
+  .input(AdminTestEmailConnectionSchema)
+  .handler(async ({ context, input, errors }) =>
+    unwrapResult(
+      EmailService.testEmailConnection(context, {
+        ...input,
+        password: await ConfigService.resolveTestSecret(
+          context,
+          "emailPassword",
+          input.password,
+        ),
+      }),
+      {
+        SEND_FAILED: () => {
+          throw errors.SEND_FAILED();
+        },
       },
-    }),
+    ),
   );
 
 const hasPassword = authProcedure

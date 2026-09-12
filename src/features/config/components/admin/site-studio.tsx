@@ -1,5 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Home, Plus, X } from "lucide-react";
+import { useNavSort } from "./use-nav-sort";
+import { SettingsDisclosure } from "./settings-disclosure";
+import "./site-studio.css";
+import {
+  ExternalLink,
+  GripVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Select } from "@/components/ui/select";
@@ -19,7 +29,6 @@ import {
   SOCIAL_PLATFORM_KEYS,
   SOCIAL_PLATFORMS,
 } from "@/features/config/utils/social-platforms";
-import { recentPostsQuery } from "@/features/posts/queries";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -77,7 +86,6 @@ export function SiteStudio() {
   const { register, control, setValue } = useFormContext<SystemConfig>();
   const title = useWatch({ control, name: "site.title" }) ?? "";
   const author = useWatch({ control, name: "site.author" }) ?? "";
-  const description = useWatch({ control, name: "site.description" }) ?? "";
   const banner = useWatch({ control, name: "site.theme.fuwari.homeBg" });
   const avatar = useWatch({ control, name: "site.theme.fuwari.avatar" });
   const hueRaw = useWatch({ control, name: "site.theme.fuwari.primaryHue" });
@@ -87,34 +95,27 @@ export function SiteStudio() {
   const avatarSrc = previewSrc(avatar);
 
   return (
-    <div className="space-y-6">
-      <div className="relative">
-        <div className="relative h-52 md:h-72 rounded-2xl overflow-hidden bg-(--fuwari-btn-regular-bg)">
-          {bannerSrc ? (
-            <img
-              src={bannerSrc}
-              alt=""
-              className="w-full h-full object-cover object-center"
-            />
-          ) : null}
-          <div className="absolute top-3 left-3 flex items-center gap-2 h-10 px-3 rounded-xl bg-white/90 dark:bg-black/50 backdrop-blur-sm max-w-[min(100%-1.5rem,20rem)] shadow-xs">
-            <Home
-              size={16}
-              strokeWidth={1.5}
-              className="text-(--fuwari-primary) shrink-0"
-            />
+    <div className="site-studio">
+      <section className="site-identity">
+        <div className="site-banner">
+          {bannerSrc && (
+            <img src={bannerSrc} alt="" className="site-banner-image" />
+          )}
+          <label className="site-title-edit">
             <input
               {...register("site.title")}
+              className="site-inline-input"
+              size={Math.min(28, Math.max(8, title.length * 2))}
               placeholder={m.settings_site_field_title_ph()}
               aria-label={m.settings_site_field_title()}
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium fuwari-text-90 outline-none"
             />
-          </div>
+            <Pencil size={17} aria-hidden="true" />
+          </label>
           <OverlayUpload
             name="site.theme.fuwari.homeBg"
             assetPath="themes/fuwari/home-bg.webp"
             accept={IMAGE_ACCEPT}
-            className="absolute top-3 right-3"
+            className="site-banner-upload"
             label={
               bannerSrc
                 ? m.settings_site_banner_replace()
@@ -122,23 +123,20 @@ export function SiteStudio() {
             }
           />
         </div>
-
-        <div className="relative -mt-14 md:-mt-16 px-3 md:px-5 flex flex-col md:flex-row md:items-end gap-4">
-          <div className="relative w-24 h-24 shrink-0">
-            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-(--fuwari-card-bg) bg-(--fuwari-btn-regular-bg)">
+        <div className="site-profile">
+          <div className="site-avatar-edit">
+            <div className="site-avatar">
               {avatarSrc ? (
-                <img
-                  src={avatarSrc}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : null}
+                <img src={avatarSrc} alt="" />
+              ) : (
+                <UserRound size={38} aria-hidden="true" />
+              )}
             </div>
             <OverlayUpload
               name="site.theme.fuwari.avatar"
               assetPath="themes/fuwari/avatar.png"
               accept={IMAGE_ACCEPT}
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2"
+              className="site-avatar-upload"
               label={
                 avatarSrc
                   ? m.settings_site_avatar_replace()
@@ -146,121 +144,75 @@ export function SiteStudio() {
               }
             />
           </div>
-
-          <div className="fuwari-card-base flex-1 min-w-0 p-4 space-y-3 shadow-sm">
-            <input
-              {...register("site.author")}
-              placeholder={m.settings_site_field_author_ph()}
-              aria-label={m.settings_site_field_author()}
-              className="w-full bg-transparent text-xl font-medium fuwari-text-90 outline-none"
-            />
-            <textarea
-              {...register("site.description")}
-              rows={2}
-              placeholder={m.settings_site_field_description_ph()}
-              aria-label={m.settings_site_field_description()}
-              className="w-full bg-transparent text-sm fuwari-text-50 outline-none resize-none leading-relaxed"
-            />
+          <div className="site-profile-copy">
+            <label className="site-author-edit">
+              <input
+                {...register("site.author")}
+                className="site-inline-input"
+                size={Math.min(24, Math.max(4, author.length * 2))}
+                placeholder={m.settings_site_field_author_ph()}
+                aria-label={m.settings_site_field_author()}
+              />
+              <Pencil size={15} aria-hidden="true" />
+            </label>
+            <label className="site-description-edit">
+              <textarea
+                {...register("site.description")}
+                className="site-inline-input"
+                rows={2}
+                placeholder={m.settings_site_field_description_ph()}
+                aria-label={m.settings_site_field_description()}
+              />
+              <Pencil size={14} aria-hidden="true" />
+            </label>
             <SocialPills />
           </div>
-
-          <StudioPost
-            fallbackTitle={title || author}
-            fallbackSummary={description}
+        </div>
+      </section>
+      <section className="site-theme-row">
+        <div className="site-section-copy">
+          <label htmlFor="theme-hue-slider">{m.settings_hue()}</label>
+          <p>{m.settings_hue_hint()}</p>
+        </div>
+        <div className="site-hue-control">
+          <input
+            id="theme-hue-slider"
+            type="range"
+            min={FUWARI_THEME_HUE_MIN}
+            max={FUWARI_THEME_HUE_MAX}
+            step={1}
+            value={hue}
+            onChange={(event) =>
+              setValue(
+                "site.theme.fuwari.primaryHue",
+                Number(event.target.value),
+                { shouldDirty: true },
+              )
+            }
+            style={{
+              background:
+                "linear-gradient(to right, oklch(0.7 0.14 0), oklch(0.7 0.14 60), oklch(0.7 0.14 120), oklch(0.7 0.14 180), oklch(0.7 0.14 240), oklch(0.7 0.14 300), oklch(0.7 0.14 360))",
+            }}
           />
+          <output htmlFor="theme-hue-slider">{hue}°</output>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="theme-hue-slider"
-            className="text-sm font-medium fuwari-text-75"
-          >
-            {m.settings_hue()}
-          </label>
-          <span className="text-xs font-mono fuwari-text-50">{hue}°</span>
-        </div>
-        <input
-          id="theme-hue-slider"
-          type="range"
-          min={FUWARI_THEME_HUE_MIN}
-          max={FUWARI_THEME_HUE_MAX}
-          step={1}
-          value={hue}
-          onChange={(event) =>
-            setValue(
-              "site.theme.fuwari.primaryHue",
-              Number(event.target.value),
-              {
-                shouldDirty: true,
-              },
-            )
-          }
-          className="w-full h-2 rounded-full appearance-none cursor-pointer accent-(--fuwari-primary)"
-          style={{
-            background:
-              "linear-gradient(to right, oklch(0.7 0.14 0), oklch(0.7 0.14 60), oklch(0.7 0.14 120), oklch(0.7 0.14 180), oklch(0.7 0.14 240), oklch(0.7 0.14 300), oklch(0.7 0.14 360))",
-          }}
-        />
-        <p className="text-xs fuwari-text-50">{m.settings_hue_hint()}</p>
-      </div>
-
+      </section>
       <NavLinksEditor />
-
-      <details className="rounded-2xl bg-(--fuwari-btn-regular-bg)/60 p-4 space-y-3">
-        <summary className="text-sm font-medium fuwari-text-75 cursor-pointer select-none">
-          {m.settings_icons()}
-        </summary>
-        <p className="text-xs fuwari-text-50">{m.settings_icons_hint()}</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+      <SettingsDisclosure
+        className="site-icons"
+        title={
+          <span className="site-section-copy">
+            <strong>{m.settings_icons()}</strong>
+            <span className="site-section-hint">{m.settings_icons_hint()}</span>
+          </span>
+        }
+      >
+        <div className="site-icon-grid">
           {ICON_FIELDS.map((item) => (
             <IconTile key={item.name} {...item} />
           ))}
         </div>
-      </details>
-    </div>
-  );
-}
-
-function StudioPost({
-  fallbackTitle,
-  fallbackSummary,
-}: {
-  fallbackTitle: string;
-  fallbackSummary: string;
-}) {
-  const { data } = useQuery(recentPostsQuery(1));
-  const post = data?.[0];
-  const title = post?.title || m.settings_preview_empty_title();
-  const summary =
-    post?.summary || fallbackSummary || m.settings_preview_empty_summary();
-  const cover = post?.cover?.url;
-
-  return (
-    <div className="fuwari-card-base w-full md:w-72 shrink-0 p-3 shadow-sm flex flex-col justify-between gap-2">
-      <div className="flex items-center justify-between text-[11px] fuwari-text-50">
-        <span>{m.settings_preview_badge()}</span>
-      </div>
-      <div className="flex gap-3 min-w-0">
-        {cover ? (
-          <img
-            src={cover}
-            alt=""
-            className="w-16 h-16 rounded-xl object-cover shrink-0"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-xl bg-(--fuwari-btn-regular-bg) shrink-0" />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium fuwari-text-90 line-clamp-2">
-            {title}
-          </p>
-          <p className="mt-1 text-xs fuwari-text-50 line-clamp-2">
-            {summary || fallbackTitle}
-          </p>
-        </div>
-      </div>
+      </SettingsDisclosure>
     </div>
   );
 }
@@ -268,43 +220,71 @@ function StudioPost({
 function NavLinksEditor() {
   const { control, register, setValue, watch, formState } =
     useFormContext<SystemConfig>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control,
     name: "site.navLinks",
   });
   const linkErrors = formState.errors.site?.navLinks;
+  const sorting = useNavSort(
+    fields.map((field) => field.id),
+    move,
+  );
 
   return (
-    <div className="space-y-3">
-      <div>
-        <p className="text-sm font-medium fuwari-text-75">
-          {m.settings_site_nav_title()}
-        </p>
+    <section className="site-nav-section">
+      <div className="site-section-copy">
+        <h2>{m.settings_site_nav_title()}</h2>
         <p className="mt-1 text-xs fuwari-text-50">
           {m.settings_site_nav_hint()}
         </p>
       </div>
 
-      <div className="space-y-2">
-        {fields.length > 0 ? (
-          <div className="flex gap-2 px-1 text-[11px] fuwari-text-50">
-            <span className="w-28 shrink-0">{m.settings_site_nav_name()}</span>
-            <span className="min-w-0 flex-1">{m.settings_site_nav_url()}</span>
-            <span className="w-10 shrink-0" />
-          </div>
-        ) : null}
+      <p className="site-sort-hint">{m.settings_nav_drag_hint()}</p>
+      <div className="site-nav-fields">
         {fields.map((field, index) => {
           const href = watch(`site.navLinks.${index}.href`) ?? "";
           const canonicalHref = canonicalizeNavHref(href);
           const labelError = linkErrors?.[index]?.label?.message;
           const hrefError = linkErrors?.[index]?.href?.message;
           return (
-            <div key={field.id} className="space-y-1">
-              <div className="flex gap-2">
+            <div
+              key={field.id}
+              ref={(node) => {
+                if (node) sorting.rows.current.set(field.id, node);
+                else sorting.rows.current.delete(field.id);
+              }}
+              className="site-nav-item space-y-1"
+              data-dragging={sorting.drag?.id === field.id}
+              data-drop-target={
+                sorting.drag?.target === field.id &&
+                sorting.drag?.id !== field.id
+              }
+              style={
+                sorting.drag?.id === field.id
+                  ? { transform: `translateY(${sorting.drag.offset}px)` }
+                  : undefined
+              }
+            >
+              <div className="site-nav-row">
+                <button
+                  type="button"
+                  className="site-nav-handle"
+                  {...sorting.handleProps(field.id)}
+                  aria-label={m.settings_nav_drag_label({
+                    name:
+                      watch(`site.navLinks.${index}.label`) ||
+                      String(index + 1),
+                  })}
+                  title={m.settings_nav_drag_hint()}
+                  disabled={fields.length < 2}
+                >
+                  <GripVertical size={18} />
+                </button>
                 <input
                   {...register(`site.navLinks.${index}.label`)}
                   placeholder={m.settings_site_nav_label_ph()}
-                  className={cn(SETTINGS_FIELD_CLASS, "w-28 shrink-0")}
+                  aria-label={m.settings_site_nav_name()}
+                  className={SETTINGS_FIELD_CLASS}
                 />
                 <div className="relative min-w-0 flex-1">
                   <input
@@ -319,6 +299,7 @@ function NavLinksEditor() {
                         }
                       },
                     })}
+                    aria-label={m.settings_site_nav_url()}
                     placeholder={m.settings_site_nav_href_ph()}
                     className={cn(
                       SETTINGS_FIELD_CLASS,
@@ -338,7 +319,7 @@ function NavLinksEditor() {
                   className="h-10 w-10 rounded-xl fuwari-text-50 hover:text-(--fuwari-danger-fg) grid place-items-center shrink-0"
                   aria-label={m.settings_site_nav_remove()}
                 >
-                  <X size={16} />
+                  <Trash2 size={16} />
                 </button>
               </div>
               {labelError || hrefError ? (
@@ -355,13 +336,13 @@ function NavLinksEditor() {
         <button
           type="button"
           onClick={() => append({ label: "", href: "" })}
-          className="fuwari-btn-regular rounded-xl h-10 px-3 text-sm gap-1"
+          className="site-add-link"
         >
           <Plus size={14} />
           {m.settings_site_nav_add()}
         </button>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -372,9 +353,7 @@ function SocialPills() {
     name: "site.social",
   });
   const social = useWatch({ control, name: "site.social" }) ?? [];
-  const [selected, setSelected] = useState<number | null>(
-    fields.length ? 0 : null,
-  );
+  const [selected, setSelected] = useState<number | null>(null);
   const taken = (key: string, except: number) =>
     key !== "custom" &&
     social.some((item, index) => index !== except && item.platform === key);
@@ -383,8 +362,8 @@ function SocialPills() {
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+    <div className="site-social">
+      <div className="site-social-actions">
         {fields.map((field, index) => {
           const platform = watch(`site.social.${index}.platform`);
           const preset =
@@ -397,12 +376,12 @@ function SocialPills() {
             <button
               key={field.id}
               type="button"
-              onClick={() => setSelected(index)}
-              className={cn(
-                "fuwari-btn-regular rounded-xl h-10 w-10",
-                selected === index && "ring-2 ring-(--fuwari-primary)",
-              )}
+              onClick={() =>
+                setSelected((current) => (current === index ? null : index))
+              }
+              className={cn("site-social-icon", selected === index && "active")}
               aria-label={preset?.label ?? field.label ?? ""}
+              aria-expanded={selected === index}
             >
               {Icon ? (
                 <Icon size={18} strokeWidth={1.5} />
@@ -423,7 +402,7 @@ function SocialPills() {
               append({ platform: next, url: "" });
               setSelected(fields.length);
             }}
-            className="fuwari-btn-regular rounded-xl h-10 px-3 text-sm gap-1"
+            className="site-add-link"
           >
             <Plus size={14} />
             {m.settings_social_add()}
@@ -442,7 +421,7 @@ function SocialPills() {
                   : m.settings_social_url_ph();
 
             return (
-              <div className="flex flex-col gap-2">
+              <div className="site-social-editor">
                 <div className="flex gap-2">
                   <Select
                     className="w-36 shrink-0"
