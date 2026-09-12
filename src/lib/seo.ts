@@ -5,6 +5,7 @@ type ArticleJsonLdInput = {
     slug: string;
     summary?: string | null;
     title: string;
+    coverImage?: string | null;
     publishedAt?: Date | string | null;
     updatedAt: Date | string;
     tags?: Array<{ name: string }> | undefined;
@@ -70,6 +71,10 @@ export function buildArticleJsonLd({
 
   if (post.summary) {
     jsonLd.description = post.summary;
+  }
+
+  if (post.coverImage) {
+    jsonLd.image = [post.coverImage];
   }
 
   if (post.publishedAt) {

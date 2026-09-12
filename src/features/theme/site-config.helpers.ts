@@ -7,6 +7,8 @@ export function getThemePreloadImages(siteConfig: SiteConfig): Array<string> {
       return siteConfig.theme.fuwari.homeBg
         ? [siteConfig.theme.fuwari.homeBg]
         : [];
+    case "cuckoo":
+      return siteConfig.theme.cuckoo.bg ? [siteConfig.theme.cuckoo.bg] : [];
     case "default":
       return [
         siteConfig.theme.default.background?.homeImage,

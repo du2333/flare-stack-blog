@@ -1,7 +1,18 @@
-import { Loader2, Pin, PinOff, Sparkles } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import {
+  ImagePlus,
+  Loader2,
+  Pin,
+  PinOff,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { useRef } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+import { toast } from "sonner";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { uploadImageFn } from "@/features/media/api/media.api";
 import { TagSelector } from "@/features/tags/components/tag-selector";
 import { POST_STATUSES } from "@/lib/db/schema";
 import { toLocalDateString } from "@/lib/utils";
@@ -236,7 +247,114 @@ export function PostEditorMetadata({
             className="w-full resize-none bg-transparent text-xs font-mono leading-relaxed text-foreground placeholder:text-muted-foreground/30 focus:outline-none"
           />
         </div>
+
+        <CoverImageField
+          value={post.coverImage}
+          onChange={(coverImage) => onPostChange({ coverImage })}
+        />
       </div>
     </>
+  );
+}
+
+const COVER_ACCEPT = "image/png,image/jpeg,image/jpg,image/gif,image/webp";
+
+function CoverImageField({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (coverImage: string | null) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      const result = await uploadImageFn({ data: formData });
+      if (result.error) {
+        throw new Error(m.media_upload_error_db());
+      }
+      return result.data.url;
+    },
+    onSuccess: (url) => {
+      onChange(url);
+      toast.success(m.editor_cover_upload_success());
+    },
+    onError: (err) => {
+      toast.error(m.editor_image_upload_failed(), {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    },
+  });
+
+  return (
+    <div className="col-span-1 space-y-3 md:col-span-3">
+      <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+        {m.editor_meta_cover()}
+      </label>
+      <div className="flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={COVER_ACCEPT}
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              uploadMutation.mutate(file);
+              e.target.value = "";
+            }
+          }}
+        />
+        {value ? (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-12 w-20 shrink-0 overflow-hidden rounded border border-border/40"
+            title={m.editor_cover_replace()}
+          >
+            <img
+              src={value}
+              alt={m.editor_meta_cover()}
+              className="h-full w-full object-cover"
+            />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadMutation.isPending}
+            className="flex h-12 w-20 shrink-0 items-center justify-center rounded border border-dashed border-border/40 text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+            title={m.editor_cover_upload()}
+          >
+            {uploadMutation.isPending ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <ImagePlus size={14} />
+            )}
+          </button>
+        )}
+        <Input
+          type="text"
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value || null)}
+          placeholder={m.editor_cover_placeholder()}
+          className="h-auto flex-1 border-none bg-transparent p-0 px-0 text-xs font-mono text-foreground shadow-none placeholder:text-muted-foreground/30 focus-visible:ring-0"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            disabled={uploadMutation.isPending}
+            className="ml-2 text-muted-foreground transition-colors hover:text-foreground"
+            title={m.editor_cover_clear()}
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

@@ -132,6 +132,20 @@ export function resolveSiteConfig(
           config?.site?.theme?.fuwari?.primaryHue ??
           blogConfig.theme.fuwari.primaryHue,
       },
+      cuckoo: {
+        bg: config?.site?.theme?.cuckoo?.bg ?? blogConfig.theme.cuckoo.bg,
+        avatar:
+          config?.site?.theme?.cuckoo?.avatar ?? blogConfig.theme.cuckoo.avatar,
+        sidebarBg:
+          config?.site?.theme?.cuckoo?.sidebarBg ??
+          blogConfig.theme.cuckoo.sidebarBg,
+        primaryHue:
+          config?.site?.theme?.cuckoo?.primaryHue ??
+          blogConfig.theme.cuckoo.primaryHue,
+        defaultCover:
+          config?.site?.theme?.cuckoo?.defaultCover ??
+          blogConfig.theme.cuckoo.defaultCover,
+      },
     },
   });
 }

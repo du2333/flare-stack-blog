@@ -27,5 +27,12 @@ export const blogConfig = {
       avatar: "/images/avatar.png",
       primaryHue: 250,
     },
+    cuckoo: {
+      bg: "/images/themes/cuckoo/bg.svg",
+      avatar: "/images/themes/cuckoo/avatar.svg",
+      sidebarBg: "/images/themes/cuckoo/sidebar.svg",
+      primaryHue: 15,
+      defaultCover: "",
+    },
   },
 } as const satisfies SiteConfig;

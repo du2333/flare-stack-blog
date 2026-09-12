@@ -1,0 +1,123 @@
+@reference "tailwindcss";
+
+/* Cuckoo 正文排版:对应原主题 .mdui-typo 的风格 */
+.cuckoo-custom-md {
+  --tw-prose-body: var(--cuckoo-text-90);
+  --tw-prose-headings: var(--cuckoo-text-90);
+  --tw-prose-lead: var(--cuckoo-text-75);
+  --tw-prose-links: var(--cuckoo-accent);
+  --tw-prose-bold: var(--cuckoo-text-90);
+  --tw-prose-counters: var(--cuckoo-text-50);
+  --tw-prose-bullets: var(--cuckoo-text-30);
+  --tw-prose-hr: var(--cuckoo-divider);
+  --tw-prose-quotes: var(--cuckoo-text-75);
+  --tw-prose-quote-borders: var(--cuckoo-accent);
+  --tw-prose-captions: var(--cuckoo-text-50);
+  --tw-prose-code: var(--cuckoo-inline-code-color);
+  --tw-prose-pre-code: #abb2bf;
+  --tw-prose-pre-bg: #21252b;
+  --tw-prose-th-borders: var(--cuckoo-divider);
+  --tw-prose-td-borders: var(--cuckoo-divider);
+
+  color: var(--tw-prose-body);
+  font-size: 1rem;
+  line-height: 1.8;
+
+  h1,
+  h2 {
+    @apply text-2xl md:text-3xl font-bold mt-10 mb-5;
+    border-bottom: 1px solid var(--cuckoo-divider);
+    padding-bottom: 0.35em;
+  }
+
+  h1::before,
+  h2::before {
+    content: "# ";
+    color: var(--cuckoo-accent);
+  }
+
+  h3 {
+    @apply text-xl font-bold mt-8 mb-4;
+  }
+
+  h4 {
+    @apply text-lg font-bold mt-6 mb-3;
+  }
+
+  h5,
+  h6 {
+    @apply text-base font-bold mt-6 mb-3;
+  }
+
+  h3::before,
+  h4::before,
+  h5::before,
+  h6::before {
+    content: "";
+    border-left: 4px solid var(--cuckoo-accent);
+    border-radius: 2px;
+    padding: 0 0 0 7px;
+  }
+
+  a:not(.not-prose a) {
+    color: var(--cuckoo-accent);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  a:not(.not-prose a):hover {
+    color: var(--cuckoo-accent-hover);
+    text-decoration: underline;
+  }
+
+  :not(pre) > code {
+    background-color: var(--cuckoo-inline-code-bg);
+    color: var(--cuckoo-inline-code-color);
+    border-radius: 4px;
+    padding: 0.2em 0.45em;
+    font-weight: 500;
+    font-size: 0.875em;
+  }
+
+  blockquote {
+    @apply italic;
+    border-left: 4px solid var(--cuckoo-accent);
+    border-radius: 4px;
+    background-color: var(--cuckoo-btn-regular-bg);
+    padding: 0.75em 1.25em;
+    font-weight: 400;
+  }
+
+  blockquote p:first-of-type::before,
+  blockquote p:last-of-type::after {
+    content: none;
+  }
+
+  table {
+    @apply block overflow-x-auto;
+    border-collapse: collapse;
+  }
+
+  th {
+    background-color: var(--cuckoo-btn-regular-bg);
+  }
+
+  th,
+  td {
+    padding: 0.5em 1em;
+  }
+
+  img {
+    border-radius: var(--cuckoo-radius);
+  }
+
+  hr {
+    border-color: var(--cuckoo-divider);
+  }
+
+  /* katex 公式块横向滚动 */
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0;
+  }
+}

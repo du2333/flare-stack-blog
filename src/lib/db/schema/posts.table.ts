@@ -19,6 +19,7 @@ export const PostsTable = sqliteTable(
     summary: text(),
     readTimeInMinutes: integer("read_time_in_minutes").default(1).notNull(),
     slug: text().notNull().unique(),
+    coverImage: text("cover_image"),
 
     contentJson: text("content_json", { mode: "json" }).$type<JSONContent>(),
     publicContentJson: text("public_content_json", {

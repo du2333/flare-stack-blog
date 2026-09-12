@@ -67,6 +67,7 @@ function EditPost() {
     title: post.title,
     summary: post.summary ?? "",
     slug: post.slug,
+    coverImage: post.coverImage ?? null,
     status: post.status,
     readTimeInMinutes: post.readTimeInMinutes,
     contentJson: post.contentJson,

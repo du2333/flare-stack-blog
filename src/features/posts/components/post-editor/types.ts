@@ -5,6 +5,7 @@ export interface PostEditorData {
   title: string;
   summary: string;
   slug: string;
+  coverImage: string | null;
   status: PostStatus;
   readTimeInMinutes: number;
   contentJson: JSONContent | null;
@@ -26,6 +27,7 @@ export const defaultPostData: PostEditorData = {
   title: "",
   summary: "",
   slug: "",
+  coverImage: null,
   status: "draft",
   readTimeInMinutes: 1,
   contentJson: null,

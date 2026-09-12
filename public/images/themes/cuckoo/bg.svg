@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd9e3"/>
+      <stop offset="0.42" stop-color="#ffc4d6"/>
+      <stop offset="0.72" stop-color="#e8c8f0"/>
+      <stop offset="1" stop-color="#cdd6f4"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff8fb8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff8fb8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowC" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#a78bfa" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <circle cx="330" cy="180" r="520" fill="url(#glowB)"/>
+  <circle cx="1650" cy="920" r="620" fill="url(#glowC)"/>
+  <circle cx="1180" cy="140" r="380" fill="url(#glowA)"/>
+  <circle cx="150" cy="960" r="300" fill="url(#glowA)"/>
+  <g fill="#ffffff" opacity="0.35">
+    <circle cx="960" cy="540" r="6"/>
+    <circle cx="700" cy="300" r="4"/>
+    <circle cx="1350" cy="720" r="5"/>
+    <circle cx="480" cy="800" r="4"/>
+    <circle cx="1700" cy="330" r="5"/>
+    <circle cx="220" cy="520" r="3"/>
+    <circle cx="1120" cy="920" r="4"/>
+  </g>
+</svg>

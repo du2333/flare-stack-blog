@@ -1,0 +1,372 @@
+/* Theme: cuckoo — Material Design 风格(移植自 Bhao 的 Typecho 主题 Cuckoo) */
+@import "tailwindcss";
+@import "@/styles/shared.css";
+@import "./markdown.css";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  :root {
+    --cuckoo-hue: 15;
+    --cuckoo-page-width: 71.875rem; /* 1150px */
+    --cuckoo-radius: 7px;
+    --cuckoo-content-delay: 150ms;
+
+    /* Material Pink(A200 ≈ #ff4081)风格强调色 */
+    --cuckoo-accent: oklch(0.65 0.21 var(--cuckoo-hue));
+    --cuckoo-accent-hover: oklch(0.6 0.21 var(--cuckoo-hue));
+    --cuckoo-primary: oklch(0.62 0.23 var(--cuckoo-hue));
+    --cuckoo-primary-hover: oklch(0.57 0.23 var(--cuckoo-hue));
+    --cuckoo-primary-active: oklch(0.52 0.22 var(--cuckoo-hue));
+    --cuckoo-on-primary: white;
+
+    /* 半透明卡片(毛玻璃叠在固定背景上) */
+    --cuckoo-card-bg: rgba(255, 255, 255, 0.8);
+    --cuckoo-card-bg-hover: rgba(255, 255, 255, 0.93);
+    --cuckoo-chip-bg: rgba(255, 255, 255, 0.8);
+    --cuckoo-drawer-bg: rgba(255, 255, 255, 0.95);
+    --cuckoo-footer-bg: rgba(255, 255, 255, 0.8);
+    --cuckoo-footer-text: #666666;
+    --cuckoo-footer-text-hover: #3b3b3b;
+
+    --cuckoo-text-90: rgba(0, 0, 0, 0.87);
+    --cuckoo-text-75: rgba(0, 0, 0, 0.72);
+    --cuckoo-text-50: rgba(0, 0, 0, 0.54);
+    --cuckoo-text-30: rgba(0, 0, 0, 0.38);
+
+    --cuckoo-divider: rgba(0, 0, 0, 0.12);
+    --cuckoo-meta-divider: rgba(0, 0, 0, 0.2);
+    --cuckoo-input-bg: rgba(0, 0, 0, 0.06);
+    --cuckoo-input-border: rgba(0, 0, 0, 0.25);
+    --cuckoo-inline-code-bg: rgba(0, 0, 0, 0.06);
+    --cuckoo-inline-code-color: var(--cuckoo-accent);
+    --cuckoo-selection-bg: oklch(0.9 0.06 var(--cuckoo-hue));
+    --cuckoo-btn-regular-bg: rgba(0, 0, 0, 0.06);
+    --cuckoo-btn-regular-bg-hover: rgba(0, 0, 0, 0.1);
+    --cuckoo-btn-regular-bg-active: rgba(0, 0, 0, 0.14);
+    --cuckoo-btn-plain-bg-hover: rgba(0, 0, 0, 0.05);
+    --cuckoo-btn-content: var(--cuckoo-text-75);
+    --cuckoo-overlay: rgba(0, 0, 0, 0.4);
+    --cuckoo-header-text: #ffffff;
+    --cuckoo-header-shadow: 1px 1px 1px #424242;
+
+    /* mdui 阴影层级 */
+    --cuckoo-shadow-2:
+      0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+      0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    --cuckoo-shadow-4:
+      0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --cuckoo-shadow-6:
+      0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
+      0 5px 5px -3px rgba(0, 0, 0, 0.2);
+  }
+
+  .dark {
+    --cuckoo-card-bg: rgba(66, 66, 66, 0.8);
+    --cuckoo-card-bg-hover: rgba(66, 66, 66, 0.93);
+    --cuckoo-chip-bg: rgba(53, 53, 53, 0.8);
+    --cuckoo-drawer-bg: rgba(66, 66, 66, 0.95);
+    --cuckoo-footer-bg: rgba(66, 66, 66, 0.8);
+    --cuckoo-footer-text: rgba(255, 255, 255, 0.9);
+    --cuckoo-footer-text-hover: rgb(185, 185, 185);
+
+    --cuckoo-text-90: rgba(255, 255, 255, 0.9);
+    --cuckoo-text-75: rgba(255, 255, 255, 0.75);
+    --cuckoo-text-50: rgba(255, 255, 255, 0.55);
+    --cuckoo-text-30: rgba(255, 255, 255, 0.4);
+
+    --cuckoo-divider: rgba(255, 255, 255, 0.12);
+    --cuckoo-meta-divider: rgba(255, 255, 255, 0.2);
+    --cuckoo-input-bg: rgba(255, 255, 255, 0.06);
+    --cuckoo-input-border: rgba(255, 255, 255, 0.3);
+    --cuckoo-inline-code-bg: rgba(255, 255, 255, 0.08);
+    --cuckoo-selection-bg: oklch(0.4 0.08 var(--cuckoo-hue));
+    --cuckoo-btn-regular-bg: rgba(255, 255, 255, 0.08);
+    --cuckoo-btn-regular-bg-hover: rgba(255, 255, 255, 0.12);
+    --cuckoo-btn-regular-bg-active: rgba(255, 255, 255, 0.16);
+    --cuckoo-btn-plain-bg-hover: rgba(255, 255, 255, 0.06);
+    --cuckoo-btn-content: rgba(255, 255, 255, 0.75);
+    --cuckoo-overlay: rgba(0, 0, 0, 0.55);
+
+    /* 暗色模式下背景图压暗 */
+    --cuckoo-bg-dim: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer components {
+  /* 通用半透明卡片 */
+  .cuckoo-card-base {
+    border-radius: var(--cuckoo-radius);
+    overflow: hidden;
+    background-color: var(--cuckoo-card-bg);
+    color: var(--cuckoo-text-90);
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      box-shadow 0.3s,
+      transform 0.3s;
+  }
+
+  .cuckoo-card-hoverable {
+    box-shadow: var(--cuckoo-shadow-2);
+  }
+  .cuckoo-card-hoverable:hover {
+    box-shadow: var(--cuckoo-shadow-6);
+    transform: translateY(-2px);
+  }
+
+  .cuckoo-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cuckoo-primary);
+    color: var(--cuckoo-on-primary);
+    border-radius: var(--cuckoo-radius);
+    box-shadow: var(--cuckoo-shadow-2);
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s,
+      opacity 0.2s;
+  }
+  .cuckoo-btn-primary:hover {
+    background-color: var(--cuckoo-primary-hover);
+    box-shadow: var(--cuckoo-shadow-4);
+  }
+  .cuckoo-btn-primary:active {
+    background-color: var(--cuckoo-primary-active);
+  }
+  .cuckoo-btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .cuckoo-btn-regular {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cuckoo-btn-regular-bg);
+    color: var(--cuckoo-btn-content);
+    border-radius: var(--cuckoo-radius);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .cuckoo-btn-regular:hover {
+    background-color: var(--cuckoo-btn-regular-bg-hover);
+  }
+  .cuckoo-btn-regular:active {
+    background-color: var(--cuckoo-btn-regular-bg-active);
+  }
+
+  .cuckoo-text-90 {
+    color: var(--cuckoo-text-90);
+  }
+  .cuckoo-text-75 {
+    color: var(--cuckoo-text-75);
+  }
+  .cuckoo-text-50 {
+    color: var(--cuckoo-text-50);
+  }
+  .cuckoo-text-30 {
+    color: var(--cuckoo-text-30);
+  }
+
+  .cuckoo-meta-icon {
+    transition: all 0.2s;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 0.375rem;
+    background-color: var(--cuckoo-btn-regular-bg);
+    color: var(--cuckoo-text-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+  }
+
+  .cuckoo-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--cuckoo-chip-bg);
+    border-radius: 5px;
+    padding: 0 0.75rem;
+    height: 2rem;
+    font-size: 0.875rem;
+    color: var(--cuckoo-text-75);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+    box-shadow: none;
+  }
+  .cuckoo-chip:hover {
+    color: var(--cuckoo-accent);
+    box-shadow: var(--cuckoo-shadow-2);
+  }
+
+  .cuckoo-expand-animation {
+    transition: all 0.25s;
+  }
+
+  /* 固定全屏背景 + 暗色压暗层(对应原主题 .background / .index-filter) */
+  .cuckoo-background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: 50% 50%;
+    transform: translateZ(0);
+    transition: all 0.3s;
+  }
+  .cuckoo-background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--cuckoo-bg-dim, transparent);
+    transition: background-color 0.3s;
+  }
+
+  /* 页面加载入场动画 */
+  @keyframes cuckoo-fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .cuckoo-onload-animation {
+    opacity: 0;
+    animation: cuckoo-fade-in-up 0.4s ease-out forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cuckoo-onload-animation {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  /* Appbar(白色文字 + 阴影,对应原主题 .mdui-appbar) */
+  .cuckoo-appbar {
+    color: var(--cuckoo-header-text);
+    text-shadow: var(--cuckoo-header-shadow);
+    background: transparent;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s,
+      text-shadow 0.3s;
+  }
+  .cuckoo-appbar.cuckoo-appbar-solid {
+    text-shadow: unset;
+    background-color: var(--cuckoo-card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--cuckoo-text-90);
+    box-shadow: var(--cuckoo-shadow-2);
+  }
+  .cuckoo-appbar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+  .cuckoo-appbar-icon:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+  }
+  .cuckoo-appbar-solid .cuckoo-appbar-icon:hover {
+    background-color: var(--cuckoo-btn-regular-bg-hover);
+  }
+
+  /* 顶部搜索输入 */
+  .cuckoo-appbar-search input {
+    background: transparent;
+    outline: none;
+    color: inherit;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.42);
+    transition: border-color 0.2s;
+  }
+  .cuckoo-appbar-solid .cuckoo-appbar-search input {
+    border-bottom-color: var(--cuckoo-divider);
+  }
+
+  /* 标题高亮块(对应原主题 .comment-title:before) */
+  .cuckoo-highlight-title {
+    position: relative;
+    display: inline-block;
+    font-size: 1.875rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--cuckoo-text-90);
+    z-index: 0;
+  }
+  .cuckoo-highlight-title::before {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: -6px;
+    width: 120px;
+    height: 10px;
+    background-color: var(--cuckoo-card-bg);
+    z-index: -1;
+  }
+
+  /* Mac 风格代码块窗口点 */
+  .cuckoo-code-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* 代码块折叠 */
+  .cuckoo-code-folding-wrapper {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+  .cuckoo-code-mask {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, #21252b);
+    pointer-events: none;
+  }
+
+  /* 通用深色滚动条 */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::selection {
+    background-color: var(--cuckoo-selection-bg);
+  }
+
+  .cuckoo-toc-scrollbar::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+  .cuckoo-toc-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: var(--cuckoo-divider);
+  }
+}

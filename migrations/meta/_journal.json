@@ -78,6 +78,13 @@
       "when": 1774071685152,
       "tag": "0010_romantic_roland_deschain",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1789186196588,
+      "tag": "0011_goofy_whirlwind",
+      "breakpoints": true
     }
   ]
 }

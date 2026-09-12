@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f472b6"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" fill="url(#avatar)"/>
+  <!-- 布谷鸟剪影 -->
+  <g fill="#ffffff">
+    <ellipse cx="118" cy="138" rx="46" ry="38"/>
+    <circle cx="152" cy="96" r="26"/>
+    <path d="M176 92 L204 98 L176 106 Z"/>
+    <path d="M78 150 Q46 158 34 186 Q64 184 84 170 Z"/>
+    <path d="M96 172 Q88 196 70 208 Q98 208 110 190 Z"/>
+  </g>
+  <circle cx="160" cy="90" r="5" fill="#4a4458"/>
+  <path d="M118 120 Q132 132 124 148" stroke="#f472b6" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>

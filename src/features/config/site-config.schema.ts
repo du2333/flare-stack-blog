@@ -17,6 +17,8 @@ export const DEFAULT_THEME_TRANSITION_MIN = 0;
 export const DEFAULT_THEME_TRANSITION_MAX = 1500;
 export const FUWARI_THEME_HUE_MIN = 0;
 export const FUWARI_THEME_HUE_MAX = 360;
+export const CUCKOO_THEME_HUE_MIN = 0;
+export const CUCKOO_THEME_HUE_MAX = 360;
 
 function createSiteTextSchema(max: number) {
   return z.string().trim().max(max);
@@ -270,6 +272,36 @@ function createFuwariThemeSiteConfigInputFormSchema(messages: Messages) {
   });
 }
 
+function createCuckooThemeSiteConfigSchema() {
+  return z.object({
+    bg: createBackgroundImageRefSchema(),
+    avatar: createAssetRefSchema(),
+    sidebarBg: createBackgroundImageRefSchema(),
+    primaryHue: createHueSchema(),
+    defaultCover: createBackgroundImageRefSchema(),
+  });
+}
+
+function createCuckooThemeSiteConfigInputSchema() {
+  return z.object({
+    bg: createBackgroundImageRefSchema().optional(),
+    avatar: createAssetRefSchema().optional(),
+    sidebarBg: createBackgroundImageRefSchema().optional(),
+    primaryHue: createHueSchema().optional(),
+    defaultCover: createBackgroundImageRefSchema().optional(),
+  });
+}
+
+function createCuckooThemeSiteConfigInputFormSchema(messages: Messages) {
+  return z.object({
+    bg: createBackgroundImageRefFormSchema(messages).optional(),
+    avatar: createAssetRefFormSchema(messages).optional(),
+    sidebarBg: createBackgroundImageRefFormSchema(messages).optional(),
+    primaryHue: createHueFormSchema(messages).optional(),
+    defaultCover: createBackgroundImageRefFormSchema(messages).optional(),
+  });
+}
+
 export const defaultThemeBackgroundSchema =
   createDefaultThemeBackgroundSchema();
 export const defaultThemeBackgroundInputSchema =
@@ -281,6 +313,9 @@ export const defaultThemeSiteConfigInputSchema =
 export const fuwariThemeSiteConfigSchema = createFuwariThemeSiteConfigSchema();
 export const fuwariThemeSiteConfigInputSchema =
   createFuwariThemeSiteConfigInputSchema();
+export const cuckooThemeSiteConfigSchema = createCuckooThemeSiteConfigSchema();
+export const cuckooThemeSiteConfigInputSchema =
+  createCuckooThemeSiteConfigInputSchema();
 
 export const FullSiteConfigSchema = z.object({
   title: createSiteTextSchema(120),
@@ -298,6 +333,7 @@ export const FullSiteConfigSchema = z.object({
   theme: z.object({
     default: defaultThemeSiteConfigSchema,
     fuwari: fuwariThemeSiteConfigSchema,
+    cuckoo: cuckooThemeSiteConfigSchema,
   }),
 });
 
@@ -322,6 +358,7 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
         default:
           createDefaultThemeSiteConfigInputFormSchema(messages).optional(),
         fuwari: createFuwariThemeSiteConfigInputFormSchema(messages).optional(),
+        cuckoo: createCuckooThemeSiteConfigInputFormSchema(messages).optional(),
       })
       .optional(),
   });
@@ -346,6 +383,7 @@ export const SiteConfigInputSchema = z.object({
     .object({
       default: defaultThemeSiteConfigInputSchema.optional(),
       fuwari: fuwariThemeSiteConfigInputSchema.optional(),
+      cuckoo: cuckooThemeSiteConfigInputSchema.optional(),
     })
     .optional(),
 });
@@ -364,6 +402,10 @@ export type DefaultThemeSiteConfigInput = z.infer<
 export type FuwariThemeSiteConfig = z.infer<typeof fuwariThemeSiteConfigSchema>;
 export type FuwariThemeSiteConfigInput = z.infer<
   typeof fuwariThemeSiteConfigInputSchema
+>;
+export type CuckooThemeSiteConfig = z.infer<typeof cuckooThemeSiteConfigSchema>;
+export type CuckooThemeSiteConfigInput = z.infer<
+  typeof cuckooThemeSiteConfigInputSchema
 >;
 export type SiteConfig = z.infer<typeof FullSiteConfigSchema>;
 export type SiteConfigInput = z.infer<typeof SiteConfigInputSchema>;

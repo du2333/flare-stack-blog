@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AssetUploadField } from "@/features/config/components/asset-upload-field";
 import { Field } from "@/features/config/components/site-settings-fields";
 import { SocialLinksEditor } from "@/features/config/components/social-links-editor";
+import { CuckooThemeSettings } from "@/features/config/components/themes/cuckoo-theme-settings";
 import { DefaultThemeSettings } from "@/features/config/components/themes/default-theme-settings";
 import { FuwariThemeSettings } from "@/features/config/components/themes/fuwari-theme-settings";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -15,6 +16,8 @@ function ThemeSettingsContent() {
       return <DefaultThemeSettings />;
     case "fuwari":
       return <FuwariThemeSettings />;
+    case "cuckoo":
+      return <CuckooThemeSettings />;
     default: {
       __THEME_NAME__ satisfies never;
       return null;

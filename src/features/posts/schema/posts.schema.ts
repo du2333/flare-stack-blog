@@ -13,6 +13,15 @@ import { NullableJsonContentSchema } from "./json-content.schema";
 const coercedDate = z.union([z.date(), z.string().pipe(z.coerce.date())]);
 const coercedDateNullable = coercedDate.nullable();
 
+// 封面图:允许清空、站内根路径或 http(s) 外链
+const coverImageSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      value === "" || value.startsWith("/") || z.url().safeParse(value).success,
+  );
+
 export const PostSelectSchema = createSelectSchema(PostsTable, {
   publishedAt: coercedDateNullable,
   pinnedAt: coercedDateNullable,
@@ -25,6 +34,7 @@ export const PostInsertSchema = createInsertSchema(PostsTable);
 export const PostUpdateSchema = createUpdateSchema(PostsTable, {
   contentJson: NullableJsonContentSchema.optional(),
   publicContentJson: NullableJsonContentSchema.optional(),
+  coverImage: coverImageSchema.nullable().optional(),
 }).omit({
   publicContentJson: true,
 });
