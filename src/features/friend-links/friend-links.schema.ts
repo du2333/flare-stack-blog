@@ -23,15 +23,23 @@ const FriendLinkWithUserSchema = FriendLinkSelectSchema.extend({
 // === User submission input ===
 
 export const SubmitFriendLinkInputSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "Omit for a new application. Supply an owned rejected application ID to revise and resubmit it.",
+    ),
   siteName: z.string().min(1).max(100),
   siteUrl: z.string().url(),
   description: z.string().max(300).optional(),
   logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
-  contactEmail: z.string().email(),
 });
 
 export const createSubmitFriendLinkSchema = (m: Messages) =>
   z.object({
+    id: z.number().int().positive().optional(),
     siteName: z
       .string()
       .min(1, m.friend_link_validation_required())
@@ -47,7 +55,6 @@ export const createSubmitFriendLinkSchema = (m: Messages) =>
         z.string().url(m.friend_link_validation_invalid_url()),
       ])
       .optional(),
-    contactEmail: z.string().email(m.friend_link_validation_invalid_email()),
   });
 
 // === Admin create input (manual add) ===
@@ -57,7 +64,6 @@ export const CreateFriendLinkInputSchema = z.object({
   siteUrl: z.string().url(),
   description: z.string().max(300).optional(),
   logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
-  contactEmail: z.union([z.literal(""), z.string().email()]).optional(),
 });
 
 export const createCreateFriendLinkSchema = (m: Messages) =>
@@ -75,12 +81,6 @@ export const createCreateFriendLinkSchema = (m: Messages) =>
       .union([
         z.literal(""),
         z.string().url(m.friend_link_validation_invalid_url()),
-      ])
-      .optional(),
-    contactEmail: z
-      .union([
-        z.literal(""),
-        z.string().email(m.friend_link_validation_invalid_email()),
       ])
       .optional(),
   });
@@ -108,7 +108,6 @@ export const UpdateFriendLinkInputSchema = z.object({
   siteUrl: z.string().url().optional(),
   description: z.string().max(300).optional(),
   logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
-  contactEmail: z.union([z.literal(""), z.string().email()]).optional(),
 });
 
 export const DeleteFriendLinkInputSchema = z.object({

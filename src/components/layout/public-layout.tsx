@@ -34,6 +34,8 @@ export function PublicLayout({
     select: (state) =>
       state.matches.some((match) => match.routeId.includes("/_auth")),
   });
+  const isFocusedPage =
+    isAuthPage || location.pathname === "/submit-friend-link";
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
 
   return (
@@ -77,18 +79,18 @@ export function PublicLayout({
         <div
           className={cn(
             "relative mx-auto px-0 md:px-4 pb-8 grid gap-4",
-            isAuthPage
+            isFocusedPage
               ? "grid-cols-1"
               : "grid-cols-1 lg:grid-cols-[17.5rem_1fr]",
           )}
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
-          {isAuthPage ? null : <Sidebar className="order-2 lg:order-1" />}
+          {isFocusedPage ? null : <Sidebar className="order-2 lg:order-1" />}
 
           <main
             className={cn(
               "flex flex-col gap-4 min-w-0",
-              isAuthPage ? "" : "order-1 lg:order-2",
+              isFocusedPage ? "" : "order-1 lg:order-2",
             )}
           >
             <PageFade includeSearch={location.pathname !== "/search"}>
@@ -99,7 +101,7 @@ export function PublicLayout({
           <div
             className={cn(
               "fuwari-onload-animation mt-auto",
-              isAuthPage ? "" : "order-3 lg:col-start-2",
+              isFocusedPage ? "" : "order-3 lg:col-start-2",
             )}
             style={{ animationDelay: "250ms" }}
           >

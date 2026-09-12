@@ -1,0 +1,307 @@
+.friend-application {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+  padding: 32px;
+  color: var(--fuwari-fg);
+}
+.friend-application-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 20px;
+  margin-bottom: 30px;
+}
+.friend-application-heading h1 {
+  position: relative;
+  padding-left: 20px;
+  font-size: 28px;
+  font-weight: 700;
+}
+.friend-application-heading h1::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  width: 5px;
+  height: 1em;
+  background: var(--fuwari-primary);
+  border-radius: 3px;
+}
+.friend-application-heading > a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fuwari-primary);
+  font-size: 14px;
+  min-height: 44px;
+}
+.friend-application-heading > p {
+  grid-column: 1 / -1;
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-left: 20px;
+}
+.friend-application-form fieldset {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.friend-application-core {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.friend-application-field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+.friend-application-field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fuwari-fg-75);
+}
+.friend-application-field label > span {
+  color: var(--fuwari-danger-fg);
+}
+.friend-application-field label small {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 8px;
+  color: var(--fuwari-fg-50);
+}
+.friend-application .friend-application-field input,
+.friend-application .friend-application-field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 10%,
+    var(--fuwari-card-bg)
+  );
+  color: var(--fuwari-fg);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+  box-shadow: none;
+  transition:
+    background-color 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.friend-application .friend-application-field input:hover,
+.friend-application .friend-application-field textarea:hover {
+  background: color-mix(
+    in srgb,
+    var(--fuwari-fg-50) 15%,
+    var(--fuwari-card-bg)
+  );
+}
+.friend-application .friend-application-field input:focus,
+.friend-application .friend-application-field textarea:focus {
+  background: var(--fuwari-btn-regular-bg);
+  border-color: color-mix(in srgb, var(--fuwari-primary) 55%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--fuwari-primary) 12%, transparent);
+}
+.friend-application-field textarea {
+  resize: vertical;
+}
+.friend-application-field input::placeholder,
+.friend-application-field textarea::placeholder {
+  color: var(--fuwari-fg-30);
+}
+.friend-application-logo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.friend-application-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 14px;
+  color: var(--fuwari-primary);
+  background: var(--fuwari-btn-regular-bg);
+}
+.friend-application-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.friend-application-verification {
+  margin-top: 24px;
+  min-width: 0;
+}
+.friend-application-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.friend-application-actions > a,
+.friend-application-actions > button,
+.friend-application-message > button {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 10px 20px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.friend-application-submit {
+  flex: 1;
+}
+.friend-application button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.friend-application a:focus-visible,
+.friend-application button:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 3px;
+}
+.friend-application-hint {
+  text-align: center;
+  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+.friend-application-error {
+  color: var(--fuwari-danger-fg);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.friend-application-form > .friend-application-error {
+  margin-top: 16px;
+}
+.friend-application-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 0;
+  color: var(--fuwari-fg-50);
+}
+.friend-application-message {
+  padding-block: 32px;
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+.friend-application-switcher {
+  margin-bottom: 24px;
+}
+.friend-application-state-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.friend-application-state-icon[data-status="rejected"] {
+  color: var(--fuwari-danger-fg);
+  background: var(--fuwari-danger-bg);
+}
+.friend-application-status h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 18px;
+}
+.friend-application-status > p {
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.friend-application-site {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-block: 24px;
+  margin-top: 20px;
+  border-block: 1px solid
+    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+}
+.friend-application-site > div {
+  min-width: 0;
+}
+.friend-application-site strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.friend-application-site a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fuwari-primary);
+  font-size: 14px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.friend-application-site a svg {
+  flex-shrink: 0;
+}
+.friend-application-site p {
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.friend-application-reason {
+  margin-top: 20px;
+  border-left: 3px solid var(--fuwari-danger);
+  padding-left: 16px;
+  font-size: 14px;
+}
+.friend-application-reason p {
+  margin-top: 8px;
+  color: var(--fuwari-fg-75);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .friend-application {
+    padding: 24px;
+  }
+  .friend-application-heading {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .friend-application-heading h1 {
+    font-size: 24px;
+  }
+  .friend-application-heading > a {
+    font-size: 12px;
+  }
+  .friend-application-heading > p {
+    padding-left: 0;
+  }
+  .friend-application-core {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .friend-application .friend-application-field input,
+  .friend-application .friend-application-field textarea {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .friend-application .friend-application-field input,
+  .friend-application .friend-application-field textarea {
+    transition: none;
+  }
+}

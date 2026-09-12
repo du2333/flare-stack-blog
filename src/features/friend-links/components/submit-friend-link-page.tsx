@@ -1,272 +1,363 @@
-import { ClientOnly, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
-  CheckCircle2,
+  ArrowLeft,
+  Check,
   Clock,
-  Link as LinkIcon,
+  ExternalLink,
+  Globe,
   Loader2,
-  PlusCircle,
+  RefreshCw,
   XCircle,
 } from "lucide-react";
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Turnstile, type TurnstileProps } from "@/components/common/turnstile";
-import type { SubmitFriendLinkInput } from "@/features/friend-links/friend-links.schema";
+import { useRef, useState, type ReactNode } from "react";
+import { Turnstile } from "@/components/common/turnstile";
+import DropdownMenu from "@/components/ui/dropdown-menu";
+import type { FriendLink } from "@/lib/db/schema";
+import { useContentMotion } from "@/hooks/use-motion";
+import { useFriendLinkSubmitForm } from "../hooks/use-friend-link-submit-form";
 import { m } from "@/paraglide/messages";
-
-interface MyFriendLink {
-  id: number;
-  siteName: string;
-  siteUrl: string;
-  status: "pending" | "approved" | "rejected";
-  rejectionReason: string | null;
-  createdAt: Date | string;
-}
-
-interface FriendLinkSubmitFormData {
-  register: UseFormRegister<SubmitFriendLinkInput>;
-  errors: FieldErrors<SubmitFriendLinkInput>;
-  handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  isSubmitting: boolean;
-  turnstileProps: TurnstileProps;
-}
-
-interface SubmitFriendLinkPageProps {
-  myLinks: Array<MyFriendLink>;
-  form: FriendLinkSubmitFormData;
-}
-
-function StatusBadge({ status }: { status: MyFriendLink["status"] }) {
-  switch (status) {
-    case "approved":
-      return (
-        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          {m.friend_link_status_approved()}
-        </span>
-      );
-    case "rejected":
-      return (
-        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-medium">
-          <XCircle className="w-3.5 h-3.5" />
-          {m.friend_link_status_rejected_fuwari()}
-        </span>
-      );
-    case "pending":
-    default:
-      return (
-        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-medium">
-          <Clock className="w-3.5 h-3.5" />
-          {m.friend_link_status_pending()}
-        </span>
-      );
-  }
-}
+import "./submit-friend-link-page.css";
 
 export function SubmitFriendLinkPage({
   myLinks,
-  form,
-}: SubmitFriendLinkPageProps) {
+  isLoading,
+  isError,
+  isRefreshing,
+  reload,
+}: {
+  myLinks: FriendLink[];
+  isLoading: boolean;
+  isError: boolean;
+  isRefreshing: boolean;
+  reload: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const current = myLinks.find((link) => link.id === selectedId) ?? myLinks[0];
+  const editing = current?.status === "rejected" && editingId === current.id;
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useContentMotion(
+    bodyRef,
+    `${isLoading}:${current?.id}:${current?.status}:${editing}`,
+  );
   return (
-    <div className="flex flex-col gap-4 w-full">
-      {/* Header */}
-      <div
-        className="fuwari-card-base p-6 md:p-8 relative overflow-hidden flex flex-col items-center justify-center min-h-48 fuwari-onload-animation bg-linear-to-br from-(--fuwari-primary)/5 to-transparent"
-        style={{ animationDelay: "150ms" }}
-      >
-        <h1 className="text-3xl font-bold fuwari-text-90 mb-4 z-10 transition-colors">
-          {m.friend_link_submit_title()}
-        </h1>
-        <p className="fuwari-text-50 text-center max-w-xl z-10 transition-colors">
-          {m.friend_link_submit_desc()}
-        </p>
-        <Link
-          to="/friend-links"
-          className="mt-6 z-10 flex items-center gap-2 text-sm text-(--fuwari-primary) hover:underline transition-all"
-        >
-          <LinkIcon className="w-4 h-4" />
+    <section className="friend-application fuwari-card-base">
+      <header className="friend-application-heading">
+        <h1>{m.friend_link_submit_title()}</h1>
+        <Link to="/friend-links">
+          <ArrowLeft size={16} />
           {m.friend_link_back_to_list()}
         </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Form Section */}
-        <div
-          className="lg:col-span-3 fuwari-card-base p-6 md:p-8 fuwari-onload-animation"
-          style={{ animationDelay: "300ms" }}
-        >
-          <h2 className="text-xl font-bold fuwari-text-90 mb-6 flex items-center gap-2 transition-colors">
-            <PlusCircle className="w-5 h-5 text-(--fuwari-primary)" />
-            {m.friend_link_submit_form_title()}
-          </h2>
-
-          <form onSubmit={form.handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="siteName"
-                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
-              >
-                {m.friend_link_field_site_name()}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="siteName"
-                {...form.register("siteName")}
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
-                placeholder={m.friend_link_placeholder_site_name_fuwari()}
-              />
-              {form.errors.siteName && (
-                <p className="mt-1.5 text-sm text-red-500">
-                  {form.errors.siteName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                {m.friend_link_field_site_url_fuwari()}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                {...form.register("siteUrl")}
-                type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
-                placeholder={m.friend_link_placeholder_site_url_fuwari()}
-              />
-              {form.errors.siteUrl && (
-                <p className="mt-1.5 text-sm text-red-500">
-                  {form.errors.siteUrl.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                {m.friend_link_field_description()}
-              </label>
-              <input
-                {...form.register("description")}
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
-                placeholder={m.friend_link_placeholder_description_fuwari()}
-              />
-              {form.errors.description && (
-                <p className="mt-1.5 text-sm text-red-500">
-                  {form.errors.description.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                {m.friend_link_field_logo_url()}
-              </label>
-              <input
-                {...form.register("logoUrl")}
-                type="url"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
-                placeholder={m.friend_link_placeholder_logo_url_fuwari()}
-              />
-              {form.errors.logoUrl && (
-                <p className="mt-1.5 text-sm text-red-500">
-                  {form.errors.logoUrl.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
-                {m.friend_link_field_contact_email()}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                {...form.register("contactEmail")}
-                type="email"
-                className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all fuwari-text-90 placeholder:text-black/30 dark:placeholder:text-white/30"
-                placeholder={m.friend_link_placeholder_contact_email_fuwari()}
-              />
-              {form.errors.contactEmail && (
-                <p className="mt-1.5 text-sm text-red-500">
-                  {form.errors.contactEmail.message}
-                </p>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <Turnstile {...form.turnstileProps} />
-            </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={form.isSubmitting}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold fuwari-btn-primary active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--fuwari-primary) disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {form.isSubmitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  m.friend_link_submit_form_title()
-                )}
-              </button>
-            </div>
-          </form>
+        <p>{m.friend_apply_intro()}</p>
+      </header>
+      {myLinks.length > 1 && (
+        <div className="friend-application-switcher">
+          <DropdownMenu
+            value={String(current.id)}
+            options={myLinks.map((link) => ({
+              value: String(link.id),
+              label: link.siteName,
+            }))}
+            ariaLabel={m.friend_apply_choose_site()}
+            onChange={(value) => {
+              setSelectedId(Number(value));
+              setEditingId(null);
+            }}
+          />
         </div>
-
-        {/* My Links Section */}
-        <div
-          className="lg:col-span-2 fuwari-card-base p-6 md:p-8 fuwari-onload-animation self-start"
-          style={{ animationDelay: "450ms" }}
-        >
-          <h2 className="text-xl font-bold fuwari-text-90 mb-6 transition-colors">
-            {m.friend_link_my_submissions()}
-          </h2>
-
-          <div className="space-y-4">
-            {myLinks.length > 0 ? (
-              myLinks.map((link) => (
-                <div
-                  key={link.id}
-                  className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 transition-all hover:border-(--fuwari-primary)/30"
+      )}
+      <div ref={bodyRef}>
+        {isLoading ? (
+          <div className="friend-application-loading" aria-busy="true">
+            <Loader2 className="animate-spin" size={22} />
+            {m.friend_apply_loading()}
+          </div>
+        ) : isError ? (
+          <div className="friend-application-message" role="alert">
+            <p>{m.friend_apply_load_failed()}</p>
+            <button
+              type="button"
+              className="fuwari-btn-regular"
+              onClick={reload}
+              disabled={isRefreshing}
+            >
+              {m.friend_apply_refresh()}
+            </button>
+          </div>
+        ) : !current || editing ? (
+          <ApplicationForm
+            key={current?.id ?? "new"}
+            initial={editing ? current : undefined}
+            onCancel={editing ? () => setEditingId(null) : undefined}
+            onSubmitted={() => setEditingId(null)}
+          />
+        ) : (
+          <div className="friend-application-status" role="status">
+            <div
+              className="friend-application-state-icon"
+              data-status={current.status}
+            >
+              {current.status === "pending" ? (
+                <Clock size={26} />
+              ) : current.status === "approved" ? (
+                <Check size={26} />
+              ) : (
+                <XCircle size={26} />
+              )}
+            </div>
+            <h2>
+              {current.status === "pending"
+                ? m.friend_apply_pending()
+                : current.status === "approved"
+                  ? m.friend_apply_approved()
+                  : m.friend_apply_rejected()}
+            </h2>
+            <p>
+              {current.status === "pending"
+                ? m.friend_apply_pending_desc()
+                : current.status === "approved"
+                  ? m.friend_apply_approved_desc()
+                  : m.friend_apply_rejected_desc()}
+            </p>
+            <div className="friend-application-site">
+              <SiteIcon src={current.logoUrl || ""} />
+              <div>
+                <strong>{current.siteName}</strong>
+                <a
+                  href={current.siteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold fuwari-text-90 truncate transition-colors">
-                      {link.siteName}
-                    </h3>
-                    <StatusBadge status={link.status} />
-                  </div>
-                  <a
-                    href={link.siteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) transition-colors truncate block mb-3"
-                  >
-                    {link.siteUrl}
-                  </a>
-
-                  {link.status === "rejected" && link.rejectionReason && (
-                    <div className="mt-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                      <p className="text-xs text-red-600 dark:text-red-400">
-                        <span className="font-bold">
-                          {m.friend_link_rejection_reason_fuwari()}
-                        </span>
-                        {link.rejectionReason}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="text-[10px] fuwari-text-30 text-right mt-2 transition-colors">
-                    {m.friend_link_submitted_at()}{" "}
-                    <ClientOnly fallback="-">
-                      {new Date(link.createdAt).toLocaleDateString()}
-                    </ClientOnly>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="py-12 text-center fuwari-text-30 transition-colors">
-                <p className="text-sm">{m.friend_link_no_submissions()}</p>
+                  {current.siteUrl}
+                  <ExternalLink size={14} />
+                </a>
+                {current.description && <p>{current.description}</p>}
+              </div>
+            </div>
+            {current.status === "rejected" && current.rejectionReason && (
+              <div className="friend-application-reason">
+                <strong>{m.friend_links_reject_reason()}</strong>
+                <p>{current.rejectionReason}</p>
               </div>
             )}
+            <div className="friend-application-actions">
+              {current.status === "rejected" ? (
+                <button
+                  type="button"
+                  className="fuwari-btn-primary"
+                  onClick={() => setEditingId(current.id)}
+                >
+                  {m.friend_apply_revise()}
+                </button>
+              ) : current.status === "approved" ? (
+                <Link to="/friend-links" className="fuwari-btn-primary">
+                  {m.friend_apply_view()}
+                </Link>
+              ) : null}
+              <button
+                type="button"
+                className="fuwari-btn-regular"
+                onClick={reload}
+                disabled={isRefreshing}
+              >
+                <RefreshCw
+                  size={16}
+                  className={isRefreshing ? "animate-spin" : ""}
+                />
+                {m.friend_apply_refresh()}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
+    </section>
+  );
+}
+
+function SiteIcon({ src }: { src: string }) {
+  const [failed, setFailed] = useState<string | null>(null);
+  const valid = /^https?:\/\//i.test(src);
+  return (
+    <span className="friend-application-icon">
+      {valid && failed !== src ? (
+        <img src={src} alt="" onError={() => setFailed(src)} />
+      ) : (
+        <Globe size={24} strokeWidth={1.5} />
+      )}
+    </span>
+  );
+}
+
+function ApplicationForm({
+  initial,
+  onCancel,
+  onSubmitted,
+}: {
+  initial?: FriendLink;
+  onCancel?: () => void;
+  onSubmitted: () => void;
+}) {
+  const form = useFriendLinkSubmitForm(
+    initial
+      ? {
+          id: initial.id,
+          siteName: initial.siteName,
+          siteUrl: initial.siteUrl,
+          description: initial.description || "",
+          logoUrl: initial.logoUrl || "",
+        }
+      : undefined,
+    onSubmitted,
+  );
+  return (
+    <form
+      className="friend-application-form"
+      onSubmit={form.handleSubmit}
+      noValidate
+    >
+      <fieldset disabled={form.isSubmitting}>
+        <div className="friend-application-core">
+          <Field
+            name="siteName"
+            label={m.friend_link_field_site_name()}
+            error={form.errors.siteName?.message}
+            required
+          >
+            <input
+              id="apply-siteName"
+              aria-required="true"
+              {...form.register("siteName")}
+              maxLength={100}
+              autoComplete="organization"
+              aria-invalid={!!form.errors.siteName}
+              aria-describedby={
+                form.errors.siteName ? "apply-siteName-error" : undefined
+              }
+              placeholder={m.friend_link_placeholder_site_name_fuwari()}
+            />
+          </Field>
+          <Field
+            name="siteUrl"
+            label={m.friend_link_field_site_url_fuwari()}
+            error={form.errors.siteUrl?.message}
+            required
+          >
+            <input
+              id="apply-siteUrl"
+              aria-required="true"
+              {...form.register("siteUrl")}
+              type="url"
+              autoComplete="url"
+              aria-invalid={!!form.errors.siteUrl}
+              aria-describedby={
+                form.errors.siteUrl ? "apply-siteUrl-error" : undefined
+              }
+              placeholder="https://example.com"
+            />
+          </Field>
+        </div>
+        <Field
+          name="description"
+          label={m.friend_link_field_description()}
+          error={form.errors.description?.message}
+        >
+          <textarea
+            id="apply-description"
+            {...form.register("description")}
+            rows={3}
+            maxLength={300}
+            aria-invalid={!!form.errors.description}
+            aria-describedby={
+              form.errors.description ? "apply-description-error" : undefined
+            }
+            placeholder={m.friend_link_placeholder_description_fuwari()}
+          />
+        </Field>
+        <Field
+          name="logoUrl"
+          label={m.friend_link_field_logo_url()}
+          error={form.errors.logoUrl?.message}
+        >
+          <div className="friend-application-logo">
+            <input
+              id="apply-logoUrl"
+              {...form.register("logoUrl")}
+              type="url"
+              aria-invalid={!!form.errors.logoUrl}
+              aria-describedby={
+                form.errors.logoUrl ? "apply-logoUrl-error" : undefined
+              }
+              placeholder="https://example.com/avatar.png"
+            />
+            <SiteIcon src={form.logoUrl} />
+          </div>
+        </Field>
+      </fieldset>
+      <div className="friend-application-verification">
+        <Turnstile {...form.turnstileProps} />
+      </div>
+      {form.submitError && (
+        <p className="friend-application-error" role="alert">
+          {form.submitError}
+        </p>
+      )}
+      <div className="friend-application-actions">
+        {onCancel && (
+          <button
+            type="button"
+            className="fuwari-btn-regular"
+            onClick={onCancel}
+            disabled={form.isSubmitting}
+          >
+            {m.common_cancel()}
+          </button>
+        )}
+        <button
+          type="submit"
+          className="fuwari-btn-primary friend-application-submit"
+          disabled={form.isSubmitting || form.turnstilePending}
+        >
+          {form.isSubmitting && <Loader2 size={16} className="animate-spin" />}
+          {form.isSubmitting
+            ? m.friend_apply_sending()
+            : initial
+              ? m.friend_apply_resubmit()
+              : m.friend_link_submit_form_title()}
+        </button>
+      </div>
+      <p className="friend-application-hint">{m.friend_apply_after_submit()}</p>
+    </form>
+  );
+}
+function Field({
+  name,
+  label,
+  error,
+  required,
+  children,
+}: {
+  name: string;
+  label: string;
+  error?: string;
+  required?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="friend-application-field">
+      <label htmlFor={`apply-${name}`}>
+        {label}
+        {required ? (
+          <span aria-hidden="true"> *</span>
+        ) : (
+          <small>{m.friend_apply_optional()}</small>
+        )}
+      </label>
+      {children}
+      {error && (
+        <p id={`apply-${name}-error`} className="friend-application-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

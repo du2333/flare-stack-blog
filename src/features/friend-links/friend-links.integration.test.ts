@@ -7,6 +7,8 @@ import {
   seedUser,
   waitForBackgroundTasks,
 } from "tests/test-utils";
+import { eq } from "drizzle-orm";
+import { user, FriendLinksTable } from "@/lib/db/schema";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
@@ -45,7 +47,6 @@ describe("FriendLinkService", () => {
         siteName: "Test Site",
         siteUrl: "https://example.com",
         description: "A test site",
-        contactEmail: "contact@example.com",
       });
 
       expect(result.data).toBeDefined();
@@ -58,7 +59,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "New Site",
         siteUrl: "https://newsite.com",
-        contactEmail: "contact@newsite.com",
       });
 
       expect(userContext.env.QUEUE.send).toHaveBeenCalledWith(
@@ -93,7 +93,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Webhook Site",
         siteUrl: "https://webhook-site.com",
-        contactEmail: "contact@webhook-site.com",
       });
 
       expect(userContext.env.QUEUE.send).toHaveBeenCalledTimes(1);
@@ -132,7 +131,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Empty Webhook Site",
         siteUrl: "https://empty-webhook.com",
-        contactEmail: "contact@empty-webhook.com",
       });
 
       expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
@@ -143,14 +141,12 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Site 1",
         siteUrl: "https://duplicate.com",
-        contactEmail: "contact@duplicate.com",
       });
 
       // Duplicate submission
       const result = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Site 2",
         siteUrl: "https://duplicate.com",
-        contactEmail: "contact2@duplicate.com",
       });
 
       expect(result.error?.reason).toBe("DUPLICATE_URL");
@@ -161,7 +157,6 @@ describe("FriendLinkService", () => {
       const first = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Rejected Site",
         siteUrl: "https://rejected.com",
-        contactEmail: "contact@rejected.com",
       });
       expect(first.data).toBeDefined();
 
@@ -171,15 +166,102 @@ describe("FriendLinkService", () => {
         rejectionReason: "Not suitable",
       });
 
-      // Resubmission should be allowed
+      // Resubmission revises the same rejected application.
       const second = await FriendLinkService.submitFriendLink(userContext, {
+        id: first.data!.id,
         siteName: "Rejected Site Retry",
         siteUrl: "https://rejected.com",
-        contactEmail: "contact@rejected.com",
       });
 
       expect(second.data).toBeDefined();
       expect(second.data?.status).toBe("pending");
+      expect(second.data?.id).toBe(first.data!.id);
+      expect(second.data?.rejectionReason).toBeNull();
+      expect(
+        await FriendLinkService.getMyFriendLinks(userContext),
+      ).toHaveLength(1);
+    });
+  });
+
+  describe("Account-linked application", () => {
+    it("uses the current account email at review time without returning it", async () => {
+      const submitted = await FriendLinkService.submitFriendLink(userContext, {
+        siteName: "Current email",
+        siteUrl: "https://current.example.com",
+      });
+      await userContext.db
+        .update(user)
+        .set({ email: "updated@example.com" })
+        .where(eq(user.id, "user-1"));
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+      await FriendLinkService.approveFriendLink(adminContext, {
+        id: submitted.data!.id,
+      });
+      expect(adminContext.env.QUEUE.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "EMAIL",
+          data: expect.objectContaining({ to: "updated@example.com" }),
+        }),
+      );
+      const list = await FriendLinkService.getAllFriendLinks(adminContext, {});
+      expect(JSON.stringify(list)).not.toContain("updated@example.com");
+      expect(list.items[0]).not.toHaveProperty("contactEmail");
+    });
+    it("does not notify an applicant for a manually created link", async () => {
+      const link = await FriendLinkService.createFriendLink(adminContext, {
+        siteName: "Manual",
+        siteUrl: "https://manual.example.com",
+      });
+      vi.mocked(adminContext.env.QUEUE.send).mockClear();
+      await FriendLinkService.rejectFriendLink(adminContext, { id: link.id });
+      expect(adminContext.env.QUEUE.send).not.toHaveBeenCalled();
+    });
+    it("rejects resubmission of another user's link or a pending link", async () => {
+      const link = await FriendLinkService.submitFriendLink(userContext, {
+        siteName: "Owned",
+        siteUrl: "https://owned.example.com",
+      });
+      const input = {
+        id: link.data!.id,
+        siteName: "Revised",
+        siteUrl: "https://revised.example.com",
+      };
+      expect(
+        (await FriendLinkService.submitFriendLink(adminContext, input)).error
+          ?.reason,
+      ).toBe("NOT_FOUND");
+      expect(
+        (await FriendLinkService.submitFriendLink(userContext, input)).error
+          ?.reason,
+      ).toBe("INVALID_STATE");
+      expect(
+        (await FriendLinkService.getMyFriendLinks(userContext))[0].siteName,
+      ).toBe("Owned");
+    });
+    it("allows only one concurrent resubmission of a rejected application", async () => {
+      const link = await FriendLinkService.submitFriendLink(userContext, {
+        siteName: "Retry",
+        siteUrl: "https://retry.example.com",
+      });
+      await FriendLinkService.rejectFriendLink(adminContext, {
+        id: link.data!.id,
+      });
+      const input = {
+        id: link.data!.id,
+        siteName: "Revised",
+        siteUrl: "https://retry.example.com",
+      };
+      const results = await Promise.all([
+        FriendLinkService.submitFriendLink(userContext, input),
+        FriendLinkService.submitFriendLink(userContext, input),
+      ]);
+      expect(results.filter((result) => result.data)).toHaveLength(1);
+      expect(
+        results.filter((result) => result.error?.reason === "INVALID_STATE"),
+      ).toHaveLength(1);
+      expect(await userContext.db.select().from(FriendLinksTable)).toHaveLength(
+        1,
+      );
     });
   });
 
@@ -212,7 +294,6 @@ describe("FriendLinkService", () => {
       const submitted = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Pending Site",
         siteUrl: "https://pending.com",
-        contactEmail: "pending@example.com",
       });
 
       vi.mocked(adminContext.env.QUEUE.send).mockClear();
@@ -228,7 +309,7 @@ describe("FriendLinkService", () => {
         expect.objectContaining({
           type: "EMAIL",
           data: expect.objectContaining({
-            to: "pending@example.com",
+            to: "user@example.com",
             subject: expect.stringContaining("审核通过"),
           }),
         }),
@@ -249,7 +330,6 @@ describe("FriendLinkService", () => {
       const submitted = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Pending Site",
         siteUrl: "https://pending-disabled.com",
-        contactEmail: "pending-disabled@example.com",
       });
 
       vi.mocked(adminContext.env.QUEUE.send).mockClear();
@@ -266,7 +346,6 @@ describe("FriendLinkService", () => {
       const submitted = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "To Reject",
         siteUrl: "https://toreject.com",
-        contactEmail: "reject@example.com",
       });
 
       vi.mocked(adminContext.env.QUEUE.send).mockClear();
@@ -284,7 +363,7 @@ describe("FriendLinkService", () => {
         expect.objectContaining({
           type: "EMAIL",
           data: expect.objectContaining({
-            to: "reject@example.com",
+            to: "user@example.com",
             subject: expect.stringContaining("审核结果"),
           }),
         }),
@@ -305,7 +384,6 @@ describe("FriendLinkService", () => {
       const submitted = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "To Reject Disabled",
         siteUrl: "https://toreject-disabled.com",
-        contactEmail: "reject-disabled@example.com",
       });
 
       vi.mocked(adminContext.env.QUEUE.send).mockClear();
@@ -352,7 +430,6 @@ describe("FriendLinkService", () => {
         siteName: "Test Site",
         siteUrl: "https://test.com",
         description: "Original",
-        contactEmail: "original@test.com",
       });
 
       // Only update siteName
@@ -363,7 +440,6 @@ describe("FriendLinkService", () => {
 
       expect(updated.data?.siteName).toBe("New Name");
       expect(updated.data?.description).toBe("Original"); // unchanged
-      expect(updated.data?.contactEmail).toBe("original@test.com"); // unchanged
     });
   });
 
@@ -406,7 +482,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Pending",
         siteUrl: "https://pending.com",
-        contactEmail: "pending@test.com",
       });
 
       const approved =
@@ -438,7 +513,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Pending",
         siteUrl: "https://pending-count.com",
-        contactEmail: "pending-count@test.com",
       });
 
       const list = await FriendLinkService.getAllFriendLinks(adminContext, {
@@ -463,7 +537,6 @@ describe("FriendLinkService", () => {
       const pending = await FriendLinkService.submitFriendLink(userContext, {
         siteName: "Pending 1",
         siteUrl: "https://pending1.com",
-        contactEmail: "pending1@test.com",
       });
 
       await FriendLinkService.rejectFriendLink(adminContext, {
@@ -497,7 +570,6 @@ describe("FriendLinkService", () => {
       await FriendLinkService.submitFriendLink(userContext, {
         siteName: "My Site",
         siteUrl: "https://mysite.com",
-        contactEmail: "me@test.com",
       });
 
       const myLinks = await FriendLinkService.getMyFriendLinks(userContext);

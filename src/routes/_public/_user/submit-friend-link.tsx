@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { SubmitFriendLinkPage } from "@/features/friend-links/components/submit-friend-link-page";
-import { useFriendLinkSubmitForm } from "@/features/friend-links/hooks/use-friend-link-submit-form";
 import { myFriendLinksQuery } from "@/features/friend-links/queries";
 import { authClient } from "@/lib/auth/auth.client";
 import { m } from "@/paraglide/messages";
@@ -26,12 +25,21 @@ export const Route = createFileRoute("/_public/_user/submit-friend-link")({
 function SubmitFriendLinkRoute() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
-  const { data: myLinks } = useQuery(myFriendLinksQuery());
-  const form = useFriendLinkSubmitForm(user?.email);
+  const query = useQuery({ ...myFriendLinksQuery(), refetchOnMount: "always" });
 
   if (!user) {
     return null;
   }
 
-  return <SubmitFriendLinkPage myLinks={myLinks ?? []} form={form} />;
+  return (
+    <SubmitFriendLinkPage
+      myLinks={query.data ?? []}
+      isLoading={query.isPending}
+      isError={query.isError && query.data === undefined}
+      isRefreshing={query.isFetching}
+      reload={() => {
+        void query.refetch();
+      }}
+    />
+  );
 }

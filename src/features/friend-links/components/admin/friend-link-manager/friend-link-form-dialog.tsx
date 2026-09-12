@@ -16,7 +16,6 @@ const emptyValues: CreateFriendLinkInput = {
   siteUrl: "",
   description: "",
   logoUrl: "",
-  contactEmail: "",
 };
 
 function valuesFrom(link: FriendLinkWithUser): CreateFriendLinkInput {
@@ -25,7 +24,6 @@ function valuesFrom(link: FriendLinkWithUser): CreateFriendLinkInput {
     siteUrl: link.siteUrl,
     description: link.description || "",
     logoUrl: link.logoUrl || "",
-    contactEmail: link.contactEmail || "",
   };
 }
 
@@ -89,7 +87,6 @@ function FriendLinkFormDialogInternal({
               siteUrl: data.siteUrl,
               description: data.description || undefined,
               logoUrl: data.logoUrl || undefined,
-              contactEmail: data.contactEmail || undefined,
             }),
           )}
         >
@@ -116,12 +113,6 @@ function FriendLinkFormDialogInternal({
             error={errors.logoUrl?.message}
             inputProps={register("logoUrl")}
             placeholder={m.friend_links_form_logo_ph()}
-          />
-          <Field
-            label={m.friend_links_field_email()}
-            error={errors.contactEmail?.message}
-            inputProps={register("contactEmail")}
-            placeholder={m.friend_links_form_email_ph()}
           />
           <div className="flex justify-end gap-2 pt-2">
             <button

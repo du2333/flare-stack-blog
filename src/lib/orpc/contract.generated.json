@@ -708,7 +708,8 @@
         "route": {
           "method": "POST",
           "path": "/friend-links",
-          "summary": "Submit a friend link",
+          "summary": "Submit or resubmit a friend link",
+          "description": "Notifications use the applicant’s current account email. No contact email is stored or accepted. An optional id revises an owned rejected application in place; pending and approved applications cannot be resubmitted.",
           "tags": ["Friend Links"]
         }
       }

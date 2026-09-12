@@ -24,22 +24,41 @@ export async function submitFriendLink(
     context.db,
     context.session.user.id,
   );
+  const previous =
+    data.id === undefined
+      ? undefined
+      : existing.find((link) => link.id === data.id);
+  if (data.id !== undefined && !previous) return err({ reason: "NOT_FOUND" });
+  if (previous && previous.status !== "rejected")
+    return err({ reason: "INVALID_STATE" });
   const hasDuplicateUrl = existing.some(
-    (link) => link.siteUrl === data.siteUrl && link.status !== "rejected",
+    (link) =>
+      link.id !== data.id &&
+      link.siteUrl === data.siteUrl &&
+      link.status !== "rejected",
   );
   if (hasDuplicateUrl) {
     return err({ reason: "DUPLICATE_URL" });
   }
 
-  const friendLink = await FriendLinkRepo.insertFriendLink(context.db, {
+  const values = {
     siteName: data.siteName,
     siteUrl: data.siteUrl,
-    description: data.description,
-    logoUrl: data.logoUrl,
-    contactEmail: data.contactEmail,
+    description: data.description || "",
+    logoUrl: data.logoUrl || "",
     userId: context.session.user.id,
-    status: "pending",
-  });
+    status: "pending" as const,
+    rejectionReason: null,
+  };
+  const friendLink = previous
+    ? await FriendLinkRepo.resubmitFriendLink(
+        context.db,
+        previous.id,
+        context.session.user.id,
+        values,
+      )
+    : await FriendLinkRepo.insertFriendLink(context.db, values);
+  if (!friendLink) return err({ reason: "INVALID_STATE" });
 
   const { DOMAIN } = serverEnv(context.env);
   await publishNotificationEvent(context, {
@@ -86,7 +105,6 @@ export async function createFriendLink(
     siteUrl: data.siteUrl,
     description: data.description,
     logoUrl: data.logoUrl,
-    contactEmail: data.contactEmail,
     userId: null,
     status: "approved",
   });
@@ -133,8 +151,11 @@ export async function approveFriendLink(
 
   await invalidateCache(context);
 
-  // Notify submitter if contactEmail exists
-  if (friendLink.contactEmail) {
+  const recipient = await FriendLinkRepo.getApplicantEmail(
+    context.db,
+    friendLink.userId,
+  );
+  if (recipient) {
     const { DOMAIN } = serverEnv(context.env);
     await publishNotificationEvent(
       context,
@@ -145,7 +166,7 @@ export async function approveFriendLink(
           blogUrl: `https://${DOMAIN}`,
         },
       },
-      { to: friendLink.contactEmail },
+      { to: recipient },
     );
   }
 
@@ -173,8 +194,11 @@ export async function rejectFriendLink(
     await invalidateCache(context);
   }
 
-  // Notify submitter if contactEmail exists
-  if (friendLink.contactEmail) {
+  const recipient = await FriendLinkRepo.getApplicantEmail(
+    context.db,
+    friendLink.userId,
+  );
+  if (recipient) {
     await publishNotificationEvent(
       context,
       {
@@ -184,7 +208,7 @@ export async function rejectFriendLink(
           rejectionReason: data.rejectionReason,
         },
       },
-      { to: friendLink.contactEmail },
+      { to: recipient },
     );
   }
 

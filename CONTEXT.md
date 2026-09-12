@@ -157,6 +157,8 @@ _Avoid_: New commit, fork update
 - A **Reply** notifies the author of the targeted **Comment**, not the rest of the **Comment Thread**. A new root **Comment** by a non-**Admin** notifies the **Admin**.
 - A **Reply** belongs to exactly one **Comment Thread**.
 - A **Media** item cannot be deleted from the media library while it appears in the editable **Post** or in a **Public Content Snapshot**. **Post Revision**s do not keep **Media** from being deleted.
+- A user-submitted **Friend Link** belongs to its submitting **User**; review notifications use that **User**’s account email. An admin-created **Friend Link** may have no submitting **User**.
+- A rejected **Friend Link** can be revised and resubmitted by its submitting **User**.
 - Only an approved **Friend Link** appears on the public friend-links page.
 - **System Config** contains **Site Config**.
 - **System Config** may include one **Webhook Endpoint**.

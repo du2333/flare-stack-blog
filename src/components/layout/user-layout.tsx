@@ -1,9 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Home, LogIn } from "lucide-react";
 import type { UserLayoutProps } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";
 
 export function UserLayout({ isAuthenticated, children }: UserLayoutProps) {
+  const location = useLocation();
   if (isAuthenticated) return children;
 
   return (
@@ -28,6 +29,7 @@ export function UserLayout({ isAuthenticated, children }: UserLayoutProps) {
         <div className="flex flex-col gap-3">
           <Link
             to="/login"
+            search={{ redirectTo: location.href }}
             className="fuwari-btn-primary rounded-xl w-full py-3 flex items-center justify-center gap-2 font-bold active:scale-95 transition-all"
           >
             <LogIn className="w-4 h-4" />

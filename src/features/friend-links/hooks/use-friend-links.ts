@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { handleORPCError } from "@/lib/orpc/error-handler";
 import { orpc, orpcClient } from "@/lib/orpc";
+import { myFriendLinksQuery } from "../queries";
 import { m } from "@/paraglide/messages";
 import type {
   ApproveFriendLinkInput,
@@ -18,8 +19,14 @@ export function useFriendLinks() {
   const submitMutation = useMutation({
     mutationFn: (input: SubmitFriendLinkInput) =>
       orpcClient.friendLinks.submit(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orpc.friendLinks.mine.key() });
+    onSuccess: (saved) => {
+      queryClient.setQueryData(myFriendLinksQuery().queryKey, (previous) => [
+        saved,
+        ...(previous ?? []).filter((link) => link.id !== saved.id),
+      ]);
+      void queryClient.invalidateQueries({
+        queryKey: orpc.friendLinks.mine.key(),
+      });
       toast.success(m.friend_links_toast_submit_success(), {
         description: m.friend_links_toast_submit_success_desc(),
       });

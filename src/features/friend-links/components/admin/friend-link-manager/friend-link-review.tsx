@@ -210,9 +210,6 @@ export function FriendLinkReview({
                       </ClientOnly>
                     </span>
                   </p>
-                  {selected.contactEmail && (
-                    <p className="friend-muted">{selected.contactEmail}</p>
-                  )}
                 </section>
                 <section className="friend-section">
                   <h3>{m.friend_links_field_desc()}</h3>

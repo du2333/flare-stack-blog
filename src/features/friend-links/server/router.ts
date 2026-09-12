@@ -20,6 +20,11 @@ import { unwrapResult } from "@/lib/orpc/unwrap-result";
 
 const friendLinkErrors = {
   DUPLICATE_URL: { status: 409, message: "Friend link URL already exists." },
+  INVALID_STATE: {
+    status: 409,
+    message:
+      "Only a rejected application can be resubmitted. Refresh its status.",
+  },
   NOT_FOUND: { status: 404, message: "Friend link not found." },
 } as const;
 
@@ -45,12 +50,20 @@ const submit = authProcedure
   .route({
     method: "POST",
     path: "/friend-links",
-    summary: "Submit a friend link",
+    summary: "Submit or resubmit a friend link",
+    description:
+      "Notifications use the applicant’s current account email. No contact email is stored or accepted. An optional id revises an owned rejected application in place; pending and approved applications cannot be resubmitted.",
     tags: ["Friend Links"],
   })
   .input(SubmitFriendLinkInputSchema)
   .handler(({ context, input, errors }) =>
     unwrapResult(FriendLinkService.submitFriendLink(context, input), {
+      NOT_FOUND: () => {
+        throw errors.NOT_FOUND();
+      },
+      INVALID_STATE: () => {
+        throw errors.INVALID_STATE();
+      },
       DUPLICATE_URL: () => {
         throw errors.DUPLICATE_URL();
       },

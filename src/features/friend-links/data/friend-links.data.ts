@@ -48,7 +48,6 @@ export async function getAllFriendLinks(
       siteUrl: FriendLinksTable.siteUrl,
       description: FriendLinksTable.description,
       logoUrl: FriendLinksTable.logoUrl,
-      contactEmail: FriendLinksTable.contactEmail,
       status: FriendLinksTable.status,
       rejectionReason: FriendLinksTable.rejectionReason,
       userId: FriendLinksTable.userId,
@@ -136,4 +135,37 @@ export async function updateFriendLink(
 
 export async function deleteFriendLink(db: DB, id: number) {
   await db.delete(FriendLinksTable).where(eq(FriendLinksTable.id, id));
+}
+
+/** Recipient stays server-only; public friend-link user summaries never contain email. */
+export async function getApplicantEmail(db: DB, userId: string | null) {
+  if (!userId) return null;
+  const [applicant] = await db
+    .select({ email: user.email })
+    .from(user)
+    .where(eq(user.id, userId));
+  return applicant?.email ?? null;
+}
+
+export async function resubmitFriendLink(
+  db: DB,
+  id: number,
+  userId: string,
+  data: Pick<
+    typeof FriendLinksTable.$inferInsert,
+    "siteName" | "siteUrl" | "description" | "logoUrl"
+  >,
+) {
+  const [result] = await db
+    .update(FriendLinksTable)
+    .set({ ...data, status: "pending", rejectionReason: null })
+    .where(
+      and(
+        eq(FriendLinksTable.id, id),
+        eq(FriendLinksTable.userId, userId),
+        eq(FriendLinksTable.status, "rejected"),
+      ),
+    )
+    .returning();
+  return result;
 }

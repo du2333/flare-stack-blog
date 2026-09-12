@@ -77,7 +77,6 @@ describe("Dashboard overview", () => {
       await FriendLinkRepo.insertFriendLink(adminContext.db, {
         siteName: `Site ${i}`,
         siteUrl: `https://site-${i}.example`,
-        contactEmail: `site-${i}@example.com`,
         status: "pending",
         userId: userContext.session.user.id,
       });

@@ -5,7 +5,11 @@ import { ApprovedFriendLinksResponseSchema } from "@/features/friend-links/frien
 export const approvedFriendLinks = defineEntry({
   name: "friend-links.approved",
   namespace: "friend-links:list",
-  key: (_params: Record<string, never>) => ["friend-links", "approved"],
+  key: (_params: Record<string, never>) => [
+    "friend-links",
+    "approved",
+    "account-email-v2",
+  ],
   schema: ApprovedFriendLinksResponseSchema,
   ttl: "7d",
   invalidatedBy: ["friend-links.changed"],
