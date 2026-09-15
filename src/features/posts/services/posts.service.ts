@@ -11,6 +11,7 @@ import {
   postsList,
 } from "@/features/posts/posts.cache";
 import type {
+  CreatePostData,
   DeletePostInput,
   FindPostByIdInput,
   FindPostBySlugInput,
@@ -223,6 +224,27 @@ export async function generateSlug(
 
   // 4. 结果就是最大值 + 1
   return { slug: `${baseSlug}-${maxSuffix + 1}` };
+}
+
+/**
+ * Creates a brand new draft carrying the given content. Unlike
+ * `createEmptyPost`, it never reuses an existing empty draft, so a client can
+ * safely retry a failed create or create several posts in a row.
+ */
+export async function createDraft(context: DbContext, data: CreatePostData) {
+  const { slug } = await generateSlug(context, { title: data.title });
+
+  const post = await PostRepo.insertPost(context.db, {
+    title: data.title,
+    slug,
+    summary: data.summary ?? "",
+    status: "draft",
+    contentJson: normalizePostContent(data.contentJson ?? null),
+  });
+
+  await syncPostMedia(context.db, post);
+
+  return { id: post.id };
 }
 
 export async function createEmptyPost(context: DbContext) {

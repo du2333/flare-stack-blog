@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   AdminPostListPageSchema,
+  CreatePostInputSchema,
   HomePostsInputSchema,
   HomePostsResponseSchema,
   DeletePostInputSchema,
@@ -185,10 +186,17 @@ const create = adminProcedure
   .route({
     method: "POST",
     path: "/admin/posts",
-    summary: "Get or create an empty draft post",
+    summary: "Create a draft post",
+    description:
+      "With data, creates a new draft post carrying that content. Without data, returns an existing empty draft post when one exists, otherwise creates one.",
     tags: ["Admin Posts"],
   })
-  .handler(({ context }) => PostService.createEmptyPost(context));
+  .input(CreatePostInputSchema)
+  .handler(({ context, input }) =>
+    input?.data
+      ? PostService.createDraft(context, input.data)
+      : PostService.createEmptyPost(context),
+  );
 
 const update = adminProcedure
   .errors(postErrors)

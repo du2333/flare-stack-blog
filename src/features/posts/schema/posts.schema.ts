@@ -212,6 +212,29 @@ export const AdminPostListPageSchema = z.object({
 
 export const FindPostByIdInputSchema = z.object({ id: z.number() });
 
+/**
+ * Content for a newly created draft. When present, `POST /api/admin/posts`
+ * always creates a new draft instead of reusing an existing empty one, so
+ * several external clients can create posts without colliding.
+ */
+export const CreatePostDataSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1)
+    .describe("Draft title; a unique slug is generated from it."),
+  summary: z.string().nullable().optional(),
+  contentJson: NullableJsonContentSchema.optional(),
+});
+
+export const CreatePostInputSchema = z
+  .object({
+    data: CreatePostDataSchema.optional().describe(
+      "Omit to keep the get-or-create-empty-draft behavior used by the Admin UI.",
+    ),
+  })
+  .optional();
+
 export const UpdatePostInputSchema = z.object({
   id: z.number(),
   data: PostUpdateSchema,
@@ -231,6 +254,8 @@ export type GenerateSlugInput = z.infer<typeof GenerateSlugInputSchema>;
 export type GetPostsInput = z.infer<typeof GetPostsInputSchema>;
 export type GetPostsCountInput = z.infer<typeof GetPostsCountInputSchema>;
 export type FindPostByIdInput = z.infer<typeof FindPostByIdInputSchema>;
+export type CreatePostData = z.infer<typeof CreatePostDataSchema>;
+export type CreatePostInput = z.infer<typeof CreatePostInputSchema>;
 export type UpdatePostInput = z.infer<typeof UpdatePostInputSchema>;
 export type DeletePostInput = z.infer<typeof DeletePostInputSchema>;
 export type PublishPostInput = z.infer<typeof PublishPostInputSchema>;

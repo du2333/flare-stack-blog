@@ -214,6 +214,81 @@ describe("Posts Integration", () => {
       expect(storedPost?.publicSnapshotJson?.cover ?? null).toBeNull();
     });
 
+    it("creates a new draft carrying content without reusing an empty draft", async () => {
+      const reusableDraft = await PostService.createEmptyPost(adminContext);
+      const contentJson = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Written in an external editor" }],
+          },
+        ],
+      };
+
+      const created = await PostService.createDraft(adminContext, {
+        title: "External Draft",
+        summary: "Created with content",
+        contentJson,
+      });
+
+      expect(created.id).not.toBe(reusableDraft.id);
+
+      const post = await PostService.findPostById(adminContext, {
+        id: created.id,
+      });
+      expect(post?.title).toBe("External Draft");
+      expect(post?.summary).toBe("Created with content");
+      expect(post?.slug).toBe("external-draft");
+      expect(post?.status).toBe("draft");
+      expect(post?.contentJson).toEqual(contentJson);
+      expect(post?.publicSnapshotContentJson).toBeNull();
+
+      // The empty draft is still there for the next get-or-create caller.
+      const stillEmpty = await PostService.findPostById(adminContext, {
+        id: reusableDraft.id,
+      });
+      expect(stillEmpty?.title).toBe("");
+      expect(stillEmpty?.contentJson).toBeNull();
+    });
+
+    it("creates a post per call so consecutive creates never collide", async () => {
+      const first = await PostService.createDraft(adminContext, {
+        title: "First Note",
+        contentJson: null,
+      });
+      const second = await PostService.createDraft(adminContext, {
+        title: "Second Note",
+        contentJson: null,
+      });
+
+      expect(first.id).not.toBe(second.id);
+
+      const firstPost = await PostService.findPostById(adminContext, {
+        id: first.id,
+      });
+      const secondPost = await PostService.findPostById(adminContext, {
+        id: second.id,
+      });
+      expect(firstPost?.title).toBe("First Note");
+      expect(secondPost?.title).toBe("Second Note");
+      expect(firstPost?.slug).toBe("first-note");
+      expect(secondPost?.slug).toBe("second-note");
+    });
+
+    it("keeps the get-or-create empty draft behavior for existing callers", async () => {
+      const first = await PostService.createEmptyPost(adminContext);
+      const second = await PostService.createEmptyPost(adminContext);
+
+      expect(second.id).toBe(first.id);
+
+      const post = await PostService.findPostById(adminContext, {
+        id: first.id,
+      });
+      expect(post?.title).toBe("");
+      expect(post?.status).toBe("draft");
+    });
+
     it("should delete a post", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
       await updatePost({
