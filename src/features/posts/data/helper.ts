@@ -4,7 +4,7 @@ import type { PostStatus } from "@/lib/db/schema";
 import type { AdminTaxonomyFilter } from "@/features/posts/schema/posts.schema";
 import { PostTagsTable, PostsTable } from "@/lib/db/schema";
 
-export type SortField = "publishedAt" | "updatedAt";
+export type SortField = "publishedAt" | "updatedAt" | "id";
 export type SortDirection = "ASC" | "DESC";
 
 function escapeLikeString(str: string) {
@@ -74,13 +74,16 @@ export function buildPostOrderByClause(
   sortDir?: SortDirection,
   sortBy?: SortField,
   publicSnapshot = false,
-): SQL {
+): SQL[] {
   const direction = sortDir ?? "DESC";
   const field = sortBy ?? "updatedAt";
   const orderFn = direction === "DESC" ? desc : asc;
-  return orderFn(
+  const primary = orderFn(
     publicSnapshot && field === "publishedAt"
       ? sql`json_extract(${PostsTable.publicSnapshotJson}, '$.publishedAt')`
       : PostsTable[field],
   );
+  // The id is an immutable primary key, so it keeps offset pagination stable
+  // when rows share the sorted value or are written while a client pages.
+  return field === "id" ? [primary] : [primary, orderFn(PostsTable.id)];
 }

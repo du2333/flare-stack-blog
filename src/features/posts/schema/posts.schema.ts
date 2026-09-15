@@ -175,7 +175,13 @@ export const GetPostsInputSchema = z.object({
   publicOnly: z.boolean().optional(),
   search: z.string().optional(),
   sortDir: z.enum(["ASC", "DESC"]).optional(),
-  sortBy: z.enum(["publishedAt", "updatedAt"]).optional(),
+  sortBy: z.enum(["publishedAt", "updatedAt", "id"]).optional(),
+  includeContent: z
+    .boolean()
+    .optional()
+    .describe(
+      "Include the editable TipTap body of every item. Pagination, the 50 item limit and every other response field stay the same.",
+    ),
 });
 
 const GetPostsCountInputSchema = GetPostsInputSchema.omit({
@@ -194,6 +200,9 @@ const AdminPostListItemSchema = z.object({
   pinnedAt: coercedDateNullable,
   createdAt: coercedDate,
   updatedAt: coercedDate,
+  contentJson: NullableJsonContentSchema.optional().describe(
+    "Only returned when the request asks for includeContent=true.",
+  ),
 });
 
 const AdminPostStatusCountsSchema = z.object({

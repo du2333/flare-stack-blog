@@ -97,6 +97,7 @@ export async function getPosts(
     taxonomy?: AdminTaxonomyFilter;
     sortDir?: SortDirection;
     sortBy?: SortField;
+    includeContent?: boolean;
   } = {},
 ) {
   const {
@@ -104,6 +105,7 @@ export async function getPosts(
     limit = DEFAULT_PAGE_SIZE,
     sortDir,
     sortBy,
+    includeContent = false,
     ...filters
   } = options;
   const whereClause = buildPostWhereClause(filters);
@@ -128,11 +130,12 @@ export async function getPosts(
       categoryId: PostsTable.categoryId,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
+      ...(includeContent ? { contentJson: PostsTable.contentJson } : {}),
     })
     .from(PostsTable)
     .limit(Math.min(limit, 50))
     .offset(offset)
-    .orderBy(orderByClause)
+    .orderBy(...orderByClause)
     .where(whereClause);
   return posts;
 }

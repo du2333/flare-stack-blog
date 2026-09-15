@@ -286,6 +286,7 @@ export async function getPosts(context: DbContext, data: GetPostsInput) {
     taxonomy: data.taxonomy,
     sortDir: data.sortDir,
     sortBy: data.sortBy,
+    includeContent: data.includeContent,
   });
 }
 
