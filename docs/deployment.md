@@ -233,7 +233,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 3. 打开 Cloudflare 对应 Worker 的 **Deployments / Builds**，等待这次提交的构建和部署成功。
 4. 刷新博客，检查首页和后台是否正常。
 
-同步产生新提交后，Cloudflare Workers Builds 会自动部署，并执行数据库迁移，已有资源和运行时变量会保留。
+同步产生新提交后，Cloudflare Workers Builds 会自动部署，并执行数据库迁移，已有资源和运行时变量会保留。迁移会改动线上数据库结构，出问题时的恢复方式见[数据备份与恢复](#数据备份与恢复)。
 
 若更新说明要求新增变量或调整配置，请一并完成。自行修改过代码的仓库，可能需要先解决同步冲突。
 
@@ -249,6 +249,49 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 | 减少后台更新检查的 GitHub API 限流 | 无 | `GITHUB_TOKEN`（Secret） | 按模板链接创建 Fine-grained token，权限保留默认的公共仓库只读访问 |
 
 修改**构建时变量**后，需要重新触发构建，新值才会进入部署产物。修改**运行时变量**后，使用保存并部署使其生效。
+
+## 数据备份与恢复
+
+每次部署都会执行 `bun db:migrate`（即 `wrangler d1 migrations apply DB --remote`），把 `migrations/` 中尚未应用的迁移按文件名顺序应用到线上 D1。版本更新因此可能改动线上表结构，建议先了解下面两种恢复手段。
+
+### 优先使用 D1 自带的时间点恢复
+
+Cloudflare D1 的 **Time Travel** 是内置的备份与时间点恢复能力：**无需开启，始终可用，不额外计费**，可以恢复到最近 **30 天**内的任意一分钟，正是为「迁移或改表失败、误删误改数据」这类场景设计的。
+
+```bash
+# 查看当前 bookmark 与可恢复的时间点
+wrangler d1 time-travel info DB
+
+# 恢复到某个时间点，时间戳支持 Unix 秒或 RFC3339
+wrangler d1 time-travel restore DB --timestamp=2026-09-18T02:40:00Z
+wrangler d1 time-travel restore DB --bookmark=<bookmark>
+```
+
+两点需要注意：
+
+- 恢复是**整库回滚**：目标时间点之后的写入（新文章、评论等）都会一并丢失，执行前先确认时间点。
+- 只有使用 D1 新存储子系统的数据库支持 Time Travel。可以用 `wrangler d1 info DB` 查看 `version` 字段：`production` 支持，`alpha` 只能使用旧的快照备份。
+
+### 需要离线留档时：逐表导出
+
+如果要把数据留存在 Cloudflare 之外，或需要保留超过 30 天，可以用 `wrangler d1 export` 导出为 SQL 文件。
+
+注意：**当数据库中存在 FTS5 虚拟表时，整库导出会直接失败**，本项目自 `0019_search_fts.sql` 起必然如此：
+
+```text
+✘ [ERROR] D1 Export error: cannot export databases with Virtual Tables (fts5)
+```
+
+此时改用 `--table` 逐表导出。`--no-schema` 单独使用同样会报上面的错，必须配合 `--table`；`--table` 可以重复指定：
+
+```bash
+TABLES="posts post_tags tags categories media post_media post_revisions comments friend_links user session account verification apikey system_config email_unsubscriptions search_documents"
+for table in $TABLES; do
+  wrangler d1 export DB --remote --no-schema --table "$table" --output="d1-backup-$table.sql"
+done
+```
+
+导出结果是**纯数据**（只有 `INSERT`，没有建表语句）：恢复时先在空数据库上应用 `migrations/`，再执行这些 SQL。另外每次 `d1 export` 都会让数据库短暂无法响应查询，不建议对访问量较大的站点按计划频繁执行。
 
 ## 常见问题
 
@@ -288,6 +331,10 @@ GitHub OAuth Redirect URI：   https://blog.example.com/api/auth/callback/github
 ### 同步了 Fork，但没有自动部署
 
 检查更新是否进入 Cloudflare 监听的生产分支，以及 **Settings → Builds** 中的 GitHub 连接、生产分支和自动构建设置。如果配置了 Build watch paths，还要检查本次改动是否被排除。没有新提交，或仅同步到其他分支，都不会触发生产分支部署。
+
+### 迁移失败或误删了数据，怎么恢复
+
+优先用 D1 的 Time Travel 恢复到事故前的时间点，具体命令、限制和离线导出方式见[数据备份与恢复](#数据备份与恢复)。
 
 ### 图片能显示，但没有优化效果
 
