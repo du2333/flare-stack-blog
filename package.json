@@ -95,8 +95,8 @@
     "zod": "~4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.53.1",
-    "@cloudflare/vitest-plugin": "^1.0.0",
+    "@cloudflare/vite-plugin": "^1.55.0",
+    "@cloudflare/vitest-plugin": "^1.1.12",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@inlang/paraglide-js": "^2.24.1",
     "@release-it/conventional-changelog": "^10.0.6",
@@ -124,6 +124,6 @@
     "vite": "^7.3.6",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.11",
-    "wrangler": "^4.125.0"
+    "wrangler": "^4.134.0"
   }
 }
