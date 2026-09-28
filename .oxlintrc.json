@@ -13,7 +13,7 @@
   "ignorePatterns": [
     "src/paraglide",
     "src/routeTree.gen.ts",
-    "worker-configuration.d.ts",
+    ".cloudflare/**",
     "migrations/**",
     "dist/**"
   ],

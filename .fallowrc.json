@@ -1,6 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["src/server.ts", "src/**/*.test.ts", "scripts/**/*.test.ts"],
+  "entry": [
+    "src/server.ts",
+    "cloudflare.config.ts",
+    "src/**/*.test.ts",
+    "scripts/**/*.test.ts"
+  ],
   "dynamicallyLoaded": [
     ".release-it.ts",
     "tests/apply-migrations.ts",

@@ -244,7 +244,7 @@ export const FindPostByIdInputSchema = z.object({ id: z.number() });
  * always creates a new draft instead of reusing an existing empty one, so
  * several external clients can create posts without colliding.
  */
-export const CreatePostDataSchema = z.object({
+const CreatePostDataSchema = z.object({
   title: z
     .string()
     .trim()
@@ -282,7 +282,6 @@ export type GetPostsInput = z.infer<typeof GetPostsInputSchema>;
 export type GetPostsCountInput = z.infer<typeof GetPostsCountInputSchema>;
 export type FindPostByIdInput = z.infer<typeof FindPostByIdInputSchema>;
 export type CreatePostData = z.infer<typeof CreatePostDataSchema>;
-export type CreatePostInput = z.infer<typeof CreatePostInputSchema>;
 export type UpdatePostInput = z.infer<typeof UpdatePostInputSchema>;
 export type DeletePostInput = z.infer<typeof DeletePostInputSchema>;
 export type PublishPostInput = z.infer<typeof PublishPostInputSchema>;
