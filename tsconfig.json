@@ -27,7 +27,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "./worker-configuration.d.ts",
+    ".cloudflare/types/index.d.ts",
     ".release-it.ts"
   ],
   "exclude": ["tmp"]

@@ -57,6 +57,8 @@ const config = defineConfig({
       viteEnvironment: {
         name: "ssr",
       },
+      // Read the Worker from cloudflare.config.ts instead of wrangler.jsonc.
+      experimental: { newConfig: true },
     }),
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],

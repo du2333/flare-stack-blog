@@ -18,9 +18,8 @@ export default defineConfig(async () => {
         projects: ["./tsconfig.json"],
       }),
       cloudflareTest({
-        wrangler: {
-          configPath: "./wrangler.jsonc",
-          environment: "test",
+        experimental: {
+          newConfig: { configPath: "./cloudflare.config.ts" },
         },
         miniflare: {
           bindings: {

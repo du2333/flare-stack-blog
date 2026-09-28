@@ -39,9 +39,6 @@ jobs:
       - name: Install dependencies
         run: bun ci
 
-      - name: Setup Wrangler Config
-        run: cp wrangler.example.jsonc wrangler.jsonc
-
       - name: Lint Check
         run: bun lint
 

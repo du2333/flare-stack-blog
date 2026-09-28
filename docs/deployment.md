@@ -179,7 +179,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 | 设置项 | 填写内容 |
 | --- | --- |
 | Project name / Worker name | 与 `WORKER_NAME` 相同，例如 `flare-blog` |
-| Build command | `bun run wrangler:prepare && bun run build` |
+| Build command | `bun run build` |
 | Deploy command | `bun run deploy` |
 | Path / Root directory | `/`，即仓库根目录 |
 | Builds for non-production branches | 首次部署建议取消勾选 |
@@ -190,7 +190,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 
 ![构建变量示例：WORKER_NAME 的值必须与应用名称一致](./assets/deployment/11-build-vars.png)
 
-可在这里额外添加 `BUN_VERSION=1.3.5`，指定构建环境使用的 Bun 版本。
+可在这里额外添加 `BUN_VERSION=1.3.5`，指定构建环境使用的 Bun 版本。构建环境的 Node 版本由仓库根目录的 `.node-version` 指定，无需额外设置。
 
 确认生产分支为 Fork 的 `main`。有些界面在创建时使用仓库默认分支，可在创建后的 **Settings → Builds → Branch control / Production branch** 中核对。后续自动部署监听的就是这个分支。
 
@@ -204,8 +204,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 
 添加运行时清单中已填好的变量。可以逐项填写 Key / Value，也可以将 `KEY=value` 格式的变量行粘贴到 **Key** 输入框，批量导入。
 
-- `BETTER_AUTH_SECRET`、`GITHUB_CLIENT_SECRET` 勾选 **Secret**，加密保存。
-- `BETTER_AUTH_URL`、`DOMAIN`、`GITHUB_CLIENT_ID` 可使用普通文本。
+- **所有运行时变量都必须勾选 Secret**（包括 `BETTER_AUTH_URL`、`DOMAIN`、`GITHUB_CLIENT_ID`、`ENVIRONMENT`）。部署程序会保留机密，但会在每次部署时丢弃没有写进配置文件的普通文本变量，导致博客报 `Invalid environment variables`。
 - `ENVIRONMENT` 使用第 2 步设置的 `prod`。
 
 点击 **Add variable and deploy**（保存并部署），等待变量生效。
@@ -233,7 +232,14 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 3. 打开 Cloudflare 对应 Worker 的 **Deployments / Builds**，等待这次提交的构建和部署成功。
 4. 刷新博客，检查首页和后台是否正常。
 
-同步产生新提交后，Cloudflare Workers Builds 会自动部署，并执行数据库迁移，已有资源和运行时变量会保留。
+同步产生新提交后，Cloudflare Workers Builds 会自动部署，并执行数据库迁移，已有资源和运行时机密会保留。
+
+> **从使用 `wrangler.jsonc` 的旧版本升级（v2.x → v3）时**，同步之前请先完成两件事，否则第一次自动部署就会出问题：
+>
+> 1. 打开 Worker 的 **Settings → Runtime variables and secrets**，把仍是普通文本的运行时变量（例如 `BETTER_AUTH_URL`、`DOMAIN`、`GITHUB_CLIENT_ID`、`ENVIRONMENT`）删除后以 **Secret** 类型重新添加。新版部署程序不再保留普通文本变量。
+> 2. 把 **Build command** 改为 `bun run build`。旧的 `bun run wrangler:prepare && bun run build` 在本版本仍可运行（`wrangler:prepare` 只会打印一条废弃提示），但之后的版本会移除它。
+>
+> 另外，Durable Object 的声明方式已改为 `exports`。部署成功后，无法再回退到旧的基于 `migrations` 的 Wrangler 配置，回退需要把 DO 同样声明在旧配置的 `exports` 里。
 
 若更新说明要求新增变量或调整配置，请一并完成。自行修改过代码的仓库，可能需要先解决同步冲突。
 
@@ -259,7 +265,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 - 六个构建必填项是否齐全，名称是否拼写正确，值前后是否混入空格。
 - D1 和 KV 填的是完整 **ID**，R2 和 Queue 填的是**名称**。
 - Worker 和资源是否位于同一 Cloudflare 账号，`WORKER_NAME` 是否与应用名一致。
-- Build command 是否包含 `bun run wrangler:prepare`，Deploy command 是否为 `bun run deploy`。
+- Build command 是否为 `bun run build`，Deploy command 是否为 `bun run deploy`。
 
 如果日志提示权限不足，检查 Builds 使用的 Cloudflare API token 是否有权部署 Worker、访问对应存储和队列资源、配置域名。构建授权说明见 [Workers Builds 配置文档](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)。修正后重新构建。
 

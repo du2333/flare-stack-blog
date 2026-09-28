@@ -11,8 +11,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "bun run orpc:contract && vite build && bun scripts/ssr-chunk-graph.ts",
-    "deploy": "bun db:migrate && wrangler deploy",
+    "build": "bun run orpc:contract && cf build && bun scripts/ssr-chunk-graph.ts .cloudflare/output/v0/workers/default/bundle",
+    "deploy": "cf d1 migrations apply \"$D1_DATABASE_ID\" && cf deploy --prebuilt",
     "serve": "vite preview",
     "test": "vitest run",
     "test:node": "vitest run --config vitest.node.config.ts",
@@ -20,18 +20,17 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "orpc:contract": "bun run i18n:compile && bun scripts/generate-orpc-contract.ts && oxfmt src/lib/orpc/contract.generated.json",
-    "typecheck": "bun run orpc:contract && ./node_modules/typescript/bin/tsc --noEmit",
-    "check": "bun run orpc:contract && oxlint && oxfmt --check && ./node_modules/typescript/bin/tsc --noEmit",
+    "typecheck": "bun run orpc:contract && cf workers types && ./node_modules/typescript/bin/tsc --noEmit",
+    "check": "bun run orpc:contract && cf workers types && oxlint && oxfmt --check && ./node_modules/typescript/bin/tsc --noEmit",
     "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "i18n:verify": "bun scripts/verify-translations.ts",
     "i18n:prune-unused": "bun scripts/prune-unused-translations.ts",
-    "wrangler:prepare": "bun scripts/prepare-wrangler-config.ts",
-    "cf-typegen": "wrangler types --env-interface Env",
+    "wrangler:prepare": "bun scripts/wrangler-prepare-deprecated.ts",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "CI=1 wrangler d1 migrations apply DB --remote",
-    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate": "cf d1 migrations apply \"$D1_DATABASE_ID\"",
+    "db:migrate:local": "cf d1 migrations apply 00000000-0000-4000-8000-000000000000 --local --persist-to .wrangler/state",
     "auth:generate-schema": "bunx @better-auth/cli generate --yes --config auth-cli.ts --output src/lib/db/schema/auth.table.ts",
     "release": "export GITHUB_TOKEN=$(gh auth token) && release-it",
     "release:beta": "export GITHUB_TOKEN=$(gh auth token) && release-it --preRelease=beta",
@@ -95,8 +94,8 @@
     "zod": "~4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.53.1",
-    "@cloudflare/vitest-plugin": "^1.0.0",
+    "@cloudflare/vite-plugin": "^1.62.0",
+    "@cloudflare/vitest-plugin": "^1.3.1",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@inlang/paraglide-js": "^2.24.1",
     "@release-it/conventional-changelog": "^10.0.6",
@@ -112,6 +111,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "@vitest/runner": "^4.1.11",
     "@vitest/snapshot": "^4.1.11",
+    "cf": "1.0.0-beta.5",
     "drizzle-kit": "^0.31.10",
     "fallow": "^3.21.0",
     "husky": "^9.1.7",
@@ -123,7 +123,9 @@
     "typescript": "^7.0.2",
     "vite": "^7.3.6",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.11",
-    "wrangler": "^4.125.0"
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

@@ -1,5 +1,6 @@
-# 运行时变量，由 Wrangler / Cloudflare 注入 Worker。
-# 本地复制为 .dev.vars；生产在 Worker「设置 → 变量和机密」中填写。
+# 运行时变量，由 Cloudflare 注入 Worker，校验规则见 src/lib/env/server.env.ts。
+# 本地复制为 .dev.vars；生产在 Worker「设置 → 变量和机密」中填写，且一律选择「机密」类型
+# （部署时 `cf deploy` 会保留机密，但会丢弃未写入配置的普通文本变量）。
 
 # --- 必填 ---
 BETTER_AUTH_SECRET=your-secret-key-run-openssl-rand-hex-32

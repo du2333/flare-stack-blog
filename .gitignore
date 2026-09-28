@@ -16,9 +16,10 @@ drizzle
 tmp/
 test.http
 .secrets
-wrangler.jsonc
 docs/superpowers/
 .cache/
 *.tsbuildinfo
 .fallow
 .scratch
+# cf build output
+.cloudflare

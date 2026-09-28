@@ -43,6 +43,6 @@
     ".tanstack/**",
     ".output/**",
     ".cache/**",
-    "worker-configuration.d.ts"
+    ".cloudflare/**"
   ]
 }

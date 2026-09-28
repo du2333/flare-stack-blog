@@ -14,11 +14,10 @@
   "ignorePatterns": [
     "src/paraglide",
     "src/routeTree.gen.ts",
-    "worker-configuration.d.ts",
+    ".cloudflare",
     "migrations/**/*",
     "messages/**",
     "docs/**",
-    "**/*.md",
-    "wrangler.example.jsonc"
+    "**/*.md"
   ]
 }
