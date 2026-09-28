@@ -24,6 +24,8 @@ const serverEnvSchema = z.object({
   GITHUB_TOKEN: z.string().optional(),
 });
 
+export type ServerEnv = z.infer<typeof serverEnvSchema>;
+
 export function serverEnv(env: Env) {
   const result = serverEnvSchema.safeParse(env);
 

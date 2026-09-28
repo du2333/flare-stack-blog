@@ -5,6 +5,7 @@ import {
 } from "@/features/posts/data/posts.data";
 import { buildFeed } from "@/features/posts/utils/feed";
 import { getDb } from "@/lib/db";
+import { serverEnv } from "@/lib/env/server.env";
 
 export const SITE_DOCUMENT_CACHE_CONTROL = {
   feed: "public, max-age=3600, s-maxage=3600",
@@ -92,6 +93,7 @@ async function getAllPublishedPostsForSitemap(env: Env) {
 }
 
 export async function buildSitemapXml(env: Env) {
+  const { DOMAIN } = serverEnv(env);
   const posts = await getAllPublishedPostsForSitemap(env);
 
   const formatDate = (
@@ -106,17 +108,17 @@ export async function buildSitemapXml(env: Env) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://${env.DOMAIN}/</loc>
+    <loc>https://${DOMAIN}/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://${env.DOMAIN}/posts</loc>
+    <loc>https://${DOMAIN}/posts</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://${env.DOMAIN}/friend-links</loc>
+    <loc>https://${DOMAIN}/friend-links</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -129,7 +131,7 @@ export async function buildSitemapXml(env: Env) {
 
       return `
   <url>
-    <loc>https://${env.DOMAIN}/post/${encodeURIComponent(post.slug)}</loc>
+    <loc>https://${DOMAIN}/post/${encodeURIComponent(post.slug)}</loc>
     ${lastModifiedAt ? `<lastmod>${lastModifiedAt}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -140,6 +142,7 @@ export async function buildSitemapXml(env: Env) {
 }
 
 export function buildRobotsTxt(env: Env) {
+  const { DOMAIN } = serverEnv(env);
   return `User-agent: *
 Allow: /
 Disallow: /admin
@@ -152,7 +155,7 @@ Disallow: /verify-email
 Disallow: /reset-link
 Disallow: /profile
 Disallow: /submit-friend-link
-Sitemap: https://${env.DOMAIN}/sitemap.xml`;
+Sitemap: https://${DOMAIN}/sitemap.xml`;
 }
 
 export async function buildWebManifest(

@@ -4,6 +4,7 @@ import type {
   PostPopularityWindow,
 } from "@/features/post-popularity/post-popularity";
 import { ms } from "@/lib/duration";
+import type { ServerEnv } from "@/lib/env/server.env";
 
 const CLOUD_API_URL = "https://api.umami.is/v1";
 const REQUEST_TIMEOUT = ms("10s");
@@ -43,7 +44,7 @@ export type UmamiApiConfig =
 
 type UmamiEnv = Partial<
   Pick<
-    Env,
+    ServerEnv,
     | "UMAMI_WEBSITE_ID"
     | "UMAMI_SRC"
     | "UMAMI_API_URL"
