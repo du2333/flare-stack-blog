@@ -249,10 +249,8 @@ const publishPost = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(PublishPostInputSchema)
-  .handler(async ({ context, input, errors }) => {
-    const result = await getPostPublisher(context.env, input.id).publish(
-      input.id,
-    );
+  .handler(async ({ input, errors }) => {
+    const result = await (await getPostPublisher(input.id)).publish(input.id);
     return unwrapResult<{ success: boolean }>(result, {
       POST_NOT_FOUND: () => {
         throw errors.POST_NOT_FOUND();
@@ -275,10 +273,8 @@ const unpublishPost = adminProcedure
     tags: ["Admin Posts"],
   })
   .input(UnpublishPostInputSchema)
-  .handler(async ({ context, input, errors }) => {
-    const result = await getPostPublisher(context.env, input.id).unpublish(
-      input.id,
-    );
+  .handler(async ({ input, errors }) => {
+    const result = await (await getPostPublisher(input.id)).unpublish(input.id);
     return unwrapResult<{ success: boolean }>(result, {
       POST_NOT_FOUND: () => {
         throw errors.POST_NOT_FOUND();

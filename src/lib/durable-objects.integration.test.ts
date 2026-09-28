@@ -1,5 +1,5 @@
 import { runDurableObjectAlarm } from "cloudflare:test";
-import { env } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { handleAuthRequest } from "@/lib/http/handle-auth-request";
 
@@ -18,8 +18,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should allow request if there are enough tokens", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-1");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-1");
 
       const result = await rateLimiter.checkLimit({
         capacity: 5,
@@ -32,8 +31,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should reject request if there are not enough tokens", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-2");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-2");
 
       for (let i = 0; i < 5; i++) {
         await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
@@ -49,8 +47,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should reject request if cost is greater than capacity", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-3");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-3");
 
       const result = await rateLimiter.checkLimit({
         capacity: 5,
@@ -64,8 +61,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should refill tokens after time passes", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-4");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-4");
 
       const config = { capacity: 5, interval: "1m" as const };
 
@@ -85,8 +81,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should correctly calculate retry after time", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-5");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-5");
 
       const result = await rateLimiter.checkLimit({
         capacity: 5,
@@ -112,8 +107,7 @@ describe("Durable Objects Integration", () => {
     });
 
     it("should handle custom cost", async () => {
-      const id = env.RATE_LIMITER.idFromName("user-6");
-      const rateLimiter = env.RATE_LIMITER.get(id);
+      const rateLimiter = exports.RateLimiter.getByName("user-6");
 
       const result = await rateLimiter.checkLimit({
         capacity: 5,
@@ -130,8 +124,7 @@ describe("Durable Objects Integration", () => {
       const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
       it("should clean up inactive DO after 7 days", async () => {
-        const id = env.RATE_LIMITER.idFromName("cleanup-1");
-        const rateLimiter = env.RATE_LIMITER.get(id);
+        const rateLimiter = exports.RateLimiter.getByName("cleanup-1");
 
         await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
 
@@ -150,8 +143,7 @@ describe("Durable Objects Integration", () => {
       });
 
       it("should renew alarm if DO is still active", async () => {
-        const id = env.RATE_LIMITER.idFromName("cleanup-2");
-        const rateLimiter = env.RATE_LIMITER.get(id);
+        const rateLimiter = exports.RateLimiter.getByName("cleanup-2");
 
         await rateLimiter.checkLimit({ capacity: 5, interval: "1m" });
 

@@ -1551,7 +1551,7 @@ describe("Posts Integration", () => {
         }),
       );
 
-      unwrap(await getPostPublisher(adminContext.env, id).publish(id));
+      unwrap(await (await getPostPublisher(id)).publish(id));
 
       const published = await adminContext.db.query.PostsTable.findFirst({
         where: eq(PostsTable.id, id),

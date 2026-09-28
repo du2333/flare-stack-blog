@@ -2,6 +2,7 @@ import { ORPCError, os } from "@orpc/server";
 import { isAPIError } from "better-auth/api";
 import { z } from "zod";
 import type { RateLimitOptions } from "@/lib/do/rate-limiter";
+import { getRateLimiter } from "@/lib/do/rate-limiter-binding";
 import { serverEnv } from "@/lib/env/server.env";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import type { ApiContext, AuthedApiContext } from "./context";
@@ -94,8 +95,7 @@ export function withRateLimit(options: RateLimitOptions & { key?: string }) {
     const scope = options.key || "default";
     const uniqueIdentifier = `${identifier}:${scope}`;
 
-    const id = context.env.RATE_LIMITER.idFromName(uniqueIdentifier);
-    const rateLimiter = context.env.RATE_LIMITER.get(id);
+    const rateLimiter = await getRateLimiter(uniqueIdentifier);
     const result = await rateLimiter.checkLimit(options);
 
     if (!result.allowed) {

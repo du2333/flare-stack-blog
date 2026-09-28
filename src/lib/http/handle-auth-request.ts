@@ -21,21 +21,21 @@ export async function handleAuthRequest(
       const turnstileResponse = await enforceTurnstile(env, request);
       if (turnstileResponse) return turnstileResponse;
 
-      const minuteLimit = await enforceIpRateLimit(env, request, {
+      const minuteLimit = await enforceIpRateLimit(request, {
         capacity: 5,
         interval: "1m",
         key: `auth:${pathname}:1m`,
       });
       if (minuteLimit) return minuteLimit;
 
-      const hourlyLimit = await enforceIpRateLimit(env, request, {
+      const hourlyLimit = await enforceIpRateLimit(request, {
         capacity: 10,
         interval: "1h",
         key: `auth:${pathname}:1h`,
       });
       if (hourlyLimit) return hourlyLimit;
     } else {
-      const minuteLimit = await enforceIpRateLimit(env, request, {
+      const minuteLimit = await enforceIpRateLimit(request, {
         capacity: 5,
         interval: "1m",
         key: `auth:${pathname}:1m`,
