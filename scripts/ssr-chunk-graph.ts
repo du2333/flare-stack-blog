@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const DYNAMIC_IMPORT_RE = /import\(\s*["']\.\/([^"']+\.js)["']\s*\)/g;
@@ -14,6 +14,17 @@ function resolveWorkerEntry(dir: string): { dir: string; file: string } {
   const workerEntry = files.find((name) => WORKER_ENTRY_RE.test(name));
   if (workerEntry) {
     return { dir, file: workerEntry };
+  }
+  // When chunks are split, `cf build` emits a stub index.js that re-exports
+  // from assets/worker-entry-*.js, which is where the dynamic imports live.
+  const assetsDir = path.join(dir, "assets");
+  if (existsSync(assetsDir)) {
+    const nested = readdirSync(assetsDir).find((name) =>
+      WORKER_ENTRY_RE.test(name),
+    );
+    if (nested) {
+      return { dir: assetsDir, file: nested };
+    }
   }
   if (files.includes("index.js")) {
     return { dir, file: "index.js" };
@@ -36,6 +47,9 @@ export function findSsrEntryBackEdges(dir: string): SsrChunkBackEdge[] {
   );
   for (const specifier of imported) {
     const importedPath = path.join(entryDir, specifier);
+    // A real dynamic import always has an emitted chunk. Matches without one
+    // come from text such as JSDoc `import("./x.js")` types kept in the bundle.
+    if (!existsSync(importedPath)) continue;
     const importedSource = readFileSync(importedPath, "utf8");
     if (fromPattern.test(importedSource)) {
       backEdges.push({ from: specifier, to: workerEntry });
