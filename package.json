@@ -85,7 +85,7 @@
     "react-dom": "^19.3.0",
     "react-hook-form": "^7.89.0",
     "react-textarea-autosize": "^8.5.9",
-    "shiki": "^3.23.0",
+    "shiki": "^4.4.3",
     "simple-icons": "^16.28.0",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
