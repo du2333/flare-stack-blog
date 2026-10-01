@@ -44,7 +44,7 @@
     "@orpc/client": "^1.15.0",
     "@orpc/contract": "^1.15.0",
     "@orpc/json-schema": "^1.15.0",
-    "@orpc/openapi": "^1.15.0",
+    "@orpc/openapi": "^1.15.4",
     "@orpc/openapi-client": "^1.15.0",
     "@orpc/server": "^1.15.0",
     "@orpc/tanstack-query": "^1.15.0",
