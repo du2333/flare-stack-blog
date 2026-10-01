@@ -48,6 +48,10 @@ jobs:
       - name: Type Check
         run: bun typecheck
 
+      # Same command Workers Builds runs to deploy, so a broken build fails here first.
+      - name: Build
+        run: bun run build
+
       - name: Run Node Tests
         run: bun run test:node
 
