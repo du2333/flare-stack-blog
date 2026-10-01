@@ -48,7 +48,7 @@
     "@orpc/openapi": "^1.15.0",
     "@orpc/openapi-client": "^1.15.0",
     "@orpc/server": "^1.15.0",
-    "@orpc/tanstack-query": "^1.15.0",
+    "@orpc/tanstack-query": "^1.15.4",
     "@orpc/zod": "^1.15.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tanstack/react-devtools": "^0.10.12",
