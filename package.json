@@ -78,7 +78,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.3",
     "drizzle-zod": "^0.8.3",
-    "feed": "^5.2.1",
+    "feed": "^6.0.0",
     "katex": "^0.16.47",
     "lucide-react": "^1.48.0",
     "react": "^19.3.0",
