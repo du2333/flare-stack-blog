@@ -36,8 +36,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@better-auth/api-key": "1.6.30",
-    "@better-auth/core": "1.6.30",
+    "@better-auth/api-key": "1.7.6",
+    "@better-auth/core": "1.7.6",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource/roboto": "^5.3.0",
     "@hookform/resolvers": "^5.9.1",
@@ -74,7 +74,7 @@
     "@tiptap/react": "^3.20.0",
     "@tiptap/starter-kit": "^3.20.0",
     "@tiptap/static-renderer": "^3.20.0",
-    "better-auth": "1.6.30",
+    "better-auth": "1.7.6",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.3",
     "drizzle-zod": "^0.8.3",
