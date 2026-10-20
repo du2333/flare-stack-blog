@@ -7,16 +7,21 @@ import { z } from "zod";
 const UserThemeSchema = z.enum(["light", "dark", "system"]).catch("system");
 const _AppThemeSchema = z.enum(["light", "dark"]).catch("light");
 
+// yozora 主题默认亮色（纸面原稿）；其他主题沿用 system
+const DEFAULT_USER_THEME: UserTheme =
+  __THEME_NAME__ === "yozora" ? "light" : "system";
+const defaultUserThemeJson = JSON.stringify(DEFAULT_USER_THEME);
+
 export type UserTheme = z.infer<typeof UserThemeSchema>;
 export type AppTheme = z.infer<typeof _AppThemeSchema>;
 
 const themeStorageKey = "ui-theme";
 
 const getStoredUserTheme = createIsomorphicFn()
-  .server((): UserTheme => "system")
+  .server((): UserTheme => DEFAULT_USER_THEME)
   .client((): UserTheme => {
     const stored = localStorage.getItem(themeStorageKey);
-    return UserThemeSchema.parse(stored);
+    return UserThemeSchema.parse(stored ?? DEFAULT_USER_THEME);
   });
 
 const setStoredTheme = createClientOnlyFn((theme: UserTheme) => {
@@ -56,10 +61,11 @@ const setupPreferredListener = createClientOnlyFn(() => {
 const themeScript = (() => {
   function themeFn() {
     try {
-      const storedTheme = localStorage.getItem("ui-theme") || "system";
+      const storedTheme =
+        localStorage.getItem("ui-theme") || "__DEFAULT_USER_THEME__";
       const validTheme = ["light", "dark", "system"].includes(storedTheme)
         ? storedTheme
-        : "system";
+        : "__DEFAULT_USER_THEME__";
 
       if (validTheme === "system") {
         const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
@@ -78,7 +84,7 @@ const themeScript = (() => {
       document.documentElement.classList.add(systemTheme, "system");
     }
   }
-  return `(${themeFn.toString()})();`;
+  return `(${themeFn.toString().replaceAll('"__DEFAULT_USER_THEME__"', defaultUserThemeJson)})();`;
 })();
 
 interface ThemeContextProps {

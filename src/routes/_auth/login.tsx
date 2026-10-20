@@ -34,8 +34,11 @@ function RouteComponent() {
     turnstileProps,
   } = useTurnstile("login");
 
+  // SSR 阶段没有 window，用固定 base 兜底；客户端行为不变
+  const originBase =
+    typeof window === "undefined" ? "http://localhost" : window.location.origin;
   const currentSearchParams = new URLSearchParams(
-    new URL(location.href, window.location.origin).search,
+    new URL(location.href, originBase).search,
   );
   const isOAuthAuthorizationRequest =
     !!currentSearchParams.get("client_id") &&
