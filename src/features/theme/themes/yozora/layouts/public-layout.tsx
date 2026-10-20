@@ -2,7 +2,6 @@ import { useLocation, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackToTop } from "../components/control/back-to-top";
-import { CursorLight } from "../components/cursor-light";
 import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
@@ -33,7 +32,6 @@ export function PublicLayout({
       }`}
     >
       <div className="yz-progress" aria-hidden="true" />
-      <CursorLight />
       <MobileMenu
         navOptions={navOptions}
         isOpen={isMenuOpen}

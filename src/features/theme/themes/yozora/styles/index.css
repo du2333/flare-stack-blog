@@ -692,47 +692,6 @@ article h1, article h2, article h3 {
   }
 }
 /* =====================================================================
-   纸面光斑（跟随指针的柔光）
-   ===================================================================== */
-.yz-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 340px;
-  height: 340px;
-  margin: -170px 0 0 -170px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 20;
-  opacity: 0;
-  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-  background: radial-gradient(
-    circle,
-    rgba(255, 247, 228, 0.55),
-    rgba(255, 247, 228, 0.16) 44%,
-    transparent 72%
-  );
-  mix-blend-mode: soft-light;
-  will-change: transform;
-}
-body.has-pointer .yz-cursor {
-  opacity: 1;
-}
-.dark .yz-cursor {
-  background: radial-gradient(
-    circle,
-    rgba(190, 205, 255, 0.26),
-    transparent 72%
-  );
-  mix-blend-mode: screen;
-}
-@media (hover: none) {
-  .yz-cursor {
-    display: none;
-  }
-}
-
-/* =====================================================================
    友链：纸面书签
    ===================================================================== */
 .yz-friend {
