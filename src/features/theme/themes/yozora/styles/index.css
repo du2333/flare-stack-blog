@@ -1207,48 +1207,58 @@ article h1, article h2, article h3 {
 /* =====================================================================
    文章视觉指纹 Plate：fnv1a(slug) → 图案/色/日语词（确定性，零请求）
    ===================================================================== */
+/* 视觉指纹容器：只覆盖卡片顶部 560px，不跟随长文章撑高
+   （旧版 inset:0 会在 13900px 的文章上生成同样高的装饰层） */
 .yz-plate {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 560px;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
   border-radius: inherit;
 }
+/* 色晕：固定在右上角的固定尺寸柔光，不随卡片高度膨胀。
+   旧版用 top:-30%/bottom:30% + scale(1.4)，长文章时会变成
+   2500×19500px 的巨椭圆，把卡片切成"左亮右暖"两条色带。 */
 .yz-plate__wash {
   position: absolute;
-  top: -30%;
+  top: 0;
   right: 0;
-  left: 0;
-  bottom: 30%;
-  transform: rotate(var(--pa-rot, 0deg)) scale(1.4);
-  transform-origin: var(--pa-x, 70%) 0%;
+  width: min(58%, 520px);
+  height: 420px;
   background:
     radial-gradient(
-      60% 90% at var(--pa-x, 70%) 0%,
-      color-mix(in srgb, var(--pa-ink) 12%, transparent),
-      transparent 70%
+      78% 78% at 88% 0%,
+      color-mix(in srgb, var(--pa-ink) 11%, transparent),
+      transparent 72%
     );
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
 }
 .dark .yz-plate__wash {
   background:
     radial-gradient(
-      60% 90% at var(--pa-x, 70%) 0%,
-      color-mix(in srgb, var(--pa-ink) 22%, transparent),
-      transparent 70%
+      78% 78% at 88% 0%,
+      color-mix(in srgb, var(--pa-ink) 18%, transparent),
+      transparent 72%
     );
 }
 
-/* 图案层：4 种，全用渐变/重复线画，无图片 */
+/* 图案层：4 种，全用渐变/重复线画，无图片。
+   用固定像素偏移（不是百分比）——长文章的百分比会把它推到 1000px 以下。 */
 .yz-plate::before {
   content: "";
   position: absolute;
-  top: 8%;
-  right: 4%;
+  top: 96px;
+  right: 24px;
   width: min(46%, 380px);
   height: 240px;
-  opacity: 0.5;
+  opacity: 0.42;
   transform: rotate(var(--pa-rot, 0deg));
+  transform-origin: 100% 0;
 }
 .yz-plate--p0::before {
   /* 同心圆（魔法使的涟漪） */
@@ -1285,16 +1295,16 @@ article h1, article h2, article h3 {
   mask-image: radial-gradient(70% 90% at 70% 20%, #000 0%, transparent 75%);
 }
 
-/* 背景日语词：竖排大字，纸面水印 */
+/* 背景日语词：竖排大字，纸面水印。固定像素定位（长文章下百分比会飘走） */
 .yz-plate__word {
   position: absolute;
-  top: 12%;
-  right: 6%;
+  top: 108px;
+  right: 48px;
   writing-mode: vertical-rl;
   font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
   font-size: clamp(2.6rem, 6vw, 4.6rem);
   letter-spacing: 0.18em;
-  color: color-mix(in srgb, var(--pa-ink) 13%, transparent);
+  color: color-mix(in srgb, var(--pa-ink) 12%, transparent);
   user-select: none;
 }
 .dark .yz-plate__word {
