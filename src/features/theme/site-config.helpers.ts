@@ -7,6 +7,10 @@ export function getThemePreloadImages(siteConfig: SiteConfig): Array<string> {
       return siteConfig.theme.fuwari.homeBg
         ? [siteConfig.theme.fuwari.homeBg]
         : [];
+    case "yozora":
+      return siteConfig.theme.fuwari.homeBg
+        ? [siteConfig.theme.fuwari.homeBg]
+        : [];
     case "default":
       return [
         siteConfig.theme.default.background?.homeImage,

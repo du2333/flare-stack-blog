@@ -4,6 +4,11 @@ export function normalizeRedirectUrl(
   redirectTo: string | undefined,
   fallback: string,
 ) {
+  // SSR 阶段没有 window：退回相对路径，客户端再规范化
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
   const safeFallback = `${window.location.origin}${fallback}`;
 
   if (!redirectTo) {

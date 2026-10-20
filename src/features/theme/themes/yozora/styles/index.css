@@ -1,0 +1,1826 @@
+/* =====================================================================
+   Theme: yozora — 「白衣の魔法使」纸面语言
+   策略：保留 fuwari 的类名（69 个组件零改动），只重映射令牌与排版，
+   让整站一次性变成"纸 + 墨 + 烫金 + 细衬线"。
+   ===================================================================== */
+@import "tailwindcss";
+@import "@/styles/shared.css";
+@import "./markdown.css";
+@plugin "@tailwindcss/typography";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  :root {
+    /* 形状：纸面几乎直角，卡片用发丝线而不是阴影 */
+    --fuwari-radius-large: 0.375rem;
+    --fuwari-content-delay: 150ms;
+    --fuwari-page-width: 72rem;
+    --fuwari-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+
+    /* —— 纸（亮色，默认）—— */
+    --yz-paper: #ece4d6;
+    --yz-paper-2: #f7f2e8;
+    --yz-ink: #241d2a;
+    --yz-ink-soft: rgba(36, 29, 42, 0.68);
+    --yz-ink-faint: rgba(36, 29, 42, 0.38);
+    --yz-rule: rgba(36, 29, 42, 0.16);
+    --yz-rule-soft: rgba(36, 29, 42, 0.09);
+    --yz-gold: #b8892f;
+    --yz-gold-strong: #9a6f20;
+    --yz-shinku: #c8102e;
+
+    --fuwari-primary: var(--yz-gold);
+    --fuwari-primary-hover: var(--yz-gold-strong);
+    --fuwari-primary-active: #7f5a17;
+    --fuwari-page-bg: var(--yz-paper);
+    --fuwari-card-bg: var(--yz-paper-2);
+    --fuwari-btn-content: var(--yz-ink-soft);
+    --fuwari-btn-regular-bg: var(--yz-rule-soft);
+    --fuwari-btn-regular-bg-hover: rgba(36, 29, 42, 0.14);
+    --fuwari-btn-regular-bg-active: rgba(36, 29, 42, 0.2);
+    --fuwari-btn-plain-bg-hover: var(--yz-rule-soft);
+    --fuwari-btn-plain-bg-active: rgba(36, 29, 42, 0.13);
+    --fuwari-enter-btn-bg: transparent;
+    --fuwari-enter-btn-bg-hover: var(--yz-rule-soft);
+    --fuwari-enter-btn-bg-active: rgba(36, 29, 42, 0.14);
+    --fuwari-meta-divider: var(--yz-rule);
+    --fuwari-selection-bg: rgba(184, 137, 47, 0.24);
+    --fuwari-inline-code-bg: var(--yz-rule-soft);
+    --fuwari-inline-code-color: #7a5520;
+    --fuwari-input-bg: rgba(255, 253, 248, 0.7);
+    --fuwari-input-border: var(--yz-rule);
+    --fuwari-toc-btn-hover: var(--yz-rule-soft);
+    --fuwari-toc-btn-active: rgba(184, 137, 47, 0.16);
+  }
+
+  /* —— 夜（暗色）—— */
+  .dark {
+    --yz-paper: #12121a;
+    --yz-paper-2: #171722;
+    --yz-ink: #f0ece4;
+    --yz-ink-soft: rgba(240, 236, 228, 0.7);
+    --yz-ink-faint: rgba(240, 236, 228, 0.38);
+    --yz-rule: rgba(240, 236, 228, 0.15);
+    --yz-rule-soft: rgba(240, 236, 228, 0.07);
+    --yz-gold: #d8b878;
+    --yz-gold-strong: #e8cd97;
+
+    --fuwari-primary: var(--yz-gold);
+    --fuwari-primary-hover: var(--yz-gold-strong);
+    --fuwari-primary-active: #f2e2bd;
+    --fuwari-page-bg: var(--yz-paper);
+    --fuwari-card-bg: var(--yz-paper-2);
+    --fuwari-btn-content: var(--yz-ink-soft);
+    --fuwari-btn-regular-bg: var(--yz-rule-soft);
+    --fuwari-btn-regular-bg-hover: rgba(240, 236, 228, 0.13);
+    --fuwari-btn-regular-bg-active: rgba(240, 236, 228, 0.19);
+    --fuwari-btn-plain-bg-hover: var(--yz-rule-soft);
+    --fuwari-btn-plain-bg-active: rgba(240, 236, 228, 0.12);
+    --fuwari-enter-btn-bg: transparent;
+    --fuwari-enter-btn-bg-hover: var(--yz-rule-soft);
+    --fuwari-enter-btn-bg-active: rgba(240, 236, 228, 0.12);
+    --fuwari-meta-divider: var(--yz-rule);
+    --fuwari-selection-bg: rgba(216, 184, 120, 0.28);
+    --fuwari-inline-code-bg: rgba(240, 236, 228, 0.1);
+    --fuwari-inline-code-color: #e8cd97;
+    --fuwari-input-bg: rgba(255, 255, 255, 0.05);
+    --fuwari-input-border: var(--yz-rule);
+    --fuwari-toc-btn-hover: var(--yz-rule-soft);
+    --fuwari-toc-btn-active: rgba(216, 184, 120, 0.16);
+  }
+
+  /* 排版：标题细衬线，正文黑体，行距更松 */
+  h1, h2, h3, h4 {
+    font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  h1 { font-weight: 300; letter-spacing: 0.005em; }
+  p, li { text-wrap: pretty; }
+
+  ::selection {
+    background-color: var(--fuwari-selection-bg);
+    color: inherit;
+  }
+}
+
+@layer components {
+  /* 卡片：纸片 + 发丝线，去掉圆角阴影感 */
+  .fuwari-card-base {
+    border-radius: var(--fuwari-radius-large);
+    overflow: hidden;
+    background-color: var(--fuwari-card-bg);
+    border: 1px solid var(--yz-rule);
+    box-shadow: 0 10px 26px -22px rgba(36, 29, 42, 0.55);
+    transition:
+      background-color 0.3s,
+      border-color 0.3s,
+      color 0.3s,
+      box-shadow 0.3s;
+  }
+  .fuwari-card-base:hover {
+    border-color: var(--yz-rule);
+    box-shadow: 0 16px 34px -24px rgba(36, 29, 42, 0.6);
+  }
+  .dark .fuwari-card-base {
+    box-shadow: 0 10px 26px -22px rgba(0, 0, 0, 0.7);
+  }
+
+  /* 次级按钮：细线描边 */
+  .fuwari-btn-regular {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid var(--yz-rule);
+    color: var(--yz-ink-soft);
+    transition:
+      border-color 0.2s,
+      color 0.2s,
+      background-color 0.2s;
+  }
+  .fuwari-btn-regular:hover {
+    border-color: var(--yz-gold);
+    color: var(--yz-ink);
+    background-color: var(--fuwari-btn-regular-bg-hover);
+  }
+  .fuwari-btn-regular:active {
+    background-color: var(--fuwari-btn-regular-bg-active);
+  }
+  .dark .fuwari-btn-regular {
+    color: var(--yz-ink-soft);
+  }
+
+  /* 主按钮：墨块 */
+  .fuwari-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--yz-ink);
+    border: 1px solid var(--yz-ink);
+    color: var(--fuwari-page-bg);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      opacity 0.2s;
+  }
+  .fuwari-btn-primary:hover {
+    background-color: transparent;
+    color: var(--yz-ink);
+  }
+  .fuwari-btn-primary:active {
+    background-color: var(--yz-rule-soft);
+  }
+  .fuwari-btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .dark .fuwari-btn-primary {
+    color: var(--fuwari-page-bg);
+  }
+  .dark .fuwari-btn-primary:hover {
+    background-color: transparent;
+    color: var(--yz-ink);
+  }
+
+  /* 文字层级：墨的透明度，而不是纯黑纯白 */
+  .fuwari-text-90 { color: var(--yz-ink); }
+  .fuwari-text-75 { color: var(--yz-ink-soft); }
+  .fuwari-text-50 { color: var(--yz-ink-faint); }
+  .fuwari-text-30 { color: rgba(36, 29, 42, 0.22); }
+  .dark .fuwari-text-90 { color: var(--yz-ink); }
+  .dark .fuwari-text-75 { color: var(--yz-ink-soft); }
+  .dark .fuwari-text-50 { color: var(--yz-ink-faint); }
+  .dark .fuwari-text-30 { color: rgba(240, 236, 228, 0.24); }
+
+  .fuwari-meta-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid var(--yz-rule-soft);
+    color: var(--yz-ink-faint);
+    margin-right: 0.5rem;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .fuwari-expand-animation {
+    position: relative;
+    z-index: 0;
+  }
+  .fuwari-expand-animation::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    scale: 0.85;
+    z-index: -1;
+    transition:
+      scale 0.2s ease-out,
+      background-color 0.2s;
+  }
+  .fuwari-expand-animation:hover::before {
+    scale: 1;
+    background-color: var(--fuwari-btn-plain-bg-hover);
+  }
+  .fuwari-expand-animation:active::before {
+    background-color: var(--fuwari-btn-plain-bg-active);
+  }
+
+  .fuwari-timeline-dash {
+    position: relative;
+  }
+  .fuwari-timeline-dash::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 1px dashed var(--yz-rule);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+  }
+
+  .fuwari-code-folding-wrapper {
+    @apply relative transition-[max-height] duration-500 ease-in-out overflow-x-auto overflow-y-hidden;
+  }
+
+  .fuwari-code-mask {
+    @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
+    background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
+    z-index: 10;
+  }
+
+  .fuwari-toc-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--yz-rule) transparent;
+  }
+  .fuwari-toc-scrollbar:hover {
+    scrollbar-color: var(--yz-ink-faint) transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--yz-rule);
+    border-radius: 4px;
+    border: none;
+  }
+  .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: var(--yz-ink-faint);
+  }
+
+  /* —— yozora 专属小件 —— */
+  .yz-hairline {
+    height: 1px;
+    background-color: var(--yz-rule);
+  }
+  .yz-pagemark {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--yz-ink-faint);
+  }
+  .yz-gold {
+    color: var(--yz-gold);
+  }
+  .yz-rule-gold {
+    height: 1px;
+    background-color: var(--yz-gold);
+    opacity: 0.55;
+  }
+}
+
+/* 入场：与"白大褂飘动"同节奏，慢、轻、不弹 */
+@keyframes yozora-rise {
+  0% {
+    transform: translateY(0.6rem);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fuwari-onload-animation {
+  opacity: 0;
+  animation: yozora-rise 620ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* 滚动条：墨色细条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--yz-rule);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--yz-ink-faint);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--yz-rule);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--yz-ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fuwari-onload-animation {
+    animation: none;
+    opacity: 1;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* =====================================================================
+   未分层规则（unlayered）——必须放在所有 @layer 之外：
+   分层 CSS 永远输给未分层 CSS，而 app 级 styles.css 里有未分层的 body 底色，
+   所以纸面背景/衬线字体只能写在层外才能生效。
+   ===================================================================== */
+body {
+  background-color: var(--yz-paper);
+  color: var(--yz-ink);
+  background-image:
+    radial-gradient(130% 100% at 50% 0%, rgba(255, 253, 248, 0.5) 0%, transparent 52%),
+    radial-gradient(100% 80% at 50% 100%, rgba(36, 29, 42, 0.05) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+.dark body {
+  background-color: var(--yz-paper);
+  background-image:
+    radial-gradient(130% 100% at 50% 0%, rgba(216, 184, 120, 0.06) 0%, transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, h4, h5, h6,
+.fuwari-card-title,
+article h1, article h2, article h3 {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  letter-spacing: 0.01em;
+}
+/* 横幅：任何一张图都要"融进纸面"——降饱和 + 上缘纸雾 + 下缘渐隐到纸色 */
+.yozora-banner img {
+  filter: saturate(0.78) contrast(0.96) sepia(0.08) brightness(1.02);
+}
+.yozora-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--yz-paper) 42%, transparent) 0%,
+      transparent 22%,
+      transparent 52%,
+      color-mix(in srgb, var(--yz-paper) 55%, transparent) 82%,
+      var(--yz-paper) 100%
+    );
+}
+/* =====================================================================
+   目录页语言：页边码 + 标题 + 点线 + 标签/日期（书籍目录，不是卡片）
+   ===================================================================== */
+.yz-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.5rem 0 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--yz-rule);
+}
+.yz-section-head h2 {
+  font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--yz-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.yz-section-head h2::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--yz-gold);
+  transform: translateY(-0.2em);
+}
+.yz-section-head__meta {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+}
+
+.yz-contents {
+  display: flex;
+  flex-direction: column;
+}
+.yz-contents__foot {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.1rem;
+}
+
+.yz-tocline {
+  padding: 0.68rem 0 0.5rem;
+  border-bottom: 1px solid var(--yz-rule-soft);
+}
+.yz-tocline:last-of-type {
+  border-bottom: 0;
+}
+
+.yz-tocline__link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.yz-tocline__pno {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 3.4rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--yz-ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.yz-tocline__mark {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--yz-gold);
+  flex: none;
+}
+
+.yz-tocline__body {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yz-tocline__title {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC",
+    "Hiragino Mincho ProN", serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--yz-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.yz-tocline__dots {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted var(--yz-rule);
+  transform: translateY(-0.28em);
+  transition:
+    border-color 0.28s,
+    opacity 0.28s;
+}
+
+.yz-tocline__meta {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  white-space: nowrap;
+}
+.yz-tocline__tag {
+  border: 1px solid var(--yz-rule-soft);
+  padding: 0.05rem 0.35rem;
+  letter-spacing: 0.1em;
+}
+
+.yz-tocline__side {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  margin-left: 1rem;
+  min-width: 4.2rem;
+  gap: 0.7rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--yz-ink-faint);
+  white-space: nowrap;
+}
+
+.yz-tocline__summary {
+  margin: 0.32rem 0 0;
+  padding-left: 4.1rem;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--yz-ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yz-tocline__link:hover .yz-tocline__title {
+  color: var(--yz-gold);
+}
+.yz-tocline__link:hover .yz-tocline__dots {
+  border-bottom-color: var(--yz-gold);
+}
+
+@media (max-width: 767px) {
+  .yz-tocline__side,
+  .yz-tocline__summary {
+    display: none;
+  }
+  .yz-tocline__title {
+    white-space: normal;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .yz-tocline__dots {
+    display: none;
+  }
+  .yz-tocline__meta {
+    margin-left: auto;
+  }
+}
+
+/* =====================================================================
+   正文：首字下沉 + 细衬线小标题 + 更松的行距（纸面阅读）
+   ===================================================================== */
+.fuwari-custom-md {
+  --tw-prose-body: var(--yz-ink);
+  --tw-prose-headings: var(--yz-ink);
+  --tw-prose-lead: var(--yz-ink-soft);
+  --tw-prose-links: var(--yz-gold);
+  --tw-prose-bold: var(--yz-ink);
+  --tw-prose-counters: var(--yz-ink-faint);
+  --tw-prose-bullets: var(--yz-ink-faint);
+  --tw-prose-hr: var(--yz-rule);
+  --tw-prose-quotes: var(--yz-ink-soft);
+  --tw-prose-quote-borders: var(--yz-gold);
+  --tw-prose-captions: var(--yz-ink-faint);
+  --tw-prose-code: var(--yz-ink);
+  --tw-prose-pre-code: var(--yz-ink);
+  --tw-prose-pre-bg: color-mix(in srgb, var(--yz-ink) 5%, transparent);
+  --tw-prose-th-borders: var(--yz-rule);
+  --tw-prose-td-borders: var(--yz-rule-soft);
+}
+
+.fuwari-custom-md p {
+  line-height: 2.05;
+}
+
+/* CJK 不用首字下沉（"二/一/十"放大后会变成断线）；
+   改用章首细金线 + 首行两字缩进，任何文字都成立 */
+.fuwari-custom-md p:first-of-type::before {
+  content: "";
+  display: block;
+  width: 2.2rem;
+  height: 1px;
+  background: var(--yz-gold);
+  opacity: 0.75;
+  margin: 0 0 1rem;
+}
+.fuwari-custom-md p:first-of-type {
+  text-indent: 2em;
+}
+
+.fuwari-custom-md h2 {
+  font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.02em;
+  margin-top: 2.2rem;
+}
+.fuwari-custom-md h2::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 1px;
+  background: var(--yz-gold);
+  vertical-align: 0.35em;
+  margin-right: 0.5rem;
+}
+
+.fuwari-custom-md blockquote {
+  border-left: 1px solid var(--yz-gold);
+  background: var(--yz-rule-soft);
+  padding: 0.85rem 1.05rem;
+  font-style: normal;
+  border-radius: 0;
+}
+
+/* =====================================================================
+   阅读进度线：纯 CSS 滚动驱动，无 JS
+   ===================================================================== */
+.yz-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 60;
+  pointer-events: none;
+  background: var(--yz-gold);
+  opacity: 0.85;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+@supports (animation-timeline: scroll()) {
+  .yz-progress {
+    animation: yz-progress-grow linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes yz-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+@supports not (animation-timeline: scroll()) {
+  .yz-progress {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yz-progress {
+    display: none;
+  }
+}
+/* =====================================================================
+   纸面光斑（跟随指针的柔光）
+   ===================================================================== */
+.yz-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 340px;
+  height: 340px;
+  margin: -170px 0 0 -170px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  background: radial-gradient(
+    circle,
+    rgba(255, 247, 228, 0.55),
+    rgba(255, 247, 228, 0.16) 44%,
+    transparent 72%
+  );
+  mix-blend-mode: soft-light;
+  will-change: transform;
+}
+body.has-pointer .yz-cursor {
+  opacity: 1;
+}
+.dark .yz-cursor {
+  background: radial-gradient(
+    circle,
+    rgba(190, 205, 255, 0.26),
+    transparent 72%
+  );
+  mix-blend-mode: screen;
+}
+@media (hover: none) {
+  .yz-cursor {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   友链：纸面书签
+   ===================================================================== */
+.yz-friend {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  background: var(--yz-paper-2);
+  border: 1px solid var(--yz-rule);
+  border-radius: var(--fuwari-radius-large);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 10px 24px -22px rgba(36, 29, 42, 0.5);
+  transition:
+    border-color 0.28s cubic-bezier(0.2, 0.7, 0.2, 1),
+    background-color 0.28s;
+}
+.yz-friend:hover {
+  border-color: var(--yz-gold);
+}
+.yz-friend__logo {
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--yz-rule-soft);
+  border: 1px solid var(--yz-rule-soft);
+  color: var(--yz-ink-faint);
+}
+.yz-friend__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.yz-friend__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.yz-friend__name {
+  font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
+  font-size: 1.04rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--yz-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.28s;
+}
+.yz-friend:hover .yz-friend__name {
+  color: var(--yz-gold);
+}
+.yz-friend__desc {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--yz-ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.yz-friend__arrow {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--yz-ink-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.28s,
+    transform 0.28s,
+    color 0.28s;
+}
+.yz-friend:hover .yz-friend__arrow {
+  opacity: 1;
+  transform: none;
+  color: var(--yz-gold);
+}
+/* =====================================================================
+   首页 Hero（对齐 proto-v9）：全屏纸与光 + 偏心大衬线 + 背影 + 照片卡
+   ===================================================================== */
+.yz-hero {
+  position: relative;
+  min-height: calc(100vh - 5.5rem);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-top: -6.5rem; /* 让 Hero 顶到页面最上沿，导航浮在其上 */
+}
+.yz-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.yz-hero__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 46%;
+  animation: yz-hero-pan 64s ease-in-out infinite alternate;
+}
+@keyframes yz-hero-pan {
+  from {
+    object-position: 62% 46%;
+  }
+  to {
+    object-position: 56% 52%;
+  }
+}
+.yz-hero__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      var(--yz-paper) 0%,
+      color-mix(in srgb, var(--yz-paper) 88%, transparent) 34%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--yz-paper) 55%, transparent) 0%,
+      transparent 18%,
+      transparent 62%,
+      color-mix(in srgb, var(--yz-paper) 72%, transparent) 100%
+    );
+}
+.dark .yz-hero__bg {
+  opacity: 0.3;
+  filter: invert(1) hue-rotate(180deg);
+}
+.dark .yz-hero__bg::after {
+  background:
+    linear-gradient(
+      90deg,
+      var(--yz-paper) 0%,
+      color-mix(in srgb, var(--yz-paper) 84%, transparent) 38%,
+      transparent 68%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--yz-paper) 40%, transparent) 0%,
+      transparent 20%,
+      transparent 60%,
+      color-mix(in srgb, var(--yz-paper) 78%, transparent)
+    );
+}
+
+/* 背影：羽化遮罩，仅亮色桌面出现 */
+.yz-hero__chara {
+  position: absolute;
+  right: 0.5%;
+  top: 9%;
+  height: clamp(210px, 30vh, 330px);
+  z-index: 1;
+  pointer-events: none;
+  animation: yz-chara-float 11s ease-in-out infinite alternate;
+}
+.yz-hero__chara img {
+  height: 100%;
+  width: auto;
+  display: block;
+  opacity: 0.62;
+  mix-blend-mode: multiply;
+  filter: contrast(0.96) saturate(0.92) brightness(1.01);
+  -webkit-mask-image: radial-gradient(
+    120% 100% at 60% 38%,
+    #000 40%,
+    rgba(0, 0, 0, 0.92) 58%,
+    transparent 86%
+  );
+  mask-image: radial-gradient(
+    120% 100% at 60% 38%,
+    #000 40%,
+    rgba(0, 0, 0, 0.92) 58%,
+    transparent 86%
+  );
+}
+@keyframes yz-chara-float {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+.yz-hero__inner {
+  position: relative;
+  z-index: 2;
+  width: min(1280px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 72px);
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: clamp(12px, 2vw, 24px);
+  align-items: center;
+}
+.yz-hero__copy {
+  grid-column: 1 / span 7;
+}
+.yz-hero__pagemark {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+}
+.yz-hero__jp {
+  font-style: normal;
+  letter-spacing: 0.2em;
+}
+.yz-hero__title {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC",
+    "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-weight: 300;
+  font-size: clamp(2.5rem, 6.4vw, 4.9rem);
+  line-height: 1.22;
+  letter-spacing: 0.01em;
+  color: var(--yz-ink);
+  margin-top: clamp(16px, 2.6vh, 28px);
+  text-wrap: balance;
+}
+.yz-hero__title::after {
+  content: "";
+  display: block;
+  width: 4.5rem;
+  height: 1px;
+  background: var(--yz-gold);
+  opacity: 0.6;
+  margin-top: 0.55em;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: yz-draw 1s 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes yz-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+.yz-hero__lead {
+  margin-top: clamp(14px, 2.4vh, 24px);
+  max-width: 29rem;
+  font-size: 0.95rem;
+  line-height: 2.05;
+  color: var(--yz-ink-soft);
+  font-weight: 350;
+}
+.yz-hero__act {
+  display: flex;
+  align-items: center;
+  gap: 1.9rem;
+  margin-top: clamp(22px, 3.8vh, 38px);
+}
+.yz-hero__solid {
+  background: var(--yz-ink);
+  color: var(--yz-paper);
+  padding: 0.74rem 1.55rem;
+  border: 1px solid var(--yz-ink);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition:
+    background-color 0.32s cubic-bezier(0.2, 0.7, 0.2, 1),
+    color 0.32s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.yz-hero__solid:hover {
+  background: transparent;
+  color: var(--yz-ink);
+  transform: translateY(-1px);
+}
+.yz-hero__line {
+  position: relative;
+  font-size: 0.85rem;
+  color: var(--yz-ink-soft);
+  padding-block: 6px;
+  text-decoration: none;
+}
+.yz-hero__line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--yz-gold);
+  opacity: 0.6;
+  transform-origin: left;
+  transition:
+    transform 0.36s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.36s;
+}
+.yz-hero__line:hover {
+  color: var(--yz-ink);
+}
+.yz-hero__line:hover::after {
+  opacity: 1;
+  transform: scaleX(1.02);
+}
+
+/* 照片卡：贴在页面上的实体感 */
+.yz-hero__photo {
+  grid-column: 9 / span 3;
+  justify-self: end;
+  width: min(100%, 224px);
+  background: var(--yz-paper-2);
+  padding: 7px 7px 26px;
+  border: 1px solid var(--yz-rule);
+  box-shadow: 0 12px 30px -18px rgba(36, 29, 42, 0.45);
+  transform: rotate(-1.6deg);
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.5s;
+  margin: 0;
+}
+.yz-hero__photo:hover {
+  transform: rotate(-0.4deg) translateY(-2px);
+  box-shadow: 0 18px 40px -20px rgba(36, 29, 42, 0.5);
+}
+.yz-hero__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: saturate(0.92) contrast(0.98);
+}
+.yz-hero__photo figcaption {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--yz-ink-faint);
+  margin-top: 7px;
+  text-align: center;
+}
+
+/* 首页导航浮层：透明底、墨字 */
+.yz-home #fuwari-navbar .fuwari-card-base {
+  background: color-mix(in srgb, var(--yz-paper) 62%, transparent);
+  backdrop-filter: blur(10px);
+  border-color: transparent;
+  box-shadow: none;
+}
+.yz-home .yz-shell {
+  width: min(1280px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 72px);
+}
+.yz-home__contents {
+  position: relative;
+  z-index: 2;
+  padding-top: clamp(28px, 5vh, 56px);
+  padding-bottom: 2rem;
+}
+
+/* Hero 入场：分级淡入 */
+.yz-hero__copy > * {
+  opacity: 0;
+  transform: translateY(9px);
+  animation: yz-rise 0.72s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.yz-hero__copy > *:nth-child(1) { animation-delay: 0.05s; }
+.yz-hero__copy > *:nth-child(2) { animation-delay: 0.13s; }
+.yz-hero__copy > *:nth-child(3) { animation-delay: 0.21s; }
+.yz-hero__copy > *:nth-child(4) { animation-delay: 0.29s; }
+.yz-hero__photo {
+  opacity: 0;
+  animation: yz-rise-photo 0.8s 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes yz-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes yz-rise-photo {
+  from {
+    opacity: 0;
+    transform: rotate(-1.6deg) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-1.6deg);
+  }
+}
+
+@media (max-width: 1000px) {
+  .yz-hero__copy {
+    grid-column: 1 / span 12;
+  }
+  .yz-hero__photo {
+    grid-column: 1 / span 12;
+    justify-self: start;
+    margin-top: 1.6rem;
+    width: 180px;
+  }
+  .yz-hero__chara {
+    height: clamp(160px, 22vh, 240px);
+    opacity: 0.85;
+  }
+}
+@media (max-width: 600px) {
+  .yz-hero {
+    min-height: calc(100vh - 5rem);
+  }
+  .yz-hero__title {
+    font-size: clamp(2rem, 8.6vw, 3.2rem);
+  }
+  .yz-hero__chara {
+    display: none;
+  }
+  .yz-hero__photo {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yz-hero__bg img,
+  .yz-hero__chara {
+    animation: none;
+  }
+  .yz-hero__title::after {
+    animation: none;
+    transform: none;
+  }
+  .yz-hero__copy > *,
+  .yz-hero__photo {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .yz-hero__photo {
+    transform: rotate(-1.6deg);
+  }
+}
+/* =====================================================================
+   目录页（书）：书脊页头 + 年份章标，与首页同语言
+   ===================================================================== */
+.yz-book {
+  padding-top: clamp(96px, 14vh, 150px);
+  padding-bottom: 2rem;
+  min-height: 70vh;
+}
+.yz-book__head {
+  margin-bottom: clamp(20px, 4vh, 40px);
+}
+.yz-book__title {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC",
+    "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 4.6vw, 3.2rem);
+  letter-spacing: 0.02em;
+  color: var(--yz-ink);
+  margin-top: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+.yz-book__title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.35em;
+  width: 3.2rem;
+  height: 1px;
+  background: var(--yz-gold);
+  opacity: 0.6;
+}
+
+.yz-archive {
+  padding-top: 0.5rem;
+}
+
+/* 年份章标：细线 + 衬线年份 + 页码区间 */
+.yz-yearmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  margin: clamp(18px, 3vh, 30px) 0 0.4rem;
+}
+.yz-yearmark:first-child {
+  margin-top: 0;
+}
+.yz-yearmark__year {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--yz-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.yz-yearmark__rule {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--yz-rule);
+  transform: translateY(-0.28em);
+}
+.yz-yearmark__meta {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  white-space: nowrap;
+}
+/* =====================================================================
+   文章视觉指纹 Plate：fnv1a(slug) → 图案/色/日语词（确定性，零请求）
+   ===================================================================== */
+.yz-plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+.yz-plate__wash {
+  position: absolute;
+  top: -30%;
+  right: 0;
+  left: 0;
+  bottom: 30%;
+  transform: rotate(var(--pa-rot, 0deg)) scale(1.4);
+  transform-origin: var(--pa-x, 70%) 0%;
+  background:
+    radial-gradient(
+      60% 90% at var(--pa-x, 70%) 0%,
+      color-mix(in srgb, var(--pa-ink) 12%, transparent),
+      transparent 70%
+    );
+}
+.dark .yz-plate__wash {
+  background:
+    radial-gradient(
+      60% 90% at var(--pa-x, 70%) 0%,
+      color-mix(in srgb, var(--pa-ink) 22%, transparent),
+      transparent 70%
+    );
+}
+
+/* 图案层：4 种，全用渐变/重复线画，无图片 */
+.yz-plate::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  right: 4%;
+  width: min(46%, 380px);
+  height: 240px;
+  opacity: 0.5;
+  transform: rotate(var(--pa-rot, 0deg));
+}
+.yz-plate--p0::before {
+  /* 同心圆（魔法使的涟漪） */
+  background:
+    radial-gradient(circle at 60% 40%, transparent 0 26px, color-mix(in srgb, var(--pa-ink) 30%, transparent) 27px, transparent 28px),
+    radial-gradient(circle at 60% 40%, transparent 0 52px, color-mix(in srgb, var(--pa-ink) 24%, transparent) 53px, transparent 54px),
+    radial-gradient(circle at 60% 40%, transparent 0 78px, color-mix(in srgb, var(--pa-ink) 18%, transparent) 79px, transparent 80px),
+    radial-gradient(circle at 60% 40%, transparent 0 104px, color-mix(in srgb, var(--pa-ink) 12%, transparent) 105px, transparent 106px);
+}
+.yz-plate--p1::before {
+  /* 五线谱（古典乐） */
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--pa-ink) 26%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+  mask-image: linear-gradient(115deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+}
+.yz-plate--p2::before {
+  /* 海浪（风津ヶ浜） */
+  background:
+    radial-gradient(100% 46px at 20% 0%, transparent 44px, color-mix(in srgb, var(--pa-ink) 22%, transparent) 45px 46px, transparent 47px),
+    radial-gradient(100% 46px at 80% 25%, transparent 44px, color-mix(in srgb, var(--pa-ink) 18%, transparent) 45px 46px, transparent 47px),
+    radial-gradient(100% 46px at 20% 50%, transparent 44px, color-mix(in srgb, var(--pa-ink) 14%, transparent) 45px 46px, transparent 47px),
+    radial-gradient(100% 46px at 80% 75%, transparent 44px, color-mix(in srgb, var(--pa-ink) 10%, transparent) 45px 46px, transparent 47px);
+}
+.yz-plate--p3::before {
+  /* 星轨（点阵渐疏） */
+  background:
+    radial-gradient(circle, var(--pa-ink) 1.2px, transparent 1.6px),
+    radial-gradient(circle, color-mix(in srgb, var(--pa-ink) 70%, transparent) 1px, transparent 1.4px);
+  background-size: 26px 26px, 34px 34px;
+  background-position: 0 0, 13px 9px;
+  mask-image: radial-gradient(70% 90% at 70% 20%, #000 0%, transparent 75%);
+}
+
+/* 背景日语词：竖排大字，纸面水印 */
+.yz-plate__word {
+  position: absolute;
+  top: 12%;
+  right: 6%;
+  writing-mode: vertical-rl;
+  font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--pa-ink) 13%, transparent);
+  user-select: none;
+}
+.dark .yz-plate__word {
+  color: color-mix(in srgb, var(--pa-ink) 20%, transparent);
+}
+
+/* 版号角标 */
+.yz-plate__no {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.45rem 0.9rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  color: color-mix(in srgb, var(--pa-ink) 55%, var(--yz-ink-faint));
+  border-left: 1px solid var(--yz-rule-soft);
+  border-bottom: 1px solid var(--yz-rule-soft);
+  border-bottom-left-radius: 0.375rem;
+}
+
+/* =====================================================================
+   作者名牌（替代 fuwari 卡片）
+   ===================================================================== */
+.yz-sign {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.yz-sign--stack {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.25rem 0;
+}
+.yz-sign--row {
+  align-items: center;
+  padding: 1.1rem 0.2rem;
+  border-top: 1px solid var(--yz-rule-soft);
+  border-bottom: 1px solid var(--yz-rule-soft);
+}
+.yz-sign__avatar {
+  flex: none;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  border: 1px solid var(--yz-rule);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--yz-gold) 26%, transparent);
+}
+.yz-sign--stack .yz-sign__avatar {
+  width: 4.6rem;
+  height: 4.6rem;
+}
+.yz-sign__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.yz-sign__name {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--yz-ink);
+}
+.yz-sign__rule {
+  width: 1.4rem;
+  height: 1px;
+  background: var(--yz-gold);
+  opacity: 0.7;
+  margin: 0.35rem 0;
+}
+.yz-sign--stack .yz-sign__rule {
+  margin-inline: auto;
+}
+.yz-sign__desc {
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--yz-ink-faint);
+}
+.yz-sign__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-top: 0.55rem;
+}
+.yz-sign--stack .yz-sign__social {
+  justify-content: center;
+}
+.yz-sign__social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+}
+.yz-sign__social-link:hover {
+  color: var(--yz-gold);
+  border-bottom-color: var(--yz-gold);
+}
+
+/* =====================================================================
+   友链页：书脊描述 + 书签卡底纹
+   ===================================================================== */
+.yz-book__desc {
+  margin-top: 0.9rem;
+  max-width: 30rem;
+  font-size: 0.85rem;
+  line-height: 2;
+  color: var(--yz-ink-soft);
+}
+.yz-friend {
+  overflow: hidden;
+}
+.yz-friend__plate {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.yz-friend__plate-wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    90% 130% at var(--pa-x, 70%) 0%,
+    color-mix(in srgb, var(--pa-ink) 9%, transparent),
+    transparent 65%
+  );
+}
+.dark .yz-friend__plate-wash {
+  background: radial-gradient(
+    90% 130% at var(--pa-x, 70%) 0%,
+    color-mix(in srgb, var(--pa-ink) 16%, transparent),
+    transparent 65%
+  );
+}
+.yz-friend__plate-word {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.16em;
+  color: color-mix(in srgb, var(--pa-ink) 11%, transparent);
+  user-select: none;
+}
+.dark .yz-friend__plate-word {
+  color: color-mix(in srgb, var(--pa-ink) 18%, transparent);
+}
+.yz-friend__logo,
+.yz-friend__body,
+.yz-friend__arrow {
+  position: relative;
+  z-index: 1;
+}
+/* =====================================================================
+   检索页：一条检索线 + 目录条结果
+   ===================================================================== */
+.yz-searchline {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid var(--yz-rule);
+  padding: 0.6rem 0.2rem;
+  margin-top: 1.2rem;
+  color: var(--yz-ink-faint);
+  transition: border-color 0.3s;
+}
+.yz-searchline:focus-within {
+  border-bottom-color: var(--yz-gold);
+  color: var(--yz-gold);
+}
+.yz-searchline input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 1.15rem;
+  color: var(--yz-ink);
+}
+.yz-searchline input::placeholder {
+  color: var(--yz-ink-faint);
+  opacity: 0.7;
+}
+.yz-searchline__spin {
+  color: var(--yz-gold);
+}
+.yz-search__hint {
+  margin-top: 1.4rem;
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--yz-ink-faint);
+}
+.yz-search__foot {
+  margin-top: 1.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--yz-rule-soft);
+}
+.yz-search__back {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 0.85rem;
+  color: var(--yz-ink-soft);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+.yz-search__back:hover {
+  color: var(--yz-gold);
+}
+
+/* =====================================================================
+   申请友链：信纸 + 页边批注
+   ===================================================================== */
+.yz-letter__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--yz-rule);
+}
+.yz-letter__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+.yz-field {
+  display: block;
+}
+.yz-field__label {
+  display: block;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  margin-bottom: 0.3rem;
+}
+.yz-field__label i {
+  font-style: normal;
+  color: var(--yz-gold);
+  margin-left: 0.25rem;
+}
+.yz-field input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--yz-rule);
+  background: transparent;
+  outline: none;
+  padding: 0.4rem 0.1rem;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 0.98rem;
+  color: var(--yz-ink);
+  transition: border-color 0.3s;
+}
+.yz-field input:focus {
+  border-bottom-color: var(--yz-gold);
+}
+.yz-field input::placeholder {
+  color: var(--yz-ink-faint);
+  opacity: 0.55;
+}
+.yz-field__err {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--yz-shinku);
+}
+.yz-letter__margin {
+  align-self: start;
+  position: sticky;
+  top: 6rem;
+}
+.yz-letter__margin-title {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--yz-rule);
+  margin-bottom: 0.8rem;
+}
+.yz-letter__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.yz-note {
+  border-left: 1px solid var(--yz-rule-soft);
+  padding: 0.35rem 0 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+.yz-note--empty {
+  color: var(--yz-ink-faint);
+}
+.yz-note__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.yz-note__name {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 0.9rem;
+  color: var(--yz-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.yz-letter__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--st);
+  white-space: nowrap;
+}
+.yz-letter__status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--st);
+}
+.yz-note__url {
+  display: block;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.66rem;
+  color: var(--yz-ink-faint);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.25s;
+}
+.yz-note__url:hover {
+  color: var(--yz-gold);
+}
+.yz-note__reason {
+  margin-top: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  background: color-mix(in srgb, var(--yz-shinku) 7%, transparent);
+  border-left: 2px solid var(--yz-shinku);
+  color: var(--yz-ink-soft);
+  font-size: 0.72rem;
+}
+.yz-note__date {
+  margin-top: 0.25rem;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--yz-ink-faint);
+}
+/* Auth 页竖排水印 */
+.yz-auth-watermark {
+  writing-mode: vertical-rl;
+  font-family: "Noto Serif SC", "Songti SC", "Hiragino Mincho ProN", serif;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  letter-spacing: 0.22em;
+  color: color-mix(in srgb, var(--yz-gold) 9%, transparent);
+  user-select: none;
+}
+.dark .yz-auth-watermark {
+  color: color-mix(in srgb, var(--yz-gold) 13%, transparent);
+}
+/* =====================================================================
+   评论区：页边批注（margin notes）
+   ===================================================================== */
+.yz-notes {
+  border-top: 1px solid var(--yz-rule);
+  padding-top: 1.6rem;
+  position: relative;
+}
+.yz-notes h2 {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--yz-ink-faint);
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+}
+
+.yz-note-c {
+  display: flex;
+  gap: 0.9rem;
+  border-left: 1px solid var(--yz-rule-soft);
+  padding-left: 1.1rem;
+  position: relative;
+}
+/* 批注引出的小横线（像页边批注牵出的引线） */
+.yz-note-c::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 1.35rem;
+  width: 0.7rem;
+  height: 1px;
+  background: var(--yz-rule);
+}
+.yz-note-c--reply {
+  margin-left: 1.6rem;
+}
+.yz-note-c--hit {
+  background: color-mix(in srgb, var(--yz-gold) 7%, transparent);
+}
+.yz-note-c__name {
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 0.88rem;
+  color: var(--yz-ink);
+}
+.yz-note-c__date {
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--yz-ink-faint);
+}
+.yz-note-c__text {
+  color: var(--yz-ink-soft);
+  line-height: 1.95;
+}
+.yz-note-c__act {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  color: var(--yz-ink-faint);
+  padding-bottom: 1px;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+}
+.yz-note-c__act:hover {
+  color: var(--yz-gold);
+  border-bottom-color: var(--yz-gold);
+}
+.yz-note-c__act--danger:hover {
+  color: var(--yz-shinku);
+  border-bottom-color: var(--yz-shinku);
+}
+
+/* 编辑器：批注输入框（发丝线框，focus 变金） */
+.yz-note-c__editor {
+  position: relative;
+  border: 1px solid var(--yz-rule-soft);
+  border-radius: 0.25rem;
+  background: transparent;
+  transition: border-color 0.3s;
+  overflow: hidden;
+}
+.yz-note-c__editor:focus-within {
+  border-color: color-mix(in srgb, var(--yz-gold) 55%, transparent);
+}
+.yz-note-c__submit {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  background: var(--yz-ink);
+  color: var(--yz-paper);
+  border: 1px solid var(--yz-ink);
+  border-radius: 0.2rem;
+  transition:
+    background-color 0.28s,
+    color 0.28s;
+}
+.yz-note-c__submit:hover:not(:disabled) {
+  background: transparent;
+  color: var(--yz-ink);
+}
