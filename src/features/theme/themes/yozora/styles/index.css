@@ -1799,3 +1799,259 @@ article h1, article h2, article h3 {
   background: transparent;
   color: var(--yz-ink);
 }
+
+/* =====================================================================
+   Moments 动态：日々の断章（时间线 / 纸片）
+   ===================================================================== */
+.yz-moments {
+  padding: clamp(2.5rem, 6vh, 4.5rem) 0 4rem;
+}
+.yz-moments__head {
+  max-width: 42rem;
+  padding-bottom: clamp(1.6rem, 4vh, 2.6rem);
+}
+.yz-moments__head .yz-book__desc {
+  max-width: 34rem;
+}
+.yz-moments__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--yz-rule-soft);
+  border-bottom: 1px solid var(--yz-rule-soft);
+}
+.yz-moments__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+}
+.yz-moments__filter {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--yz-ink-meta);
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 0.25s;
+}
+.yz-moments__filter:hover,
+.yz-moments__filter--active {
+  color: var(--yz-gold-text);
+}
+.yz-moments__count {
+  color: var(--yz-ink-meta);
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.yz-moments__list {
+  position: relative;
+  margin: 0;
+  padding: 1.6rem 0 0;
+  list-style: none;
+}
+.yz-moments__list::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4.25rem;
+  width: 1px;
+  content: "";
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--yz-rule) 7%,
+    var(--yz-rule) 93%,
+    transparent
+  );
+}
+.yz-moment {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 0.4rem 0 2rem;
+}
+.yz-moment__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 0.9rem;
+  color: var(--yz-ink-meta);
+  line-height: 1;
+}
+.yz-moment__day {
+  color: var(--yz-ink);
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: 2rem;
+  font-weight: 300;
+}
+.yz-moment__month {
+  margin-top: 0.35rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+}
+.yz-moment__year {
+  margin-top: 0.2rem;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+.yz-moment__card {
+  position: relative;
+  padding: clamp(1rem, 2.4vw, 1.6rem);
+  background: color-mix(in srgb, var(--yz-paper-2) 72%, transparent);
+  border: 1px solid var(--yz-rule-soft);
+  border-radius: 0.25rem;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s;
+}
+.yz-moment__card:hover {
+  border-color: var(--yz-rule);
+  background: color-mix(in srgb, var(--yz-paper-2) 88%, transparent);
+}
+.yz-moment__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+  color: var(--yz-ink-meta);
+  font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.yz-moment__type {
+  color: var(--yz-gold-text);
+  border-bottom: 1px solid var(--yz-rule);
+  padding-bottom: 1px;
+}
+.yz-moment__type--chatter {
+  color: var(--yz-ink-soft);
+}
+.yz-moment__time {
+  font-variant-numeric: tabular-nums;
+}
+.yz-moment__place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.yz-moment__text {
+  color: var(--yz-ink);
+  font-size: 0.95rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.yz-moment__gallery {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+.yz-moment__gallery--1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.yz-moment__gallery--1 .yz-moment__image img {
+  aspect-ratio: 16 / 9;
+  max-height: 30rem;
+}
+.yz-moment__gallery--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 38rem;
+}
+.yz-moment__gallery--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.yz-moment__image {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--yz-rule-soft);
+  background: var(--yz-rule-soft);
+}
+.yz-moment__image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(0.98);
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.yz-moment__image:hover img {
+  transform: scale(1.025);
+}
+.yz-moments__empty {
+  padding: 5rem 0;
+  color: var(--yz-ink-meta);
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+.yz-moments__empty-mark {
+  margin-bottom: 0.9rem;
+  color: var(--yz-gold-text);
+  font-family: ui-monospace, Menlo, monospace;
+  letter-spacing: 0.5em;
+}
+.yz-moments__skeleton-head,
+.yz-moments__skeleton {
+  background: var(--yz-rule-soft);
+  animation: yz-pulse 1.6s ease-in-out infinite;
+}
+.yz-moments__skeleton-head {
+  width: min(28rem, 80%);
+  height: 4rem;
+  margin: 2rem 0;
+}
+.yz-moments__skeleton {
+  height: 8rem;
+  margin: 0 0 1.2rem 5rem;
+  border: 1px solid var(--yz-rule-soft);
+}
+@keyframes yz-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (max-width: 767px) {
+  .yz-moments__list::before {
+    display: none;
+  }
+  .yz-moment {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  .yz-moment__rail {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding-top: 0;
+  }
+  .yz-moment__day {
+    font-size: 1.35rem;
+  }
+  .yz-moment__month,
+  .yz-moment__year {
+    margin-top: 0;
+  }
+  .yz-moment__gallery--2,
+  .yz-moment__gallery--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .yz-moments__skeleton {
+    margin-left: 0;
+  }
+}

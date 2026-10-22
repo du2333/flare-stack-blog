@@ -39,7 +39,7 @@ export const blogConfig = {
    *   - 切换后需要重新部署（构建期读取，非运行时）
    */
   features: {
-    moments: false, // 动态 / 杂谈 / 照片
+    moments: true, // 动态 / 杂谈 / 照片
     library: false, // 音乐 / 项目 / 时光轴 / 技能树
     about: false, // 关于页
   },

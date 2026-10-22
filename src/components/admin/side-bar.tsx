@@ -7,6 +7,7 @@ import {
   Link2,
   LogOut,
   MessageSquare,
+  NotebookPen,
   Tag,
   User,
   X,
@@ -83,6 +84,12 @@ export function SideBar({
       path: "/admin/tags",
       icon: Tag,
       label: m.admin_sidebar_tags(),
+      exact: false,
+    },
+    {
+      path: "/admin/moments",
+      icon: NotebookPen,
+      label: m.admin_sidebar_moments(),
       exact: false,
     },
     {

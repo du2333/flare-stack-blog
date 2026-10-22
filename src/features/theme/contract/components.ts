@@ -10,6 +10,7 @@ import type {
   FriendLinksPageProps,
   HomePageProps,
   LoginPageProps,
+  MomentsPageProps,
   PostPageProps,
   PostsPageProps,
   ProfilePageProps,
@@ -44,6 +45,10 @@ export interface ThemeComponents {
   PostsPage: React.ComponentType<PostsPageProps>;
   /** 文章列表页骨架屏 */
   PostsPageSkeleton: React.ComponentType;
+
+  /** Moments 动态页（可选；不实现的主题返回 404） */
+  MomentsPage?: React.ComponentType<MomentsPageProps>;
+  MomentsPageSkeleton?: React.ComponentType;
 
   /** 文章详情页组件 */
   PostPage: React.ComponentType<PostPageProps>;

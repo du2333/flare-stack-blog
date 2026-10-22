@@ -22,7 +22,10 @@ export function PublicLayout({
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   /* 目录页与首页同属"书"的语言：无横幅、无侧栏、全宽 */
-  const isBookPage = isHomePage || location.pathname === "/posts";
+  const isBookPage =
+    isHomePage ||
+    location.pathname === "/posts" ||
+    location.pathname === "/moments";
   const bannerHeightVh = isBookPage ? 100 : BANNER_HEIGHT_PAGE;
 
   return (

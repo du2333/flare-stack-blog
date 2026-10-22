@@ -1,28 +1,43 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { siteConfigQuery } from "@/features/config/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import theme from "@theme";
 import { requireFeature } from "@/features/config/features";
+import { siteConfigQuery } from "@/features/config/queries";
+import { momentsQuery } from "@/features/moments/queries";
+import type { ThemeComponents } from "@/features/theme/contract/components";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public/moments")({
-  // 开关关闭时直接 404 —— 与导航隐藏保持同一判据
   beforeLoad: async ({ context }) => {
     const siteConfig = await context.queryClient.ensureQueryData(
       siteConfigQuery,
     );
     requireFeature(siteConfig, "moments");
   },
-  component: RouteComponent,
-  head: () => ({
-    meta: [{ title: m.nav_moments() }],
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(momentsQuery());
+
+    return {
+      title: m.moments_title(),
+      description: m.moments_desc(),
+    };
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      { title: loaderData?.title },
+      { name: "description", content: loaderData?.description },
+    ],
   }),
+  component: MomentsRoute,
 });
 
-function RouteComponent() {
-  // 占位：D2 demo 通过后替换为真实实现
-  return (
-    <div className="w-full py-16 text-center">
-      <h1 className="text-2xl font-semibold">{m.nav_moments()}</h1>
-      <p className="mt-3 text-sm opacity-60">coming soon</p>
-    </div>
-  );
+function MomentsRoute() {
+  const { data } = useSuspenseQuery(momentsQuery());
+  const Page = (theme as Partial<ThemeComponents>).MomentsPage;
+
+  if (!Page) {
+    throw notFound();
+  }
+
+  return <Page moments={data.items} />;
 }
