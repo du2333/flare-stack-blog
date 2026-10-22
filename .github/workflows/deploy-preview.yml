@@ -112,15 +112,48 @@ jobs:
           export ZONE_NAME
           bun run wrangler:prepare
 
-      - name: Strip routes from wrangler config
+      - name: Strip preview-incompatible bindings
         run: |
-          # preview 不绑定自定义域名
+          # preview 环境需要剥离两类独占资源配置：
+          #
+          # 1. routes —— preview 不绑定自定义域名，走 workers.dev
+          # 2. queues.consumers —— Cloudflare 规定一个队列只能有一个消费者，
+          #    生产环境已占用 blog-queue；preview 重复声明会报
+          #    "Queue 'blog-queue' already has a consumer [code: 11004]"
+          #
+          # 保留：producers（可多个）、durable_objects / workflows / migrations
+          #      （按 Worker 隔离，不冲突）
+          #
+          # 注意：剥离后必须清理尾逗号，否则 JSON 非法
           node -e "
             const fs = require('fs');
-            const cfg = fs.readFileSync('wrangler.jsonc', 'utf8');
-            const stripped = cfg.replace(/\"routes\"\s*:\s*\[[^\]]*\]\s*,?/g, '');
-            fs.writeFileSync('wrangler.jsonc', stripped);
-            console.log('routes stripped for preview');
+            let cfg = fs.readFileSync('wrangler.jsonc', 'utf8');
+            const orig = cfg.length;
+
+            // 1. 剥离 routes 数组
+            cfg = cfg.replace(/\"routes\"\s*:\s*\[[\s\S]*?\]\s*,?/g, '');
+
+            // 2. 剥离 queues.consumers 数组
+            cfg = cfg.replace(/\"consumers\"\s*:\s*\[[\s\S]*?\]\s*,?/g, '');
+
+            // 3. 清理剥离后残留的尾逗号与空行
+            cfg = cfg.replace(/,\s*([}\]])/g, '\$1');
+            cfg = cfg.replace(/\n\s*\n/g, '\n');
+
+            // 4. 校验：去注释后必须能 parse
+            const clean = cfg.replace(/^\s*\/\/.*\$/gm, '');
+            try {
+              JSON.parse(clean);
+            } catch (e) {
+              console.error('FATAL: wrangler.jsonc 在剥离后不是合法 JSON: ' + e.message);
+              process.exit(1);
+            }
+
+            fs.writeFileSync('wrangler.jsonc', cfg);
+            console.log('stripped: ' + (orig - cfg.length) + ' chars, JSON valid');
+            console.log('  routes present: ' + /\"routes\"\s*:/.test(cfg));
+            console.log('  consumers present: ' + /\"consumers\"\s*:/.test(cfg));
+            console.log('  producers kept: ' + /\"producers\"\s*:/.test(cfg));
           "
 
       - name: Generate Secrets JSON
