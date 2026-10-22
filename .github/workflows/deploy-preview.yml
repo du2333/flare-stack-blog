@@ -1,0 +1,160 @@
+name: deploy preview to cloudflare workers
+
+# Preview 环境：用于每期改动的可视化验收，不影响生产。
+#
+# 触发方式：
+#   1. 手动（workflow_dispatch）—— 推荐，可控
+#   2. 非 main 分支 push 到 theme/yozora-ext 系列分支 —— 自动
+#
+# 部署目标：<worker-name>-preview.<subdomain>.workers.dev
+# 使用独立的 D1 / KV / R2（由 secrets 中的 PREVIEW_* 变量提供）
+#
+# 与生产 deploy.yml 的区别：
+#   - 不执行 D1 迁移（preview 库需手动初始化一次）
+#   - 不 purge CDN 缓存
+#   - 使用 wrangler --env preview
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "要部署的分支"
+        required: false
+        default: "main"
+  push:
+    branches:
+      - "theme/**"
+      - "feat/**"
+    paths-ignore:
+      - "**.md"
+      - "anime-redesign/**"
+      - "review/**"
+      - "plan/**"
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_WORKER_NAME: flare-stack-blog
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun ci
+
+      - name: Import secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_D1_DATABASE_ID: ${{ secrets.PREVIEW_D1_DATABASE_ID }}
+          PREVIEW_KV_NAMESPACE_ID: ${{ secrets.PREVIEW_KV_NAMESPACE_ID }}
+          PREVIEW_BUCKET_NAME: ${{ secrets.PREVIEW_BUCKET_NAME }}
+        run: |
+          echo "CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN" >> $GITHUB_ENV
+          echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> $GITHUB_ENV
+          echo "D1_DATABASE_ID=$PREVIEW_D1_DATABASE_ID" >> $GITHUB_ENV
+          echo "KV_NAMESPACE_ID=$PREVIEW_KV_NAMESPACE_ID" >> $GITHUB_ENV
+          echo "BUCKET_NAME=$PREVIEW_BUCKET_NAME" >> $GITHUB_ENV
+
+      - name: Import runtime secrets
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          PAGEVIEW_SALT: ${{ secrets.PAGEVIEW_SALT }}
+        run: |
+          echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> $GITHUB_ENV
+          echo "ADMIN_EMAIL=$ADMIN_EMAIL" >> $GITHUB_ENV
+          echo "GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID" >> $GITHUB_ENV
+          echo "GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET" >> $GITHUB_ENV
+          echo "CLOUDFLARE_ZONE_ID=$CLOUDFLARE_ZONE_ID" >> $GITHUB_ENV
+          echo "PAGEVIEW_SALT=$PAGEVIEW_SALT" >> $GITHUB_ENV
+          # preview 使用 workers.dev 域名，不走自定义域名
+          echo "BETTER_AUTH_URL=https://${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_ENV
+          echo "DOMAIN=${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_ENV
+          # preview 不需要 CDN purge
+          echo "CLOUDFLARE_PURGE_API_TOKEN=" >> $GITHUB_ENV
+
+      - name: Inject Resource IDs
+        env:
+          ROUTE: ""
+          ZONE_NAME: ""
+        run: |
+          export ROUTE
+          export ZONE_NAME
+          bun run wrangler:prepare
+
+      - name: Strip routes from wrangler config
+        run: |
+          # preview 不绑定自定义域名
+          node -e "
+            const fs = require('fs');
+            const cfg = fs.readFileSync('wrangler.jsonc', 'utf8');
+            const stripped = cfg.replace(/\"routes\"\s*:\s*\[[^\]]*\]\s*,?/g, '');
+            fs.writeFileSync('wrangler.jsonc', stripped);
+            console.log('routes stripped for preview');
+          "
+
+      - name: Generate Secrets JSON
+        run: |
+          cat <<EOF > secrets.json
+          {
+            "BETTER_AUTH_SECRET": "$BETTER_AUTH_SECRET",
+            "BETTER_AUTH_URL": "$BETTER_AUTH_URL",
+            "ADMIN_EMAIL": "$ADMIN_EMAIL",
+            "GITHUB_CLIENT_ID": "$GITHUB_CLIENT_ID",
+            "GITHUB_CLIENT_SECRET": "$GITHUB_CLIENT_SECRET",
+            "CLOUDFLARE_ZONE_ID": "$CLOUDFLARE_ZONE_ID",
+            "CLOUDFLARE_PURGE_API_TOKEN": "",
+            "DOMAIN": "$DOMAIN",
+            "CDN_DOMAIN": "",
+            "VITE_UMAMI_WEBSITE_ID": "",
+            "UMAMI_SRC": "",
+            "PAGEVIEW_SALT": "$PAGEVIEW_SALT",
+            "TURNSTILE_SECRET_KEY": "",
+            "GITHUB_TOKEN": ""
+          }
+          EOF
+
+      - name: Deploy to Cloudflare Workers (preview)
+        run: |
+          bunx wrangler secret bulk secrets.json
+          bun run build
+          bunx wrangler deploy --name "${PREVIEW_WORKER_NAME}-preview"
+
+      - name: Output preview URL
+        run: |
+          echo "### Preview 部署完成" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: https://${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**提交**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

@@ -28,4 +28,19 @@ export const blogConfig = {
       primaryHue: 250,
     },
   },
+  /**
+   * 板块功能开关（简化版 feature flag）
+   *
+   * 用途：新板块上线出问题时，关掉即可隐藏导航项并让路由返回 404，
+   *      不需要回滚代码，也不影响主站其他板块。
+   *
+   * 约定：
+   *   - false 时：导航不显示该项 + 对应路由返回 404
+   *   - 切换后需要重新部署（构建期读取，非运行时）
+   */
+  features: {
+    moments: false, // 动态 / 杂谈 / 照片
+    library: false, // 音乐 / 项目 / 时光轴 / 技能树
+    about: false, // 关于页
+  },
 } as const satisfies SiteConfig;

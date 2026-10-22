@@ -299,6 +299,17 @@ export const FullSiteConfigSchema = z.object({
     default: defaultThemeSiteConfigSchema,
     fuwari: fuwariThemeSiteConfigSchema,
   }),
+  /**
+   * 板块功能开关：false 时不显示导航项且路由 404。
+   * 构建期读取，切换后需重新部署。
+   */
+  features: z
+    .object({
+      moments: z.boolean(),
+      library: z.boolean(),
+      about: z.boolean(),
+    })
+    .default({ moments: false, library: false, about: false }),
 });
 
 export function createSiteConfigInputFormSchema(messages: Messages) {
