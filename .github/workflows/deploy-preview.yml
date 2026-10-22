@@ -41,6 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PREVIEW_WORKER_NAME: flare-stack-blog
+      # Cloudflare 账号的 workers.dev 子域（每个账号唯一，不是省略的）
+      # 实际 URL 形如 <worker>.<subdomain>.workers.dev
+      WORKERS_DEV_SUBDOMAIN: 3286927775
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -97,9 +100,12 @@ jobs:
           echo "GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET" >> $GITHUB_ENV
           echo "CLOUDFLARE_ZONE_ID=$CLOUDFLARE_ZONE_ID" >> $GITHUB_ENV
           echo "PAGEVIEW_SALT=$PAGEVIEW_SALT" >> $GITHUB_ENV
-          # preview 使用 workers.dev 域名，不走自定义域名
-          echo "BETTER_AUTH_URL=https://${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_ENV
-          echo "DOMAIN=${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_ENV
+          # preview 走 workers.dev，完整域名含账号子域：
+          #   <worker>.<subdomain>.workers.dev
+          PREVIEW_HOST="${PREVIEW_WORKER_NAME}-preview.${WORKERS_DEV_SUBDOMAIN}.workers.dev"
+          echo "PREVIEW_HOST=${PREVIEW_HOST}" >> $GITHUB_ENV
+          echo "BETTER_AUTH_URL=https://${PREVIEW_HOST}" >> $GITHUB_ENV
+          echo "DOMAIN=${PREVIEW_HOST}" >> $GITHUB_ENV
           # preview 不需要 CDN purge
           echo "CLOUDFLARE_PURGE_API_TOKEN=" >> $GITHUB_ENV
 
@@ -155,6 +161,25 @@ jobs:
             console.log('  consumers present: ' + /\"consumers\"\s*:/.test(cfg));
             console.log('  producers kept: ' + /\"producers\"\s*:/.test(cfg));
           "
+
+      # 预览库是新建的空库，必须初始化表结构，否则 Worker 一查库就 500。
+      # 这里用 wrangler 原生 apply（幂等），不用项目的 safe-d1-migrate
+      # ——后者的校验逻辑是给生产用的，会比对 posts/comments 行数，空库必然失败。
+      - name: Apply migrations to preview D1
+        run: |
+          echo "Applying migrations to preview database..."
+          bunx wrangler d1 migrations apply DB --remote
+          echo "--- 验证表结构 ---"
+          bunx wrangler d1 execute DB --remote --json \
+            --command "SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table';" \
+            | tee /tmp/table-count.json
+          TABLES=$(node -e "const d=require('/tmp/table-count.json'); console.log(d[0].results[0].n)")
+          echo "preview D1 表数量: $TABLES"
+          if [ "$TABLES" -lt 5 ]; then
+            echo "FATAL: 迁移后表数量异常（$TABLES），预期 >= 5"
+            exit 1
+          fi
+          echo "migrations applied successfully"
 
       - name: Generate Secrets JSON
         run: |
