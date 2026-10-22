@@ -31,7 +31,8 @@ export function MobileMenu({
       />
 
       {/* Floating Menu Panel */}
-      <div
+      <nav
+        aria-label={m.nav_mobile_label()}
         className={cn(
           "fixed top-20 right-4 z-50 w-64 origin-top-right transition-all duration-300 ease-out transform",
           isOpen
@@ -41,7 +42,7 @@ export function MobileMenu({
       >
         <div className="fuwari-card-base p-2 flex flex-col gap-1 shadow-xl ring-1 ring-black/5 dark:ring-white/10">
           {/* Navigation Items */}
-          <nav className="flex flex-col">
+          <div className="flex flex-col">
             {navOptions.map((item) => (
               <Link
                 key={item.id}
@@ -50,7 +51,7 @@ export function MobileMenu({
                 className="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg) hover:text-(--fuwari-primary) active:scale-[0.98]"
                 activeProps={{
                   className:
-                    "!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--fuwari-primary)]",
+                    "!bg-[var(--fuwari-btn-regular-bg)] !text-[var(--yz-gold-text)]",
                 }}
               >
                 {item.label}
@@ -67,7 +68,7 @@ export function MobileMenu({
                 {m.profile_admin_dashboard_fuwari()}
               </Link>
             )}
-          </nav>
+          </div>
 
           {/* Divider */}
           <div className="h-px bg-black/5 dark:bg-white/10 my-1 mx-2" />
@@ -126,7 +127,7 @@ export function MobileMenu({
             </div>
           )}
         </div>
-      </div>
+      </nav>
     </>
   );
 }

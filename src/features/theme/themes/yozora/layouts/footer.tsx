@@ -26,7 +26,7 @@ export function Footer(_: FooterProps) {
             href="/rss.xml"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--yz-gold-text-hover) text-(--yz-gold-text)"
           >
             RSS
           </a>{" "}
@@ -35,7 +35,7 @@ export function Footer(_: FooterProps) {
             href="/sitemap.xml"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--yz-gold-text-hover) text-(--yz-gold-text)"
           >
             Sitemap
           </a>
@@ -45,7 +45,7 @@ export function Footer(_: FooterProps) {
             href="https://tanstack.com/start"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--yz-gold-text-hover) text-(--yz-gold-text)"
           >
             Tanstack Start
           </a>{" "}
@@ -54,7 +54,7 @@ export function Footer(_: FooterProps) {
             href="https://github.com/du2333/flare-stack-blog"
             target="_blank"
             rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--yz-gold-text-hover) text-(--yz-gold-text)"
           >
             Flare Stack Blog
           </a>

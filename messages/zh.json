@@ -3,6 +3,8 @@
   "nav_home": "主页",
   "nav_posts": "文章",
   "nav_friend_links": "友链",
+  "nav_main_label": "主导航",
+  "nav_mobile_label": "移动导航",
   "nav_search": "搜索",
   "nav_login": "登录",
   "error_title": "程序发生错误",

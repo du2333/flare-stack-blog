@@ -51,7 +51,7 @@ export function Navbar({
   }, [bannerHeightVh]);
 
   return (
-    <div
+    <header
       id="fuwari-navbar-wrapper"
       className={`z-50 sticky top-0 transition-all duration-300 ease-in-out ${
         isHidden
@@ -74,19 +74,22 @@ export function Navbar({
               strokeWidth={1.5}
               className="text-(--fuwari-primary) mr-2 shrink-0"
             />
-            <span className="text-(--fuwari-primary) text-base">
+            <span className="text-(--yz-gold-text) text-base">
               {siteConfig.title}
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav
+            className="hidden md:flex items-center gap-1"
+            aria-label={m.nav_main_label()}
+          >
             {navOptions.map((option) => (
               <Link
                 key={option.id}
                 to={option.to}
                 className="fuwari-expand-animation rounded-lg h-11 font-bold px-5 active:scale-95 flex items-center fuwari-text-75 hover:text-(--fuwari-primary)"
                 activeProps={{
-                  className: "!text-[var(--fuwari-primary)]",
+                  className: "!text-[var(--yz-gold-text)]",
                 }}
               >
                 {option.label}
@@ -105,7 +108,7 @@ export function Navbar({
                 className="ml-3 transition-colors text-black/30 dark:text-white/30 group-hover:text-black/50 dark:group-hover:text-white/50"
                 strokeWidth={1.25}
               />
-              <span className="ml-2 text-black/50 dark:text-white/50 text-sm bg-transparent outline-none truncate">
+              <span className="ml-2 fuwari-text-75 text-sm bg-transparent outline-none truncate">
                 {m.nav_search()}
               </span>
             </Link>
@@ -163,6 +166,6 @@ export function Navbar({
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

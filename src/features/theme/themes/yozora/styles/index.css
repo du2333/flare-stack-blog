@@ -25,11 +25,14 @@
     --yz-paper-2: #f7f2e8;
     --yz-ink: #241d2a;
     --yz-ink-soft: rgba(36, 29, 42, 0.68);
+    --yz-ink-meta: rgba(36, 29, 42, 0.65);
     --yz-ink-faint: rgba(36, 29, 42, 0.38);
     --yz-rule: rgba(36, 29, 42, 0.16);
     --yz-rule-soft: rgba(36, 29, 42, 0.09);
     --yz-gold: #b8892f;
     --yz-gold-strong: #9a6f20;
+    --yz-gold-text: #7a5510;
+    --yz-gold-text-hover: #5f3f08;
     --yz-shinku: #c8102e;
 
     --fuwari-primary: var(--yz-gold);
@@ -62,11 +65,14 @@
     --yz-paper-2: #171722;
     --yz-ink: #f0ece4;
     --yz-ink-soft: rgba(240, 236, 228, 0.7);
+    --yz-ink-meta: rgba(240, 236, 228, 0.5);
     --yz-ink-faint: rgba(240, 236, 228, 0.38);
     --yz-rule: rgba(240, 236, 228, 0.15);
     --yz-rule-soft: rgba(240, 236, 228, 0.07);
     --yz-gold: #d8b878;
     --yz-gold-strong: #e8cd97;
+    --yz-gold-text: #d8b878;
+    --yz-gold-text-hover: #e8cd97;
 
     --fuwari-primary: var(--yz-gold);
     --fuwari-primary-hover: var(--yz-gold-strong);
@@ -190,11 +196,11 @@
   /* 文字层级：墨的透明度，而不是纯黑纯白 */
   .fuwari-text-90 { color: var(--yz-ink); }
   .fuwari-text-75 { color: var(--yz-ink-soft); }
-  .fuwari-text-50 { color: var(--yz-ink-faint); }
+  .fuwari-text-50 { color: var(--yz-ink-meta); }
   .fuwari-text-30 { color: rgba(36, 29, 42, 0.22); }
   .dark .fuwari-text-90 { color: var(--yz-ink); }
   .dark .fuwari-text-75 { color: var(--yz-ink-soft); }
-  .dark .fuwari-text-50 { color: var(--yz-ink-faint); }
+  .dark .fuwari-text-50 { color: var(--yz-ink-meta); }
   .dark .fuwari-text-30 { color: rgba(240, 236, 228, 0.24); }
 
   .fuwari-meta-icon {
@@ -206,7 +212,7 @@
     justify-content: center;
     background-color: transparent;
     border: 1px solid var(--yz-rule-soft);
-    color: var(--yz-ink-faint);
+    color: var(--yz-ink-meta);
     margin-right: 0.5rem;
     transition:
       background-color 0.2s,
@@ -294,7 +300,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--yz-ink-faint);
+    color: var(--yz-ink-meta);
   }
   .yz-gold {
     color: var(--yz-gold);
@@ -440,7 +446,7 @@ article h1, article h2, article h3 {
   font-size: 0.58rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 
 .yz-contents {
@@ -477,7 +483,7 @@ article h1, article h2, article h3 {
   font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
   font-size: 0.62rem;
   letter-spacing: 0.12em;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   font-variant-numeric: tabular-nums;
 }
 .yz-tocline__mark {
@@ -528,7 +534,7 @@ article h1, article h2, article h3 {
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   white-space: nowrap;
 }
 .yz-tocline__tag {
@@ -547,7 +553,7 @@ article h1, article h2, article h3 {
   font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
   font-size: 0.58rem;
   letter-spacing: 0.1em;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   white-space: nowrap;
 }
 
@@ -556,7 +562,7 @@ article h1, article h2, article h3 {
   padding-left: 4.1rem;
   font-size: 0.8rem;
   line-height: 1.7;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -601,7 +607,7 @@ article h1, article h2, article h3 {
   --tw-prose-hr: var(--yz-rule);
   --tw-prose-quotes: var(--yz-ink-soft);
   --tw-prose-quote-borders: var(--yz-gold);
-  --tw-prose-captions: var(--yz-ink-faint);
+  --tw-prose-captions: var(--yz-ink-meta);
   --tw-prose-code: var(--yz-ink);
   --tw-prose-pre-code: var(--yz-ink);
   --tw-prose-pre-bg: color-mix(in srgb, var(--yz-ink) 5%, transparent);
@@ -724,7 +730,7 @@ article h1, article h2, article h3 {
   justify-content: center;
   background: var(--yz-rule-soft);
   border: 1px solid var(--yz-rule-soft);
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-friend__logo img {
   width: 100%;
@@ -755,7 +761,7 @@ article h1, article h2, article h3 {
 .yz-friend__desc {
   font-size: 0.78rem;
   line-height: 1.6;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -763,7 +769,7 @@ article h1, article h2, article h3 {
 .yz-friend__arrow {
   font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
   font-size: 0.8rem;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   opacity: 0;
   transform: translateX(-4px);
   transition:
@@ -908,7 +914,7 @@ article h1, article h2, article h3 {
   font-size: 0.6rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-hero__jp {
   font-style: normal;
@@ -1032,7 +1038,7 @@ article h1, article h2, article h3 {
   font-family: "Noto Serif SC", "Songti SC", serif;
   font-size: 0.62rem;
   letter-spacing: 0.2em;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   margin-top: 7px;
   text-align: center;
 }
@@ -1201,7 +1207,7 @@ article h1, article h2, article h3 {
   font-size: 0.58rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   white-space: nowrap;
 }
 /* =====================================================================
@@ -1385,7 +1391,7 @@ article h1, article h2, article h3 {
 .yz-sign__desc {
   font-size: 0.78rem;
   line-height: 1.75;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-sign__social {
   display: flex;
@@ -1404,7 +1410,7 @@ article h1, article h2, article h3 {
   font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   text-decoration: none;
   padding-bottom: 2px;
   border-bottom: 1px solid transparent;
@@ -1482,7 +1488,7 @@ article h1, article h2, article h3 {
   border-bottom: 1px solid var(--yz-rule);
   padding: 0.6rem 0.2rem;
   margin-top: 1.2rem;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   transition: border-color 0.3s;
 }
 .yz-searchline:focus-within {
@@ -1499,7 +1505,7 @@ article h1, article h2, article h3 {
   color: var(--yz-ink);
 }
 .yz-searchline input::placeholder {
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   opacity: 0.7;
 }
 .yz-searchline__spin {
@@ -1509,7 +1515,7 @@ article h1, article h2, article h3 {
   margin-top: 1.4rem;
   font-size: 0.82rem;
   line-height: 2;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-search__foot {
   margin-top: 1.4rem;
@@ -1552,7 +1558,7 @@ article h1, article h2, article h3 {
   font-size: 0.6rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   margin-bottom: 0.3rem;
 }
 .yz-field__label i {
@@ -1576,7 +1582,7 @@ article h1, article h2, article h3 {
   border-bottom-color: var(--yz-gold);
 }
 .yz-field input::placeholder {
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   opacity: 0.55;
 }
 .yz-field__err {
@@ -1595,7 +1601,7 @@ article h1, article h2, article h3 {
   font-size: 0.6rem;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--yz-rule);
   margin-bottom: 0.8rem;
@@ -1612,7 +1618,7 @@ article h1, article h2, article h3 {
   line-height: 1.8;
 }
 .yz-note--empty {
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-note__top {
   display: flex;
@@ -1648,7 +1654,7 @@ article h1, article h2, article h3 {
   display: block;
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.66rem;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1671,7 +1677,7 @@ article h1, article h2, article h3 {
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.58rem;
   letter-spacing: 0.1em;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 /* Auth 页竖排水印 */
 .yz-auth-watermark {
@@ -1698,7 +1704,7 @@ article h1, article h2, article h3 {
   font-size: 0.62rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   font-weight: 500;
   margin-bottom: 1.2rem;
 }
@@ -1735,7 +1741,7 @@ article h1, article h2, article h3 {
   font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
   font-size: 0.58rem;
   letter-spacing: 0.12em;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
 }
 .yz-note-c__text {
   color: var(--yz-ink-soft);
@@ -1746,7 +1752,7 @@ article h1, article h2, article h3 {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
-  color: var(--yz-ink-faint);
+  color: var(--yz-ink-meta);
   padding-bottom: 1px;
   border-bottom: 1px solid transparent;
   transition:
