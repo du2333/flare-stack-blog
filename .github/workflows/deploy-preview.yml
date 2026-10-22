@@ -130,6 +130,11 @@ jobs:
           # 保留：producers（可多个）、durable_objects / workflows / migrations
           #      （按 Worker 隔离，不冲突）
           #
+          # 3. Worker 名称 —— wrangler.jsonc 由 wrangler.example.jsonc 生成，
+          #    name 仍是生产名（my-blog）。不改名的话，任何未显式带 --name
+          #    的命令（如 secret bulk）都会打到生产 Worker，预览 Worker 拿不到
+          #    密钥，运行时 serverEnv() 校验失败 → 全站 500。
+          #
           # 注意：剥离后必须清理尾逗号，否则 JSON 非法
           node -e "
             const fs = require('fs');
@@ -146,7 +151,15 @@ jobs:
             cfg = cfg.replace(/,\s*([}\]])/g, '\$1');
             cfg = cfg.replace(/\n\s*\n/g, '\n');
 
-            // 4. 校验：去注释后必须能 parse
+            // 4. 重命名 Worker，使其与 --name 的部署目标一致
+            const previewWorker = process.env.PREVIEW_WORKER_NAME + '-preview';
+            if (!/\"name\"\s*:\s*\"[^\"]*\"/.test(cfg)) {
+              console.error('FATAL: wrangler.jsonc 中找不到 name 字段，无法重命名为预览 Worker');
+              process.exit(1);
+            }
+            cfg = cfg.replace(/\"name\"\s*:\s*\"[^\"]*\"/, '\"name\": \"' + previewWorker + '\"');
+
+            // 5. 校验：去注释后必须能 parse
             const clean = cfg.replace(/^\s*\/\/.*\$/gm, '');
             try {
               JSON.parse(clean);
@@ -160,6 +173,7 @@ jobs:
             console.log('  routes present: ' + /\"routes\"\s*:/.test(cfg));
             console.log('  consumers present: ' + /\"consumers\"\s*:/.test(cfg));
             console.log('  producers kept: ' + /\"producers\"\s*:/.test(cfg));
+            console.log('  worker name -> ' + previewWorker);
           "
 
       # 预览库是新建的空库，必须初始化表结构，否则 Worker 一查库就 500。
@@ -252,9 +266,32 @@ jobs:
           }
           EOF
 
+      # 必须显式带 --name：wrangler.jsonc 由生产模板生成，不带 --name 时
+      # secret bulk 会把密钥写到生产 Worker。曾经漏了这个参数，预览 Worker
+      # 零密钥 → serverEnv() 校验失败 → 整站 500 Internal Server Error。
+      - name: Upload preview secrets
+        run: |
+          bunx wrangler secret bulk secrets.json --name "${PREVIEW_WORKER_NAME}-preview"
+
+      # 回归防线：wrangler 对「密钥写错 Worker」完全不报错，部署照样 success，
+      # 只有线上请求才会 500。这里直接断言目标 Worker 的密钥齐全。
+      - name: Verify preview worker secrets
+        run: |
+          bunx wrangler secret list --name "${PREVIEW_WORKER_NAME}-preview" --format json > /tmp/preview-secrets.json
+          node -e "
+            const fs = require('fs');
+            const names = JSON.parse(fs.readFileSync('/tmp/preview-secrets.json', 'utf8')).map((s) => s.name);
+            const required = ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL', 'ADMIN_EMAIL', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'CLOUDFLARE_ZONE_ID', 'DOMAIN', 'PAGEVIEW_SALT'];
+            const missing = required.filter((n) => !names.includes(n));
+            if (missing.length) {
+              console.error('FATAL: 预览 Worker 缺少密钥: ' + missing.join(', '));
+              process.exit(1);
+            }
+            console.log('预览 Worker 密钥就绪: ' + names.length + ' 个');
+          "
+
       - name: Deploy to Cloudflare Workers (preview)
         run: |
-          bunx wrangler secret bulk secrets.json
           bun run build
           bunx wrangler deploy --name "${PREVIEW_WORKER_NAME}-preview"
 
@@ -262,7 +299,7 @@ jobs:
         run: |
           echo "### Preview 部署完成" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**URL**: https://${PREVIEW_WORKER_NAME}-preview.workers.dev" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: https://${PREVIEW_HOST}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**提交**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
