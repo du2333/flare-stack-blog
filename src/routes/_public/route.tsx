@@ -1,9 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  useNavigate,
+  useRouteContext,
+} from "@tanstack/react-router";
 import theme from "@theme";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { AUTH_KEYS } from "@/features/auth/queries";
+import { isFeatureEnabled } from "@/features/config/features";
 import { getThemePreloadImages } from "@/features/theme/site-config.helpers";
 import { authClient } from "@/lib/auth/auth.client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -29,18 +35,30 @@ export const Route = createFileRoute("/_public")({
 
 function PublicLayout() {
   const navigate = useNavigate();
+  const { siteConfig } = useRouteContext({ from: "__root__" });
   const { data: session, isPending: isSessionPending } =
     authClient.useSession();
   const queryClient = useQueryClient();
 
+  // 导航项由 features 开关驱动：关闭的板块不出现在导航里。
+  // 路由侧的 404 由各路由的 beforeLoad → requireFeature 保证。
   const navOptions = [
     { label: m.nav_home(), to: "/" as const, id: "home" },
     { label: m.nav_posts(), to: "/posts" as const, id: "posts" },
+    ...(isFeatureEnabled(siteConfig, "moments")
+      ? [{ label: m.nav_moments(), to: "/moments" as const, id: "moments" }]
+      : []),
+    ...(isFeatureEnabled(siteConfig, "library")
+      ? [{ label: m.nav_library(), to: "/library" as const, id: "library" }]
+      : []),
     {
       label: m.nav_friend_links(),
       to: "/friend-links" as const,
       id: "friend-links",
     },
+    ...(isFeatureEnabled(siteConfig, "about")
+      ? [{ label: m.nav_about(), to: "/about" as const, id: "about" }]
+      : []),
   ];
 
   const logout = async () => {
