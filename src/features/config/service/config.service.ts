@@ -133,6 +133,10 @@ export function resolveSiteConfig(
           blogConfig.theme.fuwari.primaryHue,
       },
     },
+    // Feature flags are build-time config. They are not part of the editable
+    // SystemConfig schema, so they must be read from blog.config.ts here
+    // instead of being dropped by FullSiteConfigSchema.parse().
+    features: blogConfig.features,
   });
 }
 
