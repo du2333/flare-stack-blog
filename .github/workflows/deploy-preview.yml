@@ -181,6 +181,56 @@ jobs:
           fi
           echo "migrations applied successfully"
 
+      # 迁移只建表结构，不建初始数据。而 siteConfig 来自 system_config 表，
+      # 该表为空会让 getDocumentStyle(siteConfig) 读到 undefined 并抛
+      # "Cannot read properties of undefined (reading 'theme')" → 整站 500。
+      #
+      # 这里做两件事：
+      #   1. 检测 system_config 是否为空
+      #   2. 为空时用 PREVIEW_SEED_CONFIG（可选 secret）或最小默认值兜底
+      #
+      # 若已有数据则完全跳过，不覆盖任何已调整的预览配置。
+      - name: Ensure system_config exists
+        env:
+          SEED_CONFIG: ${{ secrets.PREVIEW_SEED_CONFIG }}
+        run: |
+          bunx wrangler d1 execute DB --remote --json \
+            --command "SELECT COUNT(*) AS n FROM system_config;" \
+            | tee /tmp/cfg-count.json
+          COUNT=$(node -e "const d=require('/tmp/cfg-count.json'); console.log(d[0].results[0].n)")
+          echo "system_config 行数: $COUNT"
+
+          if [ "$COUNT" -gt 0 ]; then
+            echo "已存在配置，跳过"
+            exit 0
+          fi
+
+          echo "system_config 为空，写入初始配置..."
+
+          if [ -n "$SEED_CONFIG" ]; then
+            echo "使用 PREVIEW_SEED_CONFIG secret"
+            CFG="$SEED_CONFIG"
+          else
+            echo "未提供 PREVIEW_SEED_CONFIG，使用最小默认值"
+            CFG='{"email":{"host":"","port":465,"username":"","password":"","senderName":"","senderAddress":""},"notification":{"admin":{"channels":{"email":false,"webhook":false}},"user":{"emailEnabled":false},"webhooks":[]},"site":{"title":"Preview","author":"Preview","description":"Preview environment","social":[],"icons":{"faviconSvg":"","faviconIco":"","favicon96":"","appleTouchIcon":"","webApp192":"","webApp512":""},"theme":{"default":{"navBarName":"Preview"},"fuwari":{"homeBg":"","avatar":"","primaryHue":250}}}}'
+          fi
+
+          # 写入（单引号转义）
+          ESCAPED=$(node -e "console.log(JSON.stringify(process.argv[1]).slice(1,-1))" "$CFG")
+          bunx wrangler d1 execute DB --remote \
+            --command "INSERT OR REPLACE INTO system_config (id, config_json, updated_at) VALUES (1, '$ESCAPED', unixepoch());"
+
+          echo "--- 验证 ---"
+          bunx wrangler d1 execute DB --remote --json \
+            --command "SELECT COUNT(*) AS n FROM system_config;" \
+            | tee /tmp/cfg-check.json
+          FINAL=$(node -e "const d=require('/tmp/cfg-check.json'); console.log(d[0].results[0].n)")
+          if [ "$FINAL" -lt 1 ]; then
+            echo "FATAL: 初始配置写入失败"
+            exit 1
+          fi
+          echo "system_config 初始化完成（$FINAL 行）"
+
       - name: Generate Secrets JSON
         run: |
           cat <<EOF > secrets.json
