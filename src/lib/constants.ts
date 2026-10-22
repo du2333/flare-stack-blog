@@ -1,13 +1,17 @@
 export const ADMIN_ITEMS_PER_PAGE = 12;
 
+// Preview must never inherit a year-long CDN cache from a previous deploy.
+// Hashed static assets are still safe to cache.
+const cdnCache = (value: string) => (__IS_PREVIEW__ ? "no-store" : value);
+
 export const CACHE_CONTROL = {
   public: {
     "Cache-Control": "public, max-age=0, must-revalidate",
-    "CDN-Cache-Control": "public, s-maxage=31536000",
+    "CDN-Cache-Control": cdnCache("public, s-maxage=31536000"),
   },
   swr: {
     "Cache-Control": "public, max-age=0, must-revalidate",
-    "CDN-Cache-Control": "public, s-maxage=1, stale-while-revalidate=604800",
+    "CDN-Cache-Control": cdnCache("public, s-maxage=1, stale-while-revalidate=604800"),
   },
   immutable: {
     "Cache-Control": "public, max-age=31536000, immutable",
@@ -15,15 +19,15 @@ export const CACHE_CONTROL = {
   },
   forbidden: {
     "Cache-Control": "public, max-age=0, must-revalidate",
-    "CDN-Cache-Control": "public, s-maxage=3600",
+    "CDN-Cache-Control": cdnCache("public, s-maxage=3600"),
   },
   notFound: {
     "Cache-Control": "public, max-age=0, must-revalidate",
-    "CDN-Cache-Control": "public, s-maxage=10",
+    "CDN-Cache-Control": cdnCache("public, s-maxage=10"),
   },
   serverError: {
     "Cache-Control": "public, max-age=0, must-revalidate",
-    "CDN-Cache-Control": "public, s-maxage=10",
+    "CDN-Cache-Control": cdnCache("public, s-maxage=10"),
   },
   private: {
     "Cache-Control": "private, no-store, no-cache, must-revalidate",

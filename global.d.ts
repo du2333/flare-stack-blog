@@ -78,4 +78,5 @@ declare global {
   const __APP_VERSION__: string;
   const __THEME_NAME__: ThemeName;
   const __THEME_CONFIG__: ThemeRouterConfig;
+  const __IS_PREVIEW__: boolean;
 }

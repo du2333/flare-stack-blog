@@ -14,6 +14,7 @@ import { themeNames, themes } from "./src/features/theme/registry";
 
 const buildEnvSchema = z.object({
   THEME: z.enum(themeNames).catch("default"),
+  PREVIEW: z.enum(["true", "false"]).catch("false"),
 });
 
 const config = defineConfig(({ mode }) => {
@@ -24,6 +25,7 @@ const config = defineConfig(({ mode }) => {
       __APP_VERSION__: JSON.stringify(packageJson.version),
       __THEME_NAME__: JSON.stringify(buildEnv.THEME),
       __THEME_CONFIG__: JSON.stringify(themes[buildEnv.THEME]),
+      __IS_PREVIEW__: JSON.stringify(buildEnv.PREVIEW === "true"),
     },
     resolve: {
       alias: {

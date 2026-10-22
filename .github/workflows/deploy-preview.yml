@@ -42,6 +42,7 @@ jobs:
     env:
       PREVIEW_WORKER_NAME: flare-stack-blog
       THEME: yozora
+      PREVIEW: "true"
       # Cloudflare 账号的 workers.dev 子域（每个账号唯一，不是省略的）
       # 实际 URL 形如 <worker>.<subdomain>.workers.dev
       WORKERS_DEV_SUBDOMAIN: 3286927775
