@@ -1,6 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { directVideoAttrs } from "@/features/posts/utils/video-source";
 import { renderReact } from "./render";
 
 function cell(
@@ -229,5 +230,60 @@ describe("renderReact links", () => {
     expect(render(linked({ href: "javascript:alert(1)" }))).toBe(
       '<p><a target="_blank" rel="noopener noreferrer nofollow">go</a></p>',
     );
+  });
+});
+
+describe("renderReact Direct Videos", () => {
+  const video = (attrs: Record<string, unknown>): JSONContent => ({
+    type: "doc",
+    content: [
+      {
+        type: "video",
+        attrs: directVideoAttrs({
+          src: "https://cdn.example.com/clip.mp4",
+          pageUrl: null,
+          title: null,
+          cover: null,
+          duration: null,
+          ...attrs,
+        }),
+      },
+    ],
+  });
+
+  it("shows a poster card and fetches nothing until it is played", () => {
+    const html = render(
+      video({
+        title: "A clip",
+        cover: "https://example.com/cover.jpg",
+        duration: 95,
+      }),
+    );
+    expect(html).toContain("<button");
+    expect(html).toContain('src="https://example.com/cover.jpg"');
+    expect(html).toContain("A clip");
+    expect(html).toContain("1:35");
+    expect(html).toContain("cdn.example.com");
+    expect(html).not.toContain("<video");
+    expect(html).not.toContain("clip.mp4");
+    expect(html).not.toContain("<iframe");
+  });
+
+  it("falls back to the gradient when there is no cover", () => {
+    const html = render(video({}));
+    expect(html).not.toContain("<img");
+    expect(html).toContain("bg-linear-to-br");
+  });
+
+  it("links to the source page only when there is one", () => {
+    expect(render(video({}))).not.toContain("<a ");
+    const html = render(video({ pageUrl: "https://example.com/watch/1" }));
+    expect(html).toContain('href="https://example.com/watch/1"');
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
+  it("shows nothing for a Direct Video whose address is not https", () => {
+    expect(render(video({ src: "http://cdn.example.com/clip.mp4" }))).toBe("");
+    expect(render(video({ src: "javascript:alert(1)" }))).toBe("");
   });
 });
