@@ -7,6 +7,8 @@ import {
   DeletePostInputSchema,
   DeletePostResultSchema,
   DeletePostRevisionsResultSchema,
+  DirectVideoInputSchema,
+  DirectVideoLookupSchema,
   DiscardPostChangesInputSchema,
   GenerateSlugInputSchema,
   GenerateSlugResultSchema,
@@ -32,6 +34,7 @@ import {
   PostRevisionSchema,
   RestorePostRevisionInputSchema,
 } from "@/features/posts/schema/post-revisions.schema";
+import * as DirectVideoService from "@/features/posts/services/direct-video.service";
 import * as PostMarkdownService from "@/features/posts/services/post-markdown.service";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
@@ -115,11 +118,13 @@ const postErrors = {
   CONTENT_LINK_INVALID: {
     status: 400,
     message:
-      "Links must be http(s), mailto or tel addresses, site paths or #fragments.",
+      "Links must be http(s), mailto or tel addresses, site paths or #fragments, and a Direct Video's addresses must be https.",
     data: z.object({
       links: z
         .array(z.string())
-        .describe("The refused link addresses, such as javascript: or data:."),
+        .describe(
+          "The refused addresses: links such as javascript: or data:, and Direct Video file, poster or page addresses (src, cover, pageUrl) that are not https.",
+        ),
     }),
   },
   POST_CONTENT_TOO_LARGE: {
@@ -265,7 +270,7 @@ function throwMarkdownContentError(
     case "CONTENT_LINK_INVALID": {
       const list = error.links.map((href) => `"${href}"`).join(", ");
       throw errors.CONTENT_LINK_INVALID({
-        message: `${error.links.length > 1 ? "Links" : "Link"} ${list} must be an http(s), mailto or tel address, a site path or a #fragment. Links such as javascript: or data: cannot be shown on a post.`,
+        message: `${error.links.length > 1 ? "Addresses" : "Address"} ${list} cannot be shown on a post. A link must be an http(s), mailto or tel address, a site path or a #fragment, not javascript: or data:, and a Direct Video's file, poster and page (src, cover, pageUrl) must be https addresses without a user name or password.`,
         data: { links: error.links },
       });
     }
@@ -364,6 +369,19 @@ const videoMeta = adminProcedure
     const source = videoSourceOf(input);
     return source ? VideoMetaService.fetchVideoMeta(source) : null;
   });
+
+const directVideo = adminProcedure
+  .route({
+    method: "GET",
+    path: "/admin/posts/direct-video",
+    summary: "Look up the address of a Direct Video",
+    description:
+      "Asks the address once, when the editor embeds a Direct Video: a video file is returned as is, and from a web page its title, cover and the video file it names are read, the file only once a request for it answers a video file. Only https addresses are asked, and a redirect only to another one. Writes in Markdown over the API never call it; their <video> lines are kept as written.",
+    tags: ["Admin Posts"],
+  })
+  .input(DirectVideoInputSchema)
+  .output(DirectVideoLookupSchema)
+  .handler(({ input }) => DirectVideoService.resolveDirectVideo(input.url));
 
 const create = adminProcedure
   .errors({
@@ -717,6 +735,7 @@ export default {
   get: adminGet,
   generateSlug,
   videoMeta,
+  directVideo,
   create,
   update,
   remove,
