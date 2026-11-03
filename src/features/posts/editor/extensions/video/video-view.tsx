@@ -3,10 +3,13 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { ExternalLink, Video } from "lucide-react";
 import { useEffect, useRef } from "react";
 import {
+  DirectVideoPoster,
+  directVideoHost,
   VideoPoster,
   videoProviderName,
 } from "@/features/posts/components/content/video-embed";
 import {
+  directVideoOf,
   videoMetaOf,
   videoPageUrl,
   videoSourceOf,
@@ -14,7 +17,7 @@ import {
 import { useDismissOnOutside } from "@/hooks/use-dismiss-on-outside";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { useVideoEditor } from "./state";
+import { getDirectVideoResolver, useVideoEditor } from "./state";
 import { VideoEditorPanel } from "./video-editor-panel";
 
 /**
@@ -30,6 +33,7 @@ export function VideoView({
   selected,
 }: ReactNodeViewProps) {
   const source = videoSourceOf(node.attrs);
+  const direct = source ? null : directVideoOf(node.attrs);
   const open = useVideoEditor(editor);
   const editing = open !== null && open.pos === getPos();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -64,10 +68,19 @@ export function VideoView({
           className="rounded-xl p-3 ring-1 ring-(--fuwari-input-border)"
         >
           <VideoEditorPanel
-            link={source ? videoPageUrl(source) : ""}
+            link={
+              source
+                ? videoPageUrl(source)
+                : direct
+                  ? (direct.pageUrl ?? direct.src)
+                  : ""
+            }
+            direct={direct}
             inserted={open.inserted}
+            resolveDirectVideo={getDirectVideoResolver(editor)}
             inputRef={inputRef}
             onApply={(next) => editor.commands.applyVideo(next)}
+            onApplyDirect={(next) => editor.commands.applyDirectVideo(next)}
             onCancel={() => {
               editor.commands.closeVideoEditor();
               editor.commands.focus();
@@ -94,6 +107,34 @@ export function VideoView({
             </span>
             <a
               href={videoPageUrl(source)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="no-styling inline-flex items-center gap-1 hover:text-(--fuwari-primary)"
+            >
+              {m.editor_video_open()}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+      ) : direct ? (
+        <div>
+          <div
+            onClick={openEditor}
+            className={cn(
+              "group rounded-xl",
+              editor.isEditable && "cursor-pointer",
+              selected &&
+                "ring-2 ring-(--fuwari-primary) ring-offset-2 ring-offset-(--fuwari-card-bg)",
+            )}
+          >
+            <DirectVideoPoster video={direct} />
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-3 text-xs fuwari-text-50">
+            <span>
+              {m.editor_video_direct_info({ host: directVideoHost(direct) })}
+            </span>
+            <a
+              href={direct.pageUrl ?? direct.src}
               target="_blank"
               rel="noopener noreferrer"
               className="no-styling inline-flex items-center gap-1 hover:text-(--fuwari-primary)"
