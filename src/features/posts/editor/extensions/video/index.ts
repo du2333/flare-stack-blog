@@ -8,10 +8,13 @@ import { Transform } from "@tiptap/pm/transform";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { schemaVideo } from "@/features/posts/editor/schema";
 import type {
+  DirectVideo,
+  DirectVideoLookup,
   VideoMeta,
   VideoSource,
 } from "@/features/posts/utils/video-source";
 import {
+  directVideoAttrs,
   EMPTY_VIDEO_META,
   parseVideoInput,
   videoMetaOf,
@@ -22,7 +25,11 @@ import { VIDEO, videoEditor } from "./state";
 import { VideoView } from "./video-view";
 
 export type { VideoEditorState } from "./state";
-export { getVideoEditor, useVideoEditor } from "./state";
+export {
+  getDirectVideoResolver,
+  getVideoEditor,
+  useVideoEditor,
+} from "./state";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -36,6 +43,8 @@ declare module "@tiptap/core" {
       openVideoEditor: (pos: number) => ReturnType;
       /** Points the open video at `source` and closes the editing. */
       applyVideo: (source: VideoSource) => ReturnType;
+      /** Points the open video at a Direct Video and closes the editing. */
+      applyDirectVideo: (video: DirectVideo) => ReturnType;
       /**
        * Closes the editing without changing the video, or removes it when it
        * was just inserted and never filled.
@@ -95,6 +104,12 @@ export interface VideoEditingOptions {
    * undo step of their own.
    */
   fetchMeta?: (source: VideoSource) => Promise<VideoMeta | null>;
+  /**
+   * Finds out what is at an address the Admin gave for a Direct Video: a
+   * video file, or a page that may name one. Without it the panel fetches
+   * nothing and the Admin fills a Direct Video in by hand.
+   */
+  resolveDirectVideo?: (url: string) => Promise<DirectVideoLookup>;
 }
 
 /** Whether `node` is the video `source`, part included. */
@@ -181,7 +196,7 @@ export const VideoEditing = Extension.create<VideoEditingOptions>({
   priority: 210,
 
   addOptions() {
-    return { fetchMeta: undefined };
+    return { fetchMeta: undefined, resolveDirectVideo: undefined };
   },
 
   addExtensions() {
@@ -320,12 +335,31 @@ export const VideoEditing = Extension.create<VideoEditingOptions>({
           const node = tr.doc.nodeAt(open.pos);
           if (node?.type.name !== VIDEO) return true;
           // Another video's title and cover would be wrong; look them up anew.
+          // A block that was a Direct Video gives up its file and page.
           tr.setNodeMarkup(open.pos, undefined, {
             ...(isVideo(node, source)
               ? videoMetaOf(node.attrs)
               : EMPTY_VIDEO_META),
             ...source,
+            src: null,
+            pageUrl: null,
           });
+          tr.setSelection(NodeSelection.create(tr.doc, open.pos));
+          focusSoon(editor);
+          return true;
+        },
+      applyDirectVideo:
+        (video) =>
+        ({ editor, state, tr, dispatch }) => {
+          const open = videoEditor.get(state);
+          if (!open) return false;
+          if (!dispatch) return true;
+          videoEditor.close(tr);
+          const node = tr.doc.nodeAt(open.pos);
+          if (node?.type.name !== VIDEO) return true;
+          // `directVideoAttrs` names every attribute, so what the block was
+          // before (a Bilibili ID, its cover) cannot linger.
+          tr.setNodeMarkup(open.pos, undefined, directVideoAttrs(video));
           tr.setSelection(NodeSelection.create(tr.doc, open.pos));
           focusSoon(editor);
           return true;
