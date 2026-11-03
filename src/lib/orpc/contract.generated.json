@@ -125,6 +125,19 @@
           }
         }
       },
+      "directVideo": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/posts/direct-video",
+            "summary": "Look up the address of a Direct Video",
+            "description": "Asks the address once, when the editor embeds a Direct Video: a video file is returned as is, and from a web page its title, cover and the video file it names are read, the file only once a request for it answers a video file. Only https addresses are asked, and a redirect only to another one. Writes in Markdown over the API never call it; their <video> lines are kept as written.",
+            "tags": ["Admin Posts"]
+          }
+        }
+      },
       "create": {
         "~orpc": {
           "errorMap": {},

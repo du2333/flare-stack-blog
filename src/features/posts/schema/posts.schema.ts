@@ -32,6 +32,7 @@ import {
   POST_MARK_ATTRIBUTES,
   POST_NODE_ATTRIBUTES,
 } from "@/features/posts/utils/post-content-rules";
+import type { DirectVideoLookup } from "@/features/posts/utils/video-source";
 import { NullableJsonContentSchema } from "./json-content.schema";
 import { SaveTokenSchema, StatedSaveTokenSchema } from "./save-token.schema";
 import { coercedDate } from "@/lib/orpc/dates";
@@ -676,3 +677,35 @@ export const VideoMetaSchema = z
     duration: z.number().int().nullable(),
   })
   .nullable();
+
+export const DirectVideoInputSchema = z.strictObject({
+  url: z
+    .string()
+    .max(4096)
+    .describe("The address given: a video file, or a page that names one."),
+});
+
+export const DirectVideoLookupSchema = z.discriminatedUnion("kind", [
+  z
+    .object({ kind: z.literal("file"), src: z.string() })
+    .describe("The address is a video file; src is the address given."),
+  z
+    .object({
+      kind: z.literal("page"),
+      pageUrl: z.string(),
+      src: z.string().nullable(),
+      title: z.string().nullable(),
+      cover: z.string().nullable(),
+    })
+    .describe(
+      "The address is a web page, given back as pageUrl. src is the video file its og:video names once a request for it answered a video file, and null otherwise, such as when og:video is another site's player. cover is its og:image and title its og:title or <title>, null when it has none.",
+    ),
+  z
+    .object({ kind: z.literal("unreachable") })
+    .describe("The request failed, timed out or answered other than 2xx."),
+  z
+    .object({ kind: z.literal("unsupported") })
+    .describe(
+      "The address is not https, or answered neither a video file nor an HTML page.",
+    ),
+]) satisfies z.ZodType<DirectVideoLookup>;
