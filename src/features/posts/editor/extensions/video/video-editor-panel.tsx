@@ -210,6 +210,13 @@ export function VideoEditorPanel({
   } else if (result.kind === "file") {
     status = m.editor_video_direct_file();
     tone = "ok";
+  } else if (result.kind === "page" && srcReading) {
+    // The playback address being read is what the status is about, not the
+    // page's own video, which it may be about to replace.
+    status = m.editor_video_src_reading();
+  } else if (result.kind === "page" && srcResult?.kind === "file") {
+    status = m.editor_video_src_confirmed();
+    tone = "ok";
   } else if (result.kind === "page") {
     status = playback
       ? m.editor_video_direct_page()
