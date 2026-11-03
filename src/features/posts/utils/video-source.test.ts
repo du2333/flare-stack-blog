@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  directVideoAddress,
+  directVideoAttrs,
+  directVideoOf,
   formatVideoDuration,
   parseVideoInput,
   videoCoverUrl,
@@ -219,6 +222,106 @@ describe("videoMetaOf", () => {
       cover: null,
       duration: null,
     });
+  });
+});
+
+describe("directVideoAddress", () => {
+  it.each([
+    ["https://cdn.example.com/a b.mp4", "https://cdn.example.com/a%20b.mp4"],
+    ["HTTPS://CDN.example.com/v.mp4?t=1", "https://cdn.example.com/v.mp4?t=1"],
+  ])("keeps %j as %j", (value, address) => {
+    expect(directVideoAddress(value)).toBe(address);
+  });
+
+  it.each([
+    "http://cdn.example.com/v.mp4",
+    "//cdn.example.com/v.mp4",
+    "/videos/v.mp4",
+    "javascript:alert(1)",
+    "data:video/mp4;base64,AAAA",
+    "https://user:pass@cdn.example.com/v.mp4",
+    "https://user@cdn.example.com/v.mp4",
+    "",
+    "   ",
+    42,
+    null,
+  ])("refuses %j", (value) => {
+    expect(directVideoAddress(value)).toBeNull();
+  });
+});
+
+describe("directVideoOf", () => {
+  it("reads a Direct Video with its HTTPS addresses, title and length", () => {
+    expect(
+      directVideoOf({
+        provider: "direct",
+        videoId: null,
+        src: "https://cdn.example.com/v.mp4",
+        pageUrl: "https://example.com/watch/1",
+        title: "  片头  ",
+        cover: "https://cdn.example.com/v.jpg",
+        duration: 95,
+      }),
+    ).toEqual({
+      src: "https://cdn.example.com/v.mp4",
+      pageUrl: "https://example.com/watch/1",
+      title: "片头",
+      cover: "https://cdn.example.com/v.jpg",
+      duration: 95,
+    });
+  });
+
+  it("drops a poster or page that is not HTTPS, and nonsense values", () => {
+    expect(
+      directVideoOf({
+        provider: "direct",
+        src: "https://cdn.example.com/v.mp4",
+        pageUrl: "javascript:alert(1)",
+        title: "",
+        cover: "http://cdn.example.com/v.jpg",
+        duration: -1,
+      }),
+    ).toEqual({
+      src: "https://cdn.example.com/v.mp4",
+      pageUrl: null,
+      title: null,
+      cover: null,
+      duration: null,
+    });
+  });
+
+  it("is no Direct Video without an HTTPS file or the direct provider", () => {
+    for (const src of [null, "http://cdn.example.com/v.mp4", "javascript:x"]) {
+      expect(directVideoOf({ provider: "direct", src })).toBeNull();
+    }
+    expect(
+      directVideoOf({ provider: "youtube", src: "https://cdn.example.com/v" }),
+    ).toBeNull();
+    expect(directVideoOf(null)).toBeNull();
+  });
+
+  it("is not a provider's video", () => {
+    expect(
+      videoSourceOf({ provider: "direct", src: "https://cdn.example.com/v" }),
+    ).toBeNull();
+  });
+
+  it("writes block attributes with no provider video parts", () => {
+    const video = {
+      src: "https://cdn.example.com/v.mp4",
+      pageUrl: null,
+      title: "T",
+      cover: null,
+      duration: 3,
+    };
+    expect(directVideoAttrs(video)).toEqual({
+      provider: "direct",
+      videoId: null,
+      page: null,
+      start: null,
+      ...video,
+    });
+    expect(directVideoOf(directVideoAttrs(video))).toEqual(video);
   });
 });
 

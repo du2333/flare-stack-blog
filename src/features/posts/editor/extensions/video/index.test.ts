@@ -4,9 +4,13 @@ import { Slice } from "@tiptap/pm/model";
 import { Editor as HeadlessEditor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { afterEach, expect, it, vi } from "vitest";
+import {
+  directVideoAttrs,
+  directVideoOf,
+} from "@/features/posts/utils/video-source";
 import { createPostEditor } from "@/features/posts/editor/test-utils";
 import type { VideoEditingOptions } from ".";
-import { getVideoEditor, VideoEditing } from ".";
+import { getDirectVideoResolver, getVideoEditor, VideoEditing } from ".";
 
 const BILIBILI = "https://www.bilibili.com/video/BV1fK4y1s7Qf/?p=2";
 const SOURCE = {
@@ -80,7 +84,14 @@ it("fills the open video and selects it", () => {
   expect(getVideoEditor(target)).toBeNull();
   expect(target.getJSON().content?.[0]).toEqual({
     type: "video",
-    attrs: { ...SOURCE, title: null, cover: null, duration: null },
+    attrs: {
+      ...SOURCE,
+      title: null,
+      cover: null,
+      duration: null,
+      src: null,
+      pageUrl: null,
+    },
   });
   expect(target.state.selection.from).toBe(0);
 });
@@ -191,7 +202,12 @@ it("fills in a new Bilibili video's metadata, outside the undo history", async (
   target.commands.applyVideo(SOURCE);
 
   await vi.waitFor(() =>
-    expect(target.getJSON().content?.[0].attrs).toEqual({ ...SOURCE, ...META }),
+    expect(target.getJSON().content?.[0].attrs).toEqual({
+      ...SOURCE,
+      ...META,
+      src: null,
+      pageUrl: null,
+    }),
   );
   expect(fetchMeta).toHaveBeenCalledExactlyOnceWith(SOURCE);
   target.commands.undo();
@@ -239,5 +255,119 @@ it("forgets the old metadata when the link is changed to another video", () => {
     title: null,
     cover: null,
     duration: null,
+  });
+});
+
+const DIRECT = {
+  src: "https://cdn.example.com/clip.mp4",
+  pageUrl: "https://example.com/watch/1",
+  title: "A clip",
+  cover: "https://example.com/cover.jpg",
+  duration: 95,
+};
+
+it("writes a Direct Video into the open block, selecting it", () => {
+  const target = open();
+  target.commands.insertVideo();
+  target.commands.applyDirectVideo(DIRECT);
+
+  expect(getVideoEditor(target)).toBeNull();
+  expect(target.getJSON().content?.[0]).toEqual({
+    type: "video",
+    attrs: directVideoAttrs(DIRECT),
+  });
+  expect(directVideoOf(target.getJSON().content?.[0].attrs)).toEqual(DIRECT);
+  expect(target.state.selection.from).toBe(0);
+});
+
+it("keeps a Direct Video when its editing is cancelled, and removes one never filled", () => {
+  const target = open();
+  target.commands.insertVideo();
+  target.commands.applyDirectVideo(DIRECT);
+  target.commands.openVideoEditor(0);
+  target.commands.closeVideoEditor();
+  expect(target.getJSON().content?.[0].attrs).toMatchObject({
+    provider: "direct",
+    src: DIRECT.src,
+  });
+
+  const fresh = open();
+  fresh.commands.insertVideo();
+  fresh.commands.closeVideoEditor();
+  expect(outline(fresh).some((line) => line.startsWith("video"))).toBe(false);
+});
+
+it("does not apply a Direct Video when no block is open", () => {
+  const target = open();
+  expect(target.commands.applyDirectVideo(DIRECT)).toBe(false);
+});
+
+it("clears a Bilibili video's parts when the block becomes a Direct Video", () => {
+  const target = open();
+  target.commands.insertVideo();
+  target.commands.applyVideo(SOURCE);
+  target.commands.openVideoEditor(0);
+  target.commands.applyDirectVideo({ ...DIRECT, title: null, cover: null });
+
+  expect(target.getJSON().content?.[0].attrs).toEqual(
+    directVideoAttrs({ ...DIRECT, title: null, cover: null }),
+  );
+  expect(target.getJSON().content?.[0].attrs).toMatchObject({
+    videoId: null,
+    page: null,
+    start: null,
+  });
+});
+
+it("clears a Direct Video's address, page and metadata when the block becomes Bilibili or YouTube", () => {
+  const target = open();
+  target.commands.insertVideo();
+  target.commands.applyDirectVideo(DIRECT);
+  target.commands.openVideoEditor(0);
+  target.commands.applyVideo(SOURCE);
+
+  expect(target.getJSON().content?.[0].attrs).toEqual({
+    ...SOURCE,
+    title: null,
+    cover: null,
+    duration: null,
+    src: null,
+    pageUrl: null,
+  });
+});
+
+it("hands the lookup it was configured with to the panel", () => {
+  const resolveDirectVideo = vi.fn();
+  const target = new HeadlessEditor({
+    element: document.createElement("div"),
+    extensions: [StarterKit, VideoEditing.configure({ resolveDirectVideo })],
+  });
+  editor = target;
+  expect(getDirectVideoResolver(target)).toBe(resolveDirectVideo);
+  const unconfigured = new HeadlessEditor({
+    element: document.createElement("div"),
+    extensions: [StarterKit, VideoEditing],
+  });
+  expect(getDirectVideoResolver(unconfigured)).toBeUndefined();
+  unconfigured.destroy();
+});
+
+it("never looks metadata up for a Direct Video", async () => {
+  const fetchMeta = vi.fn(async () => META);
+  const target = withMeta(fetchMeta, {
+    type: "doc",
+    content: [
+      {
+        type: "video",
+        attrs: directVideoAttrs({ ...DIRECT, title: null, cover: null }),
+      },
+    ],
+  });
+  await new Promise((done) => setTimeout(done, 20));
+
+  expect(fetchMeta).not.toHaveBeenCalled();
+  expect(target.getJSON().content?.[0].attrs).toMatchObject({
+    provider: "direct",
+    title: null,
   });
 });

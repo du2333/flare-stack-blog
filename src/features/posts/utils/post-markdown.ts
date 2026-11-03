@@ -30,7 +30,14 @@ function videoOfLine(text: string): JSONContent | null {
   return input.kind === "video"
     ? {
         type: "video",
-        attrs: { ...input.source, title: null, cover: null, duration: null },
+        attrs: {
+          ...input.source,
+          title: null,
+          cover: null,
+          duration: null,
+          src: null,
+          pageUrl: null,
+        },
       }
     : null;
 }

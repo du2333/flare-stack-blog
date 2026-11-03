@@ -3,6 +3,11 @@
  * allowlist and that provider's video ID. Player and page URLs are built from
  * these parts, never taken from the author, so a post cannot point an iframe
  * anywhere else.
+ *
+ * A Direct Video (provider `"direct"`) is the other kind: a video file at any
+ * HTTPS address, played by the reader's browser in a `<video>`, which runs no
+ * other site's script (ADR 0036). `VideoProvider` and `videoSourceOf` leave
+ * it out; `directVideoOf` reads it.
  */
 
 export type VideoProvider = "bilibili" | "youtube";
@@ -34,6 +39,46 @@ export const EMPTY_VIDEO_META: VideoMeta = {
   cover: null,
   duration: null,
 };
+
+/**
+ * A Direct Video as its block stores it. Every address is HTTPS without a
+ * user name or password; the CMS keeps the addresses only and does not know
+ * whether the file is still there.
+ */
+export interface DirectVideo {
+  /** The video file, played by the reader's browser. */
+  src: string;
+  /** The page the video was found on, linked under the player. */
+  pageUrl: string | null;
+  title: string | null;
+  /** The poster shown before the video plays. */
+  cover: string | null;
+  /** The file's length in seconds, as the editor read it from the file. */
+  duration: number | null;
+}
+
+/**
+ * What the server found at an address the Admin gave for a Direct Video,
+ * shared by the endpoint that looks addresses up and the editor.
+ */
+export type DirectVideoLookup =
+  /** The address is a video file. */
+  | { kind: "file"; src: string }
+  /**
+   * The address is a web page; `src` is a video file the page names and the
+   * server confirmed is one, or null when it names none.
+   */
+  | {
+      kind: "page";
+      pageUrl: string;
+      src: string | null;
+      title: string | null;
+      cover: string | null;
+    }
+  /** The request failed, timed out or answered other than 2xx. */
+  | { kind: "unreachable" }
+  /** The address answered neither a video file nor an HTML page. */
+  | { kind: "unsupported" };
 
 /** What reading a pasted link or embed code found. */
 export type VideoInput =
@@ -209,6 +254,21 @@ function bilibiliCover(value: unknown): string | null {
   return url.toString();
 }
 
+function titleOf(value: unknown): string | null {
+  return typeof value === "string" && value.trim()
+    ? value.trim().slice(0, 200)
+    : null;
+}
+
+function durationOf(value: unknown): number | null {
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value < 360_000
+    ? value
+    : null;
+}
+
 /**
  * A video block's stored metadata, keeping only values that are safe to
  * show: a cover on the provider's CDN, a short title, a sane length.
@@ -217,18 +277,67 @@ export function videoMetaOf(
   attrs: Record<string, unknown> | null | undefined,
 ): VideoMeta {
   if (!attrs) return EMPTY_VIDEO_META;
-  const title =
-    typeof attrs.title === "string" && attrs.title.trim()
-      ? attrs.title.trim().slice(0, 200)
+  return {
+    title: titleOf(attrs.title),
+    cover: bilibiliCover(attrs.cover),
+    duration: durationOf(attrs.duration),
+  };
+}
+
+/**
+ * `value` as an address a Direct Video may use: HTTPS, with no user name or
+ * password, written out in full. Anything else is null, so no other scheme,
+ * `javascript:` among them, reaches a page through a Direct Video.
+ */
+export function directVideoAddress(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password
+      ? url.href
       : null;
-  const duration =
-    typeof attrs.duration === "number" &&
-    Number.isInteger(attrs.duration) &&
-    attrs.duration > 0 &&
-    attrs.duration < 360_000
-      ? attrs.duration
-      : null;
-  return { title, cover: bilibiliCover(attrs.cover), duration };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A video block's attributes as a Direct Video, or `null` when they are not
+ * one or its file is not at an address `directVideoAddress` accepts. A
+ * poster or page address it does not accept is dropped, and the title and
+ * length are kept as `videoMetaOf` keeps them.
+ */
+export function directVideoOf(
+  attrs: Record<string, unknown> | null | undefined,
+): DirectVideo | null {
+  if (attrs?.provider !== "direct") return null;
+  const src = directVideoAddress(attrs.src);
+  if (!src) return null;
+  return {
+    src,
+    pageUrl: directVideoAddress(attrs.pageUrl),
+    title: titleOf(attrs.title),
+    cover: directVideoAddress(attrs.cover),
+    duration: durationOf(attrs.duration),
+  };
+}
+
+/**
+ * `video` as the attributes of its block, every one the editor gives it, with
+ * no provider video parts.
+ */
+export function directVideoAttrs(video: DirectVideo) {
+  return {
+    provider: "direct",
+    videoId: null,
+    page: null,
+    start: null,
+    title: video.title,
+    cover: video.cover,
+    duration: video.duration,
+    src: video.src,
+    pageUrl: video.pageUrl,
+  } as const;
 }
 
 /** `cover` resized by the CDN to fill a 16:9 frame `width` pixels wide. */

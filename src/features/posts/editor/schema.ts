@@ -98,9 +98,8 @@ function numberAttribute(key: string) {
   };
 }
 
-/** An optional string, kept in `data-<key>`. */
-function textAttribute(key: string) {
-  const name = `data-${key}`;
+/** An optional string, kept in `data-<key>` unless `name` is given. */
+function textAttribute(key: string, name = `data-${key}`) {
   return {
     default: null,
     parseHTML: (element: HTMLElement) => element.getAttribute(name) || null,
@@ -112,7 +111,9 @@ function textAttribute(key: string) {
 /**
  * An embedded video, stored as its provider and video ID (see
  * `video-source.ts`); readers get the provider's player from those. The
- * title, cover and length are looked up when it is embedded.
+ * title, cover and length are looked up when it is embedded. A Direct Video
+ * has the provider `direct` and keeps its file's address in `src` and the
+ * page it was found on in `pageUrl` instead, its poster in `cover`.
  */
 export const schemaVideo = Node.create({
   name: "video",
@@ -139,6 +140,8 @@ export const schemaVideo = Node.create({
       title: textAttribute("title"),
       cover: textAttribute("cover"),
       duration: numberAttribute("duration"),
+      src: textAttribute("src"),
+      pageUrl: textAttribute("pageUrl", "data-page-url"),
     };
   },
   parseHTML() {

@@ -65,6 +65,8 @@ export const editorSchema = createSchemaExtensions({
           page: source.page,
         })
         .catch(() => null),
+    // The panel treats a rejected lookup as unreachable.
+    resolveDirectVideo: (url) => orpcClient.posts.admin.directVideo({ url }),
   }),
 });
 

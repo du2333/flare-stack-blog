@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/core";
 import type { Step } from "@tiptap/pm/transform";
 import { createInPlaceEditing, useInPlaceEditing } from "../in-place-editing";
 import { mapSteps } from "../insertion";
+import type { ResolveDirectVideo } from "./use-direct-video-lookup";
 
 export const VIDEO = "video";
 
@@ -43,4 +44,16 @@ export function getVideoEditor(editor: Editor): VideoEditorState | null {
 /** The video open for editing, re-rendering as it opens, moves or closes. */
 export function useVideoEditor(editor: Editor | null) {
   return useInPlaceEditing(editor, videoEditor);
+}
+
+/**
+ * The lookup the editor was configured with for Direct Video addresses, or
+ * `undefined` when it has none (a read-only view), which fetches nothing.
+ */
+export function getDirectVideoResolver(
+  editor: Editor,
+): ResolveDirectVideo | undefined {
+  return editor.extensionManager.extensions.find(
+    (extension) => extension.name === "videoEditing",
+  )?.options.resolveDirectVideo;
 }

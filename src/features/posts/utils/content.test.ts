@@ -1,6 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { describe, expect, it } from "vitest";
 import {
+  convertToPlainText,
   FALLBACK_SLUG,
   jsonContentHasType,
   mediaPathKey,
@@ -62,6 +63,41 @@ describe("jsonContentHasType", () => {
     expect(jsonContentHasType(content, ["inlineMath", "blockMath"])).toBe(true);
     expect(jsonContentHasType(content, "blockMath")).toBe(false);
     expect(jsonContentHasType(content, "image")).toBe(false);
+  });
+});
+
+describe("convertToPlainText", () => {
+  it("gives a video's title and its page, or a Direct Video's file", () => {
+    const text = convertToPlainText(
+      doc(
+        {
+          type: "video",
+          attrs: { provider: "youtube", videoId: "dQw4w9WgXcQ", title: "Song" },
+        },
+        {
+          type: "video",
+          attrs: {
+            provider: "direct",
+            src: "https://cdn.example.com/a.mp4",
+            pageUrl: "https://example.com/watch/1",
+            title: "Intro",
+          },
+        },
+        {
+          type: "video",
+          attrs: { provider: "direct", src: "https://cdn.example.com/b.mp4" },
+        },
+        {
+          type: "video",
+          attrs: { provider: "direct", src: "javascript:alert(1)" },
+        },
+      ),
+    );
+    expect(text.split("\n").filter(Boolean)).toEqual([
+      "Song https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "Intro https://example.com/watch/1",
+      "https://cdn.example.com/b.mp4",
+    ]);
   });
 });
 
