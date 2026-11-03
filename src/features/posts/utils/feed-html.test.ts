@@ -99,6 +99,62 @@ describe("renderFeedHtml", () => {
     expect(html).toContain("<code>x^2</code>");
   });
 
+  it("writes a Direct Video as a <video> with a link to its page, or its file", () => {
+    const html = renderFeedHtml(
+      doc(
+        {
+          type: "video",
+          attrs: {
+            provider: "direct",
+            src: "https://cdn.example.com/a.mp4?x=1&y=2",
+            cover: "https://cdn.example.com/a.jpg",
+            title: "<Intro>",
+            pageUrl: "https://example.com/watch/1",
+          },
+        },
+        {
+          type: "video",
+          attrs: { provider: "direct", src: "https://cdn.example.com/b.mp4" },
+        },
+      ),
+      ORIGIN,
+    );
+    expect(html).toBe(
+      [
+        '<video controls preload="none" src="https://cdn.example.com/a.mp4?x=1&amp;y=2" poster="https://cdn.example.com/a.jpg"></video>',
+        '<p><a href="https://example.com/watch/1">&lt;Intro&gt;</a></p>',
+        '<video controls preload="none" src="https://cdn.example.com/b.mp4"></video>',
+        '<p><a href="https://cdn.example.com/b.mp4">https://cdn.example.com/b.mp4</a></p>',
+      ].join(""),
+    );
+  });
+
+  it("leaves out a Direct Video's addresses that are not HTTPS", () => {
+    const html = renderFeedHtml(
+      doc(
+        {
+          type: "video",
+          attrs: {
+            provider: "direct",
+            src: "https://cdn.example.com/a.mp4",
+            cover: "javascript:alert(1)",
+            pageUrl: "javascript:alert(2)",
+          },
+        },
+        {
+          type: "video",
+          attrs: { provider: "direct", src: "http://cdn.example.com/b.mp4" },
+        },
+      ),
+      ORIGIN,
+    );
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("b.mp4");
+    expect(html).toContain(
+      '<p><a href="https://cdn.example.com/a.mp4">https://cdn.example.com/a.mp4</a></p>',
+    );
+  });
+
   it("gives an empty string for no body", () => {
     expect(renderFeedHtml(null, ORIGIN)).toBe("");
   });
