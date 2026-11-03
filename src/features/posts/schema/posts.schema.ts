@@ -82,14 +82,14 @@ export const ContentMarkdownOutputSchema = z
   .nullable()
   .optional()
   .describe(
-    "The body as Markdown, returned in place of contentJson when the request asks for contentFormat=markdown. Null when the post has no body, which includes a body with no content, such as one empty paragraph. Videos are written as their page link alone on a line, keeping the Bilibili part and start time; their title, cover and length are not carried.",
+    'The body as Markdown, returned in place of contentJson when the request asks for contentFormat=markdown. Null when the post has no body, which includes a body with no content, such as one empty paragraph. Bilibili and YouTube videos are written as their page link alone on a line, keeping the Bilibili part and start time; their title, cover and length are not carried. A Direct Video (a video file at an https address) is written as one line <video src="…" poster="…" title="…" data-page="…"></video>, its poster, title and source page left out when it has none and values HTML-escaped; its length is not carried.',
   );
 
 export const ContentMarkdownInputSchema = z
   .string()
   .optional()
   .describe(
-    `The body as Markdown, converted to contentJson on the server. Send either contentJson or contentMarkdown, not both (CONTENT_FORMAT_AMBIGUOUS). ${MARKDOWN_RULES} An image that is not an http(s) address or a Media path, such as a local file path, is refused with MARKDOWN_IMAGE_INVALID naming it, so upload it as Media first; a link the rules refuse answers CONTENT_LINK_INVALID naming it. The title, cover and length of a video are looked up from its provider, or kept from the body being replaced, and stay empty when the lookup fails. Column widths of every table reset to equal. An empty string writes an empty body.`,
+    `The body as Markdown, converted to contentJson on the server. Send either contentJson or contentMarkdown, not both (CONTENT_FORMAT_AMBIGUOUS). ${MARKDOWN_RULES} An image that is not an http(s) address or a Media path, such as a local file path, is refused with MARKDOWN_IMAGE_INVALID naming it, so upload it as Media first; a link the rules refuse answers CONTENT_LINK_INVALID naming it. The title, cover and length of a Bilibili or YouTube video are looked up from its provider, or kept from the body being replaced, and stay empty when the lookup fails. A Direct Video's <video> line is not looked up: its poster and title are what the line says, and it keeps the length it had in the body being replaced when its src is the same. Column widths of every table reset to equal. An empty string writes an empty body.`,
   );
 
 /** `type` and its attributes in brackets, for each type of `lists`. */

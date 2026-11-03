@@ -64,4 +64,47 @@ describe("refusedLinks", () => {
     expect(refusedLinks(doc)).toEqual(["data:,a", "javascript:void(0)"]);
     expect(refusedLinks(null)).toEqual([]);
   });
+
+  it("refuses a Direct Video's file, poster or page that is not HTTPS", () => {
+    const direct = (attrs: Record<string, unknown>) => ({
+      type: "video",
+      attrs: { provider: "direct", ...attrs },
+    });
+    const doc = {
+      type: "doc",
+      content: [
+        direct({
+          src: "https://cdn.example.com/v.mp4",
+          cover: "https://cdn.example.com/v.jpg",
+          pageUrl: "https://example.com/watch",
+        }),
+        direct({
+          src: "http://cdn.example.com/v.mp4",
+          cover: "",
+          pageUrl: null,
+        }),
+        direct({
+          src: "https://cdn.example.com/v.mp4",
+          cover: "data:image/png;base64,AA",
+          pageUrl: "javascript:alert(1)",
+        }),
+        {
+          type: "blockquote",
+          content: [direct({ src: "https://u:p@cdn.example.com/v.mp4" })],
+        },
+        // Only a Direct Video uses these attributes.
+        {
+          type: "video",
+          attrs: { provider: "youtube", videoId: "x", pageUrl: "javascript:" },
+        },
+      ],
+    };
+
+    expect(refusedLinks(doc)).toEqual([
+      "http://cdn.example.com/v.mp4",
+      "data:image/png;base64,AA",
+      "javascript:alert(1)",
+      "https://u:p@cdn.example.com/v.mp4",
+    ]);
+  });
 });

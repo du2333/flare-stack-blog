@@ -1,6 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { extractImageKey } from "@/features/media/utils/media.utils";
 import {
+  directVideoOf,
   videoMetaOf,
   videoPageUrl,
   videoSourceOf,
@@ -146,10 +147,13 @@ export function convertToPlainText(doc: JSONContent | null): string {
     else if (node.type === "video") {
       const source = videoSourceOf(node.attrs);
       const { title } = videoMetaOf(node.attrs);
-      if (source) {
-        textParts.push(
-          `\n${title ? `${title} ` : ""}${videoPageUrl(source)}\n`,
-        );
+      // 视频直链没有来源网页时，输出视频文件地址
+      const direct = source ? null : directVideoOf(node.attrs);
+      const address = source
+        ? videoPageUrl(source)
+        : direct && (direct.pageUrl ?? direct.src);
+      if (address) {
+        textParts.push(`\n${title ? `${title} ` : ""}${address}\n`);
       }
     }
 

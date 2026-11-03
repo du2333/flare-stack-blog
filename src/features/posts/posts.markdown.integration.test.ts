@@ -409,6 +409,8 @@ describe("Post content as Markdown over the Admin API", () => {
         page: 2,
         start: 90,
         ...BILIBILI_META,
+        src: null,
+        pageUrl: null,
       },
     });
 
@@ -444,9 +446,130 @@ describe("Post content as Markdown over the Admin API", () => {
           title: null,
           cover: null,
           duration: null,
+          src: null,
+          pageUrl: null,
         },
       },
     ]);
+  });
+
+  describe("Direct Videos", () => {
+    const SRC = "https://cdn.example.com/intro.mp4";
+    const LINE = `<video src="${SRC}" poster="https://cdn.example.com/intro.jpg" title="Intro &amp; more" data-page="https://example.com/watch/1"></video>`;
+
+    const direct = (attrs: Record<string, unknown>) => ({
+      type: "doc",
+      content: [
+        {
+          type: "video",
+          attrs: {
+            provider: "direct",
+            videoId: null,
+            page: null,
+            start: null,
+            title: null,
+            cover: null,
+            duration: null,
+            src: SRC,
+            pageUrl: null,
+            ...attrs,
+          },
+        },
+      ],
+    });
+
+    it("writes a <video> line as a Direct Video, looking nothing up, and reads it back", async () => {
+      const apiKey = await seedAdminApiKey();
+      const id = await createPost(apiKey, { contentMarkdown: LINE });
+
+      expect(lookUpVideo).not.toHaveBeenCalled();
+      expect((await readPost(apiKey, id)).contentJson).toEqual(
+        direct({
+          title: "Intro & more",
+          cover: "https://cdn.example.com/intro.jpg",
+          pageUrl: "https://example.com/watch/1",
+        }),
+      );
+      expect(
+        (await readPost(apiKey, id, "?contentFormat=markdown")).contentMarkdown,
+      ).toBe(`${LINE}\n`);
+    });
+
+    it("keeps the length its file had, and takes the title and poster from the Markdown", async () => {
+      const apiKey = await seedAdminApiKey();
+      const id = await createPost(apiKey, {
+        contentJson: direct({
+          title: "Old",
+          cover: "https://cdn.example.com/old.jpg",
+          duration: 95,
+        }),
+      });
+
+      const patch = await callAdminApi(apiKey, `/admin/posts/${id}`, {
+        method: "PATCH",
+        body: {
+          data: {
+            contentMarkdown: `<video src="${SRC}" title="New"></video>\n\n<video src="https://cdn.example.com/other.mp4"></video>`,
+          },
+        },
+      });
+      expect(patch.status).toBe(200);
+      const content = (await readPost(apiKey, id)).contentJson?.content;
+      expect(content?.[0].attrs).toMatchObject({
+        src: SRC,
+        title: "New",
+        cover: null,
+        duration: 95,
+      });
+      expect(content?.[1].attrs).toMatchObject({
+        src: "https://cdn.example.com/other.mp4",
+        duration: null,
+      });
+    });
+
+    it("keeps a <video> line whose file is not https as text", async () => {
+      const apiKey = await seedAdminApiKey();
+      const line = '<video src="http://cdn.example.com/a.mp4"></video>';
+      const id = await createPost(apiKey, { contentMarkdown: line });
+      expect((await readPost(apiKey, id)).contentJson).toEqual(paragraph(line));
+    });
+
+    it("refuses contentJson whose Direct Video addresses are not https, naming them", async () => {
+      const apiKey = await seedAdminApiKey();
+      const id = await createPost(apiKey, { contentJson: paragraph("Before") });
+
+      const response = await callAdminApi(apiKey, `/admin/posts/${id}`, {
+        method: "PATCH",
+        body: {
+          data: {
+            contentJson: direct({
+              src: "http://cdn.example.com/a.mp4",
+              cover: "https://cdn.example.com/a.jpg",
+              pageUrl: "javascript:alert(1)",
+            }),
+          },
+        },
+      });
+      expect(response.status).toBe(400);
+      const body = (await response.json()) as {
+        code: string;
+        data: { links: Array<string> };
+      };
+      expect(body.code).toBe("CONTENT_LINK_INVALID");
+      expect(body.data.links).toEqual([
+        "http://cdn.example.com/a.mp4",
+        "javascript:alert(1)",
+      ]);
+      expect((await readPost(apiKey, id)).contentJson).toEqual(
+        paragraph("Before"),
+      );
+
+      const fine = await callAdminApi(apiKey, `/admin/posts/${id}`, {
+        method: "PATCH",
+        body: { data: { contentJson: direct({ duration: 12 }) } },
+      });
+      expect(fine.status).toBe(200);
+    });
   });
 
   describe("contentJson follows the Markdown rules", () => {

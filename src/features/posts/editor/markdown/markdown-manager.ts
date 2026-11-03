@@ -11,10 +11,14 @@ import type { marked } from "marked";
 import { Marked } from "marked";
 import { INLINE_MATH } from "@/features/posts/editor/extensions/math-editing/syntax";
 import { createSchemaExtensions } from "@/features/posts/editor/schema";
+import type { DirectVideo } from "@/features/posts/utils/video-source";
 import {
+  directVideoAttrs,
+  directVideoOf,
   videoPageUrl,
   videoSourceOf,
 } from "@/features/posts/utils/video-source";
+import { escapeCodeHtml as escapeHtml } from "@/lib/plain-code-html";
 
 /*
  * The editor schema's Markdown dialect, shared by Markdown paste and the HTTP
@@ -32,6 +36,104 @@ const BLOCK_MATH_START = /(?:^|\n)(?= {0,3}\$\$)/;
  */
 const BLOCK_START =
   /^( {0,3})(#{1,6}(?=[ \t]|$)|>|[-+](?=[ \t]|$)|\d{1,9}(?=[.)](?:[ \t]|$))|=+[ \t]*$|-+[ \t]*$)/;
+
+/**
+ * A Direct Video's line: one `<video …></video>` tag with quoted attributes;
+ * `directVideoOfTag` decides which attributes it may have.
+ */
+const VIDEO_TAG =
+  /^ {0,3}<video((?:[ \t]+[a-z][a-z-]*[ \t]*=[ \t]*(?:"[^"\n]*"|'[^'\n]*'))*)[ \t]*>[ \t]*<\/video>[ \t]*(?:\n+|$)/i;
+const VIDEO_TAG_ATTRIBUTE =
+  /([a-z][a-z-]*)[ \t]*=[ \t]*(?:"([^"\n]*)"|'([^'\n]*)')/gi;
+// Marked looks for a block start from the second character of a block, so
+// only one after a line break is the start of a line.
+const VIDEO_TAG_LINE = /\n(?= {0,3}<video\b)/gi;
+
+/** The attributes a `<video>` line may have, and what each one holds. */
+const VIDEO_TAG_ATTRIBUTES: Record<string, keyof DirectVideo> = {
+  src: "src",
+  poster: "cover",
+  title: "title",
+  "data-page": "pageUrl",
+};
+
+const NAMED_CHARACTERS: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+};
+
+/** An attribute value with its character references read. */
+function decodeHtml(value: string): string {
+  return value.replace(
+    /&(?:#(\d{1,7})|#x([\da-f]{1,6})|([a-z]+));/gi,
+    (reference, decimal?: string, hex?: string, name?: string) => {
+      if (name) return NAMED_CHARACTERS[name.toLowerCase()] ?? reference;
+      const code = decimal
+        ? Number.parseInt(decimal, 10)
+        : Number.parseInt(hex ?? "", 16);
+      return code > 0 && code <= 0x10ffff && (code < 0xd800 || code > 0xdfff)
+        ? String.fromCodePoint(code)
+        : reference;
+    },
+  );
+}
+
+/**
+ * The Direct Video a `<video>` tag's attributes name: only the four a
+ * Direct Video's line is written with, each once, and a file `directVideoOf`
+ * accepts. A poster or page address it does not accept is dropped.
+ */
+function directVideoOfTag(attributes: string): DirectVideo | null {
+  const attrs: Record<string, string> = {};
+  for (const [, name, double, single] of attributes.matchAll(
+    VIDEO_TAG_ATTRIBUTE,
+  )) {
+    const key = VIDEO_TAG_ATTRIBUTES[name.toLowerCase()];
+    if (!key || key in attrs) return null;
+    attrs[key] = decodeHtml(double ?? single);
+  }
+  return directVideoOf({ ...attrs, provider: "direct" });
+}
+
+/** The `<video>` line at the start of `src`, if it is a Direct Video's. */
+function videoTagAt(src: string) {
+  const match = VIDEO_TAG.exec(src);
+  const video = match ? directVideoOfTag(match[1]) : null;
+  return match && video ? { raw: match[0], video } : null;
+}
+
+/** A Direct Video as its line. Its length is the file's, so is not written. */
+function videoTag(video: DirectVideo): string {
+  const attributes = [
+    `src="${escapeHtml(video.src)}"`,
+    video.cover && `poster="${escapeHtml(video.cover)}"`,
+    video.title && `title="${escapeHtml(video.title)}"`,
+    video.pageUrl && `data-page="${escapeHtml(video.pageUrl)}"`,
+  ].filter(Boolean);
+  return `<video ${attributes.join(" ")}></video>`;
+}
+
+const videoTagTokenizer: MarkdownTokenizer = {
+  name: "video",
+  level: "block",
+  // A `<video>` line ends the paragraph above it only when it is a Direct
+  // Video's, so other HTML stays in its paragraph as it did.
+  start: (src) => {
+    for (const match of src.matchAll(VIDEO_TAG_LINE)) {
+      const index = match.index + match[0].length;
+      if (videoTagAt(src.slice(index))) return index;
+    }
+    return -1;
+  },
+  tokenize: (src) => {
+    const line = videoTagAt(src);
+    if (!line) return undefined;
+    return { type: "video", raw: line.raw, video: line.video };
+  },
+};
 
 const inlineMathTokenizer: MarkdownTokenizer = {
   name: "inlineMath",
@@ -198,13 +300,20 @@ const markdownOverrides: Record<
         return `![${alt}](${src}${title})`;
       },
     }),
-  // A video is its page link alone on a line; a block that names no video
-  // has nothing to write.
+  // A provider's video is its page link alone on a line, and a Direct Video
+  // its `<video>` line; a block that names no video has nothing to write.
   video: (extension) =>
     extension.extend({
+      markdownTokenizer: videoTagTokenizer,
+      parseMarkdown: (token: MarkdownToken) => ({
+        type: "video",
+        attrs: directVideoAttrs(token.video),
+      }),
       renderMarkdown: (node: JSONContent) => {
         const source = videoSourceOf(node.attrs);
-        return source ? videoPageUrl(source) : "";
+        if (source) return videoPageUrl(source);
+        const direct = directVideoOf(node.attrs);
+        return direct ? videoTag(direct) : "";
       },
     }),
 };

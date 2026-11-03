@@ -28,7 +28,17 @@ export const POST_NODE_ATTRIBUTES: Readonly<
   tableHeader: ["colspan", "rowspan", "colwidth", "align"],
   tableCell: ["colspan", "rowspan", "colwidth", "align"],
   image: ["src", "alt", "title", "width", "height", "uploadId"],
-  video: ["provider", "videoId", "page", "start", "title", "cover", "duration"],
+  video: [
+    "provider",
+    "videoId",
+    "page",
+    "start",
+    "title",
+    "cover",
+    "duration",
+    "src",
+    "pageUrl",
+  ],
   inlineMath: ["latex"],
   blockMath: ["latex"],
 };
