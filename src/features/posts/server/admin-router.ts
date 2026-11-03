@@ -118,11 +118,13 @@ const postErrors = {
   CONTENT_LINK_INVALID: {
     status: 400,
     message:
-      "Links must be http(s), mailto or tel addresses, site paths or #fragments.",
+      "Links must be http(s), mailto or tel addresses, site paths or #fragments, and a Direct Video's addresses must be https.",
     data: z.object({
       links: z
         .array(z.string())
-        .describe("The refused link addresses, such as javascript: or data:."),
+        .describe(
+          "The refused addresses: links such as javascript: or data:, and Direct Video file, poster or page addresses (src, cover, pageUrl) that are not https.",
+        ),
     }),
   },
   POST_CONTENT_TOO_LARGE: {
@@ -268,7 +270,7 @@ function throwMarkdownContentError(
     case "CONTENT_LINK_INVALID": {
       const list = error.links.map((href) => `"${href}"`).join(", ");
       throw errors.CONTENT_LINK_INVALID({
-        message: `${error.links.length > 1 ? "Links" : "Link"} ${list} must be an http(s), mailto or tel address, a site path or a #fragment. Links such as javascript: or data: cannot be shown on a post.`,
+        message: `${error.links.length > 1 ? "Addresses" : "Address"} ${list} cannot be shown on a post. A link must be an http(s), mailto or tel address, a site path or a #fragment, not javascript: or data:, and a Direct Video's file, poster and page (src, cover, pageUrl) must be https addresses without a user name or password.`,
         data: { links: error.links },
       });
     }
