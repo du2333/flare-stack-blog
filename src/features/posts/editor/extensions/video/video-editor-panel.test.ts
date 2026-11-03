@@ -427,3 +427,30 @@ it("does not apply a video the panel was closed on while its length was read", a
   await act(async () => length(10));
   expect(onApplyDirect).not.toHaveBeenCalled();
 });
+
+it.each([
+  ["has a video", () => page(FILE), () => m.editor_video_direct_page()],
+  ["has no video", () => page(null), () => m.editor_video_direct_page_empty()],
+])(
+  "says the playback address is being read, then confirmed, when the page %s",
+  async (_, found, before) => {
+    resolve.mockResolvedValueOnce(found());
+    panel();
+    await type(PAGE);
+    expect(screen.getByRole("status").textContent).toBe(before());
+
+    let answer: (lookup: DirectVideoLookup) => void = () => {};
+    resolve.mockReturnValueOnce(new Promise((done) => (answer = done)));
+    await type(OWN_FILE, field(m.editor_video_src_label()));
+    expect(screen.getByRole("status").textContent).toBe(
+      m.editor_video_src_reading(),
+    );
+    expect(insertButton().hasAttribute("disabled")).toBe(true);
+
+    await act(async () => answer(file(OWN_FILE)));
+    expect(screen.getByRole("status").textContent).toBe(
+      m.editor_video_src_confirmed(),
+    );
+    expect(insertButton().hasAttribute("disabled")).toBe(false);
+  },
+);
