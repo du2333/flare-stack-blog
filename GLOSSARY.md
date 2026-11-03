@@ -64,6 +64,14 @@ _Avoid_: Asset
 The optional cover **Media** of a **Post**. It is not a body image and not the site-wide banner.
 _Avoid_: Banner, thumbnail, featured image, hero, OG image, 封面图
 
+**Video Embed**:
+A block in a **Post** body that plays one video: a Bilibili or YouTube video in that site's own player, or a **Direct Video**.
+_Avoid_: Video block, video card, iframe, 视频卡片
+
+**Direct Video**:
+The web address of a video file that the reader's browser plays itself, kept with an optional title, poster and the address of the page it was found on. It is not **Media**: the CMS neither stores nor tracks the file and does not know whether it is still there.
+_Avoid_: Self-hosted video, uploaded video, external video, video link, 自托管视频, 上传的视频, 外链视频
+
 **Friend Link**:
 A submitted or admin-created external site listing that can be approved for display on the public friend-links page.
 _Avoid_: Blogroll, partner link, link exchange
@@ -187,6 +195,11 @@ _Avoid_: New commit, fork update
 - A **Reply** belongs to exactly one **Comment Thread**.
 - A **Post** body can show **Media** by its path, alone or on the blog's own address, only while that **Media** exists; an image a draft already showed by that path before its **Media** was gone may stay. The same path on another address is an external image.
 - A **Media** item cannot be deleted from the media library while it appears in the editable **Post**, in a **Public Content Snapshot** or in a **Post Revision**, so restoring a **Post Revision** never brings back a deleted image. Deleting the **Post Revision** releases it.
+- A **Post** body can contain zero or more **Video Embeds**.
+- A Bilibili or YouTube **Video Embed** can only name a video on that site. A **Direct Video** can be at any HTTPS address.
+- A **Direct Video** whose file is no longer served stays in the **Post** and fails to play; the CMS neither prevents nor reports it.
+- A **Direct Video** is always a video file. A page whose video is another site's player, not a file, cannot become a **Direct Video**.
+- The title and poster of a **Direct Video** are read once, when it is embedded, and kept on the **Video Embed**; the Admin may change them. Readers never wait on the page or host they came from.
 - A **Media** file name follows the rules of a **Tag** name (trimmed, not empty, no control or format characters) up to 255 characters. Replacing a **Media** file keeps its image type; another type is refused, because the key's extension and the type served at it must agree.
 - A user-submitted **Friend Link** belongs to its submitting **User**; review notifications use that **User**’s account email. An admin-created **Friend Link** may have no submitting **User**.
 - A rejected **Friend Link** can be revised and resubmitted by its submitting **User**.
@@ -238,4 +251,5 @@ _Avoid_: New commit, fork update
 - Chinese「分类」is **Category**, not **Tag**.
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
 - "封面图", "banner", "featured image", and "OG image" are not glossary terms. Per-Post cover is **Post Cover**. The site-wide Fuwari banner is **Site Config** `theme.fuwari.homeBg`.
+- 「自托管视频」 is not a glossary term. A video on the Admin's own server is a **Direct Video** like any other; the CMS does not distinguish where a **Direct Video** is hosted.
 - "Version" is ambiguous. For Post content, use **Public Content Snapshot** or **Post Revision**. For deployed CMS code, use **Application Release** or **Running Application Release**.
