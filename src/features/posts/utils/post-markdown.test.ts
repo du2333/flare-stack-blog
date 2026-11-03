@@ -309,6 +309,138 @@ describe("Post content as Markdown", () => {
     ).toEqual(["paragraph", "paragraph", "video"]);
   });
 
+  it("writes a Direct Video as its <video> line, escaped, and reads it back", () => {
+    const direct = video({
+      provider: "direct",
+      src: "https://cdn.example.com/a.mp4?x=1&y=2",
+      cover: "https://cdn.example.com/a.jpg",
+      title: 'Say "hi" & <wave>',
+      pageUrl: "https://example.com/watch/1",
+    });
+    const bare = video({
+      provider: "direct",
+      src: "https://cdn.example.com/b.mp4",
+    });
+    const content = doc(direct, bare);
+
+    expect(postContentToMarkdown(editorJson(content))).toBe(
+      [
+        '<video src="https://cdn.example.com/a.mp4?x=1&amp;y=2" poster="https://cdn.example.com/a.jpg" title="Say &quot;hi&quot; &amp; &lt;wave&gt;" data-page="https://example.com/watch/1"></video>',
+        '<video src="https://cdn.example.com/b.mp4"></video>',
+      ].join("\n\n") + "\n",
+    );
+    expect(roundTrip(content)).toEqual(editorJson(content));
+  });
+
+  it("does not write a Direct Video's length", () => {
+    const content = doc(
+      video({
+        provider: "direct",
+        src: "https://cdn.example.com/a.mp4",
+        duration: 95,
+      }),
+    );
+    expect(roundTrip(content)).toEqual(
+      editorJson(
+        doc(
+          video({ provider: "direct", src: "https://cdn.example.com/a.mp4" }),
+        ),
+      ),
+    );
+  });
+
+  it("reads a <video> line's four attributes in any order and quoting", () => {
+    expect(
+      fromMarkdown(
+        "<VIDEO data-page='https://example.com/w' TITLE=\"&#26631;&#x9898;\" poster=\"https://cdn.example.com/p.jpg\" src='https://cdn.example.com/v.mp4' ></video>",
+      ),
+    ).toEqual(
+      editorJson(
+        doc(
+          video({
+            provider: "direct",
+            src: "https://cdn.example.com/v.mp4",
+            cover: "https://cdn.example.com/p.jpg",
+            title: "标题",
+            pageUrl: "https://example.com/w",
+          }),
+        ),
+      ),
+    );
+  });
+
+  it("drops a <video> line's poster or page when it is not HTTPS", () => {
+    expect(
+      fromMarkdown(
+        '<video src="https://cdn.example.com/v.mp4" poster="http://cdn.example.com/p.jpg" data-page="javascript:alert(1)"></video>',
+      ),
+    ).toEqual(
+      editorJson(
+        doc(
+          video({ provider: "direct", src: "https://cdn.example.com/v.mp4" }),
+        ),
+      ),
+    );
+  });
+
+  it("keeps any other <video> tag, and other HTML, as text", () => {
+    const lines = [
+      '<video src="http://cdn.example.com/v.mp4"></video>',
+      '<video src="javascript:alert(1)"></video>',
+      '<video src="https://user:pw@cdn.example.com/v.mp4"></video>',
+      '<video poster="https://cdn.example.com/p.jpg"></video>',
+      '<video src="https://cdn.example.com/v.mp4" onerror="x()"></video>',
+      '<video src="https://cdn.example.com/v.mp4" controls></video>',
+      '<video src="https://cdn.example.com/v.mp4" src="https://cdn.example.com/w.mp4"></video>',
+      '<video src="https://cdn.example.com/v.mp4"></video> and more',
+      '<video src="https://cdn.example.com/v.mp4">',
+      '<video\nsrc="https://cdn.example.com/v.mp4"></video>',
+      '<div data-type="video" data-provider="direct"></div>',
+    ];
+    expect(fromMarkdown(lines.join("\n\n"))).toEqual(
+      editorJson(doc(...lines.map((line) => paragraph(text(line))))),
+    );
+    // A paragraph keeps the lines it had.
+    const kept = 'a\n<video src="http://cdn.example.com/v.mp4"></video>\nb';
+    expect(fromMarkdown(kept)).toEqual(editorJson(doc(paragraph(text(kept)))));
+  });
+
+  it("makes a Direct Video of a <video> line inside a paragraph", () => {
+    expect(
+      fromMarkdown(
+        'Before\n<video src="https://cdn.example.com/v.mp4"></video>\nAfter',
+      ),
+    ).toEqual(
+      editorJson(
+        doc(
+          paragraph(text("Before")),
+          video({ provider: "direct", src: "https://cdn.example.com/v.mp4" }),
+          paragraph(text("After")),
+        ),
+      ),
+    );
+  });
+
+  it("keeps text that reads like a <video> line as text", () => {
+    const content = doc(
+      paragraph(text('<video src="https://cdn.example.com/v.mp4"></video>')),
+    );
+    expect(postContentToMarkdown(editorJson(content))).not.toContain("<video");
+  });
+
+  it("writes nothing for a Direct Video with no HTTPS file", () => {
+    expect(
+      postContentToMarkdown(
+        editorJson(
+          doc(
+            video({ provider: "direct", src: "http://cdn.example.com/v.mp4" }),
+            paragraph(text("after")),
+          ),
+        ),
+      ),
+    ).toBe("after\n");
+  });
+
   it("flattens merged cells and cells of several lines, as the rules say", () => {
     const merged = doc({
       type: "table",

@@ -7,6 +7,7 @@ import { inspectPostContent } from "@/features/posts/utils/post-content-rules";
 import { refusedLinks } from "@/features/posts/utils/refused-links";
 import type { VideoMeta } from "@/features/posts/utils/video-source";
 import {
+  directVideoOf,
   videoMetaOf,
   videoSourceOf,
 } from "@/features/posts/utils/video-source";
@@ -45,10 +46,12 @@ function hasMeta(meta: VideoMeta) {
 
 /**
  * What Markdown cannot say about the body it replaces: the title, cover and
- * length of each video and the size of each image.
+ * length of each provider's video, the length of each Direct Video's file
+ * and the size of each image.
  */
 function knownDetails(previous: JSONContent | null) {
   const videos = new Map<string, VideoMeta>();
+  const durations = new Map<string, number>();
   const images = new Map<string, { width: unknown; height: unknown }>();
   if (previous) {
     walk(previous, (node) => {
@@ -56,6 +59,8 @@ function knownDetails(previous: JSONContent | null) {
         const key = videoKey(node.attrs);
         const meta = videoMetaOf(node.attrs);
         if (key && hasMeta(meta)) videos.set(key, meta);
+        const direct = directVideoOf(node.attrs);
+        if (direct?.duration) durations.set(direct.src, direct.duration);
       } else if (node.type === "image" && node.attrs?.src) {
         const { width = null, height = null } = node.attrs;
         if (width !== null || height !== null) {
@@ -64,12 +69,14 @@ function knownDetails(previous: JSONContent | null) {
       }
     });
   }
-  return { videos, images };
+  return { videos, durations, images };
 }
 
 /**
- * Gives every video the title, cover and length it had in `previous`, or
- * else what its provider says. A failed lookup leaves them empty.
+ * Gives every provider's video the title, cover and length it had in
+ * `previous`, or else what its provider says. A failed lookup leaves them
+ * empty. Nothing is looked up for a Direct Video: its title and poster are
+ * what the Markdown says, and its length is the one its file had.
  */
 async function withDetails(
   contentJson: JSONContent,
@@ -96,7 +103,10 @@ async function withDetails(
     if (node.type === "video") {
       const key = videoKey(node.attrs);
       const meta = key ? known.videos.get(key) : undefined;
-      return meta ? { ...node, attrs: { ...node.attrs, ...meta } } : node;
+      if (meta) return { ...node, attrs: { ...node.attrs, ...meta } };
+      const direct = directVideoOf(node.attrs);
+      const duration = direct && known.durations.get(direct.src);
+      return duration ? { ...node, attrs: { ...node.attrs, duration } } : node;
     }
     if (node.type === "image") {
       const size = known.images.get(String(node.attrs?.src));
