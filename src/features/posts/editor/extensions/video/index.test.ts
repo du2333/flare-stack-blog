@@ -344,7 +344,12 @@ it("hands the lookup it was configured with to the panel", () => {
   });
   editor = target;
   expect(getDirectVideoResolver(target)).toBe(resolveDirectVideo);
-  expect(getDirectVideoResolver(open())).toBeUndefined();
+  const unconfigured = new HeadlessEditor({
+    element: document.createElement("div"),
+    extensions: [StarterKit, VideoEditing],
+  });
+  expect(getDirectVideoResolver(unconfigured)).toBeUndefined();
+  unconfigured.destroy();
 });
 
 it("never looks metadata up for a Direct Video", async () => {
