@@ -12,7 +12,8 @@ import { useMomentRefresh } from "./use-moment-refresh";
 
 /**
  * Edit and delete for one Moment. Editing is the card's to show, in place;
- * deleting asks first, because it takes effect at once and keeps no history.
+ * deleting asks first, because it takes effect at once and keeps no history,
+ * and says how many comments go with the Moment.
  */
 export function MomentAdminActions({
   moment,
@@ -60,7 +61,13 @@ export function MomentAdminActions({
         onClose={() => setConfirming(false)}
         onConfirm={() => remove.mutate()}
         title={m.moment_admin_delete_title()}
-        message={m.moment_admin_delete_message()}
+        message={
+          moment.commentCount > 0
+            ? m.moment_admin_delete_message_with_comments({
+                count: moment.commentCount,
+              })
+            : m.moment_admin_delete_message()
+        }
         confirmLabel={m.moment_admin_delete_confirm()}
         isDanger
         isLoading={remove.isPending}

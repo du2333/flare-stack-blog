@@ -38,6 +38,27 @@ vi.mock("sonner", () => ({
 const router = vi.hoisted(() => ({ invalidate: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({
   ClientOnly: ({ children }: { children: ReactNode }) => children,
+  // The address a link names is the router's to build; its test is in moment-route.test.ts.
+  Link: ({
+    to,
+    params,
+    hash,
+    children,
+    ...rest
+  }: {
+    to: string;
+    params: Record<string, string>;
+    hash?: string;
+    children: ReactNode;
+  }) =>
+    createElement(
+      "a",
+      {
+        ...rest,
+        href: `${to.replace("$id", params.id)}${hash ? `#${hash}` : ""}`,
+      },
+      children,
+    ),
   useRouter: () => router,
   useRouteContext: () => ({
     siteConfig: {
@@ -835,6 +856,73 @@ it("asks before deleting, then deletes and refreshes", async () => {
   );
   expect(invalidated).toHaveBeenCalledWith({ queryKey: ["moments"] });
   expect(router.invalidate).toHaveBeenCalled();
+});
+
+it("says how many comments go with a Moment that has some", async () => {
+  renderWithClient(
+    createElement(MomentAdminActions, {
+      moment: stored({ commentCount: 12 }),
+      onEdit: vi.fn(),
+    }),
+  );
+
+  fireEvent.click(button(m.moment_admin_delete()));
+  const dialog = await screen.findByRole("dialog");
+  expect(
+    within(dialog).getByText(
+      m.moment_admin_delete_message_with_comments({ count: 12 }),
+    ).textContent,
+  ).toContain("12");
+  expect(
+    within(dialog).queryByText(m.moment_admin_delete_message()),
+  ).toBeNull();
+});
+
+it("leaves the comments out of the delete message when there are none", async () => {
+  renderWithClient(
+    createElement(MomentAdminActions, { moment: stored(), onEdit: vi.fn() }),
+  );
+
+  fireEvent.click(button(m.moment_admin_delete()));
+  const dialog = await screen.findByRole("dialog");
+  expect(
+    within(dialog).getByText(m.moment_admin_delete_message()),
+  ).toBeTruthy();
+});
+
+it("shows the comment count with a comment icon, linking to the comment section", () => {
+  admin.value = false;
+  renderWithClient(
+    createElement(MomentCard, { moment: stored({ commentCount: 3 }) }),
+  );
+
+  const link = screen.getByRole("link", {
+    name: m.moments_comments_count({ count: 3 }),
+  });
+  expect(link.getAttribute("href")).toBe("/moments/7#comments");
+  expect(link.textContent).toBe("3");
+  expect(link.querySelector("svg")).toBeTruthy();
+});
+
+it("shows 评论 instead of 0 on a Moment nobody has commented on", () => {
+  admin.value = false;
+  renderWithClient(createElement(MomentCard, { moment: stored() }));
+
+  const link = screen.getByRole("link", { name: m.moments_comments() });
+  expect(link.getAttribute("href")).toBe("/moments/7#comments");
+  expect(link.textContent).toBe(m.moments_comments());
+  expect(link.textContent).not.toContain("0");
+});
+
+it("shows the count to the Admin too, but not while the card is being edited", () => {
+  api.get.mockResolvedValue(stored());
+  renderWithClient(
+    createElement(MomentCard, { moment: stored({ commentCount: 2 }) }),
+  );
+
+  expect(screen.getByRole("link", { name: /2/ })).toBeTruthy();
+  fireEvent.click(button(m.moment_admin_edit()));
+  expect(screen.queryByRole("link", { name: /2/ })).toBeNull();
 });
 
 it("does not delete when the Admin backs out", async () => {
