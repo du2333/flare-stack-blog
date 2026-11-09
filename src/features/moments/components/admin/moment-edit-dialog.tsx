@@ -197,7 +197,7 @@ export function MomentEditDialog({
         onClose={onClose}
         busy={save.isPending}
         labelledBy={titleId}
-        className="fuwari-modal-wide"
+        className="fuwari-modal-wide fuwari-modal-top"
       >
         <div className="flex flex-col gap-4 p-5">
           <h2 id={titleId} className="text-lg font-medium fuwari-text-90">
