@@ -10,6 +10,11 @@ import {
 import { createFeed, type FeedFlavor } from "@/features/posts/utils/feed";
 import { getDb } from "@/lib/db";
 import { m } from "@/paraglide/messages";
+import { baseLocale, type Locale } from "@/paraglide/runtime";
+
+// The feeds are cached by path only, so they cannot follow the request locale:
+// they are always written in the site's base locale.
+const FEED_LOCALE: { locale: Locale } = { locale: baseLocale as Locale };
 
 // As many entries as the Post feeds.
 const FEED_ITEMS = 100;
@@ -23,8 +28,8 @@ function titleOf(moment: { text: string; video: unknown; postedAt: Date }) {
   if (fromText !== null) return fromText;
   const date = moment.postedAt.toISOString().slice(0, 10);
   return moment.video
-    ? m.moments_feed_video_item_title({ date })
-    : m.moments_feed_images_item_title({ date });
+    ? m.moments_feed_video_item_title({ date }, FEED_LOCALE)
+    : m.moments_feed_images_item_title({ date }, FEED_LOCALE);
 }
 
 /** The Moments feed in one format, built as the Post feed is (`feed.ts`). */
@@ -47,7 +52,11 @@ async function buildFeed(
     env,
     executionCtx,
     flavor,
-    { updated, titleSuffix: m.moments_feed_title(), path: "/moments" },
+    {
+      updated,
+      titleSuffix: m.moments_feed_title({}, FEED_LOCALE),
+      path: "/moments",
+    },
   );
 
   for (const moment of moments) {
