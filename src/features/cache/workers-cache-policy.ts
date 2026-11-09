@@ -14,14 +14,20 @@ const POSTS_TAG = "posts";
 // Only the pages that render view counts or the popular ranking.
 const POPULARITY_TAG = "popularity";
 const FRIEND_LINKS_TAG = "friend-links";
-// The Moments list pages and the home sidebar's latest Moments.
+// The Moments list pages, the home sidebar's latest Moments, the Moments feeds
+// and the Moments in the sitemap.
 const MOMENTS_TAG = "moments";
 
 const SITE_DOCUMENTS_WITH_POSTS = new Set([
   "/atom.xml",
   "/rss.xml",
   "/feed.json",
-  "/sitemap.xml",
+]);
+
+const SITE_DOCUMENTS_WITH_MOMENTS = new Set([
+  "/moments/atom.xml",
+  "/moments/rss.xml",
+  "/moments/feed.json",
 ]);
 
 const SITE_DOCUMENTS_HTML_ONLY = new Set(["/robots.txt", "/site.webmanifest"]);
@@ -103,6 +109,12 @@ export function workersCachePolicy(pathname: string): WorkersCachePolicy {
   }
   if (SITE_DOCUMENTS_WITH_POSTS.has(path)) {
     return { cache: "public", tags: [HTML_TAG, POSTS_TAG] };
+  }
+  if (path === "/sitemap.xml") {
+    return { cache: "public", tags: [HTML_TAG, POSTS_TAG, MOMENTS_TAG] };
+  }
+  if (SITE_DOCUMENTS_WITH_MOMENTS.has(path)) {
+    return { cache: "public", tags: [HTML_TAG, MOMENTS_TAG] };
   }
   if (SITE_DOCUMENTS_HTML_ONLY.has(path)) {
     return { cache: "public", tags: [HTML_TAG] };
