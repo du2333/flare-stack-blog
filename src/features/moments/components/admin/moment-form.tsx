@@ -418,7 +418,13 @@ export function MomentForm({
             collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]",
           )}
         >
-          <div className="-mx-1 -mb-1 flex min-h-0 flex-col gap-3 overflow-hidden px-1 pb-1">
+          {/* The bottom padding leaves room for focus rings while open; collapsed it would hold the top of the toolbar open. */}
+          <div
+            className={cn(
+              "-mx-1 flex min-h-0 flex-col gap-3 overflow-hidden px-1",
+              collapsed ? "pb-0" : "-mb-1 pb-1",
+            )}
+          >
             {hasImages || pending.length > 0 ? (
               <MomentImageGrid
                 images={draft.images}
