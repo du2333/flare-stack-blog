@@ -4,15 +4,16 @@ import { withoutControlCharacters } from "@/lib/unicode-text";
 export const MEDIA_NAME_MAX_LENGTH = 255;
 
 /**
- * How posts use an image: in a draft or published version (`current`), only in
- * Post Revisions, which restoring would bring back (`revisions-only`), or not
- * at all.
+ * How an image is used: by a post's draft or published version or by a
+ * Moment (`current`), only in Post Revisions, which restoring would bring back
+ * (`revisions-only`), or not at all.
  */
 export function mediaUsageOf(counts: {
   postCount: number;
   revisionOnlyPostCount: number;
+  momentCount: number;
 }): "current" | "revisions-only" | "none" {
-  if (counts.postCount > 0) return "current";
+  if (counts.postCount > 0 || counts.momentCount > 0) return "current";
   return counts.revisionOnlyPostCount > 0 ? "revisions-only" : "none";
 }
 

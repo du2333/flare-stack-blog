@@ -172,14 +172,20 @@ describe("isSameImageType", () => {
 
 describe("mediaUsageOf", () => {
   it("tells current use from use only in Post Revisions", () => {
-    expect(mediaUsageOf({ postCount: 2, revisionOnlyPostCount: 1 })).toBe(
-      "current",
-    );
-    expect(mediaUsageOf({ postCount: 0, revisionOnlyPostCount: 1 })).toBe(
-      "revisions-only",
-    );
-    expect(mediaUsageOf({ postCount: 0, revisionOnlyPostCount: 0 })).toBe(
-      "none",
-    );
+    expect(
+      mediaUsageOf({ postCount: 2, revisionOnlyPostCount: 1, momentCount: 0 }),
+    ).toBe("current");
+    expect(
+      mediaUsageOf({ postCount: 0, revisionOnlyPostCount: 1, momentCount: 0 }),
+    ).toBe("revisions-only");
+    expect(
+      mediaUsageOf({ postCount: 0, revisionOnlyPostCount: 0, momentCount: 0 }),
+    ).toBe("none");
+  });
+
+  it("counts an image a Moment shows as in use", () => {
+    expect(
+      mediaUsageOf({ postCount: 0, revisionOnlyPostCount: 1, momentCount: 1 }),
+    ).toBe("current");
   });
 });
