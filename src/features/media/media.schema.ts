@@ -52,8 +52,11 @@ export const MediaListItemSchema = MediaSelectSchema.extend({
   revisionOnlyPostCount: z
     .number()
     .describe(
-      "How many posts use the image only in a Post Revision, not in the draft or the published version. Restoring such a revision brings the image back, so an image with postCount or revisionOnlyPostCount above 0 cannot be deleted.",
+      "How many posts use the image only in a Post Revision, not in the draft or the published version. Restoring such a revision brings the image back, so an image with postCount, revisionOnlyPostCount or momentCount above 0 cannot be deleted.",
     ),
+  momentCount: z
+    .number()
+    .describe("How many Moments show the image among their images."),
   isCover: z
     .boolean()
     .describe("True when a post uses the image as its cover."),
@@ -73,7 +76,7 @@ export const MediaStatsSchema = z.object({
     .number()
     .int()
     .describe(
-      "Images no post uses (draft, published version or Post Revision) and no Admin has as an avatar.",
+      "Images no post uses (draft, published version or Post Revision), no Moment shows and no Admin has as an avatar.",
     ),
   totalBytes: z.number().int(),
 });

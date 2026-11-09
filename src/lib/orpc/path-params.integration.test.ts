@@ -6,7 +6,12 @@ import {
 } from "tests/test-utils";
 import { describe, expect, it } from "vitest";
 import { getDb } from "@/lib/db";
-import { CommentsTable, FriendLinksTable, MediaTable } from "@/lib/db/schema";
+import {
+  CommentsTable,
+  FriendLinksTable,
+  MediaTable,
+  MomentsTable,
+} from "@/lib/db/schema";
 import { createApiContext } from "@/lib/orpc/create-context";
 import { handleApiRequest, openAPIHandler } from "@/lib/orpc/openapi-handler";
 
@@ -136,6 +141,10 @@ async function seedPairs(apiKey: string) {
       })),
     )
     .returning({ id: FriendLinksTable.id });
+  const moments = await db
+    .insert(MomentsTable)
+    .values(["a", "b"].map((text) => ({ text })))
+    .returning({ id: MomentsTable.id });
   const mediaKeys = ["path-a.png", "path-b.png"];
   await db.insert(MediaTable).values(
     mediaKeys.map((key) => ({
@@ -155,6 +164,7 @@ async function seedPairs(apiKey: string) {
     comments: [comments[0].id, comments[1].id],
     "friend-links": [friendLinks[0].id, friendLinks[1].id],
     media: [mediaKeys[0], mediaKeys[1]],
+    moments: [moments[0].id, moments[1].id],
     "muted-users": [userIds[0], userIds[1]],
     slugs: [posts[0].slug, posts[1].slug],
   };

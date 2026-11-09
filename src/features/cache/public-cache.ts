@@ -292,6 +292,24 @@ export const invalidate = {
       purgeOptionsFor("post.deleted", params),
     );
   },
+  /**
+   * A Moment was posted, edited or deleted. `navigationChanged` says the
+   * site went from no Moments to some or back, which every page's public
+   * navigation shows.
+   */
+  async momentChanged(
+    context: InvalidateContext,
+    params: { id: number; navigationChanged: boolean },
+  ) {
+    await run("moment.changed", context, { id: params.id });
+    await purgeWorkersCache(
+      context.executionCtx,
+      purgeOptionsFor("moment.changed", {
+        momentId: params.id,
+        navigationChanged: params.navigationChanged,
+      }),
+    );
+  },
   async tagChanged(context: InvalidateContext, params?: { slugs?: string[] }) {
     const slugs = params?.slugs ?? [];
     if (slugs.length === 0) {

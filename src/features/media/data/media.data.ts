@@ -3,6 +3,7 @@ import { and, count, desc, eq, inArray, lt, or, sql, sum } from "drizzle-orm";
 import { containsText } from "@/lib/db/text-match";
 import {
   MediaTable,
+  MomentImagesTable,
   PostMediaTable,
   PostRevisionMediaTable,
   PostRevisionsTable,
@@ -17,12 +18,13 @@ export type Media = typeof MediaTable.$inferSelect;
 const usedAsAdminAvatar = sql`exists (select 1 from ${user} where ${user.role} = 'admin' and instr(${user.image}, '/images/' || ${MediaTable.key}) > 0)`;
 
 // A Post Revision's images count too, so restoring it never brings back a
-// deleted image.
-const unreferenced = sql`not exists (select 1 from ${PostMediaTable} where ${PostMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${PostRevisionMediaTable} where ${PostRevisionMediaTable.mediaId} = ${MediaTable.id}) and not ${usedAsAdminAvatar}`;
+// deleted image, and so do a Moment's.
+const unreferenced = sql`not exists (select 1 from ${PostMediaTable} where ${PostMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${PostRevisionMediaTable} where ${PostRevisionMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${MomentImagesTable} where ${MomentImagesTable.mediaId} = ${MediaTable.id}) and not ${usedAsAdminAvatar}`;
 
 export type MediaListItem = Media & {
   postCount: number;
   revisionOnlyPostCount: number;
+  momentCount: number;
   isCover: boolean;
 };
 
@@ -57,10 +59,10 @@ export async function findMediaByKey(
 
 /**
  * Deletes the Media with `key` unless something uses it: a Post (draft,
- * Public Content Snapshot or cover), a Post Revision or an Admin's avatar.
- * The check and the delete are one statement, so a Post write that records
- * the Media in the meantime (`mediaReferenceGuards`) makes it refuse. Returns
- * whether it deleted.
+ * Public Content Snapshot or cover), a Post Revision, a Moment or an Admin's
+ * avatar. The check and the delete are one statement, so a Post or Moment
+ * write that records the Media in the meantime (`mediaReferenceGuards`,
+ * `moments.data.ts`) makes it refuse. Returns whether it deleted.
  */
 export async function deleteMediaIfUnused(db: DB, key: string) {
   const deleted = await db
@@ -198,7 +200,7 @@ async function withUsage(
   if (items.length === 0) return [];
 
   const ids = items.map((item) => item.id);
-  const [postRows, revisionRows, coverRows] = await Promise.all([
+  const [postRows, revisionRows, coverRows, momentRows] = await Promise.all([
     db
       .select({
         mediaId: PostMediaTable.mediaId,
@@ -229,7 +231,18 @@ async function withUsage(
           inArray(snapshotCoverMediaId, ids),
         ),
       ),
+    db
+      .select({
+        mediaId: MomentImagesTable.mediaId,
+        momentCount: sql<number>`count(distinct ${MomentImagesTable.momentId})`,
+      })
+      .from(MomentImagesTable)
+      .where(inArray(MomentImagesTable.mediaId, ids))
+      .groupBy(MomentImagesTable.mediaId),
   ]);
+  const momentCounts = new Map(
+    momentRows.map((row) => [row.mediaId, Number(row.momentCount)]),
+  );
 
   const groupByMedia = (rows: Array<{ mediaId: number; postId: number }>) => {
     const postIdsById = new Map<number, Set<number>>();
@@ -258,6 +271,7 @@ async function withUsage(
     revisionOnlyPostCount: [...(revisionPostIds.get(item.id) ?? [])].filter(
       (postId) => !currentPostIds.get(item.id)?.has(postId),
     ).length,
+    momentCount: momentCounts.get(item.id) ?? 0,
     isCover: coverIds.has(item.id),
   }));
 }
