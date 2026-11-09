@@ -1,19 +1,27 @@
-import { PublicPageHeading } from "@/components/ui/page-heading";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { MomentCard } from "@/features/moments/components/moment-card";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import { m } from "@/paraglide/messages";
 
-/** One Moment on a page of its own, with the way back to the timeline. */
+/**
+ * One Moment on a page of its own, with the way back to the timeline. Like
+ * the other public pages it opens on a card, not a title over the banner.
+ */
 export function MomentPage({ moment }: { moment: PublicMoment }) {
   return (
     <div
       className="fuwari-onload-animation flex flex-col gap-4"
       style={{ animationDelay: "var(--fuwari-content-delay)" }}
     >
-      <PublicPageHeading
-        title={m.moments_title()}
-        back={{ to: "/moments", label: m.moments_all() }}
-      />
+      <h1 className="sr-only">{m.moments_title()}</h1>
+      <Link
+        to="/moments"
+        className="fuwari-card-base inline-flex w-fit items-center gap-1.5 px-4 py-2 text-sm font-medium fuwari-text-75 transition hover:text-(--fuwari-primary)"
+      >
+        <ArrowLeft size={16} aria-hidden="true" />
+        {m.moments_all()}
+      </Link>
       <MomentCard moment={moment} />
     </div>
   );
