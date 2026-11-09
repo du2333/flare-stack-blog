@@ -32,7 +32,7 @@ function getPublicFeedEmail(social: SiteConfig["social"]) {
   return EMAIL_PATTERN.test(address) ? address : undefined;
 }
 
-type FeedFlavor = "json" | "rss" | "atom";
+export type FeedFlavor = "json" | "rss" | "atom";
 
 /**
  * The feed in one format. A title and a summary are plain text; RSS takes the
@@ -41,20 +41,60 @@ type FeedFlavor = "json" | "rss" | "atom";
  * every field also loses what XML 1.0 forbids and has its `]]>` split, which
  * the library does not do (see feed-xml.ts).
  */
+export async function createFeed(
+  env: Env,
+  executionCtx: ExecutionContext,
+  flavor: FeedFlavor,
+  options: {
+    updated: Date | undefined;
+    /** Added to the site's title, for a feed of a part of the site. */
+    titleSuffix?: string;
+    /** The site path the feed describes; the site's home by default. */
+    path?: string;
+  },
+) {
+  const xml = flavor !== "json";
+  const text = xml ? textField : (value: string) => value;
+  const siteConfig = await ConfigService.getSiteConfig({
+    env,
+    db: getDb(env),
+    executionCtx,
+  });
+  const { DOMAIN } = serverEnv(env);
+  const year = new Date().getUTCFullYear();
+  const email = getPublicFeedEmail(siteConfig.social);
+  const feedAuthor = {
+    name: text(siteConfig.author),
+    email: email === undefined ? undefined : text(email),
+    link: `https://${DOMAIN}/`,
+  };
+  const address = `https://${DOMAIN}${options.path ?? "/"}`;
+
+  const feed = new Feed({
+    updated: options.updated,
+    title: text(
+      options.titleSuffix === undefined
+        ? siteConfig.title
+        : `${siteConfig.title} · ${options.titleSuffix}`,
+    ),
+    description: text(siteConfig.description),
+    id: address,
+    link: address,
+    favicon: `https://${DOMAIN}/favicon.ico`,
+    copyright: text(`All rights reserved ${year}, ${siteConfig.author}`),
+    generator: text(siteConfig.title),
+    author: feedAuthor,
+  });
+
+  return { feed, text, feedAuthor, origin: `https://${DOMAIN}` };
+}
+
 async function buildFeed(
   env: Env,
   executionCtx: ExecutionContext,
   flavor: FeedFlavor,
 ) {
-  const xml = flavor !== "json";
-  const text = xml ? textField : (value: string) => value;
-  const db = getDb(env);
-  const siteConfig = await ConfigService.getSiteConfig({
-    env,
-    db,
-    executionCtx,
-  });
-  const posts = await db
+  const posts = await getDb(env)
     .select({
       id: PostsTable.id,
       publicSnapshotJson: PostsTable.publicSnapshotJson,
@@ -68,14 +108,6 @@ async function buildFeed(
       ),
     )
     .limit(100);
-  const { DOMAIN } = serverEnv(env);
-  const year = new Date().getUTCFullYear();
-  const email = getPublicFeedEmail(siteConfig.social);
-  const feedAuthor = {
-    name: text(siteConfig.author),
-    email: email === undefined ? undefined : text(email),
-    link: `https://${DOMAIN}/`,
-  };
 
   // The feed was last updated when its newest change was published, not when
   // it was built and not when a draft was saved.
@@ -85,26 +117,21 @@ async function buildFeed(
     return !latest || modifiedAt > latest ? modifiedAt : latest;
   }, undefined);
 
-  const feed = new Feed({
-    updated,
-    title: text(siteConfig.title),
-    description: text(siteConfig.description),
-    id: `https://${DOMAIN}/`,
-    link: `https://${DOMAIN}/`,
-    favicon: `https://${DOMAIN}/favicon.ico`,
-    copyright: text(`All rights reserved ${year}, ${siteConfig.author}`),
-    generator: text(siteConfig.title),
-    author: feedAuthor,
-  });
+  const { feed, feedAuthor, origin } = await createFeed(
+    env,
+    executionCtx,
+    flavor,
+    { updated },
+  );
 
   posts.forEach((post) => {
     const snapshot = post.publicSnapshotJson;
     if (!snapshot) return;
     const summary = snapshot.summary ?? "";
-    const html = renderFeedHtml(snapshot.contentJson, `https://${DOMAIN}`);
+    const html = renderFeedHtml(snapshot.contentJson, origin);
     feed.addItem({
       id: post.id.toString(),
-      link: `https://${DOMAIN}/post/${encodeURIComponent(post.publicSlug ?? snapshot.slug)}`,
+      link: `${origin}/post/${encodeURIComponent(post.publicSlug ?? snapshot.slug)}`,
       ...(flavor === "json"
         ? { title: snapshot.title, description: summary, content: html }
         : {

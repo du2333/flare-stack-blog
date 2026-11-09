@@ -124,6 +124,23 @@ describe("workersCachePolicy", () => {
     });
   });
 
+  it("tags the Moments feeds and the sitemap with moments", () => {
+    for (const path of [
+      "/moments/rss.xml",
+      "/moments/atom.xml",
+      "/moments/feed.json",
+    ]) {
+      expect(workersCachePolicy(path)).toEqual({
+        cache: "public",
+        tags: ["html", "moments"],
+      });
+    }
+    expect(workersCachePolicy("/sitemap.xml")).toEqual({
+      cache: "public",
+      tags: ["html", "posts", "moments"],
+    });
+  });
+
   it("tags images by their Media key only", () => {
     expect(workersCachePolicy("/images/cover.webp")).toEqual({
       cache: "public",
@@ -253,6 +270,10 @@ describe("purgeOptionsFor", () => {
       "/moments",
       "/moments/7",
       "/moments/8",
+      "/moments/rss.xml",
+      "/moments/atom.xml",
+      "/moments/feed.json",
+      "/sitemap.xml",
       "/posts",
       "/post/hello",
       "/friend-links",
@@ -265,7 +286,15 @@ describe("purgeOptionsFor", () => {
         policy.tags.some((tag) => target.tags.includes(tag))
       );
     });
-    expect(purged).toEqual(["/", "/moments", "/moments/7"]);
+    expect(purged).toEqual([
+      "/",
+      "/moments",
+      "/moments/7",
+      "/moments/rss.xml",
+      "/moments/atom.xml",
+      "/moments/feed.json",
+      "/sitemap.xml",
+    ]);
   });
 
   it("purges every page with the public navigation when Moments appear or disappear", () => {

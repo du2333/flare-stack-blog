@@ -34,6 +34,9 @@ import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as ApiAuthRouteImport } from './routes/api.auth'
 import { Route as ApiSendRouteImport } from './routes/api.send'
 import { Route as ImagesSplatRouteImport } from './routes/images.$'
+import { Route as MomentsAtomDotxmlRouteImport } from './routes/moments.atom[.]xml'
+import { Route as MomentsFeedDotjsonRouteImport } from './routes/moments.feed[.]json'
+import { Route as MomentsRssDotxmlRouteImport } from './routes/moments.rss[.]xml'
 import { Route as PublicAuthForgotPasswordRouteImport } from './routes/_public/_auth/forgot-password'
 import { Route as PublicAuthLoginRouteImport } from './routes/_public/_auth/login'
 import { Route as PublicAuthRegisterRouteImport } from './routes/_public/_auth/register'
@@ -180,6 +183,21 @@ const ApiSendRoute = ApiSendRouteImport.update({
 const ImagesSplatRoute = ImagesSplatRouteImport.update({
   id: '/images/$',
   path: '/images/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MomentsAtomDotxmlRoute = MomentsAtomDotxmlRouteImport.update({
+  id: '/moments/atom.xml',
+  path: '/moments/atom.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MomentsFeedDotjsonRoute = MomentsFeedDotjsonRouteImport.update({
+  id: '/moments/feed.json',
+  path: '/moments/feed.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MomentsRssDotxmlRoute = MomentsRssDotxmlRouteImport.update({
+  id: '/moments/rss.xml',
+  path: '/moments/rss.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicAuthForgotPasswordRoute =
@@ -335,6 +353,9 @@ export interface FileRoutesByFullPath {
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
+  '/moments/atom.xml': typeof MomentsAtomDotxmlRoute
+  '/moments/feed.json': typeof MomentsFeedDotjsonRoute
+  '/moments/rss.xml': typeof MomentsRssDotxmlRoute
   '/admin/': typeof AdminIndexRoute
   '/forgot-password': typeof PublicAuthForgotPasswordRoute
   '/login': typeof PublicAuthLoginRoute
@@ -381,6 +402,9 @@ export interface FileRoutesByTo {
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
+  '/moments/atom.xml': typeof MomentsAtomDotxmlRoute
+  '/moments/feed.json': typeof MomentsFeedDotjsonRoute
+  '/moments/rss.xml': typeof MomentsRssDotxmlRoute
   '/admin': typeof AdminIndexRoute
   '/forgot-password': typeof PublicAuthForgotPasswordRoute
   '/login': typeof PublicAuthLoginRoute
@@ -432,6 +456,9 @@ export interface FileRoutesById {
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
+  '/moments/atom.xml': typeof MomentsAtomDotxmlRoute
+  '/moments/feed.json': typeof MomentsFeedDotjsonRoute
+  '/moments/rss.xml': typeof MomentsRssDotxmlRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/_public/_auth/forgot-password': typeof PublicAuthForgotPasswordRoute
@@ -484,6 +511,9 @@ export interface FileRouteTypes {
     | '/api/auth'
     | '/api/send'
     | '/images/$'
+    | '/moments/atom.xml'
+    | '/moments/feed.json'
+    | '/moments/rss.xml'
     | '/admin/'
     | '/forgot-password'
     | '/login'
@@ -530,6 +560,9 @@ export interface FileRouteTypes {
     | '/api/auth'
     | '/api/send'
     | '/images/$'
+    | '/moments/atom.xml'
+    | '/moments/feed.json'
+    | '/moments/rss.xml'
     | '/admin'
     | '/forgot-password'
     | '/login'
@@ -580,6 +613,9 @@ export interface FileRouteTypes {
     | '/api/auth'
     | '/api/send'
     | '/images/$'
+    | '/moments/atom.xml'
+    | '/moments/feed.json'
+    | '/moments/rss.xml'
     | '/_public/'
     | '/admin/'
     | '/_public/_auth/forgot-password'
@@ -623,6 +659,9 @@ export interface RootRouteChildren {
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiSendRoute: typeof ApiSendRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
+  MomentsAtomDotxmlRoute: typeof MomentsAtomDotxmlRoute
+  MomentsFeedDotjsonRoute: typeof MomentsFeedDotjsonRoute
+  MomentsRssDotxmlRoute: typeof MomentsRssDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -800,6 +839,27 @@ declare module '@tanstack/react-router' {
       path: '/images/$'
       fullPath: '/images/$'
       preLoaderRoute: typeof ImagesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moments/atom.xml': {
+      id: '/moments/atom.xml'
+      path: '/moments/atom.xml'
+      fullPath: '/moments/atom.xml'
+      preLoaderRoute: typeof MomentsAtomDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moments/feed.json': {
+      id: '/moments/feed.json'
+      path: '/moments/feed.json'
+      fullPath: '/moments/feed.json'
+      preLoaderRoute: typeof MomentsFeedDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moments/rss.xml': {
+      id: '/moments/rss.xml'
+      path: '/moments/rss.xml'
+      fullPath: '/moments/rss.xml'
+      preLoaderRoute: typeof MomentsRssDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/_auth/forgot-password': {
@@ -1148,6 +1208,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiSendRoute: ApiSendRoute,
   ImagesSplatRoute: ImagesSplatRoute,
+  MomentsAtomDotxmlRoute: MomentsAtomDotxmlRoute,
+  MomentsFeedDotjsonRoute: MomentsFeedDotjsonRoute,
+  MomentsRssDotxmlRoute: MomentsRssDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

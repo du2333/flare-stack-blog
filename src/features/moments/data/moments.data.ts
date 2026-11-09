@@ -1,4 +1,14 @@
-import { and, asc, count, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import {
   MediaTable,
@@ -102,6 +112,23 @@ export async function findMomentById(
   if (!moment) return null;
   const [row] = await withImages(db, [moment]);
   return row;
+}
+
+/** The sitemap's rows: the ids after `cursor` in id order, with when each was last written. */
+export async function findMomentsForSitemapBatch(
+  db: DB,
+  options: { cursor?: number; limit: number },
+) {
+  return db
+    .select({ id: MomentsTable.id, updatedAt: MomentsTable.updatedAt })
+    .from(MomentsTable)
+    .where(
+      options.cursor === undefined
+        ? undefined
+        : gt(MomentsTable.id, options.cursor),
+    )
+    .orderBy(asc(MomentsTable.id))
+    .limit(options.limit);
 }
 
 export async function findMomentSaveToken(db: DB, id: number) {

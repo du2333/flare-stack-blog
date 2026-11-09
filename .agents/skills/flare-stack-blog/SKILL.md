@@ -1,6 +1,6 @@
 ---
 name: flare-stack-blog
-description: Manage a Flare Stack Blog over its HTTP API with an Admin API Key. Use to connect a blog and its key, and for any change to or question about its posts, categories, tags, media and publishing.
+description: Manage a Flare Stack Blog over its HTTP API with an Admin API Key. Use to connect a blog and its key, and for any change to or question about its posts, moments, categories, tags, media and publishing.
 ---
 
 # Manage a Flare Stack Blog
@@ -34,7 +34,7 @@ The key goes only in the `x-api-key` header, and only to the configured origin. 
 
 At the start of every task, GET `<origin>/api/spec/index.json` with the same headers: it lists every operation and carries the document's `info.description`. Read that description first: it says how to fetch parts of the document, and states authentication, the browser User-Agent requirement, drafts and publishing, the save guard and Edit Conflict, and Markdown content. Then fetch, as it says, only the operations you are about to call, and more as the task needs them; fetch the whole `<origin>/api/spec.json` only when the task needs most of it. Done when you hold the index and, for what you are about to touch, have read its operations and schemas, following every `$ref`. Operation paths are relative to the document's server URL; public pages, such as a Post's public page, are on the site origin itself.
 
-When an entity has both public and admin operations, use the admin ones. Stay within posts, categories, tags, media and publishing: leave site settings, notifications and their test sends (which deliver real messages), comments, friend links and API keys alone unless the human asks for exactly that.
+When an entity has both public and admin operations, use the admin ones. Stay within posts, moments, categories, tags, media and publishing: leave site settings, notifications and their test sends (which deliver real messages), comments, friend links and API keys alone unless the human asks for exactly that.
 
 ## 3. Change the draft
 
@@ -61,6 +61,15 @@ To throw away a Published Post's unpublished changes, discard them with the docu
 To take a Post off the public site for now, unpublish it; the draft stays. Delete only when the human explicitly asks to delete: deleting a Post is permanent and takes its Post Revisions with it. Delete Post Revisions only when asked, too.
 
 Pinning a Post takes effect at once, without publishing. Never run site-wide operations (deleting unused Media, rebuilding the search index, purging caches) unless the human asks for exactly that.
+
+## Moments
+
+A Moment is a short public entry with no title, draft or history: every post or save is public at once, and there is no unpublish, only delete. It holds text of at most 1000 characters (web addresses become links) and either up to 50 images or one video, never both and never nothing. The document gives the exact fields and how a video is stated.
+
+- **Images are Media first.** Upload each file as Media, then write the paths the uploads answer, in display order. A path no Media has answers 400.
+- **Confirm before posting.** The text and images go live as sent: confirm them with the human unless they gave them or delegated the wording. Delete only when asked.
+- **Read right before each save, send only what changes, and send the `saveToken` you read.** Swapping images for a video, or back, takes both fields in one save, as the document describes. A 409 Edit Conflict follows [Conflicts](#conflicts) as a Post's does.
+- After a write, fetch the Moment's public page on the site origin and confirm it shows, retrying as for a Post.
 
 ## Conflicts
 
