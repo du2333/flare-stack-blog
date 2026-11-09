@@ -68,7 +68,27 @@ export const Route = createFileRoute("/_public/moments/$id")({
             ]
           : []),
       ],
-      links: [canonicalLink(canonicalHref)],
+      links: [
+        canonicalLink(canonicalHref),
+        {
+          rel: "alternate",
+          type: "application/rss+xml",
+          title: "Moments RSS Feed",
+          href: "/moments/rss.xml",
+        },
+        {
+          rel: "alternate",
+          type: "application/atom+xml",
+          title: "Moments Atom Feed",
+          href: "/moments/atom.xml",
+        },
+        {
+          rel: "alternate",
+          type: "application/feed+json",
+          title: "Moments JSON Feed",
+          href: "/moments/feed.json",
+        },
+      ],
     };
   },
   pendingComponent: MomentPageSkeleton,

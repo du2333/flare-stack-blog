@@ -32,6 +32,10 @@
 .fuwari-modal-content {
   min-height: 0;
 }
+.fuwari-modal-top {
+  margin-block: 10dvh auto;
+  max-height: calc(90dvh - 16px);
+}
 .fuwari-modal-wide {
   width: min(42rem, calc(100% - 32px));
 }
