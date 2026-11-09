@@ -92,7 +92,10 @@ describe("the whole document", () => {
         "Media",
         "UnauthorizedError",
         "PostNotFoundError",
-        "EditConflictError",
+        // Posts and Moments answer EDIT_CONFLICT each with its own message.
+        "PostsEditConflictError",
+        "MomentsEditConflictError",
+        "MomentNotFoundError",
       ]),
     );
     expect(danglingRefs(full)).toEqual([]);
