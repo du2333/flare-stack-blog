@@ -80,6 +80,15 @@ vi.mock("@/features/moments/components/moment-images", () => ({
   MomentImages: () => null,
 }));
 
+// The card's share button builds its address from the site domain.
+vi.mock("@/features/config/queries", () => ({
+  siteDomainQuery: {
+    queryKey: ["site-domain"],
+    queryFn: () => "example.com",
+    initialData: "example.com",
+  },
+}));
+
 const api = vi.hoisted(() => ({
   create: vi.fn(),
   get: vi.fn(),
@@ -923,6 +932,15 @@ it("shows the count to the Admin too, but not while the card is being edited", (
   expect(screen.getByRole("link", { name: /2/ })).toBeTruthy();
   fireEvent.click(button(m.moment_admin_edit()));
   expect(screen.queryByRole("link", { name: /2/ })).toBeNull();
+});
+
+it("puts a share button beside the comment count, and drops it while the card is edited", () => {
+  api.get.mockResolvedValue(stored());
+  renderWithClient(createElement(MomentCard, { moment: stored() }));
+
+  expect(button(m.common_share())).toBeTruthy();
+  fireEvent.click(button(m.moment_admin_edit()));
+  expect(screen.queryByRole("button", { name: m.common_share() })).toBeNull();
 });
 
 it("does not delete when the Admin backs out", async () => {
