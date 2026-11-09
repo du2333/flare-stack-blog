@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createCommentInput, type CommentTarget } from "../comment-target";
 import type { CreateCommentInput } from "../comments.schema";
 
 type ReplyTarget = { rootId: number; commentId: number; userName: string };
@@ -12,14 +13,14 @@ function focusReplyButton(id?: number) {
 }
 
 export function useCommentComposer({
-  postId,
+  target,
   userId,
   isCreating,
   createComment,
   challenge,
   onCreated,
 }: {
-  postId: number;
+  target: CommentTarget;
   userId?: string;
   isCreating: boolean;
   createComment: (
@@ -35,7 +36,7 @@ export function useCommentComposer({
     setDrafts({});
     setReplyTarget(null);
     setRootOpen(false);
-  }, [postId, userId]);
+  }, [target.type, target.id, userId]);
   const updateDraft = (key: string, value: string) =>
     setDrafts((previous) => ({ ...previous, [key]: value }));
 
@@ -64,7 +65,9 @@ export function useCommentComposer({
   const submitRoot = async (content: string) => {
     challenge.requireReady();
     try {
-      const created = await createComment({ postId, content });
+      const created = await createComment(
+        createCommentInput(target, { content }),
+      );
       updateDraft("root", "");
       setRootOpen(false);
       if (created?.id) onCreated({ rootId: created.id, commentId: created.id });
@@ -76,12 +79,13 @@ export function useCommentComposer({
     if (!replyTarget) return;
     challenge.requireReady();
     try {
-      const created = await createComment({
-        postId,
-        content,
-        rootId: replyTarget.rootId,
-        replyToCommentId: replyTarget.commentId,
-      });
+      const created = await createComment(
+        createCommentInput(target, {
+          content,
+          rootId: replyTarget.rootId,
+          replyToCommentId: replyTarget.commentId,
+        }),
+      );
       if (created?.id)
         onCreated({ rootId: replyTarget.rootId, commentId: created.id });
       updateDraft(`reply:${replyTarget.commentId}`, "");
