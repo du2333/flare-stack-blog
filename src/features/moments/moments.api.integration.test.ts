@@ -253,3 +253,57 @@ describe("public Moments", () => {
     });
   });
 });
+
+describe("Moments that show a Media", () => {
+  it("lists them newest first, titled by their text, and refuses deleting the image", async () => {
+    const apiKey = await seedAdminApiKey();
+    for (const key of ["shown.png", "other.png"]) {
+      await MediaRepo.insertMedia(getDb(env), {
+        key,
+        url: `/images/${key}`,
+        fileName: key,
+        mimeType: "image/png",
+        sizeInBytes: 1,
+      });
+    }
+    const older = await postMoment(apiKey, {
+      text: "  first\n\nwords  ",
+      images: ["/images/shown.png", "/images/shown.png"],
+    });
+    const wordless = await postMoment(apiKey, {
+      images: ["/images/shown.png"],
+    });
+    await postMoment(apiKey, {
+      text: "elsewhere",
+      images: ["/images/other.png"],
+    });
+
+    const response = await call("/admin/media/shown.png/moments", { apiKey });
+    expect(response.status).toBe(200);
+    const listed = (await response.json()) as Array<{
+      id: number;
+      title: string;
+      postedAt: string;
+    }>;
+    expect(listed.map(({ id, title }) => ({ id, title }))).toEqual([
+      { id: wordless.id, title: "图片动态" },
+      { id: older.id, title: "first words" },
+    ]);
+    expect(listed[1].postedAt).toBe(older.postedAt);
+
+    const refused = await call("/admin/media/shown.png", {
+      method: "DELETE",
+      apiKey,
+    });
+    expect(refused.status).toBe(409);
+    expect(((await refused.json()) as { code: string }).code).toBe(
+      "MEDIA_IN_USE",
+    );
+
+    for (const moment of [older, wordless]) {
+      await call(`/admin/moments/${moment.id}`, { method: "DELETE", apiKey });
+    }
+    const after = await call("/admin/media/shown.png/moments", { apiKey });
+    expect(await after.json()).toEqual([]);
+  });
+});

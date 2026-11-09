@@ -3,8 +3,8 @@ import { useRef, useState } from "react";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { usageCount } from "./media-tile";
 import { useMediaGridMotion } from "../hooks/use-media-grid-motion";
+import { usageCount } from "../media-usage";
 import type { MediaAsset } from "../types";
 import type { MediaView } from "./media-toolbar";
 

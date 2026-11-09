@@ -406,6 +406,32 @@ describe("lists of something that does not exist", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual([]);
   });
+
+  it("answers 404 MEDIA_NOT_FOUND for the Moments of Media that does not exist", async () => {
+    const apiKey = await seedAdminApiKey();
+
+    const response = await callApi(apiKey, "/admin/media/missing.png/moments");
+
+    expect(response.status).toBe(404);
+    expect(await codeOf(response)).toBe("MEDIA_NOT_FOUND");
+  });
+
+  it("answers an empty list for Media no Moment shows", async () => {
+    const apiKey = await seedAdminApiKey();
+    const form = new FormData();
+    form.set("image", new File([PNG], "idle.png", { type: "image/png" }));
+    const uploaded = await callApi(apiKey, "/admin/media", {
+      method: "POST",
+      body: form,
+    });
+    expect(uploaded.status).toBe(200);
+    const { key } = (await uploaded.json()) as { key: string };
+
+    const response = await callApi(apiKey, `/admin/media/${key}/moments`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual([]);
+  });
 });
 
 describe("admin post search", () => {

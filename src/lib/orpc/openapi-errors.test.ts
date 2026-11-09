@@ -187,6 +187,7 @@ describe("errors declared by tag, category and media operations", () => {
     ],
     ["patch", "/admin/media/{key}", ["404 MEDIA_NOT_FOUND"]],
     ["get", "/admin/media/{key}/posts", ["404 MEDIA_NOT_FOUND"]],
+    ["get", "/admin/media/{key}/moments", ["404 MEDIA_NOT_FOUND"]],
     [
       "post",
       "/admin/media/{key}/replace",
