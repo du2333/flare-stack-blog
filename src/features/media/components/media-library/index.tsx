@@ -21,6 +21,7 @@ import { useMediaLibrary, useMediaUpload } from "./hooks";
 import { useMediaScroll } from "./hooks/use-media-scroll";
 import { MEDIA_LAYOUT_DURATION } from "./hooks/use-media-grid-motion";
 import { MediaCollectionSkeleton } from "./media-library-skeleton";
+import { MediaInUseError } from "./media-usage";
 import type { MediaAsset } from "./types";
 import "./media-library.css";
 
@@ -122,8 +123,10 @@ export function MediaLibrary() {
       else await deleteUnused();
       setDeleteTarget(null);
       closePreview();
-    } catch {
+    } catch (error) {
       if (deleteTarget.kind === "unused") toast.error(m.media_delete_fail());
+      // The toast says what uses the image now; confirming again would fail.
+      else if (error instanceof MediaInUseError) setDeleteTarget(null);
     }
   };
   const isEmpty = !isPending && !isError && mediaItems.length === 0;

@@ -14,6 +14,18 @@ import {
 } from "@/features/media/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
+import { MediaInUseError, mediaInUseMessage } from "../media-usage";
+
+/** Counts the posts and Moments that use the image now, for the refusal's message. */
+async function mediaInUseError(key: string) {
+  const [posts, moments] = await Promise.all([
+    orpcClient.media.linkedPosts({ key }).catch(() => []),
+    orpcClient.media.linkedMoments({ key }).catch(() => []),
+  ]);
+  return new MediaInUseError(
+    mediaInUseMessage({ posts: posts.length, moments: moments.length }),
+  );
+}
 
 export function useMediaLibrary() {
   const queryClient = useQueryClient();
@@ -48,15 +60,28 @@ export function useMediaLibrary() {
   const deleteMutation = useMutation({
     mutationFn: async (keys: Array<string>) => {
       for (const key of keys) {
-        await orpcClient.media.remove({ key });
+        try {
+          await orpcClient.media.remove({ key });
+        } catch (error) {
+          if (error instanceof ORPCError && error.code === "MEDIA_IN_USE") {
+            // The list was stale: show what uses the image now.
+            await invalidate();
+            throw await mediaInUseError(key);
+          }
+          throw error;
+        }
       }
     },
     onSuccess: async () => {
       await invalidate();
       toast.success(m.media_deleted());
     },
-    onError: () => {
-      toast.error(m.media_toast_delete_fail());
+    onError: (error) => {
+      toast.error(
+        error instanceof MediaInUseError
+          ? error.message
+          : m.media_toast_delete_fail(),
+      );
     },
   });
 

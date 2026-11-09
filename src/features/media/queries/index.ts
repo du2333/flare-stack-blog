@@ -27,4 +27,15 @@ export function linkedPostsQuery(key: string) {
   );
 }
 
+/** Resolves to no Moments for an image that does not exist (the server answers 404). */
+export function linkedMomentsQuery(key: string, enabled = true) {
+  return emptyListOnNotFound(
+    orpc.media.linkedMoments.queryOptions({
+      input: { key },
+      enabled: enabled && !!key,
+    }),
+    "MEDIA_NOT_FOUND",
+  );
+}
+
 export const mediaStatsQuery = orpc.media.stats.queryOptions();
