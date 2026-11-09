@@ -244,6 +244,33 @@ describe("what a Moment may hold", () => {
     expect(lookUpVideo).not.toHaveBeenCalled();
   });
 
+  it("stores the length of a Direct Video as given and keeps it while the file stays", async () => {
+    const src = "https://video.example/clip.mp4";
+    const moment = unwrap(await post({ video: { src, duration: 95 } }));
+    expect(moment.video?.duration).toBe(95);
+
+    const retitled = unwrap(
+      await edit({
+        id: moment.id,
+        data: { video: { src, title: "A clip" } },
+      }),
+    );
+    expect(retitled.video).toMatchObject({ title: "A clip", duration: 95 });
+
+    const remeasured = unwrap(
+      await edit({ id: moment.id, data: { video: { src, duration: 96 } } }),
+    );
+    expect(remeasured.video?.duration).toBe(96);
+
+    const another = unwrap(
+      await edit({
+        id: moment.id,
+        data: { video: { src: "https://video.example/other.mp4" } },
+      }),
+    );
+    expect(another.video?.duration).toBeNull();
+  });
+
   it("refuses a video that is no Bilibili or YouTube video, or not at https addresses", async () => {
     expect(
       (await post({ video: { url: "https://vimeo.com/1" } })).error,

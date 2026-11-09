@@ -184,6 +184,19 @@ describe("Admin Moments with an API Key", () => {
       data: { detail: "NOT_HTTPS" },
     });
 
+    for (const duration of [0, -3, 1.5, "95"]) {
+      const badLength = await call("/admin/moments", {
+        method: "POST",
+        body: { video: { src: "https://video.example/clip.mp4", duration } },
+        apiKey,
+      });
+      expect(badLength.status, String(duration)).toBe(400);
+    }
+    const measured = await postMoment(apiKey, {
+      video: { src: "https://video.example/clip.mp4", duration: 95 },
+    });
+    expect(measured.video).toMatchObject({ provider: "direct", duration: 95 });
+
     const unknownField = await call("/admin/moments", {
       method: "POST",
       body: { text: "x", title: "no titles" },
