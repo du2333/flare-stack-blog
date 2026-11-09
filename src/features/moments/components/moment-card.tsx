@@ -53,7 +53,7 @@ export function MomentCard({ moment }: { moment: PublicMoment }) {
       ) : null}
       <MomentImages momentId={moment.id} images={moment.images} />
       {moment.video ? <MomentVideo video={moment.video} /> : null}
-      <footer className="flex items-center gap-1">
+      <footer className="-ml-2 flex items-center gap-1">
         <MomentCommentLink moment={moment} />
         <MomentShareButton moment={moment} />
       </footer>

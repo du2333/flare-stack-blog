@@ -71,3 +71,11 @@ it("titles a Moment with only a video 视频动态", () => {
     url: "https://example.com/moments/7",
   });
 });
+
+it("shows the label 分享 beside the icon", () => {
+  shareMoment({});
+
+  expect(
+    screen.getByRole("button", { name: m.common_share() }).textContent,
+  ).toBe(m.common_share());
+});

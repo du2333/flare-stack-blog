@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Share2 } from "lucide-react";
-import { IconButton } from "@/components/ui/icon-button";
+import { Button } from "@/components/ui/button";
 import { siteDomainQuery } from "@/features/config/queries";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import { momentTitle } from "@/features/moments/utils/moment-share";
@@ -16,8 +16,10 @@ export function MomentShareButton({ moment }: { moment: PublicMoment }) {
   const { data: domain } = useSuspenseQuery(siteDomainQuery);
 
   return (
-    <IconButton
-      label={m.common_share()}
+    <Button
+      variant="plain"
+      size="sm"
+      className="w-fit"
       onClick={() =>
         void shareLink({
           title: momentTitle(
@@ -29,6 +31,7 @@ export function MomentShareButton({ moment }: { moment: PublicMoment }) {
       }
     >
       <Share2 size={16} aria-hidden="true" />
-    </IconButton>
+      <span>{m.common_share()}</span>
+    </Button>
   );
 }

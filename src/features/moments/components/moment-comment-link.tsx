@@ -24,7 +24,7 @@ export function MomentCommentLink({ moment }: { moment: PublicMoment }) {
       className={buttonClass({
         variant: "plain",
         size: "sm",
-        className: "-ml-2 w-fit",
+        className: "w-fit",
       })}
     >
       <MessageCircle size={16} aria-hidden="true" />
