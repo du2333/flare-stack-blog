@@ -6,7 +6,7 @@ describe("singleImageBox", () => {
     expect(singleImageBox(1600, 800, "24rem")).toEqual({
       style: {
         aspectRatio: "1600 / 800",
-        width: "min(100%, calc(24rem * 1600 / 800))",
+        width: "min(100%, calc(24rem * 1600 / 800), 1600px)",
       },
       known: true,
     });
@@ -15,11 +15,18 @@ describe("singleImageBox", () => {
   it("reserves portrait and square boxes", () => {
     expect(singleImageBox(600, 900, "11rem").style).toEqual({
       aspectRatio: "600 / 900",
-      width: "min(100%, calc(11rem * 600 / 900))",
+      width: "min(100%, calc(11rem * 600 / 900), 600px)",
     });
     expect(singleImageBox(500, 500, "24rem").style.aspectRatio).toBe(
       "500 / 500",
     );
+  });
+
+  it("never upscales a small image past its natural width", () => {
+    expect(singleImageBox(300, 200, "24rem").style).toEqual({
+      aspectRatio: "300 / 200",
+      width: "min(100%, calc(24rem * 300 / 200), 300px)",
+    });
   });
 
   it("falls back to a 4:3 box for unknown sizes", () => {

@@ -19,7 +19,7 @@ function renderOne(width: number | null, height: number | null) {
 it("reserves the final box on a single image with known size", () => {
   const link = renderOne(1200, 600);
   expect(link.style.aspectRatio).toBe("1200 / 600");
-  expect(link.style.width).toBe("min(100%, 48rem)");
+  expect(link.style.width).toBe("min(100%, 48rem, 1200px)");
 });
 
 it("reserves a 4:3 box when the size is unknown", () => {
