@@ -97,7 +97,10 @@ export function PublicLayout({
             style={{ maxWidth: "var(--fuwari-page-width)" }}
           >
             {isFocusedPage ? null : (
-              <Sidebar className="public-sidebar order-2 lg:order-1" />
+              <Sidebar
+                className="public-sidebar order-2 lg:order-1"
+                showLatestMoments={isHomePage}
+              />
             )}
 
             <main
