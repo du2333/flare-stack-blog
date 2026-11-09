@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import { getHomeBackgroundPreloadImages } from "@/components/layout/preload-images";
 import { siteDomainQuery } from "@/features/config/queries";
+import { latestMomentsQuery } from "@/features/moments/queries";
 import {
   HomePage,
   POPULAR_POSTS_LIMIT,
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/_public/")({
       context.queryClient.ensureQueryData(
         popularPostsQuery(POPULAR_POSTS_LIMIT),
       ),
+      context.queryClient.ensureQueryData(latestMomentsQuery),
     ]);
 
     if (posts.page !== deps.page) {

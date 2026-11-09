@@ -28,6 +28,7 @@ export function useMediaUrlImport(known: ReadonlyArray<MediaAsset>) {
         ...media,
         postCount: 0,
         revisionOnlyPostCount: 0,
+        momentCount: 0,
         isCover: false,
       };
     } catch {

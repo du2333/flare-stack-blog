@@ -26,7 +26,10 @@ const mediaErrors = {
     status: 500,
     message: "Failed to create media record.",
   },
-  MEDIA_IN_USE: { status: 409, message: "Media is referenced by a post." },
+  MEDIA_IN_USE: {
+    status: 409,
+    message: "Media is referenced by a post or a Moment.",
+  },
   MEDIA_INVALID: {
     status: 400,
     message: "Invalid media upload.",
@@ -112,7 +115,7 @@ const list = adminProcedure
     path: "/admin/media",
     summary: "List media",
     description:
-      "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision. An image is unreferenced when both are 0.",
+      "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
     tags: ["Admin Media"],
   })
   .input(GetMediaListInputSchema)
@@ -213,7 +216,7 @@ const linkedKeys = adminProcedure
     path: "/admin/media/linked-keys",
     summary: "Resolve which media keys are linked",
     description:
-      "Returns the given keys that a post uses, in its draft, its published version or a Post Revision. Media with such a key cannot be deleted.",
+      "Returns the given keys that a post uses, in its draft, its published version or a Post Revision, or that a Moment shows. Media with such a key cannot be deleted.",
     tags: ["Admin Media"],
   })
   .input(z.strictObject({ keys: z.array(z.string()) }))
@@ -228,7 +231,7 @@ const removeUnused = adminProcedure
     path: "/admin/media/unused",
     summary: "Delete unused media",
     description:
-      "Deletes every image no post uses (draft, published version or Post Revision) and no Admin has as an avatar. Cannot be undone.",
+      "Deletes every image no post uses (draft, published version or Post Revision), no Moment shows and no Admin has as an avatar. Cannot be undone.",
     tags: ["Admin Media"],
   })
   .output(DeleteUnusedMediaResultSchema)
@@ -248,7 +251,7 @@ const remove = adminProcedure
     path: "/admin/media/{key}",
     summary: "Delete media",
     description:
-      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision) or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts. The check and the delete are one step: a post saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so no post is left showing a deleted image. Cannot be undone.",
+      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts, and the media list's momentCount counts the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
     tags: ["Admin Media"],
   })
   .input(MediaKeyInputSchema)

@@ -163,12 +163,12 @@ describe("Muted Users", () => {
       }),
     );
 
-    const asUser = await CommentService.getRootCommentsByPostId(userContext, {
+    const asUser = await CommentService.getRootComments(userContext, {
       postId,
     });
     expect(asUser.viewerMuted).toBe(true);
 
-    const asAdmin = await CommentService.getRootCommentsByPostId(adminContext, {
+    const asAdmin = await CommentService.getRootComments(adminContext, {
       postId,
     });
     expect(asAdmin.viewerMuted).toBe(false);
@@ -187,7 +187,7 @@ describe("Muted Users", () => {
       }),
     );
 
-    const listed = await CommentService.getRootCommentsByPostId(adminContext, {
+    const listed = await CommentService.getRootComments(adminContext, {
       postId,
     });
     expect(listed.items.some((item) => item.id === comment.id)).toBe(true);

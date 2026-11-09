@@ -340,7 +340,15 @@ describe("Media operations", () => {
     const list = await call(apiKey, "/admin/media");
     expect(list.status).toBe(200);
     expect(list.json).toMatchObject({
-      items: [{ key, postCount: 0, revisionOnlyPostCount: 0, isCover: false }],
+      items: [
+        {
+          key,
+          postCount: 0,
+          revisionOnlyPostCount: 0,
+          momentCount: 0,
+          isCover: false,
+        },
+      ],
       nextCursor: null,
     });
 

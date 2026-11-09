@@ -19,6 +19,7 @@ import { keepUpdatedAt } from "@/features/comments/data/comments.data";
 import { unpublishedChangesSql } from "@/features/posts/data/helper";
 import {
   CommentsTable,
+  MomentsTable,
   PostRevisionsTable,
   PostsTable,
   user as UserTable,
@@ -74,7 +75,13 @@ export async function listPublicPostsByIds(db: DB, ids: Array<number>) {
   );
 }
 
-/** Published Comments on public Posts, in total and since `since`. */
+/**
+ * A Comment on a page readers see: a public Post, or a Moment, which is
+ * always public. Queries using it left join both.
+ */
+const onPublicPage = or(postIsPublic, isNotNull(MomentsTable.id));
+
+/** Published Comments on public Posts and on Moments, in total and since `since`. */
 export async function countPublicComments(db: DB, since: Date) {
   const [row] = await db
     .select({
@@ -82,8 +89,9 @@ export async function countPublicComments(db: DB, since: Date) {
       recent: sql<number>`coalesce(sum(case when ${CommentsTable.createdAt} >= ${Math.floor(since.getTime() / 1000)} then 1 else 0 end), 0)`,
     })
     .from(CommentsTable)
-    .innerJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
-    .where(and(eq(CommentsTable.status, "published"), postIsPublic));
+    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(MomentsTable, eq(CommentsTable.momentId, MomentsTable.id))
+    .where(and(eq(CommentsTable.status, "published"), onPublicPage));
   return { total: row?.total ?? 0, recent: Number(row?.recent ?? 0) };
 }
 
@@ -91,16 +99,16 @@ const AdminReply = alias(CommentsTable, "admin_reply");
 const AdminReplyAuthor = alias(UserTable, "admin_reply_author");
 
 /**
- * A published Comment by a visitor on a public Post that no Admin has
- * handled (replied to or marked handled) and no published Admin Comment
- * answers: none replies to it, and for a root Comment none sits in its
- * thread without a reply target (rows written before reply targets).
+ * A published Comment by a visitor on a public Post or a Moment that no
+ * Admin has handled (replied to or marked handled) and no published Admin
+ * Comment answers: none replies to it, and for a root Comment none sits in
+ * its thread without a reply target (rows written before reply targets).
  */
 function unrepliedVisitorComment(db: DB) {
   return and(
     eq(CommentsTable.status, "published"),
     isNull(CommentsTable.handledAt),
-    postIsPublic,
+    onPublicPage,
     or(isNull(UserTable.role), ne(UserTable.role, "admin")),
     notExists(
       db
@@ -109,7 +117,9 @@ function unrepliedVisitorComment(db: DB) {
         .innerJoin(AdminReplyAuthor, eq(AdminReply.userId, AdminReplyAuthor.id))
         .where(
           and(
-            eq(AdminReply.postId, CommentsTable.postId),
+            // On the same Post or Moment; IS matches the null of the other.
+            sql`${AdminReply.postId} IS ${CommentsTable.postId}`,
+            sql`${AdminReply.momentId} IS ${CommentsTable.momentId}`,
             eq(AdminReply.status, "published"),
             eq(AdminReplyAuthor.role, "admin"),
             or(
@@ -164,9 +174,15 @@ export async function listUnrepliedComments(
       userMutedAt: UserTable.mutedAt,
       postTitle: publicPostTitle,
       postSlug: PostsTable.publicSlug,
+      momentId: CommentsTable.momentId,
+      momentText: MomentsTable.text,
+      momentHasVideo: sql<number>`${MomentsTable.video} IS NOT NULL`.mapWith(
+        Boolean,
+      ),
     })
     .from(CommentsTable)
-    .innerJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(MomentsTable, eq(CommentsTable.momentId, MomentsTable.id))
     .leftJoin(UserTable, eq(CommentsTable.userId, UserTable.id))
     .where(and(unrepliedVisitorComment(db), after))
     .orderBy(desc(CommentsTable.createdAt), desc(CommentsTable.id))
@@ -177,7 +193,8 @@ export async function countUnrepliedComments(db: DB) {
   const [row] = await db
     .select({ total: count() })
     .from(CommentsTable)
-    .innerJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(MomentsTable, eq(CommentsTable.momentId, MomentsTable.id))
     .leftJoin(UserTable, eq(CommentsTable.userId, UserTable.id))
     .where(unrepliedVisitorComment(db));
   return row?.total ?? 0;
@@ -188,7 +205,8 @@ export async function markUnrepliedCommentsHandled(db: DB, handledAt: Date) {
   const unreplied = db
     .select({ id: CommentsTable.id })
     .from(CommentsTable)
-    .innerJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(MomentsTable, eq(CommentsTable.momentId, MomentsTable.id))
     .leftJoin(UserTable, eq(CommentsTable.userId, UserTable.id))
     .where(unrepliedVisitorComment(db));
   const marked = await db

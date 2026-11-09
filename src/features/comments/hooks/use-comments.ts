@@ -3,6 +3,9 @@ import { toast } from "sonner";
 import { handleORPCError } from "@/lib/orpc/error-handler";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
+import type { CommentTarget } from "../comment-target";
+import { MOMENTS_QUERY_KEY } from "@/features/moments/queries";
+import { commentViewKeys } from "../queries";
 import type {
   CreateCommentInput,
   DeleteCommentInput,
@@ -10,37 +13,36 @@ import type {
 
 function invalidateCommentViews(
   queryClient: ReturnType<typeof useQueryClient>,
-  postId?: number,
+  target?: CommentTarget,
 ) {
   return Promise.all([
-    ...(postId
-      ? [
-          queryClient.invalidateQueries({
-            queryKey: orpc.comments.roots.key({ input: { postId } }),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: orpc.comments.replies.key({ input: { postId } }),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: orpc.comments.thread.key({ input: { postId } }),
-          }),
-        ]
+    ...(target
+      ? commentViewKeys(target).map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        )
+      : []),
+    // A Moment is read with its comment count, so a Comment changes it too.
+    ...(target?.type === "moment"
+      ? [queryClient.invalidateQueries({ queryKey: MOMENTS_QUERY_KEY })]
       : []),
     queryClient.invalidateQueries({ queryKey: orpc.comments.mine.key() }),
   ]);
 }
 
 export function useComments(
-  postId?: number,
+  target?: CommentTarget,
   options: { onMuted?: () => void } = {},
 ) {
   const queryClient = useQueryClient();
 
   const createCommentMutation = useMutation({
+    // A Moment's Comments are created under the Moment's path.
     mutationFn: (input: CreateCommentInput) =>
-      orpcClient.comments.create(input),
+      "momentId" in input
+        ? orpcClient.comments.moment.create(input)
+        : orpcClient.comments.create(input),
     onSuccess: async () => {
-      await invalidateCommentViews(queryClient, postId);
+      await invalidateCommentViews(queryClient, target);
     },
     onError: (error) => {
       handleORPCError(error, {
@@ -76,6 +78,9 @@ export function useComments(
           POST_NOT_FOUND: () => {
             toast.error(m.comments_toast_unknown_error());
           },
+          MOMENT_NOT_FOUND: () => {
+            toast.error(m.comments_toast_unknown_error());
+          },
         },
         fallback: () => {
           toast.error(m.comments_toast_unknown_error());
@@ -88,7 +93,7 @@ export function useComments(
     mutationFn: (input: DeleteCommentInput) =>
       orpcClient.comments.remove(input),
     onSuccess: async () => {
-      await invalidateCommentViews(queryClient, postId);
+      await invalidateCommentViews(queryClient, target);
       toast.success(m.comments_toast_delete_success());
     },
     onError: (error) => {

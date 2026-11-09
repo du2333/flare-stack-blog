@@ -297,6 +297,114 @@
       }
     }
   },
+  "moments": {
+    "list": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/moments",
+          "summary": "List moments",
+          "description": "Lists the Moments newest first, by when they were posted, 20 a page. A page past the last answers the last page; page says which was answered, and totalPages how many there are (1 when there are no Moments).",
+          "tags": ["Moments"]
+        }
+      }
+    },
+    "latest": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/moments/latest",
+          "summary": "List the latest moments",
+          "description": "The 3 newest Moments, as the home page sidebar shows them; an empty list when there are none.",
+          "tags": ["Moments"]
+        }
+      }
+    },
+    "exists": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/moments/exists",
+          "summary": "Tell whether any moment exists",
+          "description": "The public navigation and the home page show Moments only once at least one exists.",
+          "tags": ["Moments"]
+        }
+      }
+    },
+    "byId": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/moments/{id}",
+          "summary": "Get a moment by id",
+          "description": "Returns the Moment, or answers 404 MOMENT_NOT_FOUND when there is none, such as one that was deleted.",
+          "tags": ["Moments"]
+        }
+      }
+    },
+    "admin": {
+      "get": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/moments/{id}",
+            "summary": "Get a moment to edit",
+            "description": "Returns the Moment with its saveToken, or answers 404 MOMENT_NOT_FOUND. The Moment comes back as readers see it, each image with its address and size, together with its saveToken. saveToken identifies this read: state it when saving. Images are written back as /images/{key}.",
+            "tags": ["Admin Moments"]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/moments",
+            "summary": "Post a moment",
+            "description": "Posts a Moment, public at once: text, with either up to 50 images or one video, never both and never nothing (400 MOMENT_EMPTY). The Moment comes back as readers see it, each image with its address and size, together with its saveToken. postedAt is now, and edits never change it. A refused Moment writes nothing.",
+            "tags": ["Admin Moments"]
+          }
+        }
+      },
+      "update": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "PATCH",
+            "path": "/admin/moments/{id}",
+            "summary": "Edit a moment",
+            "description": "Writes only the fields in data, at least one (an empty data answers 400), public at once; the Moment keeps its postedAt and no history of it is kept. The result is held to the rules a new Moment is: images or a video, not both, and not nothing. The Moment comes back as readers see it, each image with its address and size, together with its saveToken. A save that leaves every stated field as it is writes nothing and answers the current saveToken. Media the Moment shows cannot be deleted, so a Moment saved at the same time as its image is deleted ends with one of them refused. With saveToken, the write happens only if the Moment was not saved since that token was read; otherwise it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token.",
+            "tags": ["Admin Moments"]
+          }
+        }
+      },
+      "remove": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "DELETE",
+            "path": "/admin/moments/{id}",
+            "summary": "Delete a moment",
+            "description": "Deletes the Moment at once; its images stay in the media library, no longer used by it. Cannot be undone. A Moment that does not exist answers 404 MOMENT_NOT_FOUND.",
+            "tags": ["Admin Moments"]
+          }
+        }
+      }
+    }
+  },
   "tags": {
     "list": {
       "~orpc": {
@@ -527,6 +635,59 @@
         }
       }
     },
+    "moment": {
+      "roots": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments",
+            "summary": "List root comments on a moment",
+            "description": "As for a post: visible root threads with reply previews, paginated by root thread; total counts all published roots and replies on the Moment, excluding deleted placeholders. A Moment that does not exist has none.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "replies": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{rootId}/replies",
+            "summary": "List replies on a moment",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "thread": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{id}/thread",
+            "summary": "Load a comment thread on a moment",
+            "description": "Resolves a comment link, /moments/{momentId}?comment={id}. Answers 404 COMMENT_NOT_FOUND when the comment is not on the Moment or its thread is not shown.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/moments/{momentId}/comments",
+            "summary": "Comment on a moment",
+            "description": "Any existing Moment takes comments (404 MOMENT_NOT_FOUND otherwise); Muted Users are refused as on a post. A reply names its thread with rootId, on the same Moment, and the comment it answers with replyToCommentId.",
+            "tags": ["Comments"]
+          }
+        }
+      }
+    },
     "remove": {
       "~orpc": {
         "errorMap": {},
@@ -547,6 +708,7 @@
           "method": "GET",
           "path": "/me/comments",
           "summary": "List the current user's comments",
+          "description": "Newest first, on Posts and Moments. Each says where it is: postId or momentId, a Moment's momentTitle, and its public commentPath.",
           "tags": ["Comments"]
         }
       }
@@ -602,7 +764,7 @@
           "method": "GET",
           "path": "/admin/media",
           "summary": "List media",
-          "description": "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision. An image is unreferenced when both are 0.",
+          "description": "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
           "tags": ["Admin Media"]
         }
       }
@@ -667,7 +829,7 @@
           "method": "POST",
           "path": "/admin/media/linked-keys",
           "summary": "Resolve which media keys are linked",
-          "description": "Returns the given keys that a post uses, in its draft, its published version or a Post Revision. Media with such a key cannot be deleted.",
+          "description": "Returns the given keys that a post uses, in its draft, its published version or a Post Revision, or that a Moment shows. Media with such a key cannot be deleted.",
           "tags": ["Admin Media"]
         }
       }
@@ -680,7 +842,7 @@
           "method": "DELETE",
           "path": "/admin/media/unused",
           "summary": "Delete unused media",
-          "description": "Deletes every image no post uses (draft, published version or Post Revision) and no Admin has as an avatar. Cannot be undone.",
+          "description": "Deletes every image no post uses (draft, published version or Post Revision), no Moment shows and no Admin has as an avatar. Cannot be undone.",
           "tags": ["Admin Media"]
         }
       }
@@ -693,7 +855,7 @@
           "method": "DELETE",
           "path": "/admin/media/{key}",
           "summary": "Delete media",
-          "description": "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision) or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts. The check and the delete are one step: a post saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so no post is left showing a deleted image. Cannot be undone.",
+          "description": "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts, and the media list's momentCount counts the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
           "tags": ["Admin Media"]
         }
       }

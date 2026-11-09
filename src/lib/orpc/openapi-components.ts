@@ -11,6 +11,12 @@ import { AdminConfigSnapshotSchema } from "@/features/config/config.admin.schema
 import { UnrepliedCommentsPageSchema } from "@/features/dashboard/dashboard.schema";
 import { FriendLinkSchema } from "@/features/friend-links/friend-links.schema";
 import { MediaSelectSchema } from "@/features/media/media.schema";
+import {
+  AdminMomentSchema,
+  MomentImageSchema,
+  MomentVideoSchema,
+  PublicMomentSchema,
+} from "@/features/moments/schema/moments.schema";
 import { MutedUserSchema } from "@/features/muted-users/muted-users.schema";
 import { PostPopularitySyncStatusSchema } from "@/features/post-popularity/post-popularity.schema";
 import { NullableJsonContentSchema } from "@/features/posts/schema/json-content.schema";
@@ -76,6 +82,10 @@ export const OPENAPI_COMPONENTS: NonNullable<
   Category: { schema: CategorySelectSchema, strategy: "output" },
   CategoryOption: { schema: CategoryOptionSchema, strategy: "output" },
   Media: { schema: MediaSelectSchema, strategy: "output" },
+  Moment: { schema: PublicMomentSchema, strategy: "output" },
+  AdminMoment: { schema: AdminMomentSchema, strategy: "output" },
+  MomentImage: { schema: MomentImageSchema, strategy: "output" },
+  MomentVideo: { schema: MomentVideoSchema, strategy: "output" },
   RootComment: { schema: RootCommentWithReplyCountSchema, strategy: "output" },
   CommentReply: {
     schema: GetRepliesResponseSchema.shape.items.element,

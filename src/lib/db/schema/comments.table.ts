@@ -1,5 +1,7 @@
 import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   primaryKey,
@@ -8,6 +10,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.table";
 import { createdAt, id, updatedAt } from "./helper";
+import { MomentsTable } from "./moments.table";
 import { PostsTable } from "./posts.table";
 
 export const COMMENT_STATUSES = ["published", "deleted"] as const;
@@ -31,9 +34,14 @@ export const CommentsTable = sqliteTable(
       .notNull()
       .default("published"),
 
-    postId: integer("post_id")
-      .notNull()
-      .references(() => PostsTable.id, { onDelete: "cascade" }),
+    // A Comment belongs to exactly one Post or one Moment (ADR 0037); the
+    // CHECK below holds every row to one of them.
+    postId: integer("post_id").references(() => PostsTable.id, {
+      onDelete: "cascade",
+    }),
+    momentId: integer("moment_id").references(() => MomentsTable.id, {
+      onDelete: "cascade",
+    }),
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     /**
      * When an Admin dealt with the Comment, by replying or by marking it
@@ -50,9 +58,18 @@ export const CommentsTable = sqliteTable(
       table.rootId,
       table.createdAt,
     ),
+    index("comments_moment_root_created_idx").on(
+      table.momentId,
+      table.rootId,
+      table.createdAt,
+    ),
     index("comments_user_created_idx").on(table.userId, table.createdAt),
     index("comments_status_created_idx").on(table.status, table.createdAt),
     index("comments_global_created_idx").on(table.createdAt),
+    check(
+      "comments_one_target",
+      sql`(${table.postId} IS NULL) <> (${table.momentId} IS NULL)`,
+    ),
   ],
 );
 

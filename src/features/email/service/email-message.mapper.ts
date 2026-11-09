@@ -36,14 +36,21 @@ export function createEmailMessageFromNotification(
     case "comment.admin_root_created":
       return {
         to: delivery.to,
-        subject: m.email_comment_admin_root_subject(
-          { postTitle: event.data.postTitle },
-          { locale },
-        ),
+        subject:
+          event.data.target === "moment"
+            ? m.email_comment_admin_root_moment_subject(
+                { momentTitle: event.data.postTitle },
+                { locale },
+              )
+            : m.email_comment_admin_root_subject(
+                { postTitle: event.data.postTitle },
+                { locale },
+              ),
         html: renderToStaticMarkup(
           AdminNotificationEmail({
             locale,
             site,
+            target: event.data.target,
             postTitle: event.data.postTitle,
             commenterName: event.data.commenterName,
             commentPreview: event.data.commentPreview,
@@ -56,17 +63,27 @@ export function createEmailMessageFromNotification(
       const unsubscribeUrl = delivery.unsubscribeUrl ?? "";
       return {
         to: delivery.to,
-        subject: m.email_comment_reply_subject(
-          {
-            postTitle: event.data.postTitle,
-            replierName: event.data.replierName,
-          },
-          { locale },
-        ),
+        subject:
+          event.data.target === "moment"
+            ? m.email_comment_reply_moment_subject(
+                {
+                  momentTitle: event.data.postTitle,
+                  replierName: event.data.replierName,
+                },
+                { locale },
+              )
+            : m.email_comment_reply_subject(
+                {
+                  postTitle: event.data.postTitle,
+                  replierName: event.data.replierName,
+                },
+                { locale },
+              ),
         html: renderToStaticMarkup(
           ReplyNotificationEmail({
             locale,
             site,
+            target: event.data.target,
             postTitle: event.data.postTitle,
             replierName: event.data.replierName,
             replyPreview: event.data.replyPreview,

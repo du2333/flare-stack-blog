@@ -122,6 +122,7 @@ describe("pagination", () => {
     ["/posts?limit=2.5"],
     ["/posts?cursor=-1"],
     ["/posts/1/comments?limit=101"],
+    ["/moments/1/comments?limit=101"],
   ])("refuses %s with 400", async (path) => {
     const apiKey = await seedAdminApiKey();
 

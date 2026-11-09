@@ -30,10 +30,36 @@ function directVideoHtml(attrs: Record<string, unknown>) {
   return `<video controls preload="none" src="${src}"${poster}></video><p><a href="${page}">${text}</a></p>`;
 }
 
-function absolute(address: string, origin: string) {
+/** A video as a feed shows it, from the attributes of a video block. */
+export function videoFeedHtml(attrs: Record<string, unknown>) {
+  const source = videoSourceOf(attrs);
+  if (!source) return directVideoHtml(attrs);
+  const page = escape(videoPageUrl(source));
+  const { title } = videoMetaOf(attrs);
+  return `<p><a href="${page}">${title ? escape(title) : page}</a></p>`;
+}
+
+/** A site path as an address a reader outside the site can open. */
+export function absolute(address: string, origin: string) {
   return address.startsWith("/") && !address.startsWith("//")
     ? `${origin}${address}`
     : address;
+}
+
+/** `children` (HTML) in a link that opens as on the public page. */
+export function linkFeedHtml(
+  attrs: Record<string, unknown>,
+  origin: string,
+  children: string,
+) {
+  const { href, title, target, rel } = publicLinkAttributes(attrs);
+  const parts = [
+    href !== undefined && `href="${escape(absolute(href, origin))}"`,
+    title !== undefined && `title="${escape(title)}"`,
+    `target="${target}"`,
+    `rel="${rel}"`,
+  ].filter(Boolean);
+  return `<a ${parts.join(" ")}>${children}</a>`;
 }
 
 export function renderFeedHtml(
@@ -54,29 +80,15 @@ export function renderFeedHtml(
           if (!src) return "";
           return `<img src="${escape(absolute(src, origin))}" alt="${escape(alt && alt !== "null" ? alt : "")}">`;
         },
-        video: ({ node }) => {
-          const source = videoSourceOf(node.attrs);
-          if (!source) return directVideoHtml(node.attrs);
-          const page = escape(videoPageUrl(source));
-          const { title } = videoMetaOf(node.attrs);
-          return `<p><a href="${page}">${title ? escape(title) : page}</a></p>`;
-        },
+        video: ({ node }) => videoFeedHtml(node.attrs),
         inlineMath: ({ node }) =>
           `<code>${escape(String(node.attrs.latex ?? ""))}</code>`,
         blockMath: ({ node }) =>
           `<pre><code>${escape(String(node.attrs.latex ?? ""))}</code></pre>`,
       },
       markMapping: {
-        link: ({ mark, children }) => {
-          const { href, title, target, rel } = publicLinkAttributes(mark.attrs);
-          const attrs = [
-            href !== undefined && `href="${escape(absolute(href, origin))}"`,
-            title !== undefined && `title="${escape(title)}"`,
-            `target="${target}"`,
-            `rel="${rel}"`,
-          ].filter(Boolean);
-          return `<a ${attrs.join(" ")}>${[children].flat().join("")}</a>`;
-        },
+        link: ({ mark, children }) =>
+          linkFeedHtml(mark.attrs, origin, [children].flat().join("")),
       },
     },
   });

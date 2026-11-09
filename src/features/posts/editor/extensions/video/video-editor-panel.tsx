@@ -26,6 +26,8 @@ export interface VideoEditorPanelProps {
   direct?: DirectVideo | null;
   /** Whether the video was just inserted, which names the apply button. */
   inserted: boolean;
+  /** Names the apply button where "Insert video" and "Update" do not fit. */
+  applyLabel?: string;
   /**
    * Looks up an address that may be a Direct Video. Without it nothing is
    * looked up, and a Direct Video is filled in by hand.
@@ -73,6 +75,7 @@ export function VideoEditorPanel({
   link,
   direct = null,
   inserted,
+  applyLabel,
   resolveDirectVideo,
   onApply,
   onApplyDirect,
@@ -337,7 +340,8 @@ export function VideoEditorPanel({
           onClick={() => void apply()}
           disabled={!canApply}
         >
-          {inserted ? m.editor_video_insert() : m.editor_video_update()}
+          {applyLabel ??
+            (inserted ? m.editor_video_insert() : m.editor_video_update())}
         </Button>
       </div>
     </div>

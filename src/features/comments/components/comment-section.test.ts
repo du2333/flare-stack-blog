@@ -31,6 +31,12 @@ const boundary = vi.hoisted(() => ({
       replies: vi.fn<Client["comments"]["replies"]>(),
       thread: vi.fn<Client["comments"]["thread"]>(),
       create: vi.fn<Client["comments"]["create"]>(),
+      moment: {
+        roots: vi.fn<Client["comments"]["moment"]["roots"]>(),
+        replies: vi.fn<Client["comments"]["moment"]["replies"]>(),
+        thread: vi.fn<Client["comments"]["moment"]["thread"]>(),
+        create: vi.fn<Client["comments"]["moment"]["create"]>(),
+      },
       remove: vi.fn<Client["comments"]["remove"]>(),
       mine: vi.fn<Client["comments"]["mine"]>(),
       admin: {
@@ -49,6 +55,17 @@ const boundary = vi.hoisted(() => ({
     user: { id: "reader", name: "Reader", image: null, role: "user" },
   },
   listeners: new Set<() => void>(),
+  toastError: vi.fn(),
+}));
+
+vi.mock("sonner", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("sonner")>()),
+  toast: Object.assign(vi.fn(), {
+    error: boundary.toastError,
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+    success: vi.fn(),
+  }),
 }));
 
 vi.mock("@/lib/orpc", async () => {
@@ -77,6 +94,7 @@ function comment(id: number, name: string, rootId: number | null = null) {
   return {
     id,
     postId: 1,
+    momentId: null,
     content: `${name}'s comment`,
     userId: name.toLowerCase(),
     status: "published" as const,
@@ -180,27 +198,42 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-async function mountSection() {
-  let changePost!: (postId: number) => void;
-  function PostComments() {
-    const [postId, setPostId] = useState(1);
-    changePost = setPostId;
-    return createElement(CommentSection, { postId });
+async function mountSection({
+  type = "post",
+  search = "",
+  ready = "Alice",
+}: {
+  type?: "post" | "moment";
+  search?: string;
+  /** The text that shows the section has loaded. */
+  ready?: string;
+} = {}) {
+  let changePost!: (id: number) => void;
+  function PageComments() {
+    const [id, setId] = useState(1);
+    changePost = setId;
+    return createElement(CommentSection, { target: { type, id } });
   }
   const root = createRootRoute();
   const publicRoute = createRoute({
     getParentRoute: () => root,
     id: "_public",
   });
-  const post = createRoute({
+  const page = createRoute({
     getParentRoute: () => publicRoute,
-    path: "/post/$slug",
-    validateSearch: () => ({ comment: undefined as number | undefined }),
-    component: PostComments,
+    path: type === "post" ? "/post/$slug" : "/moments/$id",
+    validateSearch: (search: Record<string, unknown>) => ({
+      comment: search.comment == null ? undefined : Number(search.comment),
+    }),
+    component: PageComments,
   });
   const router = createRouter({
-    routeTree: root.addChildren([publicRoute.addChildren([post])]),
-    history: createMemoryHistory({ initialEntries: ["/post/example"] }),
+    routeTree: root.addChildren([publicRoute.addChildren([page])]),
+    history: createMemoryHistory({
+      initialEntries: [
+        `${type === "post" ? "/post/example" : "/moments/1"}${search}`,
+      ],
+    }),
   });
   await act(async () => {
     render(
@@ -212,8 +245,8 @@ async function mountSection() {
     );
     await router.load();
   });
-  await screen.findByText("Alice");
-  return { changePost };
+  await screen.findByText(ready);
+  return { changePost, router };
 }
 
 async function chooseReply(name: string) {
@@ -547,4 +580,253 @@ it("clears both root and reply drafts when showing another Post", async () => {
   expect(screen.queryByRole("textbox")).toBeNull();
   await chooseReply("Alice");
   await expectDraft("");
+});
+
+function onMoment<T extends { postId: number | null; momentId: number | null }>(
+  value: T,
+): T {
+  return { ...value, postId: null, momentId: 1 };
+}
+const momentThread: RootCommentWithReplyCount = {
+  ...onMoment(thread),
+  replies: thread.replies.map(onMoment),
+};
+
+function momentSection(search = "") {
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [momentThread],
+    total: 3,
+    viewerMuted: false,
+  });
+  boundary.client.comments.moment.thread.mockResolvedValue(momentThread);
+  return mountSection({ type: "moment", search });
+}
+
+it("reads a Moment's Comments through the Moment procedures and leaves the Post ones alone", async () => {
+  await momentSection();
+  expect(boundary.client.comments.moment.roots).toHaveBeenCalledWith(
+    { momentId: 1, offset: 0, limit: expect.any(Number) },
+    expect.anything(),
+  );
+  expect(screen.getByText("Author's comment")).toBeDefined();
+  expect(screen.getByText("Bob's comment")).toBeDefined();
+  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+    `${m.comments_heading()} 3`,
+  );
+  expect(boundary.client.comments.roots).not.toHaveBeenCalled();
+});
+
+it("shows the empty state for a Moment nobody has commented on", async () => {
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [],
+    total: 0,
+    viewerMuted: false,
+  });
+  await mountSection({ type: "moment", ready: m.comments_list_empty() });
+  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+    `${m.comments_heading()} 0`,
+  );
+});
+
+it("posts a reply on a Moment under its momentId, then refreshes the Moment's reads and its comment count", async () => {
+  await momentSection();
+  queryClient.setQueryData(["moments", "detail", 1], { id: 1 });
+  await chooseReply("Alice");
+  fireEvent.change(screen.getByRole("textbox"), {
+    target: { value: "Reply on a Moment" },
+  });
+  await act(async () => challenges.values().next().value!.verify());
+  boundary.client.comments.moment.create.mockResolvedValue({
+    ...onMoment(comment(103, "Reader", 100)),
+    content: "Reply on a Moment",
+  });
+  await act(async () => {
+    fireEvent.click(
+      screen.getByRole("button", { name: m.comments_editor_submit_reply() }),
+    );
+  });
+  await waitFor(() =>
+    expect(boundary.client.comments.moment.create).toHaveBeenCalledWith({
+      momentId: 1,
+      content: "Reply on a Moment",
+      rootId: 100,
+      replyToCommentId: 101,
+    }),
+  );
+  expect(boundary.client.comments.create).not.toHaveBeenCalled();
+  await waitFor(() =>
+    expect(boundary.client.comments.moment.roots).toHaveBeenCalledTimes(2),
+  );
+  expect(
+    queryClient.getQueryState(["moments", "detail", 1])?.isInvalidated,
+  ).toBe(true);
+});
+
+it("jumps to the thread a ?comment= link names on a Moment's page", async () => {
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [],
+    total: 1,
+    viewerMuted: false,
+  });
+  boundary.client.comments.moment.thread.mockResolvedValue({
+    ...momentThread,
+    replies: [],
+    replyCount: 1,
+  });
+  boundary.client.comments.moment.replies.mockResolvedValue({
+    items: momentThread.replies.slice(0, 1),
+    total: 1,
+  });
+  const scroll = vi.fn();
+  HTMLElement.prototype.scrollIntoView = scroll;
+  await mountSection({
+    type: "moment",
+    search: "?comment=101",
+    ready: "Alice's comment",
+  });
+  expect(boundary.client.comments.moment.thread).toHaveBeenCalledWith(
+    { momentId: 1, id: 101 },
+    expect.anything(),
+  );
+  expect(boundary.client.comments.thread).not.toHaveBeenCalled();
+  const target = screen.getByText("Alice's comment").closest("article")!;
+  expect(target.id).toBe("comment-101");
+  expect(target.className).toContain("comment-highlighted");
+  await waitFor(() => expect(scroll).toHaveBeenCalled());
+});
+
+it("shows a deleted Comment on a Moment as a placeholder, and a muted User's notice in place of the composer", async () => {
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [
+      {
+        ...momentThread,
+        replies: [
+          { ...momentThread.replies[0], status: "deleted", replyTo: null },
+          momentThread.replies[1],
+        ],
+      },
+    ],
+    total: 2,
+    viewerMuted: true,
+  });
+  await mountSection({ type: "moment", ready: "Bob's comment" });
+  expect(screen.getByText(m.comments_item_deleted_content())).toBeDefined();
+  expect(screen.getByText(m.comments_muted_message())).toBeDefined();
+  expect(
+    screen.queryByRole("button", {
+      name: (name) => name.endsWith(m.comments_start_new()),
+    }),
+  ).toBeNull();
+});
+
+it("sends a signed-out reader to sign in from a Moment's page and back to its comments", async () => {
+  boundary.session = undefined as never;
+  await momentSection("?comment=100");
+  const link = screen.getByRole("link", { name: /./ });
+  const href = decodeURIComponent(link.getAttribute("href") ?? "");
+  expect(href).toContain("/moments/1");
+  expect(href).toContain("#comments");
+});
+
+it("lets an Admin mute a Moment's commenter from the comment and refreshes the Moment's reads", async () => {
+  boundary.session = {
+    user: { id: "admin", name: "Admin", image: null, role: "admin" },
+  };
+  boundary.client.mutedUsers.mute.mockResolvedValue(undefined as never);
+  await momentSection();
+  const article = screen.getByText("Alice's comment").closest("article")!;
+  await act(async () => {
+    fireEvent.click(
+      within(article).getByRole("button", { name: m.comments_more_actions() }),
+    );
+  });
+  await act(async () => {
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: m.comments_item_mute() }),
+    );
+  });
+  await act(async () => {
+    fireEvent.click(
+      await screen.findByRole("button", { name: m.comments_mute_confirm() }),
+    );
+  });
+  await waitFor(() =>
+    expect(boundary.client.mutedUsers.mute).toHaveBeenCalledWith({
+      userId: "alice",
+    }),
+  );
+  await waitFor(() =>
+    expect(boundary.client.comments.moment.roots).toHaveBeenCalledTimes(2),
+  );
+  expect(boundary.client.comments.roots).not.toHaveBeenCalled();
+});
+
+it("offers an Admin only mute on a deleted placeholder, never delete, on a Post and on a Moment", async () => {
+  boundary.session = {
+    user: { id: "admin", name: "Admin", image: null, role: "admin" },
+  };
+  const withDeleted = (source: RootCommentWithReplyCount) => ({
+    ...source,
+    replies: [
+      { ...source.replies[0], status: "deleted" as const },
+      source.replies[1],
+    ],
+  });
+  boundary.client.comments.roots.mockResolvedValue({
+    items: [withDeleted(thread)],
+    total: 2,
+    viewerMuted: false,
+  });
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [withDeleted(momentThread)],
+    total: 2,
+    viewerMuted: false,
+  });
+  for (const type of ["post", "moment"] as const) {
+    await mountSection({ type, ready: "Bob's comment" });
+    const placeholder = screen
+      .getByText(m.comments_item_deleted_content())
+      .closest("article")!;
+    await act(async () => {
+      fireEvent.click(
+        within(placeholder).getByRole("button", {
+          name: m.comments_more_actions(),
+        }),
+      );
+    });
+    const items = (await screen.findAllByRole("menuitem")).map(
+      (item) => item.textContent,
+    );
+    expect(items).toEqual([m.comments_item_mute()]);
+    cleanup();
+  }
+});
+
+it("reports a ?comment= link that names no comment as soon as the 404 arrives, without retrying", async () => {
+  const { ORPCError } = await import("@orpc/client");
+  const notFound = new ORPCError("COMMENT_NOT_FOUND", { status: 404 });
+  boundary.client.comments.thread.mockRejectedValue(notFound);
+  boundary.client.comments.moment.thread.mockRejectedValue(notFound);
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [momentThread],
+    total: 3,
+    viewerMuted: false,
+  });
+  // The app's own client retries failures; only a 404 may skip that.
+  queryClient = new QueryClient();
+  for (const type of ["post", "moment"] as const) {
+    boundary.toastError.mockClear();
+    await mountSection({ type, search: "?comment=999" });
+    await waitFor(() =>
+      expect(boundary.toastError).toHaveBeenCalledWith(
+        m.comments_locate_failed(),
+      ),
+    );
+    const called =
+      type === "post"
+        ? boundary.client.comments.thread
+        : boundary.client.comments.moment.thread;
+    expect(called).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
 });

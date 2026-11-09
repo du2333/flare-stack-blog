@@ -15,6 +15,7 @@ import {
 import { describe, expect, it } from "vitest";
 import * as CategoryService from "@/features/categories/categories.service";
 import * as MediaRepo from "@/features/media/data/media.data";
+import * as MomentRepo from "@/features/moments/data/moments.data";
 import * as PostService from "@/features/posts/services/posts.service";
 import * as TagService from "@/features/tags/tags.service";
 import { withoutXmlForbiddenCharacters } from "@/features/posts/utils/feed-xml";
@@ -22,16 +23,20 @@ import { unwrap } from "@/lib/errors";
 import {
   buildAtomXml,
   buildFeedJson,
-  buildRssXml,
+  buildMomentsAtomXml,
+  buildMomentsFeedJson,
+  buildMomentsRssXml,
   buildSitemapXml,
+  buildRssXml,
 } from "@/features/site-documents/service/site-documents.service";
-import { PostsTable } from "@/lib/db/schema";
+import { MomentsTable, PostsTable } from "@/lib/db/schema";
+import { baseLocale, overwriteGetLocale } from "@/paraglide/runtime";
 import { createApiContext } from "@/lib/orpc/create-context";
 import { openAPIHandler } from "@/lib/orpc/openapi-handler";
 
 /**
- * The public documents built from published posts: the sitemap and the three
- * feeds.
+ * The public documents built from published posts and Moments: the sitemap and
+ * the feeds.
  */
 
 async function callAdminApi(
@@ -316,5 +321,242 @@ describe("feed XML", () => {
       expect(withoutXmlForbiddenCharacters(document)).toBe(document);
       expect(document).not.toContain("\u0000");
     }
+  });
+});
+
+/**
+ * Moments in the sitemap and in their own three feeds, which carry what the
+ * public page shows with no site around it.
+ */
+describe("Moments", () => {
+  const POSTED_AT = new Date("2026-03-04T05:06:07.000Z");
+  const EDITED_AT = new Date("2026-03-05T08:09:10.000Z");
+
+  async function postMoment(
+    data: {
+      text?: string;
+      video?: NonNullable<
+        Parameters<typeof MomentRepo.insertMoment>[1]["video"]
+      >;
+      images?: Array<string>;
+    },
+    dates: { postedAt?: Date; updatedAt?: Date } = {},
+  ) {
+    const { db } = createTestContext();
+    const mediaIds: Array<number> = [];
+    for (const key of data.images ?? []) {
+      const media = await MediaRepo.insertMedia(db, {
+        key,
+        url: `/images/${key}`,
+        fileName: key,
+        mimeType: "image/png",
+        sizeInBytes: 10,
+      });
+      mediaIds.push(media.id);
+    }
+    const id = await MomentRepo.insertMoment(db, {
+      text: data.text ?? "",
+      video: data.video ?? null,
+      mediaIds,
+    });
+    await db
+      .update(MomentsTable)
+      .set({
+        postedAt: dates.postedAt ?? POSTED_AT,
+        updatedAt: dates.updatedAt ?? dates.postedAt ?? POSTED_AT,
+      })
+      .where(eq(MomentsTable.id, id));
+    return id;
+  }
+
+  const bilibili = {
+    provider: "bilibili",
+    videoId: "BV1fK4y1s7Qf",
+    page: 2,
+    start: 90,
+    title: "A Bilibili video",
+    cover: "https://i0.hdslb.com/bfs/archive/cover.jpg",
+    duration: 321,
+    src: null,
+    pageUrl: null,
+  } as const;
+
+  const direct = {
+    provider: "direct",
+    videoId: null,
+    page: null,
+    start: null,
+    title: "A clip",
+    cover: "https://video.example/poster.jpg",
+    duration: null,
+    src: "https://video.example/clip.mp4",
+    pageUrl: null,
+  } as const;
+
+  type JsonItem = {
+    id: string;
+    url: string;
+    title: string;
+    content_html: string;
+    date_published: string;
+    date_modified: string;
+  };
+
+  async function jsonItems() {
+    const json = JSON.parse(
+      await buildMomentsFeedJson(env, createMockExecutionCtx()),
+    ) as { items: Array<JsonItem> };
+    return json.items;
+  }
+
+  describe("in the sitemap", () => {
+    it("lists /moments only once a Moment exists, and each Moment with its last write", async () => {
+      expect(await buildSitemapXml(env)).not.toContain("/moments");
+
+      const first = await postMoment({ text: "one" });
+      const second = await postMoment(
+        { text: "two" },
+        { postedAt: POSTED_AT, updatedAt: EDITED_AT },
+      );
+
+      const sitemap = await buildSitemapXml(env);
+      expect(() => parseXml(sitemap)).not.toThrow();
+      expect(sitemap).toMatch(/<loc>https:\/\/[^<]+\/moments<\/loc>/);
+      const lastmod = (id: number) =>
+        new RegExp(
+          `<loc>[^<]*/moments/${id}</loc>\\s*<lastmod>([^<]+)</lastmod>`,
+        ).exec(sitemap)?.[1];
+      expect(lastmod(first)).toBe(POSTED_AT.toISOString());
+      expect(lastmod(second)).toBe(EDITED_AT.toISOString());
+    });
+  });
+
+  describe("in the feeds", () => {
+    it("are empty feeds with no Moment", async () => {
+      expect(await jsonItems()).toEqual([]);
+      const root = parseXml(
+        await buildMomentsRssXml(env, createMockExecutionCtx()),
+      );
+      expect(childrenNamed(childNamed(root, "channel"), "item")).toEqual([]);
+    });
+
+    it("give a Moment with text its first 40 characters as the title", async () => {
+      const short = await postMoment({ text: "  Hello\nworld  " });
+      const long = await postMoment({ text: `${"字".repeat(40)}超出` });
+      const items = await jsonItems();
+      expect(items.find((item) => item.url.endsWith(`/${short}`))?.title).toBe(
+        "Hello world",
+      );
+      expect(items.find((item) => item.url.endsWith(`/${long}`))?.title).toBe(
+        `${"字".repeat(40)}…`,
+      );
+    });
+
+    it("link and identify each Moment by its address, dated by when it was posted and written", async () => {
+      const id = await postMoment(
+        { text: "dated" },
+        { postedAt: POSTED_AT, updatedAt: EDITED_AT },
+      );
+      const [item] = await jsonItems();
+      expect(item?.id).toMatch(new RegExp(`^https://[^/]+/moments/${id}$`));
+      expect(item?.url).toBe(item?.id);
+      expect(item?.date_published).toBe(POSTED_AT.toISOString());
+      expect(item?.date_modified).toBe(EDITED_AT.toISOString());
+    });
+
+    it("write the text escaped with its line breaks and links, in all three formats", async () => {
+      await postMoment({
+        text: "line <one>\nsee https://example.com/a?x=1&y=2.",
+      });
+      const expected = [
+        "line &lt;one&gt;<br>see ",
+        'href="https://example.com/a?x=1&amp;y=2"',
+        'rel="noopener noreferrer nofollow"',
+      ];
+
+      const [item] = await jsonItems();
+      for (const part of expected) expect(item?.content_html).toContain(part);
+
+      const ctx = createMockExecutionCtx();
+      const rss = parseXml(await buildMomentsRssXml(env, ctx));
+      const rssItem = childNamed(childNamed(rss, "channel"), "item");
+      for (const part of expected) {
+        expect(childNamed(rssItem, "content:encoded").text).toContain(part);
+      }
+      const atom = parseXml(await buildMomentsAtomXml(env, ctx));
+      const [entry] = childrenNamed(atom, "entry");
+      if (!entry) throw new Error("Expected an entry");
+      for (const part of expected) {
+        expect(childNamed(entry, "content").text).toContain(part);
+      }
+    });
+
+    it("title an images-only Moment 图片动态 with its date and write the images as absolute <img>", async () => {
+      await postMoment({ images: ["one.png", "two.png"] });
+      const [item] = await jsonItems();
+      expect(item?.title).toBe("图片动态 · 2026-03-04");
+      expect(item?.content_html).toMatch(
+        /^<p><img src="https:\/\/[^"/]+\/images\/one\.png" alt=""><\/p><p><img src="https:\/\/[^"/]+\/images\/two\.png" alt=""><\/p>$/,
+      );
+    });
+
+    it("title a video-only Moment 视频动态 and write a Direct Video as a video with a link", async () => {
+      await postMoment({ video: direct });
+      const [item] = await jsonItems();
+      expect(item?.title).toBe("视频动态 · 2026-03-04");
+      expect(item?.content_html).toBe(
+        '<video controls preload="none" src="https://video.example/clip.mp4" poster="https://video.example/poster.jpg"></video><p><a href="https://video.example/clip.mp4">A clip</a></p>',
+      );
+    });
+
+    it("write the same fallback titles whatever the request locale is", async () => {
+      await postMoment({ images: ["one.png"] });
+      const build = async () => ({
+        json: await buildMomentsFeedJson(env, createMockExecutionCtx()),
+        rss: await buildMomentsRssXml(env, createMockExecutionCtx()),
+        atom: await buildMomentsAtomXml(env, createMockExecutionCtx()),
+      });
+      try {
+        overwriteGetLocale(() => "zh");
+        const zh = await build();
+        overwriteGetLocale(() => "en");
+        const en = await build();
+        expect(en).toEqual(zh);
+        expect(en.json).toContain("图片动态");
+        expect(en.json).not.toContain("Image moment");
+      } finally {
+        overwriteGetLocale(() => baseLocale);
+      }
+    });
+
+    it("write a Bilibili video as a link to its page", async () => {
+      await postMoment({ text: "watch", video: bilibili });
+      const [item] = await jsonItems();
+      expect(item?.content_html).toBe(
+        '<p>watch</p><p><a href="https://www.bilibili.com/video/BV1fK4y1s7Qf/?p=2&amp;t=90">A Bilibili video</a></p>',
+      );
+    });
+
+    it("list the newest Moments first and stay well-formed XML for hostile text", async () => {
+      await postMoment({ text: "old" }, { postedAt: POSTED_AT });
+      await postMoment(
+        { text: "T\u0000i\u000Btle <T> & ]]> ]]> \uFFFE\nbody ]]> \u001F" },
+        { postedAt: EDITED_AT },
+      );
+      const items = await jsonItems();
+      expect(items.map((item) => item.title)).toEqual([
+        "T\u0000i tle <T> & ]]> ]]> \uFFFE body ]]> \u001F",
+        "old",
+      ]);
+
+      const ctx = createMockExecutionCtx();
+      for (const document of [
+        await buildMomentsRssXml(env, ctx),
+        await buildMomentsAtomXml(env, ctx),
+      ]) {
+        expect(() => parseXml(document)).not.toThrow();
+        expect(withoutXmlForbiddenCharacters(document)).toBe(document);
+      }
+    });
   });
 });

@@ -21,9 +21,22 @@ export const USER_NOTIFICATION_EVENTS = [
   NOTIFICATION_EVENT.FRIEND_LINK_REJECTED,
 ] as const;
 
+/**
+ * What a comment event's Comment is on (ADR 0037). Its `postTitle` names that
+ * Post or, for a Moment, the start of the Moment's text, so a receiver built
+ * for Post comments keeps working. Events queued before Moments had Comments
+ * carry no target and are about a Post.
+ */
+const commentTargetSchema = z.enum(["post", "moment"]).optional();
+
+export type CommentNotificationTarget = NonNullable<
+  z.infer<typeof commentTargetSchema>
+>;
+
 const commentAdminRootCreatedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_ADMIN_ROOT_CREATED),
   data: z.object({
+    target: commentTargetSchema,
     postTitle: z.string(),
     commenterName: z.string(),
     commentPreview: z.string(),
@@ -34,6 +47,7 @@ const commentAdminRootCreatedNotificationSchema = z.object({
 const commentReplyToAdminPublishedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_ADMIN_PUBLISHED),
   data: z.object({
+    target: commentTargetSchema,
     postTitle: z.string(),
     replierName: z.string(),
     replyPreview: z.string(),
@@ -44,6 +58,7 @@ const commentReplyToAdminPublishedNotificationSchema = z.object({
 const commentReplyToUserPublishedNotificationSchema = z.object({
   type: z.literal(NOTIFICATION_EVENT.COMMENT_REPLY_TO_USER_PUBLISHED),
   data: z.object({
+    target: commentTargetSchema,
     postTitle: z.string(),
     replierName: z.string(),
     replyPreview: z.string(),

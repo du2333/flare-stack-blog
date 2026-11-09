@@ -6,7 +6,7 @@ import { useCommentComposer } from "./use-comment-composer";
 
 function options() {
   return {
-    postId: 1,
+    target: { type: "post" as const, id: 1 },
     userId: "reader",
     isCreating: false,
     createComment: vi.fn(async (_input: CreateCommentInput) => ({ id: 50 })),
@@ -235,7 +235,12 @@ it("keeps cancelled drafts and returns focus to each composer entry", () => {
 it("resets the composer only when its Post or User changes", () => {
   const input = options();
   const { result, rerender } = renderHook(
-    ({ postId, userId }) => useCommentComposer({ ...input, postId, userId }),
+    ({ postId, userId }) =>
+      useCommentComposer({
+        ...input,
+        target: { type: "post", id: postId },
+        userId,
+      }),
     { initialProps: { postId: 1, userId: "reader" } },
   );
   act(() => result.current.startRoot());
@@ -282,4 +287,52 @@ it("keeps separate root and reply drafts while switching targets in the same Thr
   expect(result.current.root.value).toBe("Root draft");
   act(() => result.current.startReply(bob));
   expect(result.current.reply.value).toBe("Reply to Bob");
+});
+
+it("creates a Post's Comments with its postId and a Moment's with its momentId", async () => {
+  const post = options();
+  const { result: onPost } = renderHook(() => useCommentComposer(post));
+  act(() => onPost.current.startRoot());
+  await act(async () => onPost.current.root.onSubmit("On a Post"));
+  expect(post.createComment).toHaveBeenCalledWith({
+    postId: 1,
+    content: "On a Post",
+  });
+
+  const moment = { ...options(), target: { type: "moment" as const, id: 7 } };
+  const { result: onMoment } = renderHook(() => useCommentComposer(moment));
+  act(() => onMoment.current.startRoot());
+  await act(async () => onMoment.current.root.onSubmit("On a Moment"));
+  expect(moment.createComment).toHaveBeenCalledWith({
+    momentId: 7,
+    content: "On a Moment",
+  });
+  act(() =>
+    onMoment.current.startReply({
+      rootId: 10,
+      commentId: 11,
+      userName: "Alice",
+    }),
+  );
+  await act(async () => onMoment.current.reply.onSubmit("Reply on a Moment"));
+  expect(moment.createComment).toHaveBeenLastCalledWith({
+    momentId: 7,
+    content: "Reply on a Moment",
+    rootId: 10,
+    replyToCommentId: 11,
+  });
+});
+
+it("resets the composer when the same id belongs to the other kind of target", () => {
+  const input = options();
+  const { result, rerender } = renderHook(
+    ({ type }: { type: "post" | "moment" }) =>
+      useCommentComposer({ ...input, target: { type, id: 1 } }),
+    { initialProps: { type: "post" } },
+  );
+  act(() => result.current.startRoot());
+  act(() => result.current.root.onChange("A Post's draft"));
+  rerender({ type: "moment" });
+  expect(result.current.root.isOpen).toBe(false);
+  expect(result.current.root.value).toBe("");
 });
