@@ -13,18 +13,21 @@ import ZoomableImage from "./content/zoomable-image";
 import { PostAdjacentNav } from "./post-adjacent-nav";
 import { PostMeta } from "./post-meta";
 import { PostOutdatedNotice } from "./post-outdated-notice";
+import { PostShareButton } from "./post-share-button";
 import { PostSummary } from "./post-summary";
 import TableOfContents from "./table-of-contents";
 
 interface PostPageProps {
   post: Exclude<PostWithToc, null>;
+  /** The post's canonical address, as the route's head has it. */
+  canonicalHref: string;
 }
 
 function enterDelay(extraMs: number) {
   return `calc(var(--fuwari-content-delay) + ${extraMs}ms * var(--fuwari-stagger, 1))`;
 }
 
-export function PostPage({ post }: PostPageProps) {
+export function PostPage({ post, canonicalHref }: PostPageProps) {
   const { data: session } = useSession();
   // The cover opens on its own; body images form one gallery.
   const coverRef = useRef<HTMLDivElement>(null);
@@ -156,6 +159,9 @@ export function PostPage({ post }: PostPageProps) {
               END
             </span>
             <div className="h-px w-full bg-linear-to-r from-(--fuwari-meta-divider) via-transparent to-transparent opacity-20" />
+          </div>
+          <div className="mb-4 flex justify-center">
+            <PostShareButton title={post.title} url={canonicalHref} />
           </div>
         </div>
       </div>
