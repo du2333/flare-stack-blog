@@ -4,6 +4,7 @@ import { containsText } from "@/lib/db/text-match";
 import {
   MediaTable,
   MomentImagesTable,
+  MomentsTable,
   PostMediaTable,
   PostRevisionMediaTable,
   PostRevisionsTable,
@@ -282,4 +283,22 @@ export async function deleteUnusedMedia(db: DB): Promise<Array<string>> {
     .where(unreferenced)
     .returning({ key: MediaTable.key });
   return rows.map((row) => row.key);
+}
+
+/**
+ * The Moments that show the image, newest first. A Moment that shows it
+ * twice is listed once.
+ */
+export async function getMomentsByMediaKey(db: DB, key: string) {
+  return await db
+    .selectDistinct({
+      id: MomentsTable.id,
+      text: MomentsTable.text,
+      postedAt: MomentsTable.postedAt,
+    })
+    .from(MomentImagesTable)
+    .innerJoin(MediaTable, eq(MediaTable.id, MomentImagesTable.mediaId))
+    .innerJoin(MomentsTable, eq(MomentsTable.id, MomentImagesTable.momentId))
+    .where(eq(MediaTable.key, key))
+    .orderBy(desc(MomentsTable.postedAt), desc(MomentsTable.id));
 }

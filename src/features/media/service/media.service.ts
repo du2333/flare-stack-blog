@@ -9,6 +9,7 @@ import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FILE_SIZE,
 } from "@/features/media/media.schema";
+import { momentHeading } from "@/features/moments/utils/moment-heading";
 import { getImageDimensions } from "@/features/media/utils/image-dimensions";
 import { matchesDeclaredImageType } from "@/features/media/utils/image-signature";
 import {
@@ -134,6 +135,17 @@ export async function mediaExists(context: DbContext, key: string) {
 
 export async function getLinkedPosts(context: DbContext, key: string) {
   return await PostMediaRepo.getPostsByMediaKey(context.db, key);
+}
+
+/** The Moments that show the image, titled as the Admin's other Moment lists title them. */
+export async function getLinkedMoments(context: DbContext, key: string) {
+  const moments = await MediaRepo.getMomentsByMediaKey(context.db, key);
+  // A Moment with images has no video, so a blank text is an image Moment.
+  return moments.map((moment) => ({
+    id: moment.id,
+    title: momentHeading({ text: moment.text, hasVideo: false }),
+    postedAt: moment.postedAt,
+  }));
 }
 
 export async function getLinkedMediaKeys(
