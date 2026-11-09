@@ -45,11 +45,11 @@ The differences between a **Published Post**'s draft and its **Public Content Sn
 _Avoid_: Out of sync, dirty, pending edits, 已同步
 
 **Comment**:
-A user-authored response attached to a **Post**, public as soon as it is created, whose body is text. The author or an **Admin** can delete it from the public post page; deletion keeps a placeholder in the **Comment Thread** instead of removing the row.
+A user-authored response attached to a **Post** or a **Moment**, public as soon as it is created, whose body is text. The author or an **Admin** can delete it from the public page it was left on; deletion keeps a placeholder in the **Comment Thread** instead of removing the row.
 _Avoid_: Message, pending comment, verifying comment, rich document
 
 **Comment Thread**:
-A root **Comment** plus its direct replies under one **Post**. A thread whose root is deleted and that has no published replies is not shown.
+A root **Comment** plus its direct replies under one **Post** or **Moment**. A thread whose root is deleted and that has no published replies is not shown.
 _Avoid_: Nested comment tree
 
 **Reply**:
@@ -101,7 +101,7 @@ A short-lived one-time code emailed to an address so its owner can sign in as th
 _Avoid_: OTP, verification code, magic link, password
 
 **Muted User**:
-A **User** an **Admin** has stopped from creating **Comments**. They remain a **User**: they can sign in, edit their profile, submit **Friend Links**, and delete their own **Comments**. Muting applies to every **Post** and lasts until an **Admin** unmutes them.
+A **User** an **Admin** has stopped from creating **Comments**. They remain a **User**: they can sign in, edit their profile, submit **Friend Links**, and delete their own **Comments**. Muting applies to every **Post** and **Moment** and lasts until an **Admin** unmutes them.
 _Avoid_: Banned user, blocked user, silenced user, banned
 
 **Admin**:
@@ -165,7 +165,7 @@ _Avoid_: New commit, fork update
 - A **Category** is identified by a unique name. **Category** names, **Tag** names and **Post** slugs are unique ignoring case (ß, ẞ and ss are one) and Unicode compatibility forms (fullwidth letters, no-break spaces), and ignoring characters that show nothing, such as a variation selector after an emoji; they are stored as written. Names, slugs and titles hold no control or format characters; summaries hold none besides tab and line breaks. A **Post** slug is never `pinned` or `popular` (the public API's list paths), in any case, and never holds `^`, which the public page cannot open.
 - The public site can list **Published Posts** by **Category**, and can apply a **Category** filter and a **Tag** filter together.
 - A **Post** can have zero or more **Post Revisions**.
-- A **Post** can have zero or more **Comment Threads**.
+- A **Post** or a **Moment** can have zero or more **Comment Threads**.
 - A **Post** can reference zero or more **Media** items.
 - A **Post** has zero or one **Post Cover**.
 - A **Post Cover** is a **Media** item.
@@ -185,11 +185,11 @@ _Avoid_: New commit, fork update
 - Publishing with a new slug replaces the **Public Content Snapshot** slug. The previous public slug does not remain reachable.
 - A **Published Post** has a publication date for display and listing order. The date is a past or current server date, never a future date. First publication without a date uses server time.
 - A **Post Revision** belongs to exactly one **Post**.
-- A **Comment Thread** belongs to exactly one **Post**.
-- A **User** can create a **Comment** only if that **Post** has a **Public Content Snapshot** and the **User** is not a **Muted User**.
+- A **Comment Thread** belongs to exactly one **Post** or exactly one **Moment**.
+- A **User** can create a **Comment** on a **Post** only if that **Post** has a **Public Content Snapshot**, and on any **Moment**, since a **Moment** is always public; never as a **Muted User**.
 - A **Muted User** cannot create a **Comment**.
 - Muting a **User** does not change their existing **Comments**.
-- An **Admin** mutes or unmutes a **User** from that **User**'s **Comment** on the public **Post** page, including a deleted **Comment** placeholder, when the **Comment** still identifies a **User**.
+- An **Admin** mutes or unmutes a **User** from that **User**'s **Comment** on the public page of its **Post** or **Moment**, including a deleted **Comment** placeholder, when the **Comment** still identifies a **User**.
 - An **Admin** cannot mute an **Admin**.
 - Other readers are not shown that a **User** is a **Muted User**.
 - An **Admin** can list current **Muted Users** in order to unmute them. That list is not a **User** directory and does not show **Comment** history.
@@ -204,7 +204,8 @@ _Avoid_: New commit, fork update
 - A **Direct Video** whose file is no longer served stays in the **Post** and fails to play; the CMS neither prevents nor reports it.
 - A **Direct Video** is always a video file. A page whose video is another site's player, not a file, cannot become a **Direct Video**.
 - The title and poster of a **Direct Video** are read once, when it is embedded, and kept on the **Video Embed**; the Admin may change them. Readers never wait on the page or host they came from.
-- A **Moment** is not a **Post**. It has no title, slug, summary, **Category**, **Tags**, **Post Cover**, draft, **Public Content Snapshot** or **Post Revision**, and readers cannot leave **Comments** on it.
+- A **Moment** is not a **Post**. It has no title, slug, summary, **Category**, **Tags**, **Post Cover**, draft, **Public Content Snapshot** or **Post Revision**. Readers comment on it as on a **Published Post**.
+- Deleting a **Moment** deletes its **Comments** with it; no placeholders remain.
 - A **Moment** has text of at most 1000 characters, and either up to 50 images, which are **Media**, or one **Video Embed**, never both. It is never empty.
 - A **Moment** keeps the time it was posted; editing it does not change that time.
 - The public navigation and the home sidebar show **Moments** only once at least one exists; the **Admin** always sees the Moments page, to post the first one. The home sidebar shows the latest three.
@@ -219,7 +220,7 @@ _Avoid_: New commit, fork update
 - Public blog pages consume **Site Config** when rendering.
 - A **Notification Event** can be delivered through email or a **Webhook Endpoint** according to **System Config**.
 - A **Notification Event** does not include the email recipient.
-- A **Notification Event** for a **Comment** links to that **Comment** on the public **Post** page.
+- A **Notification Event** for a **Comment** links to that **Comment** on the public page of its **Post** or **Moment**. Where it names a **Post** by its title, it names a **Moment** by the start of its text.
 - An **Admin** can manage **Posts**, **Moments**, **Comments**, **Tags**, **Categories**, **Media**, **System Config**, **Friend Links**, **Muted Users**, and **API Keys**.
 - An **API Key** belongs to exactly one **Admin**.
 - An **Admin** can have zero or more **API Keys**.
