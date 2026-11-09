@@ -193,15 +193,23 @@ const DirectVideoInputSchema = z
       .describe(
         "The https page the video was found on, linked under the player.",
       ),
+    duration: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe(
+        "The file's length in seconds, as read from the file; the server cannot read it. Stored as given. Left out, the length the Moment's video already had is kept while src stays the same, else it is unknown.",
+      ),
   })
   .describe(
-    "A Direct Video: a video file at any https address, played by the reader's browser. The server requests none of these addresses and stores them as given, so check them first. Every address must be https without a user name or password, or the save answers 400 MOMENT_VIDEO_INVALID. Its length is kept while src stays the same.",
+    "A Direct Video: a video file at any https address, played by the reader's browser. The server requests none of these addresses and stores them as given, so check them first. Every address must be https without a user name or password, or the save answers 400 MOMENT_VIDEO_INVALID.",
   );
 
 const MomentVideoInputSchema = z
   .union([ProviderVideoInputSchema, DirectVideoInputSchema])
   .describe(
-    "One video: { url } for Bilibili or YouTube, or { src, poster?, title?, page? } for a Direct Video. A Moment with a video has no images.",
+    "One video: { url } for Bilibili or YouTube, or { src, poster?, title?, page?, duration? } for a Direct Video. A Moment with a video has no images.",
   );
 
 export const CreateMomentInputSchema = z.strictObject({

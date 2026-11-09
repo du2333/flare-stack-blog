@@ -154,8 +154,8 @@ function sameProviderVideo(a: MomentVideo | null, b: MomentVideo) {
  * post body's video follows (`videoSourceOf`, `directVideoOf`). A Bilibili or
  * YouTube video gets the title, cover and length it had in `current`, or else
  * what its site says; a failed lookup leaves them empty. Nothing is requested
- * for a Direct Video (ADR 0036): it keeps the length it had while its file
- * stays the same.
+ * for a Direct Video (ADR 0036): its length is the one given, else the one it
+ * had while its file stays the same.
  */
 async function resolveVideo(
   input: MomentVideoInput,
@@ -215,9 +215,10 @@ async function resolveVideo(
     title: input.title ?? null,
     pageUrl: input.page?.trim() || null,
     duration:
-      current?.provider === "direct" && directVideoOf(current)?.src === src
+      input.duration ??
+      (current?.provider === "direct" && directVideoOf(current)?.src === src
         ? current.duration
-        : null,
+        : null),
   });
   if (!direct) {
     return err({
