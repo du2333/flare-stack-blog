@@ -30,6 +30,7 @@ import {
   buildRssXml,
 } from "@/features/site-documents/service/site-documents.service";
 import { MomentsTable, PostsTable } from "@/lib/db/schema";
+import { baseLocale, overwriteGetLocale } from "@/paraglide/runtime";
 import { createApiContext } from "@/lib/orpc/create-context";
 import { openAPIHandler } from "@/lib/orpc/openapi-handler";
 
@@ -506,6 +507,26 @@ describe("Moments", () => {
       expect(item?.content_html).toBe(
         '<video controls preload="none" src="https://video.example/clip.mp4" poster="https://video.example/poster.jpg"></video><p><a href="https://video.example/clip.mp4">A clip</a></p>',
       );
+    });
+
+    it("write the same fallback titles whatever the request locale is", async () => {
+      await postMoment({ images: ["one.png"] });
+      const build = async () => ({
+        json: await buildMomentsFeedJson(env, createMockExecutionCtx()),
+        rss: await buildMomentsRssXml(env, createMockExecutionCtx()),
+        atom: await buildMomentsAtomXml(env, createMockExecutionCtx()),
+      });
+      try {
+        overwriteGetLocale(() => "zh");
+        const zh = await build();
+        overwriteGetLocale(() => "en");
+        const en = await build();
+        expect(en).toEqual(zh);
+        expect(en.json).toContain("图片动态");
+        expect(en.json).not.toContain("Image moment");
+      } finally {
+        overwriteGetLocale(() => baseLocale);
+      }
     });
 
     it("write a Bilibili video as a link to its page", async () => {
