@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { CommentSection } from "@/features/comments/components/comment-section";
 import { MomentCard } from "@/features/moments/components/moment-card";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import { m } from "@/paraglide/messages";
 
 /**
- * One Moment on a page of its own, with the way back to the timeline. Like
+ * One Moment on a page of its own, with the way back to the timeline and its
+ * comment section (the same one a Post has). Like
  * the other public pages it opens on a card, not a title over the banner.
  */
 export function MomentPage({ moment }: { moment: PublicMoment }) {
@@ -23,6 +25,9 @@ export function MomentPage({ moment }: { moment: PublicMoment }) {
         {m.moments_all()}
       </Link>
       <MomentCard moment={moment} />
+      <div className="fuwari-card-base p-6">
+        <CommentSection target={{ type: "moment", id: moment.id }} />
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   MomentAdminActions,
   MomentEditor,
 } from "@/features/moments/components/admin";
+import { MomentCommentLink } from "@/features/moments/components/moment-comment-link";
 import { MomentAvatar } from "@/features/moments/components/moment-avatar";
 import { MomentImages } from "@/features/moments/components/moment-images";
 import { MomentText } from "@/features/moments/components/moment-text";
@@ -14,8 +15,8 @@ import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 
 /**
  * One Moment as a card: who posted it and when, the text, then the images or
- * the video. The Admin's edit and delete actions sit in the header; editing
- * turns the card into the composer, in place.
+ * the video, then its comment count. The Admin's edit and delete actions sit
+ * in the header; editing turns the card into the composer, in place.
  */
 export function MomentCard({ moment }: { moment: PublicMoment }) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
@@ -51,6 +52,7 @@ export function MomentCard({ moment }: { moment: PublicMoment }) {
       ) : null}
       <MomentImages momentId={moment.id} images={moment.images} />
       {moment.video ? <MomentVideo video={moment.video} /> : null}
+      <MomentCommentLink moment={moment} />
     </article>
   );
 }

@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CircleAlert } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import type { CommentTarget } from "@/features/comments/comment-target";
 import { remainingPublishedReplies } from "@/features/comments/comment-thread";
 import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
@@ -13,7 +14,7 @@ import { CommentReveal } from "./comment-reveal";
 
 interface CommentListProps {
   rootComments: RootCommentWithReplyCount[];
-  postId: number;
+  target: CommentTarget;
   onReply: (rootId: number, commentId: number, userName: string) => void;
   onDelete?: (commentId: number) => void;
   onMute?: (userId: string, userName: string) => void;
@@ -37,7 +38,7 @@ export function CommentList({ rootComments, ...props }: CommentListProps) {
 }
 function CommentThread({
   root,
-  postId,
+  target,
   onReply,
   onDelete,
   onMute,
@@ -59,7 +60,7 @@ function CommentThread({
     if (needsReveal) setExpanded(true);
   }, [needsReveal, revealCommentId]);
   const query = useInfiniteQuery({
-    ...repliesByRootIdInfiniteQuery(postId, root.id),
+    ...repliesByRootIdInfiniteQuery(target, root.id),
     enabled: expanded,
   });
   const fetched = query.data?.pages.flatMap((page) => page.items) ?? [];
