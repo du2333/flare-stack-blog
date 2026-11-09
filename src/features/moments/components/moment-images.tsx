@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import type { MomentImage } from "@/features/moments/schema/moments.schema";
-import { momentImageLayout } from "@/features/moments/utils/moment-images";
+import {
+  momentImageLayout,
+  singleImageBox,
+} from "@/features/moments/utils/moment-images";
 import {
   getPublicImageSrc,
   getPublicImageSrcSet,
@@ -31,6 +34,7 @@ export function MomentImages({
 
   if (images.length === 0) return null;
   const { columns, shown, more } = momentImageLayout(images.length);
+  const single = singleImageBox(images[0].width, images[0].height, "24rem");
   const alt = (index: number) =>
     m.moments_image_alt({ index: index + 1, count: images.length });
 
@@ -45,7 +49,12 @@ export function MomentImages({
           )}
           target="_blank"
           rel="noreferrer"
-          className={cn(LINK_CLASS, "w-fit max-w-full rounded-xl")}
+          style={single.style}
+          className={cn(
+            LINK_CLASS,
+            "max-w-full rounded-xl bg-(--fuwari-btn-regular-bg)",
+            !single.known && "max-w-xl",
+          )}
         >
           <img
             src={getPublicImageSrc(images[0].url, 800)}
@@ -56,7 +65,7 @@ export function MomentImages({
             height={images[0].height ?? undefined}
             loading="lazy"
             decoding="async"
-            className="block h-auto max-h-96 w-auto max-w-full object-contain"
+            className="block size-full object-contain"
           />
         </a>
       ) : (

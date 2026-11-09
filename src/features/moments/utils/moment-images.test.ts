@@ -1,5 +1,47 @@
 import { describe, expect, it } from "vitest";
-import { momentImageLayout } from "./moment-images";
+import { momentImageLayout, singleImageBox } from "./moment-images";
+
+describe("singleImageBox", () => {
+  it("reserves a landscape box capped by height and width", () => {
+    expect(singleImageBox(1600, 800, "24rem")).toEqual({
+      style: {
+        aspectRatio: "1600 / 800",
+        width: "min(100%, calc(24rem * 1600 / 800), 1600px)",
+      },
+      known: true,
+    });
+  });
+
+  it("reserves portrait and square boxes", () => {
+    expect(singleImageBox(600, 900, "11rem").style).toEqual({
+      aspectRatio: "600 / 900",
+      width: "min(100%, calc(11rem * 600 / 900), 600px)",
+    });
+    expect(singleImageBox(500, 500, "24rem").style.aspectRatio).toBe(
+      "500 / 500",
+    );
+  });
+
+  it("never upscales a small image past its natural width", () => {
+    expect(singleImageBox(300, 200, "24rem").style).toEqual({
+      aspectRatio: "300 / 200",
+      width: "min(100%, calc(24rem * 300 / 200), 300px)",
+    });
+  });
+
+  it("falls back to a 4:3 box for unknown sizes", () => {
+    for (const [w, h] of [
+      [null, null],
+      [undefined, 100],
+      [0, 0],
+    ] as const) {
+      expect(singleImageBox(w, h, "24rem")).toEqual({
+        style: { aspectRatio: "4 / 3", width: "100%" },
+        known: false,
+      });
+    }
+  });
+});
 
 describe("momentImageLayout", () => {
   it("shows one image large", () => {

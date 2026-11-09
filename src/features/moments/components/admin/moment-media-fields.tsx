@@ -11,7 +11,10 @@ import type { useMediaPicker } from "@/features/media/components/media-library/h
 import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { getPublicImageSrc } from "@/features/media/utils/media.utils";
 import type { MomentImage } from "@/features/moments/schema/moments.schema";
-import { momentImageLayout } from "@/features/moments/utils/moment-images";
+import {
+  momentImageLayout,
+  singleImageBox,
+} from "@/features/moments/utils/moment-images";
 import { MOMENT_IMAGES_MAX } from "@/features/moments/utils/moment-rules";
 import {
   directVideoHost,
@@ -169,7 +172,7 @@ export function MomentImageGrid({
         className={cn(
           "grid gap-1",
           single
-            ? "w-fit max-w-full grid-cols-1"
+            ? "w-full max-w-xs grid-cols-1 justify-items-start"
             : cn("max-w-xs", columns === 2 ? "grid-cols-2" : "grid-cols-3"),
         )}
       >
@@ -201,10 +204,16 @@ export function MomentImageGrid({
               }}
               onDrop={(event) => dropOn(event, tile)}
               onDragEnd={endDrag}
+              style={
+                single && isImage
+                  ? singleImageBox(tile.image.width, tile.image.height, "11rem")
+                      .style
+                  : undefined
+              }
               className={cn(
                 "group relative overflow-hidden rounded-lg bg-(--fuwari-btn-regular-bg)",
                 single
-                  ? "rounded-xl"
+                  ? "max-w-full rounded-xl"
                   : columns === 2
                     ? "aspect-4/3"
                     : "aspect-square",
@@ -219,13 +228,11 @@ export function MomentImageGrid({
                 <img
                   src={getPublicImageSrc(tile.image.url, 400)}
                   alt={m.moment_admin_image_alt({ index: index + 1 })}
-                  width={single ? (tile.image.width ?? undefined) : undefined}
-                  height={single ? (tile.image.height ?? undefined) : undefined}
                   loading="lazy"
                   draggable={false}
                   className={
                     single
-                      ? "block h-auto max-h-44 w-auto max-w-full object-contain"
+                      ? "block size-full object-contain"
                       : "absolute inset-0 size-full object-cover"
                   }
                 />
