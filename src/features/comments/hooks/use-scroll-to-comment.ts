@@ -3,11 +3,17 @@ import { useEffect } from "react";
 const SETTLE_MS = 300;
 const GIVE_UP_MS = 10_000;
 
-export function useScrollToComment(commentId: number | undefined) {
+/**
+ * Keep an element aligned in the viewport while the page above it settles,
+ * until its position has stopped moving for a moment (ADR 0015).
+ */
+export function useSettledScroll(
+  elementId: string | undefined,
+  block: ScrollLogicalPosition,
+) {
   useEffect(() => {
-    if (commentId == null) return;
+    if (elementId == null) return;
 
-    const elementId = `comment-${commentId}`;
     const startedAt = Date.now();
     let lastTop: number | null = null;
     let lastChangeAt = Date.now();
@@ -15,7 +21,7 @@ export function useScrollToComment(commentId: number | undefined) {
     let stopped = false;
 
     const align = (element: HTMLElement) => {
-      element.scrollIntoView({ behavior: "auto", block: "center" });
+      element.scrollIntoView({ behavior: "auto", block });
     };
 
     const tick = () => {
@@ -52,5 +58,12 @@ export function useScrollToComment(commentId: number | undefined) {
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, [commentId]);
+  }, [elementId, block]);
+}
+
+export function useScrollToComment(commentId: number | undefined) {
+  useSettledScroll(
+    commentId == null ? undefined : `comment-${commentId}`,
+    "center",
+  );
 }

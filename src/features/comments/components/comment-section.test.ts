@@ -55,6 +55,17 @@ const boundary = vi.hoisted(() => ({
     user: { id: "reader", name: "Reader", image: null, role: "user" },
   },
   listeners: new Set<() => void>(),
+  toastError: vi.fn(),
+}));
+
+vi.mock("sonner", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("sonner")>()),
+  toast: Object.assign(vi.fn(), {
+    error: boundary.toastError,
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+    success: vi.fn(),
+  }),
 }));
 
 vi.mock("@/lib/orpc", async () => {
@@ -748,4 +759,74 @@ it("lets an Admin mute a Moment's commenter from the comment and refreshes the M
     expect(boundary.client.comments.moment.roots).toHaveBeenCalledTimes(2),
   );
   expect(boundary.client.comments.roots).not.toHaveBeenCalled();
+});
+
+it("offers an Admin only mute on a deleted placeholder, never delete, on a Post and on a Moment", async () => {
+  boundary.session = {
+    user: { id: "admin", name: "Admin", image: null, role: "admin" },
+  };
+  const withDeleted = (source: RootCommentWithReplyCount) => ({
+    ...source,
+    replies: [
+      { ...source.replies[0], status: "deleted" as const },
+      source.replies[1],
+    ],
+  });
+  boundary.client.comments.roots.mockResolvedValue({
+    items: [withDeleted(thread)],
+    total: 2,
+    viewerMuted: false,
+  });
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [withDeleted(momentThread)],
+    total: 2,
+    viewerMuted: false,
+  });
+  for (const type of ["post", "moment"] as const) {
+    await mountSection({ type, ready: "Bob's comment" });
+    const placeholder = screen
+      .getByText(m.comments_item_deleted_content())
+      .closest("article")!;
+    await act(async () => {
+      fireEvent.click(
+        within(placeholder).getByRole("button", {
+          name: m.comments_more_actions(),
+        }),
+      );
+    });
+    const items = (await screen.findAllByRole("menuitem")).map(
+      (item) => item.textContent,
+    );
+    expect(items).toEqual([m.comments_item_mute()]);
+    cleanup();
+  }
+});
+
+it("reports a ?comment= link that names no comment as soon as the 404 arrives, without retrying", async () => {
+  const { ORPCError } = await import("@orpc/client");
+  const notFound = new ORPCError("COMMENT_NOT_FOUND", { status: 404 });
+  boundary.client.comments.thread.mockRejectedValue(notFound);
+  boundary.client.comments.moment.thread.mockRejectedValue(notFound);
+  boundary.client.comments.moment.roots.mockResolvedValue({
+    items: [momentThread],
+    total: 3,
+    viewerMuted: false,
+  });
+  // The app's own client retries failures; only a 404 may skip that.
+  queryClient = new QueryClient();
+  for (const type of ["post", "moment"] as const) {
+    boundary.toastError.mockClear();
+    await mountSection({ type, search: "?comment=999" });
+    await waitFor(() =>
+      expect(boundary.toastError).toHaveBeenCalledWith(
+        m.comments_locate_failed(),
+      ),
+    );
+    const called =
+      type === "post"
+        ? boundary.client.comments.thread
+        : boundary.client.comments.moment.thread;
+    expect(called).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
 });

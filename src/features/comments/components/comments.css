@@ -35,7 +35,15 @@
   flex: 1;
   min-width: 140px;
 }
-.comments-muted,
+.comments-muted {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--fuwari-fg-50) 8%, var(--fuwari-card-bg));
+  color: var(--fuwari-fg-50);
+  font-size: 14px;
+  line-height: 1.6;
+}
 .comment-avatar {
   width: 40px;
   height: 40px;

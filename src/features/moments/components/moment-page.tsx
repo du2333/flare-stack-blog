@@ -1,6 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation, useSearch } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { CommentSection } from "@/features/comments/components/comment-section";
+import { useSettledScroll } from "@/features/comments/hooks/use-scroll-to-comment";
 import { MomentCard } from "@/features/moments/components/moment-card";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import { m } from "@/paraglide/messages";
@@ -11,6 +12,18 @@ import { m } from "@/paraglide/messages";
  * the other public pages it opens on a card, not a title over the banner.
  */
 export function MomentPage({ moment }: { moment: PublicMoment }) {
+  // The comment count on a card links to `#comments`; the section and the
+  // images above it load after the browser's own jump, so land on it once the
+  // layout settles. A `?comment=` link scrolls to its comment instead.
+  const atComments = useLocation({ select: (l) => l.hash === "comments" });
+  const commentId = useSearch({
+    strict: false,
+    select: (search) => (search as { comment?: number }).comment,
+  });
+  useSettledScroll(
+    atComments && commentId == null ? "comments" : undefined,
+    "start",
+  );
   return (
     <div
       className="fuwari-onload-animation flex flex-col gap-4"

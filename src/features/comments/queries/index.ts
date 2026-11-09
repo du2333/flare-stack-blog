@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/client";
 import { orpc } from "@/lib/orpc";
 import type { CommentTarget } from "../comment-target";
 import { COMMENT_PAGE_SIZE } from "../comment-thread";
@@ -78,14 +79,22 @@ export function repliesByRootIdInfiniteQuery(
   });
 }
 
+/** A 4xx answer (a missing comment) is final; only server or network faults are retried. */
+function retryUnlessRefused(failureCount: number, error: unknown) {
+  if (error instanceof ORPCError && error.status < 500) return false;
+  return failureCount < 3;
+}
+
 export function commentThreadQuery(target: CommentTarget, commentId: number) {
   if (target.type === "moment") {
     return orpc.comments.moment.thread.queryOptions({
       input: { momentId: target.id, id: commentId },
+      retry: retryUnlessRefused,
     });
   }
   return orpc.comments.thread.queryOptions({
     input: { postId: target.id, id: commentId },
+    retry: retryUnlessRefused,
   });
 }
 
