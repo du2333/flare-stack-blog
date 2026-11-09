@@ -193,7 +193,7 @@ describe("path ids", () => {
   });
 
   it("refuses an id in a public path too", async () => {
-    const response = await call("/comments/1e0/thread?postId=1");
+    const response = await call("/posts/1e0/comments");
 
     expect(response.status).toBe(400);
   });

@@ -140,7 +140,7 @@ describe("the whole document", () => {
 describe("the index", () => {
   it("stays a few thousand tokens", async () => {
     const response = await get("/spec/index.json");
-    expect((await response.text()).length).toBeLessThan(24_000);
+    expect((await response.text()).length).toBeLessThan(25_000);
   });
 
   it("lists every operation with its id, summary and tags, and the API-wide rules", async () => {

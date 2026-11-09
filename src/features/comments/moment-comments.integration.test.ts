@@ -651,7 +651,7 @@ describe("a Moment's comments over the HTTP API", () => {
     return response;
   }
 
-  it("lists, threads and counts them by momentId", async () => {
+  it("lists, threads and counts them under the Moment's path", async () => {
     const moment = await postMoment({ text: "over http" });
     const root = unwrap(
       await CommentService.createComment(userContext, {
@@ -667,7 +667,7 @@ describe("a Moment's comments over the HTTP API", () => {
       }),
     );
 
-    const roots = await call(`/comments?momentId=${moment.id}`);
+    const roots = await call(`/moments/${moment.id}/comments`);
     expect(roots.status).toBe(200);
     expect(await roots.json()).toMatchObject({
       total: 2,
@@ -675,7 +675,7 @@ describe("a Moment's comments over the HTTP API", () => {
     });
 
     const replies = await call(
-      `/comments/${root.id}/replies?momentId=${moment.id}`,
+      `/moments/${moment.id}/comments/${root.id}/replies`,
     );
     expect(await replies.json()).toMatchObject({
       total: 1,
@@ -683,7 +683,7 @@ describe("a Moment's comments over the HTTP API", () => {
     });
 
     const thread = await call(
-      `/comments/${reply.id}/thread?momentId=${moment.id}`,
+      `/moments/${moment.id}/comments/${reply.id}/thread`,
     );
     expect(await thread.json()).toMatchObject({ id: root.id, replyCount: 1 });
 
@@ -691,9 +691,14 @@ describe("a Moment's comments over the HTTP API", () => {
     expect(await read.json()).toMatchObject({ commentCount: 2 });
   });
 
-  it("needs exactly one of postId and momentId", async () => {
-    expect((await call("/comments")).status).toBe(400);
-    expect((await call("/comments?postId=1&momentId=1")).status).toBe(400);
-    expect((await call("/comments/1/thread")).status).toBe(400);
+  it("names the Moment in the path alone", async () => {
+    const moment = await postMoment({ text: "path" });
+    expect((await call("/moments/1e0/comments")).status).toBe(400);
+    expect((await call(`/moments/${moment.id}/comments?postId=1`)).status).toBe(
+      400,
+    );
+    expect((await call(`/moments/${moment.id}/comments/1/thread`)).status).toBe(
+      404,
+    );
   });
 });

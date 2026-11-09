@@ -592,9 +592,9 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/comments",
-          "summary": "List root comments on a post or a moment",
-          "description": "Returns visible root threads with reply previews. Name the Post with postId or the Moment with momentId, exactly one of them. Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the Post or Moment, excluding deleted placeholders; it must not be used to calculate root pagination. A Post without a published version, or a Moment that does not exist, has no comments.",
+          "path": "/posts/{postId}/comments",
+          "summary": "List root comments on a post",
+          "description": "Returns visible root threads with reply previews. Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the post, excluding deleted placeholders; it must not be used to calculate root pagination.",
           "tags": ["Comments"]
         }
       }
@@ -605,9 +605,8 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/comments/{rootId}/replies",
+          "path": "/posts/{postId}/comments/{rootId}/replies",
           "summary": "List replies in a comment thread",
-          "description": "Name the Post with postId or the Moment with momentId, exactly one of them. The root comment must be on it; otherwise the list is empty.",
           "tags": ["Comments"]
         }
       }
@@ -618,9 +617,8 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/comments/{id}/thread",
+          "path": "/posts/{postId}/comments/{id}/thread",
           "summary": "Load the visible comment thread containing a comment",
-          "description": "Name the Post with postId or the Moment with momentId, exactly one of them. Answers 404 COMMENT_NOT_FOUND when the comment is not on it or its thread is not shown. Comment links (/post/{slug}?comment={id}, /moments/{momentId}?comment={id}) are resolved with this.",
           "tags": ["Comments"]
         }
       }
@@ -631,10 +629,62 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/comments",
+          "path": "/posts/{postId}/comments",
           "summary": "Create a comment",
-          "description": "Name the Post with postId or the Moment with momentId, exactly one of them. A Post takes comments only while it has a published version (400 POST_NOT_PUBLISHED); a Moment, as long as it exists (404 MOMENT_NOT_FOUND otherwise). A reply names its thread with rootId, on the same Post or Moment, and the comment it answers with replyToCommentId.",
           "tags": ["Comments"]
+        }
+      }
+    },
+    "moment": {
+      "roots": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments",
+            "summary": "List root comments on a moment",
+            "description": "As for a post: visible root threads with reply previews, paginated by root thread; total counts all published roots and replies on the Moment, excluding deleted placeholders. A Moment that does not exist has none.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "replies": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{rootId}/replies",
+            "summary": "List replies on a moment",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "thread": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{id}/thread",
+            "summary": "Load a comment thread on a moment",
+            "description": "Resolves a comment link, /moments/{momentId}?comment={id}. Answers 404 COMMENT_NOT_FOUND when the comment is not on the Moment or its thread is not shown.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/moments/{momentId}/comments",
+            "summary": "Comment on a moment",
+            "description": "Any existing Moment takes comments (404 MOMENT_NOT_FOUND otherwise); Muted Users are refused as on a post. A reply names its thread with rootId, on the same Moment, and the comment it answers with replyToCommentId.",
+            "tags": ["Comments"]
+          }
         }
       }
     },

@@ -121,9 +121,8 @@ describe("pagination", () => {
     ["/admin/friend-links?offset=-1"],
     ["/posts?limit=2.5"],
     ["/posts?cursor=-1"],
-    ["/comments?postId=1&limit=101"],
-    ["/comments?postId=1&momentId=1"],
-    ["/comments"],
+    ["/posts/1/comments?limit=101"],
+    ["/moments/1/comments?limit=101"],
   ])("refuses %s with 400", async (path) => {
     const apiKey = await seedAdminApiKey();
 

@@ -7,8 +7,8 @@ export type CommentTarget =
   | { type: "moment"; id: number };
 
 /**
- * The target a row or a checked input names. Input schemas require exactly
- * one of the two ids, so a value without `momentId` names its Post.
+ * The target a row or an input names: a row holds exactly one of the two ids
+ * (`comments_one_target`), and an input the one its procedure's path names.
  */
 export function commentTargetOf(value: {
   postId?: number | null;

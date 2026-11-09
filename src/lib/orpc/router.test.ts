@@ -71,7 +71,8 @@ describe("lazy oRPC router", () => {
       });
 
     await request("/tags");
-    await request("/comments?postId=1");
+    await request("/posts/a-slug/comments");
+    await request("/moments/1/comments");
     expect(loaded).toEqual([]);
 
     await request("/admin/dashboard");

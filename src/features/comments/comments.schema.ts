@@ -15,30 +15,43 @@ export const CommentSelectSchema = createSelectSchema(CommentsTable, {
   updatedAt: coercedDate,
 }).omit({ handledAt: true });
 
-const ONE_TARGET =
-  "Give exactly one of postId and momentId: the Post or the Moment the comments are on.";
-
 /**
- * The Post or the Moment a public comment call is about, exactly one of them
- * (ADR 0037). Every other rule is the same for both, except that a Post takes
- * Comments only while it has a Public Content Snapshot.
+ * The Post or the Moment a public comment call is about, named in its path
+ * (ADR 0037). The Post and Moment procedures take the same input around it;
+ * every rule is the same for both, except that a Post takes Comments only
+ * while it has a Public Content Snapshot.
  */
-const commentTargetFields = {
-  postId: PathIdSchema.optional().describe(
-    "The Post. Give this or momentId, not both.",
-  ),
-  momentId: PathIdSchema.optional().describe(
-    "The Moment. Give this or postId, not both.",
-  ),
+const postTarget = { postId: PathIdSchema };
+const momentTarget = { momentId: PathIdSchema };
+type CommentTargetShape = typeof postTarget | typeof momentTarget;
+
+const pageFields = {
+  offset: PageOffsetSchema.optional(),
+  limit: pageLimitSchema(100).optional(),
 };
 
-function withOneTarget<
-  TSchema extends z.ZodType<{ postId?: number; momentId?: number }>,
->(schema: TSchema): TSchema {
-  return schema.refine(
-    (value) => (value.postId === undefined) !== (value.momentId === undefined),
-    { message: ONE_TARGET, path: ["momentId"] },
-  );
+function rootsInput<T extends CommentTargetShape>(target: T) {
+  return z.object({ ...target, ...pageFields });
+}
+
+function repliesInput<T extends CommentTargetShape>(target: T) {
+  return z.object({ ...target, rootId: PathIdSchema, ...pageFields });
+}
+
+function threadInput<T extends CommentTargetShape>(target: T) {
+  return z.object({ ...target, id: PathIdSchema });
+}
+
+// Authed User API Schemas
+const CommentBodySchema = z.string().trim().min(1);
+
+function createInput<T extends CommentTargetShape>(target: T) {
+  return z.object({
+    ...target,
+    content: CommentBodySchema,
+    rootId: z.number().optional(),
+    replyToCommentId: z.number().optional(),
+  });
 }
 
 // User info schema for joined queries
@@ -69,22 +82,11 @@ const CommentWithUserSchema = CommentSelectSchema.extend({
 });
 
 // Public API Schemas
-export const GetRootCommentsInputSchema = withOneTarget(
-  z.object({
-    ...commentTargetFields,
-    offset: PageOffsetSchema.optional(),
-    limit: pageLimitSchema(100).optional(),
-  }),
-);
+export const GetCommentsByPostIdInputSchema = rootsInput(postTarget);
+export const GetCommentsByMomentIdInputSchema = rootsInput(momentTarget);
 
-export const GetRepliesByRootIdInputSchema = withOneTarget(
-  z.object({
-    ...commentTargetFields,
-    rootId: PathIdSchema,
-    offset: PageOffsetSchema.optional(),
-    limit: pageLimitSchema(100).optional(),
-  }),
-);
+export const GetRepliesByRootIdInputSchema = repliesInput(postTarget);
+export const GetMomentRepliesByRootIdInputSchema = repliesInput(momentTarget);
 
 const ReplyWithUserAndReplyToSchema = CommentWithUserSchema.extend({
   replyTo: z
@@ -115,28 +117,15 @@ export const GetRootCommentsResponseSchema = z.object({
   viewerMuted: z.boolean(),
 });
 
-// Authed User API Schemas
-const CommentBodySchema = z.string().trim().min(1);
-
-export const CreateCommentInputSchema = withOneTarget(
-  z.object({
-    ...commentTargetFields,
-    content: CommentBodySchema,
-    rootId: z.number().optional(),
-    replyToCommentId: z.number().optional(),
-  }),
-);
+export const CreateCommentInputSchema = createInput(postTarget);
+export const CreateMomentCommentInputSchema = createInput(momentTarget);
 
 export const DeleteCommentInputSchema = z.object({
   id: PathIdSchema,
 });
 
-export const GetThreadByCommentIdInputSchema = withOneTarget(
-  z.object({
-    ...commentTargetFields,
-    id: PathIdSchema,
-  }),
-);
+export const GetThreadByCommentIdInputSchema = threadInput(postTarget);
+export const GetMomentThreadByCommentIdInputSchema = threadInput(momentTarget);
 
 /** One of the current User's Comments, with what names the page it is on. */
 export const MyCommentSchema = CommentSelectSchema.extend({
@@ -170,14 +159,19 @@ export const CommentsHandledCountSchema = z.object({
 });
 
 // Types
-export type GetRootCommentsInput = z.infer<typeof GetRootCommentsInputSchema>;
-export type GetRepliesByRootIdInput = z.infer<
-  typeof GetRepliesByRootIdInputSchema
->;
-export type GetThreadByCommentIdInput = z.infer<
-  typeof GetThreadByCommentIdInputSchema
->;
-export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
+// A Post's or a Moment's: the services take either.
+export type GetRootCommentsInput =
+  | z.infer<typeof GetCommentsByPostIdInputSchema>
+  | z.infer<typeof GetCommentsByMomentIdInputSchema>;
+export type GetRepliesByRootIdInput =
+  | z.infer<typeof GetRepliesByRootIdInputSchema>
+  | z.infer<typeof GetMomentRepliesByRootIdInputSchema>;
+export type GetThreadByCommentIdInput =
+  | z.infer<typeof GetThreadByCommentIdInputSchema>
+  | z.infer<typeof GetMomentThreadByCommentIdInputSchema>;
+export type CreateCommentInput =
+  | z.infer<typeof CreateCommentInputSchema>
+  | z.infer<typeof CreateMomentCommentInputSchema>;
 export type DeleteCommentInput = z.infer<typeof DeleteCommentInputSchema>;
 export type GetMyCommentsInput = z.infer<typeof GetMyCommentsInputSchema>;
 export type MyComment = z.infer<typeof MyCommentSchema>;

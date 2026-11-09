@@ -72,13 +72,16 @@ export function UnrepliedCommentList({
   const submitReply = async (content: string) => {
     if (!replying) return;
     try {
-      await createComment({
-        postId: replying.postId ?? undefined,
-        momentId: replying.momentId ?? undefined,
+      const reply = {
         content,
         rootId: replying.rootId ?? replying.id,
         replyToCommentId: replying.id,
-      });
+      };
+      await createComment(
+        replying.momentId !== null
+          ? { momentId: replying.momentId, ...reply }
+          : { postId: replying.postId!, ...reply },
+      );
       setDrafts(({ [replying.id]: _sent, ...rest }) => rest);
       setReplyingId(null);
       fallbackFocus()?.focus({ preventScroll: true });
