@@ -33,7 +33,7 @@ export interface SingleImageBox {
 /**
  * The box a lone image occupies, set before it loads so the card does not
  * grow when it arrives. Known sizes keep their ratio, capped at `maxHeight`
- * (a CSS length) and the container width; unknown sizes take the container
+ * (a CSS length), the container width and the natural width (never upscaled); unknown sizes take the container
  * width as a 4:3 box, the image contained inside it.
  */
 export function singleImageBox(
@@ -50,7 +50,7 @@ export function singleImageBox(
   return {
     style: {
       aspectRatio: `${width} / ${height}`,
-      width: `min(100%, calc(${maxHeight} * ${width} / ${height}))`,
+      width: `min(100%, calc(${maxHeight} * ${width} / ${height}), ${width}px)`,
     },
     known: true,
   };
