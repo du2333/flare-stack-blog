@@ -471,6 +471,7 @@ describe("public reads", () => {
       video: null,
       postedAt: moment.postedAt,
       updatedAt: moment.updatedAt,
+      commentCount: 0,
     });
 
     unwrap(await MomentService.deleteMoment(createAdminTestContext(), moment));

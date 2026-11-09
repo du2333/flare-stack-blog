@@ -4,6 +4,7 @@ import {
   count,
   desc,
   eq,
+  getTableColumns,
   gt,
   inArray,
   sql,
@@ -11,6 +12,7 @@ import {
 } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import {
+  CommentsTable,
   MediaTable,
   MomentImagesTable,
   MomentsTable,
@@ -27,7 +29,26 @@ export type MomentImageRow = {
   height: number | null;
 };
 
-export type MomentRow = Moment & { images: Array<MomentImageRow> };
+export type MomentRow = Moment & {
+  images: Array<MomentImageRow>;
+  commentCount: number;
+};
+
+/**
+ * A Moment's published Comments, roots and replies, as a Post's public count
+ * is made (ADR 0014): deleted placeholders are not counted. The Moment's id
+ * is written out with its table: a query on one table leaves its columns
+ * unqualified, and a bare `id` here would be the Comment's.
+ */
+const publishedCommentCount =
+  sql<number>`(SELECT count(*) FROM ${CommentsTable} WHERE ${CommentsTable.momentId} = ${sql.identifier("moments")}.${sql.identifier("id")} AND ${CommentsTable.status} = 'published')`.mapWith(
+    Number,
+  );
+
+const momentColumns = {
+  ...getTableColumns(MomentsTable),
+  commentCount: publishedCommentCount,
+};
 
 /** What a write sets: the fields it states, the images by Media id. */
 export type MomentWrite = {
@@ -45,10 +66,10 @@ const imageColumns = {
   height: MediaTable.height,
 };
 
-async function withImages(
+async function withImages<TMoment extends Moment>(
   db: DB,
-  moments: Array<Moment>,
-): Promise<Array<MomentRow>> {
+  moments: Array<TMoment>,
+): Promise<Array<TMoment & { images: Array<MomentImageRow> }>> {
   if (moments.length === 0) return [];
   const rows = await db
     .select(imageColumns)
@@ -92,7 +113,7 @@ export async function findMoments(
   options: { limit: number; offset?: number },
 ) {
   const moments = await db
-    .select()
+    .select(momentColumns)
     .from(MomentsTable)
     .orderBy(desc(MomentsTable.postedAt), desc(MomentsTable.id))
     .limit(options.limit)
@@ -105,13 +126,30 @@ export async function findMomentById(
   id: number,
 ): Promise<MomentRow | null> {
   const [moment] = await db
-    .select()
+    .select(momentColumns)
     .from(MomentsTable)
     .where(eq(MomentsTable.id, id))
     .limit(1);
   if (!moment) return null;
   const [row] = await withImages(db, [moment]);
   return row;
+}
+
+/**
+ * What a Moment's Comments need of it: that it exists, and what names it in
+ * notifications (its text, and whether it has a video).
+ */
+export async function findMomentHeadingById(db: DB, id: number) {
+  const [row] = await db
+    .select({
+      id: MomentsTable.id,
+      text: MomentsTable.text,
+      hasVideo: sql<number>`${MomentsTable.video} IS NOT NULL`.mapWith(Boolean),
+    })
+    .from(MomentsTable)
+    .where(eq(MomentsTable.id, id))
+    .limit(1);
+  return row ?? null;
 }
 
 /** The sitemap's rows: the ids after `cursor` in id order, with when each was last written. */

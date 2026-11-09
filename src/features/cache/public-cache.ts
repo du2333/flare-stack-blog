@@ -293,9 +293,10 @@ export const invalidate = {
     );
   },
   /**
-   * A Moment was posted, edited or deleted. `navigationChanged` says the
-   * site went from no Moments to some or back, which every page's public
-   * navigation shows.
+   * A Moment was posted, edited or deleted, or a Comment on it was created
+   * or deleted, which changes the comment count it is read with.
+   * `navigationChanged` says the site went from no Moments to some or back,
+   * which every page's public navigation shows.
    */
   async momentChanged(
     context: InvalidateContext,

@@ -31,6 +31,12 @@ const boundary = vi.hoisted(() => ({
       replies: vi.fn<Client["comments"]["replies"]>(),
       thread: vi.fn<Client["comments"]["thread"]>(),
       create: vi.fn<Client["comments"]["create"]>(),
+      moment: {
+        roots: vi.fn<Client["comments"]["moment"]["roots"]>(),
+        replies: vi.fn<Client["comments"]["moment"]["replies"]>(),
+        thread: vi.fn<Client["comments"]["moment"]["thread"]>(),
+        create: vi.fn<Client["comments"]["moment"]["create"]>(),
+      },
       remove: vi.fn<Client["comments"]["remove"]>(),
       mine: vi.fn<Client["comments"]["mine"]>(),
       admin: {
@@ -77,6 +83,7 @@ function comment(id: number, name: string, rootId: number | null = null) {
   return {
     id,
     postId: 1,
+    momentId: null,
     content: `${name}'s comment`,
     userId: name.toLowerCase(),
     status: "published" as const,

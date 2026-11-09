@@ -224,6 +224,9 @@ describe("rate limit and Turnstile errors", () => {
     expect(declaredErrors("post", "/posts/{postId}/comments")).toEqual(
       expect.arrayContaining(["400 TURNSTILE_FAILED", "429 RATE_LIMITED"]),
     );
+    expect(declaredErrors("post", "/moments/{momentId}/comments")).toEqual(
+      expect.arrayContaining(["400 TURNSTILE_FAILED", "429 RATE_LIMITED"]),
+    );
     expect(declaredErrors("delete", "/comments/{id}")).toContain(
       "429 RATE_LIMITED",
     );

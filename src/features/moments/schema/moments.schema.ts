@@ -102,6 +102,13 @@ export const PublicMomentSchema = z.object({
     "When the Moment was first posted. Edits never change it.",
   ),
   updatedAt: coercedDate.describe("When the Moment was last written."),
+  commentCount: z
+    .number()
+    .int()
+    .nonnegative()
+    .describe(
+      "Published Comments on the Moment, roots and replies; deleted ones are not counted.",
+    ),
 });
 
 export const MomentSaveTokenSchema = z

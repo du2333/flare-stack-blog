@@ -635,6 +635,59 @@
         }
       }
     },
+    "moment": {
+      "roots": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments",
+            "summary": "List root comments on a moment",
+            "description": "As for a post: visible root threads with reply previews, paginated by root thread; total counts all published roots and replies on the Moment, excluding deleted placeholders. A Moment that does not exist has none.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "replies": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{rootId}/replies",
+            "summary": "List replies on a moment",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "thread": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/moments/{momentId}/comments/{id}/thread",
+            "summary": "Load a comment thread on a moment",
+            "description": "Resolves a comment link, /moments/{momentId}?comment={id}. Answers 404 COMMENT_NOT_FOUND when the comment is not on the Moment or its thread is not shown.",
+            "tags": ["Comments"]
+          }
+        }
+      },
+      "create": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/moments/{momentId}/comments",
+            "summary": "Comment on a moment",
+            "description": "Any existing Moment takes comments (404 MOMENT_NOT_FOUND otherwise); Muted Users are refused as on a post. A reply names its thread with rootId, on the same Moment, and the comment it answers with replyToCommentId.",
+            "tags": ["Comments"]
+          }
+        }
+      }
+    },
     "remove": {
       "~orpc": {
         "errorMap": {},
@@ -655,6 +708,7 @@
           "method": "GET",
           "path": "/me/comments",
           "summary": "List the current user's comments",
+          "description": "Newest first, on Posts and Moments. Each says where it is: postId or momentId, a Moment's momentTitle, and its public commentPath.",
           "tags": ["Comments"]
         }
       }

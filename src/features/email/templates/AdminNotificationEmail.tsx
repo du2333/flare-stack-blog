@@ -1,3 +1,4 @@
+import type { CommentNotificationTarget } from "@/features/notification/notification.schema";
 import type { Locale } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 import {
@@ -16,6 +17,8 @@ interface AdminNotificationEmailProps {
   locale: Locale;
   postTitle: string;
   site: EmailSite;
+  /** A Moment's Comment names the Moment by `postTitle`, the start of its text. */
+  target?: CommentNotificationTarget;
 }
 
 export const AdminNotificationEmail = ({
@@ -25,24 +28,38 @@ export const AdminNotificationEmail = ({
   locale,
   postTitle,
   site,
+  target,
 }: AdminNotificationEmailProps) => {
+  const onMoment = target === "moment";
   return (
     <EmailLayout
       locale={locale}
       site={site}
-      previewText={m.email_comment_admin_root_preview(
-        { commenterName, postTitle },
-        { locale },
-      )}
+      previewText={
+        onMoment
+          ? m.email_comment_admin_root_moment_preview(
+              { commenterName, momentTitle: postTitle },
+              { locale },
+            )
+          : m.email_comment_admin_root_preview(
+              { commenterName, postTitle },
+              { locale },
+            )
+      }
     >
       <EmailHeading>
         {m.email_comment_admin_root_title({}, { locale })}
       </EmailHeading>
       <EmailText>
-        {m.email_comment_admin_root_intro(
-          { commenterName, postTitle },
-          { locale },
-        )}
+        {onMoment
+          ? m.email_comment_admin_root_moment_intro(
+              { commenterName, momentTitle: postTitle },
+              { locale },
+            )
+          : m.email_comment_admin_root_intro(
+              { commenterName, postTitle },
+              { locale },
+            )}
       </EmailText>
       <EmailPanel>{commentPreview}</EmailPanel>
       <EmailButton href={commentUrl}>

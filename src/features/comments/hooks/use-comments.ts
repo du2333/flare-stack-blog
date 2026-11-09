@@ -37,8 +37,11 @@ export function useComments(
   const queryClient = useQueryClient();
 
   const createCommentMutation = useMutation({
+    // A Moment's Comments are created under the Moment's path.
     mutationFn: (input: CreateCommentInput) =>
-      orpcClient.comments.create(input),
+      "momentId" in input
+        ? orpcClient.comments.moment.create(input)
+        : orpcClient.comments.create(input),
     onSuccess: async () => {
       await invalidateCommentViews(queryClient, postId);
     },
