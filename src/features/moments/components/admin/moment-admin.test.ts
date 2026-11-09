@@ -211,6 +211,7 @@ function stored(change: Partial<AdminMoment> = {}): AdminMoment {
     video: null,
     postedAt: new Date(0),
     updatedAt: new Date(0),
+    commentCount: 0,
     saveToken: "token-1",
     ...change,
   };

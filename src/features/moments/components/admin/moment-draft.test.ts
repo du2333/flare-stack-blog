@@ -45,6 +45,7 @@ function moment(change: Partial<PublicMoment>): PublicMoment {
     video: null,
     postedAt: new Date(0),
     updatedAt: new Date(0),
+    commentCount: 0,
     ...change,
   };
 }

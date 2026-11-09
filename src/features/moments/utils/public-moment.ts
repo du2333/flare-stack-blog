@@ -18,6 +18,7 @@ export function toPublicMoment(row: MomentRow): PublicMoment {
     video: row.video ?? null,
     postedAt: row.postedAt,
     updatedAt: row.updatedAt,
+    commentCount: row.commentCount,
   };
 }
 
