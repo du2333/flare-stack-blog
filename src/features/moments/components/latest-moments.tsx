@@ -5,6 +5,13 @@ import { MomentTimeText } from "@/features/moments/components/moment-time";
 import { latestMomentsQuery } from "@/features/moments/queries";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import {
+  directVideoOf,
+  videoCoverUrl,
+  videoMetaOf,
+  videoSourceOf,
+  videoThumbnailUrl,
+} from "@/features/posts/utils/video-source";
+import {
   getPublicImageSrc,
   getPublicImageSrcSet,
 } from "@/features/media/utils/media.utils";
@@ -43,17 +50,44 @@ function Thumbnail({ moment }: { moment: PublicMoment }) {
     );
   }
   if (moment.video) {
+    const source = videoSourceOf(moment.video);
+    const cover = source
+      ? videoMetaOf(moment.video).cover
+      : directVideoOf(moment.video)?.cover;
+    const src = source
+      ? cover
+        ? videoCoverUrl(cover, THUMBNAIL_WIDTH * 2)
+        : videoThumbnailUrl(source)
+      : cover;
     return (
       <div
         title={m.moments_video_badge()}
-        className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-neutral-800 text-white"
+        className="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-neutral-800 text-white"
       >
-        <Play
-          size={20}
-          fill="currentColor"
-          strokeWidth={0}
-          aria-hidden="true"
-        />
+        {src ? (
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : null}
+        <span
+          className={
+            src
+              ? "relative inline-flex size-6 items-center justify-center rounded-full bg-black/55"
+              : "relative"
+          }
+        >
+          <Play
+            size={src ? 12 : 20}
+            fill="currentColor"
+            strokeWidth={0}
+            aria-hidden="true"
+          />
+        </span>
       </div>
     );
   }
