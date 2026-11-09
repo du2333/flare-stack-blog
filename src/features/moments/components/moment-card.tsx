@@ -7,6 +7,7 @@ import {
 import { MomentCommentLink } from "@/features/moments/components/moment-comment-link";
 import { MomentAvatar } from "@/features/moments/components/moment-avatar";
 import { MomentImages } from "@/features/moments/components/moment-images";
+import { MomentShareButton } from "@/features/moments/components/moment-share-button";
 import { MomentText } from "@/features/moments/components/moment-text";
 import { MomentTime } from "@/features/moments/components/moment-time";
 import { MomentVideo } from "@/features/moments/components/moment-video";
@@ -15,7 +16,7 @@ import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 
 /**
  * One Moment as a card: who posted it and when, the text, then the images or
- * the video, then its comment count. The Admin's edit and delete actions sit
+ * the video, then its comment count and share button. The Admin's edit and delete actions sit
  * in the header; editing turns the card into the composer, in place.
  */
 export function MomentCard({ moment }: { moment: PublicMoment }) {
@@ -52,7 +53,10 @@ export function MomentCard({ moment }: { moment: PublicMoment }) {
       ) : null}
       <MomentImages momentId={moment.id} images={moment.images} />
       {moment.video ? <MomentVideo video={moment.video} /> : null}
-      <MomentCommentLink moment={moment} />
+      <footer className="-ml-2 flex items-center gap-1">
+        <MomentCommentLink moment={moment} />
+        <MomentShareButton moment={moment} />
+      </footer>
     </article>
   );
 }
