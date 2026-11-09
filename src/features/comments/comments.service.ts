@@ -194,8 +194,10 @@ export async function getRepliesByRootId(
 /**
  * What a new Comment's target is called in notifications, and its page: a
  * Post by its title, a Moment by the start of its text (`momentHeading`, in
- * the locale notifications are written in). Refuses a Post without a Public
- * Content Snapshot and a Moment that does not exist.
+ * the locale notifications are written in). A Post's page is at the slug
+ * its Public Content Snapshot was published with, not its draft's, which
+ * may have been changed since. Refuses a Post without a Public Content
+ * Snapshot and a Moment that does not exist.
  */
 async function commentableTargetPage(
   context: DbContext,
@@ -224,7 +226,10 @@ async function commentableTargetPage(
   return ok({
     target: "post" as const,
     title: post.title,
-    page: { type: "post", slug: post.slug } satisfies CommentPage,
+    page: {
+      type: "post",
+      slug: post.publicSlug ?? post.slug,
+    } satisfies CommentPage,
   });
 }
 

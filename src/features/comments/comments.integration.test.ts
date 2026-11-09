@@ -1063,6 +1063,44 @@ describe("Comments Integration", () => {
         expect(userContext.env.QUEUE.send).not.toHaveBeenCalled();
       });
 
+      it("links notifications to the published Post, not a draft slug changed since", async () => {
+        const published = await PostService.findPostById(adminContext, {
+          id: postId,
+        });
+        const publicSlug = published!.publicSlug!;
+        unwrap(
+          await PostService.updatePost(adminContext, {
+            id: postId,
+            data: { slug: `${publicSlug}-renamed-draft` },
+          }),
+        );
+        vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root after a draft rename",
+          }),
+        );
+        const reply = unwrap(
+          await CommentService.createComment(adminContext, {
+            postId,
+            content: "Reply after a draft rename",
+            rootId: root.id,
+          }),
+        );
+
+        const htmls = vi
+          .mocked(userContext.env.QUEUE.send)
+          .mock.calls.map(
+            ([message]) => (message as { data: { html?: string } }).data.html,
+          );
+        expect(htmls).toHaveLength(2);
+        expect(htmls[0]).toContain(`/post/${publicSlug}?comment=${root.id}`);
+        expect(htmls[1]).toContain(`/post/${publicSlug}?comment=${reply.id}`);
+        expect(htmls.join("")).not.toContain("renamed-draft");
+      });
+
       it("should enqueue reply notification email when admin replies to a user comment", async () => {
         const rootComment = unwrap(
           await CommentService.createComment(userContext, {
