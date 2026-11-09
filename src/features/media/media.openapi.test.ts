@@ -42,7 +42,7 @@ const mediaOperations = Object.entries(doc.paths)
 
 describe("media operations in the OpenAPI document", () => {
   it("finds every media operation", () => {
-    expect(mediaOperations).toHaveLength(11);
+    expect(mediaOperations).toHaveLength(12);
   });
 
   it.each(mediaOperations)("%s has a description", (_name, operation) => {

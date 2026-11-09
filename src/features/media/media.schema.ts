@@ -96,6 +96,16 @@ export const LinkedPostSchema = z.object({
     ),
 });
 
+export const LinkedMomentSchema = z.object({
+  id: z.number().int(),
+  title: z
+    .string()
+    .describe(
+      "The start of the Moment's text on one line, or 图片动态 / Image moment (by the request's language) when it has no text.",
+    ),
+  postedAt: coercedDate.describe("When the Moment was first posted."),
+});
+
 export const DeleteMediaResultSchema = z.object({ success: z.boolean() });
 
 export const DeleteUnusedMediaResultSchema = z.object({

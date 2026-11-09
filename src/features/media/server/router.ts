@@ -7,6 +7,7 @@ import {
   DeleteUnusedMediaResultSchema,
   GetMediaListInputSchema,
   ImportMediaUrlInputSchema,
+  LinkedMomentSchema,
   LinkedPostSchema,
   MAX_FILE_SIZE,
   MEDIA_INVALID_DETAILS,
@@ -251,7 +252,7 @@ const remove = adminProcedure
     path: "/admin/media/{key}",
     summary: "Delete media",
     description:
-      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts, and the media list's momentCount counts the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
+      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts and GET /admin/media/{key}/moments lists the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
     tags: ["Admin Media"],
   })
   .input(MediaKeyInputSchema)
@@ -285,6 +286,26 @@ const linkedPosts = adminProcedure
       throw errors.MEDIA_NOT_FOUND();
     }
     return MediaService.getLinkedPosts(context, key);
+  });
+
+const linkedMoments = adminProcedure
+  .errors({ MEDIA_NOT_FOUND: mediaErrors.MEDIA_NOT_FOUND })
+  .route({
+    method: "GET",
+    path: "/admin/media/{key}/moments",
+    summary: "List Moments linked to media",
+    description:
+      "Lists the Moments that show the image, newest first. title is the start of the Moment's text, or a name for an image Moment when it has none. A key no Media has answers 404 MEDIA_NOT_FOUND; Media no Moment shows answers an empty list.",
+    tags: ["Admin Media"],
+  })
+  .input(MediaKeyInputSchema)
+  .output(z.array(LinkedMomentSchema))
+  .handler(async ({ context, input, errors }) => {
+    const key = input.key.trim();
+    if (!(await MediaService.mediaExists(context, key))) {
+      throw errors.MEDIA_NOT_FOUND();
+    }
+    return MediaService.getLinkedMoments(context, key);
   });
 
 const replace = adminProcedure
@@ -369,6 +390,7 @@ export default {
   removeUnused,
   remove,
   linkedPosts,
+  linkedMoments,
   replace,
   updateName,
 };
