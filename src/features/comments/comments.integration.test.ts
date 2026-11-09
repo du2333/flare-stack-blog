@@ -1101,6 +1101,57 @@ describe("Comments Integration", () => {
         expect(htmls.join("")).not.toContain("renamed-draft");
       });
 
+      it("names the published Post in notifications, not a draft title changed since", async () => {
+        await seedSystemConfig(adminContext, {
+          ...DEFAULT_CONFIG,
+          notification: {
+            ...DEFAULT_CONFIG.notification,
+            admin: { channels: { email: true } },
+            webhook: { url: "https://example.com/webhook", secret: "secret" },
+          },
+        });
+        unwrap(
+          await PostService.updatePost(adminContext, {
+            id: postId,
+            data: { title: "Draft Title Not Yet Published" },
+          }),
+        );
+        vi.mocked(userContext.env.QUEUE.send).mockClear();
+
+        const root = unwrap(
+          await CommentService.createComment(userContext, {
+            postId,
+            content: "Root after a draft retitle",
+          }),
+        );
+        await CommentService.createComment(adminContext, {
+          postId,
+          content: "Reply after a draft retitle",
+          rootId: root.id,
+        });
+
+        const messages = vi.mocked(userContext.env.QUEUE.send).mock.calls.map(
+          ([message]) =>
+            message as {
+              type: string;
+              data: {
+                subject?: string;
+                event?: { data: { postTitle: string } };
+              };
+            },
+        );
+        const webhook = messages.find((message) => message.type === "WEBHOOK");
+        expect(webhook?.data.event?.data.postTitle).toBe("Test Post");
+        const subjects = messages
+          .filter((message) => message.type === "EMAIL")
+          .map((message) => message.data.subject);
+        expect(subjects).toHaveLength(2);
+        for (const subject of subjects) {
+          expect(subject).toContain("Test Post");
+          expect(subject).not.toContain("Draft Title");
+        }
+      });
+
       it("should enqueue reply notification email when admin replies to a user comment", async () => {
         const rootComment = unwrap(
           await CommentService.createComment(userContext, {

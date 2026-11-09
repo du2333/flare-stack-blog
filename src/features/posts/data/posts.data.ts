@@ -396,6 +396,31 @@ export async function getPublishedPostsForSitemapBatch(
   }));
 }
 
+/**
+ * How readers know a Post, for links to it such as comment notifications:
+ * the title and slug its Public Content Snapshot was published with (null
+ * while it has none), beside the draft's.
+ */
+export async function findPostPublicName(db: DB, id: number) {
+  const [row] = await db
+    .select({
+      title: PostsTable.title,
+      slug: PostsTable.slug,
+      publicTitle: sql<
+        string | null
+      >`json_extract(${PostsTable.publicSnapshotJson}, '$.title')`,
+      publicSlug: PostsTable.publicSlug,
+      hasPublicSnapshot:
+        sql<number>`${PostsTable.publicSnapshotJson} IS NOT NULL`.mapWith(
+          Boolean,
+        ),
+    })
+    .from(PostsTable)
+    .where(eq(PostsTable.id, id))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function findPostById(db: DB, id: number) {
   const post = await db.query.PostsTable.findFirst({
     where: eq(PostsTable.id, id),

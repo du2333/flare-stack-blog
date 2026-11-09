@@ -26,6 +26,7 @@ import { momentHeading } from "@/features/moments/utils/moment-heading";
 import { publishNotificationEvent } from "@/features/notification/service/notification.publisher";
 import * as MutedUserRepo from "@/features/muted-users/data/muted-users.data";
 import { isMuted } from "@/features/muted-users/muted-users";
+import * as PostRepo from "@/features/posts/data/posts.data";
 import * as PostService from "@/features/posts/services/posts.service";
 import { serverEnv } from "@/lib/env/server.env";
 import { err, ok } from "@/lib/errors";
@@ -193,10 +194,10 @@ export async function getRepliesByRootId(
 
 /**
  * What a new Comment's target is called in notifications, and its page: a
- * Post by its title, a Moment by the start of its text (`momentHeading`, in
- * the locale notifications are written in). A Post's page is at the slug
- * its Public Content Snapshot was published with, not its draft's, which
- * may have been changed since. Refuses a Post without a Public Content
+ * Post as readers know it, by the title and at the slug its Public Content
+ * Snapshot was published with, not its draft's, which may have changed
+ * since; a Moment by the start of its text (`momentHeading`, in the locale
+ * notifications are written in). Refuses a Post without a Public Content
  * Snapshot and a Moment that does not exist.
  */
 async function commentableTargetPage(
@@ -216,7 +217,7 @@ async function commentableTargetPage(
     });
   }
 
-  const post = await PostService.findPostById(context, { id: target.id });
+  const post = await PostRepo.findPostPublicName(context.db, target.id);
   if (!post) {
     return err({ reason: "POST_NOT_FOUND" });
   }
@@ -225,7 +226,7 @@ async function commentableTargetPage(
   }
   return ok({
     target: "post" as const,
-    title: post.title,
+    title: post.publicTitle ?? post.title,
     page: {
       type: "post",
       slug: post.publicSlug ?? post.slug,
