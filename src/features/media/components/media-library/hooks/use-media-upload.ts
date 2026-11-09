@@ -8,6 +8,8 @@ import {
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
+type UploadedMedia = Awaited<ReturnType<typeof orpcClient.media.upload>>;
+
 export function useMediaUpload() {
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<{
@@ -19,13 +21,15 @@ export function useMediaUpload() {
     mutationFn: (file: File) => orpcClient.media.upload({ image: file }),
   });
 
+  /** Uploads the image files, resolving with the Media each one became. */
   const uploadFiles = async (files: Array<File>) => {
+    const uploaded: Array<UploadedMedia> = [];
     const images = files.filter((file) =>
       ACCEPTED_IMAGE_TYPES.includes(file.type),
     );
     if (images.length === 0) {
       toast.error(m.media_validation_file_invalid_type());
-      return;
+      return uploaded;
     }
 
     setProgress({ current: 0, total: images.length });
@@ -38,7 +42,7 @@ export function useMediaUpload() {
           continue;
         }
         try {
-          await uploadMutation.mutateAsync(file);
+          uploaded.push(await uploadMutation.mutateAsync(file));
           toast.success(m.media_upload_success());
         } catch {
           toast.error(m.media_upload_fail({ name: file.name }));
@@ -48,6 +52,7 @@ export function useMediaUpload() {
     } finally {
       setProgress(null);
     }
+    return uploaded;
   };
 
   return {
