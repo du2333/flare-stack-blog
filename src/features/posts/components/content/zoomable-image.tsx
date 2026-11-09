@@ -23,6 +23,26 @@ interface ZoomableImageProps extends Omit<
 }
 
 /**
+ * What makes a link open `src` in the lightbox: the large variant's address
+ * and its size for PhotoSwipe. Cloudflare never upscales, so the large variant
+ * is at most the original.
+ */
+export function zoomableImageLinkProps(
+  src: string,
+  width?: number | null,
+  height?: number | null,
+) {
+  const zoomWidth = PUBLIC_IMAGE_WIDTH.zoom;
+  const scale = width ? Math.min(1, zoomWidth / width) : 1;
+  return {
+    href: getPublicImageSrc(src, zoomWidth),
+    "data-zoomable-image": "",
+    "data-pswp-width": width ? Math.round(width * scale) : undefined,
+    "data-pswp-height": height ? Math.round(height * scale) : undefined,
+  };
+}
+
+/**
  * An inline image that opens in the lightbox of the enclosing
  * `usePhotoSwipeGallery`. Without JavaScript the link opens the large image.
  */
@@ -42,16 +62,10 @@ export default function ZoomableImage({
   if (!src) return null;
 
   const isPortrait = !!(width && height && height > width);
-  const zoomWidth = PUBLIC_IMAGE_WIDTH.zoom;
-  // Cloudflare never upscales, so the large variant is at most the original.
-  const scale = width ? Math.min(1, zoomWidth / width) : 1;
 
   return (
     <a
-      href={getPublicImageSrc(src, zoomWidth)}
-      data-zoomable-image=""
-      data-pswp-width={width ? Math.round(width * scale) : undefined}
-      data-pswp-height={height ? Math.round(height * scale) : undefined}
+      {...zoomableImageLinkProps(src, width, height)}
       data-caption={caption || undefined}
       target="_blank"
       rel="noreferrer"
