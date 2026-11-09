@@ -1371,6 +1371,7 @@
   "dashboard_unreplied_empty_title": "都回复完了",
   "dashboard_unreplied_empty_desc": "新的访客评论会出现在这里",
   "dashboard_comment_mark_handled": "标为已处理",
+  "dashboard_comment_source_moment": "动态",
   "dashboard_comment_marked_handled": "已标为已处理",
   "dashboard_comment_handled_undo": "撤销",
   "dashboard_comment_handled_error": "操作失败，请重试",

@@ -11,6 +11,11 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
+import { Badge } from "@/components/ui/badge";
+import {
+  commentTargetOf,
+  createCommentInput,
+} from "@/features/comments/comment-target";
 import { CommentConfirmationModal } from "@/features/comments/components/comment-confirmation-modal";
 import { CommentEditor } from "@/features/comments/components/comment-editor";
 import { CommentReveal } from "@/features/comments/components/comment-reveal";
@@ -30,7 +35,8 @@ type PendingAction =
   | { kind: "mute"; comment: DashboardComment; userId: string };
 
 /**
- * Unreplied Comments as rows, each with its Post link and quick actions:
+ * Unreplied Comments as rows, each with a link to its Post or Moment (a
+ * Moment is marked, and named by its text) and quick actions:
  * reply inline, mark handled, delete, mute the commenter. A handled, replied
  * or deleted Comment leaves the list when the dashboard queries reload.
  */
@@ -52,10 +58,10 @@ export function UnrepliedCommentList({
   const [pending, setPending] = useState<PendingAction | null>(null);
   const replying = comments.find((comment) => comment.id === replyingId);
   const target = pending?.comment ?? replying;
-  const { createComment, deleteComment, isCreating, isDeleting } = useComments(
-    target?.postId ?? undefined,
-  );
-  const { muteUser, isMuting } = useMutedUsers(target?.postId ?? undefined, {
+  const targetPage = target ? commentTargetOf(target) : undefined;
+  const { createComment, deleteComment, isCreating, isDeleting } =
+    useComments(targetPage);
+  const { muteUser, isMuting } = useMutedUsers(targetPage, {
     linkMutedList: true,
   });
   const {
@@ -72,15 +78,12 @@ export function UnrepliedCommentList({
   const submitReply = async (content: string) => {
     if (!replying) return;
     try {
-      const reply = {
-        content,
-        rootId: replying.rootId ?? replying.id,
-        replyToCommentId: replying.id,
-      };
       await createComment(
-        replying.momentId !== null
-          ? { momentId: replying.momentId, ...reply }
-          : { postId: replying.postId!, ...reply },
+        createCommentInput(commentTargetOf(replying), {
+          content,
+          rootId: replying.rootId ?? replying.id,
+          replyToCommentId: replying.id,
+        }),
       );
       setDrafts(({ [replying.id]: _sent, ...rest }) => rest);
       setReplyingId(null);
@@ -160,6 +163,11 @@ export function UnrepliedCommentList({
                   <p className="dashboard-comment-snippet">{comment.snippet}</p>
                 )}
                 <p className="dashboard-comment-source">
+                  {comment.momentId !== null ? (
+                    <Badge size="sm" tone="primary">
+                      {m.dashboard_comment_source_moment()}
+                    </Badge>
+                  ) : null}
                   <span className="dashboard-comment-source-title">
                     {comment.postTitle ?? comment.momentTitle}
                   </span>
@@ -184,6 +192,7 @@ export function UnrepliedCommentList({
                   <Link
                     to="/moments/$id"
                     params={{ id: String(comment.momentId) }}
+                    search={{ comment: comment.id }}
                     className="dashboard-comment"
                   >
                     {row}
