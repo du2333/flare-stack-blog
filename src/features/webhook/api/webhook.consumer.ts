@@ -12,27 +12,51 @@ import { baseLocale } from "@/paraglide/runtime";
 
 function createPlainTextMessage(event: NotificationEvent, locale: Locale) {
   switch (event.type) {
-    case "comment.admin_root_created":
-      return m.email_webhook_comment_admin_root_message(
-        {
-          commentPreview: event.data.commentPreview,
-          commentUrl: event.data.commentUrl,
-          commenterName: event.data.commenterName,
-          postTitle: event.data.postTitle,
-        },
-        { locale },
-      );
+    case "comment.admin_root_created": {
+      const { commentPreview, commentUrl, commenterName } = event.data;
+      return event.data.target === "moment"
+        ? m.email_webhook_comment_admin_root_moment_message(
+            {
+              commentPreview,
+              commentUrl,
+              commenterName,
+              momentTitle: event.data.postTitle,
+            },
+            { locale },
+          )
+        : m.email_webhook_comment_admin_root_message(
+            {
+              commentPreview,
+              commentUrl,
+              commenterName,
+              postTitle: event.data.postTitle,
+            },
+            { locale },
+          );
+    }
     case "comment.reply_to_admin_published":
-    case "comment.reply_to_user_published":
-      return m.email_webhook_comment_reply_message(
-        {
-          commentUrl: event.data.commentUrl,
-          postTitle: event.data.postTitle,
-          replierName: event.data.replierName,
-          replyPreview: event.data.replyPreview,
-        },
-        { locale },
-      );
+    case "comment.reply_to_user_published": {
+      const { commentUrl, replierName, replyPreview } = event.data;
+      return event.data.target === "moment"
+        ? m.email_webhook_comment_reply_moment_message(
+            {
+              commentUrl,
+              momentTitle: event.data.postTitle,
+              replierName,
+              replyPreview,
+            },
+            { locale },
+          )
+        : m.email_webhook_comment_reply_message(
+            {
+              commentUrl,
+              postTitle: event.data.postTitle,
+              replierName,
+              replyPreview,
+            },
+            { locale },
+          );
+    }
     case "friend_link.submitted":
       return m.email_webhook_friend_link_submitted_message(
         {
