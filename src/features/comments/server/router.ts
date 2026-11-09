@@ -1,14 +1,14 @@
 import { lazy } from "@orpc/server";
 import {
-  CommentSelectSchema,
   CreateCommentInputSchema,
   DeleteCommentInputSchema,
-  GetCommentsByPostIdInputSchema,
   GetMyCommentsInputSchema,
   GetRepliesByRootIdInputSchema,
   GetRepliesResponseSchema,
+  GetRootCommentsInputSchema,
   GetRootCommentsResponseSchema,
   GetThreadByCommentIdInputSchema,
+  MyCommentSchema,
   RootCommentWithReplyCountSchema,
 } from "@/features/comments/comments.schema";
 import { z } from "zod";
@@ -24,26 +24,32 @@ import {
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
 import { commentErrors } from "./errors";
 
+// A Comment is on a Post or a Moment (ADR 0037): every public comment call
+// names which with exactly one of postId and momentId, in the query of a read
+// and in the body of a create.
+const TARGET =
+  "Name the Post with postId or the Moment with momentId, exactly one of them.";
+
 const roots = optionalSessionProcedure
   .route({
     method: "GET",
-    path: "/posts/{postId}/comments",
-    summary: "List root comments on a post",
-    description:
-      "Returns visible root threads with reply previews. Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the post, excluding deleted placeholders; it must not be used to calculate root pagination.",
+    path: "/comments",
+    summary: "List root comments on a post or a moment",
+    description: `Returns visible root threads with reply previews. ${TARGET} Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the Post or Moment, excluding deleted placeholders; it must not be used to calculate root pagination. A Post without a published version, or a Moment that does not exist, has no comments.`,
     tags: ["Comments"],
   })
-  .input(GetCommentsByPostIdInputSchema)
+  .input(GetRootCommentsInputSchema)
   .output(GetRootCommentsResponseSchema)
   .handler(({ context, input }) =>
-    CommentService.getRootCommentsByPostId(context, input),
+    CommentService.getRootComments(context, input),
   );
 
 const replies = optionalSessionProcedure
   .route({
     method: "GET",
-    path: "/posts/{postId}/comments/{rootId}/replies",
+    path: "/comments/{rootId}/replies",
     summary: "List replies in a comment thread",
+    description: `${TARGET} The root comment must be on it; otherwise the list is empty.`,
     tags: ["Comments"],
   })
   .input(GetRepliesByRootIdInputSchema)
@@ -56,8 +62,9 @@ const thread = optionalSessionProcedure
   .errors({ COMMENT_NOT_FOUND: commentErrors.COMMENT_NOT_FOUND })
   .route({
     method: "GET",
-    path: "/posts/{postId}/comments/{id}/thread",
+    path: "/comments/{id}/thread",
     summary: "Load the visible comment thread containing a comment",
+    description: `${TARGET} Answers 404 COMMENT_NOT_FOUND when the comment is not on it or its thread is not shown. Comment links (/post/{slug}?comment={id}, /moments/{momentId}?comment={id}) are resolved with this.`,
     tags: ["Comments"],
   })
   .input(GetThreadByCommentIdInputSchema)
@@ -77,8 +84,9 @@ const create = authProcedure
   .errors(commentErrors)
   .route({
     method: "POST",
-    path: "/posts/{postId}/comments",
+    path: "/comments",
     summary: "Create a comment",
+    description: `${TARGET} A Post takes comments only while it has a published version (400 POST_NOT_PUBLISHED); a Moment, as long as it exists (404 MOMENT_NOT_FOUND otherwise). A reply names its thread with rootId, on the same Post or Moment, and the comment it answers with replyToCommentId.`,
     tags: ["Comments"],
   })
   .input(CreateCommentInputSchema)
@@ -107,6 +115,9 @@ const create = authProcedure
       },
       POST_NOT_PUBLISHED: () => {
         throw errors.POST_NOT_PUBLISHED();
+      },
+      MOMENT_NOT_FOUND: () => {
+        throw errors.MOMENT_NOT_FOUND();
       },
       USER_MUTED: () => {
         throw errors.USER_MUTED();
@@ -144,10 +155,12 @@ const mine = authProcedure
     method: "GET",
     path: "/me/comments",
     summary: "List the current user's comments",
+    description:
+      "Newest first, on Posts and Moments. Each says where it is: postId or momentId, a Moment's momentTitle, and its public commentPath.",
     tags: ["Comments"],
   })
   .input(GetMyCommentsInputSchema)
-  .output(z.array(CommentSelectSchema))
+  .output(z.array(MyCommentSchema))
   .handler(({ context, input }) =>
     CommentService.getMyComments(context, input),
   );

@@ -4,7 +4,7 @@ export const commentErrors = {
   INVALID_ROOT_ID: { status: 400, message: "Invalid root comment." },
   ROOT_COMMENT_POST_MISMATCH: {
     status: 400,
-    message: "Root comment does not belong to this post.",
+    message: "Root comment does not belong to this post or moment.",
   },
   REPLY_TO_COMMENT_NOT_FOUND: {
     status: 404,
@@ -20,6 +20,7 @@ export const commentErrors = {
   },
   COMMENT_NOT_FOUND: { status: 404, message: "Comment not found." },
   POST_NOT_FOUND: { status: 404, message: "Post not found." },
+  MOMENT_NOT_FOUND: { status: 404, message: "Moment not found." },
   POST_NOT_PUBLISHED: {
     status: 400,
     message: "Comments require a published post.",

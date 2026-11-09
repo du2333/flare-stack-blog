@@ -77,6 +77,7 @@ function comment(id: number, name: string, rootId: number | null = null) {
   return {
     id,
     postId: 1,
+    momentId: null,
     content: `${name}'s comment`,
     userId: name.toLowerCase(),
     status: "published" as const,

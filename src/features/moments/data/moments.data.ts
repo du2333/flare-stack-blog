@@ -114,6 +114,23 @@ export async function findMomentById(
   return row;
 }
 
+/**
+ * What a Moment's Comments need of it: that it exists, and what names it in
+ * notifications (its text, and whether it has a video).
+ */
+export async function findMomentHeadingById(db: DB, id: number) {
+  const [row] = await db
+    .select({
+      id: MomentsTable.id,
+      text: MomentsTable.text,
+      hasVideo: sql<number>`${MomentsTable.video} IS NOT NULL`.mapWith(Boolean),
+    })
+    .from(MomentsTable)
+    .where(eq(MomentsTable.id, id))
+    .limit(1);
+  return row ?? null;
+}
+
 /** The sitemap's rows: the ids after `cursor` in id order, with when each was last written. */
 export async function findMomentsForSitemapBatch(
   db: DB,

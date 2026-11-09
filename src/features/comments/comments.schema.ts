@@ -7,9 +7,39 @@ import { PathIdSchema } from "@/lib/orpc/path-ids";
 
 /** A Comment as public APIs return it; when an Admin handled it stays private. */
 export const CommentSelectSchema = createSelectSchema(CommentsTable, {
+  postId: (schema) =>
+    schema.describe("The Post the Comment is on; null for a Moment's Comment."),
+  momentId: (schema) =>
+    schema.describe("The Moment the Comment is on; null for a Post's Comment."),
   createdAt: coercedDate,
   updatedAt: coercedDate,
 }).omit({ handledAt: true });
+
+const ONE_TARGET =
+  "Give exactly one of postId and momentId: the Post or the Moment the comments are on.";
+
+/**
+ * The Post or the Moment a public comment call is about, exactly one of them
+ * (ADR 0037). Every other rule is the same for both, except that a Post takes
+ * Comments only while it has a Public Content Snapshot.
+ */
+const commentTargetFields = {
+  postId: PathIdSchema.optional().describe(
+    "The Post. Give this or momentId, not both.",
+  ),
+  momentId: PathIdSchema.optional().describe(
+    "The Moment. Give this or postId, not both.",
+  ),
+};
+
+function withOneTarget<
+  TSchema extends z.ZodType<{ postId?: number; momentId?: number }>,
+>(schema: TSchema): TSchema {
+  return schema.refine(
+    (value) => (value.postId === undefined) !== (value.momentId === undefined),
+    { message: ONE_TARGET, path: ["momentId"] },
+  );
+}
 
 // User info schema for joined queries
 const CommentUserSchema = z.object({
@@ -39,18 +69,22 @@ const CommentWithUserSchema = CommentSelectSchema.extend({
 });
 
 // Public API Schemas
-export const GetCommentsByPostIdInputSchema = z.object({
-  postId: PathIdSchema,
-  offset: PageOffsetSchema.optional(),
-  limit: pageLimitSchema(100).optional(),
-});
+export const GetRootCommentsInputSchema = withOneTarget(
+  z.object({
+    ...commentTargetFields,
+    offset: PageOffsetSchema.optional(),
+    limit: pageLimitSchema(100).optional(),
+  }),
+);
 
-export const GetRepliesByRootIdInputSchema = z.object({
-  postId: PathIdSchema,
-  rootId: PathIdSchema,
-  offset: PageOffsetSchema.optional(),
-  limit: pageLimitSchema(100).optional(),
-});
+export const GetRepliesByRootIdInputSchema = withOneTarget(
+  z.object({
+    ...commentTargetFields,
+    rootId: PathIdSchema,
+    offset: PageOffsetSchema.optional(),
+    limit: pageLimitSchema(100).optional(),
+  }),
+);
 
 const ReplyWithUserAndReplyToSchema = CommentWithUserSchema.extend({
   replyTo: z
@@ -76,7 +110,7 @@ export const GetRootCommentsResponseSchema = z.object({
   total: z
     .number()
     .describe(
-      "Total published comments on this post, including roots and replies but excluding deleted placeholders. This is not the number of paginated root threads.",
+      "Total published comments on this Post or Moment, including roots and replies but excluding deleted placeholders. This is not the number of paginated root threads.",
     ),
   viewerMuted: z.boolean(),
 });
@@ -84,20 +118,40 @@ export const GetRootCommentsResponseSchema = z.object({
 // Authed User API Schemas
 const CommentBodySchema = z.string().trim().min(1);
 
-export const CreateCommentInputSchema = z.object({
-  postId: PathIdSchema,
-  content: CommentBodySchema,
-  rootId: z.number().optional(),
-  replyToCommentId: z.number().optional(),
-});
+export const CreateCommentInputSchema = withOneTarget(
+  z.object({
+    ...commentTargetFields,
+    content: CommentBodySchema,
+    rootId: z.number().optional(),
+    replyToCommentId: z.number().optional(),
+  }),
+);
 
 export const DeleteCommentInputSchema = z.object({
   id: PathIdSchema,
 });
 
-export const GetThreadByCommentIdInputSchema = z.object({
-  postId: PathIdSchema,
-  id: PathIdSchema,
+export const GetThreadByCommentIdInputSchema = withOneTarget(
+  z.object({
+    ...commentTargetFields,
+    id: PathIdSchema,
+  }),
+);
+
+/** One of the current User's Comments, with what names the page it is on. */
+export const MyCommentSchema = CommentSelectSchema.extend({
+  momentTitle: z
+    .string()
+    .nullable()
+    .describe(
+      "For a Moment's Comment, the start of the Moment's text, or what the Moment holds when it has no text; null for a Post's Comment.",
+    ),
+  commentPath: z
+    .string()
+    .nullable()
+    .describe(
+      "The Comment's public link, /post/{slug}?comment={id} or /moments/{momentId}?comment={id}; null while its Post is not public.",
+    ),
 });
 
 export const GetMyCommentsInputSchema = z.object({
@@ -116,12 +170,17 @@ export const CommentsHandledCountSchema = z.object({
 });
 
 // Types
-export type GetCommentsByPostIdInput = z.infer<
-  typeof GetCommentsByPostIdInputSchema
+export type GetRootCommentsInput = z.infer<typeof GetRootCommentsInputSchema>;
+export type GetRepliesByRootIdInput = z.infer<
+  typeof GetRepliesByRootIdInputSchema
+>;
+export type GetThreadByCommentIdInput = z.infer<
+  typeof GetThreadByCommentIdInputSchema
 >;
 export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
 export type DeleteCommentInput = z.infer<typeof DeleteCommentInputSchema>;
 export type GetMyCommentsInput = z.infer<typeof GetMyCommentsInputSchema>;
+export type MyComment = z.infer<typeof MyCommentSchema>;
 export type RootCommentWithReplyCount = z.infer<
   typeof RootCommentWithReplyCountSchema
 >;

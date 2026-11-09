@@ -15,9 +15,13 @@ import {
   COMMENT_PAGE_SIZE,
   COMMENT_REPLY_PREVIEW_LIMIT,
 } from "@/features/comments/comment-thread";
-import { buildCommentWhereClause } from "@/features/comments/data/helper";
+import type { CommentTarget } from "@/features/comments/comment-target";
+import {
+  buildCommentWhereClause,
+  targetCondition,
+} from "@/features/comments/data/helper";
 import type { CommentStatus } from "@/lib/db/schema";
-import { CommentsTable, user } from "@/lib/db/schema";
+import { CommentsTable, MomentsTable, PostsTable, user } from "@/lib/db/schema";
 
 const commentListColumns = {
   id: CommentsTable.id,
@@ -25,6 +29,7 @@ const commentListColumns = {
   rootId: CommentsTable.rootId,
   replyToCommentId: CommentsTable.replyToCommentId,
   postId: CommentsTable.postId,
+  momentId: CommentsTable.momentId,
   userId: CommentsTable.userId,
   status: CommentsTable.status,
   createdAt: CommentsTable.createdAt,
@@ -52,10 +57,10 @@ export async function findCommentById(db: DB, id: number) {
   });
 }
 
-function visibleRootCondition(db: DB, postId: number) {
+function visibleRootCondition(db: DB, target: CommentTarget) {
   const threadReplies = alias(CommentsTable, "thread_replies");
   return and(
-    eq(CommentsTable.postId, postId),
+    targetCondition(target),
     isNull(CommentsTable.rootId),
     or(
       eq(CommentsTable.status, "published"),
@@ -77,9 +82,9 @@ function visibleRootCondition(db: DB, postId: number) {
   );
 }
 
-export async function getRootCommentsByPostId(
+export async function getRootComments(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   options: {
     offset?: number;
     limit?: number;
@@ -91,7 +96,7 @@ export async function getRootCommentsByPostId(
     .select(commentListColumns)
     .from(CommentsTable)
     .leftJoin(user, eq(CommentsTable.userId, user.id))
-    .where(visibleRootCondition(db, postId))
+    .where(visibleRootCondition(db, target))
     .orderBy(desc(CommentsTable.createdAt))
     .limit(Math.min(limit, 100))
     .offset(offset);
@@ -101,36 +106,31 @@ export async function getRootCommentsByPostId(
 
 export async function getVisibleRootById(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   rootId: number,
 ) {
   const comments = await db
     .select(commentListColumns)
     .from(CommentsTable)
     .leftJoin(user, eq(CommentsTable.userId, user.id))
-    .where(and(visibleRootCondition(db, postId), eq(CommentsTable.id, rootId)))
+    .where(and(visibleRootCondition(db, target), eq(CommentsTable.id, rootId)))
     .limit(1);
 
   return comments[0] ?? null;
 }
 
-export async function getPublishedCommentsCount(db: DB, postId: number) {
+export async function getPublishedCommentsCount(db: DB, target: CommentTarget) {
   const result = await db
     .select({ count: count() })
     .from(CommentsTable)
-    .where(
-      and(
-        eq(CommentsTable.postId, postId),
-        eq(CommentsTable.status, "published"),
-      ),
-    );
+    .where(and(targetCondition(target), eq(CommentsTable.status, "published")));
 
   return result[0].count;
 }
 
 export async function getPublishedReplyCountsByRootIds(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   rootIds: Array<number>,
 ) {
   const counts = new Map<number, number>();
@@ -146,7 +146,7 @@ export async function getPublishedReplyCountsByRootIds(
     .from(CommentsTable)
     .where(
       and(
-        eq(CommentsTable.postId, postId),
+        targetCondition(target),
         inArray(CommentsTable.rootId, rootIds),
         eq(CommentsTable.status, "published"),
       ),
@@ -163,7 +163,7 @@ export async function getPublishedReplyCountsByRootIds(
 
 export async function getReplyCountByRootId(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   rootId: number,
   options: {
     status?: CommentStatus | Array<CommentStatus>;
@@ -172,7 +172,7 @@ export async function getReplyCountByRootId(
   const { status } = options;
 
   const conditions = buildCommentWhereClause({
-    postId,
+    target,
     rootId,
     status,
   });
@@ -207,7 +207,7 @@ function selectReplies(db: DB) {
 
 export async function getRepliesByRootId(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   rootId: number,
   options: {
     offset?: number;
@@ -217,9 +217,7 @@ export async function getRepliesByRootId(
   const { offset = 0, limit = COMMENT_PAGE_SIZE } = options;
 
   return await selectReplies(db)
-    .where(
-      and(eq(CommentsTable.postId, postId), eq(CommentsTable.rootId, rootId)),
-    )
+    .where(and(targetCondition(target), eq(CommentsTable.rootId, rootId)))
     .orderBy(CommentsTable.createdAt, CommentsTable.id)
     .limit(Math.min(limit, 100))
     .offset(offset);
@@ -228,7 +226,7 @@ export async function getRepliesByRootId(
 /** The first replies of every given root in one query, not one per root. */
 export async function getReplyPreviewsByRootIds(
   db: DB,
-  postId: number,
+  target: CommentTarget,
   rootIds: Array<number>,
 ) {
   const previews = new Map<
@@ -248,12 +246,7 @@ export async function getReplyPreviewsByRootIds(
         ),
     })
     .from(CommentsTable)
-    .where(
-      and(
-        eq(CommentsTable.postId, postId),
-        inArray(CommentsTable.rootId, rootIds),
-      ),
-    )
+    .where(and(targetCondition(target), inArray(CommentsTable.rootId, rootIds)))
     .as("ranked_replies");
 
   const rows = await selectReplies(db)
@@ -275,6 +268,11 @@ export async function getReplyPreviewsByRootIds(
   return previews;
 }
 
+/**
+ * A User's own Comments, newest first, each with what names its page: the
+ * Post's public slug (null while the Post is not public), or the Moment's
+ * text and whether it has a video, from which its heading is made.
+ */
 export async function getCommentsByUserId(
   db: DB,
   userId: string,
@@ -289,8 +287,17 @@ export async function getCommentsByUserId(
   const conditions = buildCommentWhereClause({ userId, status });
 
   const comments = await db
-    .select()
+    .select({
+      comment: CommentsTable,
+      postSlug: PostsTable.publicSlug,
+      momentText: MomentsTable.text,
+      momentHasVideo: sql<number>`${MomentsTable.video} IS NOT NULL`.mapWith(
+        Boolean,
+      ),
+    })
     .from(CommentsTable)
+    .leftJoin(PostsTable, eq(CommentsTable.postId, PostsTable.id))
+    .leftJoin(MomentsTable, eq(CommentsTable.momentId, MomentsTable.id))
     .where(conditions)
     .orderBy(desc(CommentsTable.createdAt))
     .limit(Math.min(limit, 100))
