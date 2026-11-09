@@ -8,17 +8,20 @@ import type { PublicMoment } from "@/features/moments/schema/moments.schema";
 import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import { isMomentGone } from "./moment-draft";
-import { MomentEditDialog } from "./moment-edit-dialog";
 import { useMomentRefresh } from "./use-moment-refresh";
 
 /**
- * Edit and delete for one Moment. Editing opens the composer's form for it in
- * a dialog; deleting asks first, because it takes effect at once and keeps no
- * history.
+ * Edit and delete for one Moment. Editing is the card's to show, in place;
+ * deleting asks first, because it takes effect at once and keeps no history.
  */
-export function MomentAdminActions({ moment }: { moment: PublicMoment }) {
+export function MomentAdminActions({
+  moment,
+  onEdit,
+}: {
+  moment: PublicMoment;
+  onEdit: () => void;
+}) {
   const refresh = useMomentRefresh();
-  const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
   const remove = useMutation({
@@ -42,10 +45,7 @@ export function MomentAdminActions({ moment }: { moment: PublicMoment }) {
 
   return (
     <div className="flex items-center gap-0.5">
-      <IconButton
-        label={m.moment_admin_edit()}
-        onClick={() => setEditing(true)}
-      >
+      <IconButton label={m.moment_admin_edit()} onClick={onEdit}>
         <Pencil size={16} />
       </IconButton>
       <IconButton
@@ -55,11 +55,6 @@ export function MomentAdminActions({ moment }: { moment: PublicMoment }) {
       >
         <Trash2 size={16} />
       </IconButton>
-      <MomentEditDialog
-        momentId={moment.id}
-        open={editing}
-        onClose={() => setEditing(false)}
-      />
       <ConfirmationModal
         isOpen={confirming}
         onClose={() => setConfirming(false)}

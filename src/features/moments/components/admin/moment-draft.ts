@@ -43,6 +43,35 @@ export interface MomentDraft {
 
 export const EMPTY_DRAFT: MomentDraft = { text: "", images: [], video: null };
 
+/** Whether the draft holds nothing at all, not even whitespace. */
+export function draftIsEmpty(draft: MomentDraft) {
+  return draft.text === "" && draft.images.length === 0 && draft.video === null;
+}
+
+/**
+ * `images` with the one at `from` moved to `to`; the order of the images is
+ * the order they are published in. Out-of-range positions leave it as it is.
+ */
+export function moveImage<T>(
+  images: ReadonlyArray<T>,
+  from: number,
+  to: number,
+) {
+  if (
+    from === to ||
+    from < 0 ||
+    to < 0 ||
+    from >= images.length ||
+    to >= images.length
+  ) {
+    return [...images];
+  }
+  const next = [...images];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
+  return next;
+}
+
 /** The draft of a Moment being edited. */
 export function draftOfMoment(moment: PublicMoment): MomentDraft {
   const stored = moment.video;

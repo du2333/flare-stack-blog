@@ -18,7 +18,13 @@ import type {
   PublicMoment,
 } from "@/features/moments/schema/moments.schema";
 import { m } from "@/paraglide/messages";
-import { MomentAdminActions, MomentComposer } from "./index";
+import { MomentCard } from "@/features/moments/components/moment-card";
+import { MomentAdminActions, MomentComposer, MomentEditor } from "./index";
+import {
+  MOMENT_DRAFT_STORAGE_KEY,
+  loadStoredDraft,
+  saveStoredDraft,
+} from "./moment-draft-storage";
 
 // Unmount as soon as something closes; exit motion is not under test.
 vi.mock("@/hooks/use-motion", async (importOriginal) => ({
@@ -33,6 +39,24 @@ const router = vi.hoisted(() => ({ invalidate: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({
   ClientOnly: ({ children }: { children: ReactNode }) => children,
   useRouter: () => router,
+  useRouteContext: () => ({
+    siteConfig: {
+      author: "Author",
+      theme: { fuwari: { avatar: "/avatar.png" } },
+    },
+  }),
+}));
+
+// The card's other parts have tests of their own.
+const admin = vi.hoisted(() => ({ value: true }));
+vi.mock("@/features/moments/hooks/use-is-admin", () => ({
+  useIsAdmin: () => admin.value,
+}));
+vi.mock("@/features/moments/components/moment-time", () => ({
+  MomentTime: () => null,
+}));
+vi.mock("@/features/moments/components/moment-images", () => ({
+  MomentImages: () => null,
 }));
 
 const api = vi.hoisted(() => ({
@@ -185,7 +209,10 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  localStorage.clear();
+  admin.value = true;
   for (const fn of Object.values(api)) fn.mockReset();
 });
 
@@ -195,9 +222,16 @@ function renderWithClient(node: ReturnType<typeof createElement>) {
   );
 }
 
-const textbox = () => screen.getByLabelText(m.moment_admin_text_label());
+const textbox = () =>
+  screen.getByLabelText(m.moment_admin_text_label()) as HTMLTextAreaElement;
 const button = (name: string) => screen.getByRole("button", { name });
 const postButton = () => button(m.moment_admin_post());
+const addImages = () => button(m.moment_admin_add_images());
+const addVideo = () => button(m.moment_admin_add_video());
+
+/** A toolbar button's name when it is off, with the reason it is off. */
+const off = (label: string, reason: string) =>
+  m.moment_admin_button_disabled({ label, reason });
 
 function type(text: string) {
   fireEvent.change(textbox(), { target: { value: text } });
@@ -221,7 +255,63 @@ function refused(code: string, data?: unknown) {
   return new ORPCError(code, { status: 400, data });
 }
 
-it("keeps Post off while empty or over the limit, and counts as it is typed", () => {
+const media = (key: string) => ({
+  key,
+  url: `/images/${key}`,
+  width: 4,
+  height: 3,
+});
+
+/** Uploads that finish at once, each file becoming the next of `medias`. */
+function uploadsAs(medias: Array<ReturnType<typeof media>>) {
+  api.uploadFiles.mockImplementation(
+    async (
+      files: Array<File>,
+      options?: {
+        onFileState?: (file: File, state: string, media?: unknown) => void;
+      },
+    ) => {
+      for (const file of files) options?.onFileState?.(file, "queued");
+      const done = [];
+      for (const [index, file] of files.entries()) {
+        options?.onFileState?.(file, "uploading");
+        options?.onFileState?.(file, "done", medias[index]);
+        done.push(medias[index]);
+      }
+      return done;
+    },
+  );
+}
+
+/** Opens the image popover and picks `pick from library` once. */
+function pickFromLibrary() {
+  fireEvent.click(addImages());
+  fireEvent.click(screen.getByText("pick from library"));
+}
+
+const tiles = () =>
+  Array.from(document.querySelectorAll<HTMLElement>("[data-tile]"));
+
+it("shows one line while empty and unfocused, and opens on focus", () => {
+  renderWithClient(createElement(MomentComposer));
+
+  expect(postButton().closest("[inert]")).not.toBeNull();
+  expect(textbox().placeholder).toBe(m.moment_admin_text_placeholder());
+
+  fireEvent.focus(textbox());
+  expect(postButton().closest("[inert]")).toBeNull();
+
+  // Nothing typed and focus gone: back to one line.
+  fireEvent.blur(textbox());
+  expect(postButton().closest("[inert]")).not.toBeNull();
+
+  fireEvent.focus(textbox());
+  type("kept open");
+  fireEvent.blur(textbox());
+  expect(postButton().closest("[inert]")).toBeNull();
+});
+
+it("keeps Post off while empty or over the limit, and counts only near the limit", () => {
   renderWithClient(createElement(MomentComposer));
   expect(postButton().hasAttribute("disabled")).toBe(true);
 
@@ -229,11 +319,18 @@ it("keeps Post off while empty or over the limit, and counts as it is typed", ()
   expect(postButton().hasAttribute("disabled")).toBe(true);
 
   type("hello");
-  expect(screen.getByText("5 / 1000")).toBeTruthy();
+  expect(screen.queryByText("5 / 1000")).toBeNull();
   expect(postButton().hasAttribute("disabled")).toBe(false);
 
+  type("字".repeat(899));
+  expect(screen.queryByText("899 / 1000")).toBeNull();
+  type("字".repeat(900));
+  expect(screen.getByText("900 / 1000").className).not.toContain(
+    "fuwari-danger",
+  );
+
   type("字".repeat(1003));
-  expect(screen.getByText("1003 / 1000")).toBeTruthy();
+  expect(screen.getByText("1003 / 1000").className).toContain("fuwari-danger");
   expect(
     screen.getByText(m.moment_admin_text_too_long({ over: 3 })),
   ).toBeTruthy();
@@ -242,6 +339,18 @@ it("keeps Post off while empty or over the limit, and counts as it is typed", ()
   type("a\u0000b");
   expect(screen.getByText(m.moment_admin_text_invalid())).toBeTruthy();
   expect(postButton().hasAttribute("disabled")).toBe(true);
+});
+
+it("posts on Ctrl+Enter", async () => {
+  api.create.mockResolvedValue(stored({ text: "quick" }));
+  renderWithClient(createElement(MomentComposer));
+
+  type("quick");
+  fireEvent.keyDown(textbox(), { key: "Enter", ctrlKey: true });
+
+  await waitFor(() =>
+    expect(api.create).toHaveBeenCalledWith({ text: "quick" }),
+  );
 });
 
 it("posts, then clears the form, refreshes the page data and calls onPosted", async () => {
@@ -257,7 +366,7 @@ it("posts, then clears the form, refreshes the page data and calls onPosted", as
   expect(invalidated).toHaveBeenCalledWith({ queryKey: ["moments"] });
   expect(router.invalidate).toHaveBeenCalled();
   expect(toast.success).toHaveBeenCalledWith(m.moment_admin_posted());
-  expect((textbox() as HTMLTextAreaElement).value).toBe("");
+  expect(textbox().value).toBe("");
 });
 
 it("keeps what was typed and says why when the server refuses", async () => {
@@ -271,23 +380,22 @@ it("keeps what was typed and says why when the server refuses", async () => {
   expect(
     await screen.findByText(m.moment_admin_error_image_not_found()),
   ).toBeTruthy();
-  expect((textbox() as HTMLTextAreaElement).value).toBe("kept");
+  expect(textbox().value).toBe("kept");
   expect(onPosted).not.toHaveBeenCalled();
   expect(router.invalidate).not.toHaveBeenCalled();
 });
 
 it("posts images in the order they were added, and lets one be removed", async () => {
   api.create.mockResolvedValue(stored());
-  api.uploadFiles.mockResolvedValue([
-    { key: "up.png", url: "/images/up.png", width: 1, height: 2 },
-  ]);
+  uploadsAs([media("up.png")]);
   renderWithClient(createElement(MomentComposer));
 
-  fireEvent.click(button(m.moment_admin_add_images()));
-  fireEvent.click(screen.getByText("pick from library"));
+  pickFromLibrary();
+  // Uploading closes the popover and attaches the file.
+  fireEvent.click(addImages());
   fireEvent.click(screen.getByText("upload files"));
   await screen.findByAltText(m.moment_admin_image_alt({ index: 2 }));
-  fireEvent.click(screen.getByText("pick from library"));
+  pickFromLibrary();
   expect(toast.info).toHaveBeenCalledWith(m.moment_admin_image_duplicate());
   expect(screen.getAllByRole("img")).toHaveLength(2);
 
@@ -301,43 +409,136 @@ it("posts images in the order they were added, and lets one be removed", async (
   expect(api.create).toHaveBeenCalledWith({ images: ["/images/up.png"] });
 });
 
-it("takes images or a video, never both", () => {
+it("shows each upload on its own and keeps Post off until they are done", async () => {
+  let finish: () => void = () => {};
+  api.uploadFiles.mockImplementation(
+    async (
+      files: Array<File>,
+      options?: {
+        onFileState?: (file: File, state: string, media?: unknown) => void;
+      },
+    ) => {
+      const [first, second] = files;
+      options?.onFileState?.(first, "queued");
+      options?.onFileState?.(second, "queued");
+      options?.onFileState?.(first, "uploading");
+      await new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      options?.onFileState?.(first, "done", media("a.png"));
+      options?.onFileState?.(second, "uploading");
+      options?.onFileState?.(second, "done", media("b.png"));
+      return [];
+    },
+  );
+  renderWithClient(createElement(MomentComposer));
+  type("with pictures");
+
+  fireEvent.paste(textbox(), {
+    clipboardData: {
+      files: [
+        new File(["a"], "a.png", { type: "image/png" }),
+        new File(["b"], "b.png", { type: "image/png" }),
+      ],
+      getData: () => "",
+    },
+  });
+
+  expect(
+    await screen.findByLabelText(m.moment_admin_image_uploading()),
+  ).toBeTruthy();
+  expect(screen.getByLabelText(m.moment_admin_image_queued())).toBeTruthy();
+  expect(postButton().hasAttribute("disabled")).toBe(true);
+
+  finish();
+  await screen.findByAltText(m.moment_admin_image_alt({ index: 2 }));
+  expect(screen.queryByLabelText(m.moment_admin_image_uploading())).toBeNull();
+  expect(postButton().hasAttribute("disabled")).toBe(false);
+});
+
+it("uploads images pasted into the text, but leaves pasted text alone", () => {
+  uploadsAs([media("shot.png")]);
+  renderWithClient(createElement(MomentComposer));
+  const file = new File(["x"], "shot.png", { type: "image/png" });
+
+  // A table copied from a sheet brings a picture and its text.
+  const withText = fireEvent.paste(textbox(), {
+    clipboardData: { files: [file], getData: () => "a\tb" },
+  });
+  expect(withText).toBe(true);
+  expect(api.uploadFiles).not.toHaveBeenCalled();
+
+  const screenshot = fireEvent.paste(textbox(), {
+    clipboardData: { files: [file], getData: () => "" },
+  });
+  expect(screenshot).toBe(false);
+  expect(api.uploadFiles).toHaveBeenCalledWith([file], expect.anything());
+});
+
+it("uploads image files dropped on the box, and ignores other drags", async () => {
+  uploadsAs([media("drop.png")]);
+  renderWithClient(createElement(MomentComposer));
+  const box = screen.getByRole("region", {
+    name: m.moment_admin_composer_label(),
+  });
+  const file = new File(["x"], "drop.png", { type: "image/png" });
+
+  fireEvent.drop(box, { dataTransfer: { types: ["text/plain"], files: [] } });
+  expect(api.uploadFiles).not.toHaveBeenCalled();
+
+  fireEvent.drop(box, { dataTransfer: { types: ["Files"], files: [file] } });
+  await screen.findByAltText(m.moment_admin_image_alt({ index: 1 }));
+  expect(api.uploadFiles).toHaveBeenCalledWith([file], expect.anything());
+});
+
+it("takes no pasted or dropped images beside a video", () => {
+  renderWithClient(createElement(MomentComposer));
+  fireEvent.click(addVideo());
+  fireEvent.click(screen.getByText("apply direct"));
+
+  const file = new File(["x"], "shot.png", { type: "image/png" });
+  fireEvent.paste(textbox(), {
+    clipboardData: { files: [file], getData: () => "" },
+  });
+
+  expect(api.uploadFiles).not.toHaveBeenCalled();
+  expect(toast.info).toHaveBeenCalledWith(
+    m.moment_admin_images_blocked_by_video(),
+  );
+});
+
+it("takes images or a video, never both, and says why in the button's name", () => {
   renderWithClient(createElement(MomentComposer));
 
-  fireEvent.click(button(m.moment_admin_add_images()));
-  fireEvent.click(screen.getByText("pick from library"));
-  expect(button(m.moment_admin_add_video()).hasAttribute("disabled")).toBe(
-    true,
+  pickFromLibrary();
+  const blocked = button(
+    off(m.moment_admin_add_video(), m.moment_admin_video_blocked_by_images()),
   );
-  expect(
-    screen.getByText(m.moment_admin_video_blocked_by_images()),
-  ).toBeTruthy();
+  expect(blocked.hasAttribute("disabled")).toBe(true);
+  expect(blocked.title).toContain(m.moment_admin_video_blocked_by_images());
 
   fireEvent.click(button(m.moment_admin_image_remove({ index: 1 })));
-  expect(button(m.moment_admin_add_video()).hasAttribute("disabled")).toBe(
-    false,
-  );
+  expect(addVideo().hasAttribute("disabled")).toBe(false);
 
-  fireEvent.click(button(m.moment_admin_add_video()));
+  fireEvent.click(addVideo());
   fireEvent.click(screen.getByText("apply direct"));
-  expect(button(m.moment_admin_add_images()).hasAttribute("disabled")).toBe(
-    true,
+  const noImages = button(
+    off(m.moment_admin_add_images(), m.moment_admin_images_blocked_by_video()),
   );
-  expect(
-    screen.getByText(m.moment_admin_images_blocked_by_video()),
-  ).toBeTruthy();
+  expect(noImages.hasAttribute("disabled")).toBe(true);
+  expect(noImages.title).toContain(m.moment_admin_images_blocked_by_video());
+  // The video shows as a card with its own remove button.
+  expect(screen.getByText("A clip")).toBeTruthy();
 
   fireEvent.click(button(m.moment_admin_video_remove()));
-  expect(button(m.moment_admin_add_images()).hasAttribute("disabled")).toBe(
-    false,
-  );
+  expect(addImages().hasAttribute("disabled")).toBe(false);
 });
 
 it("posts a link video by its address and a Direct Video with the length read from the file", async () => {
   api.create.mockResolvedValue(stored());
   renderWithClient(createElement(MomentComposer));
 
-  fireEvent.click(button(m.moment_admin_add_video()));
+  fireEvent.click(addVideo());
   fireEvent.click(
     screen.getByText(`apply link (${m.moment_admin_video_add()})`),
   );
@@ -347,8 +548,8 @@ it("posts a link video by its address and a Direct Video with the length read fr
     video: { url: "https://www.bilibili.com/video/BV1xx411c7mD/" },
   });
 
-  await waitFor(() => expect(button(m.moment_admin_add_video())).toBeTruthy());
-  fireEvent.click(button(m.moment_admin_add_video()));
+  await waitFor(() => expect(addVideo()).toBeTruthy());
+  fireEvent.click(addVideo());
   fireEvent.click(screen.getByText("apply direct"));
   fireEvent.click(postButton());
   await waitFor(() => expect(api.create).toHaveBeenCalledTimes(2));
@@ -363,33 +564,138 @@ it("posts a link video by its address and a Direct Video with the length read fr
   });
 });
 
-function openEditor() {
-  const moment: PublicMoment = stored();
-  renderWithClient(createElement(MomentAdminActions, { moment }));
-  fireEvent.click(button(m.moment_admin_edit()));
+it("changes the order of the images with the buttons on them and by dragging, and posts that order", async () => {
+  api.create.mockResolvedValue(stored());
+  saveStoredDraft({
+    text: "",
+    images: [media("a.png"), media("b.png"), media("c.png")],
+    video: null,
+  });
+  renderWithClient(createElement(MomentComposer));
+  const order = () => tiles().map((tile) => tile.dataset.tile);
+  expect(order()).toEqual(["a.png", "b.png", "c.png"]);
+
+  // The first cannot go earlier, the last cannot go later.
+  expect(
+    button(m.moment_admin_image_move_earlier({ index: 1 })).hasAttribute(
+      "disabled",
+    ),
+  ).toBe(true);
+  fireEvent.click(button(m.moment_admin_image_move_later({ index: 1 })));
+  expect(order()).toEqual(["b.png", "a.png", "c.png"]);
+
+  const data = { setData: vi.fn(), types: [] as Array<string> };
+  const [, , last] = tiles();
+  fireEvent.dragStart(last, { dataTransfer: data });
+  fireEvent.dragOver(tiles()[0], { dataTransfer: data });
+  fireEvent.drop(tiles()[0], { dataTransfer: data });
+  expect(order()).toEqual(["c.png", "b.png", "a.png"]);
+
+  fireEvent.click(postButton());
+  await waitFor(() => expect(api.create).toHaveBeenCalled());
+  expect(api.create).toHaveBeenCalledWith({
+    images: ["/images/c.png", "/images/b.png", "/images/a.png"],
+  });
+});
+
+it("previews twelve images as nine with +3, which opens to manage them all", () => {
+  saveStoredDraft({
+    text: "",
+    images: Array.from({ length: 12 }, (_, i) => media(`${i}.png`)),
+    video: null,
+  });
+  renderWithClient(createElement(MomentComposer));
+
+  expect(tiles()).toHaveLength(9);
+  fireEvent.click(button(m.moment_admin_images_expand({ count: 12 })));
+  expect(tiles()).toHaveLength(12);
+
+  fireEvent.click(button(m.moment_admin_images_collapse()));
+  expect(tiles()).toHaveLength(9);
+});
+
+it("turns the images button off at fifty images and says why", () => {
+  saveStoredDraft({
+    text: "",
+    images: Array.from({ length: 50 }, (_, i) => media(`${i}.png`)),
+    video: null,
+  });
+  renderWithClient(createElement(MomentComposer));
+
+  const full = button(
+    off(m.moment_admin_add_images(), m.moment_admin_images_full({ limit: 50 })),
+  );
+  expect(full.hasAttribute("disabled")).toBe(true);
+});
+
+it("restores an unsent draft, keeps it as it changes and drops it once posted", async () => {
+  api.create.mockResolvedValue(stored());
+  saveStoredDraft({
+    text: "left half way",
+    images: [media("kept.png")],
+    video: null,
+  });
+  renderWithClient(createElement(MomentComposer));
+
+  expect(textbox().value).toBe("left half way");
+  expect(
+    screen.getByAltText(m.moment_admin_image_alt({ index: 1 })),
+  ).toBeTruthy();
+
+  type("left half way, then more");
+  expect(loadStoredDraft()?.text).toBe("left half way, then more");
+
+  fireEvent.click(postButton());
+  await waitFor(() => expect(api.create).toHaveBeenCalled());
+  expect(api.create).toHaveBeenCalledWith({
+    text: "left half way, then more",
+    images: ["/images/kept.png"],
+  });
+  await waitFor(() => expect(textbox().value).toBe(""));
+  expect(loadStoredDraft()).toBeNull();
+  expect(localStorage.getItem(MOMENT_DRAFT_STORAGE_KEY)).toBeNull();
+});
+
+it("still works where the browser refuses storage", () => {
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("quota");
+  });
+  vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+    throw new Error("blocked");
+  });
+  renderWithClient(createElement(MomentComposer));
+
+  type("typed anyway");
+  expect(textbox().value).toBe("typed anyway");
+  expect(postButton().hasAttribute("disabled")).toBe(false);
+});
+
+function renderEditor(
+  moment: PublicMoment = stored(),
+  onDone: () => void = vi.fn(),
+) {
+  renderWithClient(createElement(MomentEditor, { moment, onDone }));
+  return onDone;
 }
 
-it("reads the Moment to edit and saves only what changed, with the token it read", async () => {
+it("fills in with the Moment as shown, reads it with its token and saves only what changed", async () => {
   api.get.mockResolvedValue(stored());
   api.update.mockResolvedValue(
     stored({ text: "new words", saveToken: "token-2" }),
   );
-  openEditor();
+  const onDone = renderEditor();
 
-  const dialog = await screen.findByRole("dialog");
-  expect(api.get).toHaveBeenCalledWith({ id: 7 });
-  const field = await within(dialog).findByLabelText(
-    m.moment_admin_text_label(),
-  );
-  expect((field as HTMLTextAreaElement).value).toBe("first words");
+  // Prefilled and not editable until the read arrives.
+  expect(textbox().value).toBe("first words");
+  expect(textbox().readOnly).toBe(true);
+  await waitFor(() => expect(api.get).toHaveBeenCalledWith({ id: 7 }));
+  await waitFor(() => expect(textbox().readOnly).toBe(false));
 
   // Saving nothing is not offered.
-  const save = within(dialog).getByRole("button", {
-    name: m.moment_admin_save(),
-  });
+  const save = button(m.moment_admin_save());
   expect(save.hasAttribute("disabled")).toBe(true);
 
-  fireEvent.change(field, { target: { value: "new words" } });
+  type("new words");
   fireEvent.click(save);
 
   await waitFor(() => expect(api.update).toHaveBeenCalled());
@@ -398,12 +704,38 @@ it("reads the Moment to edit and saves only what changed, with the token it read
     data: { text: "new words" },
     saveToken: "token-1",
   });
-  await waitFor(() =>
-    expect(toast.success).toHaveBeenCalledWith(m.moment_admin_saved()),
-  );
+  await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+  expect(toast.success).toHaveBeenCalledWith(m.moment_admin_saved());
   expect(invalidated).toHaveBeenCalledWith({ queryKey: ["moments"] });
   expect(router.invalidate).toHaveBeenCalled();
-  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+});
+
+it("gives the card back on Cancel without saving and keeps no draft", async () => {
+  api.get.mockResolvedValue(stored());
+  const onDone = renderEditor();
+  await waitFor(() => expect(textbox().readOnly).toBe(false));
+
+  type("edited but abandoned");
+  expect(loadStoredDraft()).toBeNull();
+  fireEvent.click(button(m.common_cancel()));
+
+  expect(onDone).toHaveBeenCalledTimes(1);
+  expect(api.update).not.toHaveBeenCalled();
+});
+
+it("offers a retry when the Moment cannot be read", async () => {
+  api.get.mockRejectedValueOnce(refused("INTERNAL"));
+  renderEditor();
+
+  expect(await screen.findByText(m.moment_admin_load_failed())).toBeTruthy();
+  expect(textbox().readOnly).toBe(true);
+
+  api.get.mockResolvedValueOnce(
+    stored({ text: "fresh", saveToken: "token-3" }),
+  );
+  fireEvent.click(button(m.moment_admin_retry()));
+  await waitFor(() => expect(textbox().value).toBe("fresh"));
+  expect(textbox().readOnly).toBe(false);
 });
 
 it("says a Moment was changed elsewhere and loads the current version on request", async () => {
@@ -414,64 +746,30 @@ it("says a Moment was changed elsewhere and loads the current version on request
       data: { saveToken: "token-9" },
     }),
   );
-  openEditor();
+  const onDone = renderEditor();
+  await waitFor(() => expect(textbox().readOnly).toBe(false));
 
-  const dialog = await screen.findByRole("dialog");
-  const field = await within(dialog).findByLabelText(
-    m.moment_admin_text_label(),
-  );
-  fireEvent.change(field, { target: { value: "mine" } });
-  fireEvent.click(
-    within(dialog).getByRole("button", { name: m.moment_admin_save() }),
-  );
+  type("mine");
+  fireEvent.click(button(m.moment_admin_save()));
 
-  expect(
-    await within(dialog).findByText(m.moment_admin_conflict_title()),
-  ).toBeTruthy();
+  expect(await screen.findByText(m.moment_admin_conflict_title())).toBeTruthy();
   expect(toast.success).not.toHaveBeenCalled();
+  expect(onDone).not.toHaveBeenCalled();
   // Saving again would only conflict again.
-  expect(
-    within(dialog)
-      .getByRole("button", { name: m.moment_admin_save() })
-      .hasAttribute("disabled"),
-  ).toBe(true);
+  expect(button(m.moment_admin_save()).hasAttribute("disabled")).toBe(true);
   // What was typed stays until the Admin chooses to load the current version.
-  expect(
-    (
-      within(dialog).getByLabelText(
-        m.moment_admin_text_label(),
-      ) as HTMLTextAreaElement
-    ).value,
-  ).toBe("mine");
+  expect(textbox().value).toBe("mine");
 
   api.get.mockResolvedValueOnce(
     stored({ text: "theirs", saveToken: "token-9" }),
   );
-  fireEvent.click(
-    within(dialog).getByRole("button", {
-      name: m.moment_admin_conflict_load(),
-    }),
-  );
-  await waitFor(() =>
-    expect(
-      (
-        within(dialog).getByLabelText(
-          m.moment_admin_text_label(),
-        ) as HTMLTextAreaElement
-      ).value,
-    ).toBe("theirs"),
-  );
-  expect(
-    within(dialog).queryByText(m.moment_admin_conflict_title()),
-  ).toBeNull();
+  fireEvent.click(button(m.moment_admin_conflict_load()));
+  await waitFor(() => expect(textbox().value).toBe("theirs"));
+  expect(screen.queryByText(m.moment_admin_conflict_title())).toBeNull();
 
   api.update.mockResolvedValue(stored({ text: "theirs and mine" }));
-  fireEvent.change(within(dialog).getByLabelText(m.moment_admin_text_label()), {
-    target: { value: "theirs and mine" },
-  });
-  fireEvent.click(
-    within(dialog).getByRole("button", { name: m.moment_admin_save() }),
-  );
+  type("theirs and mine");
+  fireEvent.click(button(m.moment_admin_save()));
   await waitFor(() => expect(api.update).toHaveBeenCalledTimes(2));
   expect(api.update).toHaveBeenLastCalledWith({
     id: 7,
@@ -480,9 +778,46 @@ it("says a Moment was changed elsewhere and loads the current version on request
   });
 });
 
+it("swaps the card for the editor and back, only for the Admin", async () => {
+  api.get.mockResolvedValue(stored());
+  api.update.mockResolvedValue(stored({ text: "changed" }));
+  renderWithClient(createElement(MomentCard, { moment: stored() }));
+
+  expect(screen.getByText("first words")).toBeTruthy();
+  fireEvent.click(button(m.moment_admin_edit()));
+  expect(screen.queryByRole("article")).toBeNull();
+  await waitFor(() => expect(textbox().readOnly).toBe(false));
+
+  type("changed");
+  fireEvent.click(button(m.moment_admin_save()));
+  await waitFor(() => expect(screen.getByRole("article")).toBeTruthy());
+});
+
+it("leaves a reader's card without the edit button", () => {
+  admin.value = false;
+  renderWithClient(createElement(MomentCard, { moment: stored() }));
+
+  expect(
+    screen.queryByRole("button", { name: m.moment_admin_edit() }),
+  ).toBeNull();
+});
+
+it("asks for the edit and leaves the rest to the card", () => {
+  const onEdit = vi.fn();
+  renderWithClient(
+    createElement(MomentAdminActions, { moment: stored(), onEdit }),
+  );
+
+  fireEvent.click(button(m.moment_admin_edit()));
+  expect(onEdit).toHaveBeenCalledTimes(1);
+  expect(api.get).not.toHaveBeenCalled();
+});
+
 it("asks before deleting, then deletes and refreshes", async () => {
   api.remove.mockResolvedValue({ success: true });
-  renderWithClient(createElement(MomentAdminActions, { moment: stored() }));
+  renderWithClient(
+    createElement(MomentAdminActions, { moment: stored(), onEdit: vi.fn() }),
+  );
 
   fireEvent.click(button(m.moment_admin_delete()));
   const dialog = await screen.findByRole("dialog");
@@ -503,7 +838,9 @@ it("asks before deleting, then deletes and refreshes", async () => {
 });
 
 it("does not delete when the Admin backs out", async () => {
-  renderWithClient(createElement(MomentAdminActions, { moment: stored() }));
+  renderWithClient(
+    createElement(MomentAdminActions, { moment: stored(), onEdit: vi.fn() }),
+  );
 
   fireEvent.click(button(m.moment_admin_delete()));
   const dialog = await screen.findByRole("dialog");

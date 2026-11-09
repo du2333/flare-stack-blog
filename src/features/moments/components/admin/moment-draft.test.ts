@@ -7,9 +7,11 @@ import {
   draftOfMoment,
   draftProblem,
   draftTextLength,
+  draftIsEmpty,
   EMPTY_DRAFT,
   isEditConflict,
   momentErrorMessage,
+  moveImage,
   updateInputOf,
   videoInputOf,
 } from "./moment-draft";
@@ -277,5 +279,24 @@ describe("what a refused write says", () => {
     expect(isEditConflict(refused("EDIT_CONFLICT"))).toBe(true);
     expect(isEditConflict(refused("MOMENT_EMPTY"))).toBe(false);
     expect(isEditConflict(new Error("EDIT_CONFLICT"))).toBe(false);
+  });
+});
+
+describe("the images of a draft", () => {
+  it("move to a place, and keep their order for places that do not exist", () => {
+    const list = ["a", "b", "c", "d"];
+    expect(moveImage(list, 0, 2)).toEqual(["b", "c", "a", "d"]);
+    expect(moveImage(list, 3, 0)).toEqual(["d", "a", "b", "c"]);
+    expect(moveImage(list, 1, 1)).toEqual(list);
+    expect(moveImage(list, -1, 2)).toEqual(list);
+    expect(moveImage(list, 1, 4)).toEqual(list);
+    // The input is not changed.
+    expect(list).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("make a draft empty only when nothing is held, whitespace included", () => {
+    expect(draftIsEmpty(EMPTY_DRAFT)).toBe(true);
+    expect(draftIsEmpty({ ...EMPTY_DRAFT, text: " " })).toBe(false);
+    expect(draftIsEmpty({ ...EMPTY_DRAFT, images: [image("a")] })).toBe(false);
   });
 });

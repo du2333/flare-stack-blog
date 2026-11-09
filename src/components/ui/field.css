@@ -63,6 +63,19 @@
     min-height: calc(var(--fuwari-field-height, 44px) * 2);
     resize: vertical;
   }
+  /* Text typed straight into a card: no fill, border or ring, and it grows. */
+  .fuwari-input[data-bare],
+  .fuwari-input[data-bare]:hover,
+  .fuwari-input[data-bare]:focus {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+  textarea.fuwari-input[data-bare] {
+    min-height: 0;
+    padding-inline: 0;
+    resize: none;
+  }
   .fuwari-input[data-mono] {
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 13px;
