@@ -225,7 +225,8 @@ export default function TableOfContents({
       )}
       style={{
         left: left ?? 0,
-        width: "var(--fuwari-toc-width)",
+        width:
+          "var(--fuwari-toc-width, calc((100vw - var(--fuwari-page-width)) / 2 - 1rem))",
       }}
     >
       <div
