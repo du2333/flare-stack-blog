@@ -20,6 +20,8 @@ interface DropdownMenuProps {
   triggerClassName?: string;
   /** Where the menu opens; filters at a row's start open from their left edge. */
   placement?: ComponentProps<typeof Menu>["placement"];
+  /** The menu is as wide as the trigger, for a field that fills its row. */
+  matchTriggerWidth?: boolean;
 }
 
 /** A trigger showing the chosen option, opening a menu to pick another. */
@@ -31,6 +33,7 @@ export default function DropdownMenu({
   trigger,
   triggerClassName = "group fuwari-input inline-flex w-auto items-center gap-2 text-left",
   placement,
+  matchTriggerWidth,
 }: DropdownMenuProps) {
   const selected =
     options.find((option) => option.value === value) ?? options[0];
@@ -51,6 +54,7 @@ export default function DropdownMenu({
       }
       triggerClassName={triggerClassName}
       placement={placement}
+      matchTriggerWidth={matchTriggerWidth}
     >
       {options.map((option) => (
         <MenuItem
