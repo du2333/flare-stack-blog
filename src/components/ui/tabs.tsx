@@ -1,7 +1,8 @@
 import { Link, type LinkProps } from "@tanstack/react-router";
-import type { ComponentProps, ReactNode } from "react";
+import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { moveSelection } from "./roving-selection";
+import { centeredScrollLeft, scrollEdges } from "./tab-scroll";
 import "./tabs.css";
 
 export interface TabItem<T extends string> {
@@ -27,6 +28,44 @@ function TabLabel({ label, count }: { label: ReactNode; count?: ReactNode }) {
 }
 
 /**
+ * For a row that can overflow: marks which ends still have tabs to scroll to
+ * (`data-scroll-start`, `data-scroll-end`, which the `scrollCue` styles fade
+ * out) and keeps the selected tab in view.
+ */
+function useScrollCue<T extends HTMLElement>(enabled: boolean, value: string) {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    const row = ref.current;
+    if (!enabled || !row) return;
+    const update = () => {
+      const edges = scrollEdges(row);
+      row.toggleAttribute("data-scroll-start", edges.start);
+      row.toggleAttribute("data-scroll-end", edges.end);
+    };
+    update();
+    row.addEventListener("scroll", update, { passive: true });
+    // The row resizes with the window; its tabs resize with their labels.
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(row);
+    for (const tab of row.children) observer?.observe(tab);
+    return () => {
+      row.removeEventListener("scroll", update);
+      observer?.disconnect();
+    };
+  }, [enabled]);
+  useEffect(() => {
+    const row = ref.current;
+    if (!enabled || !row) return;
+    const selected = row.querySelector<HTMLElement>(
+      '[aria-selected="true"], [aria-current="page"]',
+    );
+    if (selected) row.scrollLeft = centeredScrollLeft(row, selected);
+  }, [enabled, value]);
+  return ref;
+}
+
+/**
  * Underlined tabs that switch a panel or filter a list. Arrow keys, Home and
  * End move between them; `children` follow the tabs, such as a spinner.
  */
@@ -34,6 +73,7 @@ export function Tabs<T extends string>({
   items,
   value,
   onValueChange,
+  scrollCue = false,
   className,
   children,
   ...props
@@ -41,12 +81,17 @@ export function Tabs<T extends string>({
   items: ReadonlyArray<TabItem<T>>;
   value: T;
   onValueChange: (value: T) => void;
+  /** Fade the ends of a row that overflows, to show there is more to scroll to. */
+  scrollCue?: boolean;
   "aria-label": string;
 }) {
+  const ref = useScrollCue<HTMLDivElement>(scrollCue, value);
   return (
     <div
       {...props}
+      ref={ref}
       role="tablist"
+      data-scroll-cue={scrollCue || undefined}
       className={cn("fuwari-tabs", className)}
       onKeyDown={(event) => moveSelection(event, items, value, onValueChange)}
     >
@@ -77,15 +122,24 @@ export function Tabs<T extends string>({
 export function TabNav<T extends string>({
   items,
   value,
+  scrollCue = false,
   className,
   ...props
 }: Omit<ComponentProps<"nav">, "children"> & {
   items: ReadonlyArray<Omit<TabItem<T>, "disabled"> & { to: LinkProps["to"] }>;
   value: T;
+  /** Fade the ends of a row that overflows, to show there is more to scroll to. */
+  scrollCue?: boolean;
   "aria-label": string;
 }) {
+  const ref = useScrollCue<HTMLElement>(scrollCue, value);
   return (
-    <nav {...props} className={cn("fuwari-tabs", className)}>
+    <nav
+      {...props}
+      ref={ref}
+      data-scroll-cue={scrollCue || undefined}
+      className={cn("fuwari-tabs", className)}
+    >
       {items.map((item) => (
         <Link
           key={item.value}
