@@ -10,7 +10,12 @@ import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { m } from "@/paraglide/messages";
-import { PostRow, PostsToolbar, TaxonomySheet } from "./components";
+import {
+  PostListColgroup,
+  PostRow,
+  PostsToolbar,
+  TaxonomySheet,
+} from "./components";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { PageHeader } from "@/components/ui/page-heading";
@@ -279,16 +284,10 @@ export function PostManager({
           <>
             <div className="post-list-table-wrap" aria-busy={isFetching}>
               <table className="post-list-table">
-                <colgroup>
-                  <col className="post-list-title-col" />
-                  <col className="post-list-status-col" />
-                  <col className="post-list-date-col" />
-                  <col className="post-list-actions-col" />
-                </colgroup>
+                <PostListColgroup />
                 <thead>
                   <tr>
                     <th scope="col">{m.admin_posts_col_title()}</th>
-                    <th scope="col">{m.admin_posts_filter_status()}</th>
                     <th scope="col">
                       {sortBy === "updatedAt"
                         ? m.admin_posts_sort_recent_upd()
@@ -310,6 +309,10 @@ export function PostManager({
                           deleteTriggerRef.current = trigger;
                           setPostToDelete(target);
                         }}
+                        onFilterCategory={(id) =>
+                          onTaxonomyFilter({ category: id })
+                        }
+                        onFilterTag={(id) => onTaxonomyFilter({ tag: id })}
                         onTogglePin={(target) => pinMutation.mutate(target)}
                         pinPending={
                           pinMutation.isPending &&
