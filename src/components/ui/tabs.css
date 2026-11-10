@@ -37,6 +37,7 @@
     --fuwari-tabs-fade-end: 32px;
   }
   .fuwari-tab {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -67,6 +68,16 @@
   .fuwari-tab:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+  /* Out of flow, at the label's top right: the tab keeps its width. */
+  .fuwari-tab-mark {
+    position: absolute;
+    top: 28%;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fuwari-warning-fg);
   }
   .fuwari-tab-count {
     font-size: 0.9em;

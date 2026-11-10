@@ -39,19 +39,8 @@ export function SettingsNav({ current }: { current: SettingsPageId }) {
         return {
           value: id,
           to: SETTINGS_PAGE_TO[id],
-          label: (
-            <>
-              {LABELS[id]()}
-              {dirty && (
-                <span
-                  className="text-xs"
-                  aria-label={m.settings_config_unsaved()}
-                >
-                  *
-                </span>
-              )}
-            </>
-          ),
+          label: LABELS[id](),
+          mark: dirty ? m.settings_config_unsaved() : undefined,
         };
       })}
     />

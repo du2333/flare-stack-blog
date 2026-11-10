@@ -10,13 +10,29 @@ export interface TabItem<T extends string> {
   label: ReactNode;
   /** A number shown after the label, such as how many items the tab holds. */
   count?: ReactNode;
+  /**
+   * Flags the tab with a dot that takes no room, so no tab moves; the text
+   * names the flag for assistive tech, such as "Unsaved changes".
+   */
+  mark?: string;
   disabled?: boolean;
 }
 
-function TabLabel({ label, count }: { label: ReactNode; count?: ReactNode }) {
+function TabLabel({
+  label,
+  count,
+  mark,
+}: {
+  label: ReactNode;
+  count?: ReactNode;
+  mark?: string;
+}) {
   return (
     <>
       {label}
+      {mark === undefined ? null : (
+        <span role="img" aria-label={mark} className="fuwari-tab-mark" />
+      )}
       {count === undefined ? null : (
         <>
           {" "}
@@ -109,7 +125,7 @@ export function Tabs<T extends string>({
             className="fuwari-tab"
             onClick={() => onValueChange(item.value)}
           >
-            <TabLabel label={item.label} count={item.count} />
+            <TabLabel label={item.label} count={item.count} mark={item.mark} />
           </button>
         );
       })}
@@ -147,7 +163,7 @@ export function TabNav<T extends string>({
           aria-current={item.value === value ? "page" : undefined}
           className="fuwari-tab"
         >
-          <TabLabel label={item.label} count={item.count} />
+          <TabLabel label={item.label} count={item.count} mark={item.mark} />
         </Link>
       ))}
     </nav>
