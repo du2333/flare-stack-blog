@@ -88,6 +88,14 @@ _Avoid_: Settings
 Public-facing site identity and presentation personalization used by the rendered blog.
 _Avoid_: System settings
 
+**Theme**:
+One of the built-in looks of the public blog. The **Admin** selects one for the whole site in **Site Config**; visitors do not choose it.
+_Avoid_: Skin, template, presentation, Theme Contract, 外观
+
+**Colour Scheme**:
+Whether pages are shown light or dark. Each visitor chooses it or follows their system; it is independent of the **Theme**.
+_Avoid_: Theme, appearance, 外观主题, dark theme
+
 **Notification Event**:
 A comment or friend-link domain event. Email and a **Webhook Endpoint** can deliver it; the event itself does not include the recipient mailbox.
 _Avoid_: Alert, message
@@ -264,4 +272,5 @@ _Avoid_: New commit, fork update
 - "Asset" can refer to theme or static resource paths; use **Media** for uploaded files managed by the CMS.
 - "封面图", "banner", "featured image", and "OG image" are not glossary terms. Per-Post cover is **Post Cover**. The site-wide Fuwari banner is **Site Config** `theme.fuwari.homeBg`.
 - 「自托管视频」 is not a glossary term. A video on the Admin's own server is a **Direct Video** like any other; the CMS does not distinguish where a **Direct Video** is hosted.
+- 「主题」 in Chinese discussion can mean the site-wide look or light/dark. The first is **Theme**; the second is **Colour Scheme** (明暗模式).
 - "Version" is ambiguous. For Post content, use **Public Content Snapshot** or **Post Revision**. For deployed CMS code, use **Application Release** or **Running Application Release**.
