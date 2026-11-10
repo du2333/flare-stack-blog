@@ -182,6 +182,12 @@
   .admin-sidebar.is-collapsed {
     width: 5.75rem;
   }
+  .admin-sidebar.is-collapsed .admin-sidebar-item:hover {
+    background: var(--fuwari-btn-plain-bg-hover);
+  }
+  .admin-sidebar.is-collapsed .admin-sidebar-item.is-active {
+    background: var(--fuwari-btn-regular-bg-hover);
+  }
   .admin-sidebar-toggle {
     display: flex;
   }
