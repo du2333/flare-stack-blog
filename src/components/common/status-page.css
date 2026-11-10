@@ -64,14 +64,17 @@
   color: var(--fuwari-fg-50);
   line-height: 1.7;
 }
-/* A render error may not change the router match status. Keep that case focused too. */
-.public-content-grid:has(.site-status[data-kind="error"]) {
+/* A render error may not change the router match status. Keep that case focused too.
+   Every Theme Shell marks these regions (see theme-shell.ts). */
+[data-shell-region="body"]:has(.site-status[data-kind="error"]) {
   grid-template-columns: minmax(0, 1fr);
 }
-.public-content-grid:has(.site-status[data-kind="error"]) > .public-sidebar {
+[data-shell-region="body"]:has(.site-status[data-kind="error"])
+  [data-shell-region="sidebar"] {
   display: none;
 }
-.public-content-grid:has(.site-status[data-kind="error"]) > .public-footer {
+[data-shell-region="body"]:has(.site-status[data-kind="error"])
+  [data-shell-region="footer"] {
   grid-column: 1;
 }
 /* Root failures can render without either public or admin chrome. */
