@@ -387,7 +387,8 @@
 /* On a phone the footer follows the rows, and the last one already draws the rule. */
 .post-list-table-wrap + .post-list-footer {
   border-top: 0;
-}@media (max-width: 620px) {
+}
+@media (max-width: 620px) {
   .post-list-footer > div {
     gap: 8px;
   }
