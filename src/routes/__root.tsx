@@ -5,12 +5,14 @@ import {
   HeadContent,
   Scripts,
   useRouteContext,
+  useRouterState,
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { lazy, Suspense, type ComponentType } from "react";
 import { ColourSchemeProvider } from "@/components/common/colour-scheme-provider";
 import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
+import { documentThemeId } from "@/features/theme/utils/document-theme";
 import { getLocale } from "@/paraglide/runtime";
 import appCss from "@/styles.css?url";
 
@@ -119,11 +121,20 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const locale = getLocale();
   const { siteConfig } = useRouteContext({ from: "__root__" });
+  // Follows client navigation: set on public pages, removed under /admin.
+  const themeId = useRouterState({
+    select: (state) =>
+      documentThemeId(
+        state.matches.map((match) => match.routeId),
+        siteConfig?.theme.id,
+      ),
+  });
 
   return (
     <html
       lang={locale}
       suppressHydrationWarning
+      data-theme={themeId}
       style={getFuwariThemeStyle(siteConfig)}
     >
       <head>

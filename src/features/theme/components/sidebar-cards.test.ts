@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { THEME_SHELLS } from "../shells";
+import { fixtureTheme } from "tests/theme-fixture/theme";
+import { THEMES } from "../themes";
 import { resolvePageKind } from "../utils/page-kind";
 import { sidebarCardsFor } from "./sidebar-cards";
 
@@ -61,7 +62,9 @@ describe("sidebarCardsFor", () => {
     expect(ids(sidebarCardsFor("inner", shell))[0]).toBe("profile:identity");
   });
 
-  it.each(THEME_SHELLS.map((shell) => [shell.id, shell] as const))(
+  it.each(
+    [...THEMES, fixtureTheme].map(({ shell }) => [shell.id, shell] as const),
+  )(
     "gives the %s shell the same cards apart from identity cards, and none on a focused page",
     (_, shell) => {
       expect(sidebarCardsFor("focused", shell)).toEqual([]);

@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
+import type { SiteConfig } from "@/features/config/site-config.schema";
 
 /**
  * What the host tells a shell about the current page. A focused page (sign-in,
@@ -32,15 +33,20 @@ export interface SidebarCard {
  * Every shell also:
  * - wraps its tree in `FirstScreenProvider`, which back to top, the table of
  *   contents and the navbar read;
- * - sets the `--shell-*` positioning properties on `:root` (see
- *   `shells/classic/classic-shell.css`);
+ * - sets the `--shell-*` positioning properties on `:root[data-theme="<id>"]`
+ *   in its Theme's stylesheet (see `shells/classic/classic-shell.css`);
  * - marks its root `data-theme-shell="<id>"` and its regions
  *   `data-shell-region="body" | "sidebar" | "main" | "footer"`, with the
  *   sidebar and footer inside the body, so shared styles such as the
  *   render-error fallback never use a shell's class names.
  */
+/** A Theme's own options, read from Site Config and filled in with its defaults. */
+export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
+
 export interface ThemeShellProps {
   pageKind: PageKind;
+  /** Its Theme's own options (`Theme.options` in `themes.ts`). */
+  options: ThemeOptionValues;
   navOptions: Array<NavOption>;
   /** Empty on focused pages. */
   sidebarCards: Array<SidebarCard>;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_THEME_ID, THEME_IDS } from "@/features/theme/theme-ids";
 import type { Messages } from "@/lib/i18n";
 import {
   canonicalizeNavHref,
@@ -21,17 +22,13 @@ export const BANNER_FOCUS_MIN = 0;
 export const BANNER_FOCUS_MAX = 100;
 export const TAGLINE_MAX = 80;
 
-/**
- * The registered Themes. Adding a Theme adds its id here; the first one is
- * the default, which a stored id that is not listed falls back to.
- */
-export const THEME_IDS = ["classic"] as const;
-export type ThemeId = (typeof THEME_IDS)[number];
-export const DEFAULT_THEME_ID: ThemeId = THEME_IDS[0];
-
-export function isThemeId(value: unknown): value is ThemeId {
-  return THEME_IDS.some((id) => id === value);
-}
+/** The Theme ids live with the Theme registry; Site Config only checks them. */
+export {
+  DEFAULT_THEME_ID,
+  isThemeId,
+  THEME_IDS,
+  type ThemeId,
+} from "@/features/theme/theme-ids";
 
 /** What the navigation shows as the site's mark. */
 export const BRAND_MARKS = ["default", "siteIcon", "avatar", "none"] as const;

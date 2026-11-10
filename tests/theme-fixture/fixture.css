@@ -1,0 +1,48 @@
+/* The fixture Theme's stylesheet. Each rule is meant to be seen: the marker
+   frame says this file is applied, the raised surface (menus, dialogs,
+   toasts) says its design variable reached what renders outside the shell. */
+:root[data-theme="fixture"] {
+  --theme-raised: rgb(255 212 0);
+  --shell-toc-top: 7rem;
+  --shell-toc-width: 16rem;
+  --shell-floating-actions-left: calc(100% - 4.75rem);
+}
+
+/* The marker. */
+[data-theme-shell="fixture"] {
+  min-height: 100vh;
+  outline: 12px solid rgb(255 0 170);
+  outline-offset: -12px;
+  background: var(--fuwari-page-bg);
+}
+
+.fixture-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-height: 6rem;
+  padding: 24px;
+}
+.fixture-nav {
+  display: flex;
+  gap: 12px;
+}
+.fixture-menu {
+  position: absolute;
+  top: 100%;
+  right: 24px;
+  z-index: 60;
+  width: 280px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--theme-raised);
+}
+.fixture-body {
+  display: grid;
+  gap: 16px;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}

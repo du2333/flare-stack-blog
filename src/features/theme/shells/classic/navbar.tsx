@@ -11,7 +11,6 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
-import "./navbar.css";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
