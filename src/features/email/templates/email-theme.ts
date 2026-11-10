@@ -1,16 +1,15 @@
 import type { SiteConfig } from "@/features/config/config.schema";
 
-/** The site details every email shows: its name and Fuwari primary hue. */
+/** The site details every email shows: its name and primary hue. */
 export interface EmailSite {
   title: string;
   primaryHue: number;
 }
 
-export function emailSiteOf(site: {
-  title: SiteConfig["title"];
-  theme: { fuwari: { primaryHue: number } };
-}): EmailSite {
-  return { title: site.title, primaryHue: site.theme.fuwari.primaryHue };
+export function emailSiteOf(
+  site: Pick<SiteConfig, "title" | "primaryHue">,
+): EmailSite {
+  return { title: site.title, primaryHue: site.primaryHue };
 }
 
 function toSrgbChannel(linear: number) {

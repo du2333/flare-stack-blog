@@ -63,7 +63,7 @@ vi.mock("@tanstack/react-router", () => ({
   useRouteContext: () => ({
     siteConfig: {
       author: "Author",
-      theme: { fuwari: { avatar: "/avatar.png" } },
+      avatar: "/avatar.png",
     },
   }),
 }));

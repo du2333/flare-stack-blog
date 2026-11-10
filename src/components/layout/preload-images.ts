@@ -7,12 +7,7 @@ import {
 export function getHomeBackgroundPreloadImages(
   siteConfig: SiteConfig,
 ): Array<string> {
-  return siteConfig.theme.fuwari.homeBg
-    ? [
-        getPublicImageSrc(
-          siteConfig.theme.fuwari.homeBg,
-          PUBLIC_IMAGE_WIDTH.banner,
-        ),
-      ]
+  return siteConfig.bannerImage
+    ? [getPublicImageSrc(siteConfig.bannerImage, PUBLIC_IMAGE_WIDTH.banner)]
     : [];
 }

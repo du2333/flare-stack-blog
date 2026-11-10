@@ -15,8 +15,27 @@ const SocialLinkSchema = z.object({
   label: z.string().optional(),
 });
 
-export const FUWARI_THEME_HUE_MIN = 0;
-export const FUWARI_THEME_HUE_MAX = 360;
+export const PRIMARY_HUE_MIN = 0;
+export const PRIMARY_HUE_MAX = 360;
+export const BANNER_FOCUS_MIN = 0;
+export const BANNER_FOCUS_MAX = 100;
+export const TAGLINE_MAX = 80;
+
+/**
+ * The registered Themes. Adding a Theme adds its id here; the first one is
+ * the default, which a stored id that is not listed falls back to.
+ */
+export const THEME_IDS = ["classic"] as const;
+export type ThemeId = (typeof THEME_IDS)[number];
+export const DEFAULT_THEME_ID: ThemeId = THEME_IDS[0];
+
+export function isThemeId(value: unknown): value is ThemeId {
+  return THEME_IDS.some((id) => id === value);
+}
+
+/** What the navigation shows as the site's mark. */
+export const BRAND_MARKS = ["default", "siteIcon", "avatar", "none"] as const;
+export type BrandMark = (typeof BRAND_MARKS)[number];
 
 function createSiteTextSchema(max: number) {
   return z.string().trim().max(max);
@@ -158,45 +177,83 @@ function createHueSchema() {
   return z
     .number()
     .int()
-    .min(FUWARI_THEME_HUE_MIN)
-    .max(FUWARI_THEME_HUE_MAX, {
-      message: `Value must be between ${FUWARI_THEME_HUE_MIN} and ${FUWARI_THEME_HUE_MAX}`,
+    .min(PRIMARY_HUE_MIN)
+    .max(PRIMARY_HUE_MAX, {
+      message: `Value must be between ${PRIMARY_HUE_MIN} and ${PRIMARY_HUE_MAX}`,
     });
 }
 
 function createHueFormSchema(messages: Messages) {
-  return z.number().int().min(FUWARI_THEME_HUE_MIN).max(FUWARI_THEME_HUE_MAX, {
+  return z.number().int().min(PRIMARY_HUE_MIN).max(PRIMARY_HUE_MAX, {
     message: messages.settings_site_validation_hue_range(),
   });
 }
 
-function createFuwariThemeSiteConfigSchema() {
-  return z.object({
-    homeBg: createBackgroundImageRefSchema(),
-    avatar: createAssetRefSchema(),
-    primaryHue: createHueSchema(),
-  });
-}
+const focusCoordinate = z
+  .number()
+  .int()
+  .min(BANNER_FOCUS_MIN)
+  .max(BANNER_FOCUS_MAX);
 
-function createFuwariThemeSiteConfigInputSchema() {
-  return z.object({
-    homeBg: createBackgroundImageRefSchema().optional(),
-    avatar: createAssetRefSchema().optional(),
-    primaryHue: createHueSchema().optional(),
-  });
-}
+export const BannerImageSchema = createBackgroundImageRefSchema().describe(
+  "Banner image: a root-relative path, an http(s) URL, or an empty string for none. Every Theme shows it.",
+);
+export const BannerFocusSchema = z
+  .object({ x: focusCoordinate, y: focusCoordinate })
+  .describe(
+    "Point of the banner image kept in view when a Theme crops it, in percent from the left (x) and the top (y). 50/50 is the centre.",
+  );
+export const AvatarSchema = createAssetRefSchema().describe(
+  "Author avatar: a root-relative path, or an empty string for none.",
+);
+export const PrimaryHueSchema = createHueSchema().describe(
+  "Primary colour hue in degrees (0–360). Public pages, the Admin workbench and emails derive their accent colours from it.",
+);
+export const BrandMarkSchema = z
+  .enum(BRAND_MARKS)
+  .describe(
+    "What the navigation shows as the site's mark: default (the built-in icon), siteIcon (the uploaded site icon), avatar, or none.",
+  );
+export const TaglineSchema = createSiteTextSchema(TAGLINE_MAX).describe(
+  "Short line a Theme may show on the home page banner. Empty for none.",
+);
+export const ThemeIdSchema = z
+  .enum(THEME_IDS)
+  .describe(
+    `Theme the public pages use: ${THEME_IDS.join(", ")}. A saved id that this version does not offer is read as ${DEFAULT_THEME_ID}.`,
+  );
+/** One option value. Flat, so the settings form can type the options. */
+export const ThemeOptionValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+]);
+/** Options of one Theme; each Theme defines its own keys. */
+const ThemeOptionsSchema = z.record(z.string(), ThemeOptionValueSchema);
+export const ThemeOptionsByIdSchema = z
+  .record(z.string(), ThemeOptionsSchema)
+  .describe(
+    "Options of each Theme, keyed by Theme id; each Theme defines its own keys. Options of a Theme that is not selected are kept.",
+  );
 
-function createFuwariThemeSiteConfigInputFormSchema(messages: Messages) {
-  return z.object({
-    homeBg: createBackgroundImageRefFormSchema(messages).optional(),
-    avatar: createAssetRefFormSchema(messages).optional(),
-    primaryHue: createHueFormSchema(messages).optional(),
-  });
+/**
+ * Where the banner image, avatar and hue lived before they were shared by all
+ * Themes. Written as a copy of the shared fields for one release, so an older
+ * build reading the same row still shows them; read only when a shared field
+ * is missing.
+ */
+function createLegacyFuwariSchema() {
+  return z
+    .object({
+      homeBg: createBackgroundImageRefSchema().optional(),
+      avatar: createAssetRefSchema().optional(),
+      primaryHue: createHueSchema().optional(),
+    })
+    .describe(
+      "Deprecated copy of bannerImage, avatar and primaryHue for older versions. It is rewritten on every save and only read when the shared field is omitted.",
+    );
 }
-
-const fuwariThemeSiteConfigSchema = createFuwariThemeSiteConfigSchema();
-const fuwariThemeSiteConfigInputSchema =
-  createFuwariThemeSiteConfigInputSchema();
 
 export const FullSiteConfigSchema = z.object({
   title: createSiteTextSchema(120),
@@ -212,8 +269,16 @@ export const FullSiteConfigSchema = z.object({
     webApp192: createAssetPathSchema(),
     webApp512: createAssetPathSchema(),
   }),
+  bannerImage: BannerImageSchema,
+  bannerFocus: BannerFocusSchema,
+  avatar: AvatarSchema,
+  primaryHue: PrimaryHueSchema,
+  brandMark: BrandMarkSchema,
+  tagline: TaglineSchema,
   theme: z.object({
-    fuwari: fuwariThemeSiteConfigSchema,
+    id: ThemeIdSchema,
+    options: ThemeOptionsByIdSchema,
+    fuwari: createLegacyFuwariSchema().optional(),
   }),
 });
 
@@ -234,9 +299,17 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
         webApp512: createOptionalAssetPathFormSchema(messages).optional(),
       })
       .optional(),
+    bannerImage: createBackgroundImageRefFormSchema(messages).optional(),
+    bannerFocus: BannerFocusSchema.optional(),
+    avatar: createAssetRefFormSchema(messages).optional(),
+    primaryHue: createHueFormSchema(messages).optional(),
+    brandMark: BrandMarkSchema.optional(),
+    tagline: createSiteTextFormSchema(TAGLINE_MAX, messages).optional(),
+    // The form edits the shared fields, so the legacy copy is not submitted.
     theme: z
       .object({
-        fuwari: createFuwariThemeSiteConfigInputFormSchema(messages).optional(),
+        id: ThemeIdSchema.optional(),
+        options: ThemeOptionsByIdSchema.optional(),
       })
       .optional(),
   });
@@ -258,9 +331,17 @@ export const SiteConfigInputSchema = z.object({
       webApp512: createOptionalAssetPathSchema().optional(),
     })
     .optional(),
+  bannerImage: BannerImageSchema.optional(),
+  bannerFocus: BannerFocusSchema.optional(),
+  avatar: AvatarSchema.optional(),
+  primaryHue: PrimaryHueSchema.optional(),
+  brandMark: BrandMarkSchema.optional(),
+  tagline: TaglineSchema.optional(),
   theme: z
     .object({
-      fuwari: fuwariThemeSiteConfigInputSchema.optional(),
+      id: ThemeIdSchema.optional(),
+      options: ThemeOptionsByIdSchema.optional(),
+      fuwari: createLegacyFuwariSchema().optional(),
     })
     .optional(),
 });

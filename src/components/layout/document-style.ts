@@ -8,6 +8,6 @@ export function getFuwariThemeStyle(
   // Without a config, use the default hue in styles.css.
   if (!siteConfig) return {};
   return {
-    "--fuwari-hue": String(siteConfig.theme.fuwari.primaryHue),
+    "--fuwari-hue": String(siteConfig.primaryHue),
   } as CSSProperties;
 }

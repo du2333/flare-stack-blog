@@ -73,7 +73,7 @@ export function DashboardHero({
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const { session } = useRouteContext({ from: "/admin" });
   const [imageFailed, setImageFailed] = useState(false);
-  const banner = siteConfig.theme.fuwari.homeBg;
+  const banner = siteConfig.bannerImage;
   const image =
     banner && !imageFailed
       ? getPublicImageSrc(banner, PUBLIC_IMAGE_WIDTH.banner)
