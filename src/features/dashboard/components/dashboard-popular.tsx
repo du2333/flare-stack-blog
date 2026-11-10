@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChartNoAxesColumn, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { iconButtonClass } from "@/components/ui/icon-button";
@@ -32,11 +31,6 @@ export function DashboardPopular({
         size="md"
         title={m.dashboard_popular_title()}
         description={window}
-        actions={
-          state === "expired" ? (
-            <Badge tone="warning">{m.dashboard_popular_expired()}</Badge>
-          ) : undefined
-        }
       />
       {state === "unconfigured" ? (
         <EmptyState

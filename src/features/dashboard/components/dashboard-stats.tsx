@@ -55,7 +55,6 @@ function viewsDetail(popularity: DashboardOverview["popularity"]) {
     case "missing":
       return m.dashboard_stat_views_missing();
     case "expired":
-      return m.dashboard_stat_views_expired();
     case "ready":
       return popularity.windowStart !== null && popularity.windowEnd !== null
         ? formatWindow(popularity.windowStart, popularity.windowEnd)
@@ -94,7 +93,6 @@ export function DashboardStats({
           label={m.dashboard_stat_views()}
           value={hasViews ? formatCount(popularity.totalViews) : "—"}
           detail={viewsDetail(popularity)}
-          dot={popularity.state === "expired" ? "warning" : undefined}
         />
       </li>
       <li>
