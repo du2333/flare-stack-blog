@@ -40,6 +40,16 @@
 .public-brand svg {
   flex-shrink: 0;
 }
+.public-brand-mark {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.public-brand-mark[data-mark="avatar"] {
+  border-radius: 50%;
+  object-fit: cover;
+}
 .public-brand span {
   overflow: hidden;
   text-overflow: ellipsis;

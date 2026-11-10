@@ -12,3 +12,30 @@
     calc(100% - 4.75rem)
   );
 }
+
+/* The tagline on the home page banner: bottom-left, above the 3.5rem the
+   content overlaps the banner by, on a scrim that darkens the image under it
+   in either Colour Scheme. It is out of flow and ignores the pointer. */
+.classic-tagline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 8rem 1rem calc(3.5rem + 1.5rem);
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.6),
+    rgb(0 0 0 / 0.3) 55%,
+    transparent
+  );
+  pointer-events: none;
+}
+.classic-tagline p {
+  width: min(100%, calc(var(--fuwari-page-width) - 2rem));
+  margin-inline: auto;
+  color: white;
+  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.45;
+  text-wrap: balance;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.5);
+}

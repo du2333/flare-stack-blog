@@ -18,6 +18,7 @@ import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
+import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 import { useFirstScreenHeight } from "../components/first-screen";
 import type {
@@ -84,7 +85,13 @@ async function renderShell(
     pageKind,
     user,
     logout = vi.fn(async () => {}),
-  }: { pageKind: PageKind; user?: UserInfo; logout?: () => Promise<void> },
+    site,
+  }: {
+    pageKind: PageKind;
+    user?: UserInfo;
+    logout?: () => Promise<void>;
+    site?: SystemConfig["site"];
+  },
 ) {
   const props: ThemeShellProps = {
     pageKind,
@@ -98,7 +105,7 @@ async function renderShell(
     floatingActions: createElement("button", { type: "button" }, "Floating"),
   };
   const root = createRootRoute({
-    beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
+    beforeLoad: () => ({ siteConfig: resolveSiteConfig({ site }) }),
     loader: () => ({ currentYear: 2026 }),
     component: () => createElement(shell.Shell, props),
   });
@@ -110,6 +117,16 @@ async function renderShell(
     render(createElement(RouterProvider, { router }));
   });
   await screen.findByText("Page content");
+}
+
+/** The link home that carries the site title (not the "Home" navigation entry). */
+function brandLink() {
+  const { title } = resolveSiteConfig({});
+  const link = screen
+    .getAllByRole("link", { name: title })
+    .find((candidate) => candidate.getAttribute("href") === "/");
+  expect(link).toBeDefined();
+  return link!;
 }
 
 function region(name: string) {
@@ -186,6 +203,89 @@ describe.each(THEME_SHELLS.map((shell) => [shell.id, shell] as const))(
       expect(body!.contains(region("footer"))).toBe(true);
       expect(region("main")!.textContent).toContain("Page content");
       expect(region("footer")!.textContent).toContain("Footer content");
+    });
+
+    it("shows the built-in icon and the title by default", async () => {
+      await renderShell(shell, { pageKind: "inner" });
+
+      const brand = brandLink();
+      expect(brand.querySelector("svg")).not.toBeNull();
+      expect(brand.querySelector("img")).toBeNull();
+    });
+
+    it("shows the site icon as the brand mark", async () => {
+      await renderShell(shell, {
+        pageKind: "inner",
+        site: { brandMark: "siteIcon" },
+      });
+
+      const brand = brandLink();
+      expect(brand.querySelector("svg")).toBeNull();
+      expect(brand.querySelector("img")?.getAttribute("src")).toBe(
+        resolveSiteConfig({}).icons.faviconSvg,
+      );
+    });
+
+    it("shows the avatar as the brand mark", async () => {
+      await renderShell(shell, {
+        pageKind: "inner",
+        site: { brandMark: "avatar" },
+      });
+
+      const brand = brandLink();
+      expect(brand.querySelector("svg")).toBeNull();
+      expect(brand.querySelector("img")?.getAttribute("src")).toContain(
+        "avatar",
+      );
+    });
+
+    it("shows the title alone when the brand mark is none", async () => {
+      await renderShell(shell, {
+        pageKind: "inner",
+        site: { brandMark: "none" },
+      });
+
+      const brand = brandLink();
+      expect(brand.querySelector("svg, img")).toBeNull();
+      expect(brand.textContent).toBe(resolveSiteConfig({}).title);
+    });
+
+    it.each(["home", "inner"] as const)(
+      "shows the tagline only where it declares to, on a %s page",
+      async (pageKind) => {
+        await renderShell(shell, {
+          pageKind,
+          site: { tagline: "A line under the banner" },
+        });
+
+        const shown = screen.queryByText("A line under the banner") !== null;
+        expect(shown).toBe(shell.taglineOn?.includes(pageKind) ?? false);
+      },
+    );
+
+    it("shows no tagline text when none is set", async () => {
+      await renderShell(shell, { pageKind: "home" });
+
+      expect(screen.queryByText("A line under the banner")).toBeNull();
+    });
+
+    it.each(["home", "inner"] as const)(
+      "crops the banner around the focal point on a %s page",
+      async (pageKind) => {
+        await renderShell(shell, {
+          pageKind,
+          site: { bannerFocus: { x: 10, y: 80 } },
+        });
+
+        const banner = screen.getByAltText("banner");
+        expect(banner.style.objectPosition).toBe("10% 80%");
+      },
+    );
+
+    it("leaves the banner uncropped by a style when the focal point is the centre", async () => {
+      await renderShell(shell, { pageKind: "home" });
+
+      expect(screen.getByAltText("banner").style.objectPosition).toBe("");
     });
 
     it("renders no sidebar on a focused page", async () => {

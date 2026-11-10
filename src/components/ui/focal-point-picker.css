@@ -1,0 +1,32 @@
+/*
+ * The click surface fills its positioned parent; the marker sits at the
+ * point it is given through --focal-x and --focal-y. White ring over a dark
+ * outline, so it reads on any image.
+ */
+@layer components {
+  .fuwari-focal-picker {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+  }
+  .fuwari-focal-marker {
+    position: absolute;
+    left: var(--focal-x);
+    top: var(--focal-y);
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--theme-accent) 60%, transparent);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 1px 4px rgb(0 0 0 / 0.45);
+    outline: none;
+  }
+  .fuwari-focal-marker:focus-visible {
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 0 0 4px var(--theme-accent);
+  }
+}

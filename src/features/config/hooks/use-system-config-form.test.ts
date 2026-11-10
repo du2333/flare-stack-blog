@@ -123,7 +123,7 @@ it("retains edits after a conflict and only discards the requested section on re
   expect(result.current.methods.getValues("email.senderName")).toBe("Keep me");
   expect(result.current.baseline.revisions.site).toBe(4);
 });
-it("submits the shared fields and the Theme settings that have no control yet", async () => {
+it("submits the shared fields and the Theme settings that have no control", async () => {
   state.snapshot = {
     ...state.snapshot!,
     config: {
@@ -159,5 +159,50 @@ it("submits the shared fields and the Theme settings that have no control yet", 
     brandMark: "avatar",
     tagline: "Saved tagline",
     theme: { id: "classic", options: { classic: { kept: true } } },
+  });
+});
+it("marks the site dirty by the brand mark, tagline and banner focus, and saves them", async () => {
+  const { result } = renderHook(() => useSystemConfigForm("site"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  expect(result.current.dirtySections.site).toBe(false);
+
+  act(() => {
+    result.current.methods.setValue("site.brandMark", "siteIcon", {
+      shouldDirty: true,
+    });
+  });
+  expect(result.current.dirtySections.site).toBe(true);
+  act(() => {
+    result.current.methods.setValue("site.brandMark", "default", {
+      shouldDirty: true,
+    });
+  });
+  expect(result.current.dirtySections.site).toBe(false);
+
+  act(() => {
+    result.current.methods.setValue("site.brandMark", "none", {
+      shouldDirty: true,
+    });
+    result.current.methods.setValue("site.tagline", "Notes", {
+      shouldDirty: true,
+    });
+    result.current.methods.setValue(
+      "site.bannerFocus",
+      { x: 25, y: 60 },
+      { shouldDirty: true },
+    );
+  });
+  expect(result.current.dirtySections.site).toBe(true);
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 3, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[0][0].site).toMatchObject({
+    brandMark: "none",
+    tagline: "Notes",
+    bannerFocus: { x: 25, y: 60 },
   });
 });
