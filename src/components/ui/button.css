@@ -87,7 +87,10 @@
     color: rgb(0 0 0 / 0.75);
   }
   .fuwari-button-danger:not(:disabled):hover {
-    opacity: 0.9;
+    background-color: var(--fuwari-danger-solid-hover);
+  }
+  .dark .fuwari-button-danger:not(:disabled):hover {
+    background-color: var(--fuwari-danger-hover);
   }
 
   /* On top of an image, such as a cover. */
