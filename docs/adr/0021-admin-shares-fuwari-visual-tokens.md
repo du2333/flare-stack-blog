@@ -1,3 +1,5 @@
 # Admin shares Fuwari visual tokens
 
 Public pages remain the only presentation (Fuwari). Admin stays a workbench layout and does not copy the public navbar, banner, or 75rem column. Admin and public use one stylesheet, so color, controls, type, onload animation, and toasts stay in sync, and Site Config hue applies to both. Warning, danger, and success keep fixed hues (85, 25, 145) and reuse the same lightness/chroma recipes as Fuwari controls, so they stay yellow/red/green as Site Config hue changes. This supersedes the sentence in ADR 0012 that Admin keeps its own stylesheet, and does not restore a Theme Contract.
+
+Amended by [ADR 0038](./0038-themes-are-built-in-shells-chosen-at-runtime.md): Fuwari is now one Theme among several, and the Admin reads a base layer of the variables that no Theme overrides.
