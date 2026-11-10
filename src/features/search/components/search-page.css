@@ -1,7 +1,12 @@
 .public-search {
   width: 100%;
-  padding: 32px;
+  padding: 32px var(--theme-panel-pad-x, 32px);
   color: var(--fuwari-fg);
+}
+.public-search > h1,
+.public-search-result h2 {
+  font-family: var(--theme-heading-font);
+  letter-spacing: var(--theme-heading-tracking);
 }
 .public-search > h1 {
   font-size: 26px;
@@ -28,7 +33,8 @@
   opacity: 0.55;
 }
 .public-search-results li {
-  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  border-top: 1px solid
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
 }
 .public-search-result {
   display: block;
@@ -55,7 +61,7 @@
   overflow-wrap: anywhere;
 }
 .public-search mark {
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   background: transparent;
   font-weight: 600;
 }
@@ -69,7 +75,7 @@
   position: absolute;
   right: 0;
   top: 28px;
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   opacity: 0;
   transform: translateX(-4px);
   transition:
@@ -78,7 +84,7 @@
 }
 .public-search-result:hover h2,
 .public-search-result:focus-visible h2 {
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .public-search-result:hover .public-search-arrow,
 .public-search-result:focus-visible .public-search-arrow {
@@ -91,7 +97,7 @@
     .fuwari-button,
     .fuwari-icon-button
   ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .public-search-skeleton {
@@ -101,7 +107,7 @@
 }
 @media (max-width: 639px) {
   .public-search {
-    padding: 24px;
+    padding: 24px var(--theme-panel-pad-x, 24px);
   }
   .public-search > h1 {
     font-size: 24px;

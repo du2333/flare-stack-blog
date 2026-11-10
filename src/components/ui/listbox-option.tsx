@@ -36,7 +36,7 @@ export function ListboxOption({
         "flex cursor-pointer items-center rounded-lg py-1.5 text-sm transition-colors",
         active && "bg-(--fuwari-btn-regular-bg)",
         current
-          ? "text-(--fuwari-primary)"
+          ? "text-(--theme-accent)"
           : active
             ? "fuwari-text-90"
             : "fuwari-text-75",

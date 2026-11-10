@@ -35,7 +35,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
 
   return (
     <div
-      className="fuwari-card-base flex flex-col-reverse md:flex-col w-full rounded-(--fuwari-radius-large) overflow-hidden relative"
+      className="fuwari-card-base fuwari-card-item flex flex-col-reverse md:flex-col w-full overflow-hidden relative"
       style={{ ["--coverWidth" as string]: coverWidth }}
     >
       <div
@@ -46,23 +46,19 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
         }`}
       >
         {(pinned || popular) && (
-          <div className="flex items-center gap-1.5 font-medium text-sm mb-3">
+          <div
+            className="fuwari-kicker flex items-center gap-1.5 font-medium mb-3"
+            data-kind={pinned ? "pinned" : "popular"}
+          >
             {pinned ? (
               <>
-                <Pin
-                  size={16}
-                  className="fill-current text-(--fuwari-primary)"
-                />
-                <span className="text-(--fuwari-primary)">
-                  {m.home_pinned_posts()}
-                </span>
+                <Pin size={16} className="fill-current" />
+                <span>{m.home_pinned_posts()}</span>
               </>
             ) : (
               <>
-                <Flame size={16} className="text-orange-500" />
-                <span className="text-orange-500">
-                  {m.home_popular_posts()}
-                </span>
+                <Flame size={16} />
+                <span>{m.home_popular_posts()}</span>
               </>
             )}
           </div>
@@ -71,11 +67,11 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
         <Link
           to="/post/$slug"
           params={{ slug: post.slug }}
-          className="transition group w-full block font-bold mb-3 text-3xl fuwari-text-90 hover:text-(--fuwari-primary) active:text-(--fuwari-primary) relative before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--fuwari-primary)"
+          className="fuwari-heading fuwari-list-title transition group w-full block font-bold mb-3 fuwari-text-90 hover:text-(--theme-accent) active:text-(--theme-accent) relative before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)"
         >
           {post.title}
-          <ChevronRight className="inline-block md:hidden text-[2rem] text-(--fuwari-primary) align-middle -mt-1 ml-1" />
-          <ChevronRight className="text-(--fuwari-primary) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
+          <ChevronRight className="inline-block md:hidden text-[2rem] text-(--theme-accent) align-middle -mt-1 ml-1" />
+          <ChevronRight className="text-(--theme-accent) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
         </Link>
 
         <div className="flex flex-wrap fuwari-text-50 items-center gap-4 gap-x-4 gap-y-2 mb-4">
@@ -85,7 +81,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             </div>
             <time
               dateTime={post.publishedAt?.toISOString()}
-              className="text-sm font-medium"
+              className="fuwari-meta-text"
             >
               {formatPublicPostDate(post.publishedAt)}
             </time>
@@ -98,7 +94,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
               <Link
                 to="/posts"
                 search={withCategoryFilter(post.category?.name)}
-                className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
+                className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)"
               >
                 {post.category.name}
               </Link>
@@ -120,7 +116,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
                     <Link
                       to="/posts"
                       search={withTagFilter(name)}
-                      className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 text-sm font-medium hover:text-(--fuwari-primary)"
+                      className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)"
                     >
                       {name}
                     </Link>
@@ -160,7 +156,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           to="/post/$slug"
           params={{ slug: post.slug }}
           aria-label={post.title}
-          className="group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95"
+          className="group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-(--theme-cover-radius) overflow-hidden active:scale-95"
         >
           <div className="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
           <div className="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
@@ -187,7 +183,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           className="hidden md:flex fuwari-btn-regular w-13 absolute right-3 top-3 bottom-3 rounded-xl active:scale-95"
         >
           <ChevronRight
-            className="text-(--fuwari-primary) text-4xl mx-auto"
+            className="text-(--theme-accent) text-4xl mx-auto"
             strokeWidth={2}
           />
         </Link>

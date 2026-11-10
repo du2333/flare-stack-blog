@@ -22,7 +22,7 @@
   .fuwari-empty-icon {
     flex-shrink: 0;
     margin-bottom: 4px;
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-empty-title {
     color: var(--fuwari-fg-75);

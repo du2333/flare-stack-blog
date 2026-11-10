@@ -1,0 +1,117 @@
+/*
+ * Theme variables (ADR 0038): the design values a Theme may set. The base
+ * layer (--fuwari-*, styles.css) stays what the Admin workbench reads with the
+ * Site Config hue; public pages and the shared controls read the roles below.
+ *
+ * A Theme sets --theme-* on the public document root, e.g.
+ * :root[data-theme="…"], never --fuwari-* and never !important. Under
+ * /admin every one of them is pinned back to its default (last rule), so
+ * nothing a Theme sets reaches the workbench, its dialogs or its toasts.
+ *
+ * Declared here, the same everywhere today:
+ *   --theme-surface          the surface content sits on (panels, list items, sidebar blocks)
+ *   --theme-raised           a raised surface: code blocks, floating buttons, menus, dialogs
+ *   --theme-accent           links, thin accent lines, tag and label text
+ *   --theme-solid-bg(-hover/-active)  the solid fill of a primary button or the current page
+ *   --theme-card-radius, --theme-card-shadow       content panels, list items, sidebar blocks
+ *   --theme-cover-radius     post covers
+ *   --theme-row-pad-y        block padding of a row in the post list
+ *   --theme-heading-font, --theme-heading-tracking  every title
+ *   --theme-list-title-size  a post's title in a list
+ *   --theme-meta-size, --theme-meta-weight          the items of a post's meta row
+ *   --theme-widget-rule, --theme-widget-title-size, --theme-widget-title-tracking,
+ *   --theme-widget-title-color, --theme-widget-row-bleed   sidebar blocks
+ *   --theme-chip-radius      tags and counts
+ *   --theme-kicker-size, --theme-kicker-tracking    the pinned and popular label
+ *   --theme-button-radius    buttons (small ones 2px less)
+ *   --theme-pager-radius     page numbers
+ *   --theme-standalone-border, --theme-standalone-radius  sign-in, status and profile panels
+ *   --theme-rule-style       dashed separators
+ *   --theme-link-underline-style  the underline of a link in a post body
+ *
+ * Not declared: today's value differs by place, or derives from another
+ * variable. Each consumer reads var(--theme-…, <its value today>), so a
+ * derived one follows its source wherever that is overridden:
+ *   --theme-rule             separator colour
+ *   --theme-panel-pad-x      side padding of a content panel
+ *   --theme-page-title-size  a post page's title
+ *   --theme-kicker-color     the pinned and popular label
+ *   --theme-solid-fg         text on --theme-solid-bg
+ *   --theme-standalone-pad-x-narrow  side padding of a standalone panel below 640px
+ *   --theme-link-underline   the underline colour of a link in a post body
+ *   --theme-widget-more-color  a sidebar block's "more" button
+ */
+@layer base {
+  :root {
+    --theme-surface: var(--fuwari-card-bg);
+    --theme-raised: var(--fuwari-card-bg);
+    --theme-accent: var(--fuwari-primary);
+    --theme-solid-bg: var(--fuwari-primary);
+    --theme-solid-bg-hover: var(--fuwari-primary-hover);
+    --theme-solid-bg-active: var(--fuwari-primary-active);
+    --theme-card-radius: var(--fuwari-radius-large);
+    --theme-card-shadow: none;
+    --theme-cover-radius: 0.75rem;
+    --theme-row-pad-y: 0px;
+    --theme-heading-font: var(--font-sans);
+    --theme-heading-tracking: 0;
+    --theme-list-title-size: 1.875rem;
+    --theme-meta-size: 0.875rem;
+    --theme-meta-weight: 500;
+    --theme-widget-rule: none;
+    --theme-widget-title-size: 1.125rem;
+    --theme-widget-title-tracking: normal;
+    --theme-widget-title-color: var(--fuwari-fg);
+    --theme-widget-row-bleed: 0px;
+    --theme-chip-radius: 0.5rem;
+    --theme-kicker-size: 0.875rem;
+    --theme-kicker-tracking: normal;
+    --theme-button-radius: 12px;
+    --theme-pager-radius: 0.5rem;
+    --theme-standalone-border: none;
+    --theme-standalone-radius: var(--fuwari-radius-large);
+    --theme-rule-style: dashed;
+    --theme-link-underline-style: dashed;
+  }
+
+  /* The Admin pin: the defaults above, plus initial for the undeclared ones. */
+  :root:has(.admin-layout) {
+    --theme-surface: var(--fuwari-card-bg) !important;
+    --theme-raised: var(--fuwari-card-bg) !important;
+    --theme-accent: var(--fuwari-primary) !important;
+    --theme-solid-bg: var(--fuwari-primary) !important;
+    --theme-solid-bg-hover: var(--fuwari-primary-hover) !important;
+    --theme-solid-bg-active: var(--fuwari-primary-active) !important;
+    --theme-card-radius: var(--fuwari-radius-large) !important;
+    --theme-card-shadow: none !important;
+    --theme-cover-radius: 0.75rem !important;
+    --theme-row-pad-y: 0px !important;
+    --theme-heading-font: var(--font-sans) !important;
+    --theme-heading-tracking: 0 !important;
+    --theme-list-title-size: 1.875rem !important;
+    --theme-meta-size: 0.875rem !important;
+    --theme-meta-weight: 500 !important;
+    --theme-widget-rule: none !important;
+    --theme-widget-title-size: 1.125rem !important;
+    --theme-widget-title-tracking: normal !important;
+    --theme-widget-title-color: var(--fuwari-fg) !important;
+    --theme-widget-row-bleed: 0px !important;
+    --theme-chip-radius: 0.5rem !important;
+    --theme-kicker-size: 0.875rem !important;
+    --theme-kicker-tracking: normal !important;
+    --theme-button-radius: 12px !important;
+    --theme-pager-radius: 0.5rem !important;
+    --theme-standalone-border: none !important;
+    --theme-standalone-radius: var(--fuwari-radius-large) !important;
+    --theme-rule-style: dashed !important;
+    --theme-link-underline-style: dashed !important;
+    --theme-rule: initial !important;
+    --theme-panel-pad-x: initial !important;
+    --theme-page-title-size: initial !important;
+    --theme-kicker-color: initial !important;
+    --theme-solid-fg: initial !important;
+    --theme-standalone-pad-x-narrow: initial !important;
+    --theme-link-underline: initial !important;
+    --theme-widget-more-color: initial !important;
+  }
+}

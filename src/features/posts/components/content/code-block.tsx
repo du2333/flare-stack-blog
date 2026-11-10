@@ -125,13 +125,13 @@ export function CodeBlockFrame({
 
   return (
     <div className="relative group max-w-full my-6 not-prose">
-      <div className="expressive-code relative rounded-xl border border-black/10 dark:border-white/10 bg-(--fuwari-code-bg) overflow-hidden transition-colors shadow-sm">
+      <div className="expressive-code relative rounded-xl border border-black/10 dark:border-white/10 bg-(--theme-raised) overflow-hidden transition-colors shadow-sm">
         {/* Language Badge */}
         <div
           className={cn(
             "absolute z-10 right-2 top-2 px-2 py-0.5",
             "font-mono text-xs font-bold uppercase pointer-events-none transition-opacity duration-300",
-            "text-(--fuwari-primary) bg-(--fuwari-primary)/10 rounded-lg",
+            "text-(--theme-accent) bg-(--theme-accent)/10 rounded-lg",
             "group-hover:opacity-0",
           )}
         >

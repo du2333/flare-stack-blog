@@ -32,13 +32,13 @@ export function MomentPage({ moment }: { moment: PublicMoment }) {
       <h1 className="sr-only">{m.moments_title()}</h1>
       <Link
         to="/moments"
-        className="fuwari-card-base inline-flex w-fit items-center gap-1.5 px-4 py-2 text-sm font-medium fuwari-text-75 transition hover:text-(--fuwari-primary)"
+        className="fuwari-card-base fuwari-card-item inline-flex w-fit items-center gap-1.5 px-4 py-2 text-sm font-medium fuwari-text-75 transition hover:text-(--theme-accent)"
       >
         <ArrowLeft size={16} aria-hidden="true" />
         {m.moments_all()}
       </Link>
       <MomentCard moment={moment} />
-      <div className="fuwari-card-base p-6">
+      <div className="fuwari-card-base fuwari-card-panel py-6 px-[var(--theme-panel-pad-x,1.5rem)]">
         <CommentSection target={{ type: "moment", id: moment.id }} />
       </div>
     </div>

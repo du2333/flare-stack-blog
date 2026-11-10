@@ -13,7 +13,7 @@ export function ArchiveYear({ year, count }: ArchiveYearProps) {
       </div>
       <div className="w-[15%] md:w-[10%]">
         <div
-          className="h-3 w-3 bg-none rounded-full outline outline-(--fuwari-primary) mx-auto
+          className="h-3 w-3 bg-none rounded-full outline outline-(--theme-accent) mx-auto
           -outline-offset-2 z-50"
         />
       </div>

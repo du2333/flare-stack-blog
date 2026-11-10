@@ -54,15 +54,15 @@
       border-color 0.2s;
   }
   .fuwari-tab:hover:not(:disabled) {
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-tab:is([aria-selected="true"], [aria-current="page"]) {
-    border-bottom-color: var(--fuwari-primary);
-    color: var(--fuwari-primary);
+    border-bottom-color: var(--theme-accent);
+    color: var(--theme-accent);
     font-weight: 500;
   }
   .fuwari-tab:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: -2px;
   }
   .fuwari-tab:disabled {

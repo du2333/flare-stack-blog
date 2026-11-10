@@ -61,8 +61,8 @@ export function PostPageSkeleton() {
   const wordCount = cached ? cached.readTimeInMinutes * 300 : 0;
 
   return (
-    <div className="relative mb-4 flex w-full flex-col gap-4 rounded-(--fuwari-radius-large) py-1 md:bg-transparent md:py-0">
-      <div className="fuwari-card-base relative z-10 w-full px-6 pb-4 pt-6 md:px-9">
+    <div className="relative mb-4 flex w-full flex-col gap-4 rounded-(--theme-card-radius) py-1 md:bg-transparent md:py-0">
+      <div className="fuwari-card-base fuwari-card-panel relative z-10 w-full px-[var(--theme-panel-pad-x,1.5rem)] pb-4 pt-6 md:px-[var(--theme-panel-pad-x,2.25rem)]">
         <div className="mb-3 flex flex-row flex-wrap gap-5 fuwari-text-30">
           {cached ? (
             <>
@@ -94,7 +94,7 @@ export function PostPageSkeleton() {
         <div className="relative">
           {cached ? (
             <h1
-              className="relative mb-3 block w-full text-3xl font-bold fuwari-text-90 md:text-[2.25rem]/[2.75rem] md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--fuwari-primary)"
+              className="fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90 md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--theme-accent)"
               style={
                 typeof slug === "string"
                   ? { viewTransitionName: `post-title-${slug}` }
@@ -111,9 +111,7 @@ export function PostPageSkeleton() {
         {cached ? (
           <>
             <PostMeta post={cached} className="mb-5" />
-            {!cached.cover && (
-              <div className="mb-5 border-b border-dashed border-(--fuwari-meta-divider)" />
-            )}
+            {!cached.cover && <div className="fuwari-meta-rule mb-5" />}
           </>
         ) : (
           <div className="mb-5 flex flex-wrap gap-4">
@@ -124,7 +122,7 @@ export function PostPageSkeleton() {
         )}
 
         {cached?.cover ? (
-          <div className="mb-8 overflow-hidden rounded-xl">
+          <div className="mb-8 overflow-hidden rounded-(--theme-cover-radius)">
             <img
               src={getPublicImageSrc(
                 cached.cover.url,
@@ -145,15 +143,15 @@ export function PostPageSkeleton() {
         </div>
 
         <div className="my-8 flex w-full items-center justify-center">
-          <div className="h-px w-full bg-linear-to-r from-transparent via-(--fuwari-meta-divider) to-transparent opacity-20" />
-          <span className="mx-4 whitespace-nowrap font-mono text-sm tracking-widest text-(--fuwari-meta-divider) opacity-50">
+          <div className="h-px w-full bg-linear-to-r from-transparent via-(--theme-rule,var(--fuwari-meta-divider)) to-transparent opacity-20" />
+          <span className="mx-4 whitespace-nowrap font-mono text-sm tracking-widest text-(--theme-rule,var(--fuwari-meta-divider)) opacity-50">
             END
           </span>
-          <div className="h-px w-full bg-linear-to-r from-(--fuwari-meta-divider) via-transparent to-transparent opacity-20" />
+          <div className="h-px w-full bg-linear-to-r from-(--theme-rule,var(--fuwari-meta-divider)) via-transparent to-transparent opacity-20" />
         </div>
       </div>
 
-      <div className="fuwari-card-base p-6">
+      <div className="fuwari-card-base fuwari-card-panel py-6 px-[var(--theme-panel-pad-x,1.5rem)]">
         <Skeleton className="mb-5 h-5 w-24" />
         <div className="space-y-4">
           <Skeleton className="h-16 w-full rounded-xl" />

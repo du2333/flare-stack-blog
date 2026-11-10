@@ -20,11 +20,11 @@ export function HomePage({
   const popularSlugs = new Set((popularPosts ?? []).map((post) => post.slug));
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col rounded-(--fuwari-radius-large) bg-(--fuwari-card-bg) py-1 md:py-0 md:bg-transparent md:gap-4">
+      <div className="flex flex-col rounded-(--theme-card-radius) bg-(--theme-surface) py-1 md:py-0 md:bg-transparent md:gap-4">
         {posts.map((post, i) => (
           <div
             key={post.slug}
-            className="fuwari-onload-animation"
+            className="fuwari-onload-animation py-(--theme-row-pad-y)"
             style={{
               animationDelay: `calc(var(--fuwari-content-delay) + ${i * 50}ms)`,
             }}

@@ -68,6 +68,8 @@
   }
   .fuwari-public-heading h1 {
     position: relative;
+    font-family: var(--theme-heading-font);
+    letter-spacing: var(--theme-heading-tracking);
     padding-left: 20px;
     font-size: 28px;
     font-weight: 700;
@@ -80,7 +82,7 @@
     width: 5px;
     height: 1em;
     border-radius: 4px;
-    background: var(--fuwari-primary);
+    background: var(--theme-accent);
   }
   .fuwari-public-heading > a {
     display: flex;
@@ -88,7 +90,7 @@
     gap: 6px;
     min-height: 44px;
     font-size: 14px;
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-public-heading > p {
     grid-column: 1 / -1;

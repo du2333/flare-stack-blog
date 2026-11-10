@@ -50,7 +50,7 @@
     opacity: 1;
   }
   .fuwari-badge-remove:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: 1px;
     opacity: 1;
   }
@@ -60,7 +60,7 @@
     --fuwari-badge-font-size: 11px;
   }
   .fuwari-badge[data-tone="primary"] {
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-badge[data-tone="success"] {
     background: var(--fuwari-success-bg);

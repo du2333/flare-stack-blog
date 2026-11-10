@@ -36,7 +36,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
         </div>
         <time
           dateTime={published?.toISOString()}
-          className="text-sm font-medium fuwari-text-50"
+          className="fuwari-meta-text fuwari-text-50"
         >
           {formatPublicPostDate(published)}
         </time>
@@ -50,7 +50,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
           </div>
           <time
             dateTime={updated?.toISOString()}
-            className="text-sm font-medium fuwari-text-50"
+            className="fuwari-meta-text fuwari-text-50"
           >
             {formatPublicPostDate(updated)}
           </time>
@@ -65,7 +65,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
           <Link
             to="/posts"
             search={withCategoryFilter(post.category?.name)}
-            className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+            className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
           >
             {post.category.name}
           </Link>
@@ -73,7 +73,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
           <Link
             to="/posts"
             search={withUncategorizedFilter()}
-            className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+            className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
           >
             {m.post_uncategorized()}
           </Link>
@@ -96,14 +96,14 @@ export function PostMeta({ post, className }: PostMetaProps) {
                 <Link
                   to="/posts"
                   search={withTagFilter(tag.name)}
-                  className="fuwari-expand-animation rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 text-sm font-medium hover:text-(--fuwari-primary) whitespace-nowrap"
+                  className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
                 >
                   {tag.name}
                 </Link>
               </span>
             ))
           ) : (
-            <span className="transition fuwari-text-50 text-sm font-medium">
+            <span className="transition fuwari-meta-text fuwari-text-50">
               {m.post_no_tags()}
             </span>
           )}

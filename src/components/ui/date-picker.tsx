@@ -115,7 +115,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             w-8 h-8 text-xs flex items-center justify-center rounded-lg transition-all relative disabled:cursor-not-allowed disabled:opacity-30
             ${
               selected
-                ? "bg-(--fuwari-primary) text-white"
+                ? "bg-(--theme-solid-bg) text-(--theme-solid-fg,white)"
                 : "fuwari-text-75 enabled:hover:bg-(--fuwari-btn-regular-bg)"
             }
             ${isToday && !selected ? "font-medium fuwari-text-90" : ""}
@@ -123,7 +123,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         >
           {i}
           {isToday && !selected && (
-            <div className="absolute bottom-1 left-1/2 h-px w-1 -translate-x-1/2 bg-(--fuwari-primary)"></div>
+            <div className="absolute bottom-1 left-1/2 h-px w-1 -translate-x-1/2 bg-(--theme-accent)"></div>
           )}
         </button>,
       );
@@ -186,7 +186,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               type="button"
               aria-label={formatMonth(adjacentMonth(-1))}
               onClick={() => setViewDate(adjacentMonth(-1))}
-              className="p-1 fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
+              className="p-1 fuwari-text-50 hover:text-(--theme-accent) transition-colors"
             >
               <ChevronLeft size={14} strokeWidth={1.5} />
             </button>
@@ -194,7 +194,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               type="button"
               aria-label={formatMonth(adjacentMonth(1))}
               onClick={() => setViewDate(adjacentMonth(1))}
-              className="p-1 fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
+              className="p-1 fuwari-text-50 hover:text-(--theme-accent) transition-colors"
             >
               <ChevronRight size={14} strokeWidth={1.5} />
             </button>

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 const LINK_CLASS =
-  "relative block cursor-zoom-in select-none overflow-hidden rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--fuwari-primary)";
+  "relative block cursor-zoom-in select-none overflow-hidden rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--theme-accent)";
 
 /**
  * A Moment's images in a grid: one large keeping its ratio, two to four in

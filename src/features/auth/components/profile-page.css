@@ -28,7 +28,7 @@
   border-radius: 50%;
   overflow: hidden;
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .account-avatar img {
   width: 100%;
@@ -63,11 +63,12 @@
     .fuwari-button,
     .fuwari-icon-button
   ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .account-setting {
-  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  border-top: 1px solid
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
 }
 .account-setting-row {
   display: flex;
@@ -87,14 +88,15 @@
   margin-top: 6px;
 }
 .account-footer {
-  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  border-top: 1px solid
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
   padding: 20px 20px 0;
   display: flex;
   justify-content: center;
 }
 @media (max-width: 639px) {
   .account-page {
-    padding: 24px;
+    padding: 24px var(--theme-standalone-pad-x-narrow, 24px);
   }
   .account-profile {
     grid-template-columns: minmax(0, 1fr);

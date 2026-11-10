@@ -56,7 +56,7 @@ export function PostsPage({
         className="flex flex-col items-center justify-center pt-2 pb-8"
       >
         {isFetchingNextPage ? (
-          <div className="fuwari-card-base w-full px-8 py-6 opacity-70">
+          <div className="fuwari-card-base fuwari-card-panel w-full px-[var(--theme-panel-pad-x,2rem)] py-6 opacity-70">
             {/* Inline Mini Skeleton for appending items */}
             {Array.from({ length: 3 }).map((_, i) => (
               <div
@@ -86,7 +86,7 @@ export function PostsPage({
         ) : (
           <EmptyState
             size="compact"
-            className="fuwari-card-base w-full py-12"
+            className="fuwari-card-base fuwari-card-panel w-full py-12"
             description={m.posts_no_posts()}
           />
         )}
