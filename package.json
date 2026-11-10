@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "bun run orpc:contract && cf build && bun scripts/ssr-chunk-graph.ts .cloudflare/output/v0/workers/default/bundle",
-    "deploy": "cf d1 migrations apply \"$D1_DATABASE_ID\" && cf deploy --prebuilt",
+    "deploy": "cf d1 migrations apply \"$D1_DATABASE_ID\" && cf deploy --prebuilt --force",
     "test": "vitest run",
     "test:node": "vitest run --config vitest.node.config.ts",
     "lint": "oxlint",
@@ -117,7 +117,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/runner": "^4.1.11",
     "@vitest/snapshot": "^4.1.11",
-    "cf": "1.0.0-beta.5",
+    "cf": "1.0.0-beta.29",
     "drizzle-kit": "^0.31.11",
     "fallow": "^3.21.0",
     "husky": "^9.1.7",
@@ -134,8 +134,5 @@
   },
   "engines": {
     "node": ">=24"
-  },
-  "patchedDependencies": {
-    "cf@1.0.0-beta.5": "patches/cf@1.0.0-beta.5.patch"
   }
 }
