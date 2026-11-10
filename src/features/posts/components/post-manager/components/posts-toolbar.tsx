@@ -1,19 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
-import { Settings2 } from "lucide-react";
-import { useEffect, type Ref } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useId, useState, type Ref } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import DropdownMenu from "@/components/ui/dropdown-menu";
+import { FloatingPopover } from "@/components/ui/floating-popover";
 import { IconButton } from "@/components/ui/icon-button";
+import { SectionHeading } from "@/components/ui/page-heading";
 import { SearchField } from "@/components/ui/search-field";
+import { Sheet } from "@/components/ui/sheet";
 import { Tabs } from "@/components/ui/tabs";
 import { categoryOptionsQuery } from "@/features/categories/queries";
 import type { AdminPostStatusCounts } from "@/features/posts/schema/posts.schema";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
+import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import type { CategoryFilter, SortField, StatusFilter } from "../types";
-import { STATUS_FILTERS } from "../types";
+import { SORT_FIELDS, STATUS_FILTERS, WIDE_TOOLBAR_QUERY } from "../types";
+import { PostsFilterPanel, sortLabel } from "./posts-filter-panel";
 
-const FILTER_TRIGGER =
+const SORT_TRIGGER =
   "group fuwari-input inline-flex w-auto max-w-44 items-center gap-2 text-left";
+
+/** A mousedown inside a menu opened from the panel is not outside the panel. */
+const inMenu = (target: Node) =>
+  target instanceof Element && target.closest('[role="menu"]') !== null;
 
 interface PostsToolbarProps {
   searchTerm: string;
@@ -29,6 +40,8 @@ interface PostsToolbarProps {
   onTagChange: (tag?: number, replace?: boolean) => void;
   sortBy: SortField;
   onSortByChange: (sortBy: SortField) => void;
+  /** Resets every filter, the chosen Category and Tag included. */
+  onClearFilters?: () => void;
   /** Opens the categories and tags sheet. */
   onManageTaxonomy?: () => void;
 }
@@ -46,8 +59,16 @@ export function PostsToolbar({
   onTagChange,
   sortBy,
   onSortByChange,
+  onClearFilters,
   onManageTaxonomy,
 }: PostsToolbarProps) {
+  const wide = useMediaQuery(WIDE_TOOLBAR_QUERY);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterButton, setFilterButton] = useState<HTMLButtonElement | null>(
+    null,
+  );
+  const panelId = useId();
+  const titleId = useId();
   const categoriesQuery = useQuery({
     ...categoryOptionsQuery,
     refetchOnMount: "always",
@@ -87,87 +108,181 @@ export function PostsToolbar({
         DRAFT: statusCounts.draft,
       }
     : undefined;
+
+  const categoryName =
+    category === undefined
+      ? undefined
+      : category === "none"
+        ? m.post_uncategorized()
+        : categories.find((item) => item.id === category)?.name;
+  const tagName =
+    tag === undefined ? undefined : tags.find((item) => item.id === tag)?.name;
+  const activeCount =
+    (category === undefined ? 0 : 1) + (tag === undefined ? 0 : 1);
+
+  const manageTaxonomy = onManageTaxonomy
+    ? () => {
+        // The taxonomy sheet returns focus to the button, which outlives the panel.
+        filterButton?.focus({ preventScroll: true });
+        setFilterOpen(false);
+        onManageTaxonomy();
+      }
+    : undefined;
+  const panel = (
+    <PostsFilterPanel
+      categories={categories}
+      tags={tags}
+      category={category}
+      onCategoryChange={onCategoryChange}
+      tag={tag}
+      onTagChange={onTagChange}
+      sortBy={wide ? undefined : sortBy}
+      onSortByChange={wide ? undefined : onSortByChange}
+      onManageTaxonomy={manageTaxonomy}
+    />
+  );
+
+  const tabs = (
+    <Tabs
+      className="post-list-tabs"
+      aria-label={m.admin_posts_filter_status()}
+      value={status}
+      onValueChange={onStatusChange}
+      items={STATUS_FILTERS.map((value) => ({
+        value,
+        label: labels[value],
+        count: counts?.[value] ?? "—",
+      }))}
+    />
+  );
+  const search = (
+    <SearchField
+      ref={searchRef}
+      className="post-list-search"
+      aria-label={m.admin_posts_search_placeholder()}
+      placeholder={m.admin_posts_search_placeholder()}
+      value={searchTerm}
+      onValueChange={onSearchChange}
+      clearLabel={m.admin_posts_clear_search()}
+    />
+  );
+  const filter = (
+    <Button
+      ref={setFilterButton}
+      className="post-list-filter-button"
+      icon={<SlidersHorizontal size={16} />}
+      aria-haspopup="dialog"
+      aria-expanded={filterOpen}
+      aria-controls={filterOpen ? panelId : undefined}
+      onClick={() => setFilterOpen((open) => !open)}
+    >
+      {m.admin_posts_filter_button()}
+      {activeCount > 0 ? (
+        <span className="post-list-filter-count">{activeCount}</span>
+      ) : null}
+    </Button>
+  );
+
   return (
     <>
-      <Tabs
-        className="post-list-tabs"
-        aria-label={m.admin_posts_filter_status()}
-        value={status}
-        onValueChange={onStatusChange}
-        items={STATUS_FILTERS.map((value) => ({
-          value,
-          label: labels[value],
-          count: counts?.[value] ?? "—",
-        }))}
-      />
-      <div className="post-list-controls">
-        <div className="post-list-filters">
-          <SearchField
-            ref={searchRef}
-            className="post-list-search"
-            aria-label={m.admin_posts_search_placeholder()}
-            placeholder={m.admin_posts_search_placeholder()}
-            value={searchTerm}
-            onValueChange={onSearchChange}
-            clearLabel={m.admin_posts_clear_search()}
-          />
-          <DropdownMenu
-            value={category === undefined ? "" : String(category)}
-            ariaLabel={m.admin_posts_filter_category()}
-            triggerClassName={FILTER_TRIGGER}
-            placement="bottom-start"
-            onChange={(value) =>
-              onCategoryChange(
-                value === "" ? undefined : value === "none" ? value : +value,
-              )
-            }
-            options={[
-              { value: "", label: m.admin_posts_filter_category_all() },
-              { value: "none", label: m.post_uncategorized() },
-              ...categories.map((item) => ({
-                value: String(item.id),
-                label: item.name,
-              })),
-            ]}
-          />
-          <DropdownMenu
-            value={tag === undefined ? "" : String(tag)}
-            ariaLabel={m.admin_posts_filter_tag()}
-            triggerClassName={FILTER_TRIGGER}
-            placement="bottom-start"
-            onChange={(value) => onTagChange(value === "" ? undefined : +value)}
-            options={[
-              { value: "", label: m.admin_posts_filter_tag_all() },
-              ...tags.map((item) => ({
-                value: String(item.id),
-                label: item.name,
-              })),
-            ]}
-          />
-          {onManageTaxonomy ? (
-            <IconButton
-              size="lg"
-              label={m.admin_posts_manage_taxonomy()}
-              aria-haspopup="dialog"
-              onClick={onManageTaxonomy}
+      {wide ? (
+        <div className="admin-frame-toolbar">
+          {tabs}
+          <div className="post-list-tools">
+            {search}
+            {filter}
+            <DropdownMenu
+              value={sortBy}
+              ariaLabel={m.admin_posts_sort_label()}
+              triggerClassName={SORT_TRIGGER}
+              placement="bottom-end"
+              onChange={(value) => onSortByChange(value as SortField)}
+              options={SORT_FIELDS.map((value) => ({
+                value,
+                label: sortLabel(value),
+              }))}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="admin-frame-toolbar">{tabs}</div>
+          <div className="post-list-tools">
+            {search}
+            {filter}
+          </div>
+        </>
+      )}
+      {activeCount > 0 ? (
+        <div className="post-list-chips">
+          {categoryName !== undefined ? (
+            <Badge
+              onRemove={() => onCategoryChange(undefined)}
+              removeLabel={m.admin_posts_filter_remove({ name: categoryName })}
             >
-              <Settings2 size={18} />
-            </IconButton>
+              {m.admin_posts_filter_chip_category({ name: categoryName })}
+            </Badge>
+          ) : null}
+          {tagName !== undefined ? (
+            <Badge
+              onRemove={() => onTagChange(undefined)}
+              removeLabel={m.admin_posts_filter_remove({ name: tagName })}
+            >
+              {m.admin_posts_filter_chip_tag({ name: tagName })}
+            </Badge>
+          ) : null}
+          {onClearFilters ? (
+            <Button variant="text" size="sm" onClick={onClearFilters}>
+              {m.admin_posts_clear_filters()}
+            </Button>
           ) : null}
         </div>
-        <div className="post-list-sort">
-          <span>{m.admin_posts_sort_label()}</span>
-          <DropdownMenu
-            value={sortBy}
-            ariaLabel={m.admin_posts_sort_label()}
-            onChange={(value) => onSortByChange(value as SortField)}
-            options={[
-              { value: "updatedAt", label: m.admin_posts_sort_recent_upd() },
-              { value: "publishedAt", label: m.admin_posts_sort_recent_pub() },
-            ]}
-          />
-        </div>
-      </div>
+      ) : null}
+      {wide ? (
+        <FloatingPopover
+          open={filterOpen}
+          anchor={filterButton}
+          placement="bottom-end"
+          returnFocusOnEscape
+          ignoreOutside={inMenu}
+          onDismiss={() => setFilterOpen(false)}
+          initialFocus={() =>
+            document.getElementById(panelId)?.querySelector("button") ?? null
+          }
+          id={panelId}
+          role="dialog"
+          aria-label={m.admin_posts_filter_button()}
+          className="posts-filter-popover"
+        >
+          {panel}
+        </FloatingPopover>
+      ) : (
+        <Sheet
+          open={filterOpen}
+          onClose={() => setFilterOpen(false)}
+          side="bottom"
+          id={panelId}
+          aria-labelledby={titleId}
+        >
+          <div className="posts-filter-sheet-head">
+            <SectionHeading
+              size="sm"
+              title={m.admin_posts_filter_button()}
+              titleProps={{ id: titleId }}
+              actions={
+                <IconButton
+                  size="md"
+                  label={m.common_close()}
+                  onClick={() => setFilterOpen(false)}
+                >
+                  <X size={18} />
+                </IconButton>
+              }
+            />
+          </div>
+          <div className="posts-filter-sheet-body">{panel}</div>
+        </Sheet>
+      )}
     </>
   );
 }

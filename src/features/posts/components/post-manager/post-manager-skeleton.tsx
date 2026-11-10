@@ -3,7 +3,9 @@ import {
   FrameTabsSkeleton,
 } from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
+import { WIDE_TOOLBAR_QUERY } from "./types";
 import "./post-manager.css";
 
 function PostRowSkeleton() {
@@ -33,6 +35,32 @@ export function PostManagerSkeleton() {
   );
 }
 
+/** The toolbar as it will be: tabs and tools in one row, or in two. */
+function PostsToolbarSkeleton() {
+  const wide = useMediaQuery(WIDE_TOOLBAR_QUERY);
+  const tabs = <FrameTabsSkeleton count={4} className="post-list-tabs" />;
+  const tools = (
+    <div className="post-list-tools">
+      <Skeleton className="post-list-search h-(--fuwari-field-height) rounded-xl" />
+      <Skeleton className="h-(--fuwari-field-height) w-24 rounded-xl" />
+      {wide ? (
+        <Skeleton className="h-(--fuwari-field-height) w-32 rounded-xl" />
+      ) : null}
+    </div>
+  );
+  return wide ? (
+    <div className="admin-frame-toolbar">
+      {tabs}
+      {tools}
+    </div>
+  ) : (
+    <>
+      <div className="admin-frame-toolbar">{tabs}</div>
+      {tools}
+    </>
+  );
+}
+
 export function PostManagerPageSkeleton() {
   return (
     <div
@@ -40,10 +68,7 @@ export function PostManagerPageSkeleton() {
       aria-busy="true"
     >
       <FrameHeaderSkeleton title={m.admin_posts_title()} />
-      <FrameTabsSkeleton count={4} />
-      <div className="post-list-controls">
-        <Skeleton className="h-11 w-80" />
-      </div>
+      <PostsToolbarSkeleton />
       <table className="post-list-table">
         <thead aria-hidden="true">
           <tr>

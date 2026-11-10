@@ -20,6 +20,40 @@
     vertical-align: middle;
     flex-shrink: 0;
   }
+  /* A chip: the label gives way to the remove button. */
+  .fuwari-badge[data-removable] {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding-inline-end: 3px;
+  }
+  .fuwari-badge-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fuwari-badge-remove {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: calc(var(--fuwari-badge-height, 24px) - 6px);
+    height: calc(var(--fuwari-badge-height, 24px) - 6px);
+    border-radius: 999px;
+    color: inherit;
+    opacity: 0.7;
+    transition:
+      background-color 180ms,
+      opacity 180ms;
+  }
+  .fuwari-badge-remove:hover {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+    opacity: 1;
+  }
+  .fuwari-badge-remove:focus-visible {
+    outline: 2px solid var(--fuwari-primary);
+    outline-offset: 1px;
+    opacity: 1;
+  }
   .fuwari-badge[data-size="sm"] {
     --fuwari-badge-height: 20px;
     --fuwari-badge-padding-x: 7px;

@@ -32,7 +32,8 @@ export interface SheetProps extends Omit<
   /** A dimmed backdrop that closes the sheet; modal sheets always have one. */
   backdrop?: boolean;
   backdropClassName?: string;
-  side?: "left" | "right";
+  /** `bottom` rises from the screen's lower edge across its full width. */
+  side?: "left" | "right" | "bottom";
   /** Width on wider screens: md 23rem, lg 25rem; full width on phones. */
   size?: "md" | "lg";
   as?: "div" | "aside";

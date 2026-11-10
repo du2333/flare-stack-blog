@@ -82,6 +82,22 @@ it("leaves Escape to a popup open inside it", () => {
   expect(screen.getByRole("dialog")).toBeTruthy();
 });
 
+it("rises from the bottom edge when its side is bottom", () => {
+  render(
+    createElement(Sheet, {
+      open: true,
+      onClose: () => {},
+      side: "bottom",
+      "aria-label": "Panel",
+      children: createElement("button", null, "First"),
+    }),
+  );
+
+  expect(
+    screen.getByRole("dialog", { name: "Panel" }).getAttribute("data-side"),
+  ).toBe("bottom");
+});
+
 it("keeps the page usable when non-modal", () => {
   openSheet(false);
 

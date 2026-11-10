@@ -24,6 +24,16 @@ export type StatusFilter = (typeof STATUS_FILTERS)[number];
 export const SORT_FIELDS = ["publishedAt", "updatedAt"] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
 
+/**
+ * From here the toolbar is one row with the sort beside the search; below it
+ * tabs and search take a row each and the sort lives in the filter sheet.
+ * Keep it aligned with the lg breakpoint in content-workspace.css.
+ */
+export const WIDE_TOOLBAR_QUERY = "(min-width: 1024px)";
+
+/** Where the pagination scrolls with the list instead of staying pinned. */
+export const PHONE_LAYOUT_QUERY = "(max-width: 767px)";
+
 /** A category id, or "none" for posts without one. */
 export type CategoryFilter = number | "none";
 
