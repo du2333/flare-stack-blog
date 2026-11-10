@@ -33,7 +33,7 @@ export function PairedAgents() {
   return (
     <section className="agent-skill-agents" aria-busy={isLoading}>
       <SectionHeading
-        level={3}
+        level={2}
         size="md"
         title={m.agent_skill_agents_title()}
         description={m.agent_skill_agents_hint()}

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeading } from "@/components/ui/page-heading";
+import { SettingsLead } from "@/features/config/components/admin/settings-lead";
 import { m } from "@/paraglide/messages";
 import { InstallStep } from "./install-step";
 import { PairedAgents } from "./paired-agents";
@@ -20,7 +21,7 @@ function Step({
   return (
     <li className="agent-skill-step">
       <SectionHeading
-        level={3}
+        level={2}
         size="md"
         title={
           <>
@@ -38,12 +39,8 @@ function Step({
 
 export function AgentSkillSection() {
   return (
-    <div className="agent-skill">
-      <SectionHeading
-        className="settings-section-heading"
-        title={m.agent_skill_title()}
-        description={m.agent_skill_intro()}
-      />
+    <div className="agent-skill settings-column">
+      <SettingsLead description={m.agent_skill_intro()} />
       <ol className="agent-skill-steps">
         <Step number={1} title={m.agent_skill_step_install()}>
           <InstallStep />

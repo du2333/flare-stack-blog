@@ -5,9 +5,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { SectionHeading } from "@/components/ui/page-heading";
 import { SearchField } from "@/components/ui/search-field";
 import { Select } from "@/components/ui/select";
+import { SettingsLead } from "@/features/config/components/admin/settings-lead";
 import { useContentMotion } from "@/hooks/use-motion";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
 import type { MutedUser } from "@/features/muted-users/muted-users.schema";
@@ -58,10 +58,8 @@ export function MutedUsersSettingsSection() {
     searchRef.current?.focus();
   };
   return (
-    <div className="muted-users">
-      <SectionHeading
-        className="settings-section-heading"
-        title={m.muted_users_title()}
+    <div className="muted-users settings-column">
+      <SettingsLead
         description={m.muted_manager_hint()}
         actions={
           <Badge tone="primary">
