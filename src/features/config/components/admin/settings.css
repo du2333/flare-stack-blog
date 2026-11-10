@@ -21,7 +21,8 @@
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   --settings-pad-y: calc(24 * var(--admin-unit));
-  padding: var(--settings-pad-y) var(--admin-frame-x);
+  padding: var(--settings-pad-y) var(--admin-scroll-end) var(--settings-pad-y)
+    var(--admin-frame-x);
   /* Keeps a focused field clear of the save bar. */
   scroll-padding-bottom: calc(120 * var(--admin-unit));
 }
@@ -55,9 +56,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  margin: auto calc(-1 * var(--admin-frame-x)) 0;
+  margin: auto calc(-1 * var(--admin-scroll-end)) 0
+    calc(-1 * var(--admin-frame-x));
   border-top: 1px solid var(--admin-rule);
-  padding: 14px var(--admin-frame-x);
+  padding: 14px var(--admin-scroll-end) 14px var(--admin-frame-x);
   background: var(--fuwari-card-bg);
   flex-shrink: 0;
   animation: settings-savebar-in 180ms ease-out;

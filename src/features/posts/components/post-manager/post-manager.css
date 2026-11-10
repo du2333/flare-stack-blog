@@ -342,6 +342,7 @@
   overflow-anchor: none;
   padding: 0 4px 4px;
   margin-inline: -4px;
+  margin-right: calc(-4px - var(--admin-scrollbar));
 }
 .post-list-table th {
   position: sticky;

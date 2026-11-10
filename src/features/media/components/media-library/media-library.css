@@ -588,6 +588,7 @@ aside.media-inspector[data-state="closing"] {
   overflow-anchor: none;
   padding: 4px 6px 8px 4px;
   margin: -4px -6px -8px -4px;
+  margin-right: calc(-6px - var(--admin-scrollbar));
 }
 .media-browser-content {
   position: relative;
@@ -607,6 +608,7 @@ aside.media-inspector {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   padding-right: 4px;
+  margin-right: calc(-1 * var(--admin-scrollbar));
 }
 .media-inspector-header {
   position: sticky;

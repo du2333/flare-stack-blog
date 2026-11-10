@@ -27,6 +27,15 @@
 .admin-frame {
   --admin-frame-x: calc(30 * var(--admin-unit));
   --admin-frame-top: calc(28 * var(--admin-unit));
+  /*
+   * A classic scrollbar (a mouse) takes its width from a scroller's content
+   * box, 10px as styles.css sets it; touch scrollbars overlay and take none.
+   * A padded scroller reserves that gutter and pads its right side by
+   * --admin-scroll-end, so its content and rules end at the frame inset like
+   * the title and tabs. An unpadded one grows right by --admin-scrollbar.
+   */
+  --admin-scrollbar: 0px;
+  --admin-scroll-end: calc(var(--admin-frame-x) - var(--admin-scrollbar));
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -35,6 +44,11 @@
   overflow: hidden;
   padding: var(--admin-frame-top) var(--admin-frame-x)
     var(--admin-frame-bottom, calc(20 * var(--admin-unit)));
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-frame {
+    --admin-scrollbar: 10px;
+  }
 }
 .admin-frame > .fuwari-page-header {
   margin-bottom: calc(20 * var(--admin-unit));

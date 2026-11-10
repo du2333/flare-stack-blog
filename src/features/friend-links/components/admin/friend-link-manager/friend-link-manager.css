@@ -33,7 +33,8 @@
 }
 .friend-queue-scroll {
   flex: 1;
-  padding: 0 var(--admin-frame-x) calc(12 * var(--admin-unit));
+  padding: 0 var(--admin-scroll-end) calc(12 * var(--admin-unit))
+    var(--admin-frame-x);
 }
 .friend-queue-item {
   display: flex;
@@ -100,7 +101,8 @@
 }
 .friend-detail-scroll {
   flex: 1;
-  padding: calc(30 * var(--admin-unit)) var(--admin-frame-x);
+  padding: calc(30 * var(--admin-unit)) var(--admin-scroll-end)
+    calc(30 * var(--admin-unit)) var(--admin-frame-x);
 }
 .friend-site-heading {
   display: flex;
@@ -272,7 +274,7 @@
     flex-shrink: 0;
   }
   .friend-detail-scroll {
-    padding: 10px var(--admin-frame-x) 20px;
+    padding: 10px var(--admin-scroll-end) 20px var(--admin-frame-x);
   }
   .friend-site-heading {
     gap: 16px;

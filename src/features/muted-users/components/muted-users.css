@@ -1,6 +1,9 @@
 .settings-workspace[data-section="muted-users"] .settings-body {
   display: flex;
   overflow: hidden;
+  /* It does not scroll; the list inside does, and its scrollbar takes the right inset. */
+  scrollbar-gutter: auto;
+  padding-right: var(--admin-frame-x);
 }
 .muted-users {
   display: flex;
@@ -39,6 +42,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  margin-right: calc(-1 * var(--admin-scrollbar));
 }
 .muted-row {
   display: flex;
