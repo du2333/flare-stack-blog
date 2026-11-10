@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { NavOption, UserInfo } from "./layout-props";
+import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
-import { LanguageSwitcher } from "./language-switcher";
-import { PublicNavLink } from "./public-nav-link";
-import { MobileMenu } from "./mobile-menu";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { PublicNavLink } from "@/components/layout/public-nav-link";
+import { MobileMenu } from "@/components/layout/mobile-menu";
+import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
 import "./navbar.css";
 
 interface NavbarProps {
@@ -17,18 +18,12 @@ interface NavbarProps {
   isLoading?: boolean;
   user?: UserInfo;
   logout: () => Promise<void>;
-  bannerHeightVh: number;
 }
 
-export function Navbar({
-  user,
-  navOptions,
-  isLoading,
-  logout,
-  bannerHeightVh,
-}: NavbarProps) {
+export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const pathname = useLocation({ select: (location) => location.pathname });
+  const firstScreenHeight = useFirstScreenHeight();
   const [isHidden, setIsHidden] = useState(false);
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
@@ -58,10 +53,7 @@ export function Navbar({
         setIsHidden(false);
         return;
       }
-      const threshold = Math.max(
-        72,
-        (window.innerHeight * bannerHeightVh) / 100 - 144,
-      );
+      const threshold = Math.max(72, firstScreenHeight() - 144);
       if (y < threshold) {
         travel = 0;
         setIsHidden(false);
@@ -76,7 +68,7 @@ export function Navbar({
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [bannerHeightVh, open]);
+  }, [firstScreenHeight, open]);
 
   useEffect(() => {
     if (!open) return;
