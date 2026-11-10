@@ -89,6 +89,12 @@ export const PostRevisionListItemSchema = PostRevisionSelectSchema.pick({
 }).extend({
   title: z.string(),
   summary: z.string().nullable(),
+  contentLength: z
+    .number()
+    .int()
+    .describe(
+      "Characters of text in the revision's body, not counting whitespace.",
+    ),
 });
 
 export type PostRevisionSnapshot = z.infer<typeof PostRevisionSnapshotSchema>;
