@@ -7,6 +7,7 @@ import {
   isMediaGone,
   syncPostMedia,
 } from "@/features/posts/data/post-media.data";
+import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import {
@@ -467,7 +468,7 @@ export async function listAdminPostsPage(
 ) {
   // The list filters and counts in SQL, which compares fingerprints.
   await UnpublishedChangesService.settleFingerprints(context.db);
-  const [items, statusCounts] = await Promise.all([
+  const [rows, statusCounts] = await Promise.all([
     getPosts(context, data),
     PostRepo.getAdminPostStatusCounts(context.db, {
       publicOnly: data.publicOnly,
@@ -490,6 +491,21 @@ export async function listAdminPostsPage(
         : data.status
           ? 0
           : draftTotal + publishedTotal;
+  // The assignments the rows are listed under: the public ones for the public
+  // taxonomy scope, the draft's otherwise. One batched read for the page.
+  const ids = rows.map((row) => row.id);
+  const assignments =
+    data.taxonomy?.scope === "public"
+      ? await PublicAssignmentRepo.findPublicAssignments(context.db, ids)
+      : await PostRepo.findCurrentAssignments(context.db, ids);
+  const items = rows.map(({ categoryId: _categoryId, ...row }) => ({
+    ...row,
+    category: assignments.get(row.id)?.category ?? null,
+    tags: (assignments.get(row.id)?.tags ?? []).map(({ id, name }) => ({
+      id,
+      name,
+    })),
+  }));
   return { items, total, statusCounts };
 }
 

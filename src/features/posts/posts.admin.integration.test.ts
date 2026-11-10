@@ -15,6 +15,7 @@ import { createApiContext } from "@/lib/orpc/create-context";
 import { openAPIHandler } from "@/lib/orpc/openapi-handler";
 import { unwrap } from "@/lib/errors";
 import * as PostService from "@/features/posts/services/posts.service";
+import * as TagService from "@/features/tags/tags.service";
 
 /**
  * Exercises the Admin HTTP API the way an external editor (script, agent,
@@ -67,6 +68,8 @@ async function listPosts(apiKey: string, query: string) {
       slug: string;
       publicSlug: string | null;
       contentJson?: unknown;
+      category: { id: number; name: string } | null;
+      tags: Array<{ id: number; name: string }>;
     }>;
     total: number;
     statusCounts: { draft: number; published: number };
@@ -584,5 +587,97 @@ describe("Admin posts list for external editors", () => {
     expect(uncategorized.items.map((item) => item.id)).toEqual([tagged.id]);
     expect(both.total).toBe(0);
     expect(both.statusCounts).toMatchObject({ draft: 0, published: 0 });
+  });
+
+  it("lists each post's draft category and tags, tags by name", async () => {
+    const apiKey = await seedAdminApiKey();
+    const context = createAdminTestContext();
+    const [category] = await context.db
+      .insert(CategoriesTable)
+      .values({ name: "Notes" })
+      .returning();
+    const [rust, go, zig] = await context.db
+      .insert(TagsTable)
+      .values([{ name: "Rust" }, { name: "Go" }, { name: "Zig" }])
+      .returning();
+    const [both, bare, tagOnly] = await context.db
+      .insert(PostsTable)
+      .values([
+        { title: "Both", slug: "both", categoryId: category.id },
+        { title: "Bare", slug: "bare" },
+        { title: "Tag only", slug: "tag-only" },
+      ])
+      .returning();
+    await context.db.insert(PostTagsTable).values([
+      { postId: both.id, tagId: rust.id },
+      { postId: both.id, tagId: go.id },
+      { postId: tagOnly.id, tagId: zig.id },
+    ]);
+
+    const page = await listPosts(apiKey, "sortBy=id&sortDir=ASC");
+
+    expect(
+      page.items.map(({ id, category, tags }) => ({ id, category, tags })),
+    ).toEqual([
+      {
+        id: both.id,
+        category: { id: category.id, name: "Notes" },
+        tags: [
+          { id: go.id, name: "Go" },
+          { id: rust.id, name: "Rust" },
+        ],
+      },
+      { id: bare.id, category: null, tags: [] },
+      {
+        id: tagOnly.id,
+        category: null,
+        tags: [{ id: zig.id, name: "Zig" }],
+      },
+    ]);
+  });
+
+  it("lists the published assignments in the public taxonomy scope", async () => {
+    const apiKey = await seedAdminApiKey();
+    const context = createAdminTestContext();
+    const [live, draft] = await context.db
+      .insert(CategoriesTable)
+      .values([{ name: "Live" }, { name: "Draft" }])
+      .returning();
+    const [liveTag, draftTag] = await context.db
+      .insert(TagsTable)
+      .values([{ name: "live-tag" }, { name: "draft-tag" }])
+      .returning();
+    const id = await createPostWithBody(context, 0);
+    const assign = async (categoryId: number, tagId: number) => {
+      unwrap(
+        await PostService.updatePost(context, { id, data: { categoryId } }),
+      );
+      unwrap(
+        await TagService.setPostTags(context, { postId: id, tagIds: [tagId] }),
+      );
+    };
+    await assign(live.id, liveTag.id);
+    unwrap(await PostService.publishPost(context, { id }));
+    await assign(draft.id, draftTag.id);
+
+    const current = await listPosts(
+      apiKey,
+      `taxonomy[kind]=category&taxonomy[id]=${draft.id}&taxonomy[scope]=current`,
+    );
+    const published = await listPosts(
+      apiKey,
+      `taxonomy[kind]=category&taxonomy[id]=${live.id}&taxonomy[scope]=public`,
+    );
+
+    expect(current.items.map((item) => item.id)).toEqual([id]);
+    expect(current.items[0]).toMatchObject({
+      category: { id: draft.id, name: "Draft" },
+      tags: [{ id: draftTag.id, name: "draft-tag" }],
+    });
+    expect(published.items.map((item) => item.id)).toEqual([id]);
+    expect(published.items[0]).toMatchObject({
+      category: { id: live.id, name: "Live" },
+      tags: [{ id: liveTag.id, name: "live-tag" }],
+    });
   });
 });

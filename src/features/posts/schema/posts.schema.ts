@@ -476,6 +476,14 @@ const AdminPostListItemSchema = z.object({
   contentJson: NullableJsonContentSchema.optional().describe(
     "Only returned when the request asks for includeContent=true outside the public taxonomy scope.",
   ),
+  category: PublicCategorySchema.nullable().describe(
+    "The category the post is listed under, null when it has none. The draft's category, or the published one when the request's taxonomy.scope is public.",
+  ),
+  tags: z
+    .array(TagSelectSchema.pick({ id: true, name: true }))
+    .describe(
+      "The tags the post is listed under, empty when it has none. The draft's tags, or the published ones when the request's taxonomy.scope is public.",
+    ),
   contentMarkdown: ContentMarkdownOutputSchema,
   saveToken: SaveTokenSchema.optional().describe(
     "Returned together with the body (includeContent=true). Opaque token that every save, publish or unpublish replaces; state it as saveToken when saving or publishing to refuse an Edit Conflict.",

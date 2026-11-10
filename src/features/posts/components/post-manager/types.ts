@@ -14,6 +14,9 @@ export type AdminPostListItem = Omit<
 > & {
   /** A published post whose draft differs from what is live. */
   hasUnpublishedChanges: boolean;
+  /** The draft's Category and Tags (Current Assignment). */
+  category: { id: number; name: string } | null;
+  tags: Array<{ id: number; name: string }>;
 };
 
 /** Status filter options for posts list */
