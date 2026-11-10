@@ -14,7 +14,7 @@
     background: color-mix(
       in srgb,
       var(--fuwari-btn-regular-bg) 35%,
-      var(--fuwari-card-bg)
+      var(--theme-surface)
     );
   }
   .fuwari-segment {
@@ -45,7 +45,7 @@
     color: var(--fuwari-fg-50);
   }
   .fuwari-segment:hover:not(:disabled) {
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-segmented:not([data-track])
     > .fuwari-segment:hover:not(
@@ -58,11 +58,11 @@
   .fuwari-segmented
     > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
     background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
     font-weight: 500;
   }
   .fuwari-segment:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: 1px;
   }
   .fuwari-segment:disabled {

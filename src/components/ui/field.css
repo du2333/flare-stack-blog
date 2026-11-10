@@ -14,7 +14,7 @@
     background: color-mix(
       in srgb,
       var(--fuwari-fg-50) 10%,
-      var(--fuwari-card-bg)
+      var(--theme-surface)
     );
     color: var(--fuwari-fg);
     font: inherit;
@@ -36,15 +36,15 @@
     background: color-mix(
       in srgb,
       var(--fuwari-fg-50) 15%,
-      var(--fuwari-card-bg)
+      var(--theme-surface)
     );
   }
   .fuwari-input:focus,
   .fuwari-field-shell:focus-within {
     background: var(--fuwari-btn-regular-bg);
-    border-color: color-mix(in srgb, var(--fuwari-primary) 55%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
     box-shadow: 0 0 0 3px
-      color-mix(in srgb, var(--fuwari-primary) 12%, transparent);
+      color-mix(in srgb, var(--theme-accent) 12%, transparent);
   }
   .fuwari-input[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--fuwari-danger-fg) 60%, transparent);
@@ -137,11 +137,11 @@
       background-color 180ms;
   }
   .fuwari-field-button:hover {
-    color: var(--fuwari-primary);
-    background: color-mix(in srgb, var(--fuwari-primary) 8%, transparent);
+    color: var(--theme-accent);
+    background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
   }
   .fuwari-field-button:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: -3px;
   }
   .fuwari-field-button:disabled {
@@ -222,7 +222,7 @@
     opacity: 0.5;
   }
   .fuwari-switch:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: 2px;
   }
   .fuwari-switch-track {
@@ -235,7 +235,7 @@
     transition: background-color 200ms;
   }
   .fuwari-switch[aria-checked="true"] > .fuwari-switch-track {
-    background: var(--fuwari-primary);
+    background: var(--theme-accent);
   }
   .fuwari-switch-thumb {
     position: absolute;
@@ -247,7 +247,7 @@
     place-items: center;
     border-radius: 50%;
     background: white;
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
     transition: transform 250ms var(--fuwari-motion-ease, ease);
   }
