@@ -141,6 +141,7 @@
 }
 .media-table-scroll {
   overflow-x: auto;
+  container: media-list / inline-size;
 }
 .media-table {
   width: 100%;
@@ -196,9 +197,57 @@
   height: calc(52 * var(--admin-unit));
   border-radius: calc(6 * var(--admin-unit));
 }
-.media-file > .media-name {
+.media-file-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.media-file-text > .media-name {
   font-size: calc(13 * var(--admin-unit));
   color: var(--fuwari-fg-75);
+}
+.media-file-meta {
+  display: none;
+}
+.media-table td:nth-child(3) {
+  white-space: nowrap;
+}
+/* A table too narrow for five columns drops 尺寸 and 上传时间 into a second
+   line under the name, and keeps 大小 and 引用 on one line each. */
+@container media-list (max-width: 599px) {
+  .media-table th,
+  .media-table td {
+    padding-inline: calc(6 * var(--admin-unit));
+  }
+  .media-table th:is(:nth-child(2), :nth-child(4)),
+  .media-table td:is(:nth-child(2), :nth-child(4)) {
+    display: none;
+  }
+  .media-table th:first-child {
+    width: auto;
+  }
+  .media-table th:nth-child(3) {
+    width: calc(76 * var(--admin-unit));
+  }
+  .media-table th:last-child {
+    width: calc(92 * var(--admin-unit));
+  }
+  .media-table td:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .media-file-meta {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: calc(8 * var(--admin-unit));
+    margin-top: calc(2 * var(--admin-unit));
+    font-size: calc(12 * var(--admin-unit));
+    line-height: 1.4;
+    color: var(--fuwari-fg-50);
+    white-space: nowrap;
+  }
 }
 /* A long name gives way in the middle: the head takes the ellipsis, the last
    characters and the extension stay. */
@@ -431,9 +480,6 @@ aside.media-inspector {
   .media-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: calc(22 * var(--admin-unit)) calc(14 * var(--admin-unit));
-  }
-  .media-table {
-    min-width: calc(560 * var(--admin-unit));
   }
   .media-file {
     gap: calc(8 * var(--admin-unit));
