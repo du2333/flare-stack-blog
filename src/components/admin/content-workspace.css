@@ -57,6 +57,41 @@
     --admin-scrollbar: 10px;
   }
 }
+/*
+ * The same condition, negated: with no classic scrollbar there is no gutter to
+ * reserve. styles.css gives every scrollbar 10px, which touch emulation keeps,
+ * so these scrollers drop their scrollbar and the gutter with it. :root lifts
+ * the rule over the page rules that declare scrollbar-gutter.
+ */
+@media not all and (hover: hover) and (pointer: fine) {
+  :root
+    :is(
+      .settings-body,
+      .settings-key-list,
+      .muted-list-scroll,
+      .friend-queue-scroll,
+      .friend-detail-scroll,
+      .post-list-scroll,
+      .media-browser,
+      .media-inspector
+    ) {
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
+  }
+  :root
+    :is(
+      .settings-body,
+      .settings-key-list,
+      .muted-list-scroll,
+      .friend-queue-scroll,
+      .friend-detail-scroll,
+      .post-list-scroll,
+      .media-browser,
+      .media-inspector
+    )::-webkit-scrollbar {
+    display: none;
+  }
+}
 .admin-frame > .fuwari-page-header {
   margin-bottom: calc(20 * var(--admin-unit));
 }

@@ -601,6 +601,7 @@
   .dashboard-hero-actions {
     margin-top: 18px;
   }
+  .dashboard-hero,
   .dashboard-grid .dashboard-section,
   .dashboard-stats {
     margin-inline: 4px;

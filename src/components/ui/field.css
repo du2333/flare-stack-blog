@@ -262,6 +262,13 @@
     .fuwari-field-shell {
       font-size: max(16px, var(--fuwari-field-font-size, 15px));
     }
+    /* A text input grows with that font (line 1.5 + 9px padding + 1px border, twice); a shell must reach the same height. */
+    .fuwari-field-shell {
+      min-height: max(
+        var(--fuwari-field-height, 44px),
+        calc(1.5 * max(16px, var(--fuwari-field-font-size, 15px)) + 20px)
+      );
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .fuwari-input,
