@@ -161,86 +161,6 @@
   box-shadow: 0 8px 32px #00000012;
   transform-origin: top right;
 }
-.public-menu-links {
-  display: flex;
-  flex-direction: column;
-}
-.public-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 44px;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  color: var(--fuwari-fg-75);
-  font-size: 14px;
-  text-align: left;
-  transition:
-    background-color 180ms,
-    color 180ms;
-}
-.public-menu-item:hover,
-.public-menu-active {
-  color: var(--theme-accent);
-  background: var(--fuwari-btn-regular-bg);
-}
-.public-menu-item svg {
-  flex-shrink: 0;
-}
-.public-menu-item:disabled {
-  opacity: 0.5;
-}
-.public-menu-identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  color: var(--fuwari-fg);
-  font-weight: 700;
-}
-.public-menu-identity img {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-.public-menu-identity span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.public-menu-logout {
-  color: var(--fuwari-danger-fg);
-}
-.public-menu-logout:hover,
-.public-menu-logout:focus-visible {
-  color: var(--fuwari-danger-fg);
-  background: var(--fuwari-danger-bg);
-}
-.public-menu-preferences {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 8px 6px;
-  padding: 8px 0;
-  border-block: 1px solid
-    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
-}
-.public-menu-colour-scheme {
-  min-height: 44px;
-  padding: 8px !important;
-  font-size: 12px !important;
-  border-radius: 8px;
-}
-.public-menu-languages {
-  --fuwari-segment-height: 44px;
-  --fuwari-segment-padding-x: 8px;
-}
-.public-menu-loading {
-  padding: 16px;
-}
 @media (max-width: 1279px) {
   .public-navbar {
     gap: 12px;
@@ -291,13 +211,7 @@
   .public-navbar-wrapper,
   .public-nav-link,
   .public-nav-search,
-  .public-navbar .public-tool-button,
-  .public-menu-item {
+  .public-navbar .public-tool-button {
     transition: none;
   }
-}
-.public-menu-colour-scheme {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
