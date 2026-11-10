@@ -1,12 +1,14 @@
 import { formatPublicPostDate } from "@/features/posts/utils/format-public-post-date";
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Calendar, Edit, Tag } from "lucide-react";
+import { BookOpen, Calendar, Edit, Tag, type LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import {
   withCategoryFilter,
   withTagFilter,
   withUncategorizedFilter,
 } from "@/features/posts/utils/post-public-search";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -15,7 +17,39 @@ interface PostMetaProps {
   className?: string;
 }
 
+/**
+ * One item of a Post's meta: its icon block, then its text. In the inline
+ * form the text stands alone, and the row (`fuwari-meta-inline`) sets a dot
+ * before it.
+ */
+export function MetaItem({
+  icon: Icon,
+  className = "flex items-center",
+  children,
+}: {
+  icon: LucideIcon;
+  className?: string;
+  children: ReactNode;
+}) {
+  const { meta } = useThemeRecipe();
+  return (
+    <div className={className}>
+      {meta === "chips" ? (
+        <div className="fuwari-meta-icon">
+          <Icon strokeWidth={1.5} size={20} />
+        </div>
+      ) : null}
+      {children}
+    </div>
+  );
+}
+
 export function PostMeta({ post, className }: PostMetaProps) {
+  const inline = useThemeRecipe().meta === "inline";
+  // Plain text drops the hover pad, which would run into the dot before it.
+  const linkClass = inline
+    ? "fuwari-meta-text transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
+    : "fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap";
   const published = post.publishedAt;
   const updated = post.updatedAt;
   const isUpdated = Boolean(
@@ -25,47 +59,40 @@ export function PostMeta({ post, className }: PostMetaProps) {
   return (
     <div
       className={cn(
-        "flex flex-wrap text-black/50 dark:text-white/40 items-center gap-4 gap-x-4 gap-y-2",
+        inline
+          ? "flex flex-wrap text-black/50 dark:text-white/40 items-center gap-x-2 gap-y-1 fuwari-meta-inline"
+          : "flex flex-wrap text-black/50 dark:text-white/40 items-center gap-4 gap-x-4 gap-y-2",
         className,
       )}
     >
       {/* Publish date */}
-      <div className="flex items-center">
-        <div className="fuwari-meta-icon">
-          <Calendar strokeWidth={1.5} size={20} />
-        </div>
+      <MetaItem icon={Calendar}>
         <time
           dateTime={published?.toISOString()}
           className="fuwari-meta-text fuwari-text-50"
         >
           {formatPublicPostDate(published)}
         </time>
-      </div>
+      </MetaItem>
 
       {/* Update date */}
       {isUpdated && (
-        <div className="flex items-center">
-          <div className="fuwari-meta-icon">
-            <Edit strokeWidth={1.5} size={20} />
-          </div>
+        <MetaItem icon={Edit}>
           <time
             dateTime={updated?.toISOString()}
             className="fuwari-meta-text fuwari-text-50"
           >
             {formatPublicPostDate(updated)}
           </time>
-        </div>
+        </MetaItem>
       )}
 
-      <div className="flex items-center">
-        <div className="fuwari-meta-icon">
-          <BookOpen strokeWidth={1.5} size={20} />
-        </div>
+      <MetaItem icon={BookOpen}>
         {post.category ? (
           <Link
             to="/posts"
             search={withCategoryFilter(post.category?.name)}
-            className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
+            className={linkClass}
           >
             {post.category.name}
           </Link>
@@ -73,17 +100,14 @@ export function PostMeta({ post, className }: PostMetaProps) {
           <Link
             to="/posts"
             search={withUncategorizedFilter()}
-            className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
+            className={linkClass}
           >
             {m.post_uncategorized()}
           </Link>
         )}
-      </div>
+      </MetaItem>
 
-      <div className="flex items-center">
-        <div className="fuwari-meta-icon">
-          <Tag strokeWidth={1.5} size={20} />
-        </div>
+      <MetaItem icon={Tag}>
         <div className="flex flex-row flex-nowrap items-center gap-x-1.5">
           {post.tags && post.tags.length > 0 ? (
             post.tags.map((tag, i) => (
@@ -96,7 +120,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
                 <Link
                   to="/posts"
                   search={withTagFilter(tag.name)}
-                  className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 transition fuwari-text-50 hover:text-(--theme-accent) whitespace-nowrap"
+                  className={linkClass}
                 >
                   {tag.name}
                 </Link>
@@ -108,7 +132,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
             </span>
           )}
         </div>
-      </div>
+      </MetaItem>
     </div>
   );
 }

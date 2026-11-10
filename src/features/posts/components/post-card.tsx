@@ -20,7 +20,9 @@ import {
 } from "@/features/posts/utils/post-public-search";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatPublicPostDate } from "@/features/posts/utils/format-public-post-date";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { m } from "@/paraglide/messages";
+import { MetaItem } from "./post-meta";
 
 interface PostCardProps {
   post: PostItem;
@@ -32,6 +34,11 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
   const tagNames = (post.tags ?? []).map((t) => t.name);
   const hasCover = Boolean(post.cover);
   const coverWidth = "28%";
+  const inlineMeta = useThemeRecipe().meta === "inline";
+  // Plain text drops the hover pad, which would run into the dot before it.
+  const metaLinkClass = inlineMeta
+    ? "fuwari-meta-text transition hover:text-(--theme-accent)"
+    : "fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)";
 
   return (
     <div
@@ -74,37 +81,34 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           <ChevronRight className="text-(--theme-accent) text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" />
         </Link>
 
-        <div className="flex flex-wrap fuwari-text-50 items-center gap-4 gap-x-4 gap-y-2 mb-4">
-          <div className="flex items-center">
-            <div className="fuwari-meta-icon">
-              <Calendar size={20} strokeWidth={1.5} />
-            </div>
+        <div
+          className={
+            inlineMeta
+              ? "flex flex-wrap fuwari-text-50 items-center gap-x-2 gap-y-1 mb-3 fuwari-meta-inline"
+              : "flex flex-wrap fuwari-text-50 items-center gap-4 gap-x-4 gap-y-2 mb-4"
+          }
+        >
+          <MetaItem icon={Calendar}>
             <time
               dateTime={post.publishedAt?.toISOString()}
               className="fuwari-meta-text"
             >
               {formatPublicPostDate(post.publishedAt)}
             </time>
-          </div>
+          </MetaItem>
           {post.category ? (
-            <div className="flex items-center">
-              <div className="fuwari-meta-icon">
-                <BookOpen size={20} strokeWidth={1.5} />
-              </div>
+            <MetaItem icon={BookOpen}>
               <Link
                 to="/posts"
                 search={withCategoryFilter(post.category?.name)}
-                className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)"
+                className={metaLinkClass}
               >
                 {post.category.name}
               </Link>
-            </div>
+            </MetaItem>
           ) : null}
           {tagNames.length > 0 && (
-            <div className="hidden md:flex items-center">
-              <div className="fuwari-meta-icon">
-                <Tag size={20} strokeWidth={1.5} />
-              </div>
+            <MetaItem icon={Tag} className="hidden md:flex items-center">
               <div className="flex flex-row flex-wrap items-center gap-x-1.5">
                 {tagNames.map((name, i) => (
                   <span key={name} className="flex items-center">
@@ -116,14 +120,14 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
                     <Link
                       to="/posts"
                       search={withTagFilter(name)}
-                      className="fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)"
+                      className={metaLinkClass}
                     >
                       {name}
                     </Link>
                   </span>
                 ))}
               </div>
-            </div>
+            </MetaItem>
           )}
         </div>
 
@@ -137,14 +141,20 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
           {post.summary ?? ""}
         </div>
 
-        <div className="text-sm fuwari-text-50 flex items-center gap-4 [&_svg]:shrink-0">
+        <div
+          className={
+            inlineMeta
+              ? "text-sm fuwari-text-50 flex items-center gap-2 fuwari-meta-inline"
+              : "text-sm fuwari-text-50 flex items-center gap-4 [&_svg]:shrink-0"
+          }
+        >
           <span className="inline-flex items-center gap-1.5">
-            <Clock size={14} />
+            {inlineMeta ? null : <Clock size={14} />}
             {m.read_time({ count: post.readTimeInMinutes })}
           </span>
           {post.viewCount !== undefined && (
             <span className="inline-flex items-center gap-1.5">
-              <Eye size={14} />
+              {inlineMeta ? null : <Eye size={14} />}
               {m.post_views_count({ count: post.viewCount })}
             </span>
           )}
