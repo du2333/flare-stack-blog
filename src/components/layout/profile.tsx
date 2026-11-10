@@ -14,7 +14,7 @@ export function Profile() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
 
   return (
-    <div className="fuwari-card-base p-4">
+    <div className="fuwari-card-base fuwari-card-widget p-4">
       <Link
         to="/"
         className="group block relative mx-auto mb-3 max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"
@@ -36,7 +36,7 @@ export function Profile() {
         </div>
         <div
           className="h-1 w-5 rounded-full mx-auto mb-2"
-          style={{ backgroundColor: "var(--fuwari-primary)" }}
+          style={{ backgroundColor: "var(--theme-accent)" }}
         />
         <div className="fuwari-text-50 text-sm mb-2.5">
           {siteConfig.description}

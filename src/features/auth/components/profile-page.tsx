@@ -44,7 +44,7 @@ export function ProfilePage({
   const pickAvatarRef = useRef<HTMLButtonElement>(null);
   const image = profileForm.image;
   return (
-    <section className="account-page fuwari-card-base">
+    <section className="account-page fuwari-card-base fuwari-card-standalone">
       <PublicPageHeading
         title={m.account_title()}
         back={{ to: "/", label: m.account_back() }}

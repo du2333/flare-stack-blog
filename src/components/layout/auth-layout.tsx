@@ -11,7 +11,7 @@ export function AuthLayout({ onBack, children }: AuthLayoutProps) {
         className="auth-frame w-full max-w-md fuwari-onload-animation"
         style={{ animationDelay: "calc(var(--fuwari-content-delay) + 50ms)" }}
       >
-        <div className="auth-card fuwari-card-base p-8 md:p-10 w-full">
+        <div className="auth-card fuwari-card-base fuwari-card-standalone py-8 px-(--theme-standalone-pad-x-narrow,--spacing(8)) sm:px-8 md:p-10 w-full">
           <Button
             variant="plain"
             size="sm"

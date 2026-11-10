@@ -24,7 +24,7 @@ export function MomentsPage({ moments, page, totalPages }: MomentsPageProps) {
       <h1 className="sr-only">{m.moments_title()}</h1>
       {isAdmin ? <MomentComposer /> : null}
       {moments.length === 0 ? (
-        <div className="fuwari-card-base p-6">
+        <div className="fuwari-card-base fuwari-card-panel p-6">
           <EmptyState
             icon={MessageCircle}
             title={m.moments_empty_title()}

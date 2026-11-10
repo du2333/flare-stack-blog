@@ -15,7 +15,7 @@ export function StatusPage({
   return (
     <div className="site-status-frame">
       <section
-        className="site-status fuwari-card-base fuwari-content-enter"
+        className="site-status fuwari-card-base fuwari-card-standalone fuwari-content-enter"
         data-kind={code ? "error" : "neutral"}
       >
         {code ? <p className="site-status-code">{code}</p> : null}

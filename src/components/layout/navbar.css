@@ -31,7 +31,7 @@
   min-width: 0;
   max-width: 200px;
   flex-shrink: 0;
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   font-size: 16px;
   font-weight: 700;
   border-radius: 10px;
@@ -71,7 +71,7 @@
 .public-nav-active,
 .public-nav-link:hover {
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .public-nav-tools,
 .public-desktop-tools {
@@ -131,7 +131,7 @@
 .public-tool-button[aria-expanded="true"],
 .public-nav-search:hover {
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .public-navbar .public-mobile-trigger {
   display: none;
@@ -142,7 +142,7 @@
     .fuwari-icon-button,
     .fuwari-segment
   ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .public-navigation-panel {
@@ -157,7 +157,7 @@
   overscroll-behavior: contain;
   padding: 8px;
   border-radius: 16px;
-  background: var(--fuwari-card-bg);
+  background: var(--theme-raised);
   box-shadow: 0 8px 32px #00000012;
   transform-origin: top right;
 }
@@ -182,7 +182,7 @@
 }
 .public-menu-item:hover,
 .public-menu-active {
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   background: var(--fuwari-btn-regular-bg);
 }
 .public-menu-item svg {
@@ -226,7 +226,7 @@
   margin: 8px 6px;
   padding: 8px 0;
   border-block: 1px solid
-    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
 }
 .public-menu-theme {
   min-height: 44px;

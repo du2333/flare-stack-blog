@@ -41,7 +41,7 @@ export function MomentTime({
     <Link
       to="/moments/$id"
       params={{ id: String(moment.id) }}
-      className="fuwari-expand-animation -mx-1.5 -my-1 w-fit rounded-md px-1.5 py-1 hover:text-(--fuwari-primary)"
+      className="fuwari-expand-animation -mx-1.5 -my-1 w-fit rounded-md px-1.5 py-1 hover:text-(--theme-accent)"
     >
       <MomentTimeText postedAt={moment.postedAt} className={className} />
     </Link>

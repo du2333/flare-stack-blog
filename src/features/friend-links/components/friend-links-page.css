@@ -1,5 +1,5 @@
 .friends-page {
-  padding: 32px;
+  padding: 32px var(--theme-panel-pad-x, 32px);
 }
 .friends-heading {
   display: grid;
@@ -7,10 +7,12 @@
   gap: 10px 20px;
   padding-bottom: 26px;
   border-bottom: 1px solid
-    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
 }
 .friends-heading h1 {
   position: relative;
+  font-family: var(--theme-heading-font);
+  letter-spacing: var(--theme-heading-tracking);
   padding-left: 22px;
   color: var(--fuwari-fg);
   font-size: 30px;
@@ -25,7 +27,7 @@
   height: 0.95em;
   width: 5px;
   border-radius: 4px;
-  background: var(--fuwari-primary);
+  background: var(--theme-accent);
 }
 .friends-heading p {
   grid-column: 1 / -1;
@@ -65,7 +67,7 @@
   background: var(--fuwari-btn-plain-bg-hover);
 }
 .friend-entry:focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .friend-entry:active {
@@ -80,7 +82,7 @@
   overflow: hidden;
   border-radius: 16px;
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .friend-avatar img {
   width: 100%;
@@ -111,7 +113,7 @@
 }
 .friend-entry:hover .friend-name,
 .friend-entry:focus-visible .friend-name {
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
 }
 .friend-entry:hover svg,
 .friend-entry:focus-visible svg {
@@ -130,7 +132,7 @@
 }
 @media (max-width: 639px) {
   .friends-page {
-    padding: 24px;
+    padding: 24px var(--theme-panel-pad-x, 24px);
   }
   .friends-heading {
     gap: 8px 12px;

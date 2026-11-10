@@ -28,7 +28,7 @@
   height: 56px;
   overflow: hidden;
   border-radius: 14px;
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   background: var(--fuwari-btn-regular-bg);
 }
 .friend-application-icon img {
@@ -52,7 +52,7 @@
 }
 .friend-application
   :is(a, button):not(.fuwari-button, .fuwari-icon-button):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .friend-application-hint {
@@ -100,7 +100,7 @@
   padding-block: 24px;
   margin-top: 20px;
   border-block: 1px solid
-    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
 }
 .friend-application-site > div {
   min-width: 0;
@@ -113,7 +113,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--fuwari-primary);
+  color: var(--theme-accent);
   font-size: 14px;
   margin-top: 4px;
   overflow-wrap: anywhere;

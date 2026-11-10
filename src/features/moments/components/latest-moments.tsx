@@ -101,15 +101,15 @@ export function LatestMoments() {
   if (moments.length === 0) return null;
 
   return (
-    <div className="fuwari-card-base pb-3">
-      <div className="relative mt-4 mb-2 ml-6 text-lg font-bold">
+    <div className="fuwari-card-base fuwari-card-widget pb-3">
+      <div className="fuwari-widget-title relative mt-4 mb-2 ml-6 font-bold">
         <span
           className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md"
-          style={{ backgroundColor: "var(--fuwari-primary)" }}
+          style={{ backgroundColor: "var(--theme-accent)" }}
         />
         <Link
           to="/moments"
-          className="inline-flex items-center gap-1 fuwari-text-90 transition hover:text-(--fuwari-primary)"
+          className="inline-flex items-center gap-1 text-(--theme-widget-title-color) transition hover:text-(--theme-accent)"
         >
           {m.moments_latest_title()}
           <ChevronRight size={20} aria-hidden="true" />

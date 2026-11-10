@@ -39,11 +39,11 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
   const wordCount = post.readTimeInMinutes * 300;
 
   return (
-    <div className="relative flex flex-col rounded-(--fuwari-radius-large) py-1 md:py-0 md:bg-transparent gap-4 mb-4 w-full">
+    <div className="relative flex flex-col rounded-(--theme-card-radius) py-1 md:py-0 md:bg-transparent gap-4 mb-4 w-full">
       <TableOfContents headers={post.toc} />
 
       {/* Main Post Container */}
-      <div className="fuwari-card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+      <div className="fuwari-card-base fuwari-card-panel z-10 px-[var(--theme-panel-pad-x,1.5rem)] md:px-[var(--theme-panel-pad-x,2.25rem)] pt-6 pb-4 relative w-full">
         {/* Word count and reading time */}
         <div
           className="flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition fuwari-onload-animation"
@@ -87,10 +87,9 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
           style={{ animationDelay: enterDelay(50) }}
         >
           <h1
-            className="transition w-full block font-bold mb-3
-              text-3xl md:text-[2.25rem]/[2.75rem]
+            className="fuwari-heading fuwari-page-title transition w-full block font-bold mb-3
               fuwari-text-90
-              md:before:w-1 before:h-5 before:rounded-md before:bg-(--fuwari-primary)
+              md:before:w-1 before:h-5 before:rounded-md before:bg-(--theme-accent)
               before:absolute before:top-3 before:-left-4.5"
             style={{ viewTransitionName: `post-title-${post.slug}` }}
           >
@@ -106,16 +105,14 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
           }}
         >
           <PostMeta post={post} className="mb-5" />
-          {!post.cover && (
-            <div className="border-(--fuwari-meta-divider) border-dashed border-b mb-5" />
-          )}
+          {!post.cover && <div className="fuwari-meta-rule mb-5" />}
         </div>
 
         {post.cover && (
           <div
             ref={coverRef}
             id="post-cover"
-            className="mb-8 rounded-xl overflow-hidden fuwari-onload-animation"
+            className="mb-8 rounded-(--theme-cover-radius) overflow-hidden fuwari-onload-animation"
             style={{
               animationDelay: enterDelay(175),
             }}
@@ -154,11 +151,11 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
             <ContentRenderer content={post.contentJson} />
           </div>
           <div className="my-8 flex items-center justify-center w-full">
-            <div className="h-px w-full bg-linear-to-r from-transparent via-(--fuwari-meta-divider) to-transparent opacity-20" />
-            <span className="mx-4 text-sm font-mono tracking-widest text-(--fuwari-meta-divider) opacity-50 whitespace-nowrap">
+            <div className="h-px w-full bg-linear-to-r from-transparent via-(--theme-rule,var(--fuwari-meta-divider)) to-transparent opacity-20" />
+            <span className="mx-4 text-sm font-mono tracking-widest text-(--theme-rule,var(--fuwari-meta-divider)) opacity-50 whitespace-nowrap">
               END
             </span>
-            <div className="h-px w-full bg-linear-to-r from-(--fuwari-meta-divider) via-transparent to-transparent opacity-20" />
+            <div className="h-px w-full bg-linear-to-r from-(--theme-rule,var(--fuwari-meta-divider)) via-transparent to-transparent opacity-20" />
           </div>
           <div className="mb-4 flex justify-center">
             <PostShareButton title={post.title} url={canonicalHref} />
@@ -170,7 +167,7 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
 
       {/* Comments Section */}
       <div
-        className="fuwari-card-base p-6 fuwari-onload-animation"
+        className="fuwari-card-base fuwari-card-panel py-6 px-[var(--theme-panel-pad-x,1.5rem)] fuwari-onload-animation"
         style={{ animationDelay: enterDelay(450) }}
       >
         <CommentSection target={{ type: "post", id: post.id }} />

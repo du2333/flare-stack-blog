@@ -18,11 +18,8 @@ export function PostAdjacentNav({ slug }: { slug: string }) {
           params={{ slug: data.newer.slug }}
           className="w-full overflow-hidden font-bold active:scale-95"
         >
-          <div className="fuwari-card-base flex h-[3.75rem] w-full max-w-full items-center justify-start gap-4 px-4">
-            <ChevronLeft
-              size={32}
-              className="shrink-0 text-(--fuwari-primary)"
-            />
+          <div className="fuwari-card-base fuwari-card-item flex h-[3.75rem] w-full max-w-full items-center justify-start gap-4 px-4">
+            <ChevronLeft size={32} className="shrink-0 text-(--theme-accent)" />
             <div className="max-w-[calc(100%-3rem)] overflow-hidden text-ellipsis whitespace-nowrap fuwari-text-75">
               {data.newer.title}
             </div>
@@ -37,13 +34,13 @@ export function PostAdjacentNav({ slug }: { slug: string }) {
           params={{ slug: data.older.slug }}
           className="w-full overflow-hidden font-bold active:scale-95"
         >
-          <div className="fuwari-card-base flex h-[3.75rem] w-full max-w-full items-center justify-end gap-4 px-4">
+          <div className="fuwari-card-base fuwari-card-item flex h-[3.75rem] w-full max-w-full items-center justify-end gap-4 px-4">
             <div className="max-w-[calc(100%-3rem)] overflow-hidden text-ellipsis whitespace-nowrap fuwari-text-75">
               {data.older.title}
             </div>
             <ChevronRight
               size={32}
-              className="shrink-0 text-(--fuwari-primary)"
+              className="shrink-0 text-(--theme-accent)"
             />
           </div>
         </Link>

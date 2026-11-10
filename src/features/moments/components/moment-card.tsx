@@ -29,7 +29,7 @@ export function MomentCard({ moment }: { moment: PublicMoment }) {
   }
 
   return (
-    <article className="fuwari-card-base flex flex-col gap-3 p-5 md:p-6">
+    <article className="fuwari-card-base fuwari-card-item flex flex-col gap-3 p-5 md:p-6">
       <header className="flex items-center gap-3">
         <MomentAvatar />
         <div className="flex min-w-0 flex-1 flex-col">

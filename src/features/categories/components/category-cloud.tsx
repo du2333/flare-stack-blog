@@ -11,7 +11,7 @@ const COLLAPSE_THRESHOLD = 5;
 
 export function CategoriesSkeleton() {
   return (
-    <div className="fuwari-card-base pb-4">
+    <div className="fuwari-card-base fuwari-card-widget pb-4">
       <Skeleton className="h-5 w-20 ml-6 mt-4 mb-2" />
       <div className="px-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -41,13 +41,13 @@ export function Categories() {
           key={category.id}
           to="/posts"
           search={withCategoryFilter(category.name)}
-          className="flex items-center w-full h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-all text-neutral-700 hover:text-(--fuwari-primary) dark:text-neutral-300 dark:hover:text-(--fuwari-primary)"
+          className="fuwari-widget-row flex items-center h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-all text-neutral-700 hover:text-(--theme-accent) dark:text-neutral-300 dark:hover:text-(--theme-accent)"
         >
           <div className="flex items-center justify-between relative mr-2 w-full min-w-0">
             <div className="overflow-hidden text-left whitespace-nowrap text-ellipsis">
               {category.name}
             </div>
-            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-lg text-sm font-bold text-(--fuwari-btn-content) dark:text-(--fuwari-deep-text) bg-(--fuwari-btn-regular-bg) dark:bg-(--fuwari-primary) flex items-center justify-center">
+            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-(--theme-chip-radius) text-sm font-bold text-(--fuwari-btn-content) dark:text-(--fuwari-deep-text) bg-(--fuwari-btn-regular-bg) dark:bg-(--theme-accent) flex items-center justify-center">
               {category.postCount}
             </div>
           </div>

@@ -12,7 +12,7 @@ interface FriendLinksPageProps {
 
 export function FriendLinksPage({ links }: FriendLinksPageProps) {
   return (
-    <section className="friends-page fuwari-card-base fuwari-content-enter">
+    <section className="friends-page fuwari-card-base fuwari-card-panel fuwari-content-enter">
       <header className="friends-heading">
         <h1>{m.friend_links_title()}</h1>
         <Link

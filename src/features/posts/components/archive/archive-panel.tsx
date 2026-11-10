@@ -26,7 +26,7 @@ export function ArchivePanel({ posts }: ArchivePanelProps) {
     .sort((a, b) => b - a);
 
   return (
-    <div className="fuwari-card-base px-8 py-6">
+    <div className="fuwari-card-base fuwari-card-panel px-[var(--theme-panel-pad-x,2rem)] py-6">
       {years.map((year) => (
         <div key={year}>
           <ArchiveYear year={year} count={groupedPosts[year].length} />

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 /** The card of one Moment while it loads. */
 function MomentCardSkeleton() {
   return (
-    <div className="fuwari-card-base flex flex-col gap-3 p-5 md:p-6">
+    <div className="fuwari-card-base fuwari-card-item flex flex-col gap-3 p-5 md:p-6">
       <div className="flex items-center gap-3">
         <Skeleton className="size-10 rounded-full" />
         <div className="flex flex-col gap-2">

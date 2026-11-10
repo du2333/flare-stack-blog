@@ -355,8 +355,8 @@ export function MomentForm({
       ref={rootRef}
       aria-label={label}
       className={cn(
-        "fuwari-card-base relative flex gap-3 p-4 md:p-5",
-        dropping && "ring-2 ring-(--fuwari-primary)",
+        "fuwari-card-base fuwari-card-item relative flex gap-3 p-4 md:p-5",
+        dropping && "ring-2 ring-(--theme-accent)",
       )}
       onClick={() => {
         if (collapsed) textRef.current?.focus();
@@ -551,7 +551,7 @@ export function MomentForm({
       {dropping ? (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-(--fuwari-card-bg)/80 text-sm font-medium text-(--fuwari-primary)"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-(--theme-surface)/80 text-sm font-medium text-(--theme-accent)"
         >
           {m.moment_admin_drop_hint()}
         </div>
