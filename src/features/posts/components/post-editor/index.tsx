@@ -277,7 +277,10 @@ export function PostEditor({
         confirmLabel={m.editor_leave_confirm()}
       />
 
-      <section className="post-editor-workspace fuwari-card-base">
+      <section
+        className="post-editor-workspace fuwari-card-base"
+        data-info-open={infoOpen || undefined}
+      >
         <PostEditorHeader
           saveStatus={saveStatus}
           lastSaved={lastSaved}

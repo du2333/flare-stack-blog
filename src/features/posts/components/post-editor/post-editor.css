@@ -351,6 +351,15 @@ button.post-editor-summary:hover {
   .post-editor-info-panel {
     width: min(100%, 25rem);
   }
+  /* The top bar shows the title and Done; the status row steps aside. */
+  .post-editor-workspace[data-info-open] {
+    --post-editor-header-height: 0rem;
+  }
+  .post-editor-workspace[data-info-open] .post-editor-header,
+  .post-editor-panel-heading,
+  .post-editor-info-footer {
+    display: none;
+  }
   .post-history-sidebar {
     display: none;
   }
