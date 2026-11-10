@@ -80,7 +80,7 @@ export function PostPageSkeleton() {
             <>
               <div className="flex flex-row items-center">
                 {inlineMeta ? null : (
-                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
+                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-(--fuwari-ink-faint) fuwari-text-50">
                     <FileText strokeWidth={1.5} size={16} />
                   </div>
                 )}
@@ -90,7 +90,7 @@ export function PostPageSkeleton() {
               </div>
               <div className="flex flex-row items-center">
                 {inlineMeta ? null : (
-                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
+                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-(--fuwari-ink-faint) fuwari-text-50">
                     <Clock strokeWidth={1.5} size={16} />
                   </div>
                 )}

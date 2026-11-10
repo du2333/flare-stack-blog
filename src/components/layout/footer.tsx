@@ -12,8 +12,8 @@ export function Footer(_: FooterProps) {
 
   return (
     <>
-      <div className="border-t border-black/10 dark:border-white/15 my-10 [border-top-style:var(--theme-rule-style)] mx-4 md:mx-32" />
-      <div className="border-dashed border-black/10 dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6 py-8">
+      <div className="border-t border-(--theme-rule,var(--fuwari-divider)) my-10 [border-top-style:var(--theme-rule-style)] mx-4 md:mx-32" />
+      <div className="border-dashed border-(--theme-rule,var(--fuwari-divider)) rounded-2xl mb-12 flex flex-col items-center justify-center px-6 py-8">
         <div className="fuwari-text-50 text-sm text-center">
           {m.footer_copyright({
             year: currentYear.toString(),

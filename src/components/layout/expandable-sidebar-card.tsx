@@ -40,7 +40,7 @@ export function ExpandableSidebarCard({
           <button
             type="button"
             onClick={onExpand}
-            className="rounded-lg w-full h-9 flex items-center justify-center text-black/75 hover:text-(--theme-accent) dark:text-white/75 dark:hover:text-(--theme-accent) hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition"
+            className="rounded-lg w-full h-9 flex items-center justify-center text-(--fuwari-fg-75) hover:text-(--theme-accent) hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition"
           >
             <span className="text-(--theme-widget-more-color,var(--theme-accent)) flex items-center justify-center gap-2 -translate-x-2">
               <Ellipsis size={28} />

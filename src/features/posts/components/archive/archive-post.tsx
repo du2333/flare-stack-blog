@@ -57,7 +57,7 @@ export function ArchivePost({ post }: ArchivePostProps) {
         <div className="w-[15%] md:w-[10%] relative fuwari-timeline-dash h-full flex items-center">
           <div
             className="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
-              bg-black/50 dark:bg-white/50 group-hover:bg-(--theme-accent)
+              bg-(--fuwari-fg-faint) group-hover:bg-(--theme-accent)
               outline z-50
               outline-(--theme-surface)
               group-hover:outline-(--fuwari-btn-plain-bg-hover)
@@ -99,8 +99,8 @@ export function ArchivePostSkeleton() {
       <div className="w-[15%] md:w-[10%] flex justify-end pr-2">
         <Skeleton className="h-4 w-10" />
       </div>
-      <div className="w-[15%] md:w-[10%] relative h-full flex items-center before:absolute before:w-1 left-1/2 -ml-0.5 pointer-events-none before:border-l-2 before:border-dashed before:border-black/5 dark:before:border-white/5 before:-top-5 before:bottom-0 before:h-20 z-0">
-        <div className="mx-auto w-2 h-2 rounded-full bg-black/20 dark:bg-white/20 z-10" />
+      <div className="w-[15%] md:w-[10%] relative h-full flex items-center before:absolute before:w-1 left-1/2 -ml-0.5 pointer-events-none before:border-l-2 before:border-dashed before:border-(--theme-rule,var(--fuwari-hairline)) before:-top-5 before:bottom-0 before:h-20 z-0">
+        <div className="mx-auto w-2 h-2 rounded-full bg-(--theme-rule,var(--fuwari-meta-divider)) z-10" />
       </div>
       <div className="w-[70%] md:max-w-[65%] md:w-[65%] flex justify-start pl-2">
         <Skeleton className="h-5 w-3/4 max-w-50" />

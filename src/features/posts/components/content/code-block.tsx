@@ -125,7 +125,7 @@ export function CodeBlockFrame({
 
   return (
     <div className="relative group max-w-full my-6 not-prose">
-      <div className="expressive-code relative rounded-xl border border-black/10 dark:border-white/10 bg-(--theme-raised) overflow-hidden transition-colors shadow-sm">
+      <div className="expressive-code relative rounded-xl border border-(--theme-rule,var(--fuwari-input-border)) bg-(--theme-raised) overflow-hidden transition-colors shadow-sm">
         {/* Language Badge */}
         <div
           className={cn(

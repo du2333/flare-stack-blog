@@ -41,13 +41,13 @@ export function Categories() {
           key={category.id}
           to="/posts"
           search={withCategoryFilter(category.name)}
-          className="fuwari-widget-row flex items-center h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-all text-neutral-700 hover:text-(--theme-accent) dark:text-neutral-300 dark:hover:text-(--theme-accent)"
+          className="fuwari-widget-row flex items-center h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-all text-(--theme-widget-row-color) hover:text-(--theme-accent)"
         >
           <div className="flex items-center justify-between relative mr-2 w-full min-w-0">
             <div className="overflow-hidden text-left whitespace-nowrap text-ellipsis">
               {category.name}
             </div>
-            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-(--theme-chip-radius) text-sm font-bold text-(--fuwari-btn-content) dark:text-(--fuwari-deep-text) bg-(--fuwari-btn-regular-bg) dark:bg-(--theme-accent) flex items-center justify-center">
+            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-(--theme-chip-radius) text-sm font-bold text-(--fuwari-btn-content) dark:text-(--theme-solid-fg,var(--fuwari-deep-text)) bg-(--fuwari-btn-regular-bg) dark:bg-(--theme-solid-bg) flex items-center justify-center">
               {category.postCount}
             </div>
           </div>

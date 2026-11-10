@@ -97,7 +97,7 @@ function PostListMeta({ post }: { post: PostItem }) {
             {tagNames.map((name, i) => (
               <span key={name} className="flex items-center">
                 {i > 0 && (
-                  <span className="mx-1.5 text-(--fuwari-meta-divider) text-sm">
+                  <span className="mx-1.5 text-(--theme-rule,var(--fuwari-meta-divider)) text-sm">
                     /
                   </span>
                 )}
@@ -201,7 +201,7 @@ function PostCardBox({ post, pinned, popular }: PostCardProps) {
           aria-label={post.title}
           className="group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-(--coverWidth) relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-(--theme-cover-radius) overflow-hidden active:scale-95"
         >
-          <div className="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
+          <div className="absolute pointer-events-none z-10 w-full h-full group-hover:bg-(--fuwari-scrim-hover) group-active:bg-(--fuwari-scrim-active) transition" />
           <div className="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center">
             <ChevronRight className="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" />
           </div>
