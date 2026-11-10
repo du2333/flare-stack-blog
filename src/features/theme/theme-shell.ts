@@ -64,4 +64,10 @@ export interface ThemeShell {
    * with, so leaving it out never leaves a cached page missing a tag.
    */
   identityInFirstScreen: ReadonlyArray<Exclude<PageKind, "focused">>;
+  /**
+   * Page kinds whose first screen shows the Site Config tagline when one is
+   * set. Left out, the shell never shows it. The shared shell tests hold a
+   * shell to what it declares.
+   */
+  taglineOn?: ReadonlyArray<Exclude<PageKind, "focused">>;
 }

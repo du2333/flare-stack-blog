@@ -10,6 +10,11 @@ import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { resolveBrandMarkImage } from "@/features/config/utils/brand-mark";
+import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
 import "./navbar.css";
 
@@ -18,6 +23,30 @@ interface NavbarProps {
   isLoading?: boolean;
   user?: UserInfo;
   logout: () => Promise<void>;
+}
+
+const BRAND_MARK_SIZE = 28;
+
+/** The mark before the title: the built-in icon unless the Site Config picks another. */
+function BrandMark() {
+  const { siteConfig } = useRouteContext({ from: "__root__" });
+  if (siteConfig.brandMark === "none") return null;
+  const image = resolveBrandMarkImage(siteConfig.brandMark, siteConfig);
+  if (!image) return <Home size={BRAND_MARK_SIZE} strokeWidth={1.5} />;
+  return (
+    <img
+      src={
+        image.kind === "avatar"
+          ? getPublicImageSrc(image.src, PUBLIC_IMAGE_WIDTH.avatar)
+          : image.src
+      }
+      alt=""
+      width={BRAND_MARK_SIZE}
+      height={BRAND_MARK_SIZE}
+      className="public-brand-mark"
+      data-mark={image.kind}
+    />
+  );
 }
 
 export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
@@ -117,7 +146,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
     >
       <div id="fuwari-navbar" className="public-navbar fuwari-card-base">
         <Link to="/" className="public-brand" title={siteConfig.title}>
-          <Home size={28} strokeWidth={1.5} />
+          <BrandMark />
           <span>{siteConfig.title}</span>
         </Link>
         <nav className="public-desktop-links">

@@ -1,6 +1,10 @@
 import { useRouteContext } from "@tanstack/react-router";
 import { useCallback } from "react";
 import {
+  focalObjectPosition,
+  isFocalPointCentred,
+} from "@/components/ui/focal-point";
+import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
@@ -32,6 +36,7 @@ function ClassicShell({
   const isHomePage = pageKind === "home";
   const isFocusedPage = pageKind === "focused";
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
+  const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
   // The banner is the first screen.
   const firstScreenHeight = useCallback(
     () => (window.innerHeight * bannerHeightVh) / 100,
@@ -68,8 +73,23 @@ function ClassicShell({
             )}
             alt="banner"
             fetchPriority={isHomePage ? "high" : "auto"}
-            className="fuwari-banner-image w-full h-full object-cover object-center"
+            // The centre keeps the plain class, so a site without a focal
+            // point renders exactly as before.
+            className={cn(
+              "fuwari-banner-image w-full h-full object-cover",
+              bannerCentred && "object-center",
+            )}
+            style={
+              bannerCentred
+                ? undefined
+                : { objectPosition: focalObjectPosition(siteConfig.bannerFocus) }
+            }
           />
+          {isHomePage && siteConfig.tagline ? (
+            <div className="classic-tagline">
+              <p>{siteConfig.tagline}</p>
+            </div>
+          ) : null}
         </div>
 
         {/* Main content - overlaps banner by MAIN_OVERLAP_REM */}
@@ -129,4 +149,5 @@ export const classicShell: ThemeShell = {
   id: "classic",
   Shell: ClassicShell,
   identityInFirstScreen: [],
+  taglineOn: ["home"],
 };
