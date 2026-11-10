@@ -21,7 +21,7 @@ export function MediaToolbar({
   onViewChange: (view: MediaView) => void;
 }) {
   return (
-    <div className="media-workspace-toolbar">
+    <div className="media-workspace-toolbar admin-frame-toolbar">
       <Tabs
         className="media-workspace-tabs"
         aria-label={m.media_filter_label()}

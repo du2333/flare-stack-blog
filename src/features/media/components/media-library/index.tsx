@@ -133,7 +133,7 @@ export function MediaLibrary() {
 
   return (
     <div
-      className="media-workspace admin-workspace fuwari-card-base"
+      className="media-workspace admin-workspace admin-frame fuwari-card-base"
       onDragEnter={(event) => {
         if (!event.dataTransfer.types.includes("Files")) return;
         event.preventDefault();
@@ -157,7 +157,6 @@ export function MediaLibrary() {
       }}
     >
       <PageHeader
-        className="media-workspace-header"
         title={m.media_title()}
         description={
           stats
