@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { SearchField } from "@/components/ui/search-field";
 import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
-import { useContentMotion } from "@/hooks/use-motion";
+import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
 import { formatDate } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { m } from "@/paraglide/messages";
@@ -26,6 +26,9 @@ function Logo({ link }: { link: Link }) {
     </span>
   );
 }
+/** Same breakpoint where the list and the detail pane stack (friend-link-manager.css). */
+const STACKED_QUERY = "(max-width: 767px)";
+
 function host(url: string) {
   try {
     return new URL(url).host;
@@ -81,6 +84,16 @@ export function FriendLinkReview({
   const index = selected
     ? items.findIndex((item) => item.id === selected.id)
     : -1;
+  const stacked = useMediaQuery(STACKED_QUERY);
+  // Stacked and still on the list: nothing is chosen yet, so nothing is lit.
+  const highlighted = selected && !(stacked && !detailOpen) ? selected : null;
+  const previewHint = selected
+    ? {
+        pending: m.friend_review_preview_hint(),
+        approved: m.friend_review_preview_hint_approved(),
+        rejected: m.friend_review_preview_hint_rejected(),
+      }[selected.status]
+    : "";
   const detailRef = useRef<HTMLDivElement>(null);
   const queueRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
@@ -109,7 +122,7 @@ export function FriendLinkReview({
     setDetailOpen(false);
     requestAnimationFrame(() =>
       queueRef.current
-        ?.querySelector<HTMLButtonElement>('[aria-current="true"]')
+        ?.querySelector<HTMLButtonElement>('[data-selected="true"]')
         ?.focus(),
     );
   };
@@ -153,7 +166,10 @@ export function FriendLinkReview({
                   key={item.id}
                   type="button"
                   className="friend-queue-item"
-                  aria-current={selected?.id === item.id ? "true" : undefined}
+                  data-selected={selected?.id === item.id}
+                  aria-current={
+                    highlighted?.id === item.id ? "true" : undefined
+                  }
                   onClick={() => choose(item)}
                 >
                   <Logo link={item} />
@@ -228,9 +244,7 @@ export function FriendLinkReview({
                 )}
                 <section className="friend-section">
                   <h3>{m.friend_review_preview()}</h3>
-                  <p className="friend-muted">
-                    {m.friend_review_preview_hint()}
-                  </p>
+                  <p className="friend-muted">{previewHint}</p>
                   <div className="friend-preview">
                     <Logo link={selected} />
                     <div>

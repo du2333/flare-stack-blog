@@ -19,9 +19,10 @@
   min-height: 0;
   border-right: 1px solid var(--fuwari-input-border);
 }
+/* The search field and the items share the frame inset, so they line up with the title and tabs. */
 .friend-search {
   width: auto;
-  margin: calc(20 * var(--admin-unit));
+  margin: calc(20 * var(--admin-unit)) var(--admin-frame-x);
 }
 .friend-queue-scroll,
 .friend-detail-scroll {
@@ -32,6 +33,7 @@
 }
 .friend-queue-scroll {
   flex: 1;
+  padding: 0 var(--admin-frame-x) calc(12 * var(--admin-unit));
 }
 .friend-queue-item {
   display: flex;
@@ -39,19 +41,22 @@
   text-align: left;
   width: 100%;
   gap: 14px;
-  padding: calc(20 * var(--admin-unit));
-  border-bottom: 1px solid var(--fuwari-input-border);
-  border-left: 3px solid transparent;
+  padding: calc(12 * var(--admin-unit)) calc(14 * var(--admin-unit));
+  margin-bottom: 4px;
+  border-radius: 0.75rem;
   transition:
     background 0.22s ease,
-    border-color 0.22s ease;
+    color 0.22s ease;
 }
 .friend-queue-item:hover {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--fuwari-btn-plain-bg-hover);
 }
+/* Same as the active sidebar item. */
 .friend-queue-item[aria-current="true"] {
   background: var(--fuwari-btn-regular-bg);
-  border-left-color: var(--fuwari-primary);
+}
+.friend-queue-item[aria-current="true"] strong {
+  color: var(--fuwari-primary);
 }
 .friend-logo {
   display: grid;

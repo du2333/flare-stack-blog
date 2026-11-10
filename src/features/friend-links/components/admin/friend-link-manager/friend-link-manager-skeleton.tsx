@@ -29,7 +29,9 @@ export function FriendLinkManagerPageSkeleton() {
       <div className="friend-body admin-frame-bleed">
         <div className="friend-queue">
           <Skeleton className="friend-search h-(--fuwari-field-height) rounded-xl" />
-          <FriendLinkManagerSkeleton />
+          <div className="friend-queue-scroll">
+            <FriendLinkManagerSkeleton />
+          </div>
         </div>
         <div className="friend-detail">
           <div className="friend-detail-placeholder">
