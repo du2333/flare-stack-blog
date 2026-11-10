@@ -30,15 +30,98 @@ interface PostCardProps {
   popular?: boolean;
 }
 
-export function PostCard({ post, pinned, popular }: PostCardProps) {
-  const tagNames = (post.tags ?? []).map((t) => t.name);
-  const hasCover = Boolean(post.cover);
-  const coverWidth = "28%";
+/** A Post in the home list, as a card or a row (Theme Recipe). */
+export function PostCard(props: PostCardProps) {
+  return useThemeRecipe().postCard === "row" ? (
+    <PostRow {...props} />
+  ) : (
+    <PostCardBox {...props} />
+  );
+}
+
+function PostKicker({ pinned }: { pinned?: boolean }) {
+  return (
+    <div
+      className="fuwari-kicker flex items-center gap-1.5 font-medium mb-3"
+      data-kind={pinned ? "pinned" : "popular"}
+    >
+      {pinned ? (
+        <>
+          <Pin size={16} className="fill-current" />
+          <span>{m.home_pinned_posts()}</span>
+        </>
+      ) : (
+        <>
+          <Flame size={16} />
+          <span>{m.home_popular_posts()}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** The date, Category and Tags; the Tags only from the md width up. */
+function PostListMeta({ post }: { post: PostItem }) {
   const inlineMeta = useThemeRecipe().meta === "inline";
+  const tagNames = (post.tags ?? []).map((t) => t.name);
   // Plain text drops the hover pad, which would run into the dot before it.
-  const metaLinkClass = inlineMeta
+  const linkClass = inlineMeta
     ? "fuwari-meta-text transition hover:text-(--theme-accent)"
     : "fuwari-expand-animation fuwari-meta-text rounded-md px-1.5 py-1 -m-1.5 hover:text-(--theme-accent)";
+
+  return (
+    <>
+      <MetaItem icon={Calendar}>
+        <time
+          dateTime={post.publishedAt?.toISOString()}
+          className="fuwari-meta-text"
+        >
+          {formatPublicPostDate(post.publishedAt)}
+        </time>
+      </MetaItem>
+      {post.category ? (
+        <MetaItem icon={BookOpen}>
+          <Link
+            to="/posts"
+            search={withCategoryFilter(post.category?.name)}
+            className={linkClass}
+          >
+            {post.category.name}
+          </Link>
+        </MetaItem>
+      ) : null}
+      {tagNames.length > 0 && (
+        <MetaItem icon={Tag} className="hidden md:flex items-center">
+          <div className="flex flex-row flex-wrap items-center gap-x-1.5">
+            {tagNames.map((name, i) => (
+              <span key={name} className="flex items-center">
+                {i > 0 && (
+                  <span className="mx-1.5 text-(--fuwari-meta-divider) text-sm">
+                    /
+                  </span>
+                )}
+                <Link
+                  to="/posts"
+                  search={withTagFilter(name)}
+                  className={linkClass}
+                >
+                  {name}
+                </Link>
+              </span>
+            ))}
+          </div>
+        </MetaItem>
+      )}
+    </>
+  );
+}
+
+function PostCardBox({ post, pinned, popular }: PostCardProps) {
+  const recipe = useThemeRecipe();
+  const hasCover = Boolean(post.cover);
+  const strip = !hasCover && recipe.noCoverStrip === "keep";
+  const coverWidth = "28%";
+  const inlineMeta = recipe.meta === "inline";
 
   return (
     <div
@@ -46,30 +129,15 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
       style={{ ["--coverWidth" as string]: coverWidth }}
     >
       <div
-        className={`pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative ${
+        className={`pl-6 md:pl-9 pr-6 ${hasCover || strip ? "md:pr-2" : "md:pr-9"} pt-6 md:pt-7 pb-6 relative ${
           hasCover
             ? "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]"
-            : "w-full md:w-[calc(100%_-_52px_-_12px)]"
+            : strip
+              ? "w-full md:w-[calc(100%_-_52px_-_12px)]"
+              : "w-full"
         }`}
       >
-        {(pinned || popular) && (
-          <div
-            className="fuwari-kicker flex items-center gap-1.5 font-medium mb-3"
-            data-kind={pinned ? "pinned" : "popular"}
-          >
-            {pinned ? (
-              <>
-                <Pin size={16} className="fill-current" />
-                <span>{m.home_pinned_posts()}</span>
-              </>
-            ) : (
-              <>
-                <Flame size={16} />
-                <span>{m.home_popular_posts()}</span>
-              </>
-            )}
-          </div>
-        )}
+        {(pinned || popular) && <PostKicker pinned={pinned} />}
 
         <Link
           to="/post/$slug"
@@ -88,47 +156,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
               : "flex flex-wrap fuwari-text-50 items-center gap-4 gap-x-4 gap-y-2 mb-4"
           }
         >
-          <MetaItem icon={Calendar}>
-            <time
-              dateTime={post.publishedAt?.toISOString()}
-              className="fuwari-meta-text"
-            >
-              {formatPublicPostDate(post.publishedAt)}
-            </time>
-          </MetaItem>
-          {post.category ? (
-            <MetaItem icon={BookOpen}>
-              <Link
-                to="/posts"
-                search={withCategoryFilter(post.category?.name)}
-                className={metaLinkClass}
-              >
-                {post.category.name}
-              </Link>
-            </MetaItem>
-          ) : null}
-          {tagNames.length > 0 && (
-            <MetaItem icon={Tag} className="hidden md:flex items-center">
-              <div className="flex flex-row flex-wrap items-center gap-x-1.5">
-                {tagNames.map((name, i) => (
-                  <span key={name} className="flex items-center">
-                    {i > 0 && (
-                      <span className="mx-1.5 text-(--fuwari-meta-divider) text-sm">
-                        /
-                      </span>
-                    )}
-                    <Link
-                      to="/posts"
-                      search={withTagFilter(name)}
-                      className={metaLinkClass}
-                    >
-                      {name}
-                    </Link>
-                  </span>
-                ))}
-              </div>
-            </MetaItem>
-          )}
+          <PostListMeta post={post} />
         </div>
 
         <div
@@ -185,7 +213,7 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             className="w-full h-full object-cover"
           />
         </Link>
-      ) : (
+      ) : strip ? (
         <Link
           to="/post/$slug"
           params={{ slug: post.slug }}
@@ -197,7 +225,83 @@ export function PostCard({ post, pinned, popular }: PostCardProps) {
             strokeWidth={2}
           />
         </Link>
-      )}
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * A flat row: the title, the summary when there is one, then the whole meta
+ * on one line, with a small cover on the right. The home list draws the
+ * rules between rows.
+ */
+function PostRow({ post, pinned, popular }: PostCardProps) {
+  const inlineMeta = useThemeRecipe().meta === "inline";
+
+  return (
+    <div className="relative flex w-full items-start gap-4 md:gap-6">
+      <div className="min-w-0 flex-1">
+        {(pinned || popular) && <PostKicker pinned={pinned} />}
+
+        <Link
+          to="/post/$slug"
+          params={{ slug: post.slug }}
+          className="fuwari-heading fuwari-list-title relative block font-bold mb-2 fuwari-text-90 transition hover:text-(--theme-accent) active:text-(--theme-accent) before:w-1 before:h-5 before:rounded-md before:absolute before:-left-3 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)"
+        >
+          {post.title}
+        </Link>
+
+        {post.summary ? (
+          <p
+            className={`fuwari-text-75 wrap-break-word mb-3 ${
+              pinned
+                ? "line-clamp-3 md:line-clamp-2 text-lg leading-relaxed"
+                : "line-clamp-2"
+            }`}
+          >
+            {post.summary}
+          </p>
+        ) : null}
+
+        <div
+          className={
+            inlineMeta
+              ? "flex flex-wrap fuwari-text-50 items-center gap-x-2 gap-y-1 fuwari-meta-inline"
+              : "flex flex-wrap fuwari-text-50 items-center gap-x-4 gap-y-2"
+          }
+        >
+          <PostListMeta post={post} />
+          <MetaItem icon={Clock}>
+            <span className="fuwari-meta-text">
+              {m.read_time({ count: post.readTimeInMinutes })}
+            </span>
+          </MetaItem>
+          {post.viewCount !== undefined && (
+            <MetaItem icon={Eye}>
+              <span className="fuwari-meta-text">
+                {m.post_views_count({ count: post.viewCount })}
+              </span>
+            </MetaItem>
+          )}
+        </div>
+      </div>
+
+      {post.cover ? (
+        <Link
+          to="/post/$slug"
+          params={{ slug: post.slug }}
+          aria-label={post.title}
+          className="block w-24 sm:w-32 md:w-44 aspect-4/3 shrink-0 overflow-hidden rounded-(--theme-cover-radius) transition active:scale-95"
+        >
+          <img
+            src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.cover)}
+            alt={post.title}
+            width={post.cover.width ?? undefined}
+            height={post.cover.height ?? undefined}
+            className="size-full object-cover"
+          />
+        </Link>
+      ) : null}
     </div>
   );
 }
