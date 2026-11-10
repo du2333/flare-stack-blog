@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import { updateCheckQuery } from "@/features/version/queries";
 import { recordUpdateNoticeShown } from "@/features/version/update-notice";
 import { orpcClient } from "@/lib/orpc";
@@ -41,48 +42,47 @@ export function VersionMaintenance() {
   });
 
   return (
-    <div className="flex items-center gap-3 py-4 border-b border-(--fuwari-input-border)">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium fuwari-text-90">
-          {m.settings_maintenance_version_title()}
-        </p>
-        <p className="text-xs fuwari-text-50">
-          {m.settings_maintenance_version_desc({ version: __APP_VERSION__ })}
-        </p>
-        {checkUpdateMutation.isSuccess && checkUpdateMutation.data && (
-          <StatusText className="mt-2">
-            {checkUpdateMutation.data.hasUpdate ? (
-              <a
-                href={checkUpdateMutation.data.releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-(--fuwari-primary)"
-              >
-                {m.settings_maintenance_version_toast_new_desc({
-                  version: checkUpdateMutation.data.latestVersion,
-                })}
-              </a>
-            ) : (
-              m.settings_maintenance_version_toast_latest_desc({
-                version: checkUpdateMutation.data.currentVersion,
-              })
-            )}
-          </StatusText>
-        )}
-        {checkUpdateMutation.isError && (
-          <StatusText error className="mt-2">
-            {m.settings_maintenance_version_toast_fail()}
-          </StatusText>
-        )}
-      </div>
-      <Button
-        onClick={() => checkUpdateMutation.mutate()}
-        loading={checkUpdateMutation.isPending}
-      >
-        {checkUpdateMutation.isPending
-          ? m.settings_maintenance_version_checking()
-          : m.settings_maintenance_version_check_btn()}
-      </Button>
-    </div>
+    <MaintenanceItem
+      title={m.settings_maintenance_version_title()}
+      lines={[
+        m.settings_maintenance_version_desc({ version: __APP_VERSION__ }),
+      ]}
+      action={
+        <Button
+          onClick={() => checkUpdateMutation.mutate()}
+          loading={checkUpdateMutation.isPending}
+        >
+          {checkUpdateMutation.isPending
+            ? m.settings_maintenance_version_checking()
+            : m.settings_maintenance_version_check_btn()}
+        </Button>
+      }
+    >
+      {checkUpdateMutation.isSuccess && checkUpdateMutation.data && (
+        <StatusText className="mt-2">
+          {checkUpdateMutation.data.hasUpdate ? (
+            <a
+              href={checkUpdateMutation.data.releaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-(--fuwari-primary)"
+            >
+              {m.settings_maintenance_version_toast_new_desc({
+                version: checkUpdateMutation.data.latestVersion,
+              })}
+            </a>
+          ) : (
+            m.settings_maintenance_version_toast_latest_desc({
+              version: checkUpdateMutation.data.currentVersion,
+            })
+          )}
+        </StatusText>
+      )}
+      {checkUpdateMutation.isError && (
+        <StatusText error className="mt-2">
+          {m.settings_maintenance_version_toast_fail()}
+        </StatusText>
+      )}
+    </MaintenanceItem>
   );
 }
