@@ -36,6 +36,13 @@
   line-height: 1.65;
   padding-left: 22px;
 }
+/* Without the accent bar (Theme Recipe) the title and intro start at the edge. */
+.friends-heading[data-accent="off"] > :is(h1, p) {
+  padding-left: 0;
+}
+.friends-heading[data-accent="off"] > h1::before {
+  content: none;
+}
 .friends-apply {
   align-self: start;
 }

@@ -100,10 +100,11 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
           style={{ animationDelay: enterDelay(50) }}
         >
           <h1
-            className="fuwari-heading fuwari-page-title transition w-full block font-bold mb-3
-              fuwari-text-90
-              md:before:w-1 before:h-5 before:rounded-md before:bg-(--theme-accent)
-              before:absolute before:top-3 before:-left-4.5"
+            className={
+              recipe.headingAccent === "on"
+                ? "fuwari-heading fuwari-page-title transition w-full block font-bold mb-3 fuwari-text-90 md:before:w-1 before:h-5 before:rounded-md before:bg-(--theme-accent) before:absolute before:top-3 before:-left-4.5"
+                : "fuwari-heading fuwari-page-title transition w-full block font-bold mb-3 fuwari-text-90"
+            }
             style={{ viewTransitionName: `post-title-${post.slug}` }}
           >
             {post.title}

@@ -110,7 +110,11 @@ export function PostPageSkeleton() {
         <div className="relative">
           {cached ? (
             <h1
-              className="fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90 md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--theme-accent)"
+              className={
+                recipe.headingAccent === "on"
+                  ? "fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90 md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--theme-accent)"
+                  : "fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90"
+              }
               style={
                 typeof slug === "string"
                   ? { viewTransitionName: `post-title-${slug}` }

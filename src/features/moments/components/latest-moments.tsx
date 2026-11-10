@@ -15,6 +15,7 @@ import {
   getPublicImageSrc,
   getPublicImageSrcSet,
 } from "@/features/media/utils/media.utils";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { m } from "@/paraglide/messages";
 
 const THUMBNAIL_WIDTH = 120;
@@ -97,16 +98,19 @@ function Thumbnail({ moment }: { moment: PublicMoment }) {
 /** The home sidebar's card of the latest Moments; it is not there when there are none. */
 export function LatestMoments() {
   const { data: moments } = useSuspenseQuery(latestMomentsQuery);
+  const { headingAccent } = useThemeRecipe();
 
   if (moments.length === 0) return null;
 
   return (
     <div className="fuwari-card-base fuwari-card-widget pb-3">
       <div className="fuwari-widget-title relative mt-4 mb-2 ml-6 font-bold">
-        <span
-          className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md"
-          style={{ backgroundColor: "var(--theme-accent)" }}
-        />
+        {headingAccent === "on" ? (
+          <span
+            className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md"
+            style={{ backgroundColor: "var(--theme-accent)" }}
+          />
+        ) : null}
         <Link
           to="/moments"
           className="inline-flex items-center gap-1 text-(--theme-widget-title-color) transition hover:text-(--theme-accent)"

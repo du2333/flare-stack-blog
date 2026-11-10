@@ -21,6 +21,7 @@ import {
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatPublicPostDate } from "@/features/posts/utils/format-public-post-date";
 import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { MetaItem } from "./post-meta";
 
@@ -142,7 +143,11 @@ function PostCardBox({ post, pinned, popular }: PostCardProps) {
         <Link
           to="/post/$slug"
           params={{ slug: post.slug }}
-          className="fuwari-heading fuwari-list-title transition group w-full block font-bold mb-3 fuwari-text-90 hover:text-(--theme-accent) active:text-(--theme-accent) relative before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)"
+          className={cn(
+            "fuwari-heading fuwari-list-title transition group w-full block font-bold mb-3 fuwari-text-90 hover:text-(--theme-accent) active:text-(--theme-accent) relative",
+            recipe.headingAccent === "on" &&
+              "before:w-1 before:h-5 before:rounded-md before:absolute before:-left-5 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)",
+          )}
         >
           {post.title}
           <ChevronRight className="inline-block md:hidden text-[2rem] text-(--theme-accent) align-middle -mt-1 ml-1" />
@@ -236,7 +241,8 @@ function PostCardBox({ post, pinned, popular }: PostCardProps) {
  * rules between rows.
  */
 function PostRow({ post, pinned, popular }: PostCardProps) {
-  const inlineMeta = useThemeRecipe().meta === "inline";
+  const recipe = useThemeRecipe();
+  const inlineMeta = recipe.meta === "inline";
 
   return (
     <div className="relative flex w-full items-start gap-4 md:gap-6">
@@ -246,7 +252,12 @@ function PostRow({ post, pinned, popular }: PostCardProps) {
         <Link
           to="/post/$slug"
           params={{ slug: post.slug }}
-          className="fuwari-heading fuwari-list-title relative block font-bold mb-2 fuwari-text-90 transition hover:text-(--theme-accent) active:text-(--theme-accent) before:w-1 before:h-5 before:rounded-md before:absolute before:-left-3 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)"
+          className={cn(
+            "fuwari-heading fuwari-list-title relative block font-bold mb-2 fuwari-text-90 transition hover:text-(--theme-accent) active:text-(--theme-accent)",
+            // A row has no side padding, so the bar sits closer than on a card.
+            recipe.headingAccent === "on" &&
+              "before:w-1 before:h-5 before:rounded-md before:absolute before:-left-3 before:top-1/2 before:-translate-y-1/2 before:hidden md:before:block before:bg-(--theme-accent)",
+          )}
         >
           {post.title}
         </Link>

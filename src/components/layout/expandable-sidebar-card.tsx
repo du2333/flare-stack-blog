@@ -1,5 +1,6 @@
 import { Ellipsis } from "lucide-react";
 import type { ReactNode } from "react";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -16,13 +17,16 @@ export function ExpandableSidebarCard({
   contentClassName?: string;
   children: ReactNode;
 }) {
+  const { headingAccent } = useThemeRecipe();
   return (
     <div className="fuwari-card-base fuwari-card-widget pb-4">
       <div className="fuwari-widget-title font-bold relative ml-6 mt-4 mb-2">
-        <span
-          className="absolute -left-4 top-[5.5px] w-1 h-4 rounded-md"
-          style={{ backgroundColor: "var(--theme-accent)" }}
-        />
+        {headingAccent === "on" ? (
+          <span
+            className="absolute -left-4 top-[5.5px] w-1 h-4 rounded-md"
+            style={{ backgroundColor: "var(--theme-accent)" }}
+          />
+        ) : null}
         {title}
       </div>
       <div
