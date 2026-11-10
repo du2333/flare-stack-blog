@@ -35,7 +35,7 @@
 .posts-filter-footer {
   display: flex;
   margin: 0 -16px -8px;
-  padding: 8px 8px 0;
+  padding: 8px 16px 0;
   border-top: 1px solid var(--posts-filter-rule);
 }
 .posts-filter-sheet-head {

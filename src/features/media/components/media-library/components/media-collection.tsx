@@ -62,6 +62,8 @@ export function MediaCollection({
         ? m.media_badge_revisions()
         : m.media_unreferenced();
   };
+  const dimensions = (asset: MediaAsset) =>
+    asset.width && asset.height ? `${asset.width} × ${asset.height}` : "";
   if (view === "list")
     return (
       <div className="media-table-scroll">
@@ -90,17 +92,22 @@ export function MediaCollection({
                     onClick={(event) => onSelect(asset, event.currentTarget)}
                   >
                     <MediaThumbnail asset={asset} />
-                    <MediaName name={asset.fileName} />
+                    <span className="media-file-text">
+                      <MediaName name={asset.fileName} />
+                      {/* Stands in for the two columns a narrow table drops. */}
+                      <span className="media-file-meta">
+                        {dimensions(asset) ? (
+                          <span>{dimensions(asset)}</span>
+                        ) : null}
+                        <span>{formatDate(asset.createdAt)}</span>
+                      </span>
+                    </span>
                   </button>
                 </td>
-                <td>
-                  {asset.width && asset.height
-                    ? `${asset.width} × ${asset.height}`
-                    : "—"}
-                </td>
+                <td>{dimensions(asset) || "—"}</td>
                 <td>{formatBytes(asset.sizeInBytes)}</td>
                 <td>{formatDate(asset.createdAt)}</td>
-                <td>{usage(asset)}</td>
+                <td title={usage(asset)}>{usage(asset)}</td>
               </tr>
             ))}
           </tbody>

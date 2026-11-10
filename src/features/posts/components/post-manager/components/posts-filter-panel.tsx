@@ -73,6 +73,7 @@ export function PostsFilterPanel({
           value={category === undefined ? "" : String(category)}
           ariaLabel={m.admin_posts_filter_category()}
           triggerClassName={FIELD_TRIGGER}
+          matchTriggerWidth
           placement="bottom-start"
           onChange={(value) =>
             onCategoryChange(
@@ -95,6 +96,7 @@ export function PostsFilterPanel({
           value={tag === undefined ? "" : String(tag)}
           ariaLabel={m.admin_posts_filter_tag()}
           triggerClassName={FIELD_TRIGGER}
+          matchTriggerWidth
           placement="bottom-start"
           onChange={(value) => onTagChange(value === "" ? undefined : +value)}
           options={[

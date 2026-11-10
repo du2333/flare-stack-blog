@@ -14,7 +14,10 @@ function PostRowSkeleton() {
     <tr aria-hidden="true">
       <td>
         <div className="post-list-title-line">
-          <Skeleton className="h-4 w-2/3 rounded" />
+          {/* One text line of the title link, with the same padding. */}
+          <span className="post-list-title-link w-2/3">
+            <Skeleton className="h-[1.5em] w-full rounded" />
+          </span>
           <Skeleton className="h-(--fuwari-badge-height) w-14 shrink-0 rounded-full" />
         </div>
         <div className="post-list-meta-line">

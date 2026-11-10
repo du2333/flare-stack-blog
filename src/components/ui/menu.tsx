@@ -13,6 +13,9 @@ import { FloatingPopover } from "./floating-popover";
 
 const ITEMS = '[role^="menuitem"]:not(:disabled)';
 
+/** A tall menu scrolls at 16rem, or sooner where the viewport leaves less. */
+const MENU_MAX_HEIGHT = 256;
+
 const ITEM_CLASS =
   "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors disabled:pointer-events-none disabled:opacity-50 pointer-coarse:min-h-11";
 
@@ -61,6 +64,8 @@ interface MenuProps {
   triggerTitle?: string;
   disabled?: boolean;
   placement?: Placement;
+  /** As wide as the trigger (11rem at least), and kept inside the viewport, instead of 11 to 18rem. */
+  matchTriggerWidth?: boolean;
   children: ReactNode;
 }
 
@@ -78,6 +83,7 @@ export function Menu({
   triggerTitle,
   disabled = false,
   placement = "bottom-end",
+  matchTriggerWidth = false,
   children,
 }: MenuProps) {
   const id = useId();
@@ -169,7 +175,12 @@ export function Menu({
         id={id}
         role="menu"
         aria-label={label}
-        className="max-h-[min(16rem,calc(100dvh-16px))] max-w-72 min-w-44 overflow-y-auto overscroll-contain p-1 custom-scrollbar"
+        matchTriggerWidth={matchTriggerWidth}
+        maxHeight={matchTriggerWidth ? MENU_MAX_HEIGHT : undefined}
+        className={cn(
+          "max-h-[min(16rem,calc(100dvh-16px))] min-w-44 overflow-y-auto overscroll-contain p-1 custom-scrollbar",
+          !matchTriggerWidth && "max-w-72",
+        )}
         onKeyDown={onKeyDown}
         onBlur={(event) => {
           const next = event.relatedTarget;
