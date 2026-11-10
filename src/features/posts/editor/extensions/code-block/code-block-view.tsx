@@ -9,7 +9,7 @@ import {
   type MouseEvent,
 } from "react";
 import { ShikiHtml } from "@/components/content/shiki-html";
-import { ThemedMermaidDiagram } from "@/components/content/themed-mermaid-diagram";
+import { ColourSchemeMermaidDiagram } from "@/components/content/colour-scheme-mermaid-diagram";
 import { CodeCopyButton } from "@/components/ui/copy-button";
 import { codeBlockHighlightKey } from "@/features/posts/utils/apply-code-block-highlighting";
 import { isMermaidLanguage, PLAIN_TEXT } from "@/lib/code-languages";
@@ -200,7 +200,7 @@ function MermaidPreview({
   highlightedHtml?: string;
 }) {
   return (
-    <ThemedMermaidDiagram
+    <ColourSchemeMermaidDiagram
       source={code}
       fallback={
         highlightedHtml ? (

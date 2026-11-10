@@ -24,14 +24,18 @@ beforeEach(() => {
 afterEach(cleanup);
 
 it("shows the source before the diagram renders", () => {
-  render(createElement(MermaidDiagram, { source: SOURCE, theme: "light" }));
+  render(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
+  );
 
   expect(screen.getByText(/A --> B/).textContent).toBe(SOURCE);
   expect(screen.queryByTestId("diagram")).toBeNull();
 });
 
 it("renders with the strict, base-themed Mermaid config", async () => {
-  render(createElement(MermaidDiagram, { source: SOURCE, theme: "light" }));
+  render(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
+  );
   await screen.findByTestId("diagram");
 
   expect(mermaid.initialize).toHaveBeenCalledWith(
@@ -43,9 +47,9 @@ it("renders with the strict, base-themed Mermaid config", async () => {
   );
 });
 
-it("re-renders with the dark theme variables when the site theme changes", async () => {
+it("re-renders with the dark Mermaid theme variables when the colour scheme changes", async () => {
   const { rerender } = render(
-    createElement(MermaidDiagram, { source: SOURCE, theme: "light" }),
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
   );
   await screen.findByTestId("diagram");
   expect(mermaid.initialize).toHaveBeenLastCalledWith(
@@ -57,7 +61,9 @@ it("re-renders with the dark theme variables when the site theme changes", async
   mermaid.render.mockResolvedValue({
     svg: '<svg data-testid="dark-diagram"></svg>',
   });
-  rerender(createElement(MermaidDiagram, { source: SOURCE, theme: "dark" }));
+  rerender(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "dark" }),
+  );
 
   expect(await screen.findByTestId("dark-diagram")).toBeDefined();
   expect(mermaid.initialize).toHaveBeenLastCalledWith(
@@ -69,7 +75,9 @@ it("re-renders with the dark theme variables when the site theme changes", async
 });
 
 it("replaces the source with the rendered diagram", async () => {
-  render(createElement(MermaidDiagram, { source: SOURCE, theme: "light" }));
+  render(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
+  );
 
   expect(await screen.findByTestId("diagram")).toBeDefined();
   expect(mermaid.render).toHaveBeenCalledWith(
@@ -85,7 +93,9 @@ it("keeps the source and shows the error when the syntax is invalid", async () =
     new Error("Parse error on line 2: Expecting 'SEMI', got 'EOF'"),
   );
 
-  render(createElement(MermaidDiagram, { source: SOURCE, theme: "light" }));
+  render(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
+  );
 
   const alert = await screen.findByRole("alert");
   expect(alert.textContent).toContain("Parse error on line 2");
@@ -94,7 +104,9 @@ it("keeps the source and shows the error when the syntax is invalid", async () =
 });
 
 it("measures the diagram off the page so the window never scrolls", async () => {
-  render(createElement(MermaidDiagram, { source: SOURCE, theme: "light" }));
+  render(
+    createElement(MermaidDiagram, { source: SOURCE, colourScheme: "light" }),
+  );
   await screen.findByTestId("diagram");
 
   const container = mermaid.render.mock.calls[0]?.[2] as

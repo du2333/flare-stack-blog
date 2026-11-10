@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { useState } from "react";
-import { useTheme } from "@/components/common/theme-provider";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { useColourScheme } from "@/components/common/colour-scheme-provider";
+import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { PublicNavLink } from "./public-nav-link";
@@ -29,13 +29,13 @@ export function MobileMenu({
   isLoading,
 }: MobileMenuProps) {
   const [loggingOut, setLoggingOut] = useState(false);
-  const { userTheme } = useTheme();
-  const themeLabel =
-    userTheme === "light"
-      ? m.theme_light()
-      : userTheme === "dark"
-        ? m.theme_dark()
-        : m.theme_system();
+  const { colourSchemePreference } = useColourScheme();
+  const schemeLabel =
+    colourSchemePreference === "light"
+      ? m.colour_scheme_light()
+      : colourSchemePreference === "dark"
+        ? m.colour_scheme_dark()
+        : m.colour_scheme_system();
   return (
     <>
       {mobile && (
@@ -52,7 +52,10 @@ export function MobileMenu({
             ))}
           </nav>
           <div className="public-menu-preferences">
-            <ThemeToggle className="public-menu-theme" label={themeLabel} />
+            <ColourSchemeToggle
+              className="public-menu-colour-scheme"
+              label={schemeLabel}
+            />
             <SegmentedControl
               className="public-menu-languages"
               aria-label={m.common_switch_language()}

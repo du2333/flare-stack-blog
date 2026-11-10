@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { lazy, Suspense, type ComponentType } from "react";
-import { ThemeProvider } from "@/components/common/theme-provider";
+import { ColourSchemeProvider } from "@/components/common/colour-scheme-provider";
 import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
 import { getLocale } from "@/paraglide/runtime";
@@ -130,7 +130,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ColourSchemeProvider>{children}</ColourSchemeProvider>
         <ClientOnly>
           <Suspense fallback={null}>
             <AppDevtools />

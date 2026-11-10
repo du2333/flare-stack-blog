@@ -1,7 +1,7 @@
 import { Link, useLocation, useRouteContext } from "@tanstack/react-router";
 import { ChevronDown, Home, Menu, Search, UserIcon, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "./layout-props";
@@ -148,7 +148,7 @@ export function Navbar({
             <span>{m.nav_search()}</span>
           </Link>
           <div className="public-desktop-tools">
-            <ThemeToggle className="public-tool-button" />
+            <ColourSchemeToggle className="public-tool-button" />
             <LanguageSwitcher className="public-tool-button" />
             <IconButton
               size="lg"

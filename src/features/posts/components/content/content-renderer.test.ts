@@ -15,8 +15,8 @@ vi.mock("mermaid", () => {
   return { default: mermaid };
 });
 
-vi.mock("@/components/common/theme-provider", () => ({
-  useTheme: () => ({ appTheme: "light" }),
+vi.mock("@/components/common/colour-scheme-provider", () => ({
+  useColourScheme: () => ({ colourScheme: "light" }),
 }));
 
 const SOURCE = "flowchart LR\n  A --> B";
