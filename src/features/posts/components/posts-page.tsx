@@ -63,9 +63,9 @@ export function PostsPage({
             ))}
           </div>
         ) : hasNextPage ? (
-          <div className="h-px w-24 bg-black/10 dark:bg-white/10"></div>
+          <div className="h-px w-24 bg-(--theme-rule,var(--fuwari-input-border))"></div>
         ) : posts.length > 0 ? (
-          <div className="flex items-center gap-4 text-black/20 dark:text-white/20 mt-4">
+          <div className="flex items-center gap-4 text-(--theme-rule,var(--fuwari-meta-divider)) mt-4">
             <span className="h-px w-12 bg-current" />
             <span className="text-sm font-bold italic">{m.posts_end()}</span>
             <span className="h-px w-12 bg-current" />

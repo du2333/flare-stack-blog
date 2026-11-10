@@ -266,7 +266,7 @@ export default function TableOfContents({
             </a>
           ))}
           <div
-            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 border-dashed border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 [border-style:var(--theme-rule-style)] border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
             style={{
               top: indicator.top,
               height: indicator.height,
@@ -329,7 +329,7 @@ function TocBadge({ heading }: { heading: VisibleHeader }) {
         <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--fuwari-toc-badge-bg)" />
       )}
       {heading.relative === 2 && (
-        <div className="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10" />
+        <div className="transition w-1.5 h-1.5 rounded-sm bg-(--fuwari-ink-faint)" />
       )}
     </div>
   );
@@ -474,7 +474,7 @@ function CompactToc({
               })}
               {/* The same range indicator as the side TOC. */}
               <div
-                className="absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 border-dashed border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+                className="absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 [border-style:var(--theme-rule-style)] border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
                 style={{
                   top: indicator.top,
                   height: indicator.height,

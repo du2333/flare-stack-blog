@@ -10,7 +10,7 @@
 .taxonomy-name-dialog h2 {
   font-size: clamp(18px, 1.2vw, 22px);
   font-weight: 600;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg-75);
 }
 .taxonomy-name-dialog form {
   margin-top: 20px;

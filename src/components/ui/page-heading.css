@@ -26,13 +26,13 @@
     font-size: calc(28 * var(--admin-unit, 1px));
     font-weight: 650;
     line-height: 1.4;
-    color: var(--fuwari-fg-90);
+    color: inherit;
   }
   .fuwari-section-heading :is(h2, h3) {
     font-size: calc(22 * var(--admin-unit, 1px));
     font-weight: 650;
     line-height: 1.4;
-    color: var(--fuwari-fg-90);
+    color: inherit;
     overflow-wrap: anywhere;
   }
   .fuwari-section-heading[data-size="md"] :is(h2, h3) {

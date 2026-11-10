@@ -58,7 +58,7 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
         >
           <div className="flex flex-row items-center">
             {inlineMeta ? null : (
-              <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+              <div className="transition h-6 w-6 rounded-md bg-(--fuwari-ink-faint) fuwari-text-50 flex items-center justify-center mr-2">
                 <FileText strokeWidth={1.5} size={16} />
               </div>
             )}
@@ -68,7 +68,7 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
           </div>
           <div className="flex flex-row items-center">
             {inlineMeta ? null : (
-              <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+              <div className="transition h-6 w-6 rounded-md bg-(--fuwari-ink-faint) fuwari-text-50 flex items-center justify-center mr-2">
                 <Clock strokeWidth={1.5} size={16} />
               </div>
             )}
@@ -84,7 +84,7 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
                 className="flex flex-row items-center fuwari-text-30 hover:fuwari-text-90 transition animate-in fade-in duration-500"
               >
                 {inlineMeta ? null : (
-                  <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+                  <div className="transition h-6 w-6 rounded-md bg-(--fuwari-ink-faint) fuwari-text-50 flex items-center justify-center mr-2">
                     <Pencil strokeWidth={1.5} size={16} />
                   </div>
                 )}

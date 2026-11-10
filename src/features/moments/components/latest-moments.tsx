@@ -127,7 +127,7 @@ export function LatestMoments() {
             params={{ id: String(moment.id) }}
             className={`flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) ${
               index > 0
-                ? "border-t border-dashed border-black/10 dark:border-white/15"
+                ? "border-t border-dashed border-(--theme-rule,var(--fuwari-divider))"
                 : ""
             }`}
           >

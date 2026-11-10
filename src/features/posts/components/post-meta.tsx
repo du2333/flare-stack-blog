@@ -60,8 +60,8 @@ export function PostMeta({ post, className }: PostMetaProps) {
     <div
       className={cn(
         inline
-          ? "flex flex-wrap text-black/50 dark:text-white/40 items-center gap-x-2 gap-y-1 fuwari-meta-inline"
-          : "flex flex-wrap text-black/50 dark:text-white/40 items-center gap-4 gap-x-4 gap-y-2",
+          ? "flex flex-wrap text-(--theme-meta-color) items-center gap-x-2 gap-y-1 fuwari-meta-inline"
+          : "flex flex-wrap text-(--theme-meta-color) items-center gap-4 gap-x-4 gap-y-2",
         className,
       )}
     >
@@ -113,7 +113,7 @@ export function PostMeta({ post, className }: PostMetaProps) {
             post.tags.map((tag, i) => (
               <span key={tag.name} className="flex items-center">
                 {i > 0 && (
-                  <span className="mx-1.5 text-(--fuwari-meta-divider) text-sm">
+                  <span className="mx-1.5 text-(--theme-rule,var(--fuwari-meta-divider)) text-sm">
                     /
                   </span>
                 )}

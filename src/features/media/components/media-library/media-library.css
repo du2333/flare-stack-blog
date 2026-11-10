@@ -333,7 +333,7 @@ aside.media-inspector {
   margin-top: calc(18 * var(--admin-unit));
   font-size: calc(14 * var(--admin-unit));
   font-weight: 500;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg-75);
 }
 .media-inspector-name > span {
   min-width: 0;

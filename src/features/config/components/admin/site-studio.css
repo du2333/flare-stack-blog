@@ -115,7 +115,7 @@
   background: transparent;
   border: 0;
   outline: none;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg);
   width: 100%;
   min-width: 0;
   padding: 4px 0;
@@ -154,7 +154,7 @@
   font-size: calc(16 * var(--admin-unit));
   line-height: 1.5;
   font-weight: 600;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg);
 }
 .site-section-copy p,
 .site-section-hint {

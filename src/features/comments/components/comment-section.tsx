@@ -417,7 +417,7 @@ function CommentSectionSkeleton() {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="py-6 flex gap-4 border-b border-black/5 dark:border-white/5"
+            className="py-6 flex gap-4 border-b border-(--theme-rule,var(--fuwari-hairline))"
           >
             <Skeleton className="w-9 h-9 rounded-full shrink-0" />
             <div className="flex-1 space-y-3">

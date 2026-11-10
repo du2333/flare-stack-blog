@@ -49,7 +49,7 @@ export function HomePage({
               popular={!post.pinnedAt && popularSlugs.has(post.slug)}
             />
             {!rows && i < posts.length - 1 && (
-              <div className="border-t border-dashed mx-6 border-black/10 dark:border-white/15 md:hidden" />
+              <div className="border-t border-dashed mx-6 border-(--theme-rule,var(--fuwari-divider)) md:hidden" />
             )}
           </div>
         ))}

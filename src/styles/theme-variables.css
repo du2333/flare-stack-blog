@@ -18,9 +18,9 @@
  *   --theme-row-pad-y        block padding of a row in the post list
  *   --theme-heading-font, --theme-heading-tracking  every title
  *   --theme-list-title-size  a post's title in a list
- *   --theme-meta-size, --theme-meta-weight          the items of a post's meta row
+ *   --theme-meta-size, --theme-meta-weight, --theme-meta-color  the items of a post's meta row
  *   --theme-widget-rule, --theme-widget-title-size, --theme-widget-title-tracking,
- *   --theme-widget-title-color, --theme-widget-row-bleed   sidebar blocks
+ *   --theme-widget-title-color, --theme-widget-row-color, --theme-widget-row-bleed   sidebar blocks
  *   --theme-chip-radius      tags and counts
  *   --theme-kicker-size, --theme-kicker-tracking    the pinned and popular label
  *   --theme-button-radius    buttons (small ones 2px less)
@@ -32,7 +32,7 @@
  * Not declared: today's value differs by place, or derives from another
  * variable. Each consumer reads var(--theme-…, <its value today>), so a
  * derived one follows its source wherever that is overridden:
- *   --theme-rule             separator colour
+ *   --theme-rule             separator colour: lines, dots and slashes between items, quiet box edges
  *   --theme-panel-pad-x      side padding of a content panel
  *   --theme-page-title-size  a post page's title
  *   --theme-kicker-color     the pinned and popular label
@@ -58,10 +58,12 @@
     --theme-list-title-size: 1.875rem;
     --theme-meta-size: 0.875rem;
     --theme-meta-weight: 500;
+    --theme-meta-color: var(--fuwari-meta-text);
     --theme-widget-rule: none;
     --theme-widget-title-size: 1.125rem;
     --theme-widget-title-tracking: normal;
     --theme-widget-title-color: var(--fuwari-fg);
+    --theme-widget-row-color: var(--fuwari-row-text);
     --theme-widget-row-bleed: 0px;
     --theme-chip-radius: 0.5rem;
     --theme-kicker-size: 0.875rem;
@@ -91,10 +93,12 @@
     --theme-list-title-size: 1.875rem !important;
     --theme-meta-size: 0.875rem !important;
     --theme-meta-weight: 500 !important;
+    --theme-meta-color: var(--fuwari-meta-text) !important;
     --theme-widget-rule: none !important;
     --theme-widget-title-size: 1.125rem !important;
     --theme-widget-title-tracking: normal !important;
     --theme-widget-title-color: var(--fuwari-fg) !important;
+    --theme-widget-row-color: var(--fuwari-row-text) !important;
     --theme-widget-row-bleed: 0px !important;
     --theme-chip-radius: 0.5rem !important;
     --theme-kicker-size: 0.875rem !important;
