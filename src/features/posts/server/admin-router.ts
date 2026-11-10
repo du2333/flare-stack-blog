@@ -304,6 +304,8 @@ const adminList = adminProcedure
     method: "GET",
     path: "/admin/posts",
     summary: "List posts for admin",
+    description:
+      "Each item carries its category (null when it has none) and its tags, so a client lists them without reading every post. They are the draft's assignments, or the published ones when taxonomy.scope is public, read for the whole page at once.",
     tags: ["Admin Posts"],
   })
   .input(GetPostsInputSchema)

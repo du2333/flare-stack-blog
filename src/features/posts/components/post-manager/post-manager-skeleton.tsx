@@ -5,21 +5,27 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
+import { PostListColgroup } from "./components/post-row";
 import { WIDE_TOOLBAR_QUERY } from "./types";
 import "./post-manager.css";
 
 function PostRowSkeleton() {
   return (
     <tr aria-hidden="true">
-      <td colSpan={4}>
-        <div className="flex items-center gap-8 py-2">
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-2/3 rounded" />
-            <Skeleton className="h-3 w-1/3 rounded" />
-          </div>
-          <Skeleton className="h-5 w-14 rounded-full" />
-          <Skeleton className="hidden sm:block h-4 w-24 rounded" />
+      <td>
+        <div className="post-list-title-line">
+          <Skeleton className="h-4 w-2/3 rounded" />
+          <Skeleton className="h-(--fuwari-badge-height) w-14 shrink-0 rounded-full" />
         </div>
+        <div className="post-list-meta-line">
+          <Skeleton className="h-3 w-1/4 rounded" />
+        </div>
+      </td>
+      <td className="post-list-date">
+        <Skeleton className="ml-auto h-3 w-16 rounded" />
+      </td>
+      <td className="post-list-actions">
+        <Skeleton className="ml-auto size-8 rounded-lg max-[620px]:size-11" />
       </td>
     </tr>
   );
@@ -49,9 +55,11 @@ function PostsToolbarSkeleton() {
     </div>
   );
   return wide ? (
-    <div className="admin-frame-toolbar">
-      {tabs}
-      {tools}
+    <div className="post-list-toolbar-shell">
+      <div className="admin-frame-toolbar">
+        {tabs}
+        {tools}
+      </div>
     </div>
   ) : (
     <>
@@ -70,11 +78,16 @@ export function PostManagerPageSkeleton() {
       <FrameHeaderSkeleton title={m.admin_posts_title()} />
       <PostsToolbarSkeleton />
       <table className="post-list-table">
+        <PostListColgroup />
         <thead aria-hidden="true">
           <tr>
-            <th colSpan={4}>
+            <th>
               <Skeleton className="h-3 w-12 rounded" />
             </th>
+            <th>
+              <Skeleton className="ml-auto h-3 w-16 rounded" />
+            </th>
+            <th />
           </tr>
         </thead>
         <tbody>

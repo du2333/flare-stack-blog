@@ -366,8 +366,6 @@
   "admin_posts_clear_search": "Clear search",
   "admin_posts_col_title": "Post",
   "admin_posts_col_actions": "Actions",
-  "admin_posts_slug_empty": "No URL yet",
-  "admin_posts_edit_named": "Edit {title}",
   "admin_posts_more_named": "More actions for {title}",
   "admin_posts_create_failed": "Could not create the post. Try again.",
   "admin_posts_title": "Posts",
@@ -390,6 +388,8 @@
   "admin_posts_filter_chip_category": "Category: {name}",
   "admin_posts_filter_chip_tag": "Tag: {name}",
   "admin_posts_filter_remove": "Remove the \"{name}\" filter",
+  "admin_posts_filter_by_category": "Filter by category \"{name}\"",
+  "admin_posts_filter_by_tag": "Filter by tag \"{name}\"",
   "admin_posts_sort_recent_pub": "Newest",
   "admin_posts_sort_recent_upd": "Recent Updated",
   "admin_posts_no_match": "No posts found",
@@ -414,7 +414,6 @@
       }
     }
   ],
-  "admin_posts_action_edit": "Edit",
   "admin_posts_action_delete_post": "Delete Post",
   "admin_posts_action_view_live": "View Live Page",
   "admin_posts_action_pin": "Pin",

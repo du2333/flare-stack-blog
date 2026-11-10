@@ -40,8 +40,8 @@ interface PostsToolbarProps {
   onTagChange: (tag?: number, replace?: boolean) => void;
   sortBy: SortField;
   onSortByChange: (sortBy: SortField) => void;
-  /** Resets every filter, the chosen Category and Tag included. */
-  onClearFilters?: () => void;
+  /** Clears the chosen Category and Tag only, not the search or the status. */
+  onClearTaxonomy?: () => void;
   /** Opens the categories and tags sheet. */
   onManageTaxonomy?: () => void;
 }
@@ -59,7 +59,7 @@ export function PostsToolbar({
   onTagChange,
   sortBy,
   onSortByChange,
-  onClearFilters,
+  onClearTaxonomy,
   onManageTaxonomy,
 }: PostsToolbarProps) {
   const wide = useMediaQuery(WIDE_TOOLBAR_QUERY);
@@ -186,22 +186,24 @@ export function PostsToolbar({
   return (
     <>
       {wide ? (
-        <div className="admin-frame-toolbar">
-          {tabs}
-          <div className="post-list-tools">
-            {search}
-            {filter}
-            <DropdownMenu
-              value={sortBy}
-              ariaLabel={m.admin_posts_sort_label()}
-              triggerClassName={SORT_TRIGGER}
-              placement="bottom-end"
-              onChange={(value) => onSortByChange(value as SortField)}
-              options={SORT_FIELDS.map((value) => ({
-                value,
-                label: sortLabel(value),
-              }))}
-            />
+        <div className="post-list-toolbar-shell">
+          <div className="admin-frame-toolbar">
+            {tabs}
+            <div className="post-list-tools">
+              {search}
+              {filter}
+              <DropdownMenu
+                value={sortBy}
+                ariaLabel={m.admin_posts_sort_label()}
+                triggerClassName={SORT_TRIGGER}
+                placement="bottom-end"
+                onChange={(value) => onSortByChange(value as SortField)}
+                options={SORT_FIELDS.map((value) => ({
+                  value,
+                  label: sortLabel(value),
+                }))}
+              />
+            </div>
           </div>
         </div>
       ) : (
@@ -231,8 +233,8 @@ export function PostsToolbar({
               {m.admin_posts_filter_chip_tag({ name: tagName })}
             </Badge>
           ) : null}
-          {onClearFilters ? (
-            <Button variant="text" size="sm" onClick={onClearFilters}>
+          {onClearTaxonomy ? (
+            <Button variant="text" size="sm" onClick={onClearTaxonomy}>
               {m.admin_posts_clear_filters()}
             </Button>
           ) : null}
