@@ -11,16 +11,50 @@ export type RevisionDetail = NonNullable<
   Awaited<ReturnType<typeof orpcClient.posts.admin.revisions.get>>
 >;
 
-export function getRevisionReasonLabel(reason: RevisionListItem["reason"]) {
+export function getRevisionReasonLabel(
+  reason: RevisionListItem["reason"],
+  restoredFromRevisionId: number | null,
+) {
   switch (reason) {
     case "publish":
       return m.editor_history_reason_publish();
     case "restore_backup":
-      return m.editor_history_reason_restore_backup();
+      // A restore names the version it restored; discarding changes does not.
+      return restoredFromRevisionId == null
+        ? m.editor_history_reason_discard_backup()
+        : m.editor_history_reason_restore_backup();
     case "auto":
     default:
       return m.editor_history_reason_auto();
   }
+}
+
+export interface RevisionListEntry {
+  revision: RevisionListItem;
+  /** The title, only when it differs from the adjacent older entry's. */
+  title: string | null;
+  /** Characters gained or lost against the adjacent older entry; null for the oldest. */
+  lengthChange: number | null;
+}
+
+/** `revisions` newest first, as the list returns them. */
+export function toRevisionListEntries(
+  revisions: ReadonlyArray<RevisionListItem>,
+): Array<RevisionListEntry> {
+  return revisions.map((revision, index) => {
+    const older = revisions[index + 1];
+    const title = revision.title.trim();
+    const changed = older == null || older.title.trim() !== title;
+    return {
+      revision,
+      title: changed ? title || m.common_untitled() : null,
+      lengthChange: older ? revision.contentLength - older.contentLength : null,
+    };
+  });
+}
+
+export function formatLengthChange(change: number) {
+  return change > 0 ? `+${change}` : `${change}`;
 }
 
 export function getRestoreErrorMessage(reason: string) {

@@ -1164,6 +1164,37 @@ describe("Posts Integration", () => {
       expect(revisions[1]?.title).toBe("First Version");
     });
 
+    it("counts the characters of each revision's body without whitespace", async () => {
+      const { id } = await PostService.createEmptyPost(adminContext);
+      await updatePost({
+        id,
+        data: {
+          contentJson: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "你好 世界 abc" }],
+              },
+            ],
+          },
+        },
+      });
+      unwrap(
+        await PostRevisionService.createPostRevision(adminContext, {
+          postId: id,
+          reason: "publish",
+        }),
+      );
+
+      const [revision] = await PostRevisionService.listPostRevisions(
+        adminContext,
+        { postId: id },
+      );
+
+      expect(revision?.contentLength).toBe(7);
+    });
+
     it("restores a revision and creates a restore backup from the current state", async () => {
       const originalTag = unwrap(
         await TagService.createTag(adminContext, { name: "original-tag" }),
