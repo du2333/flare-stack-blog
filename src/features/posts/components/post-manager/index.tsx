@@ -45,7 +45,10 @@ interface PostManagerProps {
   onSearchChange: (search: string) => void;
   onCategoryChange: (category?: CategoryFilter, replace?: boolean) => void;
   onTagChange: (tag?: number, replace?: boolean) => void;
-  /** Filters by one category or tag, dropping the other taxonomy filter. */
+  /**
+   * Filters by one category or tag, dropping the other taxonomy filter; with
+   * neither, clears both and leaves the search and the status alone.
+   */
   onTaxonomyFilter: (filter: {
     category?: CategoryFilter;
     tag?: number;
@@ -251,7 +254,7 @@ export function PostManager({
         onTagChange={onTagChange}
         sortBy={sortBy}
         onSortByChange={onSortByChange}
-        onClearFilters={resetFilters}
+        onClearTaxonomy={() => onTaxonomyFilter({})}
         onManageTaxonomy={() => setTaxonomyOpen(true)}
       />
       <div

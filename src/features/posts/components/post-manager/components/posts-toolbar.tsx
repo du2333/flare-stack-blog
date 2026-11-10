@@ -40,8 +40,8 @@ interface PostsToolbarProps {
   onTagChange: (tag?: number, replace?: boolean) => void;
   sortBy: SortField;
   onSortByChange: (sortBy: SortField) => void;
-  /** Resets every filter, the chosen Category and Tag included. */
-  onClearFilters?: () => void;
+  /** Clears the chosen Category and Tag only, not the search or the status. */
+  onClearTaxonomy?: () => void;
   /** Opens the categories and tags sheet. */
   onManageTaxonomy?: () => void;
 }
@@ -59,7 +59,7 @@ export function PostsToolbar({
   onTagChange,
   sortBy,
   onSortByChange,
-  onClearFilters,
+  onClearTaxonomy,
   onManageTaxonomy,
 }: PostsToolbarProps) {
   const wide = useMediaQuery(WIDE_TOOLBAR_QUERY);
@@ -231,8 +231,8 @@ export function PostsToolbar({
               {m.admin_posts_filter_chip_tag({ name: tagName })}
             </Badge>
           ) : null}
-          {onClearFilters ? (
-            <Button variant="text" size="sm" onClick={onClearFilters}>
+          {onClearTaxonomy ? (
+            <Button variant="text" size="sm" onClick={onClearTaxonomy}>
               {m.admin_posts_clear_filters()}
             </Button>
           ) : null}

@@ -53,7 +53,7 @@ function renderToolbar(
   const onCategoryChange = vi.fn();
   const onTagChange = vi.fn();
   const onSortByChange = vi.fn();
-  const onClearFilters = vi.fn();
+  const onClearTaxonomy = vi.fn();
   const onManageTaxonomy = vi.fn();
   render(
     createElement(
@@ -73,7 +73,7 @@ function renderToolbar(
         onSortByChange,
         onCategoryChange,
         onTagChange,
-        onClearFilters,
+        onClearTaxonomy,
         onManageTaxonomy,
         ...filters,
       }),
@@ -83,7 +83,7 @@ function renderToolbar(
     onCategoryChange,
     onTagChange,
     onSortByChange,
-    onClearFilters,
+    onClearTaxonomy,
     onManageTaxonomy,
   };
 }
@@ -179,7 +179,7 @@ it("keeps the search and the sort in the toolbar row and the choosers in the pan
 });
 
 it("shows the chosen filters as removable chips and counts them on the button", async () => {
-  const { onCategoryChange, onTagChange, onClearFilters } = renderToolbar({
+  const { onCategoryChange, onTagChange, onClearTaxonomy } = renderToolbar({
     category: 2,
     tag: 5,
   });
@@ -204,7 +204,7 @@ it("shows the chosen filters as removable chips and counts them on the button", 
   fireEvent.click(
     screen.getByRole("button", { name: m.admin_posts_clear_filters() }),
   );
-  expect(onClearFilters).toHaveBeenCalledOnce();
+  expect(onClearTaxonomy).toHaveBeenCalledOnce();
 });
 
 it("names the uncategorized filter and shows no chips without a filter", async () => {
