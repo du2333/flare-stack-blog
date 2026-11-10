@@ -206,10 +206,16 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  /* Title and Category on the left, the menu and the time on the right. */
+  /*
+   * Two grid rows: the title and the menu, then Category, Tags and the time.
+   * The first cell dissolves so its two lines are grid items of the row, which
+   * keeps the time level with the first line of Category and Tags however many
+   * lines the title takes.
+   */
   .post-list-table tr {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--list-rule);
   }
   .post-list-table td {
@@ -219,37 +225,60 @@
     border: 0;
   }
   .post-list-table td:first-child {
-    grid-area: 1 / 1 / 3 / 2;
+    display: contents;
+  }
+  .post-list-title-line {
+    grid-area: 1 / 1;
+    align-self: start;
+    /* The title's tap target runs 3px under the line; the rhythm does not. */
+    margin-bottom: -3px;
+  }
+  .post-list-meta-line {
+    grid-area: 2 / 1;
   }
   .post-list-actions {
     grid-area: 1 / 2;
+    align-self: start;
+    /* The 44px menu button is centred on the title's first line. */
+    margin-bottom: -3px;
   }
   .post-list-date {
     grid-area: 2 / 2;
-    align-self: center;
+    align-self: start;
+    /* Centred on the Category line's first line. */
+    line-height: 30px;
     padding-left: calc(8 * var(--admin-unit));
     font-size: calc(12 * var(--admin-unit));
   }
   .post-list-mobile-date-label {
     display: inline;
   }
-  /* Every tap target in the row is 44px high. */
+  /*
+   * Every tap target in the row is 44px high. The padding and the pseudo
+   * elements carry the extra height, so one line and two lines of title share
+   * the same space above, and Tags that wrap line up under the Category icon.
+   */
   .post-list-title-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
+    padding-block: 11px;
   }
   .post-list-meta-line {
-    min-height: 44px;
+    gap: calc(4 * var(--admin-unit)) calc(12 * var(--admin-unit));
+    min-height: 30px;
     margin-left: 0;
   }
   .post-list-taxon {
-    min-height: 44px;
+    position: relative;
+    min-height: 30px;
+    margin-inline: -6px;
+    padding-inline: 6px;
   }
-  .post-list-meta-line > :first-child {
-    padding-left: 0;
+  .post-list-taxon::after {
+    content: "";
+    position: absolute;
+    inset: -7px 0;
   }
   .post-list-uncategorized {
+    padding: 0;
     font-size: calc(12 * var(--admin-unit));
   }
   .post-list-table {
@@ -354,8 +383,7 @@
 .post-list-footer {
   border-top: 1px solid var(--list-rule);
   padding-top: calc(12 * var(--admin-unit));
-}
-@media (max-width: 620px) {
+}@media (max-width: 620px) {
   .post-list-footer > div {
     gap: 8px;
   }
