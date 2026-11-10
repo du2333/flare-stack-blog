@@ -203,7 +203,8 @@
   background: var(--fuwari-primary);
   border: 3px solid var(--fuwari-card-bg);
 }
-.site-hue-control output {
+.site-hue-control output,
+.site-focus-control output {
   display: grid;
   place-items: center;
   min-width: calc(72 * var(--admin-unit));
@@ -213,6 +214,50 @@
   border-radius: 8px;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
+}
+.site-focus-control {
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--admin-unit));
+}
+.site-brand-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(14 * var(--admin-unit));
+  min-width: 0;
+}
+.site-brand-choice {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.site-brand-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+.site-brand-preview img {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.site-brand-preview img[data-mark="avatar"] {
+  border-radius: 50%;
+  object-fit: cover;
+}
+.site-brand-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .site-nav-section {
   padding: calc(24 * var(--admin-unit)) 0;
