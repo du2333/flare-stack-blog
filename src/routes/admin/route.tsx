@@ -15,6 +15,8 @@ import {
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
 import { SideBar } from "@/components/admin/side-bar";
+import { readSidebarPreference } from "@/components/admin/sidebar-state";
+import { useSidebarCollapse } from "@/components/admin/use-sidebar-collapse";
 import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
@@ -37,7 +39,7 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/" });
     }
 
-    return { session };
+    return { session, sidebarPreference: await readSidebarPreference() };
   },
   component: AdminLayout,
   loader: () => ({
@@ -69,9 +71,8 @@ function AdminLayout() {
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const editorWorkspace = isPostEditorPath(pathname);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => editorWorkspace,
-  );
+  const { sidebarPreference } = Route.useRouteContext();
+  const sidebar = useSidebarCollapse(sidebarPreference, editorWorkspace);
   useVersionCheck();
 
   return (
@@ -85,8 +86,8 @@ function AdminLayout() {
         <SideBar
           isMobileSidebarOpen={isMobileSidebarOpen}
           closeMobileSidebar={closeMobileSidebar}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
+          collapsed={sidebar.collapsed}
+          onToggleCollapse={sidebar.toggle}
         />
 
         <main className="flex-1 flex flex-col min-w-0 min-h-0">
