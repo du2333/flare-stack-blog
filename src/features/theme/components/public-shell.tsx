@@ -6,8 +6,10 @@ import { FloatingActionsProvider } from "@/components/layout/floating-actions";
 import { Footer } from "@/components/layout/footer";
 import { PageFade } from "@/components/layout/page-fade";
 import { classicShell } from "../shells/classic/classic-shell";
+import { DEFAULT_THEME_RECIPE } from "../theme-recipe";
 import { resolvePageKind } from "../utils/page-kind";
 import { sidebarCardsFor } from "./sidebar-cards";
+import { ThemeRecipeProvider } from "./theme-recipe";
 
 interface PublicShellProps {
   children: ReactNode;
@@ -44,19 +46,21 @@ export function PublicShell({
   const { Shell } = shell;
 
   return (
-    <FloatingActionsProvider>
-      <Shell
-        pageKind={pageKind}
-        navOptions={navOptions}
-        sidebarCards={sidebarCardsFor(pageKind, shell)}
-        user={user}
-        isSessionLoading={isSessionLoading}
-        logout={logout}
-        footer={<Footer navOptions={navOptions} />}
-        floatingActions={<BackToTop />}
-      >
-        <PageFade includeSearch={pathname !== "/search"}>{children}</PageFade>
-      </Shell>
-    </FloatingActionsProvider>
+    <ThemeRecipeProvider recipe={DEFAULT_THEME_RECIPE}>
+      <FloatingActionsProvider>
+        <Shell
+          pageKind={pageKind}
+          navOptions={navOptions}
+          sidebarCards={sidebarCardsFor(pageKind, shell)}
+          user={user}
+          isSessionLoading={isSessionLoading}
+          logout={logout}
+          footer={<Footer navOptions={navOptions} />}
+          floatingActions={<BackToTop />}
+        >
+          <PageFade includeSearch={pathname !== "/search"}>{children}</PageFade>
+        </Shell>
+      </FloatingActionsProvider>
+    </ThemeRecipeProvider>
   );
 }
