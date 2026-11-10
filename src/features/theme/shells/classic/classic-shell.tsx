@@ -9,11 +9,11 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { cn } from "@/lib/utils";
-import { BackToTop } from "./back-to-top";
-import { FloatingActionsProvider } from "./floating-actions";
-import { Footer } from "./footer";
+import { BackToTop } from "@/components/layout/back-to-top";
+import { FloatingActionsProvider } from "@/components/layout/floating-actions";
+import { Footer } from "@/components/layout/footer";
+import { PageFade } from "@/components/layout/page-fade";
 import { Navbar } from "./navbar";
-import { PageFade } from "./page-fade";
 import { Sidebar } from "./sidebar";
 
 const BANNER_HEIGHT_HOME = 65;

@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { IconButton } from "@/components/ui/icon-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { NavOption, UserInfo } from "./layout-props";
+import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MOTION, useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
-import { LanguageSwitcher } from "./language-switcher";
-import { PublicNavLink } from "./public-nav-link";
-import { MobileMenu } from "./mobile-menu";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { PublicNavLink } from "@/components/layout/public-nav-link";
+import { MobileMenu } from "@/components/layout/mobile-menu";
 import "./navbar.css";
 
 interface NavbarProps {

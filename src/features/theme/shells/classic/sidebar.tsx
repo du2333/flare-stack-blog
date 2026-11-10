@@ -6,7 +6,7 @@ import {
 import { LatestMoments } from "@/features/moments/components/latest-moments";
 import { Tags, TagsSkeleton } from "@/features/tags/components/tag-cloud";
 import { cn } from "@/lib/utils";
-import { Profile } from "./profile";
+import { Profile } from "@/components/layout/profile";
 
 export function Sidebar({
   className,

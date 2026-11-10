@@ -6,7 +6,7 @@ import {
   useRouteContext,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { PublicLayout as SitePublicLayout } from "@/components/layout/public-layout";
+import { PublicLayout as SitePublicLayout } from "@/features/theme/shells/classic/classic-shell";
 import { Toaster } from "@/components/layout/toaster";
 import { NameGate } from "@/features/auth/components/name-gate";
 import { useLogout } from "@/features/auth/hooks/use-logout";
