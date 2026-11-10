@@ -208,7 +208,7 @@
     min-height: 44px;
     flex-shrink: 0;
     border-radius: 12px;
-    color: var(--fuwari-fg-90);
+    color: var(--fuwari-fg);
     text-align: start;
   }
   .fuwari-switch[data-label] {

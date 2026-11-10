@@ -1,6 +1,6 @@
 .friend-workspace {
   --admin-frame-bottom: 0;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg);
   --fuwari-field-height: calc(44 * var(--admin-unit));
   --fuwari-field-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-height: calc(40 * var(--admin-unit));

@@ -16,7 +16,7 @@
   line-height: 1.7;
 }
 .agent-skill-hint a {
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg-50);
 }
 .agent-skill-copyline {
   display: flex;

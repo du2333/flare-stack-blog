@@ -6,7 +6,7 @@
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
   --admin-frame-bottom: 0;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg);
 }
 .settings-muted {
   color: var(--fuwari-fg-50);

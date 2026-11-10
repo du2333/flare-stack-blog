@@ -19,7 +19,7 @@
 .fuwari-confirmation h2 {
   font-size: 1.25em;
   font-weight: 600;
-  color: var(--fuwari-fg-90);
+  color: var(--fuwari-fg-75);
 }
 .fuwari-confirmation p {
   margin-top: 0.75em;
