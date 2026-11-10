@@ -92,7 +92,8 @@
     --fuwari-input-border: rgba(0, 0, 0, 0.1);
     --fuwari-fg: rgb(0 0 0 / 0.9);
     --fuwari-fg-75: rgb(0 0 0 / 0.75);
-    --fuwari-fg-50: rgb(0 0 0 / 0.5);
+    /* fg-50 is the secondary-text tier: keep it at 4.5:1 or more on card, page and tint backgrounds. */
+    --fuwari-fg-50: rgb(0 0 0 / 0.58);
     --fuwari-fg-30: rgb(0 0 0 / 0.3);
     --fuwari-link-underline: color-mix(
       in oklab,
@@ -137,7 +138,7 @@
     --fuwari-input-border: rgba(255, 255, 255, 0.1);
     --fuwari-fg: rgb(255 255 255 / 0.9);
     --fuwari-fg-75: rgb(255 255 255 / 0.75);
-    --fuwari-fg-50: rgb(255 255 255 / 0.5);
+    --fuwari-fg-50: rgb(255 255 255 / 0.58);
     --fuwari-fg-30: rgb(255 255 255 / 0.3);
     --fuwari-toc-btn-hover: oklch(0.22 0.02 var(--fuwari-hue));
     --fuwari-toc-btn-active: oklch(0.25 0.02 var(--fuwari-hue));
