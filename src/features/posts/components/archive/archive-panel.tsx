@@ -1,4 +1,5 @@
 import type { PostItem } from "@/features/posts/schema/posts.schema";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { ArchivePost } from "./archive-post";
 import { ArchiveYear } from "./archive-year";
 
@@ -25,10 +26,13 @@ export function ArchivePanel({ posts }: ArchivePanelProps) {
     .map(Number)
     .sort((a, b) => b - a);
 
+  // The timeline runs on from year to year; an index sets the years apart.
+  const index = useThemeRecipe().archive === "index";
+
   return (
     <div className="fuwari-card-base fuwari-card-panel px-[var(--theme-panel-pad-x,2rem)] py-6">
       {years.map((year) => (
-        <div key={year}>
+        <div key={year} className={index ? "not-first:mt-10" : undefined}>
           <ArchiveYear year={year} count={groupedPosts[year].length} />
           {groupedPosts[year].map((post) => (
             <ArchivePost key={post.id} post={post} />
