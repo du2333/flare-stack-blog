@@ -1272,6 +1272,8 @@
   "settings_design_secret_configured": "已配置",
   "settings_design_replace_secret": "更换凭据",
   "settings_design_credential_actions": "凭据操作",
+  "settings_design_secret_change": "更换",
+  "settings_design_secret_change_actions": "更换或移除凭据",
   "settings_design_remove_secret": "移除已保存的凭据",
   "settings_design_remove_email_hint": "保存通知设置后将移除邮件密码，邮件发送将不可用。替换密码无需先移除。",
   "settings_design_remove_webhook_hint": "将清空端点地址并标记移除密钥，保存通知设置后 Webhook 停用。",

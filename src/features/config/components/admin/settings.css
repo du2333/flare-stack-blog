@@ -179,11 +179,10 @@
   flex: 1;
   min-width: 0;
 }
+/* The saved credential's state, in a box like the fields around it. */
 .settings-secret-summary {
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  color: var(--fuwari-fg-50);
+  flex: 1;
+  min-width: 0;
 }
 .notify-webhook {
   grid-column: 1;
