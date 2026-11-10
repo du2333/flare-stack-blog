@@ -6,12 +6,6 @@
   --fuwari-button-height: calc(40 * var(--admin-unit));
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
-  padding: calc(30 * var(--admin-unit)) calc(34 * var(--admin-unit))
-    calc(20 * var(--admin-unit));
-  min-height: calc(100dvh - 52px);
-}
-.post-list-heading {
-  margin-bottom: calc(24 * var(--admin-unit));
 }
 .post-list-controls {
   display: flex;
@@ -163,10 +157,6 @@
   display: none;
 }
 @media (max-width: 1200px) {
-  .post-manager {
-    padding: calc(25 * var(--admin-unit)) calc(24 * var(--admin-unit))
-      calc(18 * var(--admin-unit));
-  }
   .post-list-title-col {
     width: 45%;
   }
@@ -183,27 +173,7 @@
     gap: calc(9 * var(--admin-unit));
   }
 }
-@media (max-width: 1023px) {
-  .post-list-heading .post-list-create {
-    display: none;
-  }
-  .post-list-heading h1 {
-    display: none;
-  }
-  .post-list-heading {
-    margin-bottom: calc(10 * var(--admin-unit));
-  }
-  .post-list-heading p {
-    margin-top: 0;
-  }
-  .post-manager {
-    min-height: calc(100dvh - 120px);
-  }
-}
 @media (max-width: 620px) {
-  .post-manager {
-    padding: calc(20 * var(--admin-unit)) calc(18 * var(--admin-unit));
-  }
   .post-list-controls {
     flex-wrap: wrap;
     gap: calc(14 * var(--admin-unit));
@@ -373,16 +343,6 @@
 }
 
 /* Header, controls and pagination stay outside the independently scrolling rows. */
-.post-manager {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-}
-.post-list-heading,
-.post-list-tabs,
 .post-list-controls,
 .post-list-footer {
   flex-shrink: 0;

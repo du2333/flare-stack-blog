@@ -1,6 +1,9 @@
+import {
+  FrameHeaderSkeleton,
+  FrameTabsSkeleton,
+} from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import "@/components/ui/page-heading.css";
-import "@/components/ui/tabs.css";
+import { m } from "@/paraglide/messages";
 import "./post-manager.css";
 
 function PostRowSkeleton() {
@@ -33,22 +36,22 @@ export function PostManagerSkeleton() {
 export function PostManagerPageSkeleton() {
   return (
     <div
-      className="post-manager admin-workspace fuwari-card-base"
+      className="post-manager admin-workspace admin-frame fuwari-card-base"
       aria-busy="true"
     >
-      <div className="fuwari-page-header post-list-heading">
-        <Skeleton className="h-8 w-28 rounded" />
-        <Skeleton className="h-10 w-24 rounded" />
-      </div>
-      <div className="fuwari-tabs post-list-tabs h-12 items-center">
-        {[1, 2, 3].map((id) => (
-          <Skeleton key={id} className="h-4 w-16 rounded" />
-        ))}
-      </div>
+      <FrameHeaderSkeleton title={m.admin_posts_title()} />
+      <FrameTabsSkeleton count={4} />
       <div className="post-list-controls">
         <Skeleton className="h-11 w-80" />
       </div>
       <table className="post-list-table">
+        <thead aria-hidden="true">
+          <tr>
+            <th colSpan={4}>
+              <Skeleton className="h-3 w-12 rounded" />
+            </th>
+          </tr>
+        </thead>
         <tbody>
           <PostManagerSkeleton />
         </tbody>

@@ -183,9 +183,8 @@ export function PostManager({
   const isEmptyLibrary = !hasContentFilter && totalCount === 0;
 
   return (
-    <section className="post-manager admin-workspace fuwari-card-base">
+    <section className="post-manager admin-workspace admin-frame fuwari-card-base">
       <PageHeader
-        className="post-list-heading"
         title={m.admin_posts_title()}
         description={
           <>
@@ -200,7 +199,6 @@ export function PostManager({
         actions={
           <Button
             variant="primary"
-            className="post-list-create"
             onClick={() => createPost()}
             loading={isCreating}
             icon={<Plus size={19} />}
