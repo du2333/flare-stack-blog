@@ -1,12 +1,13 @@
 /*
  * Underlined tabs over a hairline rule. A surface sizes them through the
- * custom properties; the Admin workspaces scale them with their unit.
+ * custom properties; the Admin workspaces scale them with their unit. A row
+ * that draws the rule itself sets --fuwari-tabs-rule-width to 0.
  */
 @layer components {
   .fuwari-tabs {
     display: flex;
     gap: var(--fuwari-tabs-gap, 28px);
-    border-bottom: 1px solid
+    border-bottom: var(--fuwari-tabs-rule-width, 1px) solid
       var(
         --fuwari-tabs-rule,
         color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent)

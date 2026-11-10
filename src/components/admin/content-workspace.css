@@ -15,6 +15,66 @@
     --fuwari-tabs-gap: 22px;
   }
 }
+
+/*
+ * The frame Posts, Media, Friend Links and Settings share: title row, one
+ * toolbar row, the content, a footer. Everything sits inside one inset, so
+ * titles, tabs and primary actions line up page to page. A region that runs
+ * edge to edge (a split pane, a scroller, a bar) takes .admin-frame-bleed and
+ * pads itself with --admin-frame-x; a page that ends in such a bar sets
+ * --admin-frame-bottom to 0.
+ */
+.admin-frame {
+  --admin-frame-x: calc(30 * var(--admin-unit));
+  --admin-frame-top: calc(28 * var(--admin-unit));
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--admin-frame-top) var(--admin-frame-x)
+    var(--admin-frame-bottom, calc(20 * var(--admin-unit)));
+}
+.admin-frame > .fuwari-page-header {
+  margin-bottom: calc(20 * var(--admin-unit));
+}
+.admin-frame > :is(.fuwari-tabs, .admin-frame-toolbar) {
+  flex-shrink: 0;
+}
+.admin-frame-bleed {
+  margin-inline: calc(-1 * var(--admin-frame-x));
+}
+/* Tabs on the left, the page's controls on the right, one rule under both. */
+.admin-frame-toolbar {
+  --fuwari-tabs-rule-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(20 * var(--admin-unit));
+  min-height: var(--fuwari-tab-height);
+  border-bottom: 1px solid var(--admin-rule);
+}
+.admin-frame-toolbar > .fuwari-tabs {
+  align-self: stretch;
+  min-width: 0;
+}
+/* Below lg the top bar carries the title and the primary action. */
+@media (max-width: 1023px) {
+  .admin-frame {
+    --admin-frame-x: calc(24 * var(--admin-unit));
+    --admin-frame-top: calc(10 * var(--admin-unit));
+  }
+  .admin-frame > .fuwari-page-header {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .admin-frame {
+    --admin-frame-x: 16px;
+    --admin-frame-top: 8px;
+  }
+}
 .admin-list-region {
   position: relative;
 }
