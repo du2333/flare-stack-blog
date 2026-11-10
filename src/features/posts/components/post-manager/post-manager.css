@@ -1,7 +1,6 @@
 /* Content-list layout; colors remain shared with the Fuwari workbench. */
 .post-manager {
   --list-rule: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
-  --fuwari-field-height: calc(42 * var(--admin-unit));
   --fuwari-field-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-height: calc(40 * var(--admin-unit));
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
@@ -9,7 +8,10 @@
 }
 /* Search, 「筛选」 and the sort: in the toolbar row, or a row of their own. */
 .post-list-tools {
-  --fuwari-button-height: var(--fuwari-field-height);
+  /* One height for the search, 「筛选」 and the sort, the same as Media's. */
+  --admin-control-height: calc(40 * var(--admin-unit));
+  --fuwari-field-height: var(--admin-control-height);
+  --fuwari-button-height: var(--admin-control-height);
   display: flex;
   flex-shrink: 0;
   align-items: center;

@@ -21,7 +21,7 @@ import { PostsFilterPanel, sortLabel } from "./posts-filter-panel";
 
 /** Never squeezed: the search field gives way to it, so its label stays whole. */
 const SORT_TRIGGER =
-  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap text-left";
+  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap py-0 text-left";
 
 /** A mousedown inside a menu opened from the panel is not outside the panel. */
 const inMenu = (target: Node) =>

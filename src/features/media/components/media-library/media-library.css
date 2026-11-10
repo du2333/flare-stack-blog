@@ -19,6 +19,11 @@
 /* The toolbar row lays itself out by its own width, which the open detail
    panel narrows, not by the screen's. */
 .media-toolbar-shell {
+  /* One height for the search, the sort and the view switch, the same as
+     Posts'. The switch's track pads its pills by 4px on each side. */
+  --admin-control-height: calc(40 * var(--admin-unit));
+  --fuwari-field-height: var(--admin-control-height);
+  --fuwari-segment-height: calc(var(--admin-control-height) - 8px);
   container-type: inline-size;
   flex-shrink: 0;
 }

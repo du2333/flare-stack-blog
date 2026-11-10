@@ -9,7 +9,7 @@ import { m } from "@/paraglide/messages";
 
 /** Never squeezed: the search field gives way to it, so its label stays whole. */
 const SORT_TRIGGER =
-  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap text-left";
+  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap py-0 text-left";
 
 export type MediaView = "grid" | "list";
 
