@@ -1,6 +1,5 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -10,18 +9,19 @@ import {
 
 export function BackToTop() {
   const setSlot = useFloatingActionsSlotRef();
-  const firstScreenHeight = useFirstScreenHeight();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsVisible(window.scrollY > firstScreenHeight());
+      // A fixed share of the viewport, the same in every Theme Shell: it says
+      // "the reader has scrolled", not "the first screen is gone".
+      setIsVisible(window.scrollY > window.innerHeight * 0.35);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [firstScreenHeight]);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });

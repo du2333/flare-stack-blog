@@ -29,14 +29,14 @@ import type {
 import { THEME_SHELLS } from ".";
 
 const calls = vi.hoisted(() => ({
-  setTheme: vi.fn(),
+  setColourScheme: vi.fn(),
   setLocale: vi.fn(),
 }));
-vi.mock("@/components/common/theme-provider", () => ({
-  useTheme: () => ({
-    userTheme: "system",
-    appTheme: "light",
-    setTheme: calls.setTheme,
+vi.mock("@/components/common/colour-scheme-provider", () => ({
+  useColourScheme: () => ({
+    colourSchemePreference: "system",
+    colourScheme: "light",
+    setColourScheme: calls.setColourScheme,
   }),
 }));
 vi.mock("@/paraglide/runtime", async () => ({
@@ -202,10 +202,12 @@ describe.each(THEME_SHELLS.map((shell) => [shell.id, shell] as const))(
 
       fireEvent.click(
         screen.getAllByRole("button", {
-          name: m.theme_toggle_title({ theme: m.theme_system() }),
+          name: m.colour_scheme_toggle_title({
+            scheme: m.colour_scheme_system(),
+          }),
         })[0],
       );
-      expect(calls.setTheme).toHaveBeenCalledWith("light");
+      expect(calls.setColourScheme).toHaveBeenCalledWith("light");
 
       fireEvent.click(
         screen.getAllByRole("button", { name: m.common_switch_language() })[0],
