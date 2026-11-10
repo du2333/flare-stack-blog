@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -9,20 +10,18 @@ import {
 
 export function BackToTop() {
   const setSlot = useFloatingActionsSlotRef();
+  const firstScreenHeight = useFirstScreenHeight();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Same logic as original Fuwari: show after banner height
-      // The current Fuwari banner logic sets banner to ~35vh or 65vh, let's use 35vh as base threshold
-      const bannerHeight = window.innerHeight * 0.35;
-      setIsVisible(window.scrollY > bannerHeight);
+      setIsVisible(window.scrollY > firstScreenHeight());
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [firstScreenHeight]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });

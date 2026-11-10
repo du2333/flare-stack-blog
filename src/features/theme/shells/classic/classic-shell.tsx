@@ -1,18 +1,12 @@
-import {
-  useLocation,
-  useRouteContext,
-  useRouterState,
-} from "@tanstack/react-router";
-import type { PublicLayoutProps } from "@/components/layout/layout-props";
+import { useRouteContext } from "@tanstack/react-router";
+import { useCallback } from "react";
 import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
+import { FirstScreenProvider } from "@/features/theme/components/first-screen";
+import type { ThemeShell, ThemeShellProps } from "@/features/theme/theme-shell";
 import { cn } from "@/lib/utils";
-import { BackToTop } from "@/components/layout/back-to-top";
-import { FloatingActionsProvider } from "@/components/layout/floating-actions";
-import { Footer } from "@/components/layout/footer";
-import { PageFade } from "@/components/layout/page-fade";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 
@@ -21,36 +15,34 @@ const BANNER_HEIGHT_PAGE = 35;
 const MAIN_OVERLAP_REM = 3.5;
 const NAVBAR_HEIGHT_REM = 4.5;
 
-export function PublicLayout({
-  children,
+/** 「经典」: a sticky navbar over a banner, the sidebar cards left of the content. */
+function ClassicShell({
+  pageKind,
   navOptions,
+  sidebarCards,
   user,
   isSessionLoading,
   logout,
-}: PublicLayoutProps) {
+  children,
+  footer,
+  floatingActions,
+}: ThemeShellProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
-  const isAuthPage = useRouterState({
-    select: (state) =>
-      state.matches.some((match) => match.routeId.includes("/_auth")),
-  });
-  const hasRouteError = useRouterState({
-    select: (state) =>
-      state.matches.some(
-        (match) => match.status === "error" || match.status === "notFound",
-      ),
-  });
-  const isFocusedPage =
-    hasRouteError ||
-    isAuthPage ||
-    location.pathname === "/submit-friend-link" ||
-    location.pathname === "/profile";
+  const isHomePage = pageKind === "home";
+  const isFocusedPage = pageKind === "focused";
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
+  // The banner is the first screen.
+  const firstScreenHeight = useCallback(
+    () => (window.innerHeight * bannerHeightVh) / 100,
+    [bannerHeightVh],
+  );
 
   return (
-    <FloatingActionsProvider>
-      <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
+    <FirstScreenProvider height={firstScreenHeight}>
+      <div
+        className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors"
+        data-theme-shell="classic"
+      >
         {/* Top row: Navbar - sticky */}
         <div className="sticky top-0 z-50 pointer-events-none">
           <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-0 md:px-4">
@@ -59,7 +51,6 @@ export function PublicLayout({
               logout={logout}
               user={user}
               isLoading={isSessionLoading}
-              bannerHeightVh={bannerHeightVh}
             />
           </div>
         </div>
@@ -95,11 +86,12 @@ export function PublicLayout({
                 : "grid-cols-1 lg:grid-cols-[17.5rem_1fr]",
             )}
             style={{ maxWidth: "var(--fuwari-page-width)" }}
+            data-shell-region="body"
           >
             {isFocusedPage ? null : (
               <Sidebar
                 className="public-sidebar order-2 lg:order-1"
-                showLatestMoments={isHomePage}
+                cards={sidebarCards}
               />
             )}
 
@@ -108,10 +100,9 @@ export function PublicLayout({
                 "flex flex-col gap-4 min-w-0",
                 isFocusedPage ? "" : "order-1 lg:order-2",
               )}
+              data-shell-region="main"
             >
-              <PageFade includeSearch={location.pathname !== "/search"}>
-                {children}
-              </PageFade>
+              {children}
             </main>
 
             <div
@@ -120,14 +111,21 @@ export function PublicLayout({
                 isFocusedPage ? "" : "order-3 lg:col-start-2",
               )}
               style={{ animationDelay: "250ms" }}
+              data-shell-region="footer"
             >
-              <Footer navOptions={navOptions} />
+              {footer}
             </div>
 
-            <BackToTop />
+            {floatingActions}
           </div>
         </div>
       </div>
-    </FloatingActionsProvider>
+    </FirstScreenProvider>
   );
 }
+
+export const classicShell: ThemeShell = {
+  id: "classic",
+  Shell: ClassicShell,
+  identityInFirstScreen: [],
+};

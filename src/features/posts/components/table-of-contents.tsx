@@ -16,10 +16,10 @@ import {
 import { FloatingPopover } from "@/components/ui/floating-popover";
 import { useJumpToHeading } from "@/features/posts/components/content/use-jump-to-heading";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
+import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
 import { cn, isSSR } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-const BANNER_HEIGHT_PAGE_VH = 35;
 const MAX_LEVEL = 3;
 
 function removeTailingHash(text: string) {
@@ -55,6 +55,7 @@ export default function TableOfContents({
       });
   }, [headers]);
 
+  const firstScreenHeight = useFirstScreenHeight();
   const slotRef = useRef<HTMLDivElement>(null);
   const tocEl = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
@@ -137,8 +138,7 @@ export default function TableOfContents({
 
   useEffect(() => {
     const onScroll = () => {
-      const banner = window.innerHeight * (BANNER_HEIGHT_PAGE_VH / 100);
-      setIsVisible(window.scrollY > banner);
+      setIsVisible(window.scrollY > firstScreenHeight());
       computeActive();
     };
     onScroll();
@@ -148,7 +148,7 @@ export default function TableOfContents({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [computeActive]);
+  }, [computeActive, firstScreenHeight]);
 
   useEffect(() => {
     setIsReady(false);

@@ -1,4 +1,4 @@
-/** Layout props passed from public and auth routes. */
+/** Props shared by the public navigation and the auth and user layouts. */
 
 export interface NavOption {
   id: string;
@@ -11,14 +11,6 @@ export interface UserInfo {
   name: string;
   image?: string | null;
   role?: string | null;
-}
-
-export interface PublicLayoutProps {
-  children: React.ReactNode;
-  navOptions: Array<NavOption>;
-  user?: UserInfo;
-  isSessionLoading: boolean;
-  logout: () => Promise<void>;
 }
 
 export interface AuthLayoutProps {

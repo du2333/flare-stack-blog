@@ -1,57 +1,49 @@
-import { Suspense } from "react";
-import {
-  Categories,
-  CategoriesSkeleton,
-} from "@/features/categories/components/category-cloud";
-import { LatestMoments } from "@/features/moments/components/latest-moments";
-import { Tags, TagsSkeleton } from "@/features/tags/components/tag-cloud";
+import type { SidebarCard } from "@/features/theme/theme-shell";
 import { cn } from "@/lib/utils";
-import { Profile } from "@/components/layout/profile";
 
+/** Index cards stagger in after the rest, 50ms apart. */
+const CARD_DELAY_MS = { identity: 100, feed: 125, index: 150 } as const;
+const INDEX_STEP_MS = 50;
+
+/** The cards in the given order; index cards stay in view together below the rest. */
 export function Sidebar({
   className,
-  showLatestMoments = false,
+  cards,
 }: {
   className?: string;
-  /** The home page's card of the latest Moments. */
-  showLatestMoments?: boolean;
+  cards: Array<SidebarCard>;
 }) {
+  const leading = cards.filter((card) => card.kind !== "index");
+  const index = cards.filter((card) => card.kind === "index");
   return (
-    <aside className={cn("flex flex-col gap-4", className)}>
-      <div
-        className="fuwari-onload-animation"
-        style={{ animationDelay: "100ms" }}
-      >
-        <Profile />
-      </div>
-      {showLatestMoments ? (
+    <aside
+      className={cn("flex flex-col gap-4", className)}
+      data-shell-region="sidebar"
+    >
+      {leading.map((card) => (
         <div
+          key={card.id}
           className="fuwari-onload-animation"
-          style={{ animationDelay: "125ms" }}
+          style={{ animationDelay: `${CARD_DELAY_MS[card.kind]}ms` }}
         >
-          <Suspense fallback={null}>
-            <LatestMoments />
-          </Suspense>
+          {card.content}
+        </div>
+      ))}
+      {index.length > 0 ? (
+        <div className="sticky top-4 flex flex-col gap-4">
+          {index.map((card, position) => (
+            <div
+              key={card.id}
+              className="fuwari-onload-animation"
+              style={{
+                animationDelay: `${CARD_DELAY_MS.index + position * INDEX_STEP_MS}ms`,
+              }}
+            >
+              {card.content}
+            </div>
+          ))}
         </div>
       ) : null}
-      <div className="sticky top-4 flex flex-col gap-4">
-        <div
-          className="fuwari-onload-animation"
-          style={{ animationDelay: "150ms" }}
-        >
-          <Suspense fallback={<CategoriesSkeleton />}>
-            <Categories />
-          </Suspense>
-        </div>
-        <div
-          className="fuwari-onload-animation"
-          style={{ animationDelay: "200ms" }}
-        >
-          <Suspense fallback={<TagsSkeleton />}>
-            <Tags />
-          </Suspense>
-        </div>
-      </div>
     </aside>
   );
 }
