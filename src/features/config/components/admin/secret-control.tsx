@@ -1,6 +1,6 @@
-import { SettingsDisclosure } from "./settings-disclosure";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
+import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -40,33 +40,55 @@ export function SecretControl({
     if (!value && !cleared) setEditing(false);
   }, [value, cleared]);
   const showInput = !stored || editing || !!value;
+  // One entry for everything done to a saved credential.
+  const actions: Array<ActionMenuItem> =
+    stored && !cleared
+      ? [
+          ...(showInput
+            ? []
+            : [
+                {
+                  label: m.settings_design_replace_secret(),
+                  onSelect: () => setEditing(true),
+                },
+              ]),
+          {
+            label: m.settings_design_remove_secret(),
+            danger: true,
+            onSelect: (trigger: HTMLButtonElement) => {
+              triggerRef.current = trigger;
+              setRemoving(true);
+            },
+          },
+        ]
+      : [];
   return (
     <div className="settings-secret">
-      {cleared ? (
-        <p>{m.settings_design_secret_removed()}</p>
-      ) : showInput ? (
-        <PasswordInput
-          {...inputProps}
-          ref={inputRef}
-          secret
-          value={value}
-          onChange={(event) =>
-            setValue(name, event.target.value, { shouldDirty: true })
-          }
+      <div className="settings-secret-row">
+        {cleared ? (
+          <p className="settings-secret-summary">
+            {m.settings_design_secret_removed()}
+          </p>
+        ) : showInput ? (
+          <PasswordInput
+            {...inputProps}
+            ref={inputRef}
+            secret
+            value={value}
+            onChange={(event) =>
+              setValue(name, event.target.value, { shouldDirty: true })
+            }
+          />
+        ) : (
+          <p className="settings-secret-summary">
+            {m.settings_design_secret_configured()}
+          </p>
+        )}
+        <ActionMenu
+          label={m.settings_design_credential_actions()}
+          items={actions}
         />
-      ) : (
-        <div className="settings-secret-summary">
-          <span>{m.settings_design_secret_configured()}</span>
-          <Button
-            ref={triggerRef}
-            variant="text"
-            size="sm"
-            onClick={() => setEditing(true)}
-          >
-            {m.settings_design_replace_secret()}
-          </Button>
-        </div>
-      )}
+      </div>
       {cleared && (
         <Button
           variant="text"
@@ -89,16 +111,6 @@ export function SecretControl({
         >
           {m.settings_config_secret_generate()}
         </Button>
-      )}
-      {stored && !cleared && (
-        <SettingsDisclosure
-          className="settings-secret-more"
-          title={m.settings_design_credential_actions()}
-        >
-          <Button variant="text" size="sm" onClick={() => setRemoving(true)}>
-            {m.settings_design_remove_secret()}
-          </Button>
-        </SettingsDisclosure>
       )}
       <ConfirmationModal
         isOpen={removing}

@@ -147,7 +147,7 @@ it("lays out the install, pair and try steps in order", async () => {
   mountPage();
   await flush();
   const headings = screen
-    .getAllByRole("heading", { level: 3 })
+    .getAllByRole("heading", { level: 2 })
     .map((heading) => heading.textContent);
   expect(headings).toEqual([
     `1 ${m.agent_skill_step_install()}`,

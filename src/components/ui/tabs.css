@@ -15,6 +15,27 @@
     overflow-x: auto;
     scrollbar-width: none;
   }
+  /*
+   * Opt-in (`scrollCue`): the row fades out at an end that has more tabs to
+   * scroll to. The script marks the ends; a row that fits is not masked.
+   */
+  .fuwari-tabs[data-scroll-cue] {
+    --fuwari-tabs-fade-start: 0px;
+    --fuwari-tabs-fade-end: 0px;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fuwari-tabs-fade-start),
+      #000 calc(100% - var(--fuwari-tabs-fade-end)),
+      transparent
+    );
+  }
+  .fuwari-tabs[data-scroll-cue][data-scroll-start] {
+    --fuwari-tabs-fade-start: 32px;
+  }
+  .fuwari-tabs[data-scroll-cue][data-scroll-end] {
+    --fuwari-tabs-fade-end: 32px;
+  }
   .fuwari-tab {
     display: inline-flex;
     align-items: center;
@@ -50,6 +71,11 @@
   .fuwari-tab-count {
     font-size: 0.9em;
     font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .fuwari-tabs[data-scroll-cue] {
+      scroll-behavior: smooth;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .fuwari-tab {

@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { Input } from "@/components/ui/input";
-import { SectionHeading } from "@/components/ui/page-heading";
+import { SettingsLead } from "@/features/config/components/admin/settings-lead";
 import { isPairedApiKey } from "@/features/agent-pairing/agent-pairing.schema";
 import { useApiKeys } from "@/features/api-keys/hooks/use-api-keys";
 import { formatDate } from "@/lib/utils";
@@ -77,10 +77,8 @@ export function ApiKeySettingsSection() {
     }
   };
   return (
-    <div className="settings-keys">
-      <SectionHeading
-        className="settings-section-heading"
-        title={m.settings_nav_api_keys()}
+    <div className="settings-keys settings-column">
+      <SettingsLead
         description={m.settings_design_keys_hint()}
         actions={
           <Button

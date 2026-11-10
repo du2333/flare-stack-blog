@@ -10,7 +10,13 @@ import {
   type ErrorComponentProps,
   type RouteComponent,
 } from "@tanstack/react-router";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { createElement } from "react";
 import { useFormContext } from "react-hook-form";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -184,4 +190,41 @@ it("maps the muted users path to its settings tab", () => {
   expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBe(
     "muted-users",
   );
+});
+
+it("shows the save bar only once the section has unsaved changes", async () => {
+  const root = createRootRoute({
+    component: () =>
+      createElement(AdminChromeProvider, null, createElement(Outlet)),
+  });
+  const settings = createRoute({
+    getParentRoute: () => root,
+    path: "/admin/settings",
+    component: SettingsRoute.options.component as RouteComponent,
+  });
+  const site = createRoute({
+    getParentRoute: () => settings,
+    path: "site",
+    component: FormRoute,
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([settings.addChildren([site])]),
+    history: createMemoryHistory({ initialEntries: ["/admin/settings/site"] }),
+    context: { queryClient: new QueryClient() },
+  });
+  render(createElement(RouterProvider, { router }));
+  const input = await screen.findByRole("textbox", { name: "Site title" });
+  expect(document.querySelector(".settings-savebar")).toBeNull();
+  fireEvent.input(input, { target: { value: "A new title" } });
+  const bar = await screen.findByRole("button", {
+    name: m.settings_config_save_site(),
+  });
+  expect(bar.closest(".settings-savebar")).not.toBeNull();
+  // The tab names the section; the page header carries no description.
+  expect(
+    screen.queryByText(m.settings_nav_site(), { selector: "h2" }),
+  ).toBeNull();
+  expect(
+    screen.getByRole("region", { name: m.settings_nav_site() }),
+  ).not.toBeNull();
 });

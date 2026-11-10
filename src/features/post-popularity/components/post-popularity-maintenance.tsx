@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import { usePostPopularitySync } from "@/features/post-popularity/hooks/use-post-popularity-sync";
 import { postPopularityStatusQuery } from "@/features/post-popularity/queries";
 import { formatDate } from "@/lib/utils";
@@ -28,35 +29,34 @@ export function PostPopularityMaintenance() {
           : m.settings_maintenance_popularity_status_ready();
 
   return (
-    <div className="flex items-center gap-3 py-4 border-b border-(--fuwari-input-border)">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium fuwari-text-90">
-          {m.settings_maintenance_popularity_title()}
-        </p>
-        <p className="text-xs fuwari-text-50">
+    <MaintenanceItem
+      title={m.settings_maintenance_popularity_title()}
+      lines={[
+        <>
           {statusLabel}
           {status?.postCount != null ? ` · ${status.postCount}` : ""}
           {status?.lastSuccessAt
             ? ` · ${formatDate(status.lastSuccessAt, { includeTime: true })}`
             : ""}
-        </p>
-        <p className="text-xs fuwari-text-50">
-          {m.settings_maintenance_popularity_auto()}
-        </p>
-        {status?.lastError ? (
-          <StatusText error role={undefined} className="mt-1 break-words">
-            {status.lastError}
-          </StatusText>
-        ) : null}
-      </div>
-      <Button
-        onClick={() => syncMutation.mutate()}
-        loading={syncMutation.isPending}
-      >
-        {syncMutation.isPending
-          ? m.settings_maintenance_popularity_syncing()
-          : m.settings_maintenance_popularity_sync_btn()}
-      </Button>
-    </div>
+        </>,
+        m.settings_maintenance_popularity_auto(),
+      ]}
+      action={
+        <Button
+          onClick={() => syncMutation.mutate()}
+          loading={syncMutation.isPending}
+        >
+          {syncMutation.isPending
+            ? m.settings_maintenance_popularity_syncing()
+            : m.settings_maintenance_popularity_sync_btn()}
+        </Button>
+      }
+    >
+      {status?.lastError ? (
+        <StatusText error role={undefined} className="mt-1 break-words">
+          {status.lastError}
+        </StatusText>
+      ) : null}
+    </MaintenanceItem>
   );
 }
