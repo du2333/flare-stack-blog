@@ -1,9 +1,10 @@
 import { ImageOff } from "lucide-react";
 import { useRef, useState } from "react";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { useMediaGridMotion } from "../hooks/use-media-grid-motion";
+import { splitMediaName } from "../media-name";
 import { usageCount } from "../media-usage";
 import type { MediaAsset } from "../types";
 import type { MediaView } from "./media-toolbar";
@@ -22,6 +23,17 @@ function MediaThumbnail({ asset }: { asset: MediaAsset }) {
           onError={() => setFailed(true)}
         />
       )}
+    </span>
+  );
+}
+
+/** A file name cut in the middle: the ellipsis falls before its last characters and extension. */
+function MediaName({ name }: { name: string }) {
+  const { head, tail } = splitMediaName(name);
+  return (
+    <span className="media-name" title={name}>
+      {head ? <span className="media-name-head">{head}</span> : null}
+      <span className="media-name-tail">{tail}</span>
     </span>
   );
 }
@@ -59,6 +71,7 @@ export function MediaCollection({
               <th>{m.media_col_image()}</th>
               <th>{m.media_col_dimensions()}</th>
               <th>{m.media_preview_size()}</th>
+              <th>{m.media_col_uploaded()}</th>
               <th>{m.media_col_usage()}</th>
             </tr>
           </thead>
@@ -77,7 +90,7 @@ export function MediaCollection({
                     onClick={(event) => onSelect(asset, event.currentTarget)}
                   >
                     <MediaThumbnail asset={asset} />
-                    <span title={asset.fileName}>{asset.fileName}</span>
+                    <MediaName name={asset.fileName} />
                   </button>
                 </td>
                 <td>
@@ -86,6 +99,7 @@ export function MediaCollection({
                     : "—"}
                 </td>
                 <td>{formatBytes(asset.sizeInBytes)}</td>
+                <td>{formatDate(asset.createdAt)}</td>
                 <td>{usage(asset)}</td>
               </tr>
             ))}
@@ -105,8 +119,8 @@ export function MediaCollection({
           onClick={(event) => onSelect(asset, event.currentTarget)}
         >
           <MediaThumbnail asset={asset} />
-          <span className="media-gallery-name" title={asset.fileName}>
-            {asset.fileName}
+          <span className="media-gallery-name">
+            <MediaName name={asset.fileName} />
           </span>
           <span className="media-gallery-meta">
             {usage(asset)}
