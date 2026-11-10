@@ -217,7 +217,7 @@ it("closes the delete confirmation when deleting fails, so the toast is readable
   renderPage();
 
   await clickPageButton(m.editor_history_delete_action());
-  await confirmInDialog(m.editor_history_delete_action());
+  await confirmInDialog(m.editor_history_delete_confirm());
 
   await waitFor(() =>
     expect(toast.error).toHaveBeenCalledWith(

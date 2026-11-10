@@ -290,6 +290,25 @@ button.post-editor-summary:hover {
   border-top: 1px solid var(--post-editor-rule);
   border-radius: 0;
 }
+.post-history-panes {
+  flex-shrink: 0;
+  margin: 0.625rem 0.875rem;
+}
+@media (max-width: 1023px) {
+  /* One pane at a time; the switch above the body chooses which. */
+  .post-history-body[data-pane="content"] .post-history-sidebar,
+  .post-history-body[data-pane="list"] .post-history-content {
+    display: none;
+  }
+  .post-history-sidebar {
+    flex: 1;
+    width: 100%;
+    border-left: 0;
+  }
+  .post-history-sidebar .post-editor-panel-heading {
+    display: none;
+  }
+}
 .post-editor-workspace
   :is(
     button:not(.fuwari-button, .fuwari-icon-button),
@@ -350,9 +369,6 @@ button.post-editor-summary:hover {
   }
   .post-editor-info-panel {
     width: min(100%, 25rem);
-  }
-  .post-history-sidebar {
-    display: none;
   }
   .post-history-context p,
   .post-history-context svg {

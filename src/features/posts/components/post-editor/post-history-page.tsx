@@ -1,13 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CircleAlert, LockKeyhole, Trash2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import {
+  ArrowLeft,
+  CircleAlert,
+  History,
+  LockKeyhole,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
-import { Button, buttonClass } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-heading";
-import { postRevisionListQuery } from "@/features/posts/queries";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { formatMonthDayTime } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { usePostHistory } from "./hooks";
@@ -23,6 +29,8 @@ export function PostHistoryPage({
 }) {
   const navigate = useNavigate();
   const { setPrimaryAction, setMobileTitle } = useAdminChrome();
+  // Below 1024px one of the two panes shows at a time.
+  const [pane, setPane] = useState<"content" | "list">("content");
 
   const goEditor = () => {
     void navigate({
@@ -123,7 +131,7 @@ export function PostHistoryPage({
         onConfirm={history.confirmDelete}
         title={m.editor_history_delete_title()}
         message={m.editor_history_delete_message()}
-        confirmLabel={m.editor_history_delete_action()}
+        confirmLabel={m.editor_history_delete_confirm()}
         isLoading={history.isDeleting}
         isDanger
       />
@@ -145,16 +153,6 @@ export function PostHistoryPage({
           </div>
         </div>
         <div className="post-editor-header-actions">
-          <Link
-            to="/admin/posts/edit/$id/history"
-            params={{ id: String(postId) }}
-            className={buttonClass({
-              variant: "plain",
-              className: "lg:hidden",
-            })}
-          >
-            {m.editor_history_list_title()}
-          </Link>
           <Button
             variant="primary"
             onClick={history.requestRestore}
@@ -166,7 +164,19 @@ export function PostHistoryPage({
           </Button>
         </div>
       </header>
-      <div className="post-history-body">
+      <SegmentedControl
+        aria-label={m.editor_history_list_title()}
+        className="post-history-panes lg:hidden"
+        size="sm"
+        stretch
+        value={pane}
+        onValueChange={setPane}
+        items={[
+          { value: "content", label: m.editor_history_pane_content() },
+          { value: "list", label: m.editor_history_list_title() },
+        ]}
+      />
+      <div className="post-history-body" data-pane={pane}>
         <section className="post-history-content">
           {history.restoreFailure && (
             <Callout
@@ -200,20 +210,19 @@ export function PostHistoryPage({
             revisions={history.revisions}
             isLoading={history.isListLoading}
             selectedRevisionId={revisionId}
+            onSelect={() => setPane("content")}
           />
           {deleteAction}
         </aside>
       </div>
-      <div className="lg:hidden">{deleteAction}</div>
+      {pane === "content" && <div className="lg:hidden">{deleteAction}</div>}
     </div>
   );
 }
 
-export function PostHistoryIndex({ postId }: { postId: number }) {
+/** Shown when the Post has no Post Revision, so there is nothing to open. */
+export function PostHistoryEmpty({ postId }: { postId: number }) {
   const { setPrimaryAction, setMobileTitle } = useAdminChrome();
-  const { data: revisions = [], isLoading } = useQuery(
-    postRevisionListQuery(postId),
-  );
 
   useEffect(() => {
     setMobileTitle(m.editor_history_list_title());
@@ -225,7 +234,7 @@ export function PostHistoryIndex({ postId }: { postId: number }) {
 
   return (
     <div className="post-editor-workspace fuwari-card-base">
-      <div className="post-editor-header">
+      <header className="post-editor-header">
         <Link
           to="/admin/posts/edit/$id"
           params={{ id: String(postId) }}
@@ -234,15 +243,12 @@ export function PostHistoryIndex({ postId }: { postId: number }) {
           <ArrowLeft size={17} />
           {m.editor_history_back()}
         </Link>
-      </div>
-      <h1 className="hidden px-5 pb-2 text-2xl font-medium fuwari-text-90 lg:block">
-        {m.editor_history_list_title()}
-      </h1>
-      <PostEditorHistoryList
-        postId={postId}
-        revisions={revisions}
-        isLoading={isLoading}
-        selectedRevisionId={null}
+      </header>
+      <EmptyState
+        className="flex-1"
+        icon={History}
+        title={m.editor_history_empty_title()}
+        description={m.editor_history_empty_desc()}
       />
     </div>
   );
