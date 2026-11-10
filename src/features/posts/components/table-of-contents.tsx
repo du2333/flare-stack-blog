@@ -220,12 +220,13 @@ export default function TableOfContents({
     <nav
       className={cn(
         // The portal must sit above the full-width public content wrapper (z-30).
-        "hidden 2xl:block fixed top-14 z-40 pl-4 transition duration-300",
+        // The shell says where the gutter is: --shell-toc-top, --shell-toc-width.
+        "hidden 2xl:block fixed top-(--shell-toc-top) z-40 pl-4 transition duration-300",
         isVisible && isReady ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
       style={{
         left: left ?? 0,
-        width: "var(--fuwari-toc-width)",
+        width: "var(--shell-toc-width)",
       }}
     >
       <div

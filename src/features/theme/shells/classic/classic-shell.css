@@ -1,0 +1,14 @@
+/* Where things outside the shell's tree sit. The table of contents renders
+   into the body, so these live on the root. The content is one centred
+   column of --fuwari-page-width. */
+:root {
+  /* The side table of contents: below the navbar, in the right gutter. */
+  --shell-toc-top: 3.5rem;
+  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+  /* Back to top from lg: just right of the content, kept on screen when the
+     gutter is too narrow. */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}

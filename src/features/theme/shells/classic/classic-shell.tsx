@@ -9,6 +9,7 @@ import type { ThemeShell, ThemeShellProps } from "@/features/theme/theme-shell";
 import { cn } from "@/lib/utils";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
+import "./classic-shell.css";
 
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
