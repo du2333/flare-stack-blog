@@ -6,6 +6,7 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { findCachedPublicPost } from "@/features/posts/utils/cached-public-post";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { cn } from "@/lib/utils";
@@ -13,9 +14,12 @@ import { PostMeta } from "./post-meta";
 import { PostSummary } from "./post-summary";
 
 function MetaChip() {
+  const { meta } = useThemeRecipe();
   return (
     <div className="flex items-center">
-      <Skeleton className="mr-2 h-6 w-6 rounded-md" />
+      {meta === "chips" ? (
+        <Skeleton className="mr-2 h-6 w-6 rounded-md" />
+      ) : null}
       <Skeleton className="h-3.5 w-16" />
     </div>
   );
@@ -59,25 +63,37 @@ export function PostPageSkeleton() {
       ? findCachedPublicPost(queryClient, slug)
       : undefined;
   const wordCount = cached ? cached.readTimeInMinutes * 300 : 0;
+  const recipe = useThemeRecipe();
+  const inlineMeta = recipe.meta === "inline";
 
   return (
     <div className="relative mb-4 flex w-full flex-col gap-4 rounded-(--theme-card-radius) py-1 md:bg-transparent md:py-0">
       <div className="fuwari-card-base fuwari-card-panel relative z-10 w-full px-[var(--theme-panel-pad-x,1.5rem)] pb-4 pt-6 md:px-[var(--theme-panel-pad-x,2.25rem)]">
-        <div className="mb-3 flex flex-row flex-wrap gap-5 fuwari-text-30">
+        <div
+          className={
+            inlineMeta
+              ? "mb-3 flex flex-row flex-wrap gap-x-2 gap-y-1 fuwari-text-30 fuwari-meta-inline"
+              : "mb-3 flex flex-row flex-wrap gap-5 fuwari-text-30"
+          }
+        >
           {cached ? (
             <>
               <div className="flex flex-row items-center">
-                <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
-                  <FileText strokeWidth={1.5} size={16} />
-                </div>
+                {inlineMeta ? null : (
+                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
+                    <FileText strokeWidth={1.5} size={16} />
+                  </div>
+                )}
                 <div className="text-sm">
                   {m.post_word_count({ count: wordCount })}
                 </div>
               </div>
               <div className="flex flex-row items-center">
-                <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
-                  <Clock strokeWidth={1.5} size={16} />
-                </div>
+                {inlineMeta ? null : (
+                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-md bg-black/5 fuwari-text-50 dark:bg-white/10">
+                    <Clock strokeWidth={1.5} size={16} />
+                  </div>
+                )}
                 <div className="text-sm">
                   {m.read_time({ count: cached.readTimeInMinutes })}
                 </div>
@@ -94,7 +110,11 @@ export function PostPageSkeleton() {
         <div className="relative">
           {cached ? (
             <h1
-              className="fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90 md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--theme-accent)"
+              className={
+                recipe.headingAccent === "on"
+                  ? "fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90 md:before:absolute md:before:top-3 md:before:-left-4.5 md:before:h-5 md:before:w-1 md:before:rounded-md md:before:bg-(--theme-accent)"
+                  : "fuwari-heading fuwari-page-title relative mb-3 block w-full font-bold fuwari-text-90"
+              }
               style={
                 typeof slug === "string"
                   ? { viewTransitionName: `post-title-${slug}` }

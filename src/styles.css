@@ -220,6 +220,19 @@
     border-bottom: 1px var(--theme-rule-style)
       var(--theme-rule, var(--fuwari-meta-divider));
   }
+  /* The rule between two entries of a flat list: Posts as rows, the archive
+     as an index (Theme Recipe). */
+  .fuwari-list-rule {
+    border-top: 1px var(--theme-rule-style)
+      var(--theme-rule, var(--fuwari-meta-divider));
+  }
+  /* A meta row in the inline form of the Theme Recipe: plain text with a dot
+     before every item but the first. */
+  .fuwari-meta-inline > :not(:first-child)::before {
+    content: "·";
+    margin-right: 0.5rem;
+    color: var(--fuwari-meta-divider);
+  }
   /* The pinned or popular label above a post in a list. */
   .fuwari-kicker {
     font-size: var(--theme-kicker-size);

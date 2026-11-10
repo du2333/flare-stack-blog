@@ -84,6 +84,13 @@
     border-radius: 4px;
     background: var(--theme-accent);
   }
+  /* Without the accent bar (Theme Recipe) the title and intro start at the edge. */
+  .fuwari-public-heading[data-accent="off"] > :is(h1, p) {
+    padding-left: 0;
+  }
+  .fuwari-public-heading[data-accent="off"] > h1::before {
+    content: none;
+  }
   .fuwari-public-heading > a {
     display: flex;
     align-items: center;

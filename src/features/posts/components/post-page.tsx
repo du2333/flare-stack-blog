@@ -5,6 +5,7 @@ import { PUBLIC_IMAGE_WIDTH } from "@/features/media/utils/media.utils";
 import { CommentSection } from "@/features/comments/components/comment-section";
 import { ContentRenderer } from "@/features/posts/components/content/content-renderer";
 import type { PostWithToc } from "@/features/posts/schema/posts.schema";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { useSession } from "@/lib/auth/auth-client";
 import { m } from "@/paraglide/messages";
 import { usePhotoSwipeGallery } from "./content/photo-swipe";
@@ -37,6 +38,8 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
   useHeadingAnchors(contentRef);
   // Approximate word count
   const wordCount = post.readTimeInMinutes * 300;
+  const recipe = useThemeRecipe();
+  const inlineMeta = recipe.meta === "inline";
 
   return (
     <div className="relative flex flex-col rounded-(--theme-card-radius) py-1 md:py-0 md:bg-transparent gap-4 mb-4 w-full">
@@ -46,21 +49,29 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
       <div className="fuwari-card-base fuwari-card-panel z-10 px-[var(--theme-panel-pad-x,1.5rem)] md:px-[var(--theme-panel-pad-x,2.25rem)] pt-6 pb-4 relative w-full">
         {/* Word count and reading time */}
         <div
-          className="flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition fuwari-onload-animation"
+          className={
+            inlineMeta
+              ? "flex flex-row flex-wrap fuwari-text-30 gap-x-2 gap-y-1 mb-3 transition fuwari-onload-animation fuwari-meta-inline"
+              : "flex flex-row flex-wrap fuwari-text-30 gap-5 mb-3 transition fuwari-onload-animation"
+          }
           style={{ animationDelay: enterDelay(0) }}
         >
           <div className="flex flex-row items-center">
-            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
-              <FileText strokeWidth={1.5} size={16} />
-            </div>
+            {inlineMeta ? null : (
+              <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+                <FileText strokeWidth={1.5} size={16} />
+              </div>
+            )}
             <div className="text-sm">
               {m.post_word_count({ count: wordCount })}
             </div>
           </div>
           <div className="flex flex-row items-center">
-            <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
-              <Clock strokeWidth={1.5} size={16} />
-            </div>
+            {inlineMeta ? null : (
+              <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+                <Clock strokeWidth={1.5} size={16} />
+              </div>
+            )}
             <div className="text-sm">
               {m.read_time({ count: post.readTimeInMinutes })}
             </div>
@@ -72,9 +83,11 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
                 params={{ id: String(post.id) }}
                 className="flex flex-row items-center fuwari-text-30 hover:fuwari-text-90 transition animate-in fade-in duration-500"
               >
-                <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
-                  <Pencil strokeWidth={1.5} size={16} />
-                </div>
+                {inlineMeta ? null : (
+                  <div className="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 fuwari-text-50 flex items-center justify-center mr-2">
+                    <Pencil strokeWidth={1.5} size={16} />
+                  </div>
+                )}
                 <div className="text-sm">{m.post_edit()}</div>
               </Link>
             )}
@@ -87,10 +100,11 @@ export function PostPage({ post, canonicalHref }: PostPageProps) {
           style={{ animationDelay: enterDelay(50) }}
         >
           <h1
-            className="fuwari-heading fuwari-page-title transition w-full block font-bold mb-3
-              fuwari-text-90
-              md:before:w-1 before:h-5 before:rounded-md before:bg-(--theme-accent)
-              before:absolute before:top-3 before:-left-4.5"
+            className={
+              recipe.headingAccent === "on"
+                ? "fuwari-heading fuwari-page-title transition w-full block font-bold mb-3 fuwari-text-90 md:before:w-1 before:h-5 before:rounded-md before:bg-(--theme-accent) before:absolute before:top-3 before:-left-4.5"
+                : "fuwari-heading fuwari-page-title transition w-full block font-bold mb-3 fuwari-text-90"
+            }
             style={{ viewTransitionName: `post-title-${post.slug}` }}
           >
             {post.title}

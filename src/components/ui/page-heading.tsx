@@ -1,6 +1,7 @@
 import { Link, type LinkProps } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import type { HTMLAttributes, ReactNode, Ref } from "react";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { cn } from "@/lib/utils";
 import "./page-heading.css";
 
@@ -66,7 +67,10 @@ export function SectionHeading({
   );
 }
 
-/** A public page's title with the accent bar, a way back, and an intro. */
+/**
+ * A public page's title, a way back, and an intro. The title has the accent
+ * bar unless the Theme Recipe turns it off.
+ */
 export function PublicPageHeading({
   title,
   back,
@@ -78,8 +82,12 @@ export function PublicPageHeading({
   description?: ReactNode;
   className?: string;
 }) {
+  const { headingAccent } = useThemeRecipe();
   return (
-    <header className={cn("fuwari-public-heading", className)}>
+    <header
+      className={cn("fuwari-public-heading", className)}
+      data-accent={headingAccent === "off" ? "off" : undefined}
+    >
       <h1>{title}</h1>
       <Link to={back.to}>
         <ArrowLeft size={16} />
