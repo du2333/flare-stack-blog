@@ -33,7 +33,8 @@
 }
 .friend-queue-scroll {
   flex: 1;
-  padding: 0 var(--admin-frame-x) calc(12 * var(--admin-unit));
+  padding: 0 var(--admin-scroll-end) calc(12 * var(--admin-unit))
+    var(--admin-frame-x);
 }
 .friend-queue-item {
   display: flex;
@@ -51,12 +52,19 @@
 .friend-queue-item:hover {
   background: var(--fuwari-btn-plain-bg-hover);
 }
-/* Same as the active sidebar item. */
+/*
+ * Hover is the plain tint, which equals btn-regular-bg, so the selected item
+ * takes the next step up (the button's hover tone) to read as stronger. Its
+ * title stays at 4.5:1 or more on that tone, in both themes.
+ */
 .friend-queue-item[aria-current="true"] {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--fuwari-btn-regular-bg-hover);
 }
 .friend-queue-item[aria-current="true"] strong {
-  color: var(--fuwari-primary);
+  color: var(--fuwari-btn-content);
+}
+.dark .friend-queue-item[aria-current="true"] strong {
+  color: var(--fuwari-primary-hover);
 }
 .friend-logo {
   display: grid;
@@ -100,7 +108,8 @@
 }
 .friend-detail-scroll {
   flex: 1;
-  padding: calc(30 * var(--admin-unit)) var(--admin-frame-x);
+  padding: calc(30 * var(--admin-unit)) var(--admin-scroll-end)
+    calc(30 * var(--admin-unit)) var(--admin-frame-x);
 }
 .friend-site-heading {
   display: flex;
@@ -272,7 +281,7 @@
     flex-shrink: 0;
   }
   .friend-detail-scroll {
-    padding: 10px var(--admin-frame-x) 20px;
+    padding: 10px var(--admin-scroll-end) 20px var(--admin-frame-x);
   }
   .friend-site-heading {
     gap: 16px;

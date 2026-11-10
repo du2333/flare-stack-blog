@@ -34,6 +34,7 @@ export function SectionHeading({
   actions,
   level = 2,
   size = "lg",
+  align = "center",
   titleProps,
   className,
 }: {
@@ -42,6 +43,8 @@ export function SectionHeading({
   actions?: ReactNode;
   level?: 2 | 3;
   size?: "lg" | "md" | "sm";
+  /** "baseline" sets the actions on the title's first line, for a badge beside a heading that has a description. */
+  align?: "center" | "baseline";
   titleProps?: HTMLAttributes<HTMLHeadingElement> & {
     ref?: Ref<HTMLHeadingElement>;
   };
@@ -52,6 +55,7 @@ export function SectionHeading({
     <header
       className={cn("fuwari-section-heading", className)}
       data-size={size}
+      data-align={align}
     >
       <div className="fuwari-heading-text">
         <Title {...titleProps}>{title}</Title>

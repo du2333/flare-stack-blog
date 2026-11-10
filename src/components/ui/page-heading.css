@@ -16,6 +16,9 @@
   .fuwari-section-heading {
     align-items: center;
   }
+  .fuwari-section-heading[data-align="baseline"] {
+    align-items: first baseline;
+  }
   .fuwari-heading-text {
     min-width: 0;
   }

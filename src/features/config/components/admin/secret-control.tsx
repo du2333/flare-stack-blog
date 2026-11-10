@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { DisclosureChevron } from "@/components/ui/disclosure";
 import { PasswordInput } from "@/components/ui/password-input";
 import type { ConfigFormValues } from "./config-editing";
 import { m } from "@/paraglide/messages";
@@ -66,28 +67,49 @@ export function SecretControl({
     <div className="settings-secret">
       <div className="settings-secret-row">
         {cleared ? (
-          <p className="settings-secret-summary">
+          <p className="fuwari-field-shell settings-secret-summary">
             {m.settings_design_secret_removed()}
           </p>
         ) : showInput ? (
-          <PasswordInput
-            {...inputProps}
-            ref={inputRef}
-            secret
-            value={value}
-            onChange={(event) =>
-              setValue(name, event.target.value, { shouldDirty: true })
-            }
-          />
+          <>
+            <PasswordInput
+              {...inputProps}
+              ref={inputRef}
+              secret
+              value={value}
+              onChange={(event) =>
+                setValue(name, event.target.value, { shouldDirty: true })
+              }
+            />
+            <ActionMenu
+              label={m.settings_design_credential_actions()}
+              items={actions}
+            />
+          </>
         ) : (
-          <p className="settings-secret-summary">
-            {m.settings_design_secret_configured()}
-          </p>
+          // Looks like the fields around it; the menu opens over this box so
+          // it leaves the next field uncovered.
+          <div className="fuwari-field-shell">
+            <span className="settings-secret-summary">
+              {m.settings_design_secret_configured()}
+            </span>
+            <ActionMenu
+              label={m.settings_design_secret_change_actions()}
+              items={actions}
+              placement="left"
+              trigger={
+                <>
+                  {m.settings_design_secret_change()}
+                  <DisclosureChevron size={14} />
+                </>
+              }
+              triggerClassName={buttonClass({
+                size: "sm",
+                className: "aria-expanded:bg-(--fuwari-btn-regular-bg-hover)",
+              })}
+            />
+          </div>
         )}
-        <ActionMenu
-          label={m.settings_design_credential_actions()}
-          items={actions}
-        />
       </div>
       {cleared && (
         <Button

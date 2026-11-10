@@ -9,10 +9,18 @@
   --fuwari-segment-height: calc(36 * var(--admin-unit));
   --fuwari-segment-padding-x: calc(12 * var(--admin-unit));
   --fuwari-segment-font-size: calc(14 * var(--admin-unit));
+  /* The side inset of every workspace, the dashboard included. */
+  --admin-frame-x: calc(30 * var(--admin-unit));
+}
+@media (max-width: 1023px) {
+  .admin-workspace {
+    --admin-frame-x: calc(24 * var(--admin-unit));
+  }
 }
 @media (max-width: 767px) {
   .admin-workspace {
     --fuwari-tabs-gap: 22px;
+    --admin-frame-x: 16px;
   }
 }
 
@@ -25,8 +33,16 @@
  * --admin-frame-bottom to 0.
  */
 .admin-frame {
-  --admin-frame-x: calc(30 * var(--admin-unit));
   --admin-frame-top: calc(28 * var(--admin-unit));
+  /*
+   * A classic scrollbar (a mouse) takes its width from a scroller's content
+   * box, 10px as styles.css sets it; touch scrollbars overlay and take none.
+   * A padded scroller reserves that gutter and pads its right side by
+   * --admin-scroll-end, so its content and rules end at the frame inset like
+   * the title and tabs. An unpadded one grows right by --admin-scrollbar.
+   */
+  --admin-scrollbar: 0px;
+  --admin-scroll-end: calc(var(--admin-frame-x) - var(--admin-scrollbar));
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -35,6 +51,11 @@
   overflow: hidden;
   padding: var(--admin-frame-top) var(--admin-frame-x)
     var(--admin-frame-bottom, calc(20 * var(--admin-unit)));
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-frame {
+    --admin-scrollbar: 10px;
+  }
 }
 .admin-frame > .fuwari-page-header {
   margin-bottom: calc(20 * var(--admin-unit));
@@ -62,7 +83,6 @@
 /* Below lg the top bar carries the title and the primary action. */
 @media (max-width: 1023px) {
   .admin-frame {
-    --admin-frame-x: calc(24 * var(--admin-unit));
     --admin-frame-top: calc(10 * var(--admin-unit));
   }
   .admin-frame > .fuwari-page-header {
@@ -71,7 +91,6 @@
 }
 @media (max-width: 767px) {
   .admin-frame {
-    --admin-frame-x: 16px;
     --admin-frame-top: 8px;
   }
 }
