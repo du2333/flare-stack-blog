@@ -212,6 +212,10 @@
   border-top: 1px solid var(--fuwari-input-border);
   flex-shrink: 0;
 }
+/* A single page has no pager; without this the bar still draws its rule. */
+.friend-pagination:empty {
+  display: none;
+}
 .friend-detail-placeholder {
   flex: 1;
   display: flex;

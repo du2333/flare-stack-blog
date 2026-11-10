@@ -101,8 +101,9 @@ function AdminLayout() {
           <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
           <AdminMain />
         </main>
-        <Toaster />
       </div>
+      {/* Outside the flex row: as a flex item it would add one more gap on the right. */}
+      <Toaster />
     </AdminChromeProvider>
   );
 }
