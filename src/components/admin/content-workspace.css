@@ -9,10 +9,18 @@
   --fuwari-segment-height: calc(36 * var(--admin-unit));
   --fuwari-segment-padding-x: calc(12 * var(--admin-unit));
   --fuwari-segment-font-size: calc(14 * var(--admin-unit));
+  /* The side inset of every workspace, the dashboard included. */
+  --admin-frame-x: calc(30 * var(--admin-unit));
+}
+@media (max-width: 1023px) {
+  .admin-workspace {
+    --admin-frame-x: calc(24 * var(--admin-unit));
+  }
 }
 @media (max-width: 767px) {
   .admin-workspace {
     --fuwari-tabs-gap: 22px;
+    --admin-frame-x: 16px;
   }
 }
 
@@ -25,7 +33,6 @@
  * --admin-frame-bottom to 0.
  */
 .admin-frame {
-  --admin-frame-x: calc(30 * var(--admin-unit));
   --admin-frame-top: calc(28 * var(--admin-unit));
   /*
    * A classic scrollbar (a mouse) takes its width from a scroller's content
@@ -76,7 +83,6 @@
 /* Below lg the top bar carries the title and the primary action. */
 @media (max-width: 1023px) {
   .admin-frame {
-    --admin-frame-x: calc(24 * var(--admin-unit));
     --admin-frame-top: calc(10 * var(--admin-unit));
   }
   .admin-frame > .fuwari-page-header {
@@ -85,7 +91,6 @@
 }
 @media (max-width: 767px) {
   .admin-frame {
-    --admin-frame-x: 16px;
     --admin-frame-top: 8px;
   }
 }
