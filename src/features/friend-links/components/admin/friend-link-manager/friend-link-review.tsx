@@ -115,7 +115,10 @@ export function FriendLinkReview({
   };
   return (
     <>
-      <div className="friend-body" data-detail={detailOpen && !!selected}>
+      <div
+        className="friend-body admin-frame-bleed"
+        data-detail={detailOpen && !!selected}
+      >
         <aside className="friend-queue" aria-label={m.friend_review_queue()}>
           <SearchField
             className="friend-search"
@@ -317,7 +320,7 @@ export function FriendLinkReview({
           )}
         </section>
       </div>
-      <div className="friend-pagination">{pagination}</div>
+      <div className="friend-pagination admin-frame-bleed">{pagination}</div>
     </>
   );
 }
