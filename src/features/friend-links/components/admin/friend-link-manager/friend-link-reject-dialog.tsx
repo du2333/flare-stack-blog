@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { Textarea } from "@/components/ui/input";
+import { QuotedText } from "@/components/ui/quoted-text";
 import type { FriendLinkWithUser } from "@/features/friend-links/friend-links.schema";
 import { m } from "@/paraglide/messages";
 
@@ -46,9 +47,11 @@ function FriendLinkRejectDialogInternal({
             : m.friend_links_reject_named({ name: link?.siteName ?? "" })}
         </h2>
         <p className="mt-2 text-sm leading-relaxed fuwari-text-75">
-          {removing
-            ? m.friend_links_remove_hint()
-            : m.friend_links_reject_hint()}
+          <QuotedText>
+            {removing
+              ? m.friend_links_remove_hint()
+              : m.friend_links_reject_hint()}
+          </QuotedText>
         </p>
         <FormField label={m.friend_links_reject_reason()} className="mt-4">
           <Textarea

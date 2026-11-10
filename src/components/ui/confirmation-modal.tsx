@@ -2,6 +2,7 @@ import { ClientOnly } from "@tanstack/react-router";
 import { useId } from "react";
 import { Button } from "./button";
 import { FuwariModal } from "./fuwari-modal";
+import { QuotedText } from "./quoted-text";
 import { m } from "@/paraglide/messages";
 import "./confirmation-modal.css";
 
@@ -46,7 +47,9 @@ function ConfirmationModalInternal(props: ConfirmationModalProps) {
       fallbackFocus={props.fallbackFocus}
     >
       <h2 id={titleId}>{title}</h2>
-      <p id={messageId}>{message}</p>
+      <p id={messageId}>
+        <QuotedText>{message}</QuotedText>
+      </p>
       <div className="fuwari-confirmation-actions">
         <Button disabled={!isOpen || isLoading} onClick={onClose}>
           {m.common_cancel()}
