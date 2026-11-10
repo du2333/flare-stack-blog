@@ -7,6 +7,10 @@ import { Tabs } from "@/components/ui/tabs";
 import type { MediaSort } from "@/features/media/media.schema";
 import { m } from "@/paraglide/messages";
 
+/** Never squeezed: the search field gives way to it, so its label stays whole. */
+const SORT_TRIGGER =
+  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap text-left";
+
 export type MediaView = "grid" | "list";
 
 export function MediaToolbar({
@@ -82,6 +86,7 @@ export function MediaToolbar({
           <DropdownMenu
             value={sort}
             ariaLabel={m.media_sort_label()}
+            triggerClassName={SORT_TRIGGER}
             onChange={(value) => onSortChange(value as MediaSort)}
             options={(Object.keys(sortLabels) as Array<MediaSort>).map(
               (value) => ({ value, label: sortLabels[value] }),

@@ -19,8 +19,9 @@ import type { CategoryFilter, SortField, StatusFilter } from "../types";
 import { SORT_FIELDS, STATUS_FILTERS, WIDE_TOOLBAR_QUERY } from "../types";
 import { PostsFilterPanel, sortLabel } from "./posts-filter-panel";
 
+/** Never squeezed: the search field gives way to it, so its label stays whole. */
 const SORT_TRIGGER =
-  "group fuwari-input inline-flex w-auto max-w-44 items-center gap-2 text-left";
+  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap text-left";
 
 /** A mousedown inside a menu opened from the panel is not outside the panel. */
 const inMenu = (target: Node) =>
