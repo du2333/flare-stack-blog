@@ -52,12 +52,19 @@
 .friend-queue-item:hover {
   background: var(--fuwari-btn-plain-bg-hover);
 }
-/* Same as the active sidebar item. */
+/*
+ * Hover is the plain tint, which equals btn-regular-bg, so the selected item
+ * takes the next step up (the button's hover tone) to read as stronger. Its
+ * title stays at 4.5:1 or more on that tone, in both themes.
+ */
 .friend-queue-item[aria-current="true"] {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--fuwari-btn-regular-bg-hover);
 }
 .friend-queue-item[aria-current="true"] strong {
-  color: var(--fuwari-primary);
+  color: var(--fuwari-btn-content);
+}
+.dark .friend-queue-item[aria-current="true"] strong {
+  color: var(--fuwari-primary-hover);
 }
 .friend-logo {
   display: grid;
