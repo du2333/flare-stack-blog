@@ -49,9 +49,11 @@ function PostsToolbarSkeleton() {
     </div>
   );
   return wide ? (
-    <div className="admin-frame-toolbar">
-      {tabs}
-      {tools}
+    <div className="post-list-toolbar-shell">
+      <div className="admin-frame-toolbar">
+        {tabs}
+        {tools}
+      </div>
     </div>
   ) : (
     <>

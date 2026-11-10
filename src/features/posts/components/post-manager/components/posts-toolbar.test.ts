@@ -160,6 +160,11 @@ it("keeps the search and the sort in the toolbar row and the choosers in the pan
   expect(row?.contains(filterButton())).toBe(true);
   expect(row?.contains(sort)).toBe(true);
   expect(row?.querySelector('[role="tablist"]')).not.toBeNull();
+  // The shell is what the container query measures, so the row's own width
+  // decides whether the tools drop to a second row.
+  expect(
+    row?.parentElement?.classList.contains("post-list-toolbar-shell"),
+  ).toBe(true);
   expect(
     screen.queryByRole("button", { name: m.admin_posts_filter_category() }),
   ).toBeNull();

@@ -186,22 +186,24 @@ export function PostsToolbar({
   return (
     <>
       {wide ? (
-        <div className="admin-frame-toolbar">
-          {tabs}
-          <div className="post-list-tools">
-            {search}
-            {filter}
-            <DropdownMenu
-              value={sortBy}
-              ariaLabel={m.admin_posts_sort_label()}
-              triggerClassName={SORT_TRIGGER}
-              placement="bottom-end"
-              onChange={(value) => onSortByChange(value as SortField)}
-              options={SORT_FIELDS.map((value) => ({
-                value,
-                label: sortLabel(value),
-              }))}
-            />
+        <div className="post-list-toolbar-shell">
+          <div className="admin-frame-toolbar">
+            {tabs}
+            <div className="post-list-tools">
+              {search}
+              {filter}
+              <DropdownMenu
+                value={sortBy}
+                ariaLabel={m.admin_posts_sort_label()}
+                triggerClassName={SORT_TRIGGER}
+                placement="bottom-end"
+                onChange={(value) => onSortByChange(value as SortField)}
+                options={SORT_FIELDS.map((value) => ({
+                  value,
+                  label: sortLabel(value),
+                }))}
+              />
+            </div>
           </div>
         </div>
       ) : (
