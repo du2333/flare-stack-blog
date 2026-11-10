@@ -19,11 +19,14 @@ export const blogConfig = {
     webApp192: "/web-app-manifest-192x192.png",
     webApp512: "/web-app-manifest-512x512.png",
   },
+  bannerImage: "/images/home-bg.webp",
+  bannerFocus: { x: 50, y: 50 },
+  avatar: "/images/avatar.png",
+  primaryHue: 250,
+  brandMark: "default",
+  tagline: "",
   theme: {
-    fuwari: {
-      homeBg: "/images/home-bg.webp",
-      avatar: "/images/avatar.png",
-      primaryHue: 250,
-    },
+    id: "classic",
+    options: {},
   },
 } as const satisfies SiteConfig;

@@ -71,7 +71,7 @@ export function PublicLayout({
         >
           <img
             src={getPublicImageSrc(
-              siteConfig.theme.fuwari.homeBg,
+              siteConfig.bannerImage,
               PUBLIC_IMAGE_WIDTH.banner,
             )}
             alt="banner"

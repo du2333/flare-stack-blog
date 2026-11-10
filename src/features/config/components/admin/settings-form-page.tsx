@@ -1,3 +1,4 @@
+import { blogConfig } from "@/blog.config";
 import { useBlocker } from "@tanstack/react-router";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { ConfigEditingContext } from "./config-editing";
@@ -39,13 +40,15 @@ export function SettingsSectionFrame({
     enableBeforeUnload: isDirty,
     withResolver: true,
   });
-  const hueRaw = methods.watch("site.theme.fuwari.primaryHue");
+  const hueRaw = methods.watch("site.primaryHue");
   const hue =
-    typeof hueRaw === "number" && !Number.isNaN(hueRaw) ? hueRaw : 250;
+    typeof hueRaw === "number" && !Number.isNaN(hueRaw)
+      ? hueRaw
+      : blogConfig.primaryHue;
   const needsSave = nav === "site" || nav === "notify";
   useLiveDocumentHue(
     hue,
-    baseline.config.site?.theme?.fuwari?.primaryHue ?? 250,
+    baseline.config.site?.primaryHue ?? blogConfig.primaryHue,
     isLoading,
   );
 

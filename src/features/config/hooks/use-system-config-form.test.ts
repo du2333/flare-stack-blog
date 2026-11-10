@@ -123,3 +123,41 @@ it("retains edits after a conflict and only discards the requested section on re
   expect(result.current.methods.getValues("email.senderName")).toBe("Keep me");
   expect(result.current.baseline.revisions.site).toBe(4);
 });
+it("submits the shared fields and the Theme settings that have no control yet", async () => {
+  state.snapshot = {
+    ...state.snapshot!,
+    config: {
+      ...state.snapshot!.config,
+      site: {
+        ...state.snapshot!.config.site,
+        bannerFocus: { x: 10, y: 80 },
+        brandMark: "avatar",
+        tagline: "Saved tagline",
+        theme: { id: "classic", options: { classic: { kept: true } } },
+      },
+    },
+  };
+  const { result } = renderHook(() => useSystemConfigForm("site"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() =>
+    result.current.methods.setValue("site.primaryHue", 30, {
+      shouldDirty: true,
+    }),
+  );
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 3, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[0][0].site).toMatchObject({
+    primaryHue: 30,
+    bannerImage: DEFAULT_CONFIG.site?.bannerImage,
+    avatar: DEFAULT_CONFIG.site?.avatar,
+    bannerFocus: { x: 10, y: 80 },
+    brandMark: "avatar",
+    tagline: "Saved tagline",
+    theme: { id: "classic", options: { classic: { kept: true } } },
+  });
+});

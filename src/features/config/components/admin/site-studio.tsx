@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { blogConfig } from "@/blog.config";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,8 @@ import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
-  FUWARI_THEME_HUE_MAX,
-  FUWARI_THEME_HUE_MIN,
+  PRIMARY_HUE_MAX,
+  PRIMARY_HUE_MIN,
 } from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
@@ -88,11 +89,13 @@ export function SiteStudio() {
   const { register, control, setValue } = useFormContext<SystemConfig>();
   const title = useWatch({ control, name: "site.title" }) ?? "";
   const author = useWatch({ control, name: "site.author" }) ?? "";
-  const banner = useWatch({ control, name: "site.theme.fuwari.homeBg" });
-  const avatar = useWatch({ control, name: "site.theme.fuwari.avatar" });
-  const hueRaw = useWatch({ control, name: "site.theme.fuwari.primaryHue" });
+  const banner = useWatch({ control, name: "site.bannerImage" });
+  const avatar = useWatch({ control, name: "site.avatar" });
+  const hueRaw = useWatch({ control, name: "site.primaryHue" });
   const hue =
-    typeof hueRaw === "number" && !Number.isNaN(hueRaw) ? hueRaw : 250;
+    typeof hueRaw === "number" && !Number.isNaN(hueRaw)
+      ? hueRaw
+      : blogConfig.primaryHue;
   const bannerSrc = previewSrc(banner);
   const avatarSrc = previewSrc(avatar);
 
@@ -114,8 +117,8 @@ export function SiteStudio() {
             <Pencil size={17} aria-hidden="true" />
           </label>
           <OverlayUpload
-            name="site.theme.fuwari.homeBg"
-            assetPath="themes/fuwari/home-bg.webp"
+            name="site.bannerImage"
+            assetPath="site/banner.webp"
             accept={IMAGE_ACCEPT}
             className="site-banner-upload"
             label={
@@ -135,8 +138,8 @@ export function SiteStudio() {
               )}
             </div>
             <OverlayUpload
-              name="site.theme.fuwari.avatar"
-              assetPath="themes/fuwari/avatar.png"
+              name="site.avatar"
+              assetPath="site/avatar.png"
               accept={IMAGE_ACCEPT}
               className="site-avatar-upload"
               label={
@@ -180,16 +183,14 @@ export function SiteStudio() {
           <input
             id="theme-hue-slider"
             type="range"
-            min={FUWARI_THEME_HUE_MIN}
-            max={FUWARI_THEME_HUE_MAX}
+            min={PRIMARY_HUE_MIN}
+            max={PRIMARY_HUE_MAX}
             step={1}
             value={hue}
             onChange={(event) =>
-              setValue(
-                "site.theme.fuwari.primaryHue",
-                Number(event.target.value),
-                { shouldDirty: true },
-              )
+              setValue("site.primaryHue", Number(event.target.value), {
+                shouldDirty: true,
+              })
             }
             style={{
               background:
