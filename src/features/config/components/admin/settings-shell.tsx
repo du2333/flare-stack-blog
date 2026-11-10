@@ -44,20 +44,23 @@ export function SettingsShell({
       : m.settings_config_save_notifications();
   return (
     <div
-      className="settings-workspace admin-workspace fuwari-card-base"
+      className="settings-workspace admin-workspace admin-frame fuwari-card-base"
       data-section={nav}
     >
       <PageHeader
-        className="settings-heading"
         title={m.settings_header_title()}
         description={m.settings_design_intro()}
       />
       {nav && <SettingsNav current={nav} />}
-      <div className="settings-body" ref={scrollRef} aria-label={title}>
+      <div
+        className="settings-body admin-frame-bleed"
+        ref={scrollRef}
+        aria-label={title}
+      >
         {children}
       </div>
       {save && (
-        <footer className="settings-savebar">
+        <footer className="settings-savebar admin-frame-bleed">
           {save.dirty && (
             <Callout
               role="status"

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { AdminPagination } from "@/components/admin/admin-pagination";
@@ -112,17 +113,21 @@ export function FriendLinkManager({
   }[status];
 
   return (
-    <div className="friend-workspace admin-workspace fuwari-card-base">
+    <div className="friend-workspace admin-workspace admin-frame fuwari-card-base">
       <PageHeader
-        className="friend-header"
         title={m.friend_links_admin_title()}
         description={m.friend_review_hint()}
         actions={
-          <Button onClick={openCreate}>{m.friend_links_admin_add()}</Button>
+          <Button
+            variant="primary"
+            icon={<Plus size={17} />}
+            onClick={openCreate}
+          >
+            {m.friend_links_admin_add()}
+          </Button>
         }
       />
       <Tabs
-        className="friend-tabs"
         aria-label={m.friend_links_admin_title()}
         value={status}
         onValueChange={onStatusChange}

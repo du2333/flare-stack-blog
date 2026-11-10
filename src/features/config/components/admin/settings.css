@@ -5,17 +5,8 @@
   --fuwari-button-height: calc(40 * var(--admin-unit));
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
+  --admin-frame-bottom: 0;
   color: var(--fuwari-fg-90);
-}
-.settings-heading {
-  padding: calc(28 * var(--admin-unit)) calc(30 * var(--admin-unit))
-    calc(20 * var(--admin-unit));
 }
 .settings-muted {
   color: var(--fuwari-fg-50);
@@ -23,17 +14,13 @@
   line-height: 1.7;
   margin-top: 8px;
 }
-.settings-tabs {
-  margin: 0 calc(30 * var(--admin-unit));
-  flex-shrink: 0;
-}
 .settings-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  padding: calc(24 * var(--admin-unit)) calc(30 * var(--admin-unit));
+  padding: calc(24 * var(--admin-unit)) var(--admin-frame-x);
 }
 .settings-savebar {
   display: flex;
@@ -41,7 +28,7 @@
   justify-content: space-between;
   gap: 20px;
   border-top: 1px solid var(--admin-rule);
-  padding: 14px calc(30 * var(--admin-unit));
+  padding: 14px var(--admin-frame-x);
   flex-shrink: 0;
   --fuwari-callout-font-size: calc(13 * var(--admin-unit));
 }
@@ -169,24 +156,15 @@
   }
 }
 @media (max-width: 600px) {
-  .settings-heading {
-    padding: 18px 18px 10px;
-  }
-  .settings-heading p {
-    display: none;
-  }
-  .settings-tabs {
-    margin: 0 18px;
-  }
   .settings-body {
-    padding: 20px 18px;
+    padding-block: 20px;
   }
   .settings-field-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
   .settings-savebar {
-    padding: 12px 18px;
+    padding-block: 12px;
     flex-wrap: wrap;
     gap: 10px;
     --fuwari-callout-font-size: 12px;

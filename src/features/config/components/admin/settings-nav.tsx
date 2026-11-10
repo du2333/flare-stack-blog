@@ -23,7 +23,6 @@ export function SettingsNav({ current }: { current: SettingsPageId }) {
 
   return (
     <TabNav
-      className="settings-tabs"
       aria-label={m.settings_header_title()}
       value={
         SETTINGS_PAGE_IDS.find((id) => SETTINGS_PAGE_TO[id] === pathname) ??

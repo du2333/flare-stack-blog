@@ -20,7 +20,11 @@ export const Route = createFileRoute("/admin/settings")({
   ssr: false,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(systemConfigQuery);
-    return { title: m.settings_header_title() };
+    // The top bar names Settings; the tabs and the tab title name the section.
+    return {
+      title: m.settings_header_title(),
+      topBarTitle: m.settings_header_title(),
+    };
   },
   component: SettingsLayout,
 });

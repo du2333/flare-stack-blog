@@ -57,11 +57,18 @@ export const Route = createFileRoute("/admin")({
   },
 });
 
+type TitledLoaderData = { title?: string; topBarTitle?: string } | undefined;
+
+/**
+ * The top bar names the workspace: the deepest `topBarTitle` a route gives,
+ * such as Settings over its section, otherwise the deepest `title`.
+ */
 function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const title = (matches[i]?.loaderData as { title?: string } | undefined)
-      ?.title;
-    if (typeof title === "string" && title.length > 0) return title;
+  for (const key of ["topBarTitle", "title"] as const) {
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const title = (matches[i]?.loaderData as TitledLoaderData)?.[key];
+      if (typeof title === "string" && title.length > 0) return title;
+    }
   }
   return "";
 }
@@ -79,7 +86,7 @@ function AdminLayout() {
     <AdminChromeProvider>
       <div
         className={cn(
-          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-4 p-4 relative font-sans",
+          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-2 p-2 md:gap-4 md:p-4 relative font-sans",
           editorWorkspace && "admin-editor-layout",
         )}
       >
@@ -151,10 +158,10 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const { primaryAction, mobileTitle } = useAdminChrome();
 
   return (
-    <header className="lg:hidden shrink-0 mb-4">
+    <header className="lg:hidden shrink-0 mb-2 md:mb-4">
       <div className="fuwari-card-base flex items-center gap-3 px-3 h-16">
         <IconButton
-          size="md"
+          size="lg"
           onClick={onOpenSidebar}
           label={m.admin_layout_open_navigation()}
         >
@@ -174,7 +181,7 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
             {primaryAction.label}
           </Button>
         ) : (
-          <span className="w-9" />
+          <span className="w-11" />
         )}
       </div>
     </header>
