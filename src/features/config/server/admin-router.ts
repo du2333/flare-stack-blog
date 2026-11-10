@@ -34,7 +34,7 @@ const updateSystem = adminProcedure
     path: "/admin/config",
     summary: "Update system config",
     description:
-      "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
+      "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. A site update replaces the whole Site Config: omitted fields, including theme.id, the Theme options and the shared bannerImage, bannerFocus, avatar, primaryHue, brandMark and tagline, return to their defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
     tags: ["Admin Config"],
   })
   .input(UpdateConfigSectionSchema)

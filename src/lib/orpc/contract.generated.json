@@ -961,6 +961,7 @@
           "method": "GET",
           "path": "/site/config",
           "summary": "Get public site config",
+          "description": "Returns the resolved Site Config: identity, social and navigation links, icons, the personalization every Theme honours (bannerImage, bannerFocus, avatar, primaryHue, brandMark, tagline) and the selected Theme with its options. A saved Theme id this version does not offer is returned as the default Theme. theme.fuwari is a deprecated copy of bannerImage, avatar and primaryHue kept for older versions.",
           "tags": ["Site"]
         }
       }
@@ -999,7 +1000,7 @@
             "method": "PATCH",
             "path": "/admin/config",
             "summary": "Update system config",
-            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
+            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. A site update replaces the whole Site Config: omitted fields, including theme.id, the Theme options and the shared bannerImage, bannerFocus, avatar, primaryHue, brandMark and tagline, return to their defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
             "tags": ["Admin Config"]
           }
         }

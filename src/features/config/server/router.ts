@@ -8,6 +8,8 @@ const siteConfig = publicProcedure
     method: "GET",
     path: "/site/config",
     summary: "Get public site config",
+    description:
+      "Returns the resolved Site Config: identity, social and navigation links, icons, the personalization every Theme honours (bannerImage, bannerFocus, avatar, primaryHue, brandMark, tagline) and the selected Theme with its options. A saved Theme id this version does not offer is returned as the default Theme. theme.fuwari is a deprecated copy of bannerImage, avatar and primaryHue kept for older versions.",
     tags: ["Site"],
   })
   .handler(({ context }) => ConfigService.getSiteConfig(context));
