@@ -1,15 +1,18 @@
+import type { MediaSort } from "@/features/media/media.schema";
 import { orpc } from "@/lib/orpc";
 import { emptyListOnNotFound } from "@/lib/orpc/null-on-not-found";
 
 export function mediaInfiniteQueryOptions(
   search: string = "",
   unusedOnly: boolean = false,
+  sort: MediaSort = "newest",
 ) {
   return orpc.media.list.infiniteOptions({
     input: (pageParam: number | undefined) => ({
       cursor: pageParam,
       search: search || undefined,
       unusedOnly: unusedOnly || undefined,
+      sort: sort === "newest" ? undefined : sort,
     }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
