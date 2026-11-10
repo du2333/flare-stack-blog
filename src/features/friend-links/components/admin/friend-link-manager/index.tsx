@@ -229,9 +229,9 @@ export function FriendLinkManager({
           );
         }}
         title={m.friend_links_delete_title()}
-        message={m.friend_links_delete_message({
-          name: deleting?.siteName ?? "",
-        })}
+        message={(deleting?.status === "approved"
+          ? m.friend_links_delete_message_approved
+          : m.friend_links_delete_message)({ name: deleting?.siteName ?? "" })}
         confirmLabel={m.friend_links_delete_confirm()}
         isDanger
         isLoading={isAdminDeleting}
