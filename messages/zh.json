@@ -1324,6 +1324,11 @@
   "admin_overview_email_needs_setup_desc": "新评论和友链申请不会发邮件提醒你",
   "admin_overview_popularity_failed_desc": "去维护页查看原因并重新同步",
   "admin_overview_popularity_expired_desc": "超过 7 天没有同步，首页热门已改用置顶和最新文章",
+  "admin_overview_popularity_sync": "立即同步",
+  "admin_overview_popularity_syncing": "同步中",
+  "admin_overview_popularity_maintenance_link": "前往维护页",
+  "admin_overview_popularity_sync_failed_desc": "Umami 没有返回数据或写入失败，请稍后重试，详细原因见维护页",
+  "admin_overview_popularity_sync_unreachable_desc": "没有连上服务器，请检查网络后重试",
   "admin_overview_default_site_identity_desc": "换成你自己的站点名称和作者",
   "admin_overview_update_available": "有新版本 {version}",
   "admin_overview_update_available_desc": "当前是 v{current}，看看更新了什么",
@@ -1341,7 +1346,6 @@
   "dashboard_stat_views": "近 30 天访问",
   "dashboard_stat_views_unconfigured": "未接入 Umami",
   "dashboard_stat_views_missing": "还没有同步数据",
-  "dashboard_stat_views_expired": "数据已过期",
   "dashboard_stat_comments": "评论",
   "dashboard_stat_comments_recent": [
     {
@@ -1363,7 +1367,6 @@
   ],
   "dashboard_stat_friend_links_none_pending": "没有待审核",
   "dashboard_popular_title": "近 30 天热门",
-  "dashboard_popular_expired": "已过期",
   "dashboard_popular_open_public": "打开公开页面",
   "dashboard_popular_unconfigured_title": "还没接入 Umami",
   "dashboard_popular_unconfigured_desc": "接入后，这里会按近 30 天的阅读量列出最受欢迎的文章",

@@ -1331,6 +1331,11 @@
   "admin_overview_email_needs_setup_desc": "You won't get emails about new comments or friend link requests",
   "admin_overview_popularity_failed_desc": "See why on the maintenance page and sync again",
   "admin_overview_popularity_expired_desc": "Not synced for over 7 days; the homepage shows pinned and recent posts instead",
+  "admin_overview_popularity_sync": "Sync now",
+  "admin_overview_popularity_syncing": "Syncing",
+  "admin_overview_popularity_maintenance_link": "Open maintenance",
+  "admin_overview_popularity_sync_failed_desc": "Umami returned no data or the snapshot could not be saved. Try again later; the maintenance page has the details",
+  "admin_overview_popularity_sync_unreachable_desc": "The server could not be reached. Check the network and try again",
   "admin_overview_default_site_identity_desc": "Set your own site title and author",
   "admin_overview_update_available": "Version {version} is available",
   "admin_overview_update_available_desc": "You're on v{current}. See what's new",
@@ -1349,7 +1354,6 @@
   "dashboard_stat_views": "Views, last 30 days",
   "dashboard_stat_views_unconfigured": "Umami not connected",
   "dashboard_stat_views_missing": "Not synced yet",
-  "dashboard_stat_views_expired": "Data is out of date",
   "dashboard_stat_comments": "Comments",
   "dashboard_stat_comments_recent": [
     {
@@ -1373,7 +1377,6 @@
   ],
   "dashboard_stat_friend_links_none_pending": "None awaiting review",
   "dashboard_popular_title": "Popular in the last 30 days",
-  "dashboard_popular_expired": "Out of date",
   "dashboard_popular_open_public": "Open public page",
   "dashboard_popular_unconfigured_title": "Umami isn't connected",
   "dashboard_popular_unconfigured_desc": "Once connected, your most-read posts of the last 30 days show up here",

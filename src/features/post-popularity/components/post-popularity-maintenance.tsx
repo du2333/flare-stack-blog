@@ -1,26 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { usePostPopularitySync } from "@/features/post-popularity/hooks/use-post-popularity-sync";
 import { postPopularityStatusQuery } from "@/features/post-popularity/queries";
-import { orpcClient } from "@/lib/orpc";
 import { formatDate } from "@/lib/utils";
 import { StatusText } from "@/components/ui/status-text";
 import { m } from "@/paraglide/messages";
 
 export function PostPopularityMaintenance() {
-  const queryClient = useQueryClient();
   const { data: status } = useQuery(postPopularityStatusQuery);
-  const syncMutation = useMutation({
-    mutationFn: () => orpcClient.postPopularity.sync(),
-    onSuccess: (result) => {
-      queryClient.setQueryData(postPopularityStatusQuery.queryKey, result);
+  const syncMutation = usePostPopularitySync({
+    onSuccess: () => {
       toast.success(m.settings_maintenance_popularity_toast_success());
     },
     onError: () => {
       toast.error(m.settings_maintenance_popularity_toast_error());
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries(postPopularityStatusQuery);
     },
   });
   const statusLabel = !status
