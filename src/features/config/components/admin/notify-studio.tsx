@@ -147,6 +147,8 @@ function EmailChannel() {
     <section className="notify-email">
       <div className="notify-form">
         <SectionHeading
+          size="md"
+          align="baseline"
           title={m.settings_tab_email()}
           description={m.settings_design_email_hint()}
           actions={
@@ -189,7 +191,7 @@ function EmailChannel() {
         <SectionHeading
           className="settings-group-title"
           level={3}
-          size="md"
+          size="sm"
           title={m.settings_email_account()}
         />
         <div className="settings-field-grid">
