@@ -7,7 +7,7 @@ import { useAdminChrome } from "@/components/admin/admin-chrome";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
-import { useContentMotion } from "@/hooks/use-motion";
+import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { m } from "@/paraglide/messages";
 import { PostRow, PostsToolbar, TaxonomySheet } from "./components";
@@ -29,6 +29,7 @@ import type {
   SortField,
   StatusFilter,
 } from "./types";
+import { PHONE_LAYOUT_QUERY } from "./types";
 import "./post-manager.css";
 
 interface PostManagerProps {
@@ -77,6 +78,7 @@ export function PostManager({
   const [postToUnpublish, setPostToUnpublish] =
     useState<AdminPostListItem | null>(null);
   const [taxonomyOpen, setTaxonomyOpen] = useState(false);
+  const phone = useMediaQuery(PHONE_LAYOUT_QUERY);
   const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -182,6 +184,35 @@ export function PostManager({
     status !== "ALL" || Boolean(search.trim()) || hasTaxonomyFilter;
   const isEmptyLibrary = !hasContentFilter && totalCount === 0;
 
+  // Pinned under the scrolling rows, or at the end of them on a phone.
+  const footer =
+    !isPending && !error ? (
+      <footer className="post-list-footer">
+        {totalPages <= 1 ? (
+          <p>
+            {hasContentFilter
+              ? m.admin_posts_results({ count: totalCount })
+              : m.admin_posts_total({ count: totalCount })}
+          </p>
+        ) : (
+          <AdminPagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={ADMIN_ITEMS_PER_PAGE}
+            currentPageItemCount={posts.length}
+            onPageChange={onPageChange}
+          />
+        )}
+        {/* With Category or Tag chips showing, they carry the clear button. */}
+        {hasActiveFilters && !hasTaxonomyFilter && (
+          <Button variant="text" size="sm" onClick={resetFilters}>
+            {m.admin_posts_clear_filters()}
+          </Button>
+        )}
+      </footer>
+    ) : null;
+
   return (
     <section className="post-manager admin-workspace admin-frame fuwari-card-base">
       <PageHeader
@@ -220,6 +251,7 @@ export function PostManager({
         onTagChange={onTagChange}
         sortBy={sortBy}
         onSortByChange={onSortByChange}
+        onClearFilters={resetFilters}
         onManageTaxonomy={() => setTaxonomyOpen(true)}
       />
       <div
@@ -314,34 +346,11 @@ export function PostManager({
                 }
               />
             )}
+            {phone && footer}
           </>
         )}
       </div>
-      {!isPending && !error && (
-        <footer className="post-list-footer">
-          {totalPages <= 1 ? (
-            <p>
-              {hasContentFilter
-                ? m.admin_posts_results({ count: totalCount })
-                : m.admin_posts_total({ count: totalCount })}
-            </p>
-          ) : (
-            <AdminPagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={totalCount}
-              itemsPerPage={ADMIN_ITEMS_PER_PAGE}
-              currentPageItemCount={posts.length}
-              onPageChange={onPageChange}
-            />
-          )}
-          {hasActiveFilters && (
-            <Button variant="text" size="sm" onClick={resetFilters}>
-              {m.admin_posts_clear_filters()}
-            </Button>
-          )}
-        </footer>
-      )}
+      {!phone && footer}
 
       <TaxonomySheet
         open={taxonomyOpen}

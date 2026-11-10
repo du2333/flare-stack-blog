@@ -7,31 +7,43 @@
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
 }
-.post-list-controls {
+/* Search, 「筛选」 and the sort: in the toolbar row, or a row of their own. */
+.post-list-tools {
+  --fuwari-button-height: var(--fuwari-field-height);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(24 * var(--admin-unit));
-  padding: calc(26 * var(--admin-unit)) 0 calc(23 * var(--admin-unit));
-}
-.post-list-filters {
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
+  flex-shrink: 0;
   align-items: center;
   gap: calc(10 * var(--admin-unit));
   min-width: 0;
 }
 .post-list-search {
-  flex: 0 1 calc(390 * var(--admin-unit));
+  flex: 0 1 calc(280 * var(--admin-unit));
+  min-width: calc(150 * var(--admin-unit));
 }
-.post-list-sort {
+.post-list-filter-count {
+  color: var(--fuwari-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* The chosen Category and Tag, each one removable. */
+.post-list-chips {
+  --fuwari-badge-height: calc(30 * var(--admin-unit));
+  --fuwari-badge-padding-x: calc(12 * var(--admin-unit));
+  --fuwari-badge-font-size: calc(13 * var(--admin-unit));
   display: flex;
-  gap: calc(12 * var(--admin-unit));
+  flex-shrink: 0;
+  flex-wrap: wrap;
   align-items: center;
-  font-size: calc(14 * var(--admin-unit));
-  white-space: nowrap;
-  color: var(--fuwari-fg-75);
+  gap: calc(8 * var(--admin-unit));
+  padding-top: calc(12 * var(--admin-unit));
+}
+@media (max-width: 1023px) {
+  .post-list-tools {
+    padding-block: calc(10 * var(--admin-unit));
+  }
+  .post-list-search {
+    flex: 1;
+  }
 }
 .post-list-table {
   --fuwari-badge-height: calc(24 * var(--admin-unit));
@@ -174,19 +186,6 @@
   }
 }
 @media (max-width: 620px) {
-  .post-list-controls {
-    flex-wrap: wrap;
-    gap: calc(14 * var(--admin-unit));
-    padding: calc(20 * var(--admin-unit)) 0;
-  }
-  .post-list-filters,
-  .post-list-search {
-    flex-basis: 100%;
-  }
-  .post-list-sort {
-    margin-left: auto;
-    font-size: calc(13 * var(--admin-unit));
-  }
   .post-list-table,
   .post-list-table tbody {
     display: block;
@@ -343,7 +342,6 @@
 }
 
 /* Header, controls and pagination stay outside the independently scrolling rows. */
-.post-list-controls,
 .post-list-footer {
   flex-shrink: 0;
 }
@@ -368,10 +366,6 @@
   padding-top: calc(12 * var(--admin-unit));
 }
 @media (max-width: 620px) {
-  .post-list-controls {
-    padding: 12px 0;
-    gap: 8px;
-  }
   .post-list-footer > div {
     gap: 8px;
   }
