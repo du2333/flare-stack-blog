@@ -35,9 +35,18 @@
  * The save bar is the last thing in the scroller and sticks to its bottom
  * edge. It adds to the scrollable height instead of taking from the viewport,
  * so the content stays where it is when the bar comes and goes, and the
- * content it covers scrolls clear of it. The negative bottom margin cancels
- * the scroller's padding so the bar rests flush at the end.
+ * content it covers scrolls clear of it. While the bar is there the scroller
+ * drops its bottom padding and the content before the bar keeps that space as
+ * margin: a sticky box is held inside its container, so a bar that overhangs
+ * the container's end through a negative margin is pushed up by the overhang,
+ * over the last content.
  */
+.settings-body:has(> .settings-savebar) {
+  padding-bottom: 0;
+}
+.settings-body > :has(+ .settings-savebar) {
+  margin-bottom: var(--settings-pad-y);
+}
 .settings-savebar {
   position: sticky;
   bottom: 0;
@@ -46,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  margin: auto calc(-1 * var(--admin-frame-x)) calc(-1 * var(--settings-pad-y));
+  margin: auto calc(-1 * var(--admin-frame-x)) 0;
   border-top: 1px solid var(--admin-rule);
   padding: 14px var(--admin-frame-x);
   background: var(--fuwari-card-bg);
