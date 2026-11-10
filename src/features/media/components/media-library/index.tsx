@@ -1,4 +1,4 @@
-import { Upload } from "lucide-react";
+import { Search, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAdminChrome } from "@/components/admin/admin-chrome";
@@ -42,6 +42,10 @@ export function MediaLibrary() {
     mediaItems,
     unusedOnly,
     setUnusedOnly,
+    search,
+    setSearch,
+    sort,
+    setSort,
     view,
     setView,
     loadMore,
@@ -74,18 +78,18 @@ export function MediaLibrary() {
   const focusPending = useRef(false);
   useContentMotion(
     contentRef,
-    `${view}:${unusedOnly}:${isPending}:${mediaItems.map((item) => item.key).join(",")}`,
+    `${view}:${unusedOnly}:${search}:${sort}:${isPending}:${mediaItems.map((item) => item.key).join(",")}`,
   );
 
   const captureAnchor = useMediaScroll(
     collectionRef,
     `${view}:${!!active}`,
-    String(unusedOnly),
+    `${unusedOnly}:${search.trim()}:${sort}`,
   );
 
   useEffect(() => {
     setPreview(null);
-  }, [unusedOnly]);
+  }, [unusedOnly, search, sort]);
 
   useEffect(() => {
     setPrimaryAction({
@@ -129,6 +133,7 @@ export function MediaLibrary() {
       else if (error instanceof MediaInUseError) setDeleteTarget(null);
     }
   };
+  const searchTerm = search.trim();
   const isEmpty = !isPending && !isError && mediaItems.length === 0;
 
   return (
@@ -186,6 +191,10 @@ export function MediaLibrary() {
         }}
         unusedCount={stats?.unusedCount}
         totalCount={stats?.totalCount}
+        search={search}
+        onSearchChange={setSearch}
+        sort={sort}
+        onSortChange={setSort}
         view={view}
         onViewChange={(next) => {
           captureAnchor(preview?.key);
@@ -220,6 +229,20 @@ export function MediaLibrary() {
                 action={
                   <Button onClick={() => void refetch()}>
                     {m.media_load_retry()}
+                  </Button>
+                }
+              />
+            ) : isEmpty && searchTerm ? (
+              <EmptyState
+                icon={Search}
+                title={
+                  unusedOnly
+                    ? m.media_search_empty_unreferenced({ query: searchTerm })
+                    : m.media_search_empty({ query: searchTerm })
+                }
+                action={
+                  <Button onClick={() => setSearch("")}>
+                    {m.search_clear()}
                   </Button>
                 }
               />

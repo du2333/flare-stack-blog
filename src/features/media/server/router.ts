@@ -116,7 +116,7 @@ const list = adminProcedure
     path: "/admin/media",
     summary: "List media",
     description:
-      "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
+      "Lists the media library, newest first unless sort says otherwise (oldest first, or the largest file first), a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
     tags: ["Admin Media"],
   })
   .input(GetMediaListInputSchema)

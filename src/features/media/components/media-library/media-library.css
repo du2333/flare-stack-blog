@@ -5,6 +5,8 @@
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
 }
 .media-workspace {
+  --fuwari-field-height: calc(36 * var(--admin-unit));
+  --fuwari-field-font-size: calc(14 * var(--admin-unit));
   --media-layout-duration: 420ms;
   --media-layout-ease: cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -13,6 +15,49 @@
 }
 .media-workspace-toolbar {
   margin-bottom: calc(18 * var(--admin-unit));
+}
+/* The toolbar row lays itself out by its own width, which the open detail
+   panel narrows, not by the screen's. */
+.media-toolbar-shell {
+  container-type: inline-size;
+  flex-shrink: 0;
+}
+.media-filters {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--admin-unit));
+  min-width: 0;
+  margin-left: auto;
+}
+.media-search {
+  flex: 0 1 calc(240 * var(--admin-unit));
+  min-width: calc(150 * var(--admin-unit));
+}
+/* Too narrow for tabs, search, sort and the view switch in one row: the tabs
+   and the view switch keep the first row and the rule, search and sort take
+   their own row under it. */
+@container (max-width: 719px) {
+  .media-toolbar-shell .media-workspace-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    border-bottom: 0;
+  }
+  .media-workspace-tabs {
+    --fuwari-tabs-rule-width: 1px;
+    grid-area: 1 / 1 / 2 / 3;
+  }
+  .media-view-switch {
+    grid-area: 1 / 2;
+  }
+  .media-filters {
+    grid-area: 2 / 1 / 3 / 3;
+    margin-left: 0;
+    padding-top: calc(12 * var(--admin-unit));
+  }
+  .media-search {
+    flex: 1 1 auto;
+  }
 }
 .media-workspace-body {
   display: grid;
@@ -73,12 +118,9 @@
   transform: translateY(-2px);
 }
 .media-gallery-name {
-  display: block;
+  display: flex;
   max-width: 100%;
   margin-top: calc(11 * var(--admin-unit));
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: calc(13 * var(--admin-unit));
   line-height: 1.5;
   color: var(--fuwari-fg-75);
@@ -108,13 +150,16 @@
   font-weight: 400;
 }
 .media-table th:first-child {
-  width: 44%;
+  width: 36%;
 }
 .media-table th:nth-child(2) {
-  width: 23%;
+  width: 18%;
 }
 .media-table th:nth-child(3) {
-  width: 18%;
+  width: 14%;
+}
+.media-table th:nth-child(4) {
+  width: 17%;
 }
 .media-table th:last-child {
   width: 15%;
@@ -146,12 +191,26 @@
   height: calc(52 * var(--admin-unit));
   border-radius: calc(6 * var(--admin-unit));
 }
-.media-file > span:last-child {
+.media-file > .media-name {
   font-size: calc(13 * var(--admin-unit));
+  color: var(--fuwari-fg-75);
+}
+/* A long name gives way in the middle: the head takes the ellipsis, the last
+   characters and the extension stay. */
+.media-name {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+}
+.media-name-head {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--fuwari-fg-75);
+}
+.media-name-tail {
+  flex: none;
+  white-space: pre;
 }
 .media-browser-footer {
   display: flex;
@@ -369,10 +428,7 @@ aside.media-inspector {
     gap: calc(22 * var(--admin-unit)) calc(14 * var(--admin-unit));
   }
   .media-table {
-    min-width: calc(440 * var(--admin-unit));
-  }
-  .media-table th:first-child {
-    width: 41%;
+    min-width: calc(560 * var(--admin-unit));
   }
   .media-file {
     gap: calc(8 * var(--admin-unit));
@@ -393,7 +449,7 @@ aside.media-inspector {
 }
 
 @media (min-width: 1200px) {
-  .media-workspace:has(.has-preview) .media-workspace-toolbar {
+  .media-workspace:has(.has-preview) .media-toolbar-shell {
     margin-right: calc(354 * var(--admin-unit));
   }
 }
@@ -466,7 +522,7 @@ aside.media-inspector {
 .media-panel-slot > .media-inspector {
   width: calc(330 * var(--admin-unit));
 }
-.media-workspace-toolbar {
+.media-toolbar-shell {
   transition: margin-right var(--media-layout-duration) var(--media-layout-ease);
 }
 aside.media-inspector[data-state="open"] {
@@ -507,7 +563,7 @@ aside.media-inspector[data-state="closing"] {
 }
 @media (prefers-reduced-motion: reduce) {
   .media-workspace-body,
-  .media-workspace-toolbar {
+  .media-toolbar-shell {
     transition: none;
   }
   aside.media-inspector[data-state] {

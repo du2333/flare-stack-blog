@@ -28,8 +28,10 @@ export function MediaLibraryPageSkeleton() {
   return (
     <div className="media-workspace admin-workspace admin-frame fuwari-card-base">
       <FrameHeaderSkeleton title={m.media_title()} />
-      <div className="media-workspace-toolbar admin-frame-toolbar">
-        <FrameTabsSkeleton count={2} className="media-workspace-tabs" />
+      <div className="media-toolbar-shell">
+        <div className="media-workspace-toolbar admin-frame-toolbar">
+          <FrameTabsSkeleton count={2} className="media-workspace-tabs" />
+        </div>
       </div>
       <MediaCollectionSkeleton />
     </div>
