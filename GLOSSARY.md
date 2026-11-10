@@ -92,6 +92,14 @@ _Avoid_: System settings
 One of the built-in looks of the public blog. The **Admin** selects one for the whole site in **Site Config**; visitors do not choose it.
 _Avoid_: Skin, template, presentation, Theme Contract, 外观
 
+**Theme Shell**:
+The part of a **Theme** that arranges the navigation, the first screen, the sidebar cards and the footer around the content of a page.
+_Avoid_: Layout, template, frame
+
+**Theme Recipe**:
+The choices a **Theme** makes among the forms that shared content parts offer, such as a card or a row for a **Post** in a list.
+_Avoid_: Preset, variant set, component override
+
 **Colour Scheme**:
 Whether pages are shown light or dark. Each visitor chooses it or follows their system; it is independent of the **Theme**.
 _Avoid_: Theme, appearance, 外观主题, dark theme
