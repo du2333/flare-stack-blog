@@ -82,7 +82,9 @@ function ClassicShell({
             style={
               bannerCentred
                 ? undefined
-                : { objectPosition: focalObjectPosition(siteConfig.bannerFocus) }
+                : {
+                    objectPosition: focalObjectPosition(siteConfig.bannerFocus),
+                  }
             }
           />
           {isHomePage && siteConfig.tagline ? (
