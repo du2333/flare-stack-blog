@@ -280,15 +280,14 @@ it("confirms a delete with how many posts, and how many published ones, lose the
   const dialog = await screen.findByRole("dialog", {
     name: m.category_manager_delete_title(),
   });
-  expect(
-    within(dialog).getByText(
-      m.taxonomy_sheet_delete_category_desc({
-        name: "Rust",
-        count: 3,
-        published: 2,
-      }),
-    ),
-  ).toBeDefined();
+  // The body wraps quoted names in a no-wrap span, so match the whole text.
+  expect(dialog.textContent).toContain(
+    m.taxonomy_sheet_delete_category_desc({
+      name: "Rust",
+      count: 3,
+      published: 2,
+    }),
+  );
   await act(async () =>
     fireEvent.click(
       within(dialog).getByRole("button", { name: m.category_manager_delete() }),
@@ -311,11 +310,10 @@ it("says published posts are untouched when none of them carry the tag", async (
   const dialog = await screen.findByRole("dialog", {
     name: m.tag_manager_delete_title(),
   });
-  expect(
-    within(dialog).getByText(
-      m.taxonomy_sheet_delete_tag_desc_draft_only({ name: "react", count: 4 }),
-    ),
-  ).toBeDefined();
+  // The body wraps quoted names in a no-wrap span, so match the whole text.
+  expect(dialog.textContent).toContain(
+    m.taxonomy_sheet_delete_tag_desc_draft_only({ name: "react", count: 4 }),
+  );
 });
 
 it("confirms a tag delete with how many published posts lose it at once", async () => {
@@ -327,15 +325,14 @@ it("confirms a tag delete with how many published posts lose it at once", async 
   const dialog = await screen.findByRole("dialog", {
     name: m.tag_manager_delete_title(),
   });
-  expect(
-    within(dialog).getByText(
-      m.taxonomy_sheet_delete_tag_desc({
-        name: "react",
-        count: 4,
-        published: 1,
-      }),
-    ),
-  ).toBeDefined();
+  // The body wraps quoted names in a no-wrap span, so match the whole text.
+  expect(dialog.textContent).toContain(
+    m.taxonomy_sheet_delete_tag_desc({
+      name: "react",
+      count: 4,
+      published: 1,
+    }),
+  );
 });
 
 it("deletes every unused tag one by one", async () => {
