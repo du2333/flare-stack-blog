@@ -1,32 +1,41 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import * as React from "react";
 import { flushSync } from "react-dom";
-import type { UserTheme } from "@/components/common/theme-provider";
-import { useTheme } from "@/components/common/theme-provider";
+import type { ColourSchemePreference } from "@/components/common/colour-scheme-provider";
+import { useColourScheme } from "@/components/common/colour-scheme-provider";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-const themes: Array<UserTheme> = ["light", "dark", "system"];
+const colourSchemePreferences: Array<ColourSchemePreference> = [
+  "light",
+  "dark",
+  "system",
+];
 
-export function ThemeToggle({
+export function ColourSchemeToggle({
   className,
   label,
 }: {
   className?: string;
   label?: React.ReactNode;
 }) {
-  const { userTheme, setTheme } = useTheme();
+  const { colourSchemePreference, setColourScheme } = useColourScheme();
   const ref = React.useRef<HTMLButtonElement>(null);
-  const themeLabel =
-    userTheme === "light"
-      ? m.theme_light()
-      : userTheme === "dark"
-        ? m.theme_dark()
-        : m.theme_system();
+  const schemeLabel =
+    colourSchemePreference === "light"
+      ? m.colour_scheme_light()
+      : colourSchemePreference === "dark"
+        ? m.colour_scheme_dark()
+        : m.colour_scheme_system();
 
-  const toggleTheme = async () => {
-    const currentIndex = themes.indexOf(userTheme);
-    const nextTheme = themes[(currentIndex + 1) % themes.length];
+  const toggleColourScheme = async () => {
+    const currentIndex = colourSchemePreferences.indexOf(
+      colourSchemePreference,
+    );
+    const nextPreference =
+      colourSchemePreferences[
+        (currentIndex + 1) % colourSchemePreferences.length
+      ];
 
     // Fallback if View Transitions API is not supported
     const isReducedMotion = window.matchMedia(
@@ -34,7 +43,7 @@ export function ThemeToggle({
     ).matches;
 
     if (!ref.current || !document.startViewTransition || isReducedMotion) {
-      setTheme(nextTheme);
+      setColourScheme(nextPreference);
       return;
     }
 
@@ -46,11 +55,11 @@ export function ThemeToggle({
     const bottom = window.innerHeight - top;
     const maxRadius = Math.hypot(Math.max(left, right), Math.max(top, bottom));
 
-    document.documentElement.classList.add("theme-transition");
+    document.documentElement.classList.add("colour-scheme-transition");
 
     const transition = document.startViewTransition(() => {
       flushSync(() => {
-        setTheme(nextTheme);
+        setColourScheme(nextPreference);
       });
     });
 
@@ -75,20 +84,20 @@ export function ThemeToggle({
       .catch(() => {});
 
     void transition.finished.finally(() => {
-      document.documentElement.classList.remove("theme-transition");
+      document.documentElement.classList.remove("colour-scheme-transition");
     });
   };
 
   return (
     <button
       ref={ref}
-      onClick={toggleTheme}
+      onClick={toggleColourScheme}
       className={cn(
         "p-2 text-muted-foreground hover:text-foreground transition-colors duration-300",
         className,
       )}
-      title={m.theme_toggle_title({ theme: themeLabel })}
-      aria-label={m.theme_toggle_title({ theme: themeLabel })}
+      title={m.colour_scheme_toggle_title({ scheme: schemeLabel })}
+      aria-label={m.colour_scheme_toggle_title({ scheme: schemeLabel })}
     >
       <div className="relative flex items-center justify-center w-4 h-4">
         {/* Light Mode Icon */}

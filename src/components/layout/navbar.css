@@ -228,7 +228,7 @@
   border-block: 1px solid
     color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
 }
-.public-menu-theme {
+.public-menu-colour-scheme {
   min-height: 44px;
   padding: 8px !important;
   font-size: 12px !important;
@@ -296,7 +296,7 @@
     transition: none;
   }
 }
-.public-menu-theme {
+.public-menu-colour-scheme {
   display: flex;
   align-items: center;
   gap: 8px;

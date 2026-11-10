@@ -1,4 +1,4 @@
-import { ThemedMermaidDiagram } from "@/components/content/themed-mermaid-diagram";
+import { ColourSchemeMermaidDiagram } from "@/components/content/colour-scheme-mermaid-diagram";
 import { MERMAID } from "@/lib/code-languages";
 import { CodeBlockFrame, CodeHtml } from "./code-block";
 
@@ -16,7 +16,7 @@ export default function MermaidCodeBlock({
 }) {
   return (
     <CodeBlockFrame code={code} language={MERMAID}>
-      <ThemedMermaidDiagram
+      <ColourSchemeMermaidDiagram
         source={code}
         fallback={<CodeHtml code={code} highlightedHtml={highlightedHtml} />}
       />

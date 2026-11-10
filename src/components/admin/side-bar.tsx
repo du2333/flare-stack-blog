@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { IconButton } from "@/components/ui/icon-button";
 import { Sheet } from "@/components/ui/sheet";
@@ -234,11 +234,11 @@ export function SideBar({
                 {m.admin_layout_back_to_site()}
               </span>
             </Link>
-            <ThemeToggle
-              className="admin-sidebar-row admin-sidebar-action admin-sidebar-theme"
+            <ColourSchemeToggle
+              className="admin-sidebar-row admin-sidebar-action admin-sidebar-colour-scheme"
               label={
                 <span className="admin-sidebar-label">
-                  {m.admin_sidebar_appearance()}
+                  {m.admin_sidebar_colour_scheme()}
                 </span>
               }
             />

@@ -11,7 +11,7 @@ import {
 import { Editor, EditorContent } from "@tiptap/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { AppTheme } from "@/components/common/theme-provider";
+import type { ColourScheme } from "@/components/common/colour-scheme-provider";
 import { createSchemaExtensions } from "@/features/posts/editor/schema";
 import { CodeBlockExtension } from ".";
 
@@ -27,10 +27,10 @@ const mermaid = vi.hoisted(() => ({
 
 vi.mock("mermaid", () => ({ default: mermaid }));
 
-const theme = vi.hoisted(() => ({ appTheme: "light" as AppTheme }));
+const scheme = vi.hoisted(() => ({ colourScheme: "light" as ColourScheme }));
 
-vi.mock("@/components/common/theme-provider", () => ({
-  useTheme: () => theme,
+vi.mock("@/components/common/colour-scheme-provider", () => ({
+  useColourScheme: () => scheme,
 }));
 
 const SOURCE = "flowchart LR\n  A --> B";
@@ -44,7 +44,7 @@ Range.prototype.getBoundingClientRect ??= () => new DOMRect();
 document.elementFromPoint ??= () => null;
 
 beforeEach(() => {
-  theme.appTheme = "light";
+  scheme.colourScheme = "light";
   mermaid.initialize.mockReset();
   mermaid.render.mockReset();
   mermaid.render.mockResolvedValue({
@@ -170,7 +170,7 @@ it("re-renders the diagram from the edited source after the Admin leaves the blo
 });
 
 it("colours the diagram for the editor's dark mode", async () => {
-  theme.appTheme = "dark";
+  scheme.colourScheme = "dark";
   await renderCodeBlock("mermaid", SOURCE);
 
   await screen.findByTestId("diagram");

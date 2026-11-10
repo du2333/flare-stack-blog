@@ -463,8 +463,8 @@
   }
 }
 
-.theme-transition::view-transition-old(root),
-.theme-transition::view-transition-new(root) {
+.colour-scheme-transition::view-transition-old(root),
+.colour-scheme-transition::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }

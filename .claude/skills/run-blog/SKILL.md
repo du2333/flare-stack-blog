@@ -37,7 +37,7 @@ Use `playwright-core` from a scratch directory (`bun add playwright-core` there)
 - **Editor:** `/admin/posts` → button "新建文章" → wait for `/admin/posts/edit/<id>` → type into `.ProseMirror`. Type through `page.keyboard` so input rules and the slash menu fire.
 - **Publish:** button "发布" on the edit page; the Post's slug is in the `posts` table.
 - **Public page:** `/post/<slug>` needs no cookie.
-- **Dark mode:** `page.emulateMedia({ colorScheme: "dark" })` while the theme is "system".
+- **Dark mode:** `page.emulateMedia({ colorScheme: "dark" })` while the colour scheme preference is "system".
 
 Look at every screenshot, and record `pageerror` events.
 
