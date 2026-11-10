@@ -183,11 +183,7 @@ export function PostManager({
     onSuccess: () => setPostToUnpublish(null),
   });
   const pinMutation = useTogglePostPin();
-  const hasActiveFilters =
-    status !== "ALL" ||
-    sortBy !== "updatedAt" ||
-    Boolean(searchInput) ||
-    hasTaxonomyFilter;
+  const hasSearch = Boolean(searchInput.trim());
   const hasContentFilter =
     status !== "ALL" || Boolean(search.trim()) || hasTaxonomyFilter;
   const isEmptyLibrary = !hasContentFilter && totalCount === 0;
@@ -212,8 +208,12 @@ export function PostManager({
             onPageChange={onPageChange}
           />
         )}
-        {/* With Category or Tag chips showing, they carry the clear button. */}
-        {hasActiveFilters && !hasTaxonomyFilter && (
+        {/*
+          The full reset is for a search term, alone or with a Category or Tag.
+          A status tab is no filter, and Category or Tag chips alone carry
+          their own clear button.
+        */}
+        {hasSearch && (
           <Button variant="text" size="sm" onClick={resetFilters}>
             {m.admin_posts_clear_filters()}
           </Button>
