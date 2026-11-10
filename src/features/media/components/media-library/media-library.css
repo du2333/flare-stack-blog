@@ -379,7 +379,7 @@ aside.media-inspector {
       .fuwari-segment
     ),
     a,
-    input
+    input:not(.fuwari-field-shell > input)
   ):focus-visible {
   outline: 2px solid var(--fuwari-primary);
   outline-offset: 3px;
