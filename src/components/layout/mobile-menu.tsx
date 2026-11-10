@@ -9,6 +9,7 @@ import { PublicNavLink } from "./public-nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
+import "./mobile-menu.css";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;

@@ -16,7 +16,6 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
-import "./navbar.css";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;

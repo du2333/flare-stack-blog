@@ -1,7 +1,12 @@
+/* 「经典」's stylesheet (themes.ts links it only while 「经典」 is the selected
+   Theme; the shell's modules import no CSS). Its design variables are the
+   defaults in theme-variables.css, so it overrides none. */
+@import "./navbar.css";
+
 /* Where things outside the shell's tree sit. The table of contents renders
    into the body, so these live on the root. The content is one centred
    column of --fuwari-page-width. */
-:root {
+:root[data-theme="classic"] {
   /* The side table of contents: below the navbar, in the right gutter. */
   --shell-toc-top: 3.5rem;
   --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);

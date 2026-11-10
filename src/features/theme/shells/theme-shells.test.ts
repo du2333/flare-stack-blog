@@ -15,19 +15,18 @@ import {
 } from "@testing-library/react";
 import { createElement } from "react";
 import { findInPopover } from "tests/popover";
+import { fixtureTheme } from "tests/theme-fixture/theme";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 import { useFirstScreenHeight } from "../components/first-screen";
-import type {
-  PageKind,
-  SidebarCard,
-  ThemeShell,
-  ThemeShellProps,
-} from "../theme-shell";
-import { THEME_SHELLS } from ".";
+import type { PageKind, SidebarCard, ThemeShellProps } from "../theme-shell";
+import { resolveThemeOptions, THEMES, type Theme } from "../themes";
+
+/** Every registered Theme, and the fixture Theme as a second shell. */
+const THEMES_UNDER_TEST = [...THEMES, fixtureTheme];
 
 const calls = vi.hoisted(() => ({
   setColourScheme: vi.fn(),
@@ -80,7 +79,7 @@ function PageContent() {
 }
 
 async function renderShell(
-  shell: ThemeShell,
+  theme: Theme,
   {
     pageKind,
     user,
@@ -95,6 +94,7 @@ async function renderShell(
 ) {
   const props: ThemeShellProps = {
     pageKind,
+    options: resolveThemeOptions(theme, undefined),
     navOptions: NAV_OPTIONS,
     sidebarCards: pageKind === "focused" ? [] : CARDS,
     user,
@@ -107,7 +107,7 @@ async function renderShell(
   const root = createRootRoute({
     beforeLoad: () => ({ siteConfig: resolveSiteConfig({ site }) }),
     loader: () => ({ currentYear: 2026 }),
-    component: () => createElement(shell.Shell, props),
+    component: () => createElement(theme.shell.Shell, props),
   });
   const router = createRouter({
     routeTree: root,
@@ -151,226 +151,219 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe.each(THEME_SHELLS.map((shell) => [shell.id, shell] as const))(
-  "the %s shell",
-  (id, shell) => {
-    it.each(["home", "inner"] as const)(
-      "renders everything it is given on a %s page",
-      async (pageKind) => {
-        await renderShell(shell, { pageKind });
+describe.each(
+  THEMES_UNDER_TEST.map((theme) => [theme.shell.id, theme] as const),
+)("the %s shell", (id, theme) => {
+  it.each(["home", "inner"] as const)(
+    "renders everything it is given on a %s page",
+    async (pageKind) => {
+      await renderShell(theme, { pageKind });
 
-        for (const option of NAV_OPTIONS) {
-          const links = screen.getAllByRole("link", { name: option.label });
-          expect(links.map((link) => link.getAttribute("href"))).toContain(
-            option.href,
-          );
-        }
-        expect(
-          screen.getAllByRole("link", { name: m.nav_search() }).length,
-        ).toBeGreaterThan(0);
-
-        const sidebar = region("sidebar");
-        expect(sidebar).not.toBeNull();
-        const shown = CARDS.map(({ id }) =>
-          within(sidebar!).getByText(`Card ${id}`),
+      for (const option of NAV_OPTIONS) {
+        const links = screen.getAllByRole("link", { name: option.label });
+        expect(links.map((link) => link.getAttribute("href"))).toContain(
+          option.href,
         );
-        // Each card comes after the one before it.
-        for (let i = 1; i < shown.length; i++) {
-          expect(
-            shown[i - 1].compareDocumentPosition(shown[i]) &
-              Node.DOCUMENT_POSITION_FOLLOWING,
-          ).toBeTruthy();
-        }
+      }
+      expect(
+        screen.getAllByRole("link", { name: m.nav_search() }).length,
+      ).toBeGreaterThan(0);
 
-        expect(screen.getByRole("button", { name: "Floating" })).toBeTruthy();
+      const sidebar = region("sidebar");
+      expect(sidebar).not.toBeNull();
+      const shown = CARDS.map(({ id }) =>
+        within(sidebar!).getByText(`Card ${id}`),
+      );
+      // Each card comes after the one before it.
+      for (let i = 1; i < shown.length; i++) {
         expect(
-          Number(
-            screen.getByText("Page content").getAttribute("data-first-screen"),
-          ),
-        ).toBeGreaterThanOrEqual(0);
-      },
+          shown[i - 1].compareDocumentPosition(shown[i]) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      }
+
+      expect(screen.getByRole("button", { name: "Floating" })).toBeTruthy();
+      expect(
+        Number(
+          screen.getByText("Page content").getAttribute("data-first-screen"),
+        ),
+      ).toBeGreaterThanOrEqual(0);
+    },
+  );
+
+  it("marks its root and regions for shared styles", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+
+    expect(document.querySelector(`[data-theme-shell="${id}"]`)).not.toBeNull();
+    const body = region("body");
+    expect(body).not.toBeNull();
+    expect(body!.contains(region("sidebar"))).toBe(true);
+    expect(body!.contains(region("footer"))).toBe(true);
+    expect(region("main")!.textContent).toContain("Page content");
+    expect(region("footer")!.textContent).toContain("Footer content");
+  });
+
+  it("shows the built-in icon and the title by default", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+
+    const brand = brandLink();
+    expect(brand.querySelector("svg")).not.toBeNull();
+    expect(brand.querySelector("img")).toBeNull();
+  });
+
+  it("shows the site icon as the brand mark", async () => {
+    await renderShell(theme, {
+      pageKind: "inner",
+      site: { brandMark: "siteIcon" },
+    });
+
+    const brand = brandLink();
+    expect(brand.querySelector("svg")).toBeNull();
+    expect(brand.querySelector("img")?.getAttribute("src")).toBe(
+      resolveSiteConfig({}).icons.faviconSvg,
+    );
+  });
+
+  it("shows the avatar as the brand mark", async () => {
+    await renderShell(theme, {
+      pageKind: "inner",
+      site: { brandMark: "avatar" },
+    });
+
+    const brand = brandLink();
+    expect(brand.querySelector("svg")).toBeNull();
+    expect(brand.querySelector("img")?.getAttribute("src")).toContain("avatar");
+  });
+
+  it("shows the title alone when the brand mark is none", async () => {
+    await renderShell(theme, {
+      pageKind: "inner",
+      site: { brandMark: "none" },
+    });
+
+    const brand = brandLink();
+    expect(brand.querySelector("svg, img")).toBeNull();
+    expect(brand.textContent).toBe(resolveSiteConfig({}).title);
+  });
+
+  it.each(["home", "inner"] as const)(
+    "shows the tagline only where it declares to, on a %s page",
+    async (pageKind) => {
+      await renderShell(theme, {
+        pageKind,
+        site: { tagline: "A line under the banner" },
+      });
+
+      const shown = screen.queryByText("A line under the banner") !== null;
+      expect(shown).toBe(theme.shell.taglineOn?.includes(pageKind) ?? false);
+    },
+  );
+
+  it("shows no tagline text when none is set", async () => {
+    await renderShell(theme, { pageKind: "home" });
+
+    expect(screen.queryByText("A line under the banner")).toBeNull();
+  });
+
+  it.each(["home", "inner"] as const)(
+    "crops the banner around the focal point on a %s page",
+    async (pageKind) => {
+      await renderShell(theme, {
+        pageKind,
+        site: { bannerFocus: { x: 10, y: 80 } },
+      });
+
+      const banner = screen.getByAltText("banner");
+      expect(banner.style.objectPosition).toBe("10% 80%");
+    },
+  );
+
+  it("leaves the banner uncropped by a style when the focal point is the centre", async () => {
+    await renderShell(theme, { pageKind: "home" });
+
+    expect(screen.getByAltText("banner").style.objectPosition).toBe("");
+  });
+
+  it("renders no sidebar on a focused page", async () => {
+    await renderShell(theme, { pageKind: "focused" });
+
+    expect(region("sidebar")).toBeNull();
+    expect(region("main")!.textContent).toContain("Page content");
+    expect(region("footer")!.textContent).toContain("Footer content");
+    expect(linkCount("Nav posts")).toBeGreaterThan(0);
+  });
+
+  it("switches the colour scheme and the language", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: m.colour_scheme_toggle_title({
+          scheme: m.colour_scheme_system(),
+        }),
+      })[0],
+    );
+    expect(calls.setColourScheme).toHaveBeenCalledWith("light");
+
+    fireEvent.click(
+      screen.getAllByRole("button", { name: m.common_switch_language() })[0],
+    );
+    fireEvent.click(await findInPopover("menuitemradio", { name: "English" }));
+    expect(calls.setLocale).toHaveBeenCalledWith("en");
+  });
+
+  it("opens the compact menu with every navigation entry", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+    const before = NAV_OPTIONS.map((option) => linkCount(option.label));
+
+    const trigger = screen.getByRole("button", {
+      name: m.common_open_menu(),
+    });
+    fireEvent.click(trigger);
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    NAV_OPTIONS.forEach((option, index) => {
+      expect(linkCount(option.label)).toBe(before[index] + 1);
+    });
+  });
+
+  it("offers sign-in to a visitor", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+    expect(
+      screen.queryByRole("link", { name: m.nav_login_register() }),
+    ).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: m.nav_login_register() }),
     );
 
-    it("marks its root and regions for shared styles", async () => {
-      await renderShell(shell, { pageKind: "inner" });
+    expect(
+      screen
+        .getByRole("link", { name: m.nav_login_register() })
+        .getAttribute("href"),
+    ).toBe("/login");
+  });
 
-      expect(
-        document.querySelector(`[data-theme-shell="${id}"]`),
-      ).not.toBeNull();
-      const body = region("body");
-      expect(body).not.toBeNull();
-      expect(body!.contains(region("sidebar"))).toBe(true);
-      expect(body!.contains(region("footer"))).toBe(true);
-      expect(region("main")!.textContent).toContain("Page content");
-      expect(region("footer")!.textContent).toContain("Footer content");
+  it("lets a signed-in User reach the profile and log out", async () => {
+    const logout = vi.fn(async () => {});
+    await renderShell(theme, {
+      pageKind: "inner",
+      user: { name: "Reader", role: "user" },
+      logout,
     });
 
-    it("shows the built-in icon and the title by default", async () => {
-      await renderShell(shell, { pageKind: "inner" });
+    fireEvent.click(screen.getByRole("button", { name: m.profile_title() }));
 
-      const brand = brandLink();
-      expect(brand.querySelector("svg")).not.toBeNull();
-      expect(brand.querySelector("img")).toBeNull();
-    });
-
-    it("shows the site icon as the brand mark", async () => {
-      await renderShell(shell, {
-        pageKind: "inner",
-        site: { brandMark: "siteIcon" },
-      });
-
-      const brand = brandLink();
-      expect(brand.querySelector("svg")).toBeNull();
-      expect(brand.querySelector("img")?.getAttribute("src")).toBe(
-        resolveSiteConfig({}).icons.faviconSvg,
-      );
-    });
-
-    it("shows the avatar as the brand mark", async () => {
-      await renderShell(shell, {
-        pageKind: "inner",
-        site: { brandMark: "avatar" },
-      });
-
-      const brand = brandLink();
-      expect(brand.querySelector("svg")).toBeNull();
-      expect(brand.querySelector("img")?.getAttribute("src")).toContain(
-        "avatar",
-      );
-    });
-
-    it("shows the title alone when the brand mark is none", async () => {
-      await renderShell(shell, {
-        pageKind: "inner",
-        site: { brandMark: "none" },
-      });
-
-      const brand = brandLink();
-      expect(brand.querySelector("svg, img")).toBeNull();
-      expect(brand.textContent).toBe(resolveSiteConfig({}).title);
-    });
-
-    it.each(["home", "inner"] as const)(
-      "shows the tagline only where it declares to, on a %s page",
-      async (pageKind) => {
-        await renderShell(shell, {
-          pageKind,
-          site: { tagline: "A line under the banner" },
-        });
-
-        const shown = screen.queryByText("A line under the banner") !== null;
-        expect(shown).toBe(shell.taglineOn?.includes(pageKind) ?? false);
-      },
-    );
-
-    it("shows no tagline text when none is set", async () => {
-      await renderShell(shell, { pageKind: "home" });
-
-      expect(screen.queryByText("A line under the banner")).toBeNull();
-    });
-
-    it.each(["home", "inner"] as const)(
-      "crops the banner around the focal point on a %s page",
-      async (pageKind) => {
-        await renderShell(shell, {
-          pageKind,
-          site: { bannerFocus: { x: 10, y: 80 } },
-        });
-
-        const banner = screen.getByAltText("banner");
-        expect(banner.style.objectPosition).toBe("10% 80%");
-      },
-    );
-
-    it("leaves the banner uncropped by a style when the focal point is the centre", async () => {
-      await renderShell(shell, { pageKind: "home" });
-
-      expect(screen.getByAltText("banner").style.objectPosition).toBe("");
-    });
-
-    it("renders no sidebar on a focused page", async () => {
-      await renderShell(shell, { pageKind: "focused" });
-
-      expect(region("sidebar")).toBeNull();
-      expect(region("main")!.textContent).toContain("Page content");
-      expect(region("footer")!.textContent).toContain("Footer content");
-      expect(linkCount("Nav posts")).toBeGreaterThan(0);
-    });
-
-    it("switches the colour scheme and the language", async () => {
-      await renderShell(shell, { pageKind: "inner" });
-
+    expect(
+      screen
+        .getByRole("link", { name: m.profile_title() })
+        .getAttribute("href"),
+    ).toBe("/profile");
+    await act(async () => {
       fireEvent.click(
-        screen.getAllByRole("button", {
-          name: m.colour_scheme_toggle_title({
-            scheme: m.colour_scheme_system(),
-          }),
-        })[0],
+        screen.getByRole("button", { name: m.profile_logout_fuwari() }),
       );
-      expect(calls.setColourScheme).toHaveBeenCalledWith("light");
-
-      fireEvent.click(
-        screen.getAllByRole("button", { name: m.common_switch_language() })[0],
-      );
-      fireEvent.click(
-        await findInPopover("menuitemradio", { name: "English" }),
-      );
-      expect(calls.setLocale).toHaveBeenCalledWith("en");
     });
-
-    it("opens the compact menu with every navigation entry", async () => {
-      await renderShell(shell, { pageKind: "inner" });
-      const before = NAV_OPTIONS.map((option) => linkCount(option.label));
-
-      const trigger = screen.getByRole("button", {
-        name: m.common_open_menu(),
-      });
-      fireEvent.click(trigger);
-
-      expect(trigger.getAttribute("aria-expanded")).toBe("true");
-      NAV_OPTIONS.forEach((option, index) => {
-        expect(linkCount(option.label)).toBe(before[index] + 1);
-      });
-    });
-
-    it("offers sign-in to a visitor", async () => {
-      await renderShell(shell, { pageKind: "inner" });
-      expect(
-        screen.queryByRole("link", { name: m.nav_login_register() }),
-      ).toBeNull();
-
-      fireEvent.click(
-        screen.getByRole("button", { name: m.nav_login_register() }),
-      );
-
-      expect(
-        screen
-          .getByRole("link", { name: m.nav_login_register() })
-          .getAttribute("href"),
-      ).toBe("/login");
-    });
-
-    it("lets a signed-in User reach the profile and log out", async () => {
-      const logout = vi.fn(async () => {});
-      await renderShell(shell, {
-        pageKind: "inner",
-        user: { name: "Reader", role: "user" },
-        logout,
-      });
-
-      fireEvent.click(screen.getByRole("button", { name: m.profile_title() }));
-
-      expect(
-        screen
-          .getByRole("link", { name: m.profile_title() })
-          .getAttribute("href"),
-      ).toBe("/profile");
-      await act(async () => {
-        fireEvent.click(
-          screen.getByRole("button", { name: m.profile_logout_fuwari() }),
-        );
-      });
-      expect(logout).toHaveBeenCalledOnce();
-    });
-  },
-);
+    expect(logout).toHaveBeenCalledOnce();
+  });
+});

@@ -8,6 +8,7 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import packageJson from "./package.json";
 import { routedFirstSegmentsPlugin } from "./scripts/vite-routed-segments.ts";
+import { themeFixturePlugin } from "./scripts/vite-theme-fixture.ts";
 
 const config = defineConfig({
   define: {
@@ -38,6 +39,7 @@ const config = defineConfig({
       experimental: { newConfig: true },
     }),
     routedFirstSegmentsPlugin(),
+    themeFixturePlugin(),
     tailwindcss(),
     devtools(),
     tanstackStart(),
