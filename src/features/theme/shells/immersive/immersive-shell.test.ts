@@ -15,7 +15,7 @@ import {
   render,
   screen,
 } from "@testing-library/react";
-import { createElement } from "react";
+import { createElement, useState } from "react";
 import {
   afterEach,
   beforeEach,
@@ -25,6 +25,7 @@ import {
   vi,
   type MockInstance,
 } from "vitest";
+import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
@@ -602,5 +603,324 @@ describe("the stylesheet", () => {
       "immersive-scrim-out",
       "immersive-pill",
     ]);
+  });
+});
+
+/** The custom properties `css` gives the Theme's root, a later block winning. */
+function rootProperties(css: string) {
+  const properties: Record<string, string> = {};
+  for (const [, body] of css.matchAll(
+    /:root\[data-theme="immersive"\]\s*\{([^{}]*)\}/g,
+  )) {
+    for (const declaration of declarations(body!)) {
+      const [, name, value] = declaration.match(/^(--[\w-]+):\s*(.+)$/) ?? [];
+      if (name) properties[name] = value!;
+    }
+  }
+  return properties;
+}
+
+/** The value `block` declares for `name`. */
+function declared(block: Array<string>, name: string) {
+  const declaration = block.find((entry) => entry.startsWith(`${name}:`));
+  expect(declaration, name).toBeDefined();
+  return declaration!.slice(name.length + 1).trim();
+}
+
+/**
+ * What a declared length comes to in px: 1rem is 16px, a percentage is of
+ * `basis`, and every var() is one of `properties`. It reads calc(), min(),
+ * brackets and the four operations, and fails on anything else.
+ */
+function px(value: string, properties: Record<string, string>, basis = 0) {
+  let source = value;
+  while (source.includes("var(")) {
+    source = source.replace(/var\((--[\w-]+)\)/g, (_, name: string) => {
+      expect(properties[name], name).toBeDefined();
+      return `(${properties[name]})`;
+    });
+  }
+  const tokens = source.match(/calc|min|[\d.]+(?:rem|%)?|[-+*/(),]/g) ?? [];
+  expect(tokens.join(""), value).toBe(source.replace(/\s+/g, ""));
+  let at = 0;
+  const sum = (): number => {
+    let total = product();
+    while (tokens[at] === "+" || tokens[at] === "-") {
+      total = tokens[at++] === "+" ? total + product() : total - product();
+    }
+    return total;
+  };
+  const product = (): number => {
+    let total = term();
+    while (tokens[at] === "*" || tokens[at] === "/") {
+      total = tokens[at++] === "*" ? total * term() : total / term();
+    }
+    return total;
+  };
+  const term = (): number => {
+    const token = tokens[at++]!;
+    if (token === "min") {
+      const values: Array<number> = [];
+      do {
+        at += 1;
+        values.push(sum());
+      } while (tokens[at] === ",");
+      at += 1;
+      return Math.min(...values);
+    }
+    if (token === "calc" || token === "(") {
+      if (token === "calc") at += 1;
+      const inner = sum();
+      at += 1;
+      return inner;
+    }
+    const number = Number.parseFloat(token);
+    if (token.endsWith("rem")) return number * 16;
+    return token.endsWith("%") ? (number * basis) / 100 : number;
+  };
+  const length = sum();
+  expect(at, value).toBe(tokens.length);
+  expect(Number.isFinite(length), value).toBe(true);
+  return length;
+}
+
+describe("a Post's page", () => {
+  const read = (path: string) =>
+    readFileSync(join(import.meta.dirname, path), "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
+    );
+  const css = read("immersive.css");
+  // From where the gutter right of the reading column has room for the
+  // table of contents.
+  const BESIDE_FROM = "@media (width >= 80rem)";
+  const BESIDE_FROM_PX = 1280;
+  const beside = blockAfter(css, BESIDE_FROM);
+  const properties: Record<string, string> = {
+    "--fuwari-page-width": read("../../../../styles.css").match(
+      /--fuwari-page-width:\s*([^;]+);/,
+    )![1]!,
+    ...rootProperties(css.replace(beside, "")),
+  };
+  const POST = '.immersive-shell[data-column="reading"]';
+  const column = declarations(
+    blockAfter(css, `${POST} :is(.immersive-main, .immersive-cards) {`),
+  );
+  const columnPx = px(declared(column, "max-width"), properties);
+  const GAP_PX = 16;
+  /** Back to top: 3.75rem wide, and 1rem from the edge of the window at least. */
+  const BACK_TO_TOP_PX = 60;
+
+  /** Where the column, the side list and back to top stand in a window. */
+  function across(width: number) {
+    const columnLeft = (width - columnPx) / 2;
+    const listLeft =
+      columnLeft + px(properties["--shell-toc-left"]!, properties, columnPx);
+    const listWidth = px(properties["--shell-toc-width"]!, properties, width);
+    return {
+      columnRight: columnLeft + columnPx,
+      listLeft,
+      listWidth,
+      listRight: listLeft + listWidth,
+      backToTop: px(
+        properties["--shell-floating-actions-left"]!,
+        properties,
+        width,
+      ),
+    };
+  }
+
+  it.each([
+    ["home", undefined],
+    ["inner", undefined],
+    ["post", "reading"],
+    ["focused", undefined],
+  ] as const)(
+    "tells the stylesheet which column a %s page has",
+    async (pageKind, column) => {
+      await renderShell({ pageKind });
+
+      expect(shell().dataset.column).toBe(column);
+    },
+  );
+
+  // The page that is left stays on screen while it fades out (PageFade),
+  // after the address has changed. The column changes with the page: a
+  // moment before the next one shows, when the last has all but gone.
+  describe("going from one page to another", () => {
+    let goTo: (pageKind: PageKind) => void;
+
+    /** The shell on a page it can leave for another kind of page. */
+    async function renderShellOn(pageKind: PageKind) {
+      const root = createRootRoute({
+        beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
+        loader: () => ({ currentYear: 2026 }),
+        component: () => {
+          const [kind, setKind] = useState(pageKind);
+          goTo = (next) => {
+            act(() => {
+              setKind(next);
+            });
+          };
+          return createElement(theme.shell.Shell, {
+            pageKind: kind,
+            options: resolveThemeOptions(theme, undefined),
+            navOptions: [],
+            sidebarCards: cardsFor(kind),
+            isSessionLoading: false,
+            logout: async () => {},
+            children: createElement("p", null, "Page content"),
+            footer: null,
+            floatingActions: null,
+          });
+        },
+      });
+      const router = createRouter({
+        routeTree: root,
+        history: createMemoryHistory({ initialEntries: ["/"] }),
+      });
+      await act(async () => {
+        render(createElement(RouterProvider, { router }));
+      });
+      await screen.findByText("Page content");
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    }
+
+    function after(ms: number) {
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
+    }
+    /** By when the page that is left is at a few hundredths of its opacity. */
+    const ALL_BUT_GONE_MS = PAGE_FADE_MS - 20;
+
+    it("keeps the wide column while the page that is left fades out, and has the reading column when the Post shows", async () => {
+      await renderShellOn("inner");
+
+      goTo("post");
+      expect(shell().dataset.column).toBeUndefined();
+      after(ALL_BUT_GONE_MS);
+      expect(shell().dataset.column).toBeUndefined();
+
+      after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+      expect(shell().dataset.column).toBe("reading");
+    });
+
+    it("keeps the reading column while the Post that is left fades out, and has the wide one when the next page shows", async () => {
+      await renderShellOn("post");
+
+      goTo("home");
+      after(ALL_BUT_GONE_MS);
+      expect(shell().dataset.column).toBe("reading");
+
+      after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+      expect(shell().dataset.column).toBeUndefined();
+    });
+
+    it("leaves the column alone on the way back to a page left a moment ago", async () => {
+      await renderShellOn("post");
+
+      goTo("inner");
+      after(PAGE_FADE_MS / 2);
+      goTo("post");
+      after(PAGE_FADE_MS / 2);
+      expect(shell().dataset.column).toBe("reading");
+
+      after(PAGE_FADE_MS);
+      expect(shell().dataset.column).toBe("reading");
+    });
+
+    it("has the next page's column at once for a reader who asked for less motion", async () => {
+      reducedMotion.matches = true;
+      await renderShellOn("inner");
+
+      goTo("post");
+      expect(shell().dataset.column).toBe("reading");
+
+      goTo("inner");
+      expect(shell().dataset.column).toBeUndefined();
+    });
+  });
+
+  it("is one centred reading column, 46rem between its gutters, for the content and the cards after it", () => {
+    expect(column).toEqual([
+      "align-self: center",
+      "width: 100%",
+      "max-width: calc(var(--immersive-reading-width) - 2 * var(--immersive-gutter))",
+    ]);
+    expect(columnPx).toBe(46 * 16);
+  });
+
+  it("narrows nothing else there: the footer keeps the width it has on every page", () => {
+    const narrowed = [...css.matchAll(/([^{}]+)\{[^{}]*max-width\s*:/g)]
+      .map(([, selector]) => selector!.replace(/\s+/g, " ").trim())
+      .filter((selector) => selector.includes(POST));
+
+    expect(narrowed).toEqual([
+      `${POST} :is(.immersive-main, .immersive-cards)`,
+    ]);
+  });
+
+  it("stands the two ways into the Posts side by side in the column, each with its pills under its title", () => {
+    const slot = px(
+      declared(
+        declarations(
+          blockAfter(css, `${POST} .immersive-card[data-kind="index"] {`),
+        ),
+        "flex-basis",
+      ),
+      properties,
+    );
+
+    // Two fit in a row; a card has that form from 20rem to 28rem.
+    expect(2 * slot + GAP_PX).toBeLessThanOrEqual(columnPx);
+    expect((columnPx - GAP_PX) / 2).toBeGreaterThanOrEqual(20 * 16);
+    expect((columnPx - GAP_PX) / 2).toBeLessThan(28 * 16);
+  });
+
+  it("opens the table of contents from the button until the gutter has room for the list, from 1280px", () => {
+    expect(properties["--shell-toc-side"]).toBe("none");
+    expect(properties["--shell-toc-compact"]).toBe("flex");
+    expect(
+      declarations(blockAfter(beside, ':root[data-theme="immersive"] {')),
+    ).toEqual(["--shell-toc-side: block", "--shell-toc-compact: none"]);
+    expect(px(BESIDE_FROM.match(/[\d.]+rem/)![0], properties)).toBe(
+      BESIDE_FROM_PX,
+    );
+  });
+
+  it("stands the list below the floating navbar", () => {
+    const pill = declarations(
+      blockAfter(
+        read("navbar.css"),
+        '.immersive-nav[data-state="pill"] .immersive-bar {',
+      ),
+    );
+    const pillBottom =
+      px(declared(pill, "transform").match(/translateY\((.+)\)/)![1]!, {}) +
+      px(declared(pill, "height"), {});
+
+    expect(px(properties["--shell-toc-top"]!, properties)).toBeGreaterThan(
+      pillBottom,
+    );
+  });
+
+  it.each([BESIDE_FROM_PX, 1366, 1440, 1536, 1920, 2560])(
+    "keeps the list 1rem from the column and 0.75rem from back to top in a window %ipx wide",
+    (width) => {
+      const { columnRight, listLeft, listWidth, listRight, backToTop } =
+        across(width);
+
+      expect(listLeft - columnRight).toBeCloseTo(16);
+      expect(backToTop - listRight).toBeCloseTo(12);
+      expect(backToTop + BACK_TO_TOP_PX).toBeLessThanOrEqual(width - GAP_PX);
+      expect(listWidth).toBeGreaterThanOrEqual(10 * 16);
+    },
+  );
+
+  it("gives the list all of the lane up to 14rem, which is what a wide window leaves between the column and back to top", () => {
+    expect(across(BESIDE_FROM_PX).listWidth).toBeCloseTo(10.5 * 16);
+    expect(across(1392).listWidth).toBeCloseTo(14 * 16);
+    expect(across(2560).listWidth).toBeCloseTo(14 * 16);
   });
 });
