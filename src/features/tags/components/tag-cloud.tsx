@@ -11,7 +11,7 @@ const COLLAPSE_THRESHOLD = 20;
 
 export function TagsSkeleton() {
   return (
-    <div className="fuwari-card-base fuwari-card-widget p-4">
+    <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem)">
       <Skeleton className="h-5 w-20 mb-3" />
       <div className="flex flex-wrap gap-2">
         {Array.from({ length: 6 }).map((_, i) => (

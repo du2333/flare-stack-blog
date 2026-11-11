@@ -20,7 +20,7 @@ export function ExpandableSidebarCard({
   const { headingAccent } = useThemeRecipe();
   return (
     <div className="fuwari-card-base fuwari-card-widget pb-4">
-      <div className="fuwari-widget-title font-bold relative ml-6 mt-4 mb-2">
+      <div className="fuwari-widget-title font-bold relative ml-(--theme-widget-pad-x,1.5rem) mt-4 mb-2">
         {headingAccent === "on" ? (
           <span
             className="absolute -left-4 top-[5.5px] w-1 h-4 rounded-md"
@@ -30,13 +30,17 @@ export function ExpandableSidebarCard({
         {title}
       </div>
       <div
-        className={cn("px-4", contentClassName, "overflow-hidden")}
+        className={cn(
+          "px-(--theme-widget-pad-x,1rem)",
+          contentClassName,
+          "overflow-hidden",
+        )}
         style={collapsed ? { height: "7.5rem" } : undefined}
       >
         {children}
       </div>
       {collapsed && (
-        <div className="px-4 -mb-2">
+        <div className="px-(--theme-widget-pad-x,1rem) -mb-2">
           <button
             type="button"
             onClick={onExpand}

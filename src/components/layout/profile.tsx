@@ -10,7 +10,7 @@ export function Profile() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
 
   return (
-    <div className="fuwari-card-base fuwari-card-widget p-4">
+    <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem)">
       <Link
         to="/"
         className="group block relative mx-auto mb-3 max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"

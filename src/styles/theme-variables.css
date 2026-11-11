@@ -33,7 +33,7 @@
  *   --theme-pager-radius     page numbers
  *   --theme-standalone-border, --theme-standalone-radius  sign-in, status and profile panels
  *   --theme-rule-style       dashed separators
- *   --theme-link-underline-style  the underline of a link in a post body
+ *   --theme-link-underline-style  the underline of a link in a post body or a Moment
  *
  * Not declared: today's value differs by place, or derives from another
  * variable. Each consumer reads var(--theme-…, <its value today>), so a
@@ -46,6 +46,9 @@
  *   --theme-standalone-pad-x-narrow  side padding of a standalone panel below 640px
  *   --theme-link-underline   the underline colour of a link in a post body
  *   --theme-widget-more-color  a sidebar block's "more" button
+ *   --theme-widget-pad-x     side padding of a sidebar block
+ *   --theme-count-bg, --theme-count-fg  the count beside a category
+ *   --theme-floating-radius  back to top and the buttons stacked above it
  */
 @layer base {
   :root {
@@ -141,5 +144,9 @@
     --theme-standalone-pad-x-narrow: initial !important;
     --theme-link-underline: initial !important;
     --theme-widget-more-color: initial !important;
+    --theme-widget-pad-x: initial !important;
+    --theme-count-bg: initial !important;
+    --theme-count-fg: initial !important;
+    --theme-floating-radius: initial !important;
   }
 }
