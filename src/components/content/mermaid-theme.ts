@@ -8,12 +8,12 @@ import type { ColourScheme } from "@/components/common/colour-scheme-provider";
 
 const COLOR_TOKENS = {
   background: "--theme-raised",
-  primaryColor: "--fuwari-btn-regular-bg",
+  primaryColor: "--theme-tonal-bg",
   primaryTextColor: "--fuwari-fg",
   primaryBorderColor: "--theme-accent",
   secondaryColor: "--fuwari-selection-bg",
   tertiaryColor: "--fuwari-page-bg",
-  lineColor: "--fuwari-btn-content",
+  lineColor: "--theme-tonal-fg",
   // Edge labels sit on the diagram background instead of a derived block.
   edgeLabelBackground: "--theme-raised",
   textColor: "--fuwari-fg",

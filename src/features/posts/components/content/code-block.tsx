@@ -96,7 +96,7 @@ export function CodeHtml({
 }) {
   const html =
     highlightedHtml ||
-    `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-(--fuwari-btn-content) bg-transparent! p-0 m-0 border-0"><code>${escapeCodeHtml(code)}</code></pre>`;
+    `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-(--theme-tonal-fg) bg-transparent! p-0 m-0 border-0"><code>${escapeCodeHtml(code)}</code></pre>`;
 
   return (
     <div className="text-sm font-mono leading-relaxed transition-opacity duration-300">

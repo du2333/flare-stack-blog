@@ -14,14 +14,14 @@ export function UserLayout({ isAuthenticated, children }: UserLayoutProps) {
         className="fuwari-card-base fuwari-card-standalone max-w-md w-full py-8 px-(--theme-standalone-pad-x-narrow,--spacing(8)) sm:px-8 md:p-10 text-center fuwari-onload-animation"
         style={{ animationDelay: "calc(var(--fuwari-content-delay) + 150ms)" }}
       >
-        <div className="w-16 h-16 bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-(--theme-tonal-bg) text-(--theme-tonal-fg) rounded-2xl flex items-center justify-center mx-auto mb-6">
           <LogIn className="w-8 h-8" strokeWidth={1.5} />
         </div>
 
         <h1 className="fuwari-heading text-2xl font-bold fuwari-text-90 mb-3 transition-colors">
           {m.auth_layout_login_required()}
         </h1>
-        <p className="text-(--fuwari-btn-content) mb-8 transition-colors leading-relaxed">
+        <p className="text-(--theme-tonal-fg) mb-8 transition-colors leading-relaxed">
           {m.auth_layout_login_required_desc()}
           <br />
           {m.auth_layout_login_required_desc2()}

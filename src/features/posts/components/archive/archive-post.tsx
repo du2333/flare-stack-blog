@@ -42,7 +42,7 @@ export function ArchivePost({ post }: ArchivePostProps) {
     <Link
       to="/post/$slug"
       params={{ slug: post.slug }}
-      className="group block! h-10 w-full rounded-lg hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) transition-colors"
+      className="group block! h-10 w-full rounded-lg hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) transition-colors"
       aria-label={post.title}
     >
       <div className="flex flex-row justify-start items-center h-full">
@@ -60,8 +60,8 @@ export function ArchivePost({ post }: ArchivePostProps) {
               bg-(--fuwari-fg-faint) group-hover:bg-(--theme-accent)
               outline z-50
               outline-(--theme-surface)
-              group-hover:outline-(--fuwari-btn-plain-bg-hover)
-              group-active:outline-(--fuwari-btn-plain-bg-active)"
+              group-hover:outline-(--theme-plain-bg-hover)
+              group-active:outline-(--theme-plain-bg-active)"
           />
         </div>
 

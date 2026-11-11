@@ -277,17 +277,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     transition:
       background-color 0.2s,
       color 0.2s;
   }
   .fuwari-btn-regular:hover {
-    background-color: var(--fuwari-btn-regular-bg-hover);
+    background-color: var(--theme-tonal-bg-hover);
   }
   .fuwari-btn-regular:active {
-    background-color: var(--fuwari-btn-regular-bg-active);
+    background-color: var(--theme-tonal-bg-active);
   }
   .dark .fuwari-btn-regular {
     color: var(--fuwari-fg-75);
@@ -323,10 +323,10 @@
   }
   .fuwari-expand-animation:hover::before {
     scale: 1;
-    background-color: var(--fuwari-btn-plain-bg-hover);
+    background-color: var(--theme-plain-bg-hover);
   }
   .fuwari-expand-animation:active::before {
-    background-color: var(--fuwari-btn-plain-bg-active);
+    background-color: var(--theme-plain-bg-active);
   }
 
   .fuwari-meta-icon {
@@ -336,8 +336,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     margin-right: 0.5rem;
     transition:
       background-color 0.2s,
@@ -541,10 +541,10 @@
   --tw-prose-bullets: var(--fuwari-fg-30);
   --tw-prose-hr: var(--theme-rule, var(--fuwari-meta-divider));
   --tw-prose-quotes: var(--fuwari-fg-75);
-  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
+  --tw-prose-quote-borders: var(--theme-tonal-bg);
   --tw-prose-captions: var(--fuwari-fg-faint);
-  --tw-prose-code: var(--fuwari-inline-code-color, var(--fuwari-btn-content));
-  --tw-prose-pre-code: var(--fuwari-btn-content);
+  --tw-prose-code: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
+  --tw-prose-pre-code: var(--theme-tonal-fg);
   --tw-prose-pre-bg: var(--theme-raised);
   --tw-prose-th-borders: var(--theme-rule, var(--fuwari-meta-divider));
   --tw-prose-td-borders: var(--theme-rule, var(--fuwari-meta-divider));
@@ -606,7 +606,7 @@
     &:hover,
     &:active {
       @apply decoration-transparent;
-      background: var(--fuwari-btn-plain-bg-hover);
+      background: var(--theme-plain-bg-hover);
       border-bottom: 1px var(--theme-link-underline-style) var(--theme-accent);
       text-decoration: none;
     }
@@ -616,9 +616,9 @@
     @apply px-1 py-0.5 rounded-md overflow-hidden;
     background-color: var(
       --fuwari-inline-code-bg,
-      var(--fuwari-btn-regular-bg)
+      var(--theme-tonal-bg)
     );
-    color: var(--fuwari-inline-code-color, var(--fuwari-btn-content));
+    color: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
   }
   code {
     font-family:
@@ -673,7 +673,7 @@
     @apply not-italic border-transparent relative;
     font-weight: inherit;
     &:before {
-      @apply content-[''] absolute -left-1 block transition bg-(--fuwari-btn-regular-bg) h-full w-1 rounded-full;
+      @apply content-[''] absolute -left-1 block transition bg-(--theme-tonal-bg) h-full w-1 rounded-full;
     }
     p:before,
     p:after {

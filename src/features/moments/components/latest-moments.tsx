@@ -125,7 +125,7 @@ export function LatestMoments() {
             key={moment.id}
             to="/moments/$id"
             params={{ id: String(moment.id) }}
-            className={`flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) ${
+            className={`flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) ${
               index > 0
                 ? "border-t border-dashed border-(--theme-rule,var(--fuwari-divider))"
                 : ""

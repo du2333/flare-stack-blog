@@ -30,7 +30,7 @@ export function HomePagination({
   totalPages: number;
 }) {
   const buttonClass =
-    "bg-(--theme-surface) hover:bg-(--fuwari-btn-regular-bg-hover) transition flex items-center justify-center h-11 w-9 sm:w-11 rounded-(--theme-pager-radius) hover:text-(--theme-accent)";
+    "bg-(--theme-surface) hover:bg-(--theme-tonal-bg-hover) transition flex items-center justify-center h-11 w-9 sm:w-11 rounded-(--theme-pager-radius) hover:text-(--theme-accent)";
   const pages = (visible: number) =>
     pageNumbers(page, totalPages, visible).map((number) => {
       if (typeof number !== "number")

@@ -47,7 +47,7 @@ export function ActionMenu({
         triggerClassName ??
         iconButtonClass({
           className:
-            "pointer-coarse:size-10 aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--theme-accent)",
+            "pointer-coarse:size-10 aria-expanded:bg-(--theme-tonal-bg) aria-expanded:text-(--theme-accent)",
         })
       }
       triggerTitle={trigger ? undefined : label}

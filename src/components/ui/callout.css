@@ -6,8 +6,8 @@
     gap: 10px;
     padding: 12px 14px;
     border-radius: 12px;
-    background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     font-size: var(--fuwari-callout-font-size, 14px);
     line-height: 1.6;
   }

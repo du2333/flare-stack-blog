@@ -52,7 +52,7 @@ export function MomentImages({
           style={single.style}
           className={cn(
             LINK_CLASS,
-            "max-w-full rounded-xl bg-(--fuwari-btn-regular-bg)",
+            "max-w-full rounded-xl bg-(--theme-tonal-bg)",
             !single.known && "max-w-xl",
           )}
         >

@@ -13,6 +13,12 @@
  *   --theme-raised           a raised surface: code blocks, floating buttons, menus, dialogs
  *   --theme-accent           links, thin accent lines, tag and label text
  *   --theme-solid-bg(-hover/-active)  the solid fill of a primary button or the current page
+ *   --theme-tonal-bg(-hover/-active), --theme-tonal-fg  the tonal fill of a secondary control and the text on it:
+ *                            tags, counts, regular buttons, the current item of a menu, quote bars, inline code,
+ *                            a field in focus
+ *   --theme-plain-bg-hover, --theme-plain-bg-active  what a plain row or link shows under the pointer and pressed
+ *   --theme-toc-bg-hover, --theme-toc-bg-active, --theme-toc-badge-bg  the table of contents: an entry under the
+ *                            pointer and pressed, and the badge of a top-level entry
  *   --theme-card-radius, --theme-card-shadow       content panels, list items, sidebar blocks
  *   --theme-cover-radius     post covers
  *   --theme-row-pad-y        block padding of a row in the post list
@@ -49,6 +55,15 @@
     --theme-solid-bg: var(--fuwari-primary);
     --theme-solid-bg-hover: var(--fuwari-primary-hover);
     --theme-solid-bg-active: var(--fuwari-primary-active);
+    --theme-tonal-bg: var(--fuwari-btn-regular-bg);
+    --theme-tonal-bg-hover: var(--fuwari-btn-regular-bg-hover);
+    --theme-tonal-bg-active: var(--fuwari-btn-regular-bg-active);
+    --theme-tonal-fg: var(--fuwari-btn-content);
+    --theme-plain-bg-hover: var(--fuwari-btn-plain-bg-hover);
+    --theme-plain-bg-active: var(--fuwari-btn-plain-bg-active);
+    --theme-toc-bg-hover: var(--fuwari-toc-btn-hover);
+    --theme-toc-bg-active: var(--fuwari-toc-btn-active);
+    --theme-toc-badge-bg: var(--fuwari-toc-badge-bg);
     --theme-card-radius: var(--fuwari-radius-large);
     --theme-card-shadow: none;
     --theme-cover-radius: 0.75rem;
@@ -84,6 +99,15 @@
     --theme-solid-bg: var(--fuwari-primary) !important;
     --theme-solid-bg-hover: var(--fuwari-primary-hover) !important;
     --theme-solid-bg-active: var(--fuwari-primary-active) !important;
+    --theme-tonal-bg: var(--fuwari-btn-regular-bg) !important;
+    --theme-tonal-bg-hover: var(--fuwari-btn-regular-bg-hover) !important;
+    --theme-tonal-bg-active: var(--fuwari-btn-regular-bg-active) !important;
+    --theme-tonal-fg: var(--fuwari-btn-content) !important;
+    --theme-plain-bg-hover: var(--fuwari-btn-plain-bg-hover) !important;
+    --theme-plain-bg-active: var(--fuwari-btn-plain-bg-active) !important;
+    --theme-toc-bg-hover: var(--fuwari-toc-btn-hover) !important;
+    --theme-toc-bg-active: var(--fuwari-toc-btn-active) !important;
+    --theme-toc-badge-bg: var(--fuwari-toc-badge-bg) !important;
     --theme-card-radius: var(--fuwari-radius-large) !important;
     --theme-card-shadow: none !important;
     --theme-cover-radius: 0.75rem !important;

@@ -83,7 +83,7 @@
   font-size: 14px;
 }
 .comment-new-trigger:hover > span:last-child {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--theme-tonal-bg);
   color: var(--theme-accent);
 }
 .comment-thread + .comment-thread {
@@ -159,7 +159,7 @@
   color: var(--theme-accent);
 }
 .comment-highlighted {
-  background: var(--fuwari-btn-plain-bg-hover);
+  background: var(--theme-plain-bg-hover);
   border-radius: 12px;
 }
 .comment-replies {
@@ -219,7 +219,7 @@
     background-color 180ms;
 }
 .comment-composer-input:focus-within {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--theme-tonal-bg);
   border-color: color-mix(in srgb, var(--theme-accent) 45%, transparent);
 }
 .comment-composer-input textarea {

@@ -211,7 +211,7 @@ export function MomentImageGrid({
                   : undefined
               }
               className={cn(
-                "group relative overflow-hidden rounded-lg bg-(--fuwari-btn-regular-bg)",
+                "group relative overflow-hidden rounded-lg bg-(--theme-tonal-bg)",
                 single
                   ? "max-w-full rounded-xl"
                   : columns === 2

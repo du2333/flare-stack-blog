@@ -7,7 +7,7 @@ function Skeleton({ className, ...props }: ComponentProps<"div">) {
     <div
       aria-hidden="true"
       className={cn(
-        "animate-pulse rounded-lg bg-(--fuwari-btn-regular-bg)",
+        "animate-pulse rounded-lg bg-(--theme-tonal-bg)",
         className,
       )}
       {...props}

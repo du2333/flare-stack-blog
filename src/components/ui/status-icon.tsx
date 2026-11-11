@@ -19,7 +19,7 @@ export function StatusIcon({
         "grid size-14 place-items-center rounded-2xl",
         tone === "danger"
           ? "bg-(--fuwari-danger-bg) text-(--fuwari-danger-fg)"
-          : "bg-(--fuwari-btn-regular-bg) text-(--theme-accent)",
+          : "bg-(--theme-tonal-bg) text-(--theme-accent)",
         className,
       )}
       aria-hidden="true"

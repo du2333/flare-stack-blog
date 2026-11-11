@@ -251,7 +251,7 @@ export default function TableOfContents({
               }}
               className={cn(
                 "px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl py-2 z-10",
-                "hover:bg-(--fuwari-toc-btn-hover) active:bg-(--fuwari-toc-btn-active)",
+                "hover:bg-(--theme-toc-bg-hover) active:bg-(--theme-toc-bg-active)",
               )}
             >
               <TocBadge heading={heading} />
@@ -266,7 +266,7 @@ export default function TableOfContents({
             </a>
           ))}
           <div
-            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 [border-style:var(--theme-rule-style)] border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--theme-toc-bg-hover) border-2 [border-style:var(--theme-rule-style)] border-(--theme-toc-bg-hover) group-hover:bg-transparent group-hover:border-(--theme-toc-bg-active) pointer-events-none"
             style={{
               top: indicator.top,
               height: indicator.height,
@@ -319,14 +319,14 @@ function TocBadge({ heading }: { heading: VisibleHeader }) {
       className={cn(
         "transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
         heading.relative === 0 &&
-          "bg-(--fuwari-toc-badge-bg) text-(--fuwari-btn-content)",
+          "bg-(--theme-toc-badge-bg) text-(--theme-tonal-fg)",
         heading.relative === 1 && "ml-4",
         heading.relative === 2 && "ml-8",
       )}
     >
       {heading.relative === 0 && heading.number}
       {heading.relative === 1 && (
-        <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--fuwari-toc-badge-bg)" />
+        <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--theme-toc-badge-bg)" />
       )}
       {heading.relative === 2 && (
         <div className="transition w-1.5 h-1.5 rounded-sm bg-(--fuwari-ink-faint)" />
@@ -455,7 +455,7 @@ function CompactToc({
                     }}
                     className={cn(
                       "px-2 flex gap-2 relative z-10 w-full min-h-10 rounded-xl py-2.5 outline-none transition",
-                      "hover:bg-(--fuwari-toc-btn-hover) active:bg-(--fuwari-toc-btn-active) focus-visible:bg-(--fuwari-toc-btn-hover)",
+                      "hover:bg-(--theme-toc-bg-hover) active:bg-(--theme-toc-bg-active) focus-visible:bg-(--theme-toc-bg-hover)",
                     )}
                   >
                     <TocBadge heading={heading} />
@@ -474,7 +474,7 @@ function CompactToc({
               })}
               {/* The same range indicator as the side TOC. */}
               <div
-                className="absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 [border-style:var(--theme-rule-style)] border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+                className="absolute left-0 right-0 rounded-xl transition-all bg-(--theme-toc-bg-hover) border-2 [border-style:var(--theme-rule-style)] border-(--theme-toc-bg-hover) group-hover:bg-transparent group-hover:border-(--theme-toc-bg-active) pointer-events-none"
                 style={{
                   top: indicator.top,
                   height: indicator.height,
