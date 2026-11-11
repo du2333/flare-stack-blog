@@ -178,14 +178,16 @@
 }
 
 /* The brand on one side, the tools on the other, as wide as each other so
-   the links between them sit in the middle of the bar. */
+   the links between them sit in the middle of the bar. Neither gets
+   narrower than what it holds: when the bar is short of room, the longer
+   links are cut short. */
 .immersive-side {
   display: flex;
   align-items: center;
   flex: 1 1 0;
 }
 .immersive-side-start {
-  min-width: 0;
+  min-width: max-content;
 }
 .immersive-side-end {
   justify-content: flex-end;
@@ -215,6 +217,7 @@
 .immersive-brand-mark {
   flex-shrink: 0;
   width: 28px;
+  max-width: none;
   height: 28px;
   border-radius: 6px;
   object-fit: contain;
@@ -268,20 +271,22 @@
 }
 
 .immersive-links {
+  --immersive-link-pad: 0.875rem;
   display: flex;
   align-items: center;
   gap: 2px;
   flex: 0 1 auto;
   min-width: 0;
 }
+/* A link is cut short to no less than two characters. */
 .immersive-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
+  min-width: calc(2em + 2 * var(--immersive-link-pad));
   max-width: 9rem;
   height: 2.5rem;
-  padding-inline: 0.875rem;
+  padding-inline: var(--immersive-link-pad);
   border-radius: 999px;
   color: var(--immersive-fg-soft);
   font-size: 0.9375rem;
@@ -433,9 +438,17 @@
   border-radius: 12px;
 }
 
+/* The field needs room: a wide window, and no more than seven links. Eight
+   or more stand closer together in a narrower one. */
+.immersive-bar:has(.immersive-link:nth-child(8)) {
+  --immersive-field: 0;
+}
 @media (max-width: 1279px) {
   .immersive-bar {
     --immersive-field: 0;
+  }
+  .immersive-links:has(.immersive-link:nth-child(8)) {
+    --immersive-link-pad: 0.5rem;
   }
 }
 /* Tablet and phone: the links and the tools move into the menu. */
@@ -451,8 +464,10 @@
     gap: 8px;
     height: 4rem;
   }
+  /* The title is what gives way here. */
   .immersive-side-start {
     flex: 1 1 auto;
+    min-width: 0;
   }
   .immersive-side-end {
     flex: 0 0 auto;
