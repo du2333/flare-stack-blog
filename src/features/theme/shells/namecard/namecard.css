@@ -181,6 +181,14 @@
 .namecard-body[data-focused="false"] .namecard-main {
   border-top: 1px solid var(--namecard-hairline);
 }
+/* The page transition cuts off what leaves its box, and the page lies flat
+   in this column, its links at the very edge: the box is larger than the
+   column by its padding, room for the focus rings it would otherwise cut
+   off. */
+.namecard-main > .fuwari-page-fade {
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+}
 
 /* The sidebar cards stand in groups, a card under a card. The slot of every
    card is a container named `card`: that is what lets a card take the form
