@@ -8,7 +8,6 @@ import {
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ExpandableSidebarCard } from "@/components/layout/expandable-sidebar-card";
-import { PublicPageHeading } from "@/components/ui/page-heading";
 import { FriendLinksPage } from "@/features/friend-links/components/friend-links-page";
 import { LatestMoments } from "@/features/moments/components/latest-moments";
 import { ArchivePanel } from "@/features/posts/components/archive/archive-panel";
@@ -23,6 +22,7 @@ import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "../theme-recipe";
 import { ThemeRecipeProvider } from "./theme-recipe";
+import { ThemedPageHeading } from "./themed-page-heading";
 
 const state = vi.hoisted(() => ({ cached: undefined as unknown }));
 
@@ -342,7 +342,7 @@ describe("Theme Recipe", () => {
       onExpand: () => {},
       children: "x",
     });
-    const heading = createElement(PublicPageHeading, {
+    const heading = createElement(ThemedPageHeading, {
       title: "Profile",
       back: { to: "/", label: "Back" },
       description: "Intro",
