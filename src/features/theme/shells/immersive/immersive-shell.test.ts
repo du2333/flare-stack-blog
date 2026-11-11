@@ -64,14 +64,17 @@ async function renderShell({
   pageKind,
   site,
   cards = cardsFor(pageKind),
+  stored,
 }: {
   pageKind: PageKind;
   site?: SystemConfig["site"];
   cards?: Array<SidebarCard>;
+  /** 「沉浸」's options as Site Config holds them. */
+  stored?: Record<string, unknown>;
 }) {
   const props: ThemeShellProps = {
     pageKind,
-    options: resolveThemeOptions(theme, undefined),
+    options: resolveThemeOptions(theme, stored),
     navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
     sidebarCards: cards,
     isSessionLoading: false,
@@ -147,7 +150,7 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent and a standfirst, and no options of its own", () => {
+  it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent, a standfirst and the footer as a band", () => {
     expect(theme.id).toBe("immersive");
     expect(theme.name()).toBe(m.theme_immersive_name());
     expect(theme.recipe).toEqual({
@@ -157,9 +160,8 @@ describe("the Theme", () => {
       headingAccent: "off",
       summary: "standfirst",
       archive: "timeline",
+      footer: "band",
     });
-    expect(theme.optionFields).toBeUndefined();
-    expect(resolveThemeOptions(theme, { stale: 1 })).toEqual({});
   });
 
   it("introduces the author in the first screen of the home page, so the host leaves the profile card out there only", () => {
@@ -352,6 +354,264 @@ describe("the sidebar cards", () => {
     for (const slot of slots) {
       expect(slot.parentElement!.dataset.shellRegion).toBe("sidebar");
     }
+  });
+});
+
+// The option 「卡片位置」: under the list (the default, above) or in a column
+// right of the content. card-placement.test.ts covers which card goes where.
+describe("the card placement option", () => {
+  /** Each group of cards: its place, its side of the content, the cards in it and those in the pinned box. */
+  function placedGroups() {
+    return [
+      ...document.querySelectorAll<HTMLElement>(
+        '[data-shell-region="sidebar"]',
+      ),
+    ].map((group) => {
+      expect(follows(group, region("footer"))).toBe(true);
+      const text = (slot: Element) => slot.textContent;
+      return {
+        place: group.dataset.place,
+        side: follows(group, region("main")) ? "before" : "after",
+        cards: [...group.querySelectorAll(".immersive-card")].map(text),
+        pinned: [
+          ...group.querySelectorAll(
+            ":scope > .immersive-cards-pinned > .immersive-card",
+          ),
+        ].map(text),
+      };
+    });
+  }
+
+  it("is under the list by default, and whenever the stored value is missing or not a placement", () => {
+    expect(resolveThemeOptions(theme, undefined)).toEqual({ cards: "below" });
+    expect(resolveThemeOptions(theme, {})).toEqual({ cards: "below" });
+    expect(resolveThemeOptions(theme, { cards: "left", stale: 1 })).toEqual({
+      cards: "below",
+    });
+    expect(resolveThemeOptions(theme, { cards: "beside" })).toEqual({
+      cards: "beside",
+    });
+  });
+
+  it("offers the Admin both placements, each with a label, and says what it does", () => {
+    expect(theme.optionFields).toHaveLength(1);
+    const [field] = theme.optionFields!;
+    expect(field.key).toBe("cards");
+    expect(field.label()).toBe(m.theme_immersive_cards());
+    expect(field.hint?.()).toBe(m.theme_immersive_cards_hint());
+    expect(
+      field.choices.map((choice) => [choice.value, choice.label()]),
+    ).toEqual([
+      ["below", m.theme_immersive_cards_below()],
+      ["beside", m.theme_immersive_cards_beside()],
+    ]);
+  });
+
+  it("stands every card of the home page in one group after the content, with no strip before the list", async () => {
+    await renderShell({ pageKind: "home", stored: { cards: "beside" } });
+
+    expect(placedGroups()).toEqual([
+      {
+        place: "beside",
+        side: "after",
+        cards: ["Card latest-moments", "Card categories", "Card tags"],
+        pinned: ["Card categories", "Card tags"],
+      },
+    ]);
+  });
+
+  it("does the same on an inner page, the profile card first", async () => {
+    await renderShell({ pageKind: "inner", stored: { cards: "beside" } });
+
+    expect(placedGroups()).toEqual([
+      {
+        place: "beside",
+        side: "after",
+        cards: ["Card profile", "Card categories", "Card tags"],
+        pinned: ["Card categories", "Card tags"],
+      },
+    ]);
+  });
+
+  it("has no box to pin on a page without a way into the Posts", async () => {
+    await renderShell({
+      pageKind: "home",
+      stored: { cards: "beside" },
+      cards: cardsFor("home").filter((card) => card.kind !== "index"),
+    });
+
+    expect(placedGroups()).toEqual([
+      {
+        place: "beside",
+        side: "after",
+        cards: ["Card latest-moments"],
+        pinned: [],
+      },
+    ]);
+    expect(document.querySelector(".immersive-cards-pinned")).toBeNull();
+  });
+
+  it("gives every card a slot that says its kind, as under the list", async () => {
+    await renderShell({ pageKind: "inner", stored: { cards: "beside" } });
+
+    expect(
+      [...document.querySelectorAll<HTMLElement>(".immersive-card")].map(
+        (slot) => [slot.dataset.kind, slot.textContent],
+      ),
+    ).toEqual([
+      ["identity", "Card profile"],
+      ["index", "Card categories"],
+      ["index", "Card tags"],
+    ]);
+  });
+
+  it("leaves a Post's page as it is under the list", async () => {
+    await renderShell({ pageKind: "post", stored: { cards: "beside" } });
+
+    expect(placedGroups()).toEqual([
+      {
+        place: "after",
+        side: "after",
+        cards: ["Card profile", "Card categories", "Card tags"],
+        pinned: [],
+      },
+    ]);
+  });
+
+  it("has no group on a focused page", async () => {
+    await renderShell({ pageKind: "focused", stored: { cards: "beside" } });
+
+    expect(placedGroups()).toEqual([]);
+  });
+
+  it("keeps the first screen as it is under the list", async () => {
+    const site = { title: "Engine Notes", tagline: "Slow and exact" };
+    await renderShell({ pageKind: "home", site });
+    const below = firstScreen().outerHTML;
+    cleanup();
+    vi.useRealTimers();
+
+    await renderShell({ pageKind: "home", site, stored: { cards: "beside" } });
+
+    expect(firstScreen().outerHTML).toBe(below);
+  });
+
+  it("lays a page out under the list for a stored value it does not know", async () => {
+    await renderShell({ pageKind: "home", stored: { cards: "left" } });
+
+    expect(placedGroups().map((group) => group.place)).toEqual([
+      "before",
+      "after",
+    ]);
+  });
+
+  describe("in the stylesheet", () => {
+    // Every selector on one line, however the formatter wrapped it.
+    const css = readFileSync(join(import.meta.dirname, "immersive.css"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\s+/g, " ")
+      .replace(/\( /g, "(")
+      .replace(/ \)/g, ")");
+    const group = '.immersive-cards[data-place="beside"]';
+    const column = `.immersive-body:has(> ${group} .immersive-card:not(:empty))`;
+    /** What the stylesheet says from 1024px: the block that makes the column. */
+    const media = "@media (width >= 64rem)";
+    const wide = blockAfter(
+      css.slice(css.lastIndexOf(media, css.indexOf(column))),
+      media,
+    );
+    /** What it says at every width. */
+    const base = css.replace(wide, "");
+
+    it("follows the content below 1024px as the group after it does, the pinned box no box at all", () => {
+      expect(declarations(blockAfter(base, `${group} {`))).toEqual(
+        declarations(
+          blockAfter(base, '.immersive-cards[data-place="after"] {'),
+        ),
+      );
+      expect(
+        declarations(blockAfter(base, ".immersive-cards-pinned {")),
+      ).toEqual(["display: contents"]);
+      expect(base).not.toContain("position: sticky");
+    });
+
+    it("shows the group while a card anywhere in it shows, the pinned ones too", () => {
+      const rule = `${group}:has(.immersive-card:not(:empty)) {`;
+
+      expect(declarations(blockAfter(base, rule))).toEqual(["display: flex"]);
+      // After the rule that hides a group of empty cards, which it amends.
+      expect(base.indexOf(rule)).toBeGreaterThan(
+        base.indexOf(".immersive-card:empty"),
+      );
+    });
+
+    it("makes room for the column only from 1024px and only while a card shows", () => {
+      expect(base).not.toContain(column);
+      expect(declarations(blockAfter(wide, `${column} {`))).toEqual([
+        "display: grid",
+        "grid-template-rows: 1fr auto",
+        "grid-template-columns: minmax(0, 1fr) 17.5rem",
+      ]);
+      expect(
+        declarations(blockAfter(wide, `${column} > .immersive-main {`)),
+      ).toEqual(["grid-area: 1 / 1"]);
+      expect(
+        declarations(blockAfter(wide, `${column} > .immersive-footer {`)),
+      ).toEqual(["grid-area: 2 / 1 / auto / -1"]);
+    });
+
+    // 17.5rem is less than the 20rem from which a card takes its wide form.
+    it("stands the cards in the column one under the other, each as tall as what it shows", () => {
+      expect(declarations(blockAfter(wide, `${group} {`))).toEqual([
+        "grid-area: 1 / 2",
+        "flex-direction: column",
+        "flex-wrap: nowrap",
+        "margin-top: 0",
+      ]);
+      expect(
+        declarations(blockAfter(wide, `${group} .immersive-card {`)),
+      ).toEqual(["flex: none"]);
+    });
+
+    it("keeps the ways into the Posts in view below the navbar, in a box that scrolls when the window is too low for it", () => {
+      const pinned = declarations(
+        blockAfter(wide, `${group} > .immersive-cards-pinned {`),
+      );
+
+      expect(pinned).toEqual(
+        expect.arrayContaining([
+          "position: sticky",
+          "top: 4rem",
+          "max-height: calc(100svh - 4rem)",
+          "overflow-y: auto",
+        ]),
+      );
+      // The box is larger than its cards by its padding, for their shadows:
+      // the first card is 5rem down, clear of the navbar, and the box takes
+      // no room in the column. Its padding covers nothing.
+      expect(pinned).toContain("padding: 1rem 1rem 2.5rem");
+      expect(pinned).toContain("margin: -1rem -1rem -2.5rem");
+      expect(pinned).toContain("pointer-events: none");
+      expect(
+        declarations(
+          blockAfter(
+            wide,
+            `${group} > .immersive-cards-pinned > .immersive-card {`,
+          ),
+        ),
+      ).toEqual(["pointer-events: auto"]);
+    });
+
+    it("leaves no gap for a pinned box whose cards show nothing", () => {
+      expect(
+        declarations(
+          blockAfter(
+            wide,
+            `${group} > .immersive-cards-pinned:not(:has(> .immersive-card:not(:empty))) {`,
+          ),
+        ),
+      ).toEqual(["display: none"]);
+    });
   });
 });
 
@@ -630,7 +890,7 @@ function declared(block: Array<string>, name: string) {
 /**
  * What a declared length comes to in px: 1rem is 16px, a percentage is of
  * `basis`, and every var() is one of `properties`. It reads calc(), min(),
- * brackets and the four operations, and fails on anything else.
+ * max(), brackets and the four operations, and fails on anything else.
  */
 function px(value: string, properties: Record<string, string>, basis = 0) {
   let source = value;
@@ -640,7 +900,7 @@ function px(value: string, properties: Record<string, string>, basis = 0) {
       return `(${properties[name]})`;
     });
   }
-  const tokens = source.match(/calc|min|[\d.]+(?:rem|%)?|[-+*/(),]/g) ?? [];
+  const tokens = source.match(/calc|min|max|[\d.]+(?:rem|%)?|[-+*/(),]/g) ?? [];
   expect(tokens.join(""), value).toBe(source.replace(/\s+/g, ""));
   let at = 0;
   const sum = (): number => {
@@ -659,14 +919,14 @@ function px(value: string, properties: Record<string, string>, basis = 0) {
   };
   const term = (): number => {
     const token = tokens[at++]!;
-    if (token === "min") {
+    if (token === "min" || token === "max") {
       const values: Array<number> = [];
       do {
         at += 1;
         values.push(sum());
       } while (tokens[at] === ",");
       at += 1;
-      return Math.min(...values);
+      return token === "min" ? Math.min(...values) : Math.max(...values);
     }
     if (token === "calc" || token === "(") {
       if (token === "calc") at += 1;
@@ -690,7 +950,8 @@ describe("a Post's page", () => {
       /\/\*[\s\S]*?\*\//g,
       "",
     );
-  const css = read("immersive.css");
+  // On one line, however a selector is wrapped.
+  const css = read("immersive.css").replace(/\s+/g, " ");
   // From where the gutter right of the reading column has room for the
   // table of contents.
   const BESIDE_FROM = "@media (width >= 80rem)";
@@ -703,22 +964,24 @@ describe("a Post's page", () => {
     ...rootProperties(css.replace(beside, "")),
   };
   const POST = '.immersive-shell[data-column="reading"]';
-  const column = declarations(
-    blockAfter(css, `${POST} :is(.immersive-main, .immersive-cards) {`),
-  );
-  const columnPx = px(declared(column, "max-width"), properties);
+  const REGIONS = ".immersive-body > :is(.immersive-main, .immersive-cards)";
+  const column = declarations(blockAfter(css, `${POST} ${REGIONS} {`));
+  /** How wide the column is in a window: what its margins leave. */
+  const columnPx = (width: number) =>
+    width - 2 * px(declared(column, "margin-inline"), properties, width);
   const GAP_PX = 16;
   /** Back to top: 3.75rem wide, and 1rem from the edge of the window at least. */
   const BACK_TO_TOP_PX = 60;
 
   /** Where the column, the side list and back to top stand in a window. */
   function across(width: number) {
-    const columnLeft = (width - columnPx) / 2;
+    const columnLeft = (width - columnPx(width)) / 2;
     const listLeft =
-      columnLeft + px(properties["--shell-toc-left"]!, properties, columnPx);
+      columnLeft +
+      px(properties["--shell-toc-left"]!, properties, columnPx(width));
     const listWidth = px(properties["--shell-toc-width"]!, properties, width);
     return {
-      columnRight: columnLeft + columnPx,
+      columnRight: columnLeft + columnPx(width),
       listLeft,
       listWidth,
       listRight: listLeft + listWidth,
@@ -843,22 +1106,29 @@ describe("a Post's page", () => {
   });
 
   it("is one centred reading column, 46rem between its gutters, for the content and the cards after it", () => {
+    // Centred as the regions of every page are, by the reading width.
     expect(column).toEqual([
-      "align-self: center",
-      "width: 100%",
-      "max-width: calc(var(--immersive-reading-width) - 2 * var(--immersive-gutter))",
+      "margin-inline: max(var(--immersive-gutter), calc(50% - var(--immersive-reading-width) / 2 + var(--immersive-gutter)))",
     ]);
-    expect(columnPx).toBe(46 * 16);
+    expect(declarations(blockAfter(css, `} ${REGIONS} {`))).toEqual([
+      "margin-inline: max(var(--immersive-gutter), calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter)))",
+    ]);
+
+    expect(columnPx(2560)).toBe(46 * 16);
+    expect(columnPx(1024)).toBe(46 * 16);
+    expect(columnPx(768)).toBe(46 * 16);
+    // In a narrower window the column is the window less its gutters.
+    expect(columnPx(390)).toBe(390 - 2 * GAP_PX);
   });
 
   it("narrows nothing else there: the footer keeps the width it has on every page", () => {
-    const narrowed = [...css.matchAll(/([^{}]+)\{[^{}]*max-width\s*:/g)]
+    const narrowed = [
+      ...css.matchAll(/([^{}]+)\{[^{}]*(?:margin-inline|max-width)\s*:/g),
+    ]
       .map(([, selector]) => selector!.replace(/\s+/g, " ").trim())
       .filter((selector) => selector.includes(POST));
 
-    expect(narrowed).toEqual([
-      `${POST} :is(.immersive-main, .immersive-cards)`,
-    ]);
+    expect(narrowed).toEqual([`${POST} ${REGIONS}`]);
   });
 
   it("stands the two ways into the Posts side by side in the column, each with its pills under its title", () => {
@@ -871,11 +1141,12 @@ describe("a Post's page", () => {
       ),
       properties,
     );
+    const half = (columnPx(1440) - GAP_PX) / 2;
 
     // Two fit in a row; a card has that form from 20rem to 28rem.
-    expect(2 * slot + GAP_PX).toBeLessThanOrEqual(columnPx);
-    expect((columnPx - GAP_PX) / 2).toBeGreaterThanOrEqual(20 * 16);
-    expect((columnPx - GAP_PX) / 2).toBeLessThan(28 * 16);
+    expect(slot).toBeLessThanOrEqual(half);
+    expect(half).toBeGreaterThanOrEqual(20 * 16);
+    expect(half).toBeLessThan(28 * 16);
   });
 
   it("opens the table of contents from the button until the gutter has room for the list, from 1280px", () => {

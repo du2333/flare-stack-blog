@@ -8,7 +8,12 @@ import type {
   ThemeShellProps,
 } from "@/features/theme/theme-shell";
 import { useReducedMotion } from "@/hooks/use-motion";
-import { placeCards, type CardPlace } from "./card-placement";
+import {
+  DEFAULT_CARD_PLACEMENT,
+  isCardPlacement,
+  placeCards,
+  type CardPlace,
+} from "./card-placement";
 import { FirstScreen } from "./first-screen";
 import { Navbar } from "./navbar";
 
@@ -30,7 +35,11 @@ const COLUMN_LEAD_MS = 8;
  * 1024px the ways into the Posts lead the home page's list as one strip and
  * every other card follows the content; below, all of them follow it
  * (card-placement.ts says which card goes where, immersive.css how each
- * place looks).
+ * place looks). With the option 「卡片位置」 set to the column, the cards of
+ * the home page and of the inner pages stand in a narrow column right of
+ * the content instead, in their narrow forms and after the content in the
+ * document, the ways into the Posts staying in view; a Post's page does not
+ * follow the option.
  *
  * In the document the cards placed before the content come before it, the
  * order a wide screen shows. Below 1024px the stylesheet moves them after
@@ -39,6 +48,7 @@ const COLUMN_LEAD_MS = 8;
  */
 function ImmersiveShell({
   pageKind,
+  options,
   navOptions,
   sidebarCards,
   user,
@@ -52,7 +62,11 @@ function ImmersiveShell({
   // page; its column is the reading column.
   const isHomePage = pageKind === "home";
   const readingColumn = useReadingColumn(pageKind === "post");
-  const cards = placeCards(pageKind, sidebarCards);
+  const cards = placeCards(
+    pageKind,
+    sidebarCards,
+    isCardPlacement(options.cards) ? options.cards : DEFAULT_CARD_PLACEMENT,
+  );
   const gaugeRef = useRef<HTMLDivElement>(null);
   // The banner is the first screen. The gauge already has the height the
   // banner is on its way to.
@@ -97,6 +111,7 @@ function ImmersiveShell({
             {children}
           </main>
 
+          <Cards place="beside" cards={cards.beside} />
           <Cards place="after" cards={cards.after} />
 
           <div
@@ -144,6 +159,9 @@ function useReadingColumn(post: boolean) {
  * The cards of one place, in the given order; nothing when the place has no
  * card. Every card gets a slot of its own, which the stylesheet makes a
  * `card` container: the card takes the form the slot's width calls for.
+ *
+ * Beside the content the ways into the Posts stand together below the other
+ * cards, in a box of their own that the stylesheet keeps in view.
  */
 function Cards({
   place,
@@ -155,6 +173,25 @@ function Cards({
   if (cards.length === 0) return null;
   // Before the content the cards are one surface, which comes in as one.
   const together = place === "before";
+  const slot = (card: SidebarCard, position: number) => (
+    <div
+      key={card.id}
+      className={
+        together ? "immersive-card" : "immersive-card fuwari-onload-animation"
+      }
+      data-kind={card.kind}
+      style={
+        together
+          ? undefined
+          : { animationDelay: `${CARD_DELAY_MS + position * CARD_STEP_MS}ms` }
+      }
+    >
+      {card.content}
+    </div>
+  );
+  const pinned =
+    place === "beside" ? cards.filter((card) => card.kind === "index") : [];
+  const others = cards.filter((card) => !pinned.includes(card));
   return (
     <aside
       className={
@@ -164,26 +201,12 @@ function Cards({
       data-place={place}
       data-shell-region="sidebar"
     >
-      {cards.map((card, position) => (
-        <div
-          key={card.id}
-          className={
-            together
-              ? "immersive-card"
-              : "immersive-card fuwari-onload-animation"
-          }
-          data-kind={card.kind}
-          style={
-            together
-              ? undefined
-              : {
-                  animationDelay: `${CARD_DELAY_MS + position * CARD_STEP_MS}ms`,
-                }
-          }
-        >
-          {card.content}
+      {others.map(slot)}
+      {pinned.length > 0 ? (
+        <div className="immersive-cards-pinned">
+          {pinned.map((card, position) => slot(card, others.length + position))}
         </div>
-      ))}
+      ) : null}
     </aside>
   );
 }

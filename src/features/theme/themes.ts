@@ -4,6 +4,10 @@ import { FIXTURE_THEMES } from "virtual:fixture-themes";
 import { m } from "@/paraglide/messages";
 import { classicShell } from "./shells/classic/classic-shell";
 import classicStylesheet from "./shells/classic/classic-shell.css?url";
+import {
+  CARD_PLACEMENTS,
+  DEFAULT_CARD_PLACEMENT,
+} from "./shells/immersive/card-placement";
 import { immersiveShell } from "./shells/immersive/immersive-shell";
 import immersiveStylesheet from "./shells/immersive/immersive.css?url";
 import { DEFAULT_FRAME, FRAMES } from "./shells/namecard/frame";
@@ -83,6 +87,7 @@ const namecardTheme: Theme = {
     headingAccent: "off",
     summary: "standfirst",
     archive: "index",
+    footer: "caption",
   },
   options: z.object({ frame: z.enum(FRAMES).catch(DEFAULT_FRAME) }),
   optionFields: [
@@ -96,6 +101,11 @@ const namecardTheme: Theme = {
   thumbnail: NamecardThumbnail,
 };
 
+const CARD_PLACEMENT_LABELS = {
+  below: m.theme_immersive_cards_below,
+  beside: m.theme_immersive_cards_beside,
+} satisfies Record<(typeof CARD_PLACEMENTS)[number], () => string>;
+
 const immersiveTheme: Theme = {
   id: "immersive",
   name: m.theme_immersive_name,
@@ -108,8 +118,22 @@ const immersiveTheme: Theme = {
     headingAccent: "off",
     summary: "standfirst",
     archive: "timeline",
+    footer: "band",
   },
-  options: z.object({}),
+  options: z.object({
+    cards: z.enum(CARD_PLACEMENTS).catch(DEFAULT_CARD_PLACEMENT),
+  }),
+  optionFields: [
+    {
+      key: "cards",
+      label: m.theme_immersive_cards,
+      hint: m.theme_immersive_cards_hint,
+      choices: CARD_PLACEMENTS.map((value) => ({
+        value,
+        label: CARD_PLACEMENT_LABELS[value],
+      })),
+    },
+  ],
   thumbnail: ImmersiveThumbnail,
 };
 

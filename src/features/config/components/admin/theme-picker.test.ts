@@ -10,7 +10,7 @@ import {
 import { createElement, type ReactNode } from "react";
 import { FormProvider, useForm, type UseFormReturn } from "react-hook-form";
 import { fixtureTheme } from "tests/theme-fixture/theme";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_CONFIG,
   type SystemConfig,
@@ -27,7 +27,7 @@ delete plain.optionFields;
 // A fixed list, so registering another Theme does not change what this test sees.
 const themes = [THEMES[0], fixtureTheme, plain];
 
-function renderPicker() {
+function renderPicker(list: ReadonlyArray<Theme> = themes) {
   const form: { current?: UseFormReturn<SystemConfig> } = {};
   function Harness({ children }: { children: ReactNode }) {
     const methods = useForm<SystemConfig>({
@@ -36,7 +36,9 @@ function renderPicker() {
     form.current = methods;
     return createElement(FormProvider<SystemConfig>, { ...methods, children });
   }
-  render(createElement(Harness, null, createElement(ThemePicker, { themes })));
+  render(
+    createElement(Harness, null, createElement(ThemePicker, { themes: list })),
+  );
   return () => form.current!;
 }
 
@@ -144,4 +146,92 @@ it("previews each Theme with the options in the form, without touching it", () =
   fireEvent.click(link);
   expect(form().getValues()).toEqual(values);
   expect(form().formState.isDirty).toBe(dirty);
+});
+
+// The picker as the Admin gets it: 「沉浸」's own option, 「卡片位置」.
+describe("with the registered Themes", () => {
+  const immersive = () => card(m.theme_immersive_name());
+  const placement = () =>
+    screen.getByRole("radiogroup", { name: m.theme_immersive_cards() });
+  const choice = (name: string) =>
+    within(placement()).getByRole("radio", { name });
+
+  it("offers 「卡片位置」 only while 「沉浸」 is chosen, under the list until the Admin says otherwise", () => {
+    const form = renderPicker(THEMES);
+    expect(
+      screen.queryByRole("radiogroup", { name: m.theme_immersive_cards() }),
+    ).toBeNull();
+
+    fireEvent.click(immersive());
+
+    expect(
+      within(placement())
+        .getAllByRole("radio")
+        .map((radio) => [
+          radio.textContent,
+          radio.getAttribute("aria-checked"),
+        ]),
+    ).toEqual([
+      [m.theme_immersive_cards_below(), "true"],
+      [m.theme_immersive_cards_beside(), "false"],
+    ]);
+    expect(placement().getAttribute("aria-describedby")).toBe(
+      screen.getByText(m.theme_immersive_cards_hint()).id,
+    );
+    // Looking at the option stores nothing.
+    expect(form().getValues("site.theme.options.immersive")).toBeUndefined();
+
+    fireEvent.click(card(m.theme_namecard_name()));
+    expect(
+      screen.queryByRole("radiogroup", { name: m.theme_immersive_cards() }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("radiogroup", { name: m.theme_namecard_frame() }),
+    ).toBeTruthy();
+  });
+
+  it("stores the column, marks the form unsaved and previews 「沉浸」 with it, the thumbnail unchanged", () => {
+    const form = renderPicker(THEMES);
+    expect(form().formState.dirtyFields).toEqual({});
+    fireEvent.click(immersive());
+    const thumbnail = immersive().querySelector("svg")!.outerHTML;
+    const options = () =>
+      JSON.parse(
+        new URL(
+          screen
+            .getByRole("link", {
+              name: m.settings_theme_preview_label({
+                name: m.theme_immersive_name(),
+              }),
+            })
+            .getAttribute("href")!,
+          "https://blog.example",
+        ).searchParams.get("themePreviewOptions")!,
+      );
+    expect(options()).toEqual({ cards: "below" });
+
+    fireEvent.click(choice(m.theme_immersive_cards_beside()));
+
+    expect(form().getValues("site.theme.options.immersive")).toEqual({
+      cards: "beside",
+    });
+    expect(form().formState.dirtyFields.site?.theme?.options).toBeTruthy();
+    expect(
+      choice(m.theme_immersive_cards_beside()).getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(options()).toEqual({ cards: "beside" });
+    expect(immersive().querySelector("svg")!.outerHTML).toBe(thumbnail);
+  });
+
+  it("reads a stored placement it does not know as under the list", () => {
+    const form = renderPicker(THEMES);
+    act(() => {
+      form().setValue("site.theme.id", "immersive");
+      form().setValue("site.theme.options.immersive", { cards: "left" });
+    });
+
+    expect(
+      choice(m.theme_immersive_cards_below()).getAttribute("aria-checked"),
+    ).toBe("true");
+  });
 });

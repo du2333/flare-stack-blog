@@ -28,6 +28,7 @@
   "profile_avatar_label": "Back to Home",
   "footer_copyright": "© {year} {author}. All Rights Reserved.",
   "footer_powered_by": "Powered by",
+  "footer_nav_label": "Footer navigation",
   "posts_title": "All Posts",
   "posts_no_posts": "No posts found",
   "posts_end": "You've reached the end",
@@ -334,6 +335,10 @@
   "theme_namecard_frame_wide": "Wide",
   "theme_immersive_name": "Immersive",
   "theme_immersive_scroll_down": "Scroll down",
+  "theme_immersive_cards": "Card placement",
+  "theme_immersive_cards_hint": "Where cards such as categories and tags stand on the home page and inner pages on wide screens. On a post's page they always follow the article.",
+  "theme_immersive_cards_below": "Below the list",
+  "theme_immersive_cards_beside": "Right column",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeEn = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=true"],

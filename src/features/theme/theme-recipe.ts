@@ -43,6 +43,15 @@ export interface ThemeRecipe {
    * a ruled index of its Posts.
    */
   archive: "timeline" | "index";
+  /**
+   * The footer: a centred caption under a rule (the copyright, the feed and
+   * sitemap links, the credit), or a closing band, a surface as wide as the
+   * shell lets its footer region be: the brand mark and the site title over
+   * the tagline and the social links on one side, every navigation entry on
+   * the other, then one quiet line with the copyright and the feed and
+   * sitemap links, without the credit.
+   */
+  footer: "caption" | "band";
 }
 
 /** Today's look, which the classic Theme keeps. */
@@ -53,4 +62,5 @@ export const DEFAULT_THEME_RECIPE: ThemeRecipe = {
   headingAccent: "on",
   summary: "box",
   archive: "timeline",
+  footer: "caption",
 };
