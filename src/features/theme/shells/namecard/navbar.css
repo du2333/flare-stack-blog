@@ -22,6 +22,20 @@
 .namecard-nav[data-scrolled="true"]::before {
   opacity: 1;
 }
+/* Where the browser can tie it to the scroll position, the layer is already
+   right in the server-rendered page, as after a reload in the middle of it. */
+@keyframes namecard-nav-tint {
+  to {
+    opacity: 1;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .namecard-nav:not([data-scrolled="true"])::before {
+    animation: namecard-nav-tint linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 24px;
+  }
+}
 .namecard-nav-inner {
   position: relative;
   display: flex;
@@ -78,7 +92,7 @@
 .dark .namecard-brand-mark[data-mark="siteIcon"] {
   filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.6));
 }
-@media (hover: hover) {
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .namecard-brand:hover .namecard-brand-mark {
     transform: rotate(-8deg) scale(1.06);
   }
@@ -190,8 +204,10 @@
   background: var(--theme-plain-bg-hover);
   color: var(--namecard-ink);
 }
-.namecard-tool:active {
-  transform: scale(0.94);
+@media (prefers-reduced-motion: no-preference) {
+  .namecard-tool:active {
+    transform: scale(0.94);
+  }
 }
 .namecard-account img {
   width: 26px;
