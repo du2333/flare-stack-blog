@@ -1,6 +1,11 @@
-import { Link, useLocation, useRouteContext } from "@tanstack/react-router";
+import {
+  Link,
+  useLocation,
+  useRouteContext,
+  useRouter,
+} from "@tanstack/react-router";
 import { Home, Menu, Search, UserIcon, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
@@ -36,6 +41,8 @@ const CONDENSE_BEFORE_PX = 168;
 const CONDENSE_MIN_PX = 40;
 /** On the way back up it stays condensed this much longer, so it is steady around the line. */
 const CONDENSE_SLACK_PX = 32;
+/** How long the page has been at rest before a bar that moved up may condense. */
+const SETTLE_MS = 160;
 /** How far past the line the condensed bar stays before it may hide. */
 const HIDE_AFTER_PX = 140;
 /** How far the page travels one way before the condensed bar hides or returns. */
@@ -83,8 +90,10 @@ function BrandMark() {
 export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const pathname = useLocation({ select: (location) => location.pathname });
+  const router = useRouter();
   const firstScreenHeight = useFirstScreenHeight();
-  const [condensed, setCondensed] = useState(false);
+  // Null until the scroll position has been looked at, in the browser.
+  const [condensed, setCondensed] = useState<boolean | null>(null);
   const [hidden, setHidden] = useState(false);
   const [ready, setReady] = useState(false);
   const { open, mobile, present, toggle, close, panelProps } =
@@ -95,8 +104,12 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
     setHidden(false);
   }, [pathname]);
 
-  // Two frames, so the shape found below is painted before it may move.
+  // Two frames after the shape for this scroll position has been rendered, so
+  // it is painted before it may move. React can hold that first render back
+  // behind the rest of hydration, hence not two frames after mounting.
+  const measured = condensed !== null;
   useEffect(() => {
+    if (!measured) return;
     let second = 0;
     const first = requestAnimationFrame(() => {
       second = requestAnimationFrame(() => setReady(true));
@@ -105,26 +118,65 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
     };
-  }, []);
+  }, [measured]);
 
+  const condenseAt = useCallback(
+    () => Math.max(CONDENSE_MIN_PX, firstScreenHeight() - CONDENSE_BEFORE_PX),
+    [firstScreenHeight],
+  );
+
+  // The shape. Past the line it is the pill, but a page on its way up is not
+  // condensed before it has come to rest: after a navigation the router
+  // takes the page to the top, past a line that lies higher on a page with a
+  // lower banner, and the bar must not flicker into a pill on the way.
+  useEffect(() => {
+    let previous = Math.max(0, window.scrollY);
+    let settling = 0;
+    const measure = (rising = false) => {
+      const y = Math.max(0, window.scrollY);
+      const line = condenseAt();
+      setCondensed((current) =>
+        current ? y > line - CONDENSE_SLACK_PX : !rising && y > line,
+      );
+    };
+    const settle = () => {
+      window.clearTimeout(settling);
+      settling = window.setTimeout(measure, SETTLE_MS);
+    };
+    const onScroll = () => {
+      const y = Math.max(0, window.scrollY);
+      const rising = y < previous;
+      previous = y;
+      measure(rising);
+      if (rising) settle();
+    };
+    const onResize = () => measure();
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    // A new page may leave the scroll position where it is.
+    const unsubscribe = router.subscribe("onRendered", settle);
+    return () => {
+      window.clearTimeout(settling);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      unsubscribe();
+    };
+  }, [condenseAt, router]);
+
+  // Hiding: well past the line, the pill follows the direction of the scroll,
+  // unless it is in use.
   useEffect(() => {
     let previous = Math.max(0, window.scrollY);
     let travel = 0;
-    const update = () => {
+    const follow = () => {
       const y = Math.max(0, window.scrollY);
       const delta = y - previous;
       previous = y;
-      const condenseAt = Math.max(
-        CONDENSE_MIN_PX,
-        firstScreenHeight() - CONDENSE_BEFORE_PX,
-      );
-      setCondensed((current) =>
-        current ? y > condenseAt - CONDENSE_SLACK_PX : y > condenseAt,
-      );
       const nav = navRef.current;
       if (
         open ||
-        y < condenseAt + HIDE_AFTER_PX ||
+        y < condenseAt() + HIDE_AFTER_PX ||
         (nav?.contains(document.activeElement) &&
           document.activeElement?.matches(":focus-visible")) ||
         nav?.querySelector('[aria-expanded="true"]')
@@ -140,15 +192,9 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
         travel = 0;
       }
     };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-    // The first screen is a different height on another page.
-  }, [firstScreenHeight, open, pathname]);
+    window.addEventListener("scroll", follow, { passive: true });
+    return () => window.removeEventListener("scroll", follow);
+  }, [condenseAt, open]);
 
   const togglePanel = (button: HTMLButtonElement, compact: boolean) => {
     setHidden(false);

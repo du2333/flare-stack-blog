@@ -16,7 +16,15 @@ import {
   screen,
 } from "@testing-library/react";
 import { createElement } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from "vitest";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
@@ -49,6 +57,7 @@ const CARDS: Array<SidebarCard> = ["profile", "categories", "tags"].map(
 );
 
 const reducedMotion = { matches: false };
+let banner: MockInstance<() => number>;
 
 async function renderShell({
   pageKind,
@@ -81,6 +90,8 @@ async function renderShell({
     render(createElement(RouterProvider, { router }));
   });
   await screen.findByText("Page content");
+  // From here on, time passes only when a test says so.
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 }
 
 function shell() {
@@ -120,12 +131,13 @@ beforeEach(() => {
     removeEventListener: vi.fn(),
   }));
   vi.stubGlobal("scrollTo", vi.fn());
-  vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(
-    BANNER_PX,
-  );
+  banner = vi
+    .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+    .mockReturnValue(BANNER_PX);
   Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
 });
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -291,6 +303,34 @@ describe("the navbar", () => {
 
     scrollTo(CONDENSE_AT - 40);
     expect(navbar().dataset.state).toBe("bar");
+  });
+
+  // After a navigation the router takes the page to the top; on a page with
+  // a lower banner the line lies higher than where the page still is.
+  it("stays a bar while the page moves up, even above a line it is past", async () => {
+    await renderShell({ pageKind: "home" });
+    scrollTo(CONDENSE_AT - 100);
+    banner.mockReturnValue(BANNER_PX - 300);
+
+    scrollTo(CONDENSE_AT - 120);
+    expect(navbar().dataset.state).toBe("bar");
+
+    scrollTo(0);
+    vi.advanceTimersByTime(1000);
+    expect(navbar().dataset.state).toBe("bar");
+  });
+
+  it("condenses once a page that moved up has come to rest past the line", async () => {
+    await renderShell({ pageKind: "home" });
+    scrollTo(CONDENSE_AT - 100);
+    banner.mockReturnValue(BANNER_PX - 300);
+    scrollTo(CONDENSE_AT - 120);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(navbar().dataset.state).toBe("pill");
   });
 
   it("slides away while the page scrolls down and returns on the way up", async () => {
