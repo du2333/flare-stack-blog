@@ -30,9 +30,35 @@ bun scripts/dev-admin-session.ts seed   # prints the cookie value
 
 Set it as cookie `better-auth.session_token` on domain `localhost`, path `/`. `curl -b "better-auth.session_token=<value>" http://localhost:3000/api/auth/get-session` confirms it.
 
-## 3. Drive the browser
+## 3. Screenshots: `shots`
 
-Use `playwright-core` from a scratch directory (`bun add playwright-core` there) with the headless shell under `~/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell`; if none exists, `bunx playwright install chromium-headless-shell` in that directory. Launch with `--no-sandbox`, `locale: "zh-CN"`, add the cookie to the context, then:
+Screenshots, comparisons and contact sheets come from the checked-in tool, not from scratch Playwright scripts. Once: `bun install --cwd .claude/skills/run-blog/shots`. If it reports that the Chromium headless shell is missing, run the install command it prints.
+
+Below, `shots` stands for `bun .claude/skills/run-blog/shots/shots.ts`, run from the repo root.
+
+- `shots shoot --base <url> --out <dir> [--pages /,/posts] [--widths 1440,820,390] [--schemes light,dark] [--views full|top|end|<px>,...] [--theme <id>] [--theme-options <json>] [--session <token>] [--locale zh|en] [--reduced-motion] [--mask <css>] [--concurrency 2]` writes `<slug>-<width>-<scheme>-<view>.png` per page, width, scheme and view, and prints CLS, sideways overflow and error count per page and width. Exit 1 on a page error, a failed load or an HTTP status of 400 or more.
+- `shots compare <dirA> <dirB> [--out <dir>] [--threshold 0]` pairs files by name, prints each pair that differs (size, or differing pixels and their bounding box) and `identical / different / unpaired`. `--out` writes a diff image per differing pair. Exit 1 unless everything is identical.
+- `shots sheet <dir> --out <file.png> [--match <substring>] [--columns 4] [--cell-width 480]` tiles the matching images under their file names, at most 2000x8000 px per sheet (`-1`, `-2` when more); read the sheets, not the single files.
+
+Facts:
+
+- Every shot has animations and transitions off, fonts and all images loaded, and `time` elements and `.comment-avatar` painted as flat grey boxes. `--mask` adds CSS selectors to those. Each shot scrolls to the end of the page until its height stops changing (so `/posts` loads every page of its list) and waits for skeletons to go; a capture is repeated until two in a row match, and `[unstable]` is printed when none does. Shooting the same pages twice gives identical files.
+- `--theme` previews a Theme on the public page as an Admin, so it needs `--session` (the token from `dev-admin-session.ts seed`). Compare it with a set shot without `--theme`.
+- Phones (width below 600) use a touch context. Viewport heights: 900 from 1024 wide, 1100 from 600, 844 below.
+
+Example: before and after a change.
+
+```bash
+shots shoot --base http://localhost:3000 --out $SCRATCH/before --pages /,/posts --widths 1440,390
+# change the code, wait for the dev server to reload
+shots shoot --base http://localhost:3000 --out $SCRATCH/after --pages /,/posts --widths 1440,390
+shots compare $SCRATCH/before $SCRATCH/after --out $SCRATCH/diff
+shots sheet $SCRATCH/diff --out $SCRATCH/diff-sheet.png
+```
+
+## 4. Drive the browser by hand
+
+The editor, publishing and other flows that need clicks and typing still need a script: `playwright-core` from a scratch directory (`bun add playwright-core` there), launched with the same headless shell (`~/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell`), `--no-sandbox`, `locale: "zh-CN"`, the session cookie added to the context.
 
 - **Editor:** `/admin/posts` → button "新建文章" → wait for `/admin/posts/edit/<id>` → type into `.ProseMirror`. Type through `page.keyboard` so input rules and the slash menu fire.
 - **Publish:** button "发布" on the edit page; the Post's slug is in the `posts` table.
@@ -41,7 +67,7 @@ Use `playwright-core` from a scratch directory (`bun add playwright-core` there)
 
 Look at every screenshot, and record `pageerror` events.
 
-## 4. Cleanup
+## 5. Cleanup
 
 ```bash
 lsof -ti:3000 -sTCP:LISTEN | xargs -r kill

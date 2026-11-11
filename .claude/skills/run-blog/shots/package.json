@@ -1,0 +1,11 @@
+{
+  "name": "run-blog-shots",
+  "private": true,
+  "description": "Screenshot, compare and sheet tool for checking UI work in the blog (see ../SKILL.md)",
+  "type": "module",
+  "dependencies": {
+    "pixelmatch": "^8.0.0",
+    "playwright-core": "^1.65.0",
+    "pngjs": "^7.0.0"
+  }
+}
