@@ -85,27 +85,13 @@
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
 
-  /* The table of contents of a Post: the button in the floating column opens
-     it, until from 2xl (below) the gutter right of the content has room for
-     it. There it stands below the floating navbar, 1rem clear of the
-     content. */
-  --shell-toc-side: none;
-  --shell-toc-compact: flex;
-  --shell-toc-top: 5rem;
-  --shell-toc-left: calc(100% + 1rem);
-  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
   /* Back to top from lg: just right of the content, kept on screen when the
-     gutter is too narrow. */
+     gutter is too narrow. The table of contents of a Post is placed with
+     the Post page, below. */
   --shell-floating-actions-left: min(
     calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
     calc(100% - 4.75rem)
   );
-}
-@media (width >= 96rem) {
-  :root[data-theme="immersive"] {
-    --shell-toc-side: block;
-    --shell-toc-compact: none;
-  }
 }
 
 /* The Post list as tiles (Theme Recipe, postCard: "tile"): a title that fits
@@ -244,6 +230,55 @@
   .immersive-cards[data-place="before"] > .immersive-card ~ .immersive-card {
     flex: 3 1 0;
     box-shadow: -1px 0 0 var(--theme-rule, var(--fuwari-divider));
+  }
+}
+
+/* ── The Post page ─────────────────────────────────────────────────────────
+   One centred reading column from the title to the last card: the article,
+   the Posts next to it, the comments, then the sidebar cards. The gutter
+   right of the column is the table of contents'. Nothing in the column is
+   wider than the text; a wide table and a long line of code scroll within
+   themselves, as the shared content styles have them. The footer keeps the
+   width it has on every page. */
+
+/* The column with its gutters, as --fuwari-page-width is the page's with
+   its: 46rem of surface and, inside the panel's padding, 41.5rem of text,
+   which is 41 Chinese characters or some 85 Latin letters to a line of the
+   body. On the root, because the table of contents renders outside the
+   shell. The shell says when the page on screen is a Post's (data-column). */
+:root[data-theme="immersive"] {
+  --immersive-reading-width: 48rem;
+}
+.immersive-shell[data-column="reading"] :is(.immersive-main, .immersive-cards) {
+  align-self: center;
+  width: 100%;
+  max-width: calc(var(--immersive-reading-width) - 2 * var(--immersive-gutter));
+}
+/* The two ways into the Posts share a row of the column, each with its pills
+   in two rows under its title (the form such a card takes from 20rem). */
+.immersive-shell[data-column="reading"] .immersive-card[data-kind="index"] {
+  flex-basis: 20rem;
+}
+
+/* The table of contents of a Post: a list in the gutter right of the
+   reading column from 80rem, where the gutter has room for it, and until
+   then the button in the floating column. The list stands below the floating
+   navbar, 1rem clear of the column, and ends 0.75rem short of back to top:
+   it has the lane between the two, 14rem where the window is wide enough. */
+:root[data-theme="immersive"] {
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc(
+    var(--shell-floating-actions-left) - 0.75rem -
+      (50% + var(--immersive-reading-width) / 2 - var(--immersive-gutter) + 1rem)
+  );
+}
+@media (width >= 80rem) {
+  :root[data-theme="immersive"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
   }
 }
 

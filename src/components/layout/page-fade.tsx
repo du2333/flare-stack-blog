@@ -2,7 +2,8 @@ import { useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-const PAGE_FADE_MS = 200;
+/** How long the page that is left stays, fading, before the next one shows. */
+export const PAGE_FADE_MS = 200;
 
 export function PageFade({
   children,
