@@ -1,6 +1,7 @@
 /*
  * The click surface fills its positioned parent; the marker sits at the
- * point it is given through --focal-x and --focal-y. White ring over a dark
+ * point it is given through --focal-x and --focal-y, kept a radius inside
+ * the surface so the whole marker stays on the image. White ring over a dark
  * outline, so it reads on any image.
  */
 @layer components {
@@ -11,8 +12,8 @@
   }
   .fuwari-focal-marker {
     position: absolute;
-    left: var(--focal-x);
-    top: var(--focal-y);
+    left: clamp(11px, var(--focal-x), calc(100% - 11px));
+    top: clamp(11px, var(--focal-y), calc(100% - 11px));
     width: 22px;
     height: 22px;
     margin: -11px 0 0 -11px;
