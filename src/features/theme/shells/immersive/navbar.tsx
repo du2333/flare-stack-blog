@@ -280,7 +280,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
               </Link>
             </div>
 
-            <nav className="immersive-links">
+            <nav className="immersive-links" aria-label={m.nav_main_label()}>
               {navOptions.map((option) => (
                 <PublicNavLink
                   key={option.id}

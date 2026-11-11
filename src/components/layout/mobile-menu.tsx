@@ -41,7 +41,7 @@ export function MobileMenu({
     <>
       {mobile && (
         <>
-          <nav className="public-menu-links">
+          <nav className="public-menu-links" aria-label={m.nav_main_label()}>
             {navOptions.map((option) => (
               <PublicNavLink
                 key={option.id}

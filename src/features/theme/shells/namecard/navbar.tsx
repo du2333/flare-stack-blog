@@ -226,6 +226,7 @@ function NavLinks({
     <nav
       ref={navRef}
       className="namecard-links"
+      aria-label={m.nav_main_label()}
       data-bar={phase}
       onPointerOver={(event) => {
         if (event.pointerType === "mouse") point(event.target);
