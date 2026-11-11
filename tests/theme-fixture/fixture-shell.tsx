@@ -148,5 +148,5 @@ export const fixtureShell: ThemeShell = {
   Shell: FixtureShell,
   identityInFirstScreen: [],
   // Unlike 「经典」, on inner pages too, so the shared tests see both answers.
-  taglineOn: ["home", "inner"],
+  taglineOn: ["home", "inner", "post"],
 };

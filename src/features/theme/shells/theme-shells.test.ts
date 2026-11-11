@@ -154,7 +154,7 @@ afterEach(() => {
 describe.each(
   THEMES_UNDER_TEST.map((theme) => [theme.shell.id, theme] as const),
 )("the %s shell", (id, theme) => {
-  it.each(["home", "inner"] as const)(
+  it.each(["home", "inner", "post"] as const)(
     "renders everything it is given on a %s page",
     async (pageKind) => {
       await renderShell(theme, { pageKind });
@@ -246,7 +246,7 @@ describe.each(
     expect(brand.textContent).toBe(resolveSiteConfig({}).title);
   });
 
-  it.each(["home", "inner"] as const)(
+  it.each(["home", "inner", "post"] as const)(
     "shows the tagline only where it declares to, on a %s page",
     async (pageKind) => {
       await renderShell(theme, {

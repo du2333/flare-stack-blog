@@ -3,11 +3,42 @@ import { dirname, join } from "node:path";
 import { fixtureTheme } from "tests/theme-fixture/theme";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME_ID, THEME_IDS } from "./theme-ids";
+import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import { resolveThemeOptions, selectTheme, THEMES } from "./themes";
 import { documentThemeId } from "./utils/document-theme";
 
 const ROOT = join(import.meta.dirname, "../../..");
 const WITH_FIXTURE = [...THEMES, fixtureTheme];
+
+/**
+ * The values of each Theme Recipe item, read from the `ThemeRecipe` type
+ * itself, so a value added there is checked without a second list to keep.
+ * Each item is written as a union of string literals.
+ */
+function recipeValues(): Record<string, Array<string>> {
+  const source = readFileSync(
+    join(import.meta.dirname, "theme-recipe.ts"),
+    "utf8",
+  )
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "");
+  const body = source.match(/interface ThemeRecipe\s*\{([^}]*)\}/)?.[1];
+  expect(body, "the ThemeRecipe interface").toBeDefined();
+  return Object.fromEntries(
+    [...body!.matchAll(/(\w+)\??\s*:\s*([^;]+);/g)].map(([, item, type]) => {
+      const values = type!
+        .split("|")
+        .map((part) => part.trim())
+        .filter(Boolean);
+      for (const value of values) {
+        expect(value, `ThemeRecipe.${item} as a string literal`).toMatch(
+          /^"[^"]+"$/,
+        );
+      }
+      return [item!, values.map((value) => value.slice(1, -1))];
+    }),
+  );
+}
 
 describe("the Theme registry", () => {
   it("registers exactly the ids Site Config accepts, the default first", () => {
@@ -28,6 +59,22 @@ describe("the Theme registry", () => {
       expect(theme.thumbnail).toBeDefined();
     },
   );
+
+  it("uses every value of every Theme Recipe item in some Theme", () => {
+    const values = recipeValues();
+    expect(Object.keys(values).sort()).toEqual(
+      Object.keys(DEFAULT_THEME_RECIPE).sort(),
+    );
+    for (const [item, choices] of Object.entries(values)) {
+      const used = new Set<string>(
+        THEMES.map((theme) => theme.recipe[item as keyof ThemeRecipe]),
+      );
+      expect(
+        choices.filter((value) => !used.has(value)),
+        `values of ${item} no registered Theme uses`,
+      ).toEqual([]);
+    }
+  });
 
   it.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
     "gives %s a name, its own shell, a stylesheet and option defaults",
@@ -83,6 +130,21 @@ describe("documentThemeId", () => {
   });
 });
 
+/** What every Theme's stylesheet sets for the shared components to read. */
+const SHELL_POSITIONS = [
+  "--shell-floating-actions-left",
+  "--shell-toc-side",
+  "--shell-toc-compact",
+  "--shell-toc-top",
+  "--shell-toc-left",
+  "--shell-toc-width",
+];
+/** The values the table of contents takes as its `display`. */
+const SHELL_DISPLAYS = {
+  "--shell-toc-side": ["block", "none"],
+  "--shell-toc-compact": ["flex", "none"],
+};
+
 /** A stylesheet's source with every relative @import inlined. */
 function source(path: string): string {
   return readFileSync(path, "utf8").replace(
@@ -115,6 +177,19 @@ describe.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
     it("never sets a base variable or an !important one", () => {
       expect(css).not.toMatch(/--fuwari-[a-z0-9-]+\s*:/);
       expect(css).not.toMatch(/--[a-z0-9-]+\s*:[^;{}]*!important/);
+    });
+
+    it("places what renders outside the shell (theme-shell.ts)", () => {
+      for (const name of SHELL_POSITIONS) {
+        expect(css, name).toMatch(new RegExp(`${name}\\s*:`));
+      }
+      for (const [name, allowed] of Object.entries(SHELL_DISPLAYS)) {
+        for (const [, value] of css.matchAll(
+          new RegExp(`${name}\\s*:([^;}]*)`, "g"),
+        )) {
+          expect(allowed, `${name}: ${value}`).toContain(value!.trim());
+        }
+      }
     });
   },
 );
