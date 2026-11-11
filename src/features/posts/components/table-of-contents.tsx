@@ -65,7 +65,7 @@ export default function TableOfContents({
   }, [headers]);
 
   const firstScreenHeight = useFirstScreenHeight();
-  const slotRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const tocEl = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
@@ -80,10 +80,10 @@ export default function TableOfContents({
     opacity: 0,
   });
 
-  const updateSlotLeft = useCallback(() => {
-    const slot = slotRef.current;
-    if (!slot) return;
-    setLeft(slot.getBoundingClientRect().left);
+  const updateLeft = useCallback(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    setLeft(anchor.getBoundingClientRect().left);
   }, []);
 
   const computeActive = useCallback(() => {
@@ -162,11 +162,23 @@ export default function TableOfContents({
     if (next !== given) nav.style.setProperty("--toc-yield", `${next}px`);
   }, []);
 
+  // The side list stands where its column puts the anchor, which moves when
+  // the window is resized and when the column changes width without that: a
+  // rail that comes in beside it, a reading column the shell switches to.
   useLayoutEffect(() => {
-    updateSlotLeft();
-    window.addEventListener("resize", updateSlotLeft);
-    return () => window.removeEventListener("resize", updateSlotLeft);
-  }, [updateSlotLeft]);
+    updateLeft();
+    window.addEventListener("resize", updateLeft);
+    const column = anchorRef.current?.parentElement;
+    const observer =
+      column && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateLeft)
+        : null;
+    if (column) observer?.observe(column);
+    return () => {
+      window.removeEventListener("resize", updateLeft);
+      observer?.disconnect();
+    };
+  }, [updateLeft]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -317,9 +329,10 @@ export default function TableOfContents({
 
   return (
     <>
-      {/* Where the side list starts (--shell-toc-left). */}
+      {/* Where the side list starts (--shell-toc-left), from the left of the
+          article column it is in: the element around it. */}
       <div
-        ref={slotRef}
+        ref={anchorRef}
         className="absolute top-0 left-(--shell-toc-left) w-0 h-0"
         style={{ display: "var(--shell-toc-side, none)" }}
         aria-hidden
