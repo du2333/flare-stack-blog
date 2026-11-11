@@ -1,9 +1,11 @@
+import type { ComponentType } from "react";
 import { z } from "zod";
 import { FIXTURE_THEMES } from "virtual:fixture-themes";
 import { m } from "@/paraglide/messages";
 import { classicShell } from "./shells/classic/classic-shell";
 import classicStylesheet from "./shells/classic/classic-shell.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
+import { ClassicThumbnail } from "./thumbnails/classic-thumbnail";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
 
@@ -31,6 +33,19 @@ export interface Theme {
    * default.
    */
   options: z.ZodType<ThemeOptionValues>;
+  /** How the Admin edits this Theme's options; only choice lists for now. */
+  optionFields?: ReadonlyArray<{
+    key: string;
+    label: () => string;
+    hint?: () => string;
+    choices: ReadonlyArray<{ value: string; label: () => string }>;
+  }>;
+  /**
+   * A schematic of its shell for choosing it in the Admin, drawn with the
+   * base design variables so it follows the hue and the Admin's Colour
+   * Scheme. Without one the picker shows a neutral placeholder.
+   */
+  thumbnail?: ComponentType;
 }
 
 const classicTheme: Theme = {
@@ -40,6 +55,7 @@ const classicTheme: Theme = {
   stylesheet: classicStylesheet,
   recipe: DEFAULT_THEME_RECIPE,
   options: z.object({}),
+  thumbnail: ClassicThumbnail,
 };
 
 const BUILT_IN_THEMES = {

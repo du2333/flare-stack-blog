@@ -68,7 +68,7 @@ function FixtureShell({
       <div
         className="fixture-shell"
         data-theme-shell={FIXTURE_THEME_ID}
-        data-marker={options.marker === true ? "on" : "off"}
+        data-marker={options.marker === "off" ? "off" : "on"}
       >
         <img
           className="fixture-banner"
