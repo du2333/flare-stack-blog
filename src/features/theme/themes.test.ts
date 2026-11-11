@@ -22,6 +22,13 @@ describe("the Theme registry", () => {
     expect(THEMES).not.toContain(fixtureTheme);
   });
 
+  it.each(THEMES.map((theme) => [theme.id, theme] as const))(
+    "draws a thumbnail for %s, so the picker never shows the placeholder",
+    (_id, theme) => {
+      expect(theme.thumbnail).toBeDefined();
+    },
+  );
+
   it.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
     "gives %s a name, its own shell, a stylesheet and option defaults",
     (id, theme) => {

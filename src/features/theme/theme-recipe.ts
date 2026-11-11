@@ -21,7 +21,8 @@ export interface ThemeRecipe {
   noCoverStrip: "keep" | "remove";
   /**
    * The short bar before a title: a Post's title in the list and on its page,
-   * sidebar cards, the friend links page and a focused page's title.
+   * sidebar cards, the profile card's line under the name, the friend links
+   * page and a focused page's title.
    */
   headingAccent: "on" | "off";
   /**

@@ -8,6 +8,7 @@ import {
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ExpandableSidebarCard } from "@/components/layout/expandable-sidebar-card";
+import { Profile } from "@/components/layout/profile";
 import { FriendLinksPage } from "@/features/friend-links/components/friend-links-page";
 import { LatestMoments } from "@/features/moments/components/latest-moments";
 import { MomentsPage } from "@/features/moments/components/moments-page";
@@ -31,6 +32,14 @@ const state = vi.hoisted(() => ({ cached: undefined as unknown }));
 vi.mock("@tanstack/react-router", async () => ({
   ...(await vi.importActual("@tanstack/react-router")),
   useParams: () => ({ slug: "a-post" }),
+  useRouteContext: () => ({
+    siteConfig: {
+      avatar: "/avatar.png",
+      author: "Author",
+      description: "",
+      social: [],
+    },
+  }),
   Link: ({
     children,
     to,
@@ -424,6 +433,12 @@ describe("Theme Recipe", () => {
         byText(moments, m.moments_latest_title()).parentElement!
           .firstElementChild!.tagName,
       ).toBe(bar ? "SPAN" : "A");
+
+      // The short line under the author's name.
+      const profile = render(createElement(Profile), forms);
+      expect(
+        profile.querySelector('div[style*="--theme-accent"]') !== null,
+      ).toBe(bar);
 
       const friends = render(
         createElement(FriendLinksPage, { links: [] }),

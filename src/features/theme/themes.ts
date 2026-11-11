@@ -9,6 +9,7 @@ import { namecardShell } from "./shells/namecard/namecard-shell";
 import namecardStylesheet from "./shells/namecard/namecard.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
 import { ClassicThumbnail } from "./thumbnails/classic-thumbnail";
+import { NamecardThumbnail } from "./thumbnails/namecard-thumbnail";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
 
@@ -89,6 +90,7 @@ const namecardTheme: Theme = {
       choices: FRAMES.map((value) => ({ value, label: FRAME_LABELS[value] })),
     },
   ],
+  thumbnail: NamecardThumbnail,
 };
 
 const BUILT_IN_THEMES = {

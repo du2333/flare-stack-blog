@@ -59,7 +59,11 @@ export function ThemePicker({
               // Opens the home page in a new tab, so the draft stays here.
               action: (
                 <a
-                  className={buttonClass({ variant: "text", size: "sm" })}
+                  className={buttonClass({
+                    variant: "text",
+                    size: "sm",
+                    className: "site-theme-preview",
+                  })}
                   href={themePreviewHref(
                     theme.id,
                     resolveThemeOptions(theme, options?.[theme.id]),

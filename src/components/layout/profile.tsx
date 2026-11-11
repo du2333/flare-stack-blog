@@ -3,11 +3,14 @@ import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { SocialLinks } from "./social-links";
 
 export function Profile() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
+  const { headingAccent } = useThemeRecipe();
 
   return (
     <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem)">
@@ -24,13 +27,20 @@ export function Profile() {
         />
       </Link>
       <div className="px-2 text-center">
-        <div className="font-bold text-xl fuwari-text-90 mb-1">
+        <div
+          className={cn(
+            "font-bold text-xl fuwari-text-90",
+            headingAccent === "on" ? "mb-1" : "mb-3",
+          )}
+        >
           {siteConfig.author}
         </div>
-        <div
-          className="h-1 w-5 rounded-full mx-auto mb-2"
-          style={{ backgroundColor: "var(--theme-accent)" }}
-        />
+        {headingAccent === "on" ? (
+          <div
+            className="h-1 w-5 rounded-full mx-auto mb-2"
+            style={{ backgroundColor: "var(--theme-accent)" }}
+          />
+        ) : null}
         <div className="fuwari-text-50 text-sm mb-2.5">
           {siteConfig.description}
         </div>
