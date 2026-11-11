@@ -15,6 +15,8 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createElement, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Categories } from "@/features/categories/components/category-cloud";
@@ -360,5 +362,64 @@ describe("「更多」 by what is cut off", () => {
     fireEvent.click(more()!);
 
     expect(document.activeElement).toBe(document.body);
+  });
+});
+
+// Two rows of pills under the title show five to seven entries where one row
+// beside it has room for two or three, so the row form waits for 34rem: a
+// card 448px to 543px wide, alone in its row in a window 480px to 575px
+// wide, keeps its two rows.
+describe("the row form", () => {
+  function renderCard() {
+    return render(
+      createElement(ExpandableSidebarCard, {
+        title: "Card",
+        long: false,
+        expanded: false,
+        onExpand: () => {},
+        children: createElement("a", { href: "/one" }, "One"),
+      }),
+    );
+  }
+
+  it("puts the entries beside the title, and 「更多」 after them, from 34rem", () => {
+    const { container } = renderCard();
+    const entries = screen.getByRole("link", { name: "One" }).parentElement!;
+    const offer = more()!.parentElement!;
+    const classes = [...container.querySelectorAll("*")].flatMap((element) => [
+      ...element.classList,
+    ]);
+
+    expect([...entries.classList]).toEqual(
+      expect.arrayContaining([
+        // Under the title, across the card, from 20rem.
+        "@xs/card:row-start-2",
+        "@xs/card:col-span-2",
+        "@[34rem]/card:row-start-1",
+        "@[34rem]/card:col-start-2",
+      ]),
+    );
+    expect([...offer.classList]).toContain("@[34rem]/card:col-start-3");
+    // Nothing takes the row form at another width.
+    expect(
+      classes.filter(
+        (name) =>
+          /^@.+\/card:/.test(name) && !/^@(xs|\[34rem\])\/card:/.test(name),
+      ),
+    ).toEqual([]);
+  });
+
+  it("cuts the entries to that one row from the same width in the stylesheet", () => {
+    const css = readFileSync(
+      join(import.meta.dirname, "../../styles.css"),
+      "utf8",
+    );
+    const row = css.slice(css.indexOf("@container card (width >= 34rem)"));
+
+    expect(css.match(/@container card \(width >= [\d.]+rem\)/g)).toEqual([
+      "@container card (width >= 20rem)",
+      "@container card (width >= 34rem)",
+    ]);
+    expect(row.slice(0, row.indexOf("}"))).toContain("--widget-window: 2rem");
   });
 });

@@ -429,9 +429,9 @@
   /* An expandable sidebar card in its wide form (expandable-sidebar-card.tsx,
      in a `card` container from 20rem, `@xs/card:` there). Until the reader
      asks for all of them, the entries show through a window: the title's
-     line and two rows of pills under it, and from 28rem (`@md/card:`) the
-     one row beside the title. The window is a little larger than that, for
-     the focus ring of what lies at its edge; a row further down starts
+     line and two rows of pills under it, and from 34rem (`@[34rem]/card:`)
+     the one row beside the title. The window is a little larger than that,
+     for the focus ring of what lies at its edge; a row further down starts
      beyond it.
      「更多」 shows only while the window cuts entries off, and the stylesheet
      can tell without a script, so it is right from the first paint: the grid
@@ -464,7 +464,7 @@
       visibility: hidden;
     }
   }
-  @container card (width >= 28rem) {
+  @container card (width >= 34rem) {
     .fuwari-widget-window {
       --widget-window: 2rem;
     }
@@ -567,9 +567,12 @@
   }
 
   /* Back to top and page actions: the screen corner on phones; from lg, where
-     the Theme Shell puts them (--shell-floating-actions-left). */
+     the Theme Shell puts them (--shell-floating-actions-left). A shell that
+     stands them in a box of its own says so
+     (--shell-floating-actions-position: static) and places that box. */
   .fuwari-floating-actions {
-    @apply fixed right-4 flex flex-col gap-2;
+    @apply right-4 flex flex-col gap-2;
+    position: var(--shell-floating-actions-position, fixed);
     bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
   @variant lg {

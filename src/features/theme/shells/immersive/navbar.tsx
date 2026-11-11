@@ -5,7 +5,13 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { Home, Menu, Search, UserIcon, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
@@ -20,7 +26,9 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
+import { useReducedMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
+import { Glider } from "./glide";
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
@@ -47,6 +55,13 @@ const SETTLE_MS = 160;
 const HIDE_AFTER_PX = 140;
 /** How far the page travels one way before the condensed bar hides or returns. */
 const HIDE_TRAVEL_PX = 14;
+/**
+ * How the parts of the bar glide from one shape to the other;
+ * `--immersive-morph` and `--immersive-ease` in immersive.css say the same.
+ */
+const MORPH = { duration: 560, easing: "cubic-bezier(0.32, 0.72, 0, 1)" };
+/** The parts whose `::before` is the surface they draw (navbar.css). */
+const SURFACES = ".immersive-bar, .immersive-search";
 
 /** The mark before the title: the built-in icon unless the Site Config picks another. */
 function BrandMark() {
@@ -82,6 +97,10 @@ function BrandMark() {
  * scrolled past, it condenses into a floating frosted pill, which slides
  * away while the page scrolls down and comes back on the way up.
  *
+ * A shape is a layout, which changes at once; the parts then glide from
+ * where they were (glide.ts), so the change is not one the browser counts
+ * as layout shift. The pill slides away and back the same way.
+ *
  * Until the first frames have been painted (`data-ready`), the stylesheet
  * picks the shape from the scroll position where the browser can, so a page
  * reloaded in its middle shows the pill from the start; the shape changes
@@ -98,11 +117,35 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   const [ready, setReady] = useState(false);
   const { open, mobile, present, toggle, close, panelProps } =
     useMenuPanel(pathname);
+  const reducedMotion = useReducedMotion();
   const navRef = useRef<HTMLElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  // The shape and whether it is hidden, as last asked for; the state follows
+  // through the glider, a frame later while something is still gliding.
+  const shape = useRef<boolean | null>(null);
+  const away = useRef(false);
+  const [glider] = useState(
+    () => new Glider(() => barRef.current, SURFACES, MORPH),
+  );
+  // Not before the first frames, and not for a reader who asked for less
+  // motion: then a change is made at once.
+  const glides = useRef(false);
+  glides.current = ready && !reducedMotion;
+  useLayoutEffect(() => glider.carry());
+  useEffect(() => () => glider.end(), [glider]);
+
+  const hide = useCallback(
+    (next: boolean) => {
+      if (next === away.current) return;
+      away.current = next;
+      glider.change(() => setHidden(next), glides.current);
+    },
+    [glider],
+  );
 
   useEffect(() => {
-    setHidden(false);
-  }, [pathname]);
+    hide(false);
+  }, [hide, pathname]);
 
   // Two frames after the shape for this scroll position has been rendered, so
   // it is painted before it may move. React can hold that first render back
@@ -135,9 +178,14 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
     const measure = (rising = false) => {
       const y = Math.max(0, window.scrollY);
       const line = condenseAt();
-      setCondensed((current) =>
-        current ? y > line - CONDENSE_SLACK_PX : !rising && y > line,
-      );
+      const next = shape.current
+        ? y > line - CONDENSE_SLACK_PX
+        : !rising && y > line;
+      if (next === shape.current) return;
+      // The first shape is simply the one the page is loaded in.
+      const first = shape.current === null;
+      shape.current = next;
+      glider.change(() => setCondensed(next), !first && glides.current);
     };
     const settle = () => {
       window.clearTimeout(settling);
@@ -162,7 +210,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
       window.removeEventListener("resize", onResize);
       unsubscribe();
     };
-  }, [condenseAt, router]);
+  }, [condenseAt, glider, router]);
 
   // Hiding: well past the line, the pill follows the direction of the scroll,
   // unless it is in use.
@@ -182,22 +230,22 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
         nav?.querySelector('[aria-expanded="true"]')
       ) {
         travel = 0;
-        setHidden(false);
+        hide(false);
         return;
       }
       if (Math.sign(delta) !== Math.sign(travel)) travel = 0;
       travel += delta;
       if (Math.abs(travel) >= HIDE_TRAVEL_PX) {
-        setHidden(travel > 0);
+        hide(travel > 0);
         travel = 0;
       }
     };
     window.addEventListener("scroll", follow, { passive: true });
     return () => window.removeEventListener("scroll", follow);
-  }, [condenseAt, open]);
+  }, [condenseAt, hide, open]);
 
   const togglePanel = (button: HTMLButtonElement, compact: boolean) => {
-    setHidden(false);
+    hide(false);
     toggle(button, compact);
   };
   const state = condensed ? "pill" : "bar";
@@ -217,10 +265,10 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
         data-hidden={hidden && !open}
         data-ready={ready}
         data-brand={siteConfig.brandMark}
-        onFocusCapture={() => setHidden(false)}
+        onFocusCapture={() => hide(false)}
       >
         <div className="immersive-nav-track">
-          <div className="immersive-bar">
+          <div ref={barRef} className="immersive-bar">
             <div className="immersive-side immersive-side-start">
               <Link to="/" className="immersive-brand" title={siteConfig.title}>
                 <BrandMark />
@@ -232,7 +280,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
               </Link>
             </div>
 
-            <nav className="immersive-links">
+            <nav className="immersive-links" aria-label={m.nav_main_label()}>
               {navOptions.map((option) => (
                 <PublicNavLink
                   key={option.id}

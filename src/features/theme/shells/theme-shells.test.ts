@@ -327,6 +327,30 @@ describe.each(
     expect(calls.setLocale).toHaveBeenCalledWith("en");
   });
 
+  // The band of 「沉浸」 is a second navigation on the page; a name tells
+  // the two apart, in every shell.
+  it("names its main navigation, in the bar and in the compact menu", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+    const named = () =>
+      screen.getAllByRole("navigation", { name: m.nav_main_label() });
+
+    const inBar = named();
+    expect(inBar).toHaveLength(1);
+    for (const option of NAV_OPTIONS) {
+      expect(
+        within(inBar[0]).getByRole("link", { name: option.label }),
+      ).toBeTruthy();
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: m.common_open_menu() }));
+    const [, inMenu] = named();
+    for (const option of NAV_OPTIONS) {
+      expect(
+        within(inMenu).getByRole("link", { name: option.label }),
+      ).toBeTruthy();
+    }
+  });
+
   it("opens the compact menu with every navigation entry", async () => {
     await renderShell(theme, { pageKind: "inner" });
     const before = NAV_OPTIONS.map((option) => linkCount(option.label));

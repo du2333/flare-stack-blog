@@ -73,7 +73,7 @@ function useCutOff(
  * that is `long` cut to 7.5rem with 「更多」 as a row under it.
  *
  * Wide (in a `card` container from 20rem): the entries are pills, cut to two
- * rows under the title and, from 28rem, to one row after it, whatever their
+ * rows under the title and, from 34rem, to one row after it, whatever their
  * number; 「更多」 stands at the end of the title's line and shows only while
  * something is really cut off. `.fuwari-widget-window` in styles.css cuts
  * and decides that without a script; the measurement here agrees with it,
@@ -137,8 +137,8 @@ export function ExpandableSidebarCard({
           className={cn(
             "@xs/card:grid @xs/card:grid-cols-[minmax(0,1fr)_auto] @xs/card:items-start @xs/card:gap-x-4 @xs/card:gap-y-2",
             expanded
-              ? "@md/card:grid-cols-[auto_minmax(0,1fr)]"
-              : "@md/card:grid-cols-[auto_minmax(0,1fr)_auto]",
+              ? "@[34rem]/card:grid-cols-[auto_minmax(0,1fr)]"
+              : "@[34rem]/card:grid-cols-[auto_minmax(0,1fr)_auto]",
           )}
         >
           <div className="fuwari-widget-title font-bold relative ml-(--theme-widget-pad-x,1.5rem) mt-4 mb-2 @xs/card:col-start-1 @xs/card:row-start-1 @xs/card:m-0 @xs/card:leading-8">
@@ -158,7 +158,7 @@ export function ExpandableSidebarCard({
               "overflow-hidden",
               long && !expanded && "h-30",
               "@xs/card:col-span-2 @xs/card:col-start-1 @xs/card:row-start-2 @xs/card:flex @xs/card:h-auto @xs/card:flex-wrap @xs/card:gap-2 @xs/card:overflow-visible @xs/card:px-0",
-              "@md/card:col-span-1 @md/card:col-start-2 @md/card:row-start-1",
+              "@[34rem]/card:col-span-1 @[34rem]/card:col-start-2 @[34rem]/card:row-start-1",
             )}
           >
             {children}
@@ -170,7 +170,7 @@ export function ExpandableSidebarCard({
                 // The narrow form offers it by the number of entries alone.
                 !long && "hidden @xs/card:block",
                 "@xs/card:col-start-2 @xs/card:row-span-2 @xs/card:row-start-1 @xs/card:m-0 @xs/card:p-0",
-                "@md/card:col-start-3 @md/card:row-span-1 @md/card:row-start-1",
+                "@[34rem]/card:col-start-3 @[34rem]/card:row-span-1 @[34rem]/card:row-start-1",
               )}
             >
               <button

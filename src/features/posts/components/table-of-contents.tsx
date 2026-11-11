@@ -21,6 +21,8 @@ import { cn, isSSR } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 const MAX_LEVEL = 3;
+/** How far above a footer that runs under it the side list ends. */
+const FOOTER_GAP_PX = 16;
 
 function removeTailingHash(text: string) {
   const lastIndexOfHash = text.lastIndexOf("#");
@@ -64,6 +66,7 @@ export default function TableOfContents({
 
   const firstScreenHeight = useFirstScreenHeight();
   const slotRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const tocEl = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
   const anchorTarget = useRef<string | null>(null);
@@ -137,6 +140,28 @@ export default function TableOfContents({
     );
   }, [visibleHeaders]);
 
+  // The side list is fixed to the window, so at the end of a page it would
+  // lie on a footer that runs under it, as one as wide as the window does.
+  // There it ends short of the footer instead. Written straight to the
+  // element so scrolling does not re-render.
+  const clearFooter = useCallback(() => {
+    const nav = navRef.current;
+    const list = tocEl.current;
+    if (!nav || !list || nav.getClientRects().length === 0) return;
+    const footer = document
+      .querySelector('[data-shell-region="footer"]')
+      ?.getBoundingClientRect();
+    const box = nav.getBoundingClientRect();
+    const given =
+      Number.parseFloat(nav.style.getPropertyValue("--toc-yield")) || 0;
+    const under =
+      footer && footer.left < box.right && box.left < footer.right
+        ? box.top + list.offsetHeight + given + FOOTER_GAP_PX - footer.top
+        : 0;
+    const next = Math.max(0, Math.round(under));
+    if (next !== given) nav.style.setProperty("--toc-yield", `${next}px`);
+  }, []);
+
   useLayoutEffect(() => {
     updateSlotLeft();
     window.addEventListener("resize", updateSlotLeft);
@@ -147,6 +172,7 @@ export default function TableOfContents({
     const onScroll = () => {
       setIsVisible(window.scrollY > firstScreenHeight());
       computeActive();
+      clearFooter();
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -155,7 +181,7 @@ export default function TableOfContents({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [computeActive, firstScreenHeight]);
+  }, [computeActive, clearFooter, firstScreenHeight]);
 
   useEffect(() => {
     setIsReady(false);
@@ -225,6 +251,7 @@ export default function TableOfContents({
   if (visibleHeaders.length === 0) return null;
   const toc = (
     <nav
+      ref={navRef}
       className={cn(
         // The portal must sit above the full-width public content wrapper (z-30).
         "fixed top-(--shell-toc-top) z-40 transition duration-300",
@@ -238,7 +265,7 @@ export default function TableOfContents({
     >
       <div
         ref={tocEl}
-        className="fuwari-hide-scrollbar h-[calc(100vh-20rem)] overflow-y-scroll overflow-x-hidden"
+        className="fuwari-hide-scrollbar h-[max(0px,calc(100vh-20rem-var(--toc-yield,0px)))] overflow-y-scroll overflow-x-hidden"
         style={{
           maskImage:
             "linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%)",

@@ -166,11 +166,11 @@ function FooterBand({ navOptions }: FooterProps) {
             ))}
           </nav>
         </div>
-        {/* Below lg back to top and the page's actions rest in the corner of
-            the window (.fuwari-floating-actions): the line reads from the
-            left there and stops short of them, so they never lie on the
-            feed and sitemap links at the end of a page. */}
-        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-(--theme-rule,var(--fuwari-divider)) pt-5 text-sm fuwari-text-50 [border-top-style:var(--theme-rule-style)] max-lg:pr-12 lg:justify-between">
+        {/* The copyright at one end and the feed and sitemap links at the
+            other; where one line does not hold both, the links go under it.
+            Back to top never lies on the band: the shell that picks this
+            form rests it above (--shell-floating-actions-position). */}
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-(--theme-rule,var(--fuwari-divider)) pt-5 text-sm fuwari-text-50 [border-top-style:var(--theme-rule-style)]">
           <p className="min-w-0 wrap-anywhere">
             {m.footer_copyright({
               year: currentYear.toString(),

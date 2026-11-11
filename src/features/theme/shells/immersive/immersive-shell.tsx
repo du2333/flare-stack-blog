@@ -1,5 +1,12 @@
 import { useRouter } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import { flushSync } from "react-dom";
 import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
 import type {
@@ -21,11 +28,6 @@ import { Navbar } from "./navbar";
 const STRIP_DELAY_MS = 100;
 const CARD_DELAY_MS = 150;
 const CARD_STEP_MS = 50;
-/**
- * How long before the next page shows the column takes its width: less than
- * a frame, so the two happen together or the column goes first.
- */
-const COLUMN_LEAD_MS = 8;
 
 /**
  * 「沉浸」: the banner fills the first screen with the navigation lying on it,
@@ -61,7 +63,8 @@ function ImmersiveShell({
   // The banner and the cards of a Post's page are those of any other inner
   // page; its column is the reading column.
   const isHomePage = pageKind === "home";
-  const readingColumn = useReadingColumn(pageKind === "post");
+  const mainRef = useRef<HTMLElement>(null);
+  const readingColumn = useReadingColumn(pageKind === "post", mainRef);
   const cards = placeCards(
     pageKind,
     sidebarCards,
@@ -107,12 +110,18 @@ function ImmersiveShell({
         <div className="immersive-body" data-shell-region="body">
           <Cards place="before" cards={cards.before} />
 
-          <main className="immersive-main" data-shell-region="main">
+          <main
+            ref={mainRef}
+            className="immersive-main"
+            data-shell-region="main"
+          >
             {children}
           </main>
 
           <Cards place="beside" cards={cards.beside} />
           <Cards place="after" cards={cards.after} />
+
+          <div className="immersive-floating">{floatingActions}</div>
 
           <div
             className="immersive-footer fuwari-onload-animation"
@@ -121,8 +130,6 @@ function ImmersiveShell({
           >
             {footer}
           </div>
-
-          {floatingActions}
         </div>
       </div>
     </FirstScreenProvider>
@@ -133,11 +140,17 @@ function ImmersiveShell({
  * Whether the column is the reading column of a Post. `PageFade` keeps the
  * page that is left for `PAGE_FADE_MS` while it fades out, and the column
  * waits with it, so neither page is seen at the width of the other. It
- * changes just before the next page shows, when the one that is left has
- * all but gone: a frame late, the next would be fading in at the wrong
- * width. A reader who asked for less motion gets no fade and no wait.
+ * changes in the frame the next page comes in: the transition around the
+ * page (the one element of `main`) drops the class it fades out under in
+ * the commit that swaps the pages, and the column follows before that is
+ * painted. A timer of its own could fire a frame early, while the page that
+ * is left can still be seen; it only stands in where nothing tells. A reader
+ * who asked for less motion gets no fade and no wait.
  */
-function useReadingColumn(post: boolean) {
+function useReadingColumn(
+  post: boolean,
+  mainRef: RefObject<HTMLElement | null>,
+) {
   const reducedMotion = useReducedMotion();
   const [reading, setReading] = useState(post);
   useEffect(() => {
@@ -146,12 +159,31 @@ function useReadingColumn(post: boolean) {
       setReading(post);
       return;
     }
-    const timer = window.setTimeout(
-      () => setReading(post),
-      PAGE_FADE_MS - COLUMN_LEAD_MS,
-    );
-    return () => window.clearTimeout(timer);
-  }, [post, reading, reducedMotion]);
+    const timer = window.setTimeout(() => setReading(post), PAGE_FADE_MS);
+    const transition = mainRef.current?.firstElementChild;
+    if (!transition || typeof MutationObserver === "undefined") {
+      return () => window.clearTimeout(timer);
+    }
+    // It takes that class a commit after the address has changed, which is
+    // not the moment: only a class that goes is.
+    const observer = new MutationObserver((records) => {
+      const dropped = records.some(
+        ({ oldValue }) => (oldValue ?? "").length > transition.className.length,
+      );
+      if (!dropped) return;
+      observer.disconnect();
+      flushSync(() => setReading(post));
+    });
+    observer.observe(transition, {
+      attributes: true,
+      attributeFilter: ["class"],
+      attributeOldValue: true,
+    });
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [mainRef, post, reading, reducedMotion]);
   return reducedMotion ? post : reading;
 }
 

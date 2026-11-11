@@ -112,7 +112,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
           <BrandMark />
           <span>{siteConfig.title}</span>
         </Link>
-        <nav className="public-desktop-links">
+        <nav className="public-desktop-links" aria-label={m.nav_main_label()}>
           {navOptions.map((option) => (
             <PublicNavLink
               key={option.id}

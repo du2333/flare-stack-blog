@@ -88,7 +88,7 @@ function FixtureShell({
             <BrandMark />
             {siteConfig.title}
           </Link>
-          <nav className="fixture-nav">
+          <nav className="fixture-nav" aria-label={m.nav_main_label()}>
             {navOptions.map((option) => (
               <PublicNavLink key={option.id} option={option} />
             ))}
