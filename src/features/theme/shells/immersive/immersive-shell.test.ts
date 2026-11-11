@@ -48,13 +48,14 @@ const BANNER_PX = 700;
 /** Where the bar condenses on that banner (`CONDENSE_BEFORE_PX` in navbar.tsx). */
 const CONDENSE_AT = BANNER_PX - 168;
 
-const CARDS: Array<SidebarCard> = ["profile", "categories", "tags"].map(
-  (id) => ({
+/** The cards the host gives 「沉浸」 on a page, each showing only its id. */
+function cardsFor(pageKind: PageKind): Array<SidebarCard> {
+  return sidebarCardsFor(pageKind, theme.shell).map(({ id, kind }) => ({
     id,
-    kind: id === "profile" ? "identity" : "index",
+    kind,
     content: createElement("div", null, `Card ${id}`),
-  }),
-);
+  }));
+}
 
 const reducedMotion = { matches: false };
 let banner: MockInstance<() => number>;
@@ -62,15 +63,17 @@ let banner: MockInstance<() => number>;
 async function renderShell({
   pageKind,
   site,
+  cards = cardsFor(pageKind),
 }: {
   pageKind: PageKind;
   site?: SystemConfig["site"];
+  cards?: Array<SidebarCard>;
 }) {
   const props: ThemeShellProps = {
     pageKind,
     options: resolveThemeOptions(theme, undefined),
     navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
-    sidebarCards: pageKind === "focused" ? [] : CARDS,
+    sidebarCards: cards,
     isSessionLoading: false,
     logout: async () => {},
     children: createElement("p", null, "Page content"),
@@ -260,19 +263,89 @@ describe("the first screen", () => {
   });
 });
 
+/**
+ * The groups of cards in the order of the document: the place each has from
+ * 1024px, which side of the content it is on, and the cards in it.
+ */
+function cardGroups() {
+  return [
+    ...document.querySelectorAll<HTMLElement>('[data-shell-region="sidebar"]'),
+  ].map((group) => {
+    expect(follows(group, region("footer"))).toBe(true);
+    return {
+      place: group.dataset.place,
+      side: follows(group, region("main")) ? "before" : "after",
+      cards: [...group.children].map((slot) => slot.textContent),
+    };
+  });
+}
+
 describe("the sidebar cards", () => {
-  it.each(["home", "inner", "post"] as const)(
-    "follow the content in the document on a %s page",
+  it("lead the home page with the ways into the Posts, the rest after the content", async () => {
+    await renderShell({ pageKind: "home" });
+
+    expect(cardGroups()).toEqual([
+      {
+        place: "before",
+        side: "before",
+        cards: ["Card categories", "Card tags"],
+      },
+      { place: "after", side: "after", cards: ["Card latest-moments"] },
+    ]);
+  });
+
+  it.each(["inner", "post"] as const)(
+    "all follow the content on a %s page, the profile card first",
     async (pageKind) => {
       await renderShell({ pageKind });
 
-      expect(follows(region("main"), region("sidebar"))).toBe(true);
-      expect(follows(region("sidebar"), region("footer"))).toBe(true);
-      expect(
-        [...region("sidebar").children].map((card) => card.textContent),
-      ).toEqual(CARDS.map((card) => `Card ${card.id}`));
+      expect(cardGroups()).toEqual([
+        {
+          place: "after",
+          side: "after",
+          cards: ["Card profile", "Card categories", "Card tags"],
+        },
+      ]);
     },
   );
+
+  it("are in no group on a focused page", async () => {
+    await renderShell({ pageKind: "focused" });
+
+    expect(cardGroups()).toEqual([]);
+  });
+
+  it("have no group for a place the page has no card for", async () => {
+    await renderShell({
+      pageKind: "home",
+      cards: cardsFor("home").filter((card) => card.kind === "index"),
+    });
+    expect(cardGroups().map((group) => group.place)).toEqual(["before"]);
+    cleanup();
+    vi.useRealTimers();
+
+    await renderShell({
+      pageKind: "home",
+      cards: cardsFor("home").filter((card) => card.kind !== "index"),
+    });
+    expect(cardGroups().map((group) => group.place)).toEqual(["after"]);
+  });
+
+  it("each stand in a slot of their own that says what kind of card it holds", async () => {
+    await renderShell({ pageKind: "home" });
+
+    const slots = [
+      ...document.querySelectorAll<HTMLElement>(".immersive-card"),
+    ];
+    expect(slots.map((slot) => [slot.dataset.kind, slot.textContent])).toEqual([
+      ["index", "Card categories"],
+      ["index", "Card tags"],
+      ["feed", "Card latest-moments"],
+    ]);
+    for (const slot of slots) {
+      expect(slot.parentElement!.dataset.shellRegion).toBe("sidebar");
+    }
+  });
 });
 
 describe("the navbar", () => {
@@ -435,9 +508,41 @@ describe("the stylesheet", () => {
       "",
     );
   const navbarCss = read("navbar.css");
-  const all = [read("immersive.css"), navbarCss, read("first-screen.css")].join(
-    "\n",
-  );
+  const shellCss = read("immersive.css");
+  const all = [shellCss, navbarCss, read("first-screen.css")].join("\n");
+
+  // The cards take their wide or narrow form from this container; nothing
+  // else tells them where they stand.
+  it("makes the slot of a card the container its forms follow", () => {
+    expect(declarations(blockAfter(shellCss, ".immersive-card {"))).toContain(
+      "container: card / inline-size",
+    );
+  });
+
+  it("puts the cards placed before the content after it below 1024px, and last", () => {
+    const strip = '.immersive-cards[data-place="before"] {';
+    const wide = blockAfter(shellCss, "@media (width >= 64rem)");
+
+    expect(declarations(blockAfter(shellCss, strip))).toEqual(["order: 1"]);
+    expect(declarations(blockAfter(shellCss, ".immersive-footer {"))).toContain(
+      "order: 2",
+    );
+    expect(shellCss.indexOf(strip)).toBeLessThan(shellCss.indexOf(wide));
+    expect(declarations(blockAfter(wide, strip))).toContain("order: 0");
+  });
+
+  it("leaves no gap for a card that shows nothing, nor for a group of them", () => {
+    const rule = shellCss.slice(
+      shellCss.indexOf(".immersive-card:empty"),
+      shellCss.indexOf("{", shellCss.indexOf(".immersive-card:empty")),
+    );
+    expect(rule.replace(/\s+/g, " ").trim()).toBe(
+      ".immersive-card:empty, .immersive-cards:not(:has(> .immersive-card:not(:empty)))",
+    );
+    expect(declarations(blockAfter(shellCss, ".immersive-card:empty"))).toEqual(
+      ["display: none"],
+    );
+  });
 
   // The stylesheet reaches the pill on its own before navbar.tsx asks for
   // it, from keyframes that must say what the rule says.

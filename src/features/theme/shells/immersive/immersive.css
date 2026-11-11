@@ -33,8 +33,11 @@
   --immersive-panel-shadow:
     0 20px 56px -16px oklch(var(--immersive-ink) / 0.4),
     0 0 0 1px oklch(var(--immersive-ink) / 0.06);
-  /* How far the content rises over the lower edge of the banner. */
+  /* How far the content rises over the lower edge of the banner, and how
+     tall the strip of cards that leads the home page is (a card in one row:
+     2rem between twice 0.875rem), to stand astride that edge. */
   --immersive-overlap: 3.5rem;
+  --immersive-strip-h: 3.75rem;
   --immersive-gutter: 1rem;
   --immersive-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --immersive-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -60,8 +63,11 @@
 }
 
 :root[data-theme="immersive"] {
-  /* Soft raised surfaces with generous corners; pills for what is pressed. */
-  --theme-card-radius: 1.25rem;
+  /* Soft raised surfaces with generous corners; pills for what is pressed.
+     The radius has a name of its own too, as the shadow has, for the strip
+     that is one surface under several cards. */
+  --immersive-card-radius: 1.25rem;
+  --theme-card-radius: var(--immersive-card-radius);
   --theme-card-shadow: var(--immersive-card-shadow);
   --theme-cover-radius: 0.875rem;
   --theme-chip-radius: 999px;
@@ -124,8 +130,9 @@
 }
 
 /* One centred column of --fuwari-page-width that starts on the lower edge of
-   the banner and runs to the foot of the window: the content, the sidebar
-   cards, the footer. It lies over the banner and the navbar's scrim. */
+   the banner and runs to the foot of the window: the content with the
+   sidebar cards before and after it, then the footer. It lies over the
+   banner and the navbar's scrim. */
 .immersive-body {
   position: relative;
   z-index: 30;
@@ -145,35 +152,84 @@
   min-width: 0;
 }
 
-/* The sidebar cards, after the content at every width: rows of cards as tall
-   as their row, as many abreast as find room at the width they were made
-   for. */
+/* The sidebar cards stand in groups in the column, each group a row that
+   wraps, a card to a row and as tall as its row. The slot of every card is a
+   container named `card`: that is what lets a card take its wide form here
+   and its narrow one where a slot is narrow, without being told where it
+   stands (docs/theme-shell-checklist.md). */
 .immersive-cards {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   min-width: 0;
-  margin-top: 1.5rem;
 }
 .immersive-card {
+  container: card / inline-size;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  flex: 1 1 17.5rem;
+  flex: 1 1 100%;
   min-width: 0;
 }
-/* A card that shows nothing leaves no gap. */
-.immersive-card:empty {
+/* A card that shows nothing leaves no gap, and neither does a group of
+   them. */
+.immersive-card:empty,
+.immersive-cards:not(:has(> .immersive-card:not(:empty))) {
   display: none;
 }
-/* Abreast of the others the profile keeps the width it has in a side column,
-   so its avatar does not grow with the row. */
-@media (min-width: 1024px) {
-  .immersive-card[data-kind="identity"] {
-    flex-grow: 0;
-  }
+/* The groups follow the content, 1.5rem further from it than from each
+   other. Below lg that includes the group whose place is before the content:
+   it comes last, so the cards keep the order they were given in. */
+.immersive-cards[data-place="after"] {
+  margin-top: 1.5rem;
+}
+.immersive-cards[data-place="before"] {
+  order: 1;
 }
 .immersive-footer {
+  order: 2;
   margin-top: auto;
+}
+@media (width < 64rem) {
+  .immersive-body:not(
+      :has(> .immersive-cards[data-place="after"] > .immersive-card:not(:empty))
+    )
+    > .immersive-cards[data-place="before"] {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (width >= 64rem) {
+  /* Two ways into the Posts share a row, each in one row of its own (the
+     form such a card takes from 28rem). */
+  .immersive-card[data-kind="index"] {
+    flex-basis: 28rem;
+  }
+  /* Before the content the cards are one slim strip astride the lower edge
+     of the banner: one surface, on which they lie flat side by side, the
+     first two parts wide to the others' three and never narrower than its
+     one-row form. */
+  .immersive-cards[data-place="before"] {
+    order: 0;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow: hidden;
+    margin-top: calc(var(--immersive-overlap) - var(--immersive-strip-h) / 2);
+    border-radius: var(--immersive-card-radius);
+    background-color: var(--theme-surface);
+    box-shadow: var(--immersive-card-shadow);
+  }
+  .immersive-cards[data-place="before"] > .immersive-card {
+    flex: 2 1 0;
+    min-width: 28rem;
+  }
+  .immersive-cards[data-place="before"] > .immersive-card > * {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .immersive-cards[data-place="before"] > .immersive-card ~ .immersive-card {
+    flex: 3 1 0;
+    box-shadow: -1px 0 0 var(--theme-rule, var(--fuwari-divider));
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -182,6 +238,9 @@
   }
   .immersive-body {
     transition: margin-top var(--immersive-resize) var(--immersive-ease);
+  }
+  .immersive-cards[data-place="before"] {
+    transition: background-color 300ms;
   }
   /* Going back or forward: at once, so the restored scroll position holds. */
   .immersive-shell[data-instant="true"] .immersive-body {
