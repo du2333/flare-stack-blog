@@ -312,6 +312,9 @@
   "colour_scheme_system": "跟随系统",
   "colour_scheme_toggle_title": "明暗模式：{scheme}",
   "theme_classic_name": "经典",
+  "theme_preview_bar": "本页为主题「{name}」的预览，访客看到的仍是已保存的主题。",
+  "theme_preview_bar_label": "主题预览",
+  "theme_preview_exit": "退出预览",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],
@@ -901,6 +904,10 @@
   "settings_banner_focus_hint": "在封面预览上点选需要保留的位置，窄屏与矮屏会围绕该点裁切。标记获得焦点后，可用方向键微调，按住 Shift 每次移动 10。",
   "settings_banner_focus_value": "横向 {x}%，纵向 {y}%",
   "settings_banner_focus_reset": "恢复居中",
+  "settings_theme": "主题",
+  "settings_theme_hint": "前台的外观，保存后对访客生效。「预览」在新标签页中打开首页，按该主题及表单中的主题选项显示（含未保存的修改）；其他未保存的设置不参与预览。",
+  "settings_theme_preview": "预览",
+  "settings_theme_preview_label": "预览「{name}」",
   "settings_email_account": "发信账号",
   "settings_webhook_sample": "示例事件",
   "settings_webhook_empty": "留空则不发送",

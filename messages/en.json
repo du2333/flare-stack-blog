@@ -319,6 +319,9 @@
   "colour_scheme_system": "System",
   "colour_scheme_toggle_title": "Colour scheme: {scheme}",
   "theme_classic_name": "Classic",
+  "theme_preview_bar": "This page previews the theme \"{name}\". Visitors still see the saved theme.",
+  "theme_preview_bar_label": "Theme preview",
+  "theme_preview_exit": "Exit preview",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeEn = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=true"],
@@ -908,6 +911,10 @@
   "settings_banner_focus_hint": "Click the banner preview to mark the part to keep in view; narrow and short screens crop around it. With the marker focused, the arrow keys nudge it, and Shift moves it by 10.",
   "settings_banner_focus_value": "Horizontal {x}%, vertical {y}%",
   "settings_banner_focus_reset": "Reset to centre",
+  "settings_theme": "Theme",
+  "settings_theme_hint": "How the public blog looks; visitors see it once saved. \"Preview\" opens the home page in a new tab with that theme and the theme options in this form, unsaved changes included. Other unsaved settings are not previewed.",
+  "settings_theme_preview": "Preview",
+  "settings_theme_preview_label": "Preview \"{name}\"",
   "settings_email_account": "Sender account",
   "settings_webhook_sample": "Sample event",
   "settings_webhook_empty": "Leave empty to disable",
