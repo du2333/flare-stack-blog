@@ -30,20 +30,14 @@ const preview = { id: fixtureTheme.id, options: { marker: "off" } };
 // nothing on a site without categories or tags, and what follows it jumps.
 describe("what every public page has before it is rendered", () => {
   it("has the Moments answer, the categories and the tags, so a sidebar card never stands in for itself", async () => {
-    const prefetchQuery = vi.fn(async () => {});
-    type LoaderContext = Parameters<
-      Extract<NonNullable<typeof PublicRoute.options.loader>, Function>
-    >[0];
+    const prefetchQuery = vi.fn(async (_query: { queryKey: unknown }) => {});
+    const loader = PublicRoute.options.loader as unknown as (context: {
+      context: { queryClient: { prefetchQuery: typeof prefetchQuery } };
+    }) => Promise<void>;
 
-    await (PublicRoute.options.loader as (context: LoaderContext) => unknown)({
-      context: { queryClient: { prefetchQuery } },
-    } as unknown as LoaderContext);
+    await loader({ context: { queryClient: { prefetchQuery } } });
 
-    expect(
-      prefetchQuery.mock.calls.map(
-        ([options]) => (options as { queryKey: unknown }).queryKey,
-      ),
-    ).toEqual([
+    expect(prefetchQuery.mock.calls.map(([query]) => query.queryKey)).toEqual([
       momentsExistQuery.queryKey,
       categoriesQueryOptions.queryKey,
       tagsQueryOptions.queryKey,

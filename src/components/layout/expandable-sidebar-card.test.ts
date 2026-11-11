@@ -372,11 +372,13 @@ describe("「更多」 by what is cut off", () => {
 describe("the row form", () => {
   function renderCard() {
     return render(
-      createElement(
-        ExpandableSidebarCard,
-        { title: "Card", long: false, expanded: false, onExpand: () => {} },
-        createElement("a", { href: "/one" }, "One"),
-      ),
+      createElement(ExpandableSidebarCard, {
+        title: "Card",
+        long: false,
+        expanded: false,
+        onExpand: () => {},
+        children: createElement("a", { href: "/one" }, "One"),
+      }),
     );
   }
 

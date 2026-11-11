@@ -27,16 +27,15 @@ async function renderPage(footer: {
 }) {
   const root = createRootRoute({
     component: () =>
-      createElement(
-        FirstScreenProvider,
-        { height: () => 0 },
-        createElement(
+      createElement(FirstScreenProvider, {
+        height: () => 0,
+        children: createElement(
           FloatingActionsProvider,
           null,
           createElement(TableOfContents, { headers: HEADERS }),
           createElement("div", { "data-shell-region": "footer" }),
         ),
-      ),
+      }),
   });
   const router = createRouter({
     routeTree: root,
