@@ -9,7 +9,10 @@ import type { SiteConfig } from "@/features/config/site-config.schema";
  * own, so a shell can lay it out apart from the other inner pages (the width
  * of the reading column, the cards beside the article or after it); the host
  * gives it the cards of an inner page. A shell that does not tell the two
- * apart treats `post` as `inner`.
+ * apart treats `post` as `inner`. The kind changes with the address, while
+ * the page that is left is still fading out; what must change with the page
+ * on screen, such as the reading column, takes `useReadingColumn`
+ * (`hooks/use-reading-column.ts`).
  */
 export type PageKind = "home" | "inner" | "post" | "focused";
 
@@ -70,7 +73,8 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *     sticks to the foot of the window and ends where the footer begins, so
  *     they rest above the footer at the end of a page).
  *   - `--shell-toc-side`: `block` where the table of contents of a Post
- *     stands beside the article, `none` where it does not (the default).
+ *     stands beside the article or in the shell's slot, `none` where it
+ *     does not (the default).
  *   - `--shell-toc-compact`: `flex` where the button in the floating column
  *     opens the table of contents instead (the default), `none` where it
  *     does not; an open list closes with it.
@@ -82,13 +86,32 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *   - `--shell-toc-width`: the width of the side table of contents, which
  *     adds no padding of its own; resolved on a fixed element, so a
  *     percentage is of the window.
- *   Where the footer region runs under the side table of contents, as a
- *   footer as wide as the window does, the list ends short of it by itself.
+ *   The last three place the list only where the shell gives it no slot.
+ *   The list follows the article column by itself, when the window is
+ *   resized and when the column changes width without that (a rail that
+ *   comes in, a reading column the shell switches to). Where the footer
+ *   region runs under it, as a footer as wide as the window does, it ends
+ *   short of the footer by itself.
  * - marks its root `data-theme-shell="<id>"` and its regions
  *   `data-shell-region="body" | "sidebar" | "main" | "footer"`, with every
  *   group of cards a `sidebar` and, like the footer, inside the body, so
  *   shared styles such as the render-error fallback never use a shell's
  *   class names.
+ *
+ * A shell may give the side table of contents a place in its own tree
+ * instead of the fixed one, such as a box in a rail, by rendering one
+ * `TocSlot` (`components/toc-slot.tsx`) there, with nothing in it. The list
+ * then fills the slot's box and scrolls within it (give the slot a definite
+ * height), shows from the top of the page, and reads only `--shell-toc-side`
+ * and `--shell-toc-compact`: at the widths where the stylesheet hides the
+ * slot it sets them to `none` and `flex`, and the button opens the list. A
+ * Post without headings leaves the slot empty. The page carries
+ * `[data-table-of-contents]` from the first paint exactly while it has a
+ * table of contents, so the stylesheet can show something else in the
+ * slot's place with `:has()`, without the Post page knowing of it. The slot
+ * stays while a Post's page fades out: render it on every page, or switch
+ * it with `useReadingColumn` (`hooks/use-reading-column.ts`), never with
+ * `pageKind`, which changes before the page that is left has gone.
  */
 export interface ThemeShellProps {
   pageKind: PageKind;

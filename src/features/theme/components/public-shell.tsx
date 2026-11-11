@@ -10,6 +10,7 @@ import type { Theme } from "../themes";
 import { resolvePageKind } from "../utils/page-kind";
 import { sidebarCardsFor } from "./sidebar-cards";
 import { ThemeRecipeProvider } from "./theme-recipe";
+import { TocSlotProvider } from "./toc-slot";
 
 interface PublicShellProps {
   /** The selected Theme, and its options resolved against its defaults. */
@@ -25,7 +26,9 @@ interface PublicShellProps {
 /**
  * Decides what the public pages show around their content (the page kind and
  * the sidebar cards) and hands it to the selected Theme's shell to arrange,
- * with the Theme's recipe for the shared content components inside it.
+ * with the Theme's recipe for the shared content components inside it, and
+ * the places a shell may give what renders outside its tree (the floating
+ * column, a slot for the table of contents).
  */
 export function PublicShell({
   theme,
@@ -54,19 +57,23 @@ export function PublicShell({
   return (
     <ThemeRecipeProvider recipe={theme.recipe}>
       <FloatingActionsProvider>
-        <Shell
-          pageKind={pageKind}
-          options={options}
-          navOptions={navOptions}
-          sidebarCards={sidebarCardsFor(pageKind, shell)}
-          user={user}
-          isSessionLoading={isSessionLoading}
-          logout={logout}
-          footer={<Footer navOptions={navOptions} />}
-          floatingActions={<BackToTop />}
-        >
-          <PageFade includeSearch={pathname !== "/search"}>{children}</PageFade>
-        </Shell>
+        <TocSlotProvider>
+          <Shell
+            pageKind={pageKind}
+            options={options}
+            navOptions={navOptions}
+            sidebarCards={sidebarCardsFor(pageKind, shell)}
+            user={user}
+            isSessionLoading={isSessionLoading}
+            logout={logout}
+            footer={<Footer navOptions={navOptions} />}
+            floatingActions={<BackToTop />}
+          >
+            <PageFade includeSearch={pathname !== "/search"}>
+              {children}
+            </PageFade>
+          </Shell>
+        </TocSlotProvider>
       </FloatingActionsProvider>
     </ThemeRecipeProvider>
   );

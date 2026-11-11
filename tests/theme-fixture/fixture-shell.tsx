@@ -16,6 +16,7 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
+import { TocSlot } from "@/features/theme/components/toc-slot";
 import type { ThemeShell, ThemeShellProps } from "@/features/theme/theme-shell";
 import { m } from "@/paraglide/messages";
 import { FIXTURE_THEME_ID } from "./theme-id";
@@ -42,7 +43,9 @@ function BrandMark() {
 
 /**
  * The fixture Theme's shell: the least a shell must do to pass the shared
- * shell tests, laid out plainly. Not a design.
+ * shell tests, laid out plainly. Not a design. Unlike the built-in shells
+ * it gives the side table of contents a slot, so the shared tests see both
+ * places the list can have.
  */
 function FixtureShell({
   pageKind,
@@ -127,6 +130,10 @@ function FixtureShell({
           <p className="fixture-tagline">{siteConfig.tagline}</p>
         ) : null}
         <div className="fixture-body" data-shell-region="body">
+          {/* The side table of contents of a Post stands here rather than
+              beside the article; on every page, so the list keeps it while
+              its page fades out (fixture.css shows it). */}
+          <TocSlot className="fixture-toc" />
           <main data-shell-region="main">{children}</main>
           {pageKind === "focused" ? null : (
             <aside data-shell-region="sidebar">

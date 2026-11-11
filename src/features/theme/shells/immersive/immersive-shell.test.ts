@@ -1226,8 +1226,9 @@ describe("a Post's page", () => {
   );
 
   // The page that is left stays on screen while it fades out (PageFade),
-  // after the address has changed. The column changes with the page: a
-  // moment before the next one shows, when the last has all but gone.
+  // after the address has changed. The column changes with the page, as
+  // the shared hook has it (hooks/use-reading-column.test.ts covers the
+  // rest); here, that the shell takes it from that hook and from its `main`.
   describe("going from one page to another", () => {
     let goTo: (pageKind: PageKind) => void;
     let setLeaving: (leaving: boolean) => void;
@@ -1295,17 +1296,6 @@ describe("a Post's page", () => {
       expect(shell().dataset.column).toBe("reading");
     });
 
-    it("keeps the reading column while the Post that is left fades out, and has the wide one when the next page shows", async () => {
-      await renderShellOn("post");
-
-      goTo("home");
-      after(ALL_BUT_GONE_MS);
-      expect(shell().dataset.column).toBe("reading");
-
-      after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
-      expect(shell().dataset.column).toBeUndefined();
-    });
-
     // The transition around the page drops the class the page fades out
     // under in the commit that swaps the pages; a timer could be a frame
     // off either way.
@@ -1325,30 +1315,6 @@ describe("a Post's page", () => {
       after(PAGE_FADE_MS / 2);
       await act(async () => setLeaving(false));
       expect(shell().dataset.column).toBe("reading");
-    });
-
-    it("leaves the column alone on the way back to a page left a moment ago", async () => {
-      await renderShellOn("post");
-
-      goTo("inner");
-      after(PAGE_FADE_MS / 2);
-      goTo("post");
-      after(PAGE_FADE_MS / 2);
-      expect(shell().dataset.column).toBe("reading");
-
-      after(PAGE_FADE_MS);
-      expect(shell().dataset.column).toBe("reading");
-    });
-
-    it("has the next page's column at once for a reader who asked for less motion", async () => {
-      reducedMotion.matches = true;
-      await renderShellOn("inner");
-
-      goTo("post");
-      expect(shell().dataset.column).toBe("reading");
-
-      goTo("inner");
-      expect(shell().dataset.column).toBeUndefined();
     });
   });
 

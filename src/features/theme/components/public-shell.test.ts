@@ -16,6 +16,7 @@ import type { ThemeShellProps } from "../theme-shell";
 import type { Theme } from "../themes";
 import { PublicShell } from "./public-shell";
 import { useThemeRecipe } from "./theme-recipe";
+import { TocSlot, useTocSlot } from "./toc-slot";
 
 beforeEach(() => {
   vi.stubGlobal("matchMedia", () => ({
@@ -130,3 +131,48 @@ it.each([
     expect(region.textContent!.includes(m.footer_powered_by())).toBe(!band);
   },
 );
+
+it("lets the content find the slot its shell renders for the table of contents", async () => {
+  let found: HTMLElement | null = null;
+  function SlotReader() {
+    found = useTocSlot();
+    return createElement("p", null, "Page content");
+  }
+  const theme: Theme = {
+    ...fixtureTheme,
+    shell: {
+      ...fixtureTheme.shell,
+      Shell: (props) =>
+        createElement(
+          "div",
+          null,
+          createElement(TocSlot, { className: "rail-toc" }),
+          props.children,
+        ),
+    },
+  };
+  const root = createRootRoute({
+    beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
+    loader: () => ({ currentYear: 2026 }),
+    component: () =>
+      createElement(PublicShell, {
+        theme,
+        options: {},
+        navOptions: [],
+        isSessionLoading: false,
+        logout: async () => {},
+        children: createElement(SlotReader),
+      }),
+  });
+  const router = createRouter({
+    routeTree: root,
+    history: createMemoryHistory({ initialEntries: ["/post/hello"] }),
+  });
+  await act(async () => {
+    render(createElement(RouterProvider, { router }));
+  });
+
+  await screen.findByText("Page content");
+  expect(found).not.toBeNull();
+  expect(found).toBe(document.querySelector(".rail-toc"));
+});

@@ -1,85 +1,15 @@
 import { Link, useLoaderData, useRouteContext } from "@tanstack/react-router";
 import { Home } from "lucide-react";
-import type { NavOption } from "@/components/layout/layout-props";
 import { resolveBrandMarkImage } from "@/features/config/utils/brand-mark";
 import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
-import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { m } from "@/paraglide/messages";
-import { PublicNavLink } from "./public-nav-link";
-import { SocialLinks } from "./social-links";
-
-interface FooterProps {
-  navOptions: Array<NavOption>;
-}
-
-/** The footer of the public pages, in the form the Theme Recipe picks. */
-export function Footer({ navOptions }: FooterProps) {
-  return useThemeRecipe().footer === "band" ? (
-    <FooterBand navOptions={navOptions} />
-  ) : (
-    <FooterCaption />
-  );
-}
-
-/** A centred caption under a rule: the copyright, the feed and sitemap links, the credit. */
-function FooterCaption() {
-  const { siteConfig } = useRouteContext({ from: "__root__" });
-  const { currentYear } = useLoaderData({ from: "__root__" });
-
-  return (
-    <>
-      <div className="border-t border-(--theme-rule,var(--fuwari-divider)) my-10 [border-top-style:var(--theme-rule-style)] mx-4 md:mx-32" />
-      <div className="border-dashed border-(--theme-rule,var(--fuwari-divider)) rounded-2xl mb-12 flex flex-col items-center justify-center px-6 py-8">
-        <div className="fuwari-text-50 text-sm text-center">
-          {m.footer_copyright({
-            year: currentYear.toString(),
-            author: siteConfig.author,
-          })}{" "}
-          /{" "}
-          <a
-            href="/rss.xml"
-            target="_blank"
-            rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--theme-accent) text-(--theme-accent)"
-          >
-            RSS
-          </a>{" "}
-          /{" "}
-          <a
-            href="/sitemap.xml"
-            target="_blank"
-            rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--theme-accent) text-(--theme-accent)"
-          >
-            Sitemap
-          </a>
-          <br />
-          {m.footer_powered_by()}{" "}
-          <a
-            href="https://tanstack.com/start"
-            target="_blank"
-            rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--theme-accent) text-(--theme-accent)"
-          >
-            Tanstack Start
-          </a>{" "}
-          &{" "}
-          <a
-            href="https://github.com/du2333/flare-stack-blog"
-            target="_blank"
-            rel="noreferrer"
-            className="fuwari-expand-animation rounded-md px-1 -m-1 font-medium hover:text-(--theme-accent) text-(--theme-accent)"
-          >
-            Flare Stack Blog
-          </a>
-        </div>
-      </div>
-    </>
-  );
-}
+import { PublicNavLink } from "../public-nav-link";
+import { SocialLinks } from "../social-links";
+import type { FooterFormProps } from "./footer-form";
+import "./band.css";
 
 const BRAND_MARK_SIZE = 32;
 
@@ -115,13 +45,14 @@ const QUIET_LINK =
   "fuwari-expand-animation -mx-1.5 inline-flex items-center rounded-md px-1.5 py-0.5 font-medium transition-colors hover:text-(--theme-accent) pointer-coarse:-mx-2.5 pointer-coarse:min-h-11 pointer-coarse:px-2.5";
 
 /**
- * The closing band: a surface as wide as the shell lets its footer region
- * be, with what it shows kept to the page width. The site signs off (the
- * brand mark and the title, the tagline or else the description, the social
- * links) beside every navigation entry, over one quiet line with the
- * copyright and the feed and sitemap links. It has no credit.
+ * The footer as a closing band (Theme Recipe, footer: "band"): a surface as
+ * wide as the shell lets its footer region be, with what it shows kept to
+ * the page width. The site signs off (the brand mark and the title, the
+ * tagline or else the description, the social links) beside every
+ * navigation entry, over one quiet line with the copyright and the feed and
+ * sitemap links. It has no credit.
  */
-function FooterBand({ navOptions }: FooterProps) {
+export function FooterBand({ navOptions }: FooterFormProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const { currentYear } = useLoaderData({ from: "__root__" });
   const line = siteConfig.tagline || siteConfig.description;

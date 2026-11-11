@@ -5,17 +5,37 @@
   --theme-raised: rgb(255 212 0);
   --shell-toc-side: none;
   --shell-toc-compact: flex;
+  /* Where the side list would stand without the slot, which every page has
+     here (the list fills the slot instead). */
   --shell-toc-top: 7rem;
   --shell-toc-left: calc(100% + 1rem);
   --shell-toc-width: 15rem;
   --shell-floating-actions-left: calc(100% - 4.75rem);
 }
-/* The table of contents beside the content from 2xl, the button below. */
+/* The table of contents in the shell's slot from 2xl, the button below,
+   where the slot is hidden. */
 @media (width >= 96rem) {
   :root[data-theme="fixture"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;
   }
+}
+
+/* The slot for the side table of contents (fixture-shell.tsx): a box at the
+   head of the body, 20rem tall, that the list scrolls in. It has a place
+   only from 2xl, and only on a page with a table of contents: a Post
+   without headings leaves it empty, and nothing then stands for it. */
+.fixture-toc {
+  display: none;
+  height: 20rem;
+}
+@media (width >= 96rem) {
+  .fixture-toc {
+    display: block;
+  }
+}
+.fixture-shell:not(:has([data-table-of-contents])) .fixture-toc {
+  display: none;
 }
 
 /* The marker. */

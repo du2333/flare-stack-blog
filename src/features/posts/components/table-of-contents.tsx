@@ -17,6 +17,7 @@ import { FloatingPopover } from "@/components/ui/floating-popover";
 import { useJumpToHeading } from "@/features/posts/components/content/use-jump-to-heading";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
+import { useTocSlot } from "@/features/theme/components/toc-slot";
 import { cn, isSSR } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -33,11 +34,14 @@ function removeTailingHash(text: string) {
 }
 
 /**
- * The table of contents of a Post: a list fixed beside the article, or a
- * button in the floating column that opens it. Which of the two shows, and
- * where the side one stands, is the Theme Shell's to say through the
- * `--shell-toc-*` properties (`theme-shell.ts`); nothing here knows a
- * breakpoint.
+ * The table of contents of a Post: a list beside the article, or a button in
+ * the floating column that opens it. Which of the two shows, and where the
+ * side one stands, is the Theme Shell's to say through the `--shell-toc-*`
+ * properties (`theme-shell.ts`): fixed beside the article column, or in the
+ * slot the shell gives it (`TocSlot`), where it fills the slot's box.
+ * Nothing here knows a breakpoint. While it has entries, the page carries
+ * `[data-table-of-contents]` from the first paint, so a shell can tell a
+ * Post that has none.
  */
 export default function TableOfContents({
   headers,
@@ -65,7 +69,9 @@ export default function TableOfContents({
   }, [headers]);
 
   const firstScreenHeight = useFirstScreenHeight();
-  const slotRef = useRef<HTMLDivElement>(null);
+  // The shell's place for the side list, if it gives one (toc-slot.tsx).
+  const shellSlot = useTocSlot();
+  const anchorRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const tocEl = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
@@ -80,10 +86,10 @@ export default function TableOfContents({
     opacity: 0,
   });
 
-  const updateSlotLeft = useCallback(() => {
-    const slot = slotRef.current;
-    if (!slot) return;
-    setLeft(slot.getBoundingClientRect().left);
+  const updateLeft = useCallback(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    setLeft(anchor.getBoundingClientRect().left);
   }, []);
 
   const computeActive = useCallback(() => {
@@ -143,10 +149,12 @@ export default function TableOfContents({
   // The side list is fixed to the window, so at the end of a page it would
   // lie on a footer that runs under it, as one as wide as the window does.
   // There it ends short of the footer instead. Written straight to the
-  // element so scrolling does not re-render.
+  // element so scrolling does not re-render. In the shell's slot it keeps to
+  // the slot's box, which is the shell's to place.
   const clearFooter = useCallback(() => {
     const nav = navRef.current;
     const list = tocEl.current;
+    if (shellSlot) return;
     if (!nav || !list || nav.getClientRects().length === 0) return;
     const footer = document
       .querySelector('[data-shell-region="footer"]')
@@ -160,13 +168,25 @@ export default function TableOfContents({
         : 0;
     const next = Math.max(0, Math.round(under));
     if (next !== given) nav.style.setProperty("--toc-yield", `${next}px`);
-  }, []);
+  }, [shellSlot]);
 
+  // The side list stands where its column puts the anchor, which moves when
+  // the window is resized and when the column changes width without that: a
+  // rail that comes in beside it, a reading column the shell switches to.
   useLayoutEffect(() => {
-    updateSlotLeft();
-    window.addEventListener("resize", updateSlotLeft);
-    return () => window.removeEventListener("resize", updateSlotLeft);
-  }, [updateSlotLeft]);
+    updateLeft();
+    window.addEventListener("resize", updateLeft);
+    const column = anchorRef.current?.parentElement;
+    const observer =
+      column && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateLeft)
+        : null;
+    if (column) observer?.observe(column);
+    return () => {
+      window.removeEventListener("resize", updateLeft);
+      observer?.disconnect();
+    };
+  }, [updateLeft]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -253,19 +273,33 @@ export default function TableOfContents({
     <nav
       ref={navRef}
       className={cn(
-        // The portal must sit above the full-width public content wrapper (z-30).
-        "fixed top-(--shell-toc-top) z-40 transition duration-300",
-        isVisible && isReady ? "opacity-100" : "opacity-0 pointer-events-none",
+        shellSlot
+          ? // In the shell's slot it fills the slot's box and is in view from
+            // the top of the page, as the slot is.
+            "h-full transition duration-300"
+          : // The portal must sit above the full-width public content wrapper (z-30).
+            "fixed top-(--shell-toc-top) z-40 transition duration-300",
+        (shellSlot || isVisible) && isReady
+          ? "opacity-100"
+          : "opacity-0 pointer-events-none",
       )}
-      style={{
-        display: "var(--shell-toc-side, none)",
-        left: left ?? 0,
-        width: "var(--shell-toc-width)",
-      }}
+      style={
+        shellSlot
+          ? { display: "var(--shell-toc-side, none)" }
+          : {
+              display: "var(--shell-toc-side, none)",
+              left: left ?? 0,
+              width: "var(--shell-toc-width)",
+            }
+      }
     >
       <div
         ref={tocEl}
-        className="fuwari-hide-scrollbar h-[max(0px,calc(100vh-20rem-var(--toc-yield,0px)))] overflow-y-scroll overflow-x-hidden"
+        className={
+          shellSlot
+            ? "fuwari-hide-scrollbar h-full overflow-y-scroll overflow-x-hidden"
+            : "fuwari-hide-scrollbar h-[max(0px,calc(100vh-20rem-var(--toc-yield,0px)))] overflow-y-scroll overflow-x-hidden"
+        }
         style={{
           maskImage:
             "linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%)",
@@ -314,30 +348,42 @@ export default function TableOfContents({
       </div>
     </nav>
   );
+  const compact = (
+    <CompactToc
+      headers={visibleHeaders}
+      activeIndices={activeIndices}
+      shown={isVisible && isReady}
+      onSelect={(id) => void jumpTo(id)}
+    />
+  );
 
   return (
     <>
-      {/* Where the side list starts (--shell-toc-left). */}
+      {/* Where the side list starts (--shell-toc-left), from the left of the
+          article column it is in: the element around it. It also tells the
+          shell, from the first paint, that the page has a table of
+          contents. */}
       <div
-        ref={slotRef}
+        ref={anchorRef}
         className="absolute top-0 left-(--shell-toc-left) w-0 h-0"
         style={{ display: "var(--shell-toc-side, none)" }}
         aria-hidden
+        data-table-of-contents=""
       />
-      {!isSSR && left != null
-        ? createPortal(
-            <>
-              {toc}
-              <CompactToc
-                headers={visibleHeaders}
-                activeIndices={activeIndices}
-                shown={isVisible && isReady}
-                onSelect={(id) => void jumpTo(id)}
-              />
-            </>,
-            document.body,
-          )
-        : null}
+      {isSSR || left == null ? null : shellSlot ? (
+        <>
+          {createPortal(toc, shellSlot)}
+          {createPortal(compact, document.body)}
+        </>
+      ) : (
+        createPortal(
+          <>
+            {toc}
+            {compact}
+          </>,
+          document.body,
+        )
+      )}
     </>
   );
 }
