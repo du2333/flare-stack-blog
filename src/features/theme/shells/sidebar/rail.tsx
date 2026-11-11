@@ -10,6 +10,7 @@ import { SocialLinks } from "@/components/layout/social-links";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TocSlot } from "@/features/theme/components/toc-slot";
 import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
@@ -32,28 +33,50 @@ const ACCOUNT_PANEL_ID = "sidebar-account-panel";
 /**
  * Who writes here: the avatar, the author and the description. It is what
  * the profile card says, so the stylesheet hides that card wherever the
- * rail shows (sidebar.css).
+ * rail shows this (sidebar.css). It stands in a box that folds to nothing
+ * where the table of contents of a Post has its place (rail.css).
  */
 function Identity() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   return (
-    <div className="sidebar-identity">
-      <Link
-        to="/"
-        className="sidebar-avatar"
-        aria-label={m.profile_avatar_label()}
-      >
-        <img
-          src={getPublicImageSrc(siteConfig.avatar, PUBLIC_IMAGE_WIDTH.avatar)}
-          alt=""
-          width={AVATAR_SIZE}
-          height={AVATAR_SIZE}
-        />
-      </Link>
-      <p className="sidebar-author">{siteConfig.author}</p>
-      {siteConfig.description ? (
-        <p className="sidebar-description">{siteConfig.description}</p>
-      ) : null}
+    <div className="sidebar-identity-fold">
+      <div className="sidebar-identity">
+        <Link
+          to="/"
+          className="sidebar-avatar"
+          aria-label={m.profile_avatar_label()}
+        >
+          <img
+            src={getPublicImageSrc(
+              siteConfig.avatar,
+              PUBLIC_IMAGE_WIDTH.avatar,
+            )}
+            alt=""
+            width={AVATAR_SIZE}
+            height={AVATAR_SIZE}
+          />
+        </Link>
+        <p className="sidebar-author">{siteConfig.author}</p>
+        {siteConfig.description ? (
+          <p className="sidebar-description">{siteConfig.description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The place of the table of contents of a Post, under the navigation: a
+ * title over the slot the list renders into (`TocSlot`). It has no height
+ * until the page on screen has a table of contents; then it takes what the
+ * rail has left down to its foot, and the list scrolls within it (rail.css).
+ * It is on every page, so it is still there while a Post's page fades out.
+ */
+function Contents() {
+  return (
+    <div className="sidebar-rail-toc">
+      <p className="sidebar-rail-toc-title">{m.post_toc()}</p>
+      <TocSlot className="sidebar-rail-toc-slot" />
     </div>
   );
 }
@@ -189,8 +212,17 @@ function Account({ navOptions, user, isLoading, logout }: RailProps) {
  * At its foot: the social links, then the account entry with the Colour
  * Scheme and language switches. In a window lower than the rail the upper
  * part scrolls by itself and the foot stays where it is.
+ *
+ * With `tocSlot`, the table of contents of a Post has a place under the
+ * navigation; where it shows, who writes here folds away for it.
  */
-export function Rail(props: RailProps) {
+export function Rail({
+  tocSlot,
+  ...props
+}: RailProps & {
+  /** Whether the rail gives the table of contents of a Post its slot. */
+  tocSlot: boolean;
+}) {
   return (
     <header className="sidebar-rail">
       <div className="sidebar-rail-body">
@@ -198,6 +230,7 @@ export function Rail(props: RailProps) {
         <Identity />
         <SearchEntry />
         <Navigation navOptions={props.navOptions} />
+        {tocSlot ? <Contents /> : null}
       </div>
       <div className="sidebar-rail-foot">
         <SocialLinks className="sidebar-socials" />

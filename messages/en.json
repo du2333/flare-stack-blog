@@ -341,6 +341,14 @@
   "theme_immersive_cards_below": "Below the list",
   "theme_immersive_cards_beside": "Right column",
   "theme_sidebar_name": "Sidebar",
+  "theme_sidebar_banner": "Inner page banner",
+  "theme_sidebar_banner_hint": "The banner at the top of inner pages such as the post list, moments and friend links. The home page always shows the tall banner, and a post's page shows none.",
+  "theme_sidebar_banner_low": "Low",
+  "theme_sidebar_banner_none": "None",
+  "theme_sidebar_toc": "Table of contents on a post",
+  "theme_sidebar_toc_hint": "Where the table of contents of a post stands on wide screens: in the sidebar it takes the place of the avatar and the description; right of the article it leaves the sidebar as it is. On narrow screens a floating button opens it.",
+  "theme_sidebar_toc_rail": "In the sidebar",
+  "theme_sidebar_toc_beside": "Right of the article",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeEn = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=true"],

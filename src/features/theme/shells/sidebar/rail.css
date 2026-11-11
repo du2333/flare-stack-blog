@@ -47,9 +47,11 @@
   }
 }
 
+/* The entries of the table of contents draw their own ring, inside the
+   entry: the list clips what is drawn around it. */
 .sidebar-shell
   :is(.sidebar-rail, .sidebar-topbar)
-  :is(a, button):focus-visible {
+  :is(a, button):not(.sidebar-rail-toc-slot *):focus-visible {
   outline: 2px solid var(--theme-accent);
   outline-offset: 2px;
 }
@@ -107,14 +109,23 @@
 
 /* ── Who writes here ─────────────────────────────────────────────────────── */
 
+/* It stands in a grid row, which goes to nothing where the table of
+   contents of a Post has its place (below); the room above the avatar is
+   the avatar's own margin, so it goes with the row. */
+.sidebar-identity-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+}
 .sidebar-identity {
-  padding: 1.5rem 0.5rem 0;
+  min-height: 0;
+  padding-inline: 0.5rem;
+  overflow: hidden;
 }
 .sidebar-avatar {
   display: block;
   width: 5.5rem;
   height: 5.5rem;
-  margin-bottom: 1rem;
+  margin: 1.5rem 0 1rem;
   overflow: hidden;
   border-radius: 1.5rem;
   background-color: var(--fuwari-card-bg);
@@ -384,19 +395,68 @@
   transform-origin: bottom left;
 }
 
+/* ── The table of contents of a Post ─────────────────────────────────────── */
+
+/* The rail gives the list a place under the navigation (rail.tsx; the
+   option 「文章页目录位置」, in the rail). The place is on every page and has
+   no height. The page itself says, from the first paint, when it has a
+   table of contents ([data-table-of-contents]); it says so exactly while a
+   Post with headings is on screen, the one that is fading out included.
+   Then who writes here folds away, the navigation stands under the brand
+   and search, and the place takes what the rail has left down to its foot,
+   never less than 9rem: the list fills it and scrolls within it. A Post
+   without headings leaves the rail as it is on any page. */
+.sidebar-rail-toc {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+}
+.sidebar-rail-body > .sidebar-rail-toc {
+  flex: 0 1 0px;
+}
+.sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+  .sidebar-rail-toc {
+  flex-grow: 1;
+  min-height: 9rem;
+  opacity: 1;
+  visibility: visible;
+}
+.sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+  .sidebar-identity-fold {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+}
+/* Its title, under a hairline that parts it from the navigation. */
+.sidebar-rail-toc-title {
+  flex: none;
+  margin: 1rem 0.25rem 0;
+  padding: 0.875rem 0.5rem 0;
+  border-top: 1px solid var(--sidebar-hairline);
+  color: var(--fuwari-fg-50);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+/* The slot has a height of its own, so the list scrolls in it. */
+.sidebar-rail-toc-slot {
+  flex: 1 1 0px;
+  min-height: 0;
+}
+
 /* ── A low window ────────────────────────────────────────────────────────── */
 
 /* Below 800px of height the rail draws closer: a smaller avatar and lower
    rows, so that a navigation of the usual length still fits a laptop's
    window without scrolling. */
 @media (width >= 64rem) and (height < 50rem) {
-  .sidebar-identity {
-    padding-top: 1rem;
-  }
   .sidebar-avatar {
     width: 4rem;
     height: 4rem;
-    margin-bottom: 0.75rem;
+    margin: 1rem 0 0.75rem;
     border-radius: 1.125rem;
   }
   .sidebar-search {
@@ -432,6 +492,38 @@
   }
   .sidebar-nav-link:hover + .sidebar-nav-icon {
     transform: translateY(-50%) scale(1.08);
+  }
+  /* Who writes here folds away and the place of the table of contents
+     opens, over the same time, as a Post with headings comes on screen;
+     and back as it goes. What goes is out of reach once it has gone, and
+     what comes fades in a little after it has begun to open. */
+  .sidebar-identity-fold {
+    transition:
+      grid-template-rows var(--sidebar-fold) var(--sidebar-ease),
+      opacity 320ms ease 160ms,
+      visibility 0s;
+  }
+  .sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+    .sidebar-identity-fold {
+    transition:
+      grid-template-rows var(--sidebar-fold) var(--sidebar-ease),
+      opacity 200ms ease,
+      visibility 0s var(--sidebar-fold);
+  }
+  .sidebar-rail-toc {
+    transition:
+      flex-grow var(--sidebar-fold) var(--sidebar-ease),
+      min-height var(--sidebar-fold) var(--sidebar-ease),
+      opacity 200ms ease,
+      visibility 0s var(--sidebar-fold);
+  }
+  .sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+    .sidebar-rail-toc {
+    transition:
+      flex-grow var(--sidebar-fold) var(--sidebar-ease),
+      min-height var(--sidebar-fold) var(--sidebar-ease),
+      opacity 320ms ease 160ms,
+      visibility 0s;
   }
   .sidebar-avatar {
     transition: transform 400ms var(--sidebar-ease);

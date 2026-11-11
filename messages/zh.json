@@ -334,6 +334,14 @@
   "theme_immersive_cards_below": "列表下方",
   "theme_immersive_cards_beside": "右侧窄列",
   "theme_sidebar_name": "侧栏",
+  "theme_sidebar_banner": "内页横幅",
+  "theme_sidebar_banner_hint": "文章列表、动态、友链等内页顶部的横幅。首页始终显示高横幅，文章页不显示横幅。",
+  "theme_sidebar_banner_low": "低",
+  "theme_sidebar_banner_none": "无",
+  "theme_sidebar_toc": "文章页目录位置",
+  "theme_sidebar_toc_hint": "宽屏下文章页目录的位置：位于左栏内时取代头像与简介，位于正文右侧时左栏保持不变。窄屏下目录由浮动按钮打开。",
+  "theme_sidebar_toc_rail": "左栏内",
+  "theme_sidebar_toc_beside": "正文右侧",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],

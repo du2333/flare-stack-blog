@@ -13,6 +13,12 @@ import immersiveStylesheet from "./shells/immersive/immersive.css?url";
 import { DEFAULT_FRAME, FRAMES } from "./shells/namecard/frame";
 import { namecardShell } from "./shells/namecard/namecard-shell";
 import namecardStylesheet from "./shells/namecard/namecard.css?url";
+import {
+  DEFAULT_INNER_BANNER,
+  DEFAULT_TOC_PLACE,
+  INNER_BANNERS,
+  TOC_PLACES,
+} from "./shells/sidebar/options";
 import { sidebarShell } from "./shells/sidebar/sidebar-shell";
 import sidebarStylesheet from "./shells/sidebar/sidebar.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
@@ -140,6 +146,16 @@ const immersiveTheme: Theme = {
   thumbnail: ImmersiveThumbnail,
 };
 
+const INNER_BANNER_LABELS = {
+  low: m.theme_sidebar_banner_low,
+  none: m.theme_sidebar_banner_none,
+} satisfies Record<(typeof INNER_BANNERS)[number], () => string>;
+
+const TOC_PLACE_LABELS = {
+  rail: m.theme_sidebar_toc_rail,
+  beside: m.theme_sidebar_toc_beside,
+} satisfies Record<(typeof TOC_PLACES)[number], () => string>;
+
 const sidebarTheme: Theme = {
   id: "sidebar",
   name: m.theme_sidebar_name,
@@ -154,7 +170,30 @@ const sidebarTheme: Theme = {
     archive: "timeline",
     footer: "colophon",
   },
-  options: z.object({}),
+  options: z.object({
+    banner: z.enum(INNER_BANNERS).catch(DEFAULT_INNER_BANNER),
+    toc: z.enum(TOC_PLACES).catch(DEFAULT_TOC_PLACE),
+  }),
+  optionFields: [
+    {
+      key: "banner",
+      label: m.theme_sidebar_banner,
+      hint: m.theme_sidebar_banner_hint,
+      choices: INNER_BANNERS.map((value) => ({
+        value,
+        label: INNER_BANNER_LABELS[value],
+      })),
+    },
+    {
+      key: "toc",
+      label: m.theme_sidebar_toc,
+      hint: m.theme_sidebar_toc_hint,
+      choices: TOC_PLACES.map((value) => ({
+        value,
+        label: TOC_PLACE_LABELS[value],
+      })),
+    },
+  ],
   thumbnail: SidebarThumbnail,
 };
 

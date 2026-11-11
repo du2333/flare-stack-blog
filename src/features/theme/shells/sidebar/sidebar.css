@@ -35,6 +35,9 @@
   /* The banner changing height between the home page and the others, and
      the headline folding with it (banner.tsx waits as long). */
   --sidebar-resize: 600ms;
+  /* Who writes here folding away in the rail for the table of contents of a
+     Post, and back. */
+  --sidebar-fold: 520ms;
 }
 :root[data-theme="sidebar"].dark {
   --sidebar-pill-bg: color-mix(in srgb, var(--fuwari-card-bg) 80%, white 6%);
@@ -75,25 +78,47 @@
     calc(100% - 4.75rem)
   );
   /* The table of contents of a Post: the button in the floating column
-     opens it, until the gutter right of the frame has room for the list
-     (below). There the list stands 1.5rem right of the content column and
-     ends 1rem short of the window, never wider than 17rem; back to top has
-     the foot of the same gutter. */
+     opens it below 1024px, and from there it is a list (below). Where the
+     list is has two answers (options.ts), which this root cannot tell
+     apart, so both show it from the same width. In the rail it stands in
+     the slot the rail gives it, and the three lengths here are not read.
+     Beside the article it stands in a lane right of the reading column,
+     1.5rem clear of it and as wide as the lane; back to top floats at the
+     foot of the same lane, or right of the frame. */
   --shell-toc-side: none;
   --shell-toc-compact: flex;
   --shell-toc-top: 1.5rem;
-  --shell-toc-left: calc(100% + 1.5rem);
-  --shell-toc-width: min(
-    17rem,
-    calc((100vw - var(--sidebar-frame)) / 2 - 1.5rem)
-  );
+  --shell-toc-left: calc(100% + var(--sidebar-toc-gap));
+  --shell-toc-width: var(--sidebar-toc-lane);
 }
-/* From 1792px that gutter holds a list of 14rem. */
-@media (width >= 112rem) {
+@media (width >= 64rem) {
   :root[data-theme="sidebar"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;
   }
+}
+
+/* A Post's page. The article with what follows it is a reading column:
+   46rem of surface and, inside the panel's padding, 41.5rem of text, which
+   is 41 Chinese characters or some 85 Latin letters to a line of the body.
+   That is what the column right of the rail is at 1024px, so an article is
+   as wide in every window from there. On the root, with the lane beside it,
+   because the table of contents renders outside the shell.
+
+   The lane of a table of contents beside the article is what the frame has
+   left right of the rail, the reading column and the gap between them:
+   14.75rem in a window as wide as the frame or wider. In a narrower one the
+   column gives way instead, and the lane is never under 10.5rem. */
+:root[data-theme="sidebar"] {
+  --sidebar-reading-w: 46rem;
+  --sidebar-toc-gap: 1.5rem;
+  --sidebar-toc-lane: max(
+    10.5rem,
+    calc(
+      min(100vw, var(--sidebar-frame)) - 2rem - var(--sidebar-rail-w) -
+        1.75rem - var(--sidebar-reading-w) - var(--sidebar-toc-gap)
+    )
+  );
 }
 
 /* ── The shell and its frame ─────────────────────────────────────────────── */
@@ -179,6 +204,28 @@
     min-height: 100svh;
     padding-block: 1rem 0.25rem;
   }
+  /* A Post's page (the shell says when the page on screen is one,
+     data-column): the reading column, centred in what the rail leaves, for
+     the article, the cards after it and the footer. Nothing in it is wider
+     than the text; a wide table and a long line of code scroll within
+     themselves, as the shared content styles have them. */
+  .sidebar-shell[data-column="reading"] .sidebar-content {
+    max-width: var(--sidebar-reading-w);
+    margin-inline: auto;
+  }
+  /* With the table of contents beside the article, the column and the lane
+     right of it are centred together, and the lane is kept clear down the
+     whole page. A Post without headings has no lane. */
+  .sidebar-shell[data-column="reading"][data-toc="beside"]:has(
+      [data-table-of-contents]
+    )
+    .sidebar-content {
+    max-width: calc(
+      var(--sidebar-reading-w) + var(--sidebar-toc-gap) +
+        var(--sidebar-toc-lane)
+    );
+    padding-right: calc(var(--sidebar-toc-gap) + var(--sidebar-toc-lane));
+  }
 }
 
 /* ── The headline and the banner ─────────────────────────────────────────── */
@@ -226,7 +273,8 @@
 
 /* The banner: a rounded band with the image alone, cropped around its focal
    point. Its height is there from the first paint, and its colour stands in
-   until the image has loaded. */
+   until the image has loaded. Between a page that has it and one that has
+   not it folds to nothing, with the space after it (banner.tsx). */
 .sidebar-banner {
   position: relative;
   flex: none;
@@ -235,6 +283,17 @@
   overflow: hidden;
   border-radius: var(--theme-card-radius);
   background-color: var(--theme-tonal-bg);
+}
+.sidebar-banner[data-shown="false"] {
+  height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+}
+/* On the way into a Post's page, which has neither, both fade with the page
+   that is left and are gone when the Post shows. */
+.sidebar-headline[data-leaving="true"],
+.sidebar-banner[data-leaving="true"] {
+  opacity: 0;
 }
 .sidebar-banner > img {
   position: absolute;
@@ -294,12 +353,17 @@
     flex-basis: 26rem;
   }
   /* The rail shows who writes here, so the profile card does not: its slot
-     is hidden at exactly the widths at which the rail shows, and the card
-     stays in the page. A group with no other card to show is no group. */
-  .sidebar-card[data-kind="identity"],
-  .sidebar-cards:not(
-    :has(> .sidebar-card:not(:empty, [data-kind="identity"]))
-  ) {
+     is hidden exactly where the rail shows that, and the card stays in the
+     page. The rail does not show it on a Post whose table of contents has
+     taken that place in the rail (rail.css folds it by the same test), so
+     there the card closes the article with its author. A group with no
+     other card to show is no group. */
+  .sidebar-shell:not([data-toc="rail"]:has([data-table-of-contents]))
+    .sidebar-card[data-kind="identity"],
+  .sidebar-shell:not([data-toc="rail"]:has([data-table-of-contents]))
+    .sidebar-cards:not(
+      :has(> .sidebar-card:not(:empty, [data-kind="identity"]))
+    ) {
     display: none;
   }
 }
@@ -328,14 +392,25 @@
     transform: scale(1.04);
   }
 }
+@keyframes sidebar-lead-in {
+  from {
+    opacity: 0;
+  }
+}
 @media (prefers-reduced-motion: no-preference) {
   .sidebar-shell {
     transition: background-color 300ms;
   }
   /* The banner changes height between the home page and the others, and
-     the headline folds away and unfolds with it. */
+     the headline folds away and unfolds with it; so does a banner that
+     comes or goes. Either comes into the document with the page, fading
+     in. */
   .sidebar-banner {
-    transition: height var(--sidebar-resize) var(--sidebar-ease);
+    transition:
+      height var(--sidebar-resize) var(--sidebar-ease),
+      margin-bottom var(--sidebar-resize) var(--sidebar-ease),
+      opacity 320ms ease 120ms;
+    animation: sidebar-lead-in 300ms ease backwards;
   }
   .sidebar-banner > img {
     animation: sidebar-banner-in 900ms var(--sidebar-ease) backwards;
@@ -344,11 +419,23 @@
     transition:
       grid-template-rows var(--sidebar-resize) var(--sidebar-ease),
       opacity 320ms ease 120ms;
+    animation: sidebar-lead-in 300ms ease backwards;
   }
   .sidebar-headline[data-shown="false"] {
     transition:
       grid-template-rows var(--sidebar-resize) var(--sidebar-ease),
       opacity 200ms ease;
+  }
+  .sidebar-banner[data-shown="false"] {
+    transition:
+      height var(--sidebar-resize) var(--sidebar-ease),
+      margin-bottom var(--sidebar-resize) var(--sidebar-ease),
+      opacity 200ms ease;
+  }
+  /* As long as the page that is left takes to fade (PAGE_FADE_MS). */
+  .sidebar-headline[data-leaving="true"],
+  .sidebar-banner[data-leaving="true"] {
+    transition: opacity 200ms ease;
   }
   /* Going back or forward: at once, so the restored scroll position holds. */
   .sidebar-shell[data-instant="true"] :is(.sidebar-banner, .sidebar-headline) {
