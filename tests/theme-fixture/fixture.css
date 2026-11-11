@@ -3,9 +3,19 @@
    toasts) says its design variable reached what renders outside the shell. */
 :root[data-theme="fixture"] {
   --theme-raised: rgb(255 212 0);
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
   --shell-toc-top: 7rem;
-  --shell-toc-width: 16rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: 15rem;
   --shell-floating-actions-left: calc(100% - 4.75rem);
+}
+/* The table of contents beside the content from 2xl, the button below. */
+@media (width >= 96rem) {
+  :root[data-theme="fixture"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
 }
 
 /* The marker. */
