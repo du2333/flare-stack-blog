@@ -12,8 +12,8 @@ import { SocialLinks } from "./social-links";
  * The profile card, in two forms on one markup. Narrow: the avatar over the
  * centred name, description and social links. Wide (in a `card` container
  * from 20rem): low, the avatar small at the start, the name over the
- * description, the social links at the far end, or under the text when one
- * line cannot hold them.
+ * description in full, the social links under them and, from 32rem, at the
+ * far end where one line holds them.
  */
 export function Profile() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
@@ -48,11 +48,11 @@ export function Profile() {
             style={{ backgroundColor: "var(--theme-accent)" }}
           />
         ) : null}
-        <div className="fuwari-text-50 text-sm mb-2.5 @xs/card:mb-0 @xs/card:line-clamp-2">
+        <div className="fuwari-text-50 text-sm mb-2.5 @xs/card:mb-0">
           {siteConfig.description}
         </div>
       </div>
-      <SocialLinks className="flex flex-wrap gap-2 justify-center px-2 @xs/card:-mx-2 @xs/card:max-w-full @xs/card:shrink-0 @xs/card:justify-start @xs/card:gap-0 @xs/card:px-0 @xs/card:empty:hidden" />
+      <SocialLinks className="flex flex-wrap gap-2 justify-center px-2 @xs/card:-mx-2 @xs/card:max-w-full @xs/card:shrink-0 @xs/card:basis-full @xs/card:justify-start @xs/card:gap-0 @xs/card:px-0 @xs/card:empty:hidden @lg/card:basis-auto" />
     </div>
   );
 }
