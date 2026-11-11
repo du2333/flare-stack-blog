@@ -64,6 +64,11 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *   reads them and knows no breakpoint of a Theme:
  *   - `--shell-floating-actions-left`: from lg, the left edge of back to top
  *     and the page's own floating actions, from the left of the window.
+ *   - `--shell-floating-actions-position`: optional. Left out, those are
+ *     fixed to the window. A shell that stands them in a box of its own,
+ *     which it then places itself, sets `static` (「沉浸」 does: its box
+ *     sticks to the foot of the window and ends where the footer begins, so
+ *     they rest above the footer at the end of a page).
  *   - `--shell-toc-side`: `block` where the table of contents of a Post
  *     stands beside the article, `none` where it does not (the default).
  *   - `--shell-toc-compact`: `flex` where the button in the floating column
@@ -77,6 +82,8 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *   - `--shell-toc-width`: the width of the side table of contents, which
  *     adds no padding of its own; resolved on a fixed element, so a
  *     percentage is of the window.
+ *   Where the footer region runs under the side table of contents, as a
+ *   footer as wide as the window does, the list ends short of it by itself.
  * - marks its root `data-theme-shell="<id>"` and its regions
  *   `data-shell-region="body" | "sidebar" | "main" | "footer"`, with every
  *   group of cards a `sidebar` and, like the footer, inside the body, so
