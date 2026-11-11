@@ -5,7 +5,7 @@ Check a new or changed **Theme Shell** against this list before it ships. The co
 ## Contract
 
 - The shell arranges what the host gives it: every navigation entry, every sidebar card in the given order, the page content, the footer and the floating actions. It adds no card and drops none. Which cards a page shows is decided by the host (`sidebarCardsFor`), because the cache tags of a page assume them. The one exception is also decided by the host: a shell that lists a page kind in `identityInFirstScreen` gets no identity card there.
-- Where the cards go is the shell's choice: on either side of the content, below it or above the footer. Below 1024 px every shell is a single column with the cards after the content; no shell hides them behind a drawer or a menu.
+- Where the cards go is the shell's choice: on either side of the content, before it on wide screens, below it or above the footer. Below 1024 px every shell is a single column with the cards after the content; no shell hides them behind a drawer or a menu.
 - A Theme differs in layout only through its shell and its **Theme Recipe**. A form the recipe offers includes its arrangement (a grid of tiles is a form of the **Post** list, not a second setting beside the card form). Every value of every recipe item is used by at least one registered Theme: add a form together with the first Theme that uses it, and remove it when none does.
 - The shell never looks at the path. It reads `pageKind`; a focused page gets no cards and shows only its content.
 - The shell wraps its tree in `FirstScreenProvider` with the height of its first screen, which back to top, the table of contents and any navbar hiding read.
