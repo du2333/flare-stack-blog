@@ -53,7 +53,7 @@
     "lede art"
     "about art";
   align-content: center;
-  column-gap: clamp(2.5rem, 6vw, 5.5rem);
+  column-gap: var(--namecard-col-gap);
   row-gap: 1.75rem;
   max-width: var(--fuwari-page-width);
   margin-inline: auto;
@@ -334,6 +334,24 @@
   }
   .namecard-shell[data-frame="wide"] {
     --namecard-art-width: 51%;
+  }
+}
+/* From 1024px the page under the first screen keeps its two columns
+   (namecard.css). The portrait frame's column is the right one of those,
+   and the frame fills it from its left edge, unless the window is too low
+   for a frame that tall. The wider frames keep their own column. */
+@media (min-width: 1024px) {
+  .namecard-shell[data-frame="portrait"] {
+    --namecard-art-width: var(--namecard-aside);
+  }
+  .namecard-shell[data-frame="portrait"] .namecard-art {
+    justify-self: start;
+    width: min(100%, calc((100svh - 310px) * 0.8));
+  }
+}
+@media (min-width: 1024px) and (max-width: 1299px) {
+  .namecard-shell[data-frame="portrait"] .namecard-art {
+    width: min(calc(100% - 24px), calc((100svh - 310px) * 0.8));
   }
 }
 /* Stacked: the greeting, the picture, then the description as its caption. */
