@@ -4,6 +4,8 @@ The public blog offers a few built-in **Themes**. The **Admin** selects one for 
 
 A Theme never implements a page and never replaces a component. Pages, routing, data loading and the layouts of the sign-in, profile and error pages stay shared. That is the difference from the Theme Contract ([ADR 0003](./0003-theme-contract-for-public-presentation.md)), where each theme carried every page and layout and two themes meant two full sets to review. A shell places the navigation entries and sidebar cards it is given and does not list them, so a new public feature does not touch every shell.
 
+Themes may differ in layout as well as in look, through the same two means and no others. The Theme Shell decides where each region goes: it may put the sidebar cards on either side of the content, below it or above the footer, but it shows every card the host gives it, so no public feature depends on the Theme. The Theme Recipe picks the form of a shared content component, and a form includes its arrangement: a list of **Posts** as cards, as rows, or as a grid of tiles is one choice, not a card style multiplied by a column count. A form is added together with the first Theme that uses it and removed when no Theme uses it. On narrow screens every Theme is a single column with the cards after the content.
+
 Every Theme supports both **Colour Schemes** and honours the shared personalization fields in Site Config. The current look stays as the default Theme, so an upgrade changes nothing until the Admin picks another. Visitors cannot choose a Theme, because public pages are cached per address. There is no interface for third-party themes.
 
 The Admin workbench under `/admin` and notification emails do not follow the Theme. Design variables have a base layer that the workbench reads together with the Site Config hue; a Theme overrides them on public pages only, at the document root rather than inside its shell, because dialogs, the table of contents and toasts render outside the shell. Admin controls that appear on public pages, such as the Moment composer, follow the Theme like the rest of the page. This amends [ADR 0021](./0021-admin-shares-fuwari-visual-tokens.md): Admin and public pages still share one stylesheet and the same controls, but no longer the same variable values. The Admin is also where a broken Theme gets switched back, so nothing a Theme sets may reach it.
@@ -11,6 +13,8 @@ The Admin workbench under `/admin` and notification emails do not follow the The
 ## Considered Options
 
 - **Each Theme re-implements the content components** (post card, post page header, archive list). Rejected: it grows back into the Theme Contract.
+- **Each Theme writes its own home page list**, with every other page shared. Rejected: the list carries pagination, pinned Posts, Posts without a cover, its loading state and its narrow-screen form, so each Theme would repeat all of them.
+- **A Theme may leave out sidebar cards.** Rejected: the ways into categories and tags would depend on the Theme, and every new public feature would have to be checked against every shell.
 - **Design variables only, one shared markup.** Rejected: variables cannot change structure, such as a row list instead of cards.
 - **A build-time switch**, as before. Rejected: a fork owner would have to change a variable and redeploy to try a look.
 - **Visitors choose the Theme.** Rejected: the same address would need one cached copy per Theme.
