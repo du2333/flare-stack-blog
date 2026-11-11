@@ -79,14 +79,15 @@
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
 
-  /* The table of contents of a Post: below the floating navbar, in the
-     gutter right of the article. Until the gutter is wide enough for it, it
-     is the button in the floating column. */
-  --shell-toc-top: 5rem;
-  --shell-toc-left: calc(100% + 1rem);
-  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+  /* The table of contents of a Post: the button in the floating column opens
+     it, until from 2xl (below) the gutter right of the content has room for
+     it. There it stands below the floating navbar, 1rem clear of the
+     content. */
   --shell-toc-side: none;
   --shell-toc-compact: flex;
+  --shell-toc-top: 5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
   /* Back to top from lg: just right of the content, kept on screen when the
      gutter is too narrow. */
   --shell-floating-actions-left: min(
@@ -94,7 +95,7 @@
     calc(100% - 4.75rem)
   );
 }
-@media (min-width: 1280px) {
+@media (width >= 96rem) {
   :root[data-theme="immersive"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;

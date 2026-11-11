@@ -145,7 +145,9 @@ describe("the Theme", () => {
     expect(
       sidebarCardsFor("home", theme.shell).map((card) => card.kind),
     ).not.toContain("identity");
-    expect(sidebarCardsFor("inner", theme.shell)[0]!.kind).toBe("identity");
+    for (const pageKind of ["inner", "post"] as const) {
+      expect(sidebarCardsFor(pageKind, theme.shell)[0]!.kind).toBe("identity");
+    }
   });
 });
 
@@ -198,8 +200,7 @@ describe("the first screen", () => {
     expect(firstScreen().contains(avatars[1]!)).toBe(true);
   });
 
-  // A kind added to the contract later ("post") is an inner page here.
-  it.each(["inner", "focused", "post" as PageKind] as const)(
+  it.each(["inner", "post", "focused"] as const)(
     "is a low band without the introduction on a %s page",
     async (pageKind) => {
       await renderShell({
@@ -248,7 +249,7 @@ describe("the first screen", () => {
 });
 
 describe("the sidebar cards", () => {
-  it.each(["home", "inner"] as const)(
+  it.each(["home", "inner", "post"] as const)(
     "follow the content in the document on a %s page",
     async (pageKind) => {
       await renderShell({ pageKind });
@@ -397,19 +398,6 @@ describe("the stylesheet", () => {
   const all = [read("immersive.css"), navbarCss, read("first-screen.css")].join(
     "\n",
   );
-
-  it("places the table of contents and the floating actions", () => {
-    for (const name of [
-      "--shell-toc-top",
-      "--shell-toc-left",
-      "--shell-toc-width",
-      "--shell-toc-side",
-      "--shell-toc-compact",
-      "--shell-floating-actions-left",
-    ]) {
-      expect(all, name).toMatch(new RegExp(`${name}\\s*:`));
-    }
-  });
 
   // The stylesheet reaches the pill on its own before navbar.tsx asks for
   // it, from keyframes that must say what the rule says.

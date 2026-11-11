@@ -30,7 +30,7 @@ function ImmersiveShell({
   footer,
   floatingActions,
 }: ThemeShellProps) {
-  // Whatever is neither the home page nor a focused page is an inner page.
+  // A Post's page is laid out as any other inner page.
   const isHomePage = pageKind === "home";
   const isFocusedPage = pageKind === "focused";
   const gaugeRef = useRef<HTMLDivElement>(null);
