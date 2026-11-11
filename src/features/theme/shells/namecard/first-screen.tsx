@@ -1,6 +1,6 @@
-import { Link, useRouteContext } from "@tanstack/react-router";
+import { Link, useRouteContext, useRouter } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import type { CSSProperties, Ref } from "react";
+import { useEffect, useState, type CSSProperties, type Ref } from "react";
 import { SocialLinks } from "@/components/layout/social-links";
 import { buttonClass } from "@/components/ui/button";
 import {
@@ -29,7 +29,9 @@ function step(index: number) {
  * social links beside the banner in a frame, with the avatar as a seal on its
  * corner. Open on the home page only; it stays mounted elsewhere, folded to
  * nothing, so leaving the home page folds it away and coming back unfolds it.
- * The text is gone once it is folded.
+ * The text is gone once it is folded. Going back or forward folds it at
+ * once: the router restores the scroll position then, and needs the page at
+ * its final height.
  */
 export function FirstScreen({
   ref,
@@ -40,6 +42,15 @@ export function FirstScreen({
 }) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const present = useMotionPresence(open, FOLD_MS);
+  const router = useRouter();
+  const [traversing, setTraversing] = useState(false);
+  useEffect(
+    () =>
+      router.history.subscribe(({ action }) =>
+        setTraversing(action.type !== "PUSH" && action.type !== "REPLACE"),
+      ),
+    [router],
+  );
   const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
   const [beforeName, afterName] = m
     .theme_namecard_greeting_name({ author: NAME_SLOT })
@@ -50,6 +61,7 @@ export function FirstScreen({
       ref={ref}
       className="namecard-first-screen"
       data-open={open}
+      data-instant={traversing}
       inert={!open}
       aria-hidden={!open}
     >

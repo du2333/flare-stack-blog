@@ -69,6 +69,11 @@
     opacity 260ms ease,
     transform var(--namecard-fold) var(--namecard-ease-fold);
 }
+/* Going back or forward: no fold, so the restored scroll position holds. */
+.namecard-first-screen[data-instant="true"],
+.namecard-first-screen[data-instant="true"] .namecard-first-screen-inner {
+  transition: none;
+}
 .namecard-first-screen :is(a, button):focus-visible {
   outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
