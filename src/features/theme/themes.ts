@@ -87,7 +87,7 @@ const namecardTheme: Theme = {
     headingAccent: "off",
     summary: "standfirst",
     archive: "index",
-    footer: "caption",
+    footer: "signature",
   },
   options: z.object({ frame: z.enum(FRAMES).catch(DEFAULT_FRAME) }),
   optionFields: [

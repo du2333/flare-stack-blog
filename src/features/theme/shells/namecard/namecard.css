@@ -24,6 +24,12 @@
     0 36px 72px -28px oklch(0.4 0.1 var(--fuwari-hue) / 0.38);
   --namecard-nav-height: 60px;
   --namecard-gutter: 1rem;
+  /* The spread: the column right of the content, which is the portrait
+     frame's on the first screen (a third of the page, 20rem to 24rem), and
+     the room between the two columns. A percentage is of the page between
+     its gutters, here and in the first screen. */
+  --namecard-aside: clamp(20rem, 33%, 24rem);
+  --namecard-col-gap: clamp(2.5rem, 6vw, 5.5rem);
   --namecard-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --namecard-ease-fold: cubic-bezier(0.32, 0.72, 0, 1);
   --namecard-fold: 640ms;
@@ -117,14 +123,17 @@
 
   --theme-link-underline-style: solid;
 
-  /* The table of contents of a Post: the button in the floating column opens
-     it, until from 2xl (below) the right gutter has room for it. There it
-     stands below the navbar, 1rem clear of the content. */
+  /* The table of contents of a Post: from 1024px (below) a list in the right
+     column, which the sidebar cards have on every other page; until then
+     the button in the floating column opens it. The list starts where that
+     column does, below the navbar. Near 1024px back to top stands on the
+     last 3.75rem of the column, so the list is 15.5rem wide: 0.75rem short
+     of it and more in every window, and never on it. */
   --shell-toc-side: none;
   --shell-toc-compact: flex;
-  --shell-toc-top: calc(var(--namecard-nav-height) + 0.5rem);
-  --shell-toc-left: calc(100% + 1rem);
-  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
+  --shell-toc-top: calc(var(--namecard-nav-height) + 1rem);
+  --shell-toc-left: calc(100% + var(--namecard-col-gap));
+  --shell-toc-width: 15.5rem;
   /* Back to top from lg: just right of the content, kept on screen when the
      gutter is too narrow. */
   --shell-floating-actions-left: min(
@@ -132,7 +141,7 @@
     calc(100% - 4.75rem)
   );
 }
-@media (width >= 96rem) {
+@media (min-width: 1024px) {
   :root[data-theme="namecard"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;
@@ -146,8 +155,8 @@
   transition: background-color 300ms;
 }
 
-/* One centred column of --fuwari-page-width; from lg the sidebar cards stand
-   left of the content. */
+/* One centred column of --fuwari-page-width: the content, the sidebar cards
+   after it, the footer. From 1024px it is the spread (below). */
 .namecard-body {
   position: relative;
   display: grid;
@@ -166,47 +175,108 @@
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
-  order: 1;
 }
-/* Beside the sidebar the content starts under a rule, as each card does. */
+/* With cards on the page the content starts under a rule, as each card
+   does. */
 .namecard-body[data-focused="false"] .namecard-main {
   border-top: 1px solid var(--namecard-hairline);
 }
-.namecard-sidebar {
+
+/* The sidebar cards stand in groups, a card under a card. The slot of every
+   card is a container named `card`: that is what lets a card take the form
+   the width of its slot calls for, without being told where it stands
+   (docs/theme-shell-checklist.md). In the right column, 20rem to 24rem, the
+   profile card lies on its side and the ways into the Posts are pills in
+   two rows; in the column of the content the pills are one row beside their
+   title. */
+.namecard-cards {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
-  order: 2;
+  margin-top: 1.5rem;
 }
-.namecard-sidebar-index {
-  position: sticky;
-  top: calc(var(--namecard-nav-height) + 1rem);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.namecard-card {
+  container: card / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
 }
-/* A card that shows nothing leaves no gap. */
-.namecard-sidebar-card:empty {
+/* The box around the ways into the Posts (namecard-shell.tsx) is no box
+   until the cards have a column of their own. */
+.namecard-cards-pinned {
+  display: contents;
+}
+/* A card that shows nothing leaves no gap, and neither does a group of
+   them. */
+.namecard-card:empty,
+.namecard-cards:not(:has(.namecard-card:not(:empty))) {
   display: none;
 }
+
+/* The footer closes the page 3rem clear of what is before it, as wide as
+   the page; the signature (Theme Recipe, footer: "signature") brings its
+   own rule. */
 .namecard-footer {
-  order: 3;
-  margin-top: auto;
+  padding-top: 2rem;
 }
+
+/* ── The spread: one grid from the first screen down ──────────────────────
+   The first screen stands the words on the left and the picture on the
+   right. From 1024px the page under it keeps that: the content under the
+   greeting, and a right column for what stands beside the content, with the
+   first screen's own room between the two. The right column is as wide as
+   the portrait frame (--namecard-aside); the wider frames reach further
+   left on the first screen and share its right edge. On a Post's page the
+   article has the content's column and the table of contents the other
+   (the root's --shell-toc-*, above), with the cards after the article. The
+   footer closes both columns. */
 @media (min-width: 1024px) {
   .namecard-body[data-focused="false"] {
-    grid-template-columns: 15.5rem minmax(0, 1fr);
-    column-gap: 3.5rem;
+    grid-template-columns: minmax(0, 1fr) var(--namecard-aside);
+    column-gap: var(--namecard-col-gap);
   }
-  .namecard-body[data-focused="false"] .namecard-sidebar {
-    order: 1;
+  .namecard-body[data-focused="false"] > .namecard-main {
+    grid-area: 1 / 1;
   }
-  .namecard-body[data-focused="false"] .namecard-main {
-    order: 2;
+  .namecard-body[data-focused="false"] > .namecard-cards[data-place="beside"] {
+    grid-area: 1 / 2;
+    margin-top: 0;
   }
-  .namecard-body[data-focused="false"] .namecard-footer {
-    grid-column-start: 2;
+  .namecard-body[data-focused="false"] > .namecard-cards[data-place="after"] {
+    grid-area: 2 / 1;
+  }
+  .namecard-body[data-focused="false"] > .namecard-footer {
+    grid-column: 1 / -1;
+  }
+  /* The ways into the Posts stay in view below the navbar, while the rest
+     of the column scrolls away with the page. Where they are taller than
+     the window has room for (a list shown in full, a low window), their box
+     scrolls by itself, so its end can be reached from anywhere on the page,
+     and what it cuts off fades out over its last 1rem. The box is larger
+     than the cards by its padding: room for the focus rings it would
+     otherwise cut off, and under them for that fade. */
+  .namecard-cards[data-place="beside"] > .namecard-cards-pinned {
+    position: sticky;
+    top: calc(var(--namecard-nav-height) + 0.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100svh - var(--namecard-nav-height) - 0.5rem);
+    margin: -0.5rem -0.5rem -1.5rem;
+    padding: 0.5rem 0.5rem 1.5rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(#000 calc(100% - 1rem), transparent);
+  }
+  .namecard-cards[data-place="beside"]
+    > .namecard-cards-pinned
+    > .namecard-card {
+    flex: none;
+  }
+  .namecard-cards[data-place="beside"]
+    > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))) {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

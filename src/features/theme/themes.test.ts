@@ -84,12 +84,12 @@ describe("the Theme registry", () => {
     ).toEqual({ classic: "card", namecard: "row", immersive: "tile" });
   });
 
-  it("closes the page with a caption in classic and namecard and a band in immersive", () => {
+  it("closes the page with a caption in classic, a signature in namecard and a band in immersive", () => {
     expect(
       Object.fromEntries(
         THEMES.map((theme) => [theme.id, theme.recipe.footer]),
       ),
-    ).toEqual({ classic: "caption", namecard: "caption", immersive: "band" });
+    ).toEqual({ classic: "caption", namecard: "signature", immersive: "band" });
   });
 
   it.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
