@@ -5,9 +5,13 @@ import type { SiteConfig } from "@/features/config/site-config.schema";
 /**
  * What the host tells a shell about the current page. A focused page (sign-in,
  * profile, the friend-link form, a route error or not found) shows only its
- * content: the host gives it no sidebar cards.
+ * content: the host gives it no sidebar cards. A Post's page is a kind of its
+ * own, so a shell can lay it out apart from the other inner pages (the width
+ * of the reading column, the cards beside the article or after it); the host
+ * gives it the cards of an inner page. A shell that does not tell the two
+ * apart treats `post` as `inner`.
  */
-export type PageKind = "home" | "inner" | "focused";
+export type PageKind = "home" | "inner" | "post" | "focused";
 
 /**
  * identity: who runs the site, read from Site Config only (the profile card).

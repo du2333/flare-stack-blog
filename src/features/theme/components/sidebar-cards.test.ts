@@ -16,11 +16,12 @@ const page = (
   });
 
 describe("resolvePageKind", () => {
-  it("tells the home page from inner pages", () => {
+  it("tells the home page and a Post's page from inner pages", () => {
     expect(page("/")).toBe("home");
+    expect(page("/post/hello")).toBe("post");
     expect(page("/posts")).toBe("inner");
-    expect(page("/post/hello")).toBe("inner");
     expect(page("/moments")).toBe("inner");
+    expect(page("/moments/1")).toBe("inner");
   });
 
   it("focuses sign-in, profile, the friend-link form and failed routes", () => {
@@ -29,6 +30,7 @@ describe("resolvePageKind", () => {
     expect(page("/submit-friend-link")).toBe("focused");
     expect(page("/missing", { hasRouteError: true })).toBe("focused");
     expect(page("/", { hasRouteError: true })).toBe("focused");
+    expect(page("/post/missing", { hasRouteError: true })).toBe("focused");
   });
 });
 
@@ -52,6 +54,12 @@ describe("sidebarCardsFor", () => {
     ]);
   });
 
+  it("gives a Post's page the cards of an inner page", () => {
+    expect(ids(sidebarCardsFor("post", none))).toEqual(
+      ids(sidebarCardsFor("inner", none)),
+    );
+  });
+
   it("leaves identity cards out where the shell's first screen shows the identity", () => {
     const shell = { identityInFirstScreen: ["home"] as const };
     expect(ids(sidebarCardsFor("home", shell))).toEqual([
@@ -68,7 +76,7 @@ describe("sidebarCardsFor", () => {
     "gives the %s shell the same cards apart from identity cards, and none on a focused page",
     (_, shell) => {
       expect(sidebarCardsFor("focused", shell)).toEqual([]);
-      for (const kind of ["home", "inner"] as const) {
+      for (const kind of ["home", "inner", "post"] as const) {
         const withoutIdentity = (cards: ReturnType<typeof sidebarCardsFor>) =>
           ids(cards.filter((card) => card.kind !== "identity"));
         expect(withoutIdentity(sidebarCardsFor(kind, shell))).toEqual(

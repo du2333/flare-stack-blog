@@ -12,7 +12,7 @@ import type { PageKind, SidebarCard, ThemeShell } from "../theme-shell";
  * The sidebar cards of a page, in order. The list depends on the page kind
  * only, apart from identity cards, so the cache tags of each page stay true
  * whichever shell is in use: the home page carries the Moments tag because
- * it lists the latest Moments.
+ * it lists the latest Moments. A Post's page has the cards of an inner page.
  */
 export function sidebarCardsFor(
   pageKind: PageKind,
