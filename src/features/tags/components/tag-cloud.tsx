@@ -13,7 +13,7 @@ const COLLAPSE_THRESHOLD = 20;
 /** The card while its tags load, in both of its forms. */
 export function TagsSkeleton() {
   return (
-    <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem) @xs/card:grid @xs/card:gap-x-4 @xs/card:gap-y-2 @xs/card:px-(--theme-widget-pad-x,1.25rem) @xs/card:py-3.5 @md/card:grid-cols-[auto_minmax(0,1fr)]">
+    <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem) @xs/card:grid @xs/card:gap-x-4 @xs/card:gap-y-2 @xs/card:px-(--theme-widget-pad-x,1.25rem) @xs/card:py-3.5 @[34rem]/card:grid-cols-[auto_minmax(0,1fr)]">
       <Skeleton className="h-5 w-20 mb-3 @xs/card:my-1.5 @xs/card:w-10" />
       <div className="flex flex-wrap gap-2 @xs/card:flex-nowrap @xs/card:overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (

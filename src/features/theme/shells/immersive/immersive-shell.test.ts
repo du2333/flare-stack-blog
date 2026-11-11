@@ -1248,10 +1248,10 @@ describe("a Post's page", () => {
     );
     const half = (columnPx(1440) - GAP_PX) / 2;
 
-    // Two fit in a row; a card has that form from 20rem to 28rem.
+    // Two fit in a row; a card has that form from 20rem to 34rem.
     expect(slot).toBeLessThanOrEqual(half);
     expect(half).toBeGreaterThanOrEqual(20 * 16);
-    expect(half).toBeLessThan(28 * 16);
+    expect(half).toBeLessThan(34 * 16);
   });
 
   it("opens the table of contents from the button until the gutter has room for the list, from 1280px", () => {

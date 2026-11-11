@@ -429,9 +429,9 @@
   /* An expandable sidebar card in its wide form (expandable-sidebar-card.tsx,
      in a `card` container from 20rem, `@xs/card:` there). Until the reader
      asks for all of them, the entries show through a window: the title's
-     line and two rows of pills under it, and from 28rem (`@md/card:`) the
-     one row beside the title. The window is a little larger than that, for
-     the focus ring of what lies at its edge; a row further down starts
+     line and two rows of pills under it, and from 34rem (`@[34rem]/card:`)
+     the one row beside the title. The window is a little larger than that,
+     for the focus ring of what lies at its edge; a row further down starts
      beyond it.
      「更多」 shows only while the window cuts entries off, and the stylesheet
      can tell without a script, so it is right from the first paint: the grid
@@ -464,7 +464,7 @@
       visibility: hidden;
     }
   }
-  @container card (width >= 28rem) {
+  @container card (width >= 34rem) {
     .fuwari-widget-window {
       --widget-window: 2rem;
     }

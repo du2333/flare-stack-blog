@@ -13,7 +13,7 @@ const COLLAPSE_THRESHOLD = 5;
 /** The card while its categories load, in both of its forms. */
 export function CategoriesSkeleton() {
   return (
-    <div className="fuwari-card-base fuwari-card-widget pb-4 @xs/card:grid @xs/card:gap-x-4 @xs/card:gap-y-2 @xs/card:px-(--theme-widget-pad-x,1.25rem) @xs/card:py-3.5 @md/card:grid-cols-[auto_minmax(0,1fr)]">
+    <div className="fuwari-card-base fuwari-card-widget pb-4 @xs/card:grid @xs/card:gap-x-4 @xs/card:gap-y-2 @xs/card:px-(--theme-widget-pad-x,1.25rem) @xs/card:py-3.5 @[34rem]/card:grid-cols-[auto_minmax(0,1fr)]">
       <Skeleton className="h-5 w-20 ml-(--theme-widget-pad-x,1.5rem) mt-4 mb-2 @xs/card:mx-0 @xs/card:my-1.5 @xs/card:w-10" />
       <div className="px-(--theme-widget-pad-x,1rem) @xs/card:flex @xs/card:gap-2 @xs/card:overflow-hidden @xs/card:px-0">
         {Array.from({ length: 4 }).map((_, i) => (
