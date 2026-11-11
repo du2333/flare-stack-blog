@@ -608,6 +608,27 @@ describe("Theme Recipe", () => {
         ) + 5,
       );
     });
+
+    // A plain bar is lower than the row of text it stands for, and the
+    // title's size is the Theme's: both hold the height of the real thing.
+    it("chips and inline: the placeholders of a skeleton with nothing cached are as tall as a meta row and as one line of the title", () => {
+      state.cached = undefined;
+      for (const meta of ["chips", "inline"] as const) {
+        const host = render(createElement(PostPageSkeleton), { meta });
+        const items = [...host.querySelectorAll('div[aria-hidden="true"]')]
+          .filter((bar) => bar.classList.contains("w-16"))
+          .map((bar) => bar.parentElement!);
+        expect(items).toHaveLength(5);
+        for (const item of items) {
+          expect(item.classList.contains("h-6")).toBe(true);
+        }
+        const title = [
+          ...host.querySelectorAll('div[aria-hidden="true"]'),
+        ].filter((bar) => bar.classList.contains("fuwari-page-title"));
+        expect(title).toHaveLength(1);
+        expect(title[0]!.classList.contains("h-[1lh]")).toBe(true);
+      }
+    });
   });
 
   describe("no-cover strip", () => {

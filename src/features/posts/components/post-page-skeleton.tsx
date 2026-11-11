@@ -13,10 +13,14 @@ import { cn } from "@/lib/utils";
 import { PostMeta } from "./post-meta";
 import { PostSummary } from "./post-summary";
 
+/**
+ * Stands for one item of a meta row and is as tall as that row in either
+ * form: the icon block of a chip, or a line of plain text with its dot.
+ */
 function MetaChip() {
   const { meta } = useThemeRecipe();
   return (
-    <div className="flex items-center">
+    <div className="flex h-6 items-center">
       {meta === "chips" ? (
         <Skeleton className="mr-2 h-6 w-6 rounded-md" />
       ) : null}
@@ -124,7 +128,8 @@ export function PostPageSkeleton() {
               {cached.title}
             </h1>
           ) : (
-            <Skeleton className="mb-3 h-9 w-4/5 md:h-10" />
+            // One line of the title, in the Theme's size for it.
+            <Skeleton className="fuwari-page-title mb-3 h-[1lh] w-4/5" />
           )}
         </div>
 

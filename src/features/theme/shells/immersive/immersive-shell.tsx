@@ -1,11 +1,13 @@
 import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
 import type {
   SidebarCard,
   ThemeShell,
   ThemeShellProps,
 } from "@/features/theme/theme-shell";
+import { useReducedMotion } from "@/hooks/use-motion";
 import {
   DEFAULT_CARD_PLACEMENT,
   isCardPlacement,
@@ -19,6 +21,11 @@ import { Navbar } from "./navbar";
 const STRIP_DELAY_MS = 100;
 const CARD_DELAY_MS = 150;
 const CARD_STEP_MS = 50;
+/**
+ * How long before the next page shows the column takes its width: less than
+ * a frame, so the two happen together or the column goes first.
+ */
+const COLUMN_LEAD_MS = 8;
 
 /**
  * 「沉浸」: the banner fills the first screen with the navigation lying on it,
@@ -51,8 +58,10 @@ function ImmersiveShell({
   footer,
   floatingActions,
 }: ThemeShellProps) {
-  // A Post's page is laid out as any other inner page.
+  // The banner and the cards of a Post's page are those of any other inner
+  // page; its column is the reading column.
   const isHomePage = pageKind === "home";
+  const readingColumn = useReadingColumn(pageKind === "post");
   const cards = placeCards(
     pageKind,
     sidebarCards,
@@ -82,6 +91,7 @@ function ImmersiveShell({
       <div
         className="immersive-shell"
         data-theme-shell="immersive"
+        data-column={readingColumn ? "reading" : undefined}
         data-home={isHomePage}
         data-instant={traversing}
       >
@@ -117,6 +127,32 @@ function ImmersiveShell({
       </div>
     </FirstScreenProvider>
   );
+}
+
+/**
+ * Whether the column is the reading column of a Post. `PageFade` keeps the
+ * page that is left for `PAGE_FADE_MS` while it fades out, and the column
+ * waits with it, so neither page is seen at the width of the other. It
+ * changes just before the next page shows, when the one that is left has
+ * all but gone: a frame late, the next would be fading in at the wrong
+ * width. A reader who asked for less motion gets no fade and no wait.
+ */
+function useReadingColumn(post: boolean) {
+  const reducedMotion = useReducedMotion();
+  const [reading, setReading] = useState(post);
+  useEffect(() => {
+    if (reading === post) return;
+    if (reducedMotion) {
+      setReading(post);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setReading(post),
+      PAGE_FADE_MS - COLUMN_LEAD_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [post, reading, reducedMotion]);
+  return reducedMotion ? post : reading;
 }
 
 /**

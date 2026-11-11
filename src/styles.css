@@ -793,6 +793,9 @@
   --tw-prose-th-borders: var(--theme-rule, var(--fuwari-meta-divider));
   --tw-prose-td-borders: var(--theme-rule, var(--fuwari-meta-divider));
   color: var(--tw-prose-body);
+  /* A word longer than its line, such as an address, breaks instead of
+     running out of the column. */
+  overflow-wrap: break-word;
 
   h1 {
     @apply text-3xl font-bold mt-10 mb-6;
@@ -847,6 +850,8 @@
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
     display: inline-block;
+    /* So a long address breaks within the line instead of widening the box. */
+    max-width: 100%;
     &:hover,
     &:active {
       @apply decoration-transparent;

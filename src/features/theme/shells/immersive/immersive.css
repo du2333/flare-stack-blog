@@ -85,27 +85,13 @@
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
 
-  /* The table of contents of a Post: the button in the floating column opens
-     it, until from 2xl (below) the gutter right of the content has room for
-     it. There it stands below the floating navbar, 1rem clear of the
-     content. */
-  --shell-toc-side: none;
-  --shell-toc-compact: flex;
-  --shell-toc-top: 5rem;
-  --shell-toc-left: calc(100% + 1rem);
-  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
   /* Back to top from lg: just right of the content, kept on screen when the
-     gutter is too narrow. */
+     gutter is too narrow. The table of contents of a Post is placed with
+     the Post page, below. */
   --shell-floating-actions-left: min(
     calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
     calc(100% - 4.75rem)
   );
-}
-@media (width >= 96rem) {
-  :root[data-theme="immersive"] {
-    --shell-toc-side: block;
-    --shell-toc-compact: none;
-  }
 }
 
 /* The Post list as tiles (Theme Recipe, postCard: "tile"): a title that fits
@@ -334,8 +320,63 @@
   }
 }
 
+/* ── The Post page ─────────────────────────────────────────────────────────
+   One centred reading column from the title to the last card: the article,
+   the Posts next to it, the comments, then the sidebar cards. The gutter
+   right of the column is the table of contents'. Nothing in the column is
+   wider than the text; a wide table and a long line of code scroll within
+   themselves, as the shared content styles have them. The footer keeps the
+   width it has on every page. */
+
+/* The column with its gutters, as --fuwari-page-width is the page's with
+   its: 46rem of surface and, inside the panel's padding, 41.5rem of text,
+   which is 41 Chinese characters or some 85 Latin letters to a line of the
+   body. On the root, because the table of contents renders outside the
+   shell. The shell says when the page on screen is a Post's (data-column),
+   and the regions before the footer are centred as on every page (the
+   footer region, below), by the reading width instead of the page's. */
+:root[data-theme="immersive"] {
+  --immersive-reading-width: 48rem;
+}
+.immersive-shell[data-column="reading"]
+  .immersive-body
+  > :is(.immersive-main, .immersive-cards) {
+  margin-inline: max(
+    var(--immersive-gutter),
+    calc(50% - var(--immersive-reading-width) / 2 + var(--immersive-gutter))
+  );
+}
+/* The two ways into the Posts share a row of the column, each with its pills
+   in two rows under its title (the form such a card takes from 20rem). */
+.immersive-shell[data-column="reading"] .immersive-card[data-kind="index"] {
+  flex-basis: 20rem;
+}
+
+/* The table of contents of a Post: a list in the gutter right of the
+   reading column from 80rem, where the gutter has room for it, and until
+   then the button in the floating column. The list stands below the floating
+   navbar, 1rem clear of the column, and ends 0.75rem short of back to top:
+   it has the lane between the two, 14rem where the window is wide enough. */
+:root[data-theme="immersive"] {
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc(
+    var(--shell-floating-actions-left) - 0.75rem -
+      (50% + var(--immersive-reading-width) / 2 - var(--immersive-gutter) + 1rem)
+  );
+}
+@media (width >= 80rem) {
+  :root[data-theme="immersive"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .immersive-shell {
+  .immersive-shell,
+  .immersive-footer {
     transition: background-color 300ms;
   }
   .immersive-body {
@@ -370,4 +411,53 @@
 }
 .immersive-footer {
   padding-top: 3rem;
+}
+
+/* The layers of the page, from lg: the band closes it over what floats
+   beside the content. The table of contents of a Post, which renders outside
+   the shell, and back to top with the page's actions are one layer (z 40)
+   over the content; the band is the next, so the list slides under it at
+   the end of a Post, and back to top does where it would lie on the band's
+   navigation. From 87rem back to top stands right of the page width, where
+   the band shows nothing, and stays over it; below lg it rests in the corner
+   the band keeps clear (footer.tsx). A button the keyboard is on shows over
+   the band wherever it is. The body is no layer of its own for all that:
+   each region before the footer is one, over the banner and the navbar's
+   scrim. */
+.immersive-body {
+  z-index: auto;
+}
+.immersive-body > :is(.immersive-main, .immersive-cards, .immersive-footer) {
+  z-index: 30;
+}
+/* The room above the band is the footer's. It lets the pointer through to
+   what shows in it, the end of the list or back to top. */
+.immersive-footer {
+  pointer-events: none;
+}
+.immersive-footer > * {
+  pointer-events: auto;
+}
+@media (width >= 64rem) {
+  .immersive-body > .immersive-footer {
+    z-index: 45;
+  }
+  .immersive-body > .fuwari-floating-actions:has(:focus-visible) {
+    z-index: 46;
+  }
+}
+/* Below 80rem a Post has a second button above back to top, which reaches
+   higher than the band is tall: the room above the band covers it too, in
+   the colour of the page, so no part of a button is left showing over the
+   band's edge at the end of the page. */
+@media (64rem <= width < 80rem) {
+  .immersive-shell[data-column="reading"] .immersive-footer {
+    background-color: var(--fuwari-page-bg);
+    pointer-events: auto;
+  }
+}
+@media (width >= 87rem) {
+  .immersive-body > .fuwari-floating-actions {
+    z-index: 46;
+  }
 }
