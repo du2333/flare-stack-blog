@@ -203,8 +203,7 @@
   background: var(--fuwari-primary);
   border: 3px solid var(--fuwari-card-bg);
 }
-.site-hue-control output,
-.site-focus-control output {
+.site-hue-control output {
   display: grid;
   place-items: center;
   min-width: calc(72 * var(--admin-unit));
@@ -219,6 +218,11 @@
   display: flex;
   align-items: center;
   gap: calc(16 * var(--admin-unit));
+}
+.site-focus-control output {
+  color: var(--fuwari-fg-50);
+  font-size: calc(13 * var(--admin-unit));
+  font-variant-numeric: tabular-nums;
 }
 .site-theme-option-control {
   display: flex;
