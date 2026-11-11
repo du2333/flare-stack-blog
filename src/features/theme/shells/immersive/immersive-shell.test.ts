@@ -144,10 +144,10 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「沉浸」, with the default recipe and no options of its own", () => {
+  it("is 「沉浸」, with Posts as tiles in the default recipe and no options of its own", () => {
     expect(theme.id).toBe("immersive");
     expect(theme.name()).toBe(m.theme_immersive_name());
-    expect(theme.recipe).toBe(DEFAULT_THEME_RECIPE);
+    expect(theme.recipe).toEqual({ ...DEFAULT_THEME_RECIPE, postCard: "tile" });
     expect(theme.optionFields).toBeUndefined();
     expect(resolveThemeOptions(theme, { stale: 1 })).toEqual({});
   });

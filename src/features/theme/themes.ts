@@ -101,7 +101,7 @@ const immersiveTheme: Theme = {
   name: m.theme_immersive_name,
   shell: immersiveShell,
   stylesheet: immersiveStylesheet,
-  recipe: DEFAULT_THEME_RECIPE,
+  recipe: { ...DEFAULT_THEME_RECIPE, postCard: "tile" },
   options: z.object({}),
   thumbnail: ImmersiveThumbnail,
 };

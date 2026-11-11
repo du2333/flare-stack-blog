@@ -12,16 +12,23 @@ import { Profile } from "@/components/layout/profile";
 import { FriendLinksPage } from "@/features/friend-links/components/friend-links-page";
 import { LatestMoments } from "@/features/moments/components/latest-moments";
 import { MomentsPage } from "@/features/moments/components/moments-page";
-import { MomentPageSkeleton } from "@/features/moments/components/moments-page-skeleton";
+import {
+  MomentPageSkeleton,
+  MomentsPageSkeleton,
+} from "@/features/moments/components/moments-page-skeleton";
 import { ArchivePanel } from "@/features/posts/components/archive/archive-panel";
 import { HomePage } from "@/features/posts/components/home-page";
+import { HomePageSkeleton } from "@/features/posts/components/home-page-skeleton";
 import { PostCard } from "@/features/posts/components/post-card";
 import { PostMeta } from "@/features/posts/components/post-meta";
 import { PostPage } from "@/features/posts/components/post-page";
 import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
 import { PostSummary } from "@/features/posts/components/post-summary";
 import { PostsPage } from "@/features/posts/components/posts-page";
-import type { PostItem } from "@/features/posts/schema/posts.schema";
+import {
+  HOME_POSTS_PER_PAGE,
+  type PostItem,
+} from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "../theme-recipe";
 import { ThemeRecipeProvider } from "./theme-recipe";
@@ -252,7 +259,118 @@ describe("Theme Recipe", () => {
       expect(linksTo(withoutCover, "/post/a-post")).toHaveLength(1);
     });
 
-    it("home list: cards get a separator for phones, rows do not", () => {
+    it("tile: the cover leads, then title, summary and one meta line with the stats, without Tags", () => {
+      const host = render(
+        createElement(PostCard, {
+          post: post({ cover: COVER } as Partial<PostItem>),
+        }),
+        { postCard: "tile" },
+      );
+      const tile = host.querySelector("article")!;
+      expect(tile.children).toHaveLength(2);
+      const [lead, text] = tile.children;
+      expect(lead.getAttribute("data-lead")).toBe("cover");
+      // The title names the Post; the cover is decoration. It loads lazily
+      // and is painted with its tile, so it is not decoded asynchronously.
+      const cover = lead.querySelector("img")!;
+      expect(cover.getAttribute("alt")).toBe("");
+      expect(cover.getAttribute("loading")).toBe("lazy");
+      expect(cover.hasAttribute("decoding")).toBe(false);
+
+      const [title] = linksTo(host, "/post/a-post");
+      const parts = [...text.children];
+      expect(parts).toHaveLength(3);
+      expect(parts[0]).toBe(title);
+      expect(parts[1].textContent).toBe("What the post is about.");
+      const meta = parts[2];
+      for (const item of ["Notes", READ_TIME, VIEWS]) {
+        expect(meta.textContent).toContain(item);
+      }
+      // The Category is the only link into the archive: no Tags.
+      expect(linksTo(host, "/posts")).toHaveLength(1);
+      expect(linksTo(meta, "/posts")).toHaveLength(1);
+    });
+
+    it("tile: a missing summary takes no space", () => {
+      const host = render(
+        createElement(PostCard, { post: post({ summary: null }) }),
+        { postCard: "tile" },
+      );
+      const [title] = linksTo(host, "/post/a-post");
+      expect(title.parentElement!.children).toHaveLength(2);
+      expect(title.nextElementSibling!.textContent).toContain(READ_TIME);
+    });
+
+    it("tile: without a cover a plate leads, with the first letter of the title", () => {
+      const plate = (title: string) => {
+        const host = render(
+          createElement(PostCard, { post: post({ title }) }),
+          { postCard: "tile" },
+        );
+        const lead = host.querySelector("article")!.firstElementChild!;
+        expect(lead.getAttribute("data-lead")).toBe("plate");
+        expect(lead.querySelector("img")).toBeNull();
+        // The watermark repeats the title, so it is hidden from readers.
+        expect(lead.firstElementChild!.getAttribute("aria-hidden")).toBe(
+          "true",
+        );
+        return lead.firstElementChild!.textContent;
+      };
+      expect(plate("A post")).toBe("A");
+      expect(plate("  读《设计中的设计》")).toBe("读");
+      expect(plate("《设计中的设计》读后")).toBe("设");
+      expect(plate("🎉 2026 回顾")).toBe("2");
+      expect(plate("👨‍👩‍👧 ……")).toBe("👨‍👩‍👧");
+    });
+
+    it("tile: pinned and popular are a label on the lead, not a part of the text", () => {
+      const tile = (props: { pinned?: boolean; popular?: boolean }) =>
+        render(createElement(PostCard, { post: post(), ...props }), {
+          postCard: "tile",
+        }).querySelector("article")!;
+      const [plainLead, plainText] = tile({}).children;
+      expect(plainLead.children).toHaveLength(1);
+
+      for (const [props, kind, label] of [
+        [{ pinned: true }, "pinned", m.home_pinned_posts()],
+        [{ popular: true }, "popular", m.home_popular_posts()],
+      ] as const) {
+        const [lead, text] = tile(props).children;
+        const flag = lead.querySelector(`[data-kind="${kind}"]`)!;
+        expect(flag.textContent).toBe(label);
+        expect(flag.parentElement).toBe(lead);
+        expect(text.children).toHaveLength(plainText.children.length);
+        expect(text.className).toBe(plainText.className);
+      }
+    });
+
+    it("tile: the title is its one link to the Post; no strip, no bar and no icon blocks in any recipe", () => {
+      for (const cover of [null, COVER]) {
+        const host = render(
+          createElement(PostCard, {
+            post: post({ cover } as Partial<PostItem>),
+          }),
+          {
+            postCard: "tile",
+            meta: "chips",
+            noCoverStrip: "keep",
+            headingAccent: "on",
+          },
+        );
+        const links = linksTo(host, "/post/a-post");
+        expect(links).toHaveLength(1);
+        expect(links[0].classList.contains("fuwari-tile-title")).toBe(true);
+        expect(hasBar(links[0])).toBe(false);
+        expect(host.querySelectorAll("svg")).toHaveLength(0);
+        // The Category lies over the title's link, not inside it.
+        expect(host.querySelector("a a")).toBeNull();
+        expect(
+          host.querySelector("article")!.firstElementChild!.querySelector("a"),
+        ).toBeNull();
+      }
+    });
+
+    it("home list: cards get a separator for phones, rows and tiles do not", () => {
       const posts = [post(), post({ slug: "b" }), post({ slug: "c" })];
       const props = { posts, page: 1, totalPages: 1 };
       const list = (host: Element) => [
@@ -265,6 +383,106 @@ describe("Theme Recipe", () => {
         render(createElement(HomePage, props), { postCard: "row" }),
       );
       expect(rows.map((entry) => entry.children.length)).toEqual([1, 1, 1]);
+      const tiles = list(
+        render(createElement(HomePage, props), { postCard: "tile" }),
+      );
+      expect(tiles.map((entry) => entry.children.length)).toEqual([1, 1, 1]);
+    });
+
+    it("home list: tiles stand in the cells of a grid, over the page numbers", () => {
+      const posts = [post(), post({ slug: "b" }), post({ slug: "c" })];
+      const host = render(
+        createElement(HomePage, { posts, page: 1, totalPages: 2 }),
+        { postCard: "tile" },
+      );
+      const [grid, pages] = host.firstElementChild!.children;
+      expect(grid.className).toBe("fuwari-tile-grid");
+      expect(
+        [...grid.children].map((cell) => [
+          cell.classList.contains("fuwari-tile-cell"),
+          cell.firstElementChild!.tagName,
+        ]),
+      ).toEqual(posts.map(() => [true, "ARTICLE"]));
+      expect(pages.tagName).toBe("NAV");
+
+      // Cards and rows are no grid.
+      for (const postCard of ["card", "row"] as const) {
+        const other = render(
+          createElement(HomePage, { posts, page: 1, totalPages: 2 }),
+          { postCard },
+        );
+        expect(other.querySelector(".fuwari-tile-grid")).toBeNull();
+        expect(other.querySelector(".fuwari-tile-cell")).toBeNull();
+      }
+    });
+
+    it("home list: without Posts, tiles say so; cards and rows keep the page numbers", () => {
+      const props = { posts: [], page: 1, totalPages: 1 };
+      const tiles = render(createElement(HomePage, props), {
+        postCard: "tile",
+      });
+      expect(tiles.textContent).toBe(m.posts_no_posts());
+      expect(tiles.querySelector("nav")).toBeNull();
+      expect(tiles.querySelector(".fuwari-tile-grid")).toBeNull();
+
+      for (const postCard of ["card", "row"] as const) {
+        const other = render(createElement(HomePage, props), { postCard });
+        expect(other.querySelector("nav")).not.toBeNull();
+        expect(other.textContent).not.toContain(m.posts_no_posts());
+      }
+    });
+
+    it("home list skeleton: a page of tiles with the boxes of a tile; nothing for cards and rows", () => {
+      expect(render(createElement(HomePageSkeleton)).innerHTML).toBe("");
+      expect(
+        render(createElement(HomePageSkeleton), { postCard: "row" }).innerHTML,
+      ).toBe("");
+
+      const real = render(
+        createElement(HomePage, {
+          posts: [post({ cover: COVER } as Partial<PostItem>)],
+          page: 1,
+          totalPages: 1,
+        }),
+        { postCard: "tile" },
+      );
+      const skeleton = render(createElement(HomePageSkeleton), {
+        postCard: "tile",
+      });
+      const classes = (element: Element) => [...element.classList];
+      // The same list: a container, the grid in it, then the page numbers.
+      const [grid, pages] = skeleton.firstElementChild!.children;
+      const [realGrid, realPages] = real.firstElementChild!.children;
+      expect(classes(skeleton.firstElementChild!)).toEqual(
+        expect.arrayContaining(classes(real.firstElementChild!)),
+      );
+      expect(grid.className).toBe(realGrid.className);
+      expect(classes(pages)).toEqual(
+        expect.arrayContaining(classes(realPages)),
+      );
+      expect(grid.children).toHaveLength(HOME_POSTS_PER_PAGE);
+
+      const realTile = realGrid.querySelector("article")!;
+      for (const cell of grid.children) {
+        expect(cell.className).toBe("fuwari-tile-cell");
+        const tile = cell.firstElementChild!;
+        expect(classes(tile)).toEqual(
+          expect.arrayContaining(classes(realTile)),
+        );
+        expect(tile.children).toHaveLength(2);
+        const [lead, text] = tile.children;
+        expect(lead.classList.contains("fuwari-tile-lead")).toBe(true);
+        expect(lead.getAttribute("data-lead")).toBe("cover");
+        expect(text.className).toBe(realTile.children[1].className);
+        // A line of title, the summary, the meta line.
+        expect(text.children).toHaveLength(3);
+        expect(
+          text.firstElementChild!.classList.contains("fuwari-list-title"),
+        ).toBe(true);
+      }
+      // Placeholders only: nothing to read, nothing to follow.
+      expect(skeleton.textContent).toBe("");
+      expect(skeleton.querySelector("a, article, img")).toBeNull();
     });
   });
 
@@ -302,6 +520,28 @@ describe("Theme Recipe", () => {
       expect(ruled({ postCard: "row" })).toEqual([false, true, true]);
       expect(surface({ postCard: "row" })).toBe(false);
     });
+
+    it("tile: Moments stay one column of cards, never a grid", () => {
+      const forms = { postCard: "tile" } as const;
+      expect(ruled(forms)).toEqual([false, false, false]);
+      expect(surface(forms)).toBe(true);
+
+      const column = (element: ReactElement) => {
+        const host = render(element, forms);
+        expect(host.querySelector('[class*="fuwari-tile"]')).toBeNull();
+        expect(host.querySelector('[class*="grid"]')).toBeNull();
+        return host.innerHTML;
+      };
+      // The timeline and its skeleton are what they are for cards.
+      const timeline = createElement(MomentsPage, {
+        moments,
+        page: 1,
+        totalPages: 3,
+      });
+      expect(column(timeline)).toBe(render(timeline).innerHTML);
+      const skeleton = createElement(MomentsPageSkeleton);
+      expect(column(skeleton)).toBe(render(skeleton).innerHTML);
+    });
   });
 
   describe("meta", () => {
@@ -334,6 +574,12 @@ describe("Theme Recipe", () => {
         meta: "inline",
       });
       expect(row.querySelectorAll("svg")).toHaveLength(0);
+
+      const tile = render(createElement(PostCard, { post: post() }), {
+        postCard: "tile",
+        meta: "inline",
+      });
+      expect(tile.querySelectorAll("svg")).toHaveLength(0);
 
       const page = postPage({ meta: "inline" });
       const words = byText(page, m.post_word_count({ count: 1200 }));

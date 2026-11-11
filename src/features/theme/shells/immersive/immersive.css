@@ -102,6 +102,21 @@
   }
 }
 
+/* The Post list as tiles (Theme Recipe, postCard: "tile"): a title that fits
+   a tile half the column wide, and the deeper shadow of a tile under the
+   pointer. */
+:root[data-theme="immersive"] {
+  --immersive-tile-shadow-hover:
+    0 2px 4px oklch(var(--immersive-ink) / 0.05),
+    0 22px 44px -22px oklch(var(--immersive-ink) / 0.42);
+  --theme-card-shadow-hover: var(--immersive-tile-shadow-hover);
+  --theme-list-title-size: 1.3125rem;
+}
+:root[data-theme="immersive"].dark {
+  --immersive-tile-shadow-hover:
+    0 0 0 1px rgb(255 255 255 / 0.09), 0 24px 48px -22px rgb(0 0 0 / 0.85);
+}
+
 /* The banner is a low band, and the tall first screen of the home page; it
    never gets so low that the navbar and, on the home page, the introduction
    no longer fit on it. The navbar condenses a bar's height, the overlap and

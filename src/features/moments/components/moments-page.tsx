@@ -20,7 +20,8 @@ interface MomentsPageProps {
 export function MomentsPage({ moments, page, totalPages }: MomentsPageProps) {
   const isAdmin = useIsAdmin();
   // Cards stand apart; rows sit on the page with a rule between them, and
-  // one under the composer.
+  // one under the composer. Where Posts are tiles the timeline is cards too:
+  // it is one column in every form.
   const rows = useThemeRecipe().postCard === "row";
 
   return (
