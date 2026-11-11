@@ -1,0 +1,205 @@
+/* 「名片」's stylesheet (themes.ts links it only while 「名片」 is the selected
+   Theme; the shell's modules import no CSS): its design-variable values, then
+   the shell's own styles. */
+@import "./navbar.css";
+@import "./first-screen.css";
+
+/* The palette the values below and the shell share. Ink is the text colour at
+   full strength, used for solid fills; the accent ink is the hue dark enough
+   to read as text. Only these change with the Colour Scheme: everything else
+   derives from them or from the base layer, which already follows it. */
+:root[data-theme="namecard"] {
+  --namecard-ink: var(--fuwari-deep-text);
+  --namecard-ink-hover: color-mix(in oklab, var(--fuwari-deep-text) 86%, white);
+  --namecard-accent-ink: var(--fuwari-btn-content);
+  --namecard-hairline: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --namecard-tint: color-mix(
+    in oklab,
+    var(--fuwari-primary) 22%,
+    var(--fuwari-page-bg)
+  );
+  --namecard-frame-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 14px 28px -12px oklch(0.45 0.08 var(--fuwari-hue) / 0.28),
+    0 36px 72px -28px oklch(0.4 0.1 var(--fuwari-hue) / 0.38);
+  --namecard-nav-height: 60px;
+  --namecard-gutter: 1rem;
+  --namecard-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --namecard-ease-fold: cubic-bezier(0.32, 0.72, 0, 1);
+  --namecard-fold: 640ms;
+}
+:root[data-theme="namecard"].dark {
+  --namecard-ink: oklch(0.96 0.01 var(--fuwari-hue));
+  --namecard-ink-hover: oklch(0.88 0.015 var(--fuwari-hue));
+  --namecard-tint: color-mix(
+    in oklab,
+    var(--fuwari-primary) 26%,
+    var(--fuwari-page-bg)
+  );
+  --namecard-frame-shadow:
+    0 1px 2px rgb(0 0 0 / 0.3), 0 18px 36px -14px rgb(0 0 0 / 0.55),
+    0 40px 80px -30px rgb(0 0 0 / 0.6);
+}
+@media (max-width: 719px) {
+  :root[data-theme="namecard"] {
+    --namecard-nav-height: 56px;
+    --namecard-gutter: 1.25rem;
+  }
+}
+
+:root[data-theme="namecard"] {
+  /* Content sits on the page itself; only what floats keeps a surface. */
+  --theme-surface: var(--fuwari-page-bg);
+  --theme-raised: var(--fuwari-card-bg);
+  --theme-card-radius: 0;
+  --theme-card-shadow: none;
+  --theme-rule: var(--namecard-hairline);
+  --theme-rule-style: solid;
+  --theme-panel-pad-x: 0px;
+  --theme-row-pad-y: 1.75rem;
+  --theme-cover-radius: 0.875rem;
+
+  /* Ink for what is solid, neutral ink tints for what is tonal. */
+  --theme-accent: var(--namecard-accent-ink);
+  --theme-solid-bg: var(--namecard-ink);
+  --theme-solid-bg-hover: var(--namecard-ink-hover);
+  --theme-solid-bg-active: var(--namecard-ink-hover);
+  --theme-solid-fg: var(--fuwari-page-bg);
+  --theme-tonal-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-tonal-bg-hover: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --theme-tonal-bg-active: color-mix(
+    in srgb,
+    var(--fuwari-fg) 14%,
+    transparent
+  );
+  --theme-tonal-fg: var(--namecard-ink);
+  --theme-plain-bg-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --theme-plain-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-bg-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --theme-toc-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-badge-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-count-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-count-fg: var(--namecard-ink);
+
+  /* Serif titles. No web font: the system's serif, and where it has none for
+     Chinese, its sans face in the same weight. */
+  --theme-heading-font:
+    ui-serif, "New York", Georgia, "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", "Songti SC", serif;
+  --theme-heading-tracking: -0.005em;
+  --theme-list-title-size: 1.625rem;
+  --theme-page-title-size: clamp(2rem, 3.4vw, 2.75rem);
+  --theme-meta-size: 0.8125rem;
+  --theme-meta-weight: 400;
+  --theme-kicker-size: 0.75rem;
+  --theme-kicker-tracking: 0.2em;
+  --theme-kicker-color: var(--namecard-accent-ink);
+
+  /* Sidebar blocks: a rule above, a small spaced title. */
+  --theme-widget-rule: 1px solid var(--namecard-hairline);
+  --theme-widget-title-size: 0.8125rem;
+  --theme-widget-title-tracking: 0.24em;
+  --theme-widget-title-color: var(--namecard-accent-ink);
+  --theme-widget-pad-x: 0px;
+  --theme-widget-row-bleed: 0.5rem;
+  --theme-widget-more-color: var(--fuwari-fg-50);
+
+  /* Pills. */
+  --theme-chip-radius: 999px;
+  --theme-button-radius: 999px;
+  --theme-pager-radius: 999px;
+  --theme-floating-radius: 999px;
+
+  /* Sign-in, status and profile panels: a frame instead of a fill. */
+  --theme-standalone-border: 1px solid var(--namecard-hairline);
+  --theme-standalone-radius: 1.25rem;
+  --theme-standalone-pad-x-narrow: 20px;
+
+  --theme-link-underline-style: solid;
+
+  /* The side table of contents: below the navbar, in the right gutter. */
+  --shell-toc-top: calc(var(--namecard-nav-height) + 0.5rem);
+  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
+  /* Back to top from lg: just right of the content, kept on screen when the
+     gutter is too narrow. */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}
+
+.namecard-shell {
+  position: relative;
+  min-height: 100vh;
+  background: var(--fuwari-page-bg);
+  transition: background-color 300ms;
+}
+
+/* One centred column of --fuwari-page-width; from lg the sidebar cards stand
+   left of the content. */
+.namecard-body {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  max-width: var(--fuwari-page-width);
+  margin-inline: auto;
+  padding: 0.75rem var(--namecard-gutter) 2rem;
+}
+/* A focused page stands a little apart from the navbar. */
+.namecard-body[data-focused="true"] {
+  padding-top: clamp(1.25rem, 5vh, 3.5rem);
+}
+.namecard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  order: 1;
+}
+/* Beside the sidebar the content starts under a rule, as each card does. */
+.namecard-body[data-focused="false"] .namecard-main {
+  border-top: 1px solid var(--namecard-hairline);
+}
+.namecard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  order: 2;
+}
+.namecard-sidebar-index {
+  position: sticky;
+  top: calc(var(--namecard-nav-height) + 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+/* A card that shows nothing leaves no gap. */
+.namecard-sidebar-card:empty {
+  display: none;
+}
+.namecard-footer {
+  order: 3;
+  margin-top: auto;
+}
+@media (min-width: 1024px) {
+  .namecard-body[data-focused="false"] {
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    column-gap: 3.5rem;
+  }
+  .namecard-body[data-focused="false"] .namecard-sidebar {
+    order: 1;
+  }
+  .namecard-body[data-focused="false"] .namecard-main {
+    order: 2;
+  }
+  .namecard-body[data-focused="false"] .namecard-footer {
+    grid-column-start: 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .namecard-shell {
+    transition: none;
+  }
+}

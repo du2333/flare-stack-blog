@@ -3,6 +3,9 @@ import { FIXTURE_THEMES } from "virtual:fixture-themes";
 import { m } from "@/paraglide/messages";
 import { classicShell } from "./shells/classic/classic-shell";
 import classicStylesheet from "./shells/classic/classic-shell.css?url";
+import { DEFAULT_FRAME, FRAMES } from "./shells/namecard/frame";
+import { namecardShell } from "./shells/namecard/namecard-shell";
+import namecardStylesheet from "./shells/namecard/namecard.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
@@ -31,6 +34,13 @@ export interface Theme {
    * default.
    */
   options: z.ZodType<ThemeOptionValues>;
+  /** How the Admin edits this Theme's options; only choice lists for now. */
+  optionFields?: ReadonlyArray<{
+    key: string;
+    label: () => string;
+    hint?: () => string;
+    choices: ReadonlyArray<{ value: string; label: () => string }>;
+  }>;
 }
 
 const classicTheme: Theme = {
@@ -42,8 +52,39 @@ const classicTheme: Theme = {
   options: z.object({}),
 };
 
+const FRAME_LABELS = {
+  portrait: m.theme_namecard_frame_portrait,
+  standard: m.theme_namecard_frame_standard,
+  wide: m.theme_namecard_frame_wide,
+} satisfies Record<(typeof FRAMES)[number], () => string>;
+
+const namecardTheme: Theme = {
+  id: "namecard",
+  name: m.theme_namecard_name,
+  shell: namecardShell,
+  stylesheet: namecardStylesheet,
+  recipe: {
+    postCard: "row",
+    meta: "inline",
+    noCoverStrip: "remove",
+    headingAccent: "off",
+    summary: "standfirst",
+    archive: "index",
+  },
+  options: z.object({ frame: z.enum(FRAMES).catch(DEFAULT_FRAME) }),
+  optionFields: [
+    {
+      key: "frame",
+      label: m.theme_namecard_frame,
+      hint: m.theme_namecard_frame_hint,
+      choices: FRAMES.map((value) => ({ value, label: FRAME_LABELS[value] })),
+    },
+  ],
+};
+
 const BUILT_IN_THEMES = {
   classic: classicTheme,
+  namecard: namecardTheme,
 } satisfies Record<ThemeId, Theme>;
 
 /**

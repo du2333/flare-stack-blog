@@ -319,6 +319,16 @@
   "colour_scheme_system": "System",
   "colour_scheme_toggle_title": "Colour scheme: {scheme}",
   "theme_classic_name": "Classic",
+  "theme_namecard_name": "Name Card",
+  "theme_namecard_kicker": "Personal blog",
+  "theme_namecard_greeting_hello": "Hello,\u00a0",
+  "theme_namecard_greeting_name": "I'm {author}.",
+  "theme_namecard_read_posts": "Read the posts",
+  "theme_namecard_frame": "Frame shape",
+  "theme_namecard_frame_hint": "The proportions of the frame around the banner image on the home page.",
+  "theme_namecard_frame_portrait": "Portrait",
+  "theme_namecard_frame_standard": "4:3",
+  "theme_namecard_frame_wide": "Wide",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeEn = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=true"],
