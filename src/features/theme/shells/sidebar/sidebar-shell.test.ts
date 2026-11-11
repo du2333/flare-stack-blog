@@ -1,32 +1,45 @@
 // @vitest-environment jsdom
-// What only 「侧栏」 does; what every shell must do is in ../theme-shells.test.ts.
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router";
+// What only 「侧栏」 does on every page; what every shell must do is in
+// ../theme-shells.test.ts, a Post's page and the options in
+// ./sidebar-post.test.ts.
 import {
   act,
   cleanup,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
 } from "@testing-library/react";
-import { createElement, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { NavOption, UserInfo } from "@/components/layout/layout-props";
-import { resolveSiteConfig } from "@/features/config/config.resolve";
-import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
-import { useFirstScreenHeight } from "../../components/first-screen";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
-import type { PageKind, SidebarCard, ThemeShellProps } from "../../theme-shell";
-import { resolveThemeOptions, selectTheme } from "../../themes";
+import {
+  banner,
+  blockAfter,
+  cardSlots,
+  declarations,
+  flat,
+  follows,
+  headline,
+  inOrder,
+  mainNavigation,
+  mediaBlocks,
+  NAV_OPTIONS,
+  onScreen,
+  rail,
+  railBody,
+  railFoot,
+  read,
+  readCss,
+  reducedMotion,
+  region,
+  renderShell,
+  rootProperties,
+  shell,
+  SITE,
+  theme,
+  topBar,
+} from "./test-utils";
 
 vi.mock("@/components/common/colour-scheme-provider", () => ({
   useColourScheme: () => ({
@@ -35,144 +48,6 @@ vi.mock("@/components/common/colour-scheme-provider", () => ({
     setColourScheme: vi.fn(),
   }),
 }));
-
-const theme = selectTheme("sidebar");
-
-/** Shaped like the host's list: the built-in entries, then the custom links. */
-const NAV_OPTIONS: Array<NavOption> = [
-  { id: "home", label: "Nav home", href: "/", external: false },
-  { id: "posts", label: "Nav posts", href: "/posts", external: false },
-  { id: "moments", label: "Nav moments", href: "/moments", external: false },
-  { id: "custom-0", label: "Nav about", href: "/about", external: false },
-  {
-    id: "custom-1",
-    label: "Nav elsewhere",
-    href: "https://example.com/",
-    external: true,
-  },
-];
-
-const SITE: SystemConfig["site"] = {
-  title: "Engine Notes",
-  author: "Ada",
-  description: "Notes on engines.",
-  tagline: "Slow and exact",
-  social: [{ platform: "github", url: "https://github.com/ada" }],
-};
-
-/** The cards the host gives 「侧栏」 on a page, each showing only its id. */
-function cardsFor(pageKind: PageKind): Array<SidebarCard> {
-  return sidebarCardsFor(pageKind, theme.shell).map(({ id, kind }) => ({
-    id,
-    kind,
-    content: createElement("div", null, `Card ${id}`),
-  }));
-}
-
-/** Where the shell's first screen ends, as the page on screen is told. */
-let firstScreenHeight: () => number;
-
-function PageContent() {
-  firstScreenHeight = useFirstScreenHeight();
-  return createElement("p", null, "Page content");
-}
-
-const reducedMotion = { matches: false };
-/** Changes the page kind of the shell on screen, as a navigation does. */
-let goTo: (pageKind: PageKind) => void;
-
-async function renderShell({
-  pageKind,
-  site = SITE,
-  user,
-  isSessionLoading = false,
-  path = "/",
-  cards,
-}: {
-  pageKind: PageKind;
-  site?: SystemConfig["site"];
-  user?: UserInfo;
-  isSessionLoading?: boolean;
-  path?: string;
-  cards?: Array<SidebarCard>;
-}) {
-  function Host() {
-    const [kind, setKind] = useState(pageKind);
-    goTo = setKind;
-    const props: ThemeShellProps = {
-      pageKind: kind,
-      options: resolveThemeOptions(theme, undefined),
-      navOptions: NAV_OPTIONS,
-      sidebarCards: cards ?? cardsFor(kind),
-      user,
-      isSessionLoading,
-      logout: async () => {},
-      children: createElement(PageContent),
-      footer: createElement("p", null, "Footer content"),
-      floatingActions: createElement("button", { type: "button" }, "Floating"),
-    };
-    return createElement(theme.shell.Shell, props);
-  }
-  const root = createRootRoute({
-    beforeLoad: () => ({ siteConfig: resolveSiteConfig({ site }) }),
-    loader: () => ({ currentYear: 2026 }),
-    component: Host,
-    // The test stands the shell at any address.
-    notFoundComponent: () => null,
-  });
-  const router = createRouter({
-    routeTree: root,
-    history: createMemoryHistory({ initialEntries: [path] }),
-  });
-  await act(async () => {
-    render(createElement(RouterProvider, { router }));
-  });
-  await screen.findByText("Page content");
-  return router;
-}
-
-function shell() {
-  return document.querySelector<HTMLElement>('[data-theme-shell="sidebar"]')!;
-}
-function rail() {
-  return document.querySelector<HTMLElement>(".sidebar-rail")!;
-}
-function railBody() {
-  return rail().querySelector<HTMLElement>(".sidebar-rail-body")!;
-}
-function railFoot() {
-  return rail().querySelector<HTMLElement>(".sidebar-rail-foot")!;
-}
-function topBar() {
-  return document.querySelector<HTMLElement>(".sidebar-topbar")!;
-}
-function banner() {
-  return document.querySelector<HTMLElement>(".sidebar-banner");
-}
-function headline() {
-  return document.querySelector<HTMLElement>(".sidebar-headline");
-}
-function region(name: string) {
-  return document.querySelector<HTMLElement>(`[data-shell-region="${name}"]`)!;
-}
-function cardSlots() {
-  return [...document.querySelectorAll<HTMLElement>(".sidebar-card")];
-}
-function mainNavigation() {
-  return within(rail()).getByRole("navigation", { name: m.nav_main_label() });
-}
-
-function follows(earlier: Node, later: Node) {
-  return Boolean(
-    earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING,
-  );
-}
-function inOrder(nodes: Array<Node | null>) {
-  expect(nodes.every(Boolean)).toBe(true);
-  return nodes.every(
-    (node, index) => index === 0 || follows(nodes[index - 1]!, node!),
-  );
-}
 
 beforeEach(() => {
   reducedMotion.matches = false;
@@ -589,18 +464,16 @@ describe("the banner", () => {
     );
   });
 
-  it.each(["inner", "post"] as const)(
-    "is the low band on a %s page",
-    async (pageKind) => {
-      await renderShell({ pageKind });
+  it("is the low band on an inner page", async () => {
+    await renderShell({ pageKind: "inner" });
 
-      expect(shell().dataset.home).toBe("false");
-      expect(banner()).not.toBeNull();
-      expect(screen.getByAltText("banner").getAttribute("fetchpriority")).toBe(
-        "auto",
-      );
-    },
-  );
+    expect(shell().dataset.home).toBe("false");
+    expect(banner()).not.toBeNull();
+    expect(banner()!.dataset.shown).toBe("true");
+    expect(screen.getByAltText("banner").getAttribute("fetchpriority")).toBe(
+      "auto",
+    );
+  });
 
   it("is not on a focused page, which keeps the rail and the top bar as any page does", async () => {
     await renderShell({ pageKind: "focused" });
@@ -647,15 +520,38 @@ describe("the banner", () => {
     vi.spyOn(banner()!, "getBoundingClientRect").mockReturnValue({
       bottom: 380,
     } as DOMRect);
-    expect(firstScreenHeight()).toBe(380);
+    expect(onScreen.firstScreenHeight()).toBe(380);
 
     // Scrolled, the banner's box has moved up in the window by as much.
     Object.defineProperty(window, "scrollY", { value: 40, configurable: true });
-    expect(firstScreenHeight()).toBe(420);
+    expect(onScreen.firstScreenHeight()).toBe(420);
     Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+    cleanup();
 
-    act(() => goTo("focused"));
-    expect(firstScreenHeight()).toBe(0);
+    await renderShell({ pageKind: "focused" });
+    expect(onScreen.firstScreenHeight()).toBe(0);
+  });
+
+  it("folds away on the way to a focused page, with the space after it, and is taken out of the document after", async () => {
+    await renderShell({ pageKind: "inner" });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+    await onScreen.visit("focused");
+    expect(banner()!.dataset.shown).toBe("false");
+    expect(banner()!.getAttribute("aria-hidden")).toBe("true");
+    expect(
+      declarations(
+        blockAfter(
+          readCss("sidebar.css"),
+          '.sidebar-banner[data-shown="false"]',
+        ),
+      ),
+    ).toEqual(["height: 0", "margin-bottom: 0", "opacity: 0"]);
+
+    act(() => {
+      vi.advanceTimersByTime(RESIZE_MS + FOLD_SLACK_MS);
+    });
+    expect(banner()).toBeNull();
   });
 
   it("resizes at once when the reader goes back or forward", async () => {
@@ -695,7 +591,7 @@ describe("the headline", () => {
     await renderShell({ pageKind: "home" });
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 
-    act(() => goTo("inner"));
+    await onScreen.visit("inner");
     expect(headline()!.dataset.shown).toBe("false");
     expect(headline()!.hasAttribute("inert")).toBe(true);
     expect(headline()!.getAttribute("aria-hidden")).toBe("true");
@@ -711,16 +607,26 @@ describe("the headline", () => {
   });
 
   it("unfolds on the way back, from the frames after it was rendered folded", async () => {
-    const frames: Array<FrameRequestCallback> = [];
-    vi.stubGlobal("requestAnimationFrame", (frame: FrameRequestCallback) =>
-      frames.push(frame),
+    const frames = new Map<number, FrameRequestCallback>();
+    let handle = 0;
+    vi.stubGlobal("requestAnimationFrame", (frame: FrameRequestCallback) => {
+      frames.set(++handle, frame);
+      return handle;
+    });
+    vi.stubGlobal("cancelAnimationFrame", (cancelled: number) =>
+      frames.delete(cancelled),
     );
-    vi.stubGlobal("cancelAnimationFrame", vi.fn());
-    const nextFrame = () => act(() => frames.shift()!(0));
+    /** Everything asked for before this frame runs in it. */
+    const nextFrame = () =>
+      act(() => {
+        const due = [...frames.values()];
+        frames.clear();
+        for (const frame of due) frame(0);
+      });
     await renderShell({ pageKind: "inner" });
-    frames.length = 0;
+    frames.clear();
 
-    act(() => goTo("home"));
+    await onScreen.visit("home");
     expect(headline()!.dataset.shown).toBe("false");
     expect(headline()!.hasAttribute("inert")).toBe(false);
     nextFrame();
@@ -733,9 +639,9 @@ describe("the headline", () => {
     reducedMotion.matches = true;
     await renderShell({ pageKind: "inner" });
 
-    act(() => goTo("home"));
+    await onScreen.visit("home");
     expect(headline()!.dataset.shown).toBe("true");
-    act(() => goTo("inner"));
+    await onScreen.visit("inner");
     expect(headline()).toBeNull();
   });
 
@@ -811,20 +717,9 @@ describe("the sidebar cards", () => {
       },
     );
 
-    it("is hidden by the stylesheet at exactly the widths at which the rail shows", () => {
-      const css = readCss("sidebar.css");
+    it("has a rail to stand in for it only from 1024px, and the top bar, which shows no identity, until then", () => {
       const railCss = readCss("rail.css");
-      const identity = '.sidebar-card[data-kind="identity"]';
-      const fromLg = mediaBlocks(css, "(width >= 64rem)").find((block) =>
-        block.includes(identity),
-      )!;
 
-      // Hidden from 1024px, and nowhere else.
-      expect(css.split(identity)).toHaveLength(2);
-      expect(fromLg).toBeDefined();
-      expect(declarations(blockAfter(fromLg, identity))).toEqual([
-        "display: none",
-      ]);
       // The rail has no box below 1024px and is a column from there.
       expect(declarations(blockAfter(railCss, ".sidebar-rail {"))).toEqual([
         "display: none",
@@ -840,7 +735,6 @@ describe("the sidebar cards", () => {
         "@media (width >= 64rem)",
         "@media (width >= 64rem)",
       ]);
-      // And the top bar, which shows no identity, is there until then.
       const topBarFromLg = mediaBlocks(
         readCss("top-bar.css"),
         "(width >= 64rem)",
@@ -857,76 +751,16 @@ describe("the sidebar cards", () => {
         block.includes('.sidebar-card[data-kind="identity"]'),
       )!;
 
-      expect(fromLg.replace(/\s+/g, " ")).toContain(
-        '.sidebar-cards:not( :has(> .sidebar-card:not(:empty, [data-kind="identity"])) )',
+      expect(flat(fromLg)).toContain(
+        '.sidebar-cards:not(:has(> .sidebar-card:not(:empty, [data-kind="identity"])))',
       );
     });
   });
 });
 
-/** A file of the shell, as written. */
-function read(name: string) {
-  return readFileSync(join(import.meta.dirname, name), "utf8");
-}
-/** A stylesheet of the shell without its comments. */
-function readCss(name: string) {
-  return read(name).replace(/\/\*[\s\S]*?\*\//g, "");
-}
 /** `RESIZE_MS` and `FOLD_SLACK_MS` in banner.tsx. */
 const RESIZE_MS = 600;
 const FOLD_SLACK_MS = 150;
-
-/** The declarations of a block, one per entry, however they are wrapped. */
-function declarations(block: string) {
-  return block
-    .split(";")
-    .map((declaration) =>
-      declaration
-        .replace(/\s+/g, " ")
-        .replace(/\( /g, "(")
-        .replace(/ \)/g, ")")
-        .trim(),
-    )
-    .filter(Boolean);
-}
-
-/** The body of the first block that follows `head` in `css`. */
-function blockAfter(css: string, head: string) {
-  const start = css.indexOf("{", css.indexOf(head));
-  expect(css.indexOf(head), head).toBeGreaterThanOrEqual(0);
-  let depth = 1;
-  let end = start + 1;
-  while (depth > 0) {
-    if (css[end] === "{") depth += 1;
-    if (css[end] === "}") depth -= 1;
-    end += 1;
-  }
-  return css.slice(start + 1, end - 1);
-}
-
-/** The body of every `@media <query>` block in `css`. */
-function mediaBlocks(css: string, query: string) {
-  const head = `@media ${query}`;
-  const blocks: Array<string> = [];
-  for (let at = css.indexOf(head); at >= 0; at = css.indexOf(head, at + 1)) {
-    blocks.push(blockAfter(css.slice(at), head));
-  }
-  return blocks;
-}
-
-/** The custom properties `css` gives the Theme's root, a later block winning. */
-function rootProperties(css: string) {
-  const properties: Record<string, string> = {};
-  for (const [, body] of css.matchAll(
-    /:root\[data-theme="sidebar"\]\s*\{([^{}]*)\}/g,
-  )) {
-    for (const declaration of declarations(body!)) {
-      const [, name, value] = declaration.match(/^(--[\w-]+):\s*(.+)$/) ?? [];
-      if (name) properties[name] = value!;
-    }
-  }
-  return properties;
-}
 
 describe("the stylesheet", () => {
   const shellCss = readCss("sidebar.css");
@@ -1052,41 +886,14 @@ describe("the stylesheet", () => {
     ).toContain("height: var(--sidebar-topbar-h)");
   });
 
-  describe("what renders outside the shell", () => {
-    const fromWide = mediaBlocks(shellCss, "(width >= 112rem)");
-    /** What holds at every width: the root without what a wide window adds. */
-    const root = rootProperties(
-      fromWide.reduce((css, block) => css.replace(block, ""), shellCss),
+  it("floats back to top in the gutter right of the frame, and on screen where there is none", () => {
+    const root = rootProperties(shellCss);
+
+    expect(root["--sidebar-frame"]).toBe("81rem");
+    expect(root["--shell-floating-actions-left"]).toBe(
+      "min(calc(50% + var(--sidebar-frame) / 2 + 0.25rem), calc(100% - 4.75rem))",
     );
-
-    it("opens the table of contents of a Post from the button until the gutter right of the frame holds the list, from 1792px", () => {
-      expect(root["--shell-toc-side"]).toBe("none");
-      expect(root["--shell-toc-compact"]).toBe("flex");
-      expect(fromWide).toHaveLength(1);
-      expect(
-        declarations(blockAfter(fromWide[0]!, ':root[data-theme="sidebar"] {')),
-      ).toEqual(["--shell-toc-side: block", "--shell-toc-compact: none"]);
-    });
-
-    it("stands the list right of the content column, 14rem wide at 1792px and never wider than 17rem", () => {
-      const width = (windowRem: number) =>
-        Math.min(17, (windowRem - 81) / 2 - 1.5);
-
-      expect(root["--sidebar-frame"]).toBe("81rem");
-      expect(root["--shell-toc-left"]).toBe("calc(100% + 1.5rem)");
-      expect(root["--shell-toc-width"]).toBe(
-        "min(17rem, calc((100vw - var(--sidebar-frame)) / 2 - 1.5rem))",
-      );
-      expect(width(112)).toBe(14);
-      expect(width(160)).toBe(17);
-    });
-
-    it("floats back to top in the gutter right of the frame, and on screen where there is none", () => {
-      expect(root["--shell-floating-actions-left"]).toBe(
-        "min(calc(50% + var(--sidebar-frame) / 2 + 0.25rem), calc(100% - 4.75rem))",
-      );
-      expect(root["--shell-floating-actions-position"]).toBeUndefined();
-    });
+    expect(root["--shell-floating-actions-position"]).toBeUndefined();
   });
 
   it("uses no !important", () => {
