@@ -149,7 +149,7 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent and a standfirst", () => {
+  it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent, a standfirst and the footer as a band", () => {
     expect(theme.id).toBe("immersive");
     expect(theme.name()).toBe(m.theme_immersive_name());
     expect(theme.recipe).toEqual({
@@ -159,6 +159,7 @@ describe("the Theme", () => {
       headingAccent: "off",
       summary: "standfirst",
       archive: "timeline",
+      footer: "band",
     });
   });
 

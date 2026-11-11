@@ -87,6 +87,7 @@ const namecardTheme: Theme = {
     headingAccent: "off",
     summary: "standfirst",
     archive: "index",
+    footer: "caption",
   },
   options: z.object({ frame: z.enum(FRAMES).catch(DEFAULT_FRAME) }),
   optionFields: [
@@ -117,6 +118,7 @@ const immersiveTheme: Theme = {
     headingAccent: "off",
     summary: "standfirst",
     archive: "timeline",
+    footer: "band",
   },
   options: z.object({
     cards: z.enum(CARD_PLACEMENTS).catch(DEFAULT_CARD_PLACEMENT),

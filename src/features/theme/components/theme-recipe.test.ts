@@ -185,6 +185,7 @@ describe("Theme Recipe", () => {
       headingAccent: "on",
       summary: "box",
       archive: "timeline",
+      footer: "caption",
     });
     const element = createElement(PostCard, { post: post() });
     const bare = document.createElement("div");

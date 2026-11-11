@@ -349,3 +349,25 @@
     transition: none;
   }
 }
+
+/* ── The footer region ──
+   The footer closes the page from one edge of the window to the other and
+   ends it: the band (Theme Recipe, footer: "band") is a surface that fills
+   the region it is given, and keeps what it shows to the page width itself.
+   So the column no longer has the width of the page and its gutters itself:
+   the regions before the footer have them, each on its own (the gutter, or
+   what centres the page width in the window), and nothing follows the
+   footer. The footer stands 4rem clear of what is before it. */
+.immersive-body {
+  max-width: none;
+  padding: 0;
+}
+.immersive-body > :is(.immersive-main, .immersive-cards) {
+  margin-inline: max(
+    var(--immersive-gutter),
+    calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter))
+  );
+}
+.immersive-footer {
+  padding-top: 3rem;
+}
