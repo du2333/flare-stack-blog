@@ -1,0 +1,190 @@
+/* 「沉浸」's stylesheet (themes.ts links it only while 「沉浸」 is the selected
+   Theme; the shell's modules import no CSS): its design-variable values, then
+   the shell's own styles. */
+@import "./navbar.css";
+@import "./first-screen.css";
+
+/* What the values below and the shell share. The ink is a near-black tinted
+   with the hue, for shadows and for the shades white text stands on; the
+   glass and the frost are the surfaces of what lies on the banner and of
+   what floats over the page. Only the shadows and the frost change with the
+   Colour Scheme: everything else derives from the base layer, which already
+   follows it. */
+:root[data-theme="immersive"] {
+  --immersive-ink: 0.19 0.035 var(--fuwari-hue);
+  --immersive-card-shadow:
+    0 1px 2px oklch(var(--immersive-ink) / 0.04),
+    0 12px 32px -20px oklch(var(--immersive-ink) / 0.28);
+  /* Glass for what is filled on the banner: a mid grey, so it lightens a
+     dark image and darkens a bright one, and white text reads on both. */
+  --immersive-glass: oklch(0.56 0.03 var(--fuwari-hue) / 0.4);
+  --immersive-glass-strong: oklch(0.64 0.03 var(--fuwari-hue) / 0.5);
+  --immersive-glass-edge: rgb(255 255 255 / 0.22);
+  --immersive-frost-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 72%,
+    transparent
+  );
+  --immersive-frost-edge: rgb(255 255 255 / 0.55);
+  --immersive-frost-shadow:
+    0 14px 40px -14px oklch(var(--immersive-ink) / 0.32),
+    0 2px 8px oklch(var(--immersive-ink) / 0.07),
+    inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --immersive-panel-shadow:
+    0 20px 56px -16px oklch(var(--immersive-ink) / 0.4),
+    0 0 0 1px oklch(var(--immersive-ink) / 0.06);
+  /* How far the content rises over the lower edge of the banner. */
+  --immersive-overlap: 3.5rem;
+  --immersive-gutter: 1rem;
+  --immersive-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --immersive-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The navbar changing shape, and the banner changing height between the
+     home page and the others. */
+  --immersive-morph: 560ms;
+  --immersive-resize: 700ms;
+}
+:root[data-theme="immersive"].dark {
+  --immersive-card-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.04), 0 16px 36px -22px rgb(0 0 0 / 0.7);
+  --immersive-frost-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 68%,
+    transparent
+  );
+  --immersive-frost-edge: rgb(255 255 255 / 0.09);
+  --immersive-frost-shadow:
+    0 16px 44px -14px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --immersive-panel-shadow:
+    0 20px 56px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+:root[data-theme="immersive"] {
+  /* Soft raised surfaces with generous corners; pills for what is pressed. */
+  --theme-card-radius: 1.25rem;
+  --theme-card-shadow: var(--immersive-card-shadow);
+  --theme-cover-radius: 0.875rem;
+  --theme-chip-radius: 999px;
+  --theme-button-radius: 999px;
+  --theme-pager-radius: 999px;
+  --theme-floating-radius: 999px;
+  --theme-standalone-radius: 1.25rem;
+
+  --theme-heading-tracking: -0.005em;
+  --theme-page-title-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+  --theme-meta-size: 0.8125rem;
+  --theme-kicker-size: 0.75rem;
+  --theme-kicker-tracking: 0.04em;
+  --theme-widget-title-size: 1rem;
+  --theme-rule-style: solid;
+  --theme-link-underline-style: solid;
+
+  /* The table of contents of a Post: the button in the floating column opens
+     it, until from 2xl (below) the gutter right of the content has room for
+     it. There it stands below the floating navbar, 1rem clear of the
+     content. */
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
+  /* Back to top from lg: just right of the content, kept on screen when the
+     gutter is too narrow. */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}
+@media (width >= 96rem) {
+  :root[data-theme="immersive"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+
+/* The banner is a low band, and the tall first screen of the home page; it
+   never gets so low that the navbar and, on the home page, the introduction
+   no longer fit on it. The navbar condenses a bar's height, the overlap and
+   some air before the banner has scrolled past (navbar.tsx measures the
+   same line). */
+.immersive-shell {
+  --immersive-banner-h: max(47svh, 14rem);
+  --immersive-condense-at: max(
+    2.5rem,
+    calc(var(--immersive-banner-h) - 10.5rem)
+  );
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--fuwari-page-bg);
+}
+.immersive-shell[data-home="true"] {
+  --immersive-banner-h: max(78svh, 24rem);
+}
+
+/* One centred column of --fuwari-page-width that starts on the lower edge of
+   the banner and runs to the foot of the window: the content, the sidebar
+   cards, the footer. It lies over the banner and the navbar's scrim. */
+.immersive-body {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: var(--fuwari-page-width);
+  margin: calc(var(--immersive-banner-h) - var(--immersive-overlap)) auto 0;
+  padding: 0 var(--immersive-gutter) 2rem;
+}
+.immersive-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* The sidebar cards, after the content at every width: rows of cards as tall
+   as their row, as many abreast as find room at the width they were made
+   for. */
+.immersive-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-width: 0;
+  margin-top: 1.5rem;
+}
+.immersive-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 17.5rem;
+  min-width: 0;
+}
+/* A card that shows nothing leaves no gap. */
+.immersive-card:empty {
+  display: none;
+}
+/* Abreast of the others the profile keeps the width it has in a side column,
+   so its avatar does not grow with the row. */
+@media (min-width: 1024px) {
+  .immersive-card[data-kind="identity"] {
+    flex-grow: 0;
+  }
+}
+.immersive-footer {
+  margin-top: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .immersive-shell {
+    transition: background-color 300ms;
+  }
+  .immersive-body {
+    transition: margin-top var(--immersive-resize) var(--immersive-ease);
+  }
+  /* Going back or forward: at once, so the restored scroll position holds. */
+  .immersive-shell[data-instant="true"] .immersive-body {
+    transition: none;
+  }
+}

@@ -1,0 +1,596 @@
+/* The navbar: one element in two shapes, a bar lying on the banner and a
+   floating frosted pill. */
+
+.immersive-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  pointer-events: none;
+}
+/* The scrim stays with the bar, so the bar reads on any part of the image,
+   but lies under the content: cards slide over it instead of being shaded. */
+.immersive-scrim {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  height: 8.5rem;
+  background: linear-gradient(
+    to bottom,
+    oklch(var(--immersive-ink) / 0.66) 0%,
+    oklch(var(--immersive-ink) / 0.62) 38%,
+    oklch(var(--immersive-ink) / 0.3) 68%,
+    oklch(var(--immersive-ink) / 0.07) 90%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+.immersive-scrim[data-state="pill"] {
+  opacity: 0;
+}
+.immersive-nav-track {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: var(--fuwari-page-width);
+  margin-inline: auto;
+  padding-inline: var(--immersive-gutter);
+}
+
+/* The bar. Growing by a share takes that share of the free space, so its
+   width runs between "fits its content" and "fills the page". What its parts
+   read is set here as properties, and the pill below changes nothing but
+   those and the bar's own box, so one block says what a shape is. */
+.immersive-bar {
+  --immersive-fg: rgb(255 255 255 / 0.98);
+  --immersive-fg-soft: rgb(255 255 255 / 0.92);
+  --immersive-chip: var(--immersive-glass);
+  --immersive-chip-strong: var(--immersive-glass-strong);
+  --immersive-chip-edge: var(--immersive-glass-edge);
+  --immersive-accent: #fff;
+  --immersive-ring: #fff;
+  --immersive-seal-fg: oklch(var(--immersive-ink));
+  --immersive-icon-shadow: 0 1px 3px oklch(var(--immersive-ink) / 0.35);
+  /* Room around the brand, and whether the wordmark is unfolded. */
+  --immersive-brand-pad: 0px;
+  --immersive-wordmark: 1fr;
+  --immersive-wordmark-opacity: 1;
+  /* 1 while search is a field with its label, 0 while it is an icon. */
+  --immersive-field: 1;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 4.5rem;
+  padding-inline: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: transparent;
+  -webkit-backdrop-filter: blur(0) saturate(1);
+  backdrop-filter: blur(0) saturate(1);
+  box-shadow:
+    0 14px 40px -14px transparent,
+    0 2px 8px transparent,
+    inset 0 1px 0 transparent;
+  color: var(--immersive-fg);
+  text-shadow:
+    0 1px 2px oklch(var(--immersive-ink) / 0.28),
+    0 0 14px oklch(var(--immersive-ink) / 0.2);
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* The pill. The keyframes say the same as the rule, declaration for
+   declaration (immersive-shell.test.ts holds them to it): the rule is the
+   shape navbar.tsx asks for, the keyframes are how the stylesheet reaches it
+   on its own before that (the last block of this file). */
+.immersive-nav[data-state="pill"] .immersive-bar {
+  --immersive-fg: var(--fuwari-fg);
+  --immersive-fg-soft: var(--fuwari-fg-75);
+  --immersive-chip: color-mix(in oklab, var(--theme-tonal-bg) 86%, transparent);
+  --immersive-chip-strong: var(--theme-tonal-bg-hover);
+  --immersive-chip-edge: transparent;
+  --immersive-accent: var(--theme-tonal-fg);
+  --immersive-ring: var(--theme-accent);
+  --immersive-seal-fg: var(--theme-raised);
+  --immersive-icon-shadow: 0 0 0 transparent;
+  --immersive-brand-pad: 6px;
+  --immersive-field: 0;
+  flex-grow: 0;
+  gap: 6px;
+  height: 3.25rem;
+  padding-inline: 6px;
+  border-color: var(--immersive-frost-edge);
+  background-color: var(--immersive-frost-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
+  backdrop-filter: blur(22px) saturate(1.8);
+  box-shadow: var(--immersive-frost-shadow);
+  text-shadow:
+    0 0 0 transparent,
+    0 0 0 transparent;
+  transform: translateY(0.75rem);
+}
+@keyframes immersive-pill {
+  to {
+    --immersive-fg: var(--fuwari-fg);
+    --immersive-fg-soft: var(--fuwari-fg-75);
+    --immersive-chip: color-mix(
+      in oklab,
+      var(--theme-tonal-bg) 86%,
+      transparent
+    );
+    --immersive-chip-strong: var(--theme-tonal-bg-hover);
+    --immersive-chip-edge: transparent;
+    --immersive-accent: var(--theme-tonal-fg);
+    --immersive-ring: var(--theme-accent);
+    --immersive-seal-fg: var(--theme-raised);
+    --immersive-icon-shadow: 0 0 0 transparent;
+    --immersive-brand-pad: 6px;
+    --immersive-field: 0;
+    flex-grow: 0;
+    gap: 6px;
+    height: 3.25rem;
+    padding-inline: 6px;
+    border-color: var(--immersive-frost-edge);
+    background-color: var(--immersive-frost-bg);
+    -webkit-backdrop-filter: blur(22px) saturate(1.8);
+    backdrop-filter: blur(22px) saturate(1.8);
+    box-shadow: var(--immersive-frost-shadow);
+    text-shadow:
+      0 0 0 transparent,
+      0 0 0 transparent;
+    transform: translateY(0.75rem);
+  }
+}
+/* With a mark to stand for it, the wordmark folds away in the pill where the
+   links are shown beside it. */
+@media (min-width: 1100px) {
+  .immersive-nav[data-state="pill"]:not([data-brand="none"]) .immersive-bar {
+    --immersive-wordmark: 0fr;
+    --immersive-wordmark-opacity: 0;
+  }
+}
+@keyframes immersive-pill-fold {
+  to {
+    --immersive-wordmark: 0fr;
+    --immersive-wordmark-opacity: 0;
+  }
+}
+
+/* Scrolling down past the first screen slides the pill away; keyboard focus
+   inside it brings it back. */
+.immersive-nav[data-hidden="true"] .immersive-bar {
+  transform: translateY(-130%);
+  opacity: 0;
+  pointer-events: none;
+}
+.immersive-nav[data-hidden="true"]:has(:focus-visible) .immersive-bar {
+  transform: translateY(0.75rem);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.immersive-bar :is(a, button):focus-visible {
+  outline: 2px solid var(--immersive-ring);
+  outline-offset: 2px;
+}
+
+/* The brand on one side, the tools on the other, as wide as each other so
+   the links between them sit in the middle of the bar. Neither gets
+   narrower than what it holds: when the bar is short of room, the longer
+   links are cut short. */
+.immersive-side {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+}
+.immersive-side-start {
+  min-width: max-content;
+}
+.immersive-side-end {
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.immersive-brand {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding-inline: var(--immersive-brand-pad);
+  border-radius: 999px;
+  color: var(--immersive-fg);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+/* Without a mark, the wordmark keeps clear of the pill's round end. */
+.immersive-nav[data-brand="none"] .immersive-brand {
+  padding-inline: calc(var(--immersive-brand-pad) * 2.5)
+    calc(var(--immersive-brand-pad) * 1.5);
+}
+.immersive-brand:focus-visible {
+  outline-offset: 5px;
+}
+.immersive-brand-mark {
+  flex-shrink: 0;
+  width: 28px;
+  max-width: none;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+/* The built-in icon, as a seal. */
+.immersive-brand-mark[data-mark="default"] {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background-color: var(--immersive-fg);
+  color: var(--immersive-seal-fg);
+}
+.immersive-brand-mark[data-mark="avatar"] {
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.85);
+}
+/* A site icon of any colour keeps an edge on the image. */
+.immersive-brand-mark[data-mark="siteIcon"] {
+  filter: drop-shadow(var(--immersive-icon-shadow));
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .immersive-brand:hover .immersive-brand-mark {
+    transform: scale(1.08) rotate(-4deg);
+  }
+}
+/* A column that goes from 1fr to 0fr folds the wordmark from the width it
+   has, and the space before it with it. */
+.immersive-wordmark {
+  display: grid;
+  grid-template-columns: var(--immersive-wordmark);
+  min-width: 0;
+  opacity: var(--immersive-wordmark-opacity);
+}
+.immersive-wordmark > span {
+  min-width: 0;
+  overflow: hidden;
+}
+/* As wide as its own text, so the fold clips it instead of drawing an
+   ellipsis. */
+.immersive-wordmark > span > span {
+  display: block;
+  width: max-content;
+  max-width: min(14rem, 52vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.immersive-brand-mark + .immersive-wordmark > span > span {
+  padding-left: 10px;
+}
+
+.immersive-links {
+  --immersive-link-pad: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* A link is cut short to no less than two characters. */
+.immersive-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(2em + 2 * var(--immersive-link-pad));
+  max-width: 9rem;
+  height: 2.5rem;
+  padding-inline: var(--immersive-link-pad);
+  border-radius: 999px;
+  color: var(--immersive-fg-soft);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.immersive-link:hover {
+  background-color: var(--immersive-chip);
+  color: var(--immersive-fg);
+}
+.immersive-link-active {
+  background-color: var(--immersive-chip);
+  box-shadow: inset 0 0 0 1px var(--immersive-chip-edge);
+  color: var(--immersive-accent);
+}
+
+/* Search: a glass field on the bar where there is room, otherwise an icon
+   like the tools beside it. */
+.immersive-search {
+  justify-content: flex-start;
+  gap: 8px;
+  width: calc(2.5rem + var(--immersive-field) * 8rem);
+  height: 2.5rem;
+  margin-right: calc(var(--immersive-field) * 8px);
+  padding-inline: 0.6875rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: color-mix(
+    in srgb,
+    var(--immersive-chip) calc(var(--immersive-field) * 100%),
+    transparent
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--immersive-chip-edge) calc(var(--immersive-field) * 100%),
+      transparent
+    );
+  color: var(--immersive-fg-soft);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.immersive-search span {
+  opacity: calc(var(--immersive-field) * 0.92);
+}
+.immersive-search:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--immersive-chip-strong) calc(var(--immersive-field) * 100%),
+    var(--immersive-chip)
+  );
+  color: var(--immersive-accent);
+}
+
+.immersive-desktop-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.immersive-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 999px;
+  background-color: transparent;
+  color: var(--immersive-fg-soft);
+}
+.immersive-tool:not(:disabled):hover,
+.immersive-tool[aria-expanded="true"] {
+  background-color: var(--immersive-chip);
+  color: var(--immersive-accent);
+}
+.immersive-bar :is(.immersive-search, .immersive-tool) svg {
+  filter: drop-shadow(var(--immersive-icon-shadow));
+}
+/* The Colour Scheme toggle draws at 14px; the other tools at 18px. */
+.immersive-scheme > div,
+.immersive-scheme svg {
+  width: 18px;
+  height: 18px;
+}
+/* Round tools carry no dropdown chevron. */
+.immersive-language > svg:last-child {
+  display: none;
+}
+.immersive-account img {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.immersive-account-skeleton {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background-color: var(--immersive-chip-strong);
+}
+.immersive-menu-trigger {
+  display: none;
+}
+/* The menu icon turns into the close icon. */
+.immersive-burger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.immersive-burger svg {
+  grid-area: 1 / 1;
+}
+.immersive-burger svg:last-child,
+.immersive-burger[data-open="true"] svg:first-child {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+.immersive-burger[data-open="true"] svg:last-child {
+  opacity: 1;
+  transform: none;
+}
+
+/* The panel around the shared menu rows (mobile-menu.css). */
+.immersive-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 60;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border-radius: 20px;
+  background: var(--theme-raised);
+  box-shadow: var(--immersive-panel-shadow);
+  color: var(--fuwari-fg);
+  text-shadow: none;
+  transform-origin: top right;
+}
+.immersive-panel :is(a, button):focus-visible {
+  outline-color: var(--theme-accent);
+}
+.immersive-panel .public-menu-item {
+  border-radius: 12px;
+}
+
+/* The field needs room: a wide window, and no more than seven links. Eight
+   or more stand closer together in a narrower one. */
+.immersive-bar:has(.immersive-link:nth-child(8)) {
+  --immersive-field: 0;
+}
+@media (max-width: 1279px) {
+  .immersive-bar {
+    --immersive-field: 0;
+  }
+  .immersive-links:has(.immersive-link:nth-child(8)) {
+    --immersive-link-pad: 0.5rem;
+  }
+}
+/* Tablet and phone: the links and the tools move into the menu. */
+@media (max-width: 1099px) {
+  .immersive-links,
+  .immersive-desktop-tools {
+    display: none;
+  }
+  .immersive-menu-trigger {
+    display: flex;
+  }
+  .immersive-bar {
+    gap: 8px;
+    height: 4rem;
+  }
+  /* The title is what gives way here. */
+  .immersive-side-start {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .immersive-side-end {
+    flex: 0 0 auto;
+  }
+  .immersive-search,
+  .immersive-tool {
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+  }
+  .immersive-search span {
+    display: none;
+  }
+  /* Under a small centred pill the menu is centred too. */
+  .immersive-nav[data-state="pill"] .immersive-panel {
+    right: calc(50% - min(140px, 50vw - 12px));
+    transform-origin: top center;
+  }
+}
+@media (max-width: 767px) {
+  .immersive-nav-track {
+    padding-inline: 0.75rem;
+  }
+  /* The mark lines up with the content's gutter, as the menu icon does. */
+  .immersive-bar {
+    --immersive-brand-pad: 8px;
+  }
+}
+
+/* Motion: once the first frames have been painted in the right shape
+   (data-ready), and never for a reader who asked for less of it. */
+@media (prefers-reduced-motion: no-preference) {
+  .immersive-scrim[data-ready="true"] {
+    transition: opacity 420ms ease;
+  }
+  .immersive-nav[data-ready="true"] .immersive-bar {
+    transition:
+      flex-grow var(--immersive-morph) var(--immersive-ease),
+      height var(--immersive-morph) var(--immersive-ease),
+      padding var(--immersive-morph) var(--immersive-ease),
+      gap var(--immersive-morph) var(--immersive-ease),
+      transform var(--immersive-morph) var(--immersive-ease),
+      background-color 420ms ease,
+      border-color 420ms ease,
+      box-shadow 420ms ease,
+      -webkit-backdrop-filter 420ms ease,
+      backdrop-filter 420ms ease,
+      color 240ms ease 90ms,
+      text-shadow 240ms ease 90ms,
+      opacity 260ms ease;
+  }
+  .immersive-nav[data-ready="true"] .immersive-brand {
+    transition:
+      padding var(--immersive-morph) var(--immersive-ease),
+      color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-brand-mark {
+    transition:
+      transform 300ms var(--immersive-ease),
+      background-color 240ms ease 90ms,
+      color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-wordmark {
+    transition:
+      grid-template-columns var(--immersive-morph) var(--immersive-ease),
+      opacity 260ms ease;
+  }
+  .immersive-nav[data-ready="true"] .immersive-link {
+    transition:
+      background-color 200ms ease,
+      box-shadow 240ms ease,
+      color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-search {
+    transition:
+      width var(--immersive-morph) var(--immersive-ease),
+      margin var(--immersive-morph) var(--immersive-ease),
+      background-color 200ms ease,
+      box-shadow 300ms ease,
+      color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-search span {
+    transition: opacity 200ms ease;
+  }
+  .immersive-nav[data-ready="true"] .immersive-tool {
+    transition:
+      background-color 200ms ease,
+      color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-burger svg {
+    transition:
+      opacity 200ms,
+      transform 320ms var(--immersive-ease-out);
+  }
+}
+
+/* Before that, where the browser can tie it to the scroll position, the
+   stylesheet picks the shape itself: a page reloaded in its middle is
+   painted with the pill, not with a white bar across its text, and nothing
+   jumps when navbar.tsx takes over. The line is --immersive-condense-at. */
+@keyframes immersive-scrim-out {
+  to {
+    opacity: 0;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .immersive-nav:not([data-ready="true"]) .immersive-bar {
+    animation: immersive-pill linear both;
+    animation-timeline: scroll(root block);
+    animation-range: var(--immersive-condense-at)
+      calc(var(--immersive-condense-at) + 1px);
+  }
+  .immersive-scrim:not([data-ready="true"]) {
+    animation: immersive-scrim-out linear both;
+    animation-timeline: scroll(root block);
+    animation-range: var(--immersive-condense-at)
+      calc(var(--immersive-condense-at) + 1px);
+  }
+  @media (min-width: 1100px) {
+    .immersive-nav:not([data-ready="true"]):not([data-brand="none"])
+      .immersive-bar {
+      animation-name: immersive-pill, immersive-pill-fold;
+    }
+  }
+}
