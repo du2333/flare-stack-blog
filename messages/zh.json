@@ -325,6 +325,8 @@
   "theme_namecard_frame_portrait": "竖幅",
   "theme_namecard_frame_standard": "4:3",
   "theme_namecard_frame_wide": "宽幅",
+  "theme_immersive_name": "沉浸",
+  "theme_immersive_scroll_down": "向下浏览",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],

@@ -1,0 +1,342 @@
+/* The first screen: the banner from edge to edge and, on the home page, the
+   introduction on it. */
+
+/* As tall as the banner is on its way to be; the shell measures it. */
+.immersive-first-screen-gauge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: var(--immersive-banner-h);
+  visibility: hidden;
+  pointer-events: none;
+}
+/* Out of flow, behind the content that rises over its lower edge. A size
+   container, so the introduction is set in its width and height. Its colour
+   stands in until the image has loaded. */
+.immersive-first-screen {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 10;
+  height: var(--immersive-banner-h);
+  overflow: hidden;
+  container-type: size;
+  background-color: oklch(0.45 0.07 var(--fuwari-hue));
+}
+.immersive-banner {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 60%;
+}
+.dark .immersive-banner {
+  filter: brightness(0.86);
+}
+.immersive-banner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The shade the introduction stands on, darkest in the corner the text is
+   in and gone before the upper edge of its box. With it, white text reads
+   on a white image too. Only the home page has it. */
+.immersive-shade {
+  position: absolute;
+  inset: auto 0 0;
+  height: min(100%, 38rem);
+  background:
+    radial-gradient(
+      80% 97% at 0% 100%,
+      oklch(var(--immersive-ink) / 0.46) 0%,
+      oklch(var(--immersive-ink) / 0.41) 55%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to top,
+      oklch(var(--immersive-ink) / 0.5) 0%,
+      oklch(var(--immersive-ink) / 0.38) 25%,
+      oklch(var(--immersive-ink) / 0.24) 50%,
+      oklch(var(--immersive-ink) / 0.05) 72%,
+      transparent 85%
+    );
+  opacity: 0;
+  pointer-events: none;
+}
+.immersive-first-screen[data-home="true"] .immersive-shade {
+  opacity: 1;
+}
+
+/* The introduction, in the lower left corner above the overlap, as wide as
+   the content column. */
+.immersive-intro {
+  position: absolute;
+  inset: auto 0 calc(var(--immersive-overlap) + 2.25rem);
+  opacity: 0;
+}
+.immersive-first-screen[data-home="true"] .immersive-intro {
+  opacity: 1;
+}
+.immersive-intro-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: var(--fuwari-page-width);
+  margin-inline: auto;
+  padding-inline: var(--immersive-gutter);
+  color: #fff;
+}
+.immersive-intro-text {
+  min-width: 0;
+}
+.immersive-title {
+  font-family: var(--theme-heading-font);
+  font-size: clamp(2rem, min(9cqw, 10.5cqh), 4.25rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0 2px 4px oklch(var(--immersive-ink) / 0.3),
+    0 4px 32px oklch(var(--immersive-ink) / 0.45);
+}
+.immersive-tagline {
+  max-width: 34em;
+  margin-top: 0.6em;
+  color: rgb(255 255 255 / 0.96);
+  font-size: clamp(1rem, min(4.4cqw, 3.4cqh), 1.375rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0 1px 2px oklch(var(--immersive-ink) / 0.45),
+    0 0 16px oklch(var(--immersive-ink) / 0.5);
+}
+/* What the profile card says, here because the home page has no such card.
+   Quieter than the tagline, and two lines at most. */
+.immersive-description {
+  display: -webkit-box;
+  max-width: 34em;
+  margin-top: 0.75em;
+  overflow: hidden;
+  color: rgb(255 255 255 / 0.94);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0 1px 2px oklch(var(--immersive-ink) / 0.5),
+    0 0 12px oklch(var(--immersive-ink) / 0.55);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.immersive-author {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-top: clamp(1rem, 3.2cqh, 1.6rem);
+}
+/* Glass on the image: the avatar with the author's name, and the scroll cue. */
+.immersive-author-chip,
+.immersive-cue {
+  background-color: var(--immersive-glass);
+  box-shadow: inset 0 0 0 1px var(--immersive-glass-edge);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  color: #fff;
+}
+.immersive-author-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0 0.9rem 0 0.25rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.immersive-author-chip img {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background-color: rgb(255 255 255 / 0.85);
+  object-fit: cover;
+}
+.immersive-author-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.immersive-socials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.immersive-socials a {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  color: rgb(255 255 255 / 0.9);
+}
+.immersive-socials a :is(svg, img) {
+  width: 18px;
+  height: 18px;
+}
+.immersive-socials a svg {
+  filter: drop-shadow(0 1px 8px oklch(var(--immersive-ink) / 0.5));
+}
+.immersive-socials a:hover {
+  background-color: var(--immersive-glass);
+  color: #fff;
+}
+.immersive-cue {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+}
+.immersive-cue:not(:disabled):hover {
+  background-color: var(--immersive-glass-strong);
+  color: #fff;
+}
+.immersive-first-screen :is(a, button):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .immersive-intro {
+    bottom: calc(var(--immersive-overlap) + 1.5rem);
+  }
+  /* A phone has the least image to spare under the text: the shade reaches
+     higher and holds more, and the lines sit closer. */
+  .immersive-shade {
+    height: min(88%, 30rem);
+    background: linear-gradient(
+      to top,
+      oklch(var(--immersive-ink) / 0.72) 0%,
+      oklch(var(--immersive-ink) / 0.66) 25%,
+      oklch(var(--immersive-ink) / 0.6) 45%,
+      oklch(var(--immersive-ink) / 0.44) 62%,
+      oklch(var(--immersive-ink) / 0.1) 86%,
+      transparent 100%
+    );
+  }
+  .immersive-tagline {
+    margin-top: 0.45em;
+  }
+  .immersive-description {
+    margin-top: 0.55em;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .immersive-author {
+    margin-top: 0.9rem;
+  }
+  .immersive-cue {
+    display: none;
+  }
+}
+/* Under a finger the social links are full-size targets. */
+@media (pointer: coarse) {
+  .immersive-socials a {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+/* Motion. The banner resizes between the home page and the others and the
+   introduction fades with it; on load the image settles and the text rises
+   in order. Opacity and transform only, apart from the banner's height, so
+   nothing else moves the layout. */
+@keyframes immersive-image-in {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+@keyframes immersive-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+@keyframes immersive-nudge {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+@keyframes immersive-drift {
+  to {
+    transform: translate3d(0, 16%, 0) scale(1.07);
+  }
+}
+@keyframes immersive-intro-out {
+  0%,
+  25% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 2.5rem, 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .immersive-first-screen {
+    transition: height var(--immersive-resize) var(--immersive-ease);
+  }
+  .immersive-banner {
+    transition: filter 300ms;
+  }
+  .immersive-banner img {
+    animation: immersive-image-in 1200ms var(--immersive-ease-out) backwards;
+  }
+  .immersive-shade {
+    transition: opacity 500ms ease;
+  }
+  /* Leaving the home page: 260ms, which first-screen.tsx waits for. */
+  .immersive-intro {
+    transition: opacity 260ms ease;
+  }
+  .immersive-first-screen[data-home="true"] .immersive-intro {
+    transition: opacity 520ms ease 180ms;
+  }
+  .immersive-rise {
+    animation: immersive-rise 900ms var(--immersive-ease-out)
+      calc(120ms + var(--immersive-step, 0) * 90ms) backwards;
+  }
+  .immersive-cue svg {
+    animation: immersive-nudge 2.4s ease-in-out 1.6s infinite;
+  }
+  /* Going back or forward: at once, so the restored scroll position holds. */
+  .immersive-shell[data-instant="true"] .immersive-first-screen {
+    transition: none;
+  }
+  /* Tied to the scroll position where the browser can: the image drifts
+     slower than the page, and the introduction is gone before it could
+     slide under the navbar. Elsewhere the banner simply scrolls away. */
+  @supports (animation-timeline: scroll()) {
+    .immersive-banner {
+      animation: immersive-drift linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 var(--immersive-banner-h);
+      will-change: transform;
+    }
+    .immersive-intro-inner {
+      animation: immersive-intro-out linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 max(6rem, calc(var(--immersive-banner-h) * 0.5 - 4rem));
+    }
+  }
+}

@@ -4,11 +4,14 @@ import { FIXTURE_THEMES } from "virtual:fixture-themes";
 import { m } from "@/paraglide/messages";
 import { classicShell } from "./shells/classic/classic-shell";
 import classicStylesheet from "./shells/classic/classic-shell.css?url";
+import { immersiveShell } from "./shells/immersive/immersive-shell";
+import immersiveStylesheet from "./shells/immersive/immersive.css?url";
 import { DEFAULT_FRAME, FRAMES } from "./shells/namecard/frame";
 import { namecardShell } from "./shells/namecard/namecard-shell";
 import namecardStylesheet from "./shells/namecard/namecard.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
 import { ClassicThumbnail } from "./thumbnails/classic-thumbnail";
+import { ImmersiveThumbnail } from "./thumbnails/immersive-thumbnail";
 import { NamecardThumbnail } from "./thumbnails/namecard-thumbnail";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
@@ -93,9 +96,20 @@ const namecardTheme: Theme = {
   thumbnail: NamecardThumbnail,
 };
 
+const immersiveTheme: Theme = {
+  id: "immersive",
+  name: m.theme_immersive_name,
+  shell: immersiveShell,
+  stylesheet: immersiveStylesheet,
+  recipe: DEFAULT_THEME_RECIPE,
+  options: z.object({}),
+  thumbnail: ImmersiveThumbnail,
+};
+
 const BUILT_IN_THEMES = {
   classic: classicTheme,
   namecard: namecardTheme,
+  immersive: immersiveTheme,
 } satisfies Record<ThemeId, Theme>;
 
 /**
