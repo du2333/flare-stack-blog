@@ -247,6 +247,93 @@
   }
 }
 
+/* ── Cards beside the content: [data-place="beside"] ──────────────────────
+   The option 「卡片位置」 set to the column (card-placement.ts): every card of
+   the home page and of an inner page is in one group, which from lg is a
+   narrow column right of the content. Below lg the group follows the
+   content as the group after it does, and the box around the ways into the
+   Posts (immersive-shell.tsx) is no box at all. */
+.immersive-cards[data-place="beside"] {
+  margin-top: 1.5rem;
+}
+.immersive-cards-pinned {
+  display: contents;
+}
+/* The rule for a group of empty cards looks at the group's own slots; in
+   this group some are a step further in. */
+.immersive-cards[data-place="beside"]:has(.immersive-card:not(:empty)) {
+  display: flex;
+}
+
+@media (width >= 64rem) {
+  /* The content, and 1rem right of it a column of 17.5rem: less than the
+     20rem from which a card lies wide, so every card there takes its narrow
+     form. Only while some card shows; with none the content keeps the whole
+     width. The footer closes both, at the foot of the window on a short
+     page. */
+  .immersive-body:has(
+    > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+  ) {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+  }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-main {
+    grid-area: 1 / 1;
+  }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-footer {
+    grid-area: 2 / 1 / auto / -1;
+  }
+  /* The column starts level with the content and is as tall as it, each
+     card as tall as what it shows. */
+  .immersive-cards[data-place="beside"] {
+    grid-area: 1 / 2;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin-top: 0;
+  }
+  .immersive-cards[data-place="beside"] .immersive-card {
+    flex: none;
+  }
+  /* The ways into the Posts stay in view, 5rem down, below the floating
+     navbar, while the rest of the column scrolls away with the page. Where
+     they are taller than the window has room for (a list shown in full, a
+     low window), their box scrolls by itself, so its end can be reached
+     from anywhere on the page, and what it cuts off fades out over its
+     last 1rem. The box is larger than the cards by its padding: room for
+     the shadows it would otherwise cut off, and under them for that fade.
+     Only the cards in it take the pointer, so the padding covers nothing. */
+  .immersive-cards[data-place="beside"] > .immersive-cards-pinned {
+    position: sticky;
+    top: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100svh - 4rem);
+    margin: -1rem -1rem -2.5rem;
+    padding: 1rem 1rem 2.5rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(#000 calc(100% - 1rem), transparent);
+    pointer-events: none;
+  }
+  .immersive-cards[data-place="beside"]
+    > .immersive-cards-pinned
+    > .immersive-card {
+    pointer-events: auto;
+  }
+  .immersive-cards[data-place="beside"]
+    > .immersive-cards-pinned:not(:has(> .immersive-card:not(:empty))) {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .immersive-shell {
     transition: background-color 300ms;
