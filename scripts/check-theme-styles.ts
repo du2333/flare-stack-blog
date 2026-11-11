@@ -13,7 +13,10 @@
  * requests: `/` must link the selected Theme's stylesheet and no other's and
  * carry its `data-theme`; `/admin` neither. Each request comes after a save,
  * which purges the cached public pages, so it also shows that a switch needs
- * no rebuild. The Theme that was selected before is saved back at the end.
+ * no rebuild. Then, with the default Theme saved, it previews the fixture
+ * Theme as the Admin and checks that the preview is rendered only for the
+ * Admin, is never cacheable, and leaves the next anonymous visit on the saved
+ * Theme. The Theme that was selected before is saved back at the end.
  *
  * Needs a `.dev.vars` (see .dev.vars.example) whose DOMAIN is a domain name,
  * not localhost, and BETTER_AUTH_URL=http://localhost:3100.
@@ -23,6 +26,7 @@ import { existsSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 import { FIXTURE_THEME_ID } from "../tests/theme-fixture/theme-id.ts";
 import { BUILT_IN_THEME_IDS } from "../src/features/theme/theme-ids.ts";
+import { themePreviewHref } from "../src/features/theme/utils/theme-preview-params.ts";
 
 const PORT = 3100;
 const BASE = `http://localhost:${PORT}`;
@@ -67,7 +71,12 @@ async function readPage(path: string, cookie?: string) {
     .map(([tag]) => tag)
     .filter((tag) => attribute(tag, "rel") === "stylesheet")
     .map((tag) => attribute(tag, "href")!);
-  return { dataTheme: attribute(htmlTag, "data-theme"), hrefs };
+  return {
+    dataTheme: attribute(htmlTag, "data-theme"),
+    hrefs,
+    cacheControl: response.headers.get("Cache-Control"),
+    cacheTag: response.headers.get("Cache-Tag"),
+  };
 }
 
 /** Which Themes' stylesheets are among these: each scopes its root rule to its id. */
@@ -176,6 +185,43 @@ try {
       `/admin with ${id}: Theme stylesheets linked`,
       await themesLinked(admin.hrefs),
       [],
+    );
+  }
+
+  // The loop ended on the default Theme. Fill its cache entries first, so a
+  // preview stored under their keys would show below.
+  const [saved] = BUILT_IN_THEME_IDS;
+  const previewPath = themePreviewHref(FIXTURE_THEME_ID, { marker: "off" });
+  const postsPreviewPath = `/posts${previewPath.slice(1)}`;
+  await readPage("/");
+  await readPage("/posts");
+  for (const [path, who, cookieHeader] of [
+    [previewPath, "the Admin", cookie],
+    [postsPreviewPath, "the Admin", cookie],
+    [previewPath, "an unknown session", "better-auth.session_token=invalid"],
+  ] as const) {
+    const page = await readPage(path, cookieHeader);
+    const expected = who === "the Admin" ? FIXTURE_THEME_ID : saved;
+    expectEqual(`${path} as ${who}: data-theme`, page.dataTheme, expected);
+    expectEqual(
+      `${path} as ${who}: Theme stylesheets linked`,
+      await themesLinked(page.hrefs),
+      [expected],
+    );
+    expectEqual(
+      `${path} as ${who}: private`,
+      page.cacheControl?.startsWith("private, no-store"),
+      true,
+    );
+    expectEqual(`${path} as ${who}: Cache-Tag`, page.cacheTag, null);
+  }
+  for (const path of ["/", "/posts", previewPath]) {
+    const page = await readPage(path);
+    expectEqual(`${path} anonymously after the preview`, page.dataTheme, saved);
+    expectEqual(
+      `${path} anonymously after the preview: Theme stylesheets linked`,
+      await themesLinked(page.hrefs),
+      [saved],
     );
   }
 } finally {

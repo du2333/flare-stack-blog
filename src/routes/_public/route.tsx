@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
   Outlet,
+  useLocation,
   useNavigate,
   useRouteContext,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Toaster } from "@/components/layout/toaster";
 import { NameGate } from "@/features/auth/components/name-gate";
 import { useLogout } from "@/features/auth/hooks/use-logout";
@@ -16,11 +17,25 @@ import { isExternalNavHref } from "@/features/config/utils/nav-links";
 import { useIsAdmin } from "@/features/moments/hooks/use-is-admin";
 import { momentsExistQuery } from "@/features/moments/queries";
 import { PublicShell } from "@/features/theme/components/public-shell";
-import { resolveThemeOptions, selectTheme } from "@/features/theme/themes";
+import { ThemePreviewBar } from "@/features/theme/components/theme-preview-bar";
+import { activeTheme } from "@/features/theme/theme-preview";
+import {
+  carryThemePreview,
+  searchHasThemePreview,
+  withoutThemePreview,
+} from "@/features/theme/utils/theme-preview-params";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public")({
   component: PublicLayout,
+  // While previewing, in-site navigation keeps the preview; a reload sends
+  // the parameters to the server, which renders it again.
+  search: {
+    middlewares: [
+      ({ search, next }) =>
+        carryThemePreview(search, next(search) as Record<string, unknown>),
+    ],
+  },
   // The navigation shows the Moments entry only once a Moment exists, so the
   // answer is in the server-rendered page. A failed lookup only leaves the
   // entry out.
@@ -34,7 +49,10 @@ export const Route = createFileRoute("/_public")({
     const env = clientEnv();
     // Only the selected Theme's stylesheet, so a visitor never downloads the
     // others; in the server-rendered head, so the first paint has it.
-    const theme = selectTheme(match.context.siteConfig.theme.id);
+    const { theme } = activeTheme(
+      match.context.siteConfig,
+      match.context.themePreview,
+    );
     return {
       links: [{ rel: "stylesheet", href: theme.stylesheet }],
       scripts: env.VITE_UMAMI_WEBSITE_ID
@@ -52,8 +70,21 @@ export const Route = createFileRoute("/_public")({
 
 function PublicLayout() {
   const navigate = useNavigate();
-  const { siteConfig } = useRouteContext({ from: "__root__" });
-  const theme = selectTheme(siteConfig.theme.id);
+  const { siteConfig, themePreview } = useRouteContext({ from: "__root__" });
+  const { theme, options } = activeTheme(siteConfig, themePreview);
+  const hasPreviewParams = useLocation({
+    select: (location) => searchHasThemePreview(location.search),
+  });
+  const exitPreview = useCallback(
+    () =>
+      void navigate({
+        to: ".",
+        search: (previous: Record<string, unknown>) =>
+          withoutThemePreview(previous),
+        replace: true,
+      }),
+    [navigate],
+  );
   const { data: session, isPending: isSessionPending } = useSession();
   const { logout } = useLogout();
   const isAdmin = useIsAdmin();
@@ -88,6 +119,12 @@ function PublicLayout() {
     })),
   ];
 
+  // Someone who may not preview keeps the plain address, so the parameters
+  // do not follow them around the site.
+  useEffect(() => {
+    if (hasPreviewParams && !themePreview) exitPreview();
+  }, [hasPreviewParams, themePreview, exitPreview]);
+
   // Global shortcut: Cmd/Ctrl + K to navigate to search
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -105,7 +142,7 @@ function PublicLayout() {
     <>
       <PublicShell
         theme={theme}
-        options={resolveThemeOptions(theme, siteConfig.theme.options[theme.id])}
+        options={options}
         navOptions={navOptions}
         user={session?.user}
         isSessionLoading={isSessionPending}
@@ -113,6 +150,9 @@ function PublicLayout() {
       >
         <Outlet />
       </PublicShell>
+      {themePreview ? (
+        <ThemePreviewBar themeName={theme.name()} onExit={exitPreview} />
+      ) : null}
       <NameGate user={session?.user} logout={logout} />
       <Toaster />
     </>

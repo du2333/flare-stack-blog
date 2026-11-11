@@ -48,14 +48,14 @@ describe("selectTheme", () => {
 describe("resolveThemeOptions", () => {
   it("fills in the defaults and replaces invalid values", () => {
     expect(resolveThemeOptions(fixtureTheme, undefined)).toEqual({
-      marker: true,
+      marker: "on",
     });
-    expect(resolveThemeOptions(fixtureTheme, { marker: false })).toEqual({
-      marker: false,
+    expect(resolveThemeOptions(fixtureTheme, { marker: "off" })).toEqual({
+      marker: "off",
     });
     expect(
       resolveThemeOptions(fixtureTheme, { marker: "yes", stale: 1 }),
-    ).toEqual({ marker: true });
+    ).toEqual({ marker: "on" });
   });
 });
 

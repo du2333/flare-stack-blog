@@ -52,7 +52,7 @@ it("renders the selected Theme's shell with its options and gives the content it
     component: () =>
       createElement(PublicShell, {
         theme,
-        options: { marker: false },
+        options: { marker: "off" },
         navOptions: [],
         isSessionLoading: false,
         logout: async () => {},
@@ -70,7 +70,7 @@ it("renders the selected Theme's shell with its options and gives the content it
   expect(await screen.findByText("recipe row")).toBeTruthy();
   expect(received.at(-1)).toMatchObject({
     pageKind: "focused",
-    options: { marker: false },
+    options: { marker: "off" },
     sidebarCards: [],
   });
 });

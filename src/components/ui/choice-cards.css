@@ -1,0 +1,88 @@
+/*
+ * Cards where one is chosen: a picture over a label, the chosen one ringed in
+ * the accent and marked with a tick. A surface sizes the columns through
+ * --fuwari-choice-card-min.
+ */
+@layer components {
+  .fuwari-choice-cards {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--fuwari-choice-card-min, 150px), 1fr)
+    );
+    gap: 14px;
+  }
+  .fuwari-choice-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .fuwari-choice-card-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px 6px 10px;
+    border-radius: 12px;
+    background: var(--theme-surface);
+    box-shadow: 0 0 0 1px var(--fuwari-input-border);
+    color: var(--fuwari-fg);
+    text-align: left;
+    outline: none;
+    transition: box-shadow 0.2s;
+  }
+  .fuwari-choice-card-option:hover {
+    box-shadow: 0 0 0 1px var(--theme-accent);
+  }
+  .fuwari-choice-card-option[aria-checked="true"] {
+    box-shadow: 0 0 0 2px var(--theme-accent);
+  }
+  .fuwari-choice-card-option:focus-visible {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: 3px;
+  }
+  .fuwari-choice-card-media {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-fg-30);
+  }
+  .fuwari-choice-card-label {
+    padding: 0 4px;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fuwari-choice-card-option[aria-checked="true"] .fuwari-choice-card-label {
+    color: var(--theme-accent);
+  }
+  .fuwari-choice-card-mark {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--theme-solid-bg);
+    color: var(--theme-solid-fg, white);
+    box-shadow: 0 0 0 2px var(--theme-surface);
+  }
+  .fuwari-choice-card-action {
+    display: flex;
+    justify-content: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fuwari-choice-card-option {
+      transition: none;
+    }
+  }
+}

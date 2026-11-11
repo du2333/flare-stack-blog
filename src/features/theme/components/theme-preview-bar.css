@@ -1,0 +1,15 @@
+/*
+ * Over the bottom of the window, above the page and its floating actions but
+ * under the navbar's menus and sheets; it takes no room in the layout.
+ */
+.theme-preview-bar {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 50;
+  width: min(560px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  border-radius: 12px;
+  background: var(--theme-raised);
+  box-shadow: 0 8px 28px rgb(0 0 0/0.16);
+}

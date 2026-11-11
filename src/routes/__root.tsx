@@ -12,7 +12,9 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { ColourSchemeProvider } from "@/components/common/colour-scheme-provider";
 import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
+import { resolveThemePreview } from "@/features/theme/theme-preview";
 import { documentThemeId } from "@/features/theme/utils/document-theme";
+import { previewViewerIsAdmin } from "@/features/theme/utils/preview-viewer";
 import { getLocale } from "@/paraglide/runtime";
 import appCss from "@/styles.css?url";
 
@@ -35,10 +37,15 @@ const AppDevtools = lazy(
 );
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     const siteConfig =
       await context.queryClient.ensureQueryData(siteConfigQuery);
-    return { siteConfig };
+    // Kept in the route context, never in the Site Config query, so nothing
+    // else rendered from the same data shows it.
+    const themePreview = await resolveThemePreview(location.search, () =>
+      previewViewerIsAdmin(context.queryClient),
+    );
+    return { siteConfig, themePreview };
   },
   loader: async ({ context }) => {
     return {
@@ -120,13 +127,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const locale = getLocale();
-  const { siteConfig } = useRouteContext({ from: "__root__" });
+  const { siteConfig, themePreview } = useRouteContext({ from: "__root__" });
   // Follows client navigation: set on public pages, removed under /admin.
   const themeId = useRouterState({
     select: (state) =>
       documentThemeId(
         state.matches.map((match) => match.routeId),
-        siteConfig?.theme.id,
+        themePreview?.id ?? siteConfig?.theme.id,
       ),
   });
 

@@ -1,5 +1,6 @@
 import { useNavSort } from "./use-nav-sort";
 import { SettingsDisclosure } from "./settings-disclosure";
+import { ThemePicker } from "./theme-picker";
 import "./site-studio.css";
 import {
   ExternalLink,
@@ -227,6 +228,7 @@ export function SiteStudio() {
       <BrandMarkRow title={title} avatarSrc={avatarSrc} />
       <TaglineRow />
       <BannerFocusRow />
+      <ThemePicker />
       <section className="site-theme-row">
         <div className="site-section-copy">
           <label htmlFor="theme-hue-slider">{m.settings_hue()}</label>

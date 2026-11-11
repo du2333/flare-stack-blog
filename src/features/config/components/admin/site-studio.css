@@ -220,6 +220,14 @@
   align-items: center;
   gap: calc(16 * var(--admin-unit));
 }
+.site-theme-option-control {
+  display: flex;
+  min-width: 0;
+}
+.site-theme-option-choice {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
 .site-brand-control {
   display: flex;
   flex-direction: column;
