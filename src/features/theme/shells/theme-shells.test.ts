@@ -133,6 +133,13 @@ function region(name: string) {
   return document.querySelector<HTMLElement>(`[data-shell-region="${name}"]`);
 }
 
+/** The groups a shell stands the sidebar cards in. */
+function sidebars() {
+  return [
+    ...document.querySelectorAll<HTMLElement>('[data-shell-region="sidebar"]'),
+  ];
+}
+
 function linkCount(label: string) {
   return screen.queryAllByRole("link", { name: label }).length;
 }
@@ -169,17 +176,22 @@ describe.each(
         screen.getAllByRole("link", { name: m.nav_search() }).length,
       ).toBeGreaterThan(0);
 
-      const sidebar = region("sidebar");
-      expect(sidebar).not.toBeNull();
-      const shown = CARDS.map(({ id }) =>
-        within(sidebar!).getByText(`Card ${id}`),
+      // Every card once, in one of the shell's groups of cards; a group
+      // keeps the order the cards were given in.
+      const groups = sidebars().map((sidebar) =>
+        CARDS.flatMap(({ id }) => within(sidebar).queryAllByText(`Card ${id}`)),
       );
-      // Each card comes after the one before it.
-      for (let i = 1; i < shown.length; i++) {
-        expect(
-          shown[i - 1].compareDocumentPosition(shown[i]) &
-            Node.DOCUMENT_POSITION_FOLLOWING,
-        ).toBeTruthy();
+      expect(groups.flat()).toHaveLength(CARDS.length);
+      for (const { id } of CARDS) {
+        expect(screen.getAllByText(`Card ${id}`)).toHaveLength(1);
+      }
+      for (const shown of groups) {
+        for (let i = 1; i < shown.length; i++) {
+          expect(
+            shown[i - 1].compareDocumentPosition(shown[i]) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+          ).toBeTruthy();
+        }
       }
 
       expect(screen.getByRole("button", { name: "Floating" })).toBeTruthy();
@@ -197,7 +209,10 @@ describe.each(
     expect(document.querySelector(`[data-theme-shell="${id}"]`)).not.toBeNull();
     const body = region("body");
     expect(body).not.toBeNull();
-    expect(body!.contains(region("sidebar"))).toBe(true);
+    expect(sidebars().length).toBeGreaterThan(0);
+    for (const sidebar of sidebars()) {
+      expect(body!.contains(sidebar)).toBe(true);
+    }
     expect(body!.contains(region("footer"))).toBe(true);
     expect(region("main")!.textContent).toContain("Page content");
     expect(region("footer")!.textContent).toContain("Footer content");
@@ -287,7 +302,7 @@ describe.each(
   it("renders no sidebar on a focused page", async () => {
     await renderShell(theme, { pageKind: "focused" });
 
-    expect(region("sidebar")).toBeNull();
+    expect(sidebars()).toEqual([]);
     expect(region("main")!.textContent).toContain("Page content");
     expect(region("footer")!.textContent).toContain("Footer content");
     expect(linkCount("Nav posts")).toBeGreaterThan(0);
