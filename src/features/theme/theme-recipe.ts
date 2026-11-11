@@ -53,10 +53,13 @@ export interface ThemeRecipe {
    * as wide as the shell lets its footer region be: the author's name in the
    * heading face over the tagline at one end, the feed and sitemap links
    * over the copyright in small at the other, with no navigation, brand
-   * mark, social links or credit. Each form is a module of its own in
+   * mark, social links or credit; or a colophon, one quiet line under a rule
+   * at the end of the content: the feed and sitemap links at one end and the
+   * copyright in small at the other, naming nobody, for a Theme whose frame
+   * already shows who writes here. Each form is a module of its own in
    * `components/layout/footer/`, whose `index.tsx` picks it by this value.
    */
-  footer: "caption" | "band" | "signature";
+  footer: "caption" | "band" | "signature" | "colophon";
 }
 
 /** Today's look, which the classic Theme keeps. */
