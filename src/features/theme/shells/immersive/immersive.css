@@ -85,9 +85,12 @@
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
 
-  /* Back to top from lg: just right of the content, kept on screen when the
-     gutter is too narrow. The table of contents of a Post is placed with
+  /* Back to top from lg: just right of the content, and 4.75rem from the
+     edge of the window where the gutter is no wider than the lane the shell
+     keeps for it. It stands in a box of the shell's, which places it (the
+     footer region, below). The table of contents of a Post is placed with
      the Post page, below. */
+  --shell-floating-actions-position: static;
   --shell-floating-actions-left: min(
     calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
     calc(100% - 4.75rem)
@@ -113,12 +116,26 @@
    never gets so low that the navbar and, on the home page, the introduction
    no longer fit on it. The navbar condenses a bar's height, the overlap and
    some air before the banner has scrolled past (navbar.tsx measures the
-   same line). */
+   same line).
+
+   The page is one centred column of --fuwari-page-width with its gutters,
+   and no closer to an edge of the window than the lane. Below lg the lane
+   is the gutter. From lg it is 5.5rem: the room in which back to top and
+   the page's actions float right of the column, 4.75rem from the edge of
+   the window (--shell-floating-actions-left), so they never lie on the
+   content. Everything that keeps to the page width stands by this inset:
+   the navbar, the introduction, the regions before the footer and what the
+   footer shows. */
 .immersive-shell {
   --immersive-banner-h: max(47svh, 14rem);
   --immersive-condense-at: max(
     2.5rem,
     calc(var(--immersive-banner-h) - 10.5rem)
+  );
+  --immersive-lane: var(--immersive-gutter);
+  --immersive-page-inset: max(
+    var(--immersive-lane),
+    calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter))
   );
   position: relative;
   display: flex;
@@ -129,22 +146,29 @@
 .immersive-shell[data-home="true"] {
   --immersive-banner-h: max(78svh, 24rem);
 }
+@media (width >= 64rem) {
+  .immersive-shell {
+    --immersive-lane: 5.5rem;
+  }
+}
 
-/* One centred column of --fuwari-page-width that starts on the lower edge of
-   the banner and runs to the foot of the window: the content with the
-   sidebar cards before and after it, then the footer. It lies over the
-   banner and the navbar's scrim. */
+/* The body starts on the lower edge of the banner and runs to the foot of
+   the window, as wide as the window: the content with the sidebar cards
+   before and after it, each region keeping to the page width by itself,
+   then the footer, which does not. The body is no layer; each region is
+   one, over the banner and the navbar's scrim. */
 .immersive-body {
   position: relative;
-  z-index: 30;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  max-width: var(--fuwari-page-width);
-  margin: calc(var(--immersive-banner-h) - var(--immersive-overlap)) auto 0;
-  padding: 0 var(--immersive-gutter) 2rem;
+  margin-top: calc(var(--immersive-banner-h) - var(--immersive-overlap));
+}
+.immersive-body > :is(.immersive-main, .immersive-cards) {
+  z-index: 30;
+  margin-inline: var(--immersive-page-inset);
 }
 .immersive-main {
   display: flex;
@@ -186,10 +210,6 @@
 .immersive-cards[data-place="before"] {
   order: 1;
 }
-.immersive-footer {
-  order: 2;
-  margin-top: auto;
-}
 @media (width < 64rem) {
   .immersive-body:not(
       :has(> .immersive-cards[data-place="after"] > .immersive-card:not(:empty))
@@ -200,36 +220,34 @@
 }
 
 @media (width >= 64rem) {
-  /* Two ways into the Posts share a row, each in one row of its own (the
-     form such a card takes from 28rem). */
+  /* Two ways into the Posts share a row. */
   .immersive-card[data-kind="index"] {
     flex-basis: 28rem;
   }
   /* Before the content the cards are one slim strip astride the lower edge
-     of the banner: one surface, on which they lie flat side by side, the
-     first two parts wide to the others' three and never narrower than its
-     one-row form. */
+     of the banner: one surface, on which they lie flat with a hairline
+     between them, which is the strip's own ground showing through a gap.
+     Each card is in one row (the form such a card takes from 34rem): side
+     by side where the column holds two of them, and where it does not, one
+     under the other, the first astride the edge. */
   .immersive-cards[data-place="before"] {
     order: 0;
-    flex-wrap: nowrap;
-    gap: 0;
+    gap: 1px;
     overflow: hidden;
     margin-top: calc(var(--immersive-overlap) - var(--immersive-strip-h) / 2);
     border-radius: var(--immersive-card-radius);
     background-color: var(--theme-surface);
+    background-image: linear-gradient(
+      var(--theme-rule, var(--fuwari-divider)) 0 0
+    );
     box-shadow: var(--immersive-card-shadow);
   }
   .immersive-cards[data-place="before"] > .immersive-card {
-    flex: 2 1 0;
-    min-width: 28rem;
+    flex-basis: 34rem;
   }
   .immersive-cards[data-place="before"] > .immersive-card > * {
     border-radius: 0;
     box-shadow: none;
-  }
-  .immersive-cards[data-place="before"] > .immersive-card ~ .immersive-card {
-    flex: 3 1 0;
-    box-shadow: -1px 0 0 var(--theme-rule, var(--fuwari-divider));
   }
 }
 
@@ -255,20 +273,25 @@
   /* The content, and 1rem right of it a column of 17.5rem: less than the
      20rem from which a card lies wide, so every card there takes its narrow
      form. Only while some card shows; with none the content keeps the whole
-     width. The footer closes both, at the foot of the window on a short
-     page. */
+     width. The two stand between the insets of the page, which are columns
+     of the grid here, and the footer closes all four, at the foot of the
+     window on a short page. */
   .immersive-body:has(
     > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
   ) {
     display: grid;
     grid-template-rows: 1fr auto;
-    grid-template-columns: minmax(0, 1fr) 17.5rem;
+    grid-template-columns:
+      var(--immersive-page-inset) minmax(0, 1fr)
+      18.5rem var(--immersive-page-inset);
+    column-gap: 0;
   }
   .immersive-body:has(
       > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
     )
     > .immersive-main {
-    grid-area: 1 / 1;
+    grid-area: 1 / 2;
+    margin-inline: 0;
   }
   .immersive-body:has(
       > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
@@ -276,13 +299,22 @@
     > .immersive-footer {
     grid-area: 2 / 1 / auto / -1;
   }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-floating {
+    grid-area: 1 / 1 / auto / -1;
+    align-self: end;
+    justify-self: start;
+    margin-top: 0;
+  }
   /* The column starts level with the content and is as tall as it, each
      card as tall as what it shows. */
   .immersive-cards[data-place="beside"] {
-    grid-area: 1 / 2;
+    grid-area: 1 / 3;
     flex-direction: column;
     flex-wrap: nowrap;
-    margin-top: 0;
+    margin: 0 0 0 1rem;
   }
   .immersive-cards[data-place="beside"] .immersive-card {
     flex: none;
@@ -320,6 +352,65 @@
   }
 }
 
+/* ── The footer region, and what floats ───────────────────────────────────
+   The footer closes the page from one edge of the window to the other and
+   ends it: the band (Theme Recipe, footer: "band") is a surface that fills
+   the region it is given and keeps what it shows to the page width itself,
+   here inside the same insets as the regions before it.
+
+   Back to top and the page's actions are not fixed to the window
+   (--shell-floating-actions-position): they stand in a box that sticks to
+   the foot of the window and whose own place is the end of the content, so
+   at the end of a page they come to rest above the band, never on it, and
+   stay in reach there. Below lg that box is a row of the page, in the
+   corner of which they float over the content and at last rest clear of
+   it. From lg it has no height: they float in the lane right of the
+   column and rest there, 1.25rem above the band, in the 4rem the footer
+   stands clear of what is before it. */
+.immersive-footer {
+  order: 2;
+  margin-top: auto;
+}
+.immersive-floating {
+  position: sticky;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  z-index: 40;
+  order: 2;
+  align-self: flex-end;
+  margin-right: 1rem;
+}
+@media (width >= 64rem) {
+  .immersive-footer {
+    padding-top: 3rem;
+  }
+  .immersive-footer > * {
+    padding-inline: calc(var(--immersive-lane) - var(--immersive-gutter));
+  }
+  .immersive-floating {
+    bottom: 10rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-self: flex-start;
+    height: 0;
+    margin: 1.75rem 0 -2.75rem var(--shell-floating-actions-left);
+  }
+}
+/* The room above the band is the footer's. It lets the pointer through to
+   what shows in it, the end of the content or back to top. */
+.immersive-footer {
+  pointer-events: none;
+}
+.immersive-footer > * {
+  pointer-events: auto;
+}
+/* The band is the last layer of the page: the table of contents of a Post,
+   which renders outside the shell and keeps clear of the footer by itself,
+   never shows on it. */
+.immersive-body > .immersive-footer {
+  z-index: 45;
+}
+
 /* ── The Post page ─────────────────────────────────────────────────────────
    One centred reading column from the title to the last card: the article,
    the Posts next to it, the comments, then the sidebar cards. The gutter
@@ -333,8 +424,8 @@
    which is 41 Chinese characters or some 85 Latin letters to a line of the
    body. On the root, because the table of contents renders outside the
    shell. The shell says when the page on screen is a Post's (data-column),
-   and the regions before the footer are centred as on every page (the
-   footer region, below), by the reading width instead of the page's. */
+   and the regions before the footer are centred by the reading width
+   instead of the page's. */
 :root[data-theme="immersive"] {
   --immersive-reading-width: 48rem;
 }
@@ -388,76 +479,5 @@
   /* Going back or forward: at once, so the restored scroll position holds. */
   .immersive-shell[data-instant="true"] .immersive-body {
     transition: none;
-  }
-}
-
-/* ── The footer region ──
-   The footer closes the page from one edge of the window to the other and
-   ends it: the band (Theme Recipe, footer: "band") is a surface that fills
-   the region it is given, and keeps what it shows to the page width itself.
-   So the column no longer has the width of the page and its gutters itself:
-   the regions before the footer have them, each on its own (the gutter, or
-   what centres the page width in the window), and nothing follows the
-   footer. The footer stands 4rem clear of what is before it. */
-.immersive-body {
-  max-width: none;
-  padding: 0;
-}
-.immersive-body > :is(.immersive-main, .immersive-cards) {
-  margin-inline: max(
-    var(--immersive-gutter),
-    calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter))
-  );
-}
-.immersive-footer {
-  padding-top: 3rem;
-}
-
-/* The layers of the page, from lg: the band closes it over what floats
-   beside the content. The table of contents of a Post, which renders outside
-   the shell, and back to top with the page's actions are one layer (z 40)
-   over the content; the band is the next, so the list slides under it at
-   the end of a Post, and back to top does where it would lie on the band's
-   navigation. From 87rem back to top stands right of the page width, where
-   the band shows nothing, and stays over it; below lg it rests in the corner
-   the band keeps clear (footer.tsx). A button the keyboard is on shows over
-   the band wherever it is. The body is no layer of its own for all that:
-   each region before the footer is one, over the banner and the navbar's
-   scrim. */
-.immersive-body {
-  z-index: auto;
-}
-.immersive-body > :is(.immersive-main, .immersive-cards, .immersive-footer) {
-  z-index: 30;
-}
-/* The room above the band is the footer's. It lets the pointer through to
-   what shows in it, the end of the list or back to top. */
-.immersive-footer {
-  pointer-events: none;
-}
-.immersive-footer > * {
-  pointer-events: auto;
-}
-@media (width >= 64rem) {
-  .immersive-body > .immersive-footer {
-    z-index: 45;
-  }
-  .immersive-body > .fuwari-floating-actions:has(:focus-visible) {
-    z-index: 46;
-  }
-}
-/* Below 80rem a Post has a second button above back to top, which reaches
-   higher than the band is tall: the room above the band covers it too, in
-   the colour of the page, so no part of a button is left showing over the
-   band's edge at the end of the page. */
-@media (64rem <= width < 80rem) {
-  .immersive-shell[data-column="reading"] .immersive-footer {
-    background-color: var(--fuwari-page-bg);
-    pointer-events: auto;
-  }
-}
-@media (width >= 87rem) {
-  .immersive-body > .fuwari-floating-actions {
-    z-index: 46;
   }
 }

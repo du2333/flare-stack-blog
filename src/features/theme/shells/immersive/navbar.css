@@ -31,15 +31,13 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  max-width: var(--fuwari-page-width);
-  margin-inline: auto;
-  padding-inline: var(--immersive-gutter);
+  padding-inline: var(--immersive-page-inset);
 }
 
-/* The bar. Growing by a share takes that share of the free space, so its
-   width runs between "fits its content" and "fills the page". What its parts
-   read is set here as properties, and the pill below changes nothing but
-   those and the bar's own box, so one block says what a shape is. */
+/* The bar: as wide as the page, while the pill is as wide as what it holds.
+   What its parts and its surface read is set here as properties, and the
+   pill below changes nothing but those and the bar's own box, so one block
+   says what a shape is. */
 .immersive-bar {
   --immersive-fg: rgb(255 255 255 / 0.98);
   --immersive-fg-soft: rgb(255 255 255 / 0.92);

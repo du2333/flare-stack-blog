@@ -67,8 +67,8 @@
   opacity: 1;
 }
 
-/* The introduction, in the lower left corner above the overlap, as wide as
-   the content column. */
+/* The introduction, in the lower left corner above the overlap, between
+   the insets of the page. */
 .immersive-intro {
   position: absolute;
   inset: auto 0 calc(var(--immersive-overlap) + 2.25rem);
@@ -82,9 +82,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-  max-width: var(--fuwari-page-width);
-  margin-inline: auto;
-  padding-inline: var(--immersive-gutter);
+  padding-inline: var(--immersive-page-inset);
   color: #fff;
 }
 .immersive-intro-text {

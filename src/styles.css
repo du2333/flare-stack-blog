@@ -567,9 +567,12 @@
   }
 
   /* Back to top and page actions: the screen corner on phones; from lg, where
-     the Theme Shell puts them (--shell-floating-actions-left). */
+     the Theme Shell puts them (--shell-floating-actions-left). A shell that
+     stands them in a box of its own says so
+     (--shell-floating-actions-position: static) and places that box. */
   .fuwari-floating-actions {
-    @apply fixed right-4 flex flex-col gap-2;
+    @apply right-4 flex flex-col gap-2;
+    position: var(--shell-floating-actions-position, fixed);
     bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
   @variant lg {

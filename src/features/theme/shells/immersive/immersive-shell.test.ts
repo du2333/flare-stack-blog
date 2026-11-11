@@ -532,7 +532,6 @@ describe("the card placement option", () => {
       expect(
         declarations(blockAfter(base, ".immersive-cards-pinned {")),
       ).toEqual(["display: contents"]);
-      expect(base).not.toContain("position: sticky");
     });
 
     it("shows the group while a card anywhere in it shows, the pinned ones too", () => {
@@ -547,26 +546,41 @@ describe("the card placement option", () => {
 
     it("makes room for the column only from 1024px and only while a card shows", () => {
       expect(base).not.toContain(column);
+      // The content and the column stand between the insets of the page,
+      // which the body, as wide as the window, has as columns of its own.
       expect(declarations(blockAfter(wide, `${column} {`))).toEqual([
         "display: grid",
         "grid-template-rows: 1fr auto",
-        "grid-template-columns: minmax(0, 1fr) 17.5rem",
+        "grid-template-columns: var(--immersive-page-inset) minmax(0, 1fr) 18.5rem var(--immersive-page-inset)",
+        "column-gap: 0",
       ]);
       expect(
         declarations(blockAfter(wide, `${column} > .immersive-main {`)),
-      ).toEqual(["grid-area: 1 / 1"]);
+      ).toEqual(["grid-area: 1 / 2", "margin-inline: 0"]);
       expect(
         declarations(blockAfter(wide, `${column} > .immersive-footer {`)),
       ).toEqual(["grid-area: 2 / 1 / auto / -1"]);
     });
 
-    // 17.5rem is less than the 20rem from which a card takes its wide form.
+    it("lets back to top float over the whole row of the content and the column, to rest at its end", () => {
+      expect(
+        declarations(blockAfter(wide, `${column} > .immersive-floating {`)),
+      ).toEqual([
+        "grid-area: 1 / 1 / auto / -1",
+        "align-self: end",
+        "justify-self: start",
+        "margin-top: 0",
+      ]);
+    });
+
+    // 17.5rem is less than the 20rem from which a card takes its wide form:
+    // the track less the 1rem that keeps the column clear of the content.
     it("stands the cards in the column one under the other, each as tall as what it shows", () => {
       expect(declarations(blockAfter(wide, `${group} {`))).toEqual([
-        "grid-area: 1 / 2",
+        "grid-area: 1 / 3",
         "flex-direction: column",
         "flex-wrap: nowrap",
-        "margin-top: 0",
+        "margin: 0 0 0 1rem",
       ]);
       expect(
         declarations(blockAfter(wide, `${group} .immersive-card {`)),
@@ -786,16 +800,57 @@ describe("the stylesheet", () => {
     );
   });
 
-  it("puts the cards placed before the content after it below 1024px, and last", () => {
-    const strip = '.immersive-cards[data-place="before"] {';
-    const wide = blockAfter(shellCss, "@media (width >= 64rem)");
+  const strip = '.immersive-cards[data-place="before"] {';
+  /** What the stylesheet says of the strip from 1024px. */
+  const stripFromLg = shellCss
+    .split("@media (width >= 64rem)")
+    .slice(1)
+    .map((rest) => blockAfter(`@media ${rest}`, "@media"))
+    .find((block) => block.includes(strip))!;
 
+  it("puts the cards placed before the content after it below 1024px, and last", () => {
     expect(declarations(blockAfter(shellCss, strip))).toEqual(["order: 1"]);
-    expect(declarations(blockAfter(shellCss, ".immersive-footer {"))).toContain(
-      "order: 2",
+    expect(
+      declarations(blockAfter(shellCss, "\n.immersive-footer {")),
+    ).toContain("order: 2");
+    expect(shellCss.indexOf(strip)).toBeLessThan(shellCss.indexOf(stripFromLg));
+    expect(declarations(blockAfter(stripFromLg, strip))).toContain("order: 0");
+  });
+
+  // A card is in one row from 34rem (expandable-sidebar-card.tsx). The strip
+  // gives each that much and wraps, so two stand side by side where the
+  // column holds them and one under the other where it does not.
+  it("gives each card of the strip the width of its one-row form, on one line or two", () => {
+    const row = declarations(blockAfter(stripFromLg, strip));
+    const slot = declarations(
+      blockAfter(stripFromLg, `${strip.slice(0, -2)} > .immersive-card {`),
     );
-    expect(shellCss.indexOf(strip)).toBeLessThan(shellCss.indexOf(wide));
-    expect(declarations(blockAfter(wide, strip))).toContain("order: 0");
+
+    expect(declarations(blockAfter(shellCss, ".immersive-cards {"))).toContain(
+      "flex-wrap: wrap",
+    );
+    expect(row).not.toContain("flex-wrap: nowrap");
+    expect(slot).toEqual(["flex-basis: 34rem"]);
+    expect(
+      read("../../../../components/layout/expandable-sidebar-card.tsx"),
+    ).toContain("@[34rem]/card:row-start-1");
+  });
+
+  it("draws the line between the cards of the strip as its own ground in a gap, whichever way they lie", () => {
+    const row = declarations(blockAfter(stripFromLg, strip));
+
+    expect(row).toContain("gap: 1px");
+    expect(row).toContain(
+      "background-image: linear-gradient(var(--theme-rule, var(--fuwari-divider)) 0 0)",
+    );
+    expect(
+      declarations(
+        blockAfter(
+          stripFromLg,
+          `${strip.slice(0, -2)} > .immersive-card > * {`,
+        ),
+      ),
+    ).toEqual(["border-radius: 0", "box-shadow: none"]);
   });
 
   it("leaves no gap for a card that shows nothing, nor for a group of them", () => {
@@ -878,6 +933,29 @@ function rootProperties(css: string) {
     }
   }
   return properties;
+}
+
+/** The custom properties the first block after `head` in `css` declares. */
+function blockProperties(css: string, head: string) {
+  const properties: Record<string, string> = {};
+  for (const declaration of declarations(blockAfter(css, head))) {
+    const [, name, value] = declaration.match(/^(--[\w-]+):\s*(.+)$/) ?? [];
+    if (name) properties[name] = value!;
+  }
+  return properties;
+}
+
+/** The declarations of every block that follows `head` in `block`. */
+function everyBlockAfter(block: string, head: string) {
+  const found: Array<Array<string>> = [];
+  for (
+    let at = block.indexOf(head);
+    at >= 0;
+    at = block.indexOf(head, at + 1)
+  ) {
+    found.push(declarations(blockAfter(block.slice(at), head)));
+  }
+  return found;
 }
 
 /** The value `block` declares for `name`. */
@@ -969,9 +1047,32 @@ describe("a Post's page", () => {
   /** How wide the column is in a window: what its margins leave. */
   const columnPx = (width: number) =>
     width - 2 * px(declared(column, "margin-inline"), properties, width);
+  /** From where the shell keeps a lane for back to top beside the page. */
+  const LG = "@media (width >= 64rem)";
+  const LG_PX = 1024;
+  /** The properties in a window: the root's, and the shell's own from lg. */
+  const shellProperties = (width: number) => ({
+    ...properties,
+    ...blockProperties(css, ".immersive-shell {"),
+    ...(width >= LG_PX
+      ? blockProperties(blockAfter(css, LG), ".immersive-shell {")
+      : {}),
+  });
+  /** How far the page stands from either edge of a window. */
+  const pageInset = (width: number) =>
+    px(
+      declared(
+        declarations(blockAfter(css, `} ${REGIONS} {`)),
+        "margin-inline",
+      ),
+      shellProperties(width),
+      width,
+    );
   const GAP_PX = 16;
   /** Back to top: 3.75rem wide, and 1rem from the edge of the window at least. */
   const BACK_TO_TOP_PX = 60;
+  /** The stylesheet from the footer region on, with its block from 1024px. */
+  const footerFromLg = css.slice(css.indexOf("} .immersive-floating {"));
 
   /** Where the column, the side list and back to top stand in a window. */
   function across(width: number) {
@@ -1110,9 +1211,13 @@ describe("a Post's page", () => {
     expect(column).toEqual([
       "margin-inline: max(var(--immersive-gutter), calc(50% - var(--immersive-reading-width) / 2 + var(--immersive-gutter)))",
     ]);
-    expect(declarations(blockAfter(css, `} ${REGIONS} {`))).toEqual([
-      "margin-inline: max(var(--immersive-gutter), calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter)))",
-    ]);
+    expect(declarations(blockAfter(css, `} ${REGIONS} {`))).toContain(
+      "margin-inline: var(--immersive-page-inset)",
+    );
+    expect(blockProperties(css, ".immersive-shell {")).toMatchObject({
+      "--immersive-page-inset":
+        "max(var(--immersive-lane), calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter)))",
+    });
 
     expect(columnPx(2560)).toBe(46 * 16);
     expect(columnPx(1024)).toBe(46 * 16);
@@ -1195,94 +1300,173 @@ describe("a Post's page", () => {
     expect(across(2560).listWidth).toBeCloseTo(14 * 16);
   });
 
-  // The table of contents and back to top are fixed, and the band is as
-  // wide as the window: what lies on what at the end of a Post is a matter
-  // of layers. The list and the floating column have z 40 (their classes).
-  describe("the band at the end of the page", () => {
-    const FLOATING_Z = 40;
-    const FOOTER = ".immersive-body > .immersive-footer {";
-    const FLOATING = ".immersive-body > .fuwari-floating-actions";
-    /** The declarations of every block that follows `head` in `block`. */
-    function everyBlockAfter(block: string, head: string) {
-      const found: Array<Array<string>> = [];
-      for (
-        let at = block.indexOf(head);
-        at >= 0;
-        at = block.indexOf(head, at + 1)
-      ) {
-        found.push(declarations(blockAfter(block.slice(at), head)));
-      }
-      return found;
-    }
-    const z = (block: string, head: string) =>
-      Number(declared(declarations(blockAfter(block, head)), "z-index"));
-    const fromLg = css
-      .split("@media (width >= 64rem)")
-      .slice(1)
-      .map((rest) => blockAfter(`@media ${rest}`, "@media"))
-      .find((block) => block.includes(FOOTER))!;
+  // The page keeps to the page width, and from 1024px also clear of a lane
+  // right of it, where back to top and the page's actions float: on a list
+  // of tiles or beside a column of cards there is no other room for them.
+  describe("the lane beside the page", () => {
+    const BACK_TO_TOP_LEFT = (width: number) =>
+      px(properties["--shell-floating-actions-left"]!, properties, width);
 
-    it("is over the table of contents and back to top from 1024px, in a body that is no layer itself", () => {
-      const body = everyBlockAfter(css, "} .immersive-body {")
-        .flat()
-        .filter((declaration) => declaration.startsWith("z-index:"));
-
-      expect(body.at(-1)).toBe("z-index: auto");
-      expect(z(fromLg, FOOTER)).toBeGreaterThan(FLOATING_Z);
+    it("is the gutter below 1024px, where the page is as wide as the window lets it be", () => {
+      expect(pageInset(390)).toBe(GAP_PX);
+      expect(pageInset(LG_PX - 1)).toBe(GAP_PX);
     });
 
-    it("keeps each region of the page a layer over the banner and the navbar's scrim, under the list", () => {
-      const regions = z(
-        css,
-        ".immersive-body > :is(.immersive-main, .immersive-cards, .immersive-footer) {",
+    it.each([LG_PX, 1100, 1280, 1343])(
+      "keeps the page 0.75rem clear of back to top in a window %ipx wide",
+      (width) => {
+        const pageRight = width - pageInset(width);
+
+        expect(BACK_TO_TOP_LEFT(width) - pageRight).toBeCloseTo(12);
+        expect(BACK_TO_TOP_LEFT(width) + BACK_TO_TOP_PX).toBeLessThanOrEqual(
+          width - GAP_PX,
+        );
+      },
+    );
+
+    it("is the page width's own gutter from 1344px, where that is the wider", () => {
+      const pageWidth = px(properties["--fuwari-page-width"]!, properties);
+
+      expect(pageInset(1344)).toBeCloseTo((1344 - pageWidth) / 2 + GAP_PX);
+      expect(pageInset(1920)).toBeCloseTo((1920 - pageWidth) / 2 + GAP_PX);
+      expect(BACK_TO_TOP_LEFT(1920)).toBeGreaterThan(1920 - pageInset(1920));
+    });
+
+    it("stands the navbar, the introduction and what the footer shows by the same inset", () => {
+      expect(
+        declarations(blockAfter(read("navbar.css"), ".immersive-nav-track {")),
+      ).toContain("padding-inline: var(--immersive-page-inset)");
+      expect(
+        declarations(
+          blockAfter(read("first-screen.css"), ".immersive-intro-inner {"),
+        ),
+      ).toContain("padding-inline: var(--immersive-page-inset)");
+      // The band keeps what it shows to the page width by itself; the shell
+      // only takes the lane off the room it has for that.
+      expect(
+        declarations(
+          blockAfter(blockAfter(footerFromLg, LG), ".immersive-footer > * {"),
+        ),
+      ).toEqual([
+        "padding-inline: calc(var(--immersive-lane) - var(--immersive-gutter))",
+      ]);
+    });
+  });
+
+  // Back to top and the page's actions are not fixed to the window here:
+  // they stand in a box of the shell's that sticks to the foot of the window
+  // and whose own place is the end of the content, above the band.
+  describe("back to top and the page's actions", () => {
+    const BOX = ".immersive-floating {";
+    const box = declarations(blockAfter(footerFromLg, BOX));
+    /** A length that may be negative, in px. */
+    const signed = (value: string) =>
+      value.startsWith("-") ? -px(value.slice(1), {}) : px(value, {});
+    const boxFromLg = declarations(
+      blockAfter(blockAfter(footerFromLg, LG), BOX),
+    );
+
+    it("stand in the shell's own box, before the footer in the document", async () => {
+      await renderShell({ pageKind: "inner" });
+      const floating = document.querySelector(".immersive-floating")!;
+
+      expect(properties["--shell-floating-actions-position"]).toBe("static");
+      expect(floating.parentElement).toBe(region("body"));
+      expect(follows(region("main"), floating)).toBe(true);
+      expect(follows(floating, region("footer"))).toBe(true);
+    });
+
+    it("stick to the foot of the window until the end of the content comes, where the box has its place", () => {
+      expect(box).toEqual(
+        expect.arrayContaining([
+          "position: sticky",
+          "bottom: calc(1.5rem + env(safe-area-inset-bottom))",
+          // With the footer, after every group of cards.
+          "order: 2",
+        ]),
       );
-      const scrim = z(read("navbar.css"), ".immersive-scrim {");
-
-      expect(regions).toBeGreaterThan(scrim);
-      expect(regions).toBeLessThan(FLOATING_Z);
+      expect(boxFromLg).toContain("bottom: 10rem");
+      expect(css).not.toContain("position: fixed");
     });
 
-    it("leaves back to top over it from 1392px, where the button stands right of all the band shows", () => {
-      const wide = "@media (width >= 87rem)";
-      const from = px(wide.match(/[\d.]+rem/)![0], properties);
-      const backToTop = (width: number) =>
-        px(properties["--shell-floating-actions-left"]!, properties, width);
-      const rightOfThePage = (width: number) =>
-        width / 2 + px(properties["--fuwari-page-width"]!, properties) / 2;
-
-      expect(z(blockAfter(css, wide), `${FLOATING} {`)).toBeGreaterThan(
-        z(fromLg, FOOTER),
+    it("are a row of the page below 1024px, so at rest they cover nothing", () => {
+      expect(box).toEqual(
+        expect.arrayContaining(["align-self: flex-end", "margin-right: 1rem"]),
       );
-      expect(backToTop(from)).toBeGreaterThan(rightOfThePage(from));
-      // A pixel narrower, it is against the edge of the window instead, and
-      // nearer the page than it stands when it has the room.
-      expect(backToTop(from - 1)).toBeLessThan(backToTop(from) - 0.5);
+      expect(box.some((entry) => entry.startsWith("height:"))).toBe(false);
     });
 
-    it("shows a button the keyboard is on over the band", () => {
-      expect(z(fromLg, `${FLOATING}:has(:focus-visible) {`)).toBeGreaterThan(
-        z(fromLg, FOOTER),
+    it("float in the lane from 1024px, in a box of no height that rests 1.25rem above the band", () => {
+      const [top, , bottom, left] = declared(boxFromLg, "margin").split(" ");
+      const gap = px(
+        declared(declarations(blockAfter(css, ".immersive-body {")), "gap"),
+        {},
       );
+      const room = px(
+        declared(
+          declarations(
+            blockAfter(blockAfter(footerFromLg, LG), ".immersive-footer {"),
+          ),
+          "padding-top",
+        ),
+        {},
+      );
+
+      expect(boxFromLg).toEqual(
+        expect.arrayContaining(["height: 0", "align-self: flex-start"]),
+      );
+      expect(left).toBe("var(--shell-floating-actions-left)");
+      // The box takes no room of its own: its margins cancel the gap it adds.
+      expect(signed(top!) + signed(bottom!) + gap).toBe(0);
+      // From the box down to the band: what is left of the footer's room.
+      expect(signed(bottom!) + gap + room).toBe(20);
     });
 
-    it("lets the pointer through the room above the band, to the end of the list and to back to top", () => {
+    it("lets the pointer through the room above the band, to the end of the content and to back to top", () => {
       expect(everyBlockAfter(css, "} .immersive-footer {")).toContainEqual([
         "pointer-events: none",
       ]);
-      expect(declarations(blockAfter(css, ".immersive-footer > * {"))).toEqual([
+      expect(everyBlockAfter(css, "} .immersive-footer > * {")).toContainEqual([
         "pointer-events: auto",
       ]);
     });
 
-    it("covers the second button of a Post below 1280px with that room, where the button reaches over the band", () => {
-      const narrow = blockAfter(css, "@media (64rem <= width < 80rem)");
+    it("paints nothing over the page to hide a button, on a Post either", () => {
+      const painted = [
+        ...css.matchAll(/([^{}]+)\{[^{}]*background(?:-color)?\s*:/g),
+      ].map(([, selector]) => selector!.trim());
 
+      expect(painted.filter((selector) => selector.includes("footer"))).toEqual(
+        [],
+      );
+    });
+  });
+
+  // The band is as wide as the window, and the table of contents is fixed
+  // beside the column: the list ends short of the footer by itself
+  // (table-of-contents.tsx), and the band is the layer over it all the same.
+  describe("the band at the end of the page", () => {
+    const TOC_Z = 40;
+    const z = (block: string, head: string) =>
+      Number(declared(declarations(blockAfter(block, head)), "z-index"));
+
+    it("is the last layer of a body that is no layer itself", () => {
       expect(
-        declarations(blockAfter(narrow, `${POST} .immersive-footer {`)),
-      ).toEqual([
-        "background-color: var(--fuwari-page-bg)",
-        "pointer-events: auto",
-      ]);
+        declarations(blockAfter(css, ".immersive-body {")).some((entry) =>
+          entry.startsWith("z-index:"),
+        ),
+      ).toBe(false);
+      expect(z(css, ".immersive-body > .immersive-footer {")).toBeGreaterThan(
+        TOC_Z,
+      );
+    });
+
+    it("keeps each region of the page a layer over the banner and the navbar's scrim, under the list", () => {
+      const regions = z(css, `} ${REGIONS} {`);
+      const scrim = z(read("navbar.css"), ".immersive-scrim {");
+
+      expect(regions).toBeGreaterThan(scrim);
+      expect(regions).toBeLessThan(TOC_Z);
     });
   });
 });

@@ -114,6 +114,8 @@ function ImmersiveShell({
           <Cards place="beside" cards={cards.beside} />
           <Cards place="after" cards={cards.after} />
 
+          <div className="immersive-floating">{floatingActions}</div>
+
           <div
             className="immersive-footer fuwari-onload-animation"
             style={{ animationDelay: "250ms" }}
@@ -121,8 +123,6 @@ function ImmersiveShell({
           >
             {footer}
           </div>
-
-          {floatingActions}
         </div>
       </div>
     </FirstScreenProvider>
