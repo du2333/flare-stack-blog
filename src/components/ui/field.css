@@ -41,7 +41,7 @@
   }
   .fuwari-input:focus,
   .fuwari-field-shell:focus-within {
-    background: var(--fuwari-btn-regular-bg);
+    background: var(--theme-tonal-bg);
     border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
     box-shadow: 0 0 0 3px
       color-mix(in srgb, var(--theme-accent) 12%, transparent);
@@ -231,7 +231,7 @@
     height: 26px;
     flex-shrink: 0;
     border-radius: 999px;
-    background: var(--fuwari-btn-regular-bg);
+    background: var(--theme-tonal-bg);
     transition: background-color 200ms;
   }
   .fuwari-switch[aria-checked="true"] > .fuwari-switch-track {

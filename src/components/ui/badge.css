@@ -10,8 +10,8 @@
     padding-inline: var(--fuwari-badge-padding-x, 10px);
     overflow: hidden;
     border-radius: 999px;
-    background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     font-size: var(--fuwari-badge-font-size, 12px);
     font-weight: 500;
     line-height: var(--fuwari-badge-height, 24px);

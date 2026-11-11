@@ -116,7 +116,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             ${
               selected
                 ? "bg-(--theme-solid-bg) text-(--theme-solid-fg,white)"
-                : "fuwari-text-75 enabled:hover:bg-(--fuwari-btn-regular-bg)"
+                : "fuwari-text-75 enabled:hover:bg-(--theme-tonal-bg)"
             }
             ${isToday && !selected ? "font-medium fuwari-text-90" : ""}
           `}

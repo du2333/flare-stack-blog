@@ -71,7 +71,7 @@
 }
 .friend-entry:hover,
 .friend-entry:focus-visible {
-  background: var(--fuwari-btn-plain-bg-hover);
+  background: var(--theme-plain-bg-hover);
 }
 .friend-entry:focus-visible {
   outline: 2px solid var(--theme-accent);
@@ -88,7 +88,7 @@
   height: 64px;
   overflow: hidden;
   border-radius: 16px;
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--theme-tonal-bg);
   color: var(--theme-accent);
 }
 .friend-avatar img {

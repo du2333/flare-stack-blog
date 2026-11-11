@@ -225,10 +225,10 @@ export function MenuItem({
       className={cn(
         ITEM_CLASS,
         current
-          ? "bg-(--fuwari-btn-regular-bg) text-(--theme-accent)"
+          ? "bg-(--theme-tonal-bg) text-(--theme-accent)"
           : danger
             ? "text-(--fuwari-danger-fg) hover:bg-(--fuwari-danger-bg) focus-visible:bg-(--fuwari-danger-bg)"
-            : "fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)/70 hover:text-(--fuwari-fg) focus-visible:bg-(--fuwari-btn-regular-bg)/70 focus-visible:text-(--fuwari-fg)",
+            : "fuwari-text-75 hover:bg-(--theme-tonal-bg)/70 hover:text-(--fuwari-fg) focus-visible:bg-(--theme-tonal-bg)/70 focus-visible:text-(--fuwari-fg)",
       )}
     >
       {children}

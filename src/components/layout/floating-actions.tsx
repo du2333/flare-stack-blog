@@ -16,7 +16,7 @@ const FloatingActionsContext = createContext<SlotState | null>(null);
 
 /** Shared by every button in the floating column. */
 export const FLOATING_ACTION_BUTTON_CLASS =
-  "flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 rounded-2xl fuwari-card-base fuwari-card-floating shadow-md text-(--theme-accent) hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) active:scale-90 transition-all";
+  "flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 rounded-(--theme-floating-radius,var(--radius-2xl)) fuwari-card-base fuwari-card-floating shadow-md text-(--theme-accent) hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) active:scale-90 transition-all";
 
 /**
  * Lets a page add its own buttons to the floating column, stacked above

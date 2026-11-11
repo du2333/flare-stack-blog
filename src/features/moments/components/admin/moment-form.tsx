@@ -27,6 +27,7 @@ import type {
   DirectVideo,
   VideoSource,
 } from "@/features/posts/utils/video-source";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { MomentDraft } from "./moment-draft";
@@ -350,12 +351,17 @@ export function MomentForm({
     ? m.moment_admin_video_blocked_by_images()
     : null;
 
+  const row = useThemeRecipe().postCard === "row";
+
   return (
     <section
       ref={rootRef}
       aria-label={label}
       className={cn(
-        "fuwari-card-base fuwari-card-item relative flex gap-3 p-4 md:p-5",
+        // A card, or flat like the Moments where the Theme Recipe lists rows.
+        row
+          ? "relative flex gap-3 rounded-xl"
+          : "fuwari-card-base fuwari-card-item relative flex gap-3 p-4 md:p-5",
         dropping && "ring-2 ring-(--theme-accent)",
       )}
       onClick={() => {

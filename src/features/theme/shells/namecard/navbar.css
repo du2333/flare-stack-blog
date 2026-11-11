@@ -1,0 +1,296 @@
+/* The bare navbar: the wordmark, text links and tools sit on the page. */
+.namecard-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--namecard-nav-height);
+}
+/* The tint, blur and hairline are one layer that fades in once the page has
+   scrolled, or while a menu is open. */
+.namecard-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--fuwari-page-bg) 80%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+  box-shadow: 0 1px 0 var(--namecard-hairline);
+  opacity: 0;
+  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+.namecard-nav[data-scrolled="true"]::before {
+  opacity: 1;
+}
+/* Where the browser can tie it to the scroll position, the layer is already
+   right in the server-rendered page, as after a reload in the middle of it. */
+@keyframes namecard-nav-tint {
+  to {
+    opacity: 1;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .namecard-nav:not([data-scrolled="true"])::before {
+    animation: namecard-nav-tint linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 24px;
+  }
+}
+.namecard-nav-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 100%;
+  max-width: var(--fuwari-page-width);
+  margin-inline: auto;
+  padding-inline: var(--namecard-gutter);
+}
+.namecard-nav :is(a, button):focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+.namecard-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  margin-right: auto;
+  border-radius: 10px;
+  color: var(--namecard-ink);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.namecard-brand > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.namecard-brand-mark {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  transition: transform 420ms var(--namecard-ease);
+}
+/* The built-in icon, as a seal in ink. */
+.namecard-brand-mark[data-mark="default"] {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--namecard-ink);
+  color: var(--fuwari-page-bg);
+}
+.namecard-brand-mark[data-mark="avatar"] {
+  border-radius: 999px;
+  object-fit: cover;
+}
+/* A dark site icon would vanish on the dark page without an edge. */
+.dark .namecard-brand-mark[data-mark="siteIcon"] {
+  filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.6));
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .namecard-brand:hover .namecard-brand-mark {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+
+.namecard-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.namecard-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 9rem;
+  height: 40px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  color: var(--fuwari-fg-50);
+  font-size: 15px;
+  font-weight: 600;
+  transition: color 200ms;
+}
+.namecard-link:hover,
+.namecard-link-active {
+  color: var(--namecard-ink);
+}
+/* Until the shared underline is placed, the current link draws its own. */
+.namecard-links[data-bar="static"] .namecard-link-active::after {
+  content: "";
+  position: absolute;
+  inset-inline: 12px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--fuwari-primary);
+}
+.namecard-link-bar {
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: var(--namecard-bar-width, 0);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--fuwari-primary);
+  transform: translateX(var(--namecard-bar-x, 0));
+  opacity: 0;
+  pointer-events: none;
+}
+.namecard-links:not([data-bar="static"])
+  .namecard-link-bar[data-visible="true"] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .namecard-links[data-bar="gliding"] .namecard-link-bar {
+    transition:
+      transform 420ms var(--namecard-ease),
+      width 420ms var(--namecard-ease),
+      opacity 220ms;
+  }
+}
+
+.namecard-tools,
+.namecard-desktop-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.namecard-tools {
+  position: relative;
+  padding-left: 18px;
+  margin-right: -10px;
+}
+.namecard-tools::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 18px;
+  margin-top: -9px;
+  background: var(--namecard-hairline);
+}
+.namecard-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fuwari-fg-75);
+  transition:
+    background-color 200ms,
+    color 200ms,
+    transform 200ms var(--namecard-ease);
+}
+.namecard-tool-wide {
+  width: 52px;
+}
+.namecard-tool:hover,
+.namecard-tool[aria-expanded="true"] {
+  background: var(--theme-plain-bg-hover);
+  color: var(--namecard-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .namecard-tool:active {
+    transform: scale(0.94);
+  }
+}
+.namecard-account img {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.namecard-chevron {
+  opacity: 0.7;
+  transition: transform 200ms;
+}
+.namecard-account[aria-expanded="true"] .namecard-chevron {
+  transform: rotate(180deg);
+}
+.namecard-menu-trigger {
+  display: none;
+}
+/* The menu icon turns into the close icon. */
+.namecard-burger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.namecard-burger svg {
+  grid-area: 1 / 1;
+  transition:
+    opacity 200ms,
+    transform 320ms var(--namecard-ease);
+}
+.namecard-burger svg:last-child,
+.namecard-burger[data-open="true"] svg:first-child {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+.namecard-burger[data-open="true"] svg:last-child {
+  opacity: 1;
+  transform: none;
+}
+
+/* The panel around the shared menu rows (mobile-menu.css). */
+.namecard-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: calc(var(--namecard-gutter) - 8px);
+  z-index: 60;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border-radius: 18px;
+  background: var(--theme-raised);
+  box-shadow:
+    0 0 0 1px var(--namecard-hairline),
+    0 16px 48px -12px rgb(0 0 0 / 0.22);
+  transform-origin: top right;
+}
+
+@media (max-width: 959px) {
+  .namecard-links,
+  .namecard-desktop-tools {
+    display: none;
+  }
+  .namecard-menu-trigger {
+    display: flex;
+  }
+  .namecard-tools {
+    padding-left: 0;
+  }
+  .namecard-tools::before {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .namecard-nav::before,
+  .namecard-brand-mark,
+  .namecard-link,
+  .namecard-tool,
+  .namecard-chevron,
+  .namecard-burger svg {
+    transition: none;
+  }
+}

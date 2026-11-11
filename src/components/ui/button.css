@@ -65,17 +65,17 @@
   }
 
   .fuwari-button-regular {
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
   }
   .dark .fuwari-button-regular {
     color: var(--fuwari-fg-75);
   }
   .fuwari-button-regular:not(:disabled):hover {
-    background-color: var(--fuwari-btn-regular-bg-hover);
+    background-color: var(--theme-tonal-bg-hover);
   }
   .fuwari-button-regular:not(:disabled):active {
-    background-color: var(--fuwari-btn-regular-bg-active);
+    background-color: var(--theme-tonal-bg-active);
   }
 
   .fuwari-button-danger {
@@ -133,7 +133,7 @@
   .fuwari-icon-button:not(:disabled):hover,
   .fuwari-icon-button:is([aria-pressed="true"], [aria-expanded="true"]),
   .fuwari-icon-button-active {
-    background-color: var(--fuwari-btn-regular-bg);
+    background-color: var(--theme-tonal-bg);
     color: var(--theme-accent);
   }
   .fuwari-button-plain.fuwari-button-tone-danger:not(:disabled):hover,

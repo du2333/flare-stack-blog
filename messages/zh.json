@@ -315,6 +315,16 @@
   "theme_preview_bar": "本页为主题「{name}」的预览，访客看到的仍是已保存的主题。",
   "theme_preview_bar_label": "主题预览",
   "theme_preview_exit": "退出预览",
+  "theme_namecard_name": "名片",
+  "theme_namecard_kicker": "个人博客",
+  "theme_namecard_greeting_hello": "你好，",
+  "theme_namecard_greeting_name": "我是{author}。",
+  "theme_namecard_read_posts": "阅读文章",
+  "theme_namecard_frame": "画框形状",
+  "theme_namecard_frame_hint": "首页首屏中封面图画框的比例。",
+  "theme_namecard_frame_portrait": "竖幅",
+  "theme_namecard_frame_standard": "4:3",
+  "theme_namecard_frame_wide": "宽幅",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],

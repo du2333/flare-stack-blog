@@ -5,6 +5,7 @@ import type { NavOption } from "@/components/layout/layout-props";
 const STATIC_HREF = {
   "/": "/",
   "/posts": "/posts",
+  "/moments": "/moments",
   "/friend-links": "/friend-links",
 } as const;
 

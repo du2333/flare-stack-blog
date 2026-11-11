@@ -34,7 +34,7 @@ export function ListboxOption({
       onClick={onPick}
       className={cn(
         "flex cursor-pointer items-center rounded-lg py-1.5 text-sm transition-colors",
-        active && "bg-(--fuwari-btn-regular-bg)",
+        active && "bg-(--theme-tonal-bg)",
         current
           ? "text-(--theme-accent)"
           : active

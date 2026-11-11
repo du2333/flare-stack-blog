@@ -104,7 +104,7 @@ export function LatestMoments() {
 
   return (
     <div className="fuwari-card-base fuwari-card-widget pb-3">
-      <div className="fuwari-widget-title relative mt-4 mb-2 ml-6 font-bold">
+      <div className="fuwari-widget-title relative mt-4 mb-2 ml-(--theme-widget-pad-x,1.5rem) font-bold">
         {headingAccent === "on" ? (
           <span
             className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md"
@@ -119,15 +119,15 @@ export function LatestMoments() {
           <ChevronRight size={20} aria-hidden="true" />
         </Link>
       </div>
-      <div className="px-2">
+      <div className="px-(--theme-widget-pad-x,0.5rem)">
         {moments.map((moment, index) => (
           <Link
             key={moment.id}
             to="/moments/$id"
             params={{ id: String(moment.id) }}
-            className={`flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) ${
+            className={`fuwari-widget-row flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) ${
               index > 0
-                ? "border-t border-dashed border-(--theme-rule,var(--fuwari-divider))"
+                ? "border-t [border-top-style:var(--theme-rule-style)] border-(--theme-rule,var(--fuwari-divider))"
                 : ""
             }`}
           >

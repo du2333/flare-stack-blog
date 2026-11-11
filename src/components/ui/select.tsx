@@ -123,9 +123,9 @@ export function Select({
                 "flex w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
                 option.disabled && "cursor-not-allowed opacity-40",
                 isSelected
-                  ? "bg-(--fuwari-btn-regular-bg) text-(--theme-accent)"
+                  ? "bg-(--theme-tonal-bg) text-(--theme-accent)"
                   : active
-                    ? "bg-(--fuwari-btn-regular-bg)/70 fuwari-text-90"
+                    ? "bg-(--theme-tonal-bg)/70 fuwari-text-90"
                     : "fuwari-text-75",
               )}
             >

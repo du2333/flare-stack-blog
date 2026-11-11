@@ -8,9 +8,10 @@ import {
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ExpandableSidebarCard } from "@/components/layout/expandable-sidebar-card";
-import { PublicPageHeading } from "@/components/ui/page-heading";
 import { FriendLinksPage } from "@/features/friend-links/components/friend-links-page";
 import { LatestMoments } from "@/features/moments/components/latest-moments";
+import { MomentsPage } from "@/features/moments/components/moments-page";
+import { MomentPageSkeleton } from "@/features/moments/components/moments-page-skeleton";
 import { ArchivePanel } from "@/features/posts/components/archive/archive-panel";
 import { HomePage } from "@/features/posts/components/home-page";
 import { PostCard } from "@/features/posts/components/post-card";
@@ -23,6 +24,7 @@ import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "../theme-recipe";
 import { ThemeRecipeProvider } from "./theme-recipe";
+import { ThemedPageHeading } from "./themed-page-heading";
 
 const state = vi.hoisted(() => ({ cached: undefined as unknown }));
 
@@ -75,6 +77,10 @@ vi.mock("@/features/comments/components/comment-section", () => ({
 }));
 vi.mock("@/features/posts/components/post-adjacent-nav", () => ({
   PostAdjacentNav: () => null,
+}));
+// The card has a test of its own; here it only marks an entry of the timeline.
+vi.mock("@/features/moments/components/moment-card", () => ({
+  MomentCard: () => createElement("article"),
 }));
 vi.mock("@/features/posts/components/table-of-contents", () => ({
   default: () => null,
@@ -253,6 +259,42 @@ describe("Theme Recipe", () => {
     });
   });
 
+  describe("Moments timeline", () => {
+    const moments = [1, 2, 3].map((id) => ({
+      id,
+      text: "A moment",
+      images: [],
+      video: null,
+      postedAt: new Date("2026-01-02T00:00:00Z"),
+      updatedAt: new Date("2026-01-02T00:00:00Z"),
+      commentCount: 0,
+    }));
+    const ruled = (forms?: Partial<ThemeRecipe>) =>
+      [
+        ...render(
+          createElement(MomentsPage, { moments, page: 1, totalPages: 1 }),
+          forms,
+        ).querySelectorAll("article"),
+      ].map((entry) =>
+        entry.parentElement!.classList.contains("fuwari-list-rule"),
+      );
+    const surface = (forms?: Partial<ThemeRecipe>) =>
+      render(
+        createElement(MomentPageSkeleton),
+        forms,
+      ).firstElementChild!.classList.contains("fuwari-card-item");
+
+    it("card: Moments stand apart, each on its own surface", () => {
+      expect(ruled()).toEqual([false, false, false]);
+      expect(surface()).toBe(true);
+    });
+
+    it("row: Moments sit on the page with a rule between them", () => {
+      expect(ruled({ postCard: "row" })).toEqual([false, true, true]);
+      expect(surface({ postCard: "row" })).toBe(false);
+    });
+  });
+
   describe("meta", () => {
     it("chips: every item is led by an icon", () => {
       expect(
@@ -342,7 +384,7 @@ describe("Theme Recipe", () => {
       onExpand: () => {},
       children: "x",
     });
-    const heading = createElement(PublicPageHeading, {
+    const heading = createElement(ThemedPageHeading, {
       title: "Profile",
       back: { to: "/", label: "Back" },
       description: "Intro",

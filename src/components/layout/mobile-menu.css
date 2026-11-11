@@ -23,7 +23,7 @@
 .public-menu-item:hover,
 .public-menu-active {
   color: var(--theme-accent);
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--theme-tonal-bg);
 }
 .public-menu-item svg {
   flex-shrink: 0;
