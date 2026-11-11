@@ -1,14 +1,10 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
-import { iconButtonClass } from "@/components/ui/icon-button";
 import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
-import {
-  resolveSocialHref,
-  SOCIAL_PLATFORMS,
-} from "@/features/config/utils/social-platforms";
 import { m } from "@/paraglide/messages";
+import { SocialLinks } from "./social-links";
 
 export function Profile() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
@@ -38,36 +34,7 @@ export function Profile() {
         <div className="fuwari-text-50 text-sm mb-2.5">
           {siteConfig.description}
         </div>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {siteConfig.social
-            .filter((link) => link.url)
-            .map((link, i) => {
-              const preset =
-                link.platform !== "custom"
-                  ? SOCIAL_PLATFORMS[link.platform]
-                  : null;
-              const Icon = preset?.icon;
-              const label = preset?.label ?? link.label ?? "";
-              const href = resolveSocialHref(link.platform, link.url);
-
-              return (
-                <a
-                  key={`${link.platform}-${i}`}
-                  href={href}
-                  target={link.platform === "email" ? undefined : "_blank"}
-                  rel={link.platform === "email" ? undefined : "me noreferrer"}
-                  aria-label={label}
-                  className={iconButtonClass({ size: "lg" })}
-                >
-                  {Icon ? (
-                    <Icon size={20} strokeWidth={1.5} />
-                  ) : (
-                    <img src={link.icon} alt={label} className="w-5 h-5" />
-                  )}
-                </a>
-              );
-            })}
-        </div>
+        <SocialLinks className="flex flex-wrap gap-2 justify-center" />
       </div>
     </div>
   );
