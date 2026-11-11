@@ -1,7 +1,8 @@
 /*
  * The one Fuwari button look. md and lg read --fuwari-button-height,
- * --fuwari-button-font-size and --fuwari-button-padding-x, so a surface can
- * resize them; the Admin workspaces scale them with their unit.
+ * --fuwari-button-font-size and --fuwari-button-padding-x, and sm reads
+ * --fuwari-button-height-sm, so a surface can resize them; the Admin
+ * workspaces scale them with their unit.
  */
 @layer components {
   .fuwari-button,
@@ -32,7 +33,7 @@
     flex-shrink: 0;
   }
   .fuwari-button-sm {
-    min-height: 32px;
+    min-height: var(--fuwari-button-height-sm, 32px);
     padding: 0 12px;
     gap: 6px;
     border-radius: calc(var(--theme-button-radius) - 2px);

@@ -224,6 +224,29 @@
   font-size: calc(13 * var(--admin-unit));
   font-variant-numeric: tabular-nums;
 }
+/* The Theme card's preview link is a line of text; its hit area grows around it. */
+.site-theme-preview {
+  position: relative;
+}
+/* Touch targets: at least 44px high where the pointer is a finger. */
+@media (pointer: coarse) {
+  .site-theme-preview::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -8px;
+    left: -8px;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+  .site-focus-control {
+    --fuwari-button-height-sm: 44px;
+  }
+  .site-brand-choice,
+  .site-theme-option-choice {
+    --fuwari-segment-height: 44px;
+  }
+}
 .site-theme-option-control {
   display: flex;
   min-width: 0;
