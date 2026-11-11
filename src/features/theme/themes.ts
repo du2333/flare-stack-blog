@@ -13,10 +13,13 @@ import immersiveStylesheet from "./shells/immersive/immersive.css?url";
 import { DEFAULT_FRAME, FRAMES } from "./shells/namecard/frame";
 import { namecardShell } from "./shells/namecard/namecard-shell";
 import namecardStylesheet from "./shells/namecard/namecard.css?url";
+import { sidebarShell } from "./shells/sidebar/sidebar-shell";
+import sidebarStylesheet from "./shells/sidebar/sidebar.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
 import { ClassicThumbnail } from "./thumbnails/classic-thumbnail";
 import { ImmersiveThumbnail } from "./thumbnails/immersive-thumbnail";
 import { NamecardThumbnail } from "./thumbnails/namecard-thumbnail";
+import { SidebarThumbnail } from "./thumbnails/sidebar-thumbnail";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
 
@@ -137,10 +140,29 @@ const immersiveTheme: Theme = {
   thumbnail: ImmersiveThumbnail,
 };
 
+const sidebarTheme: Theme = {
+  id: "sidebar",
+  name: m.theme_sidebar_name,
+  shell: sidebarShell,
+  stylesheet: sidebarStylesheet,
+  recipe: {
+    postCard: "tile",
+    meta: "inline",
+    noCoverStrip: "remove",
+    headingAccent: "on",
+    summary: "standfirst",
+    archive: "timeline",
+    footer: "caption",
+  },
+  options: z.object({}),
+  thumbnail: SidebarThumbnail,
+};
+
 const BUILT_IN_THEMES = {
   classic: classicTheme,
   namecard: namecardTheme,
   immersive: immersiveTheme,
+  sidebar: sidebarTheme,
 } satisfies Record<ThemeId, Theme>;
 
 /**

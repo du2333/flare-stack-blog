@@ -4,7 +4,12 @@
  * listed falls back to. Kept apart from the registry so Site Config can check
  * an id without loading the shells.
  */
-export const BUILT_IN_THEME_IDS = ["classic", "namecard", "immersive"] as const;
+export const BUILT_IN_THEME_IDS = [
+  "classic",
+  "namecard",
+  "immersive",
+  "sidebar",
+] as const;
 export type ThemeId = (typeof BUILT_IN_THEME_IDS)[number];
 export const DEFAULT_THEME_ID: ThemeId = BUILT_IN_THEME_IDS[0];
 

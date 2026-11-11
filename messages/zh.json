@@ -333,6 +333,7 @@
   "theme_immersive_cards_hint": "宽屏下首页与内页中分类、标签等卡片的位置；文章页的卡片始终位于正文之后。",
   "theme_immersive_cards_below": "列表下方",
   "theme_immersive_cards_beside": "右侧窄列",
+  "theme_sidebar_name": "侧栏",
   "format_month_day_time": [
     {
       "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],

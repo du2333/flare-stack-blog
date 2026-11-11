@@ -76,20 +76,30 @@ describe("the Theme registry", () => {
     }
   });
 
-  it("lists Posts as cards in classic, rows in namecard and tiles in immersive", () => {
+  it("lists Posts as cards in classic, rows in namecard and tiles in immersive and sidebar", () => {
     expect(
       Object.fromEntries(
         THEMES.map((theme) => [theme.id, theme.recipe.postCard]),
       ),
-    ).toEqual({ classic: "card", namecard: "row", immersive: "tile" });
+    ).toEqual({
+      classic: "card",
+      namecard: "row",
+      immersive: "tile",
+      sidebar: "tile",
+    });
   });
 
-  it("closes the page with a caption in classic and namecard and a band in immersive", () => {
+  it("closes the page with a caption in classic, namecard and sidebar and a band in immersive", () => {
     expect(
       Object.fromEntries(
         THEMES.map((theme) => [theme.id, theme.recipe.footer]),
       ),
-    ).toEqual({ classic: "caption", namecard: "caption", immersive: "band" });
+    ).toEqual({
+      classic: "caption",
+      namecard: "caption",
+      immersive: "band",
+      sidebar: "caption",
+    });
   });
 
   it.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
