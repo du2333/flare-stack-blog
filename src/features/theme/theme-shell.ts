@@ -24,7 +24,11 @@ export interface SidebarCard {
   /** Stable for the card, used as its key. */
   id: string;
   kind: SidebarCardKind;
-  /** Hides itself when it has nothing to show. */
+  /**
+   * Renders nothing when it has nothing to show (the shell leaves no gap for
+   * it), and takes its narrow or its wide form from the width of the `card`
+   * container around it, if the shell declares one.
+   */
   content: ReactNode;
 }
 
@@ -33,9 +37,23 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
 
 /**
  * A shell only arranges what it is given (docs/theme-shell-checklist.md). It
- * shows every navigation entry and every sidebar card, in the given order, and
- * never decides which cards a page has or whether a page is focused: the cache
+ * shows every navigation entry and every sidebar card, each once, and never
+ * decides which cards a page has or whether a page is focused: the cache
  * tags of a page assume the cards the host chose.
+ *
+ * Where the cards go is the shell's: beside the content, after it, or, on
+ * wide screens only, some of them before it. It may stand them in more than
+ * one group; a group keeps the given order, and one placed before the
+ * content comes before it in the document. Below 1024px every card follows
+ * the content.
+ *
+ * A card is not told where it stands. It takes its narrow form (a column
+ * beside the content) or its wide, low one from the width of the CSS
+ * container named `card` around it. A shell that gives cards more room than
+ * a narrow column makes the slot of each card that container in its
+ * stylesheet (`container: card / inline-size`, as `.immersive-card` in
+ * `shells/immersive/immersive.css`); where a shell declares none, every card
+ * keeps its narrow form.
  *
  * Every shell also:
  * - wraps its tree in `FirstScreenProvider`, which back to top, the table of
@@ -60,16 +78,17 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *     adds no padding of its own; resolved on a fixed element, so a
  *     percentage is of the window.
  * - marks its root `data-theme-shell="<id>"` and its regions
- *   `data-shell-region="body" | "sidebar" | "main" | "footer"`, with the
- *   sidebar and footer inside the body, so shared styles such as the
- *   render-error fallback never use a shell's class names.
+ *   `data-shell-region="body" | "sidebar" | "main" | "footer"`, with every
+ *   group of cards a `sidebar` and, like the footer, inside the body, so
+ *   shared styles such as the render-error fallback never use a shell's
+ *   class names.
  */
 export interface ThemeShellProps {
   pageKind: PageKind;
   /** Its Theme's own options (`Theme.options` in `themes.ts`). */
   options: ThemeOptionValues;
   navOptions: Array<NavOption>;
-  /** Empty on focused pages. */
+  /** In the order to show them within a group; empty on focused pages. */
   sidebarCards: Array<SidebarCard>;
   user?: UserInfo;
   isSessionLoading: boolean;
