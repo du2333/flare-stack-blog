@@ -214,6 +214,13 @@ describe("the footer as a band", () => {
     expect(line.contains(sitemap)).toBe(true);
     // They are not navigation entries.
     expect(within(host).getByRole("navigation").contains(rss)).toBe(false);
+    // At every width the copyright is at one end of the line and the links
+    // at the other: no corner is kept clear for back to top, which the
+    // shell that picks the band rests above it.
+    expect([...line.classList]).toContain("justify-between");
+    expect(
+      [...line.classList].filter((name) => /^(max-)?(sm|md|lg|xl):/.test(name)),
+    ).toEqual([]);
 
     expect(host.textContent).not.toContain(m.footer_powered_by());
     expect(host.textContent).not.toContain("Tanstack Start");
