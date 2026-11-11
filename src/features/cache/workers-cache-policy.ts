@@ -1,3 +1,8 @@
+import {
+  hasSessionCookie,
+  hasThemePreviewParams,
+  withoutThemePreviewParams,
+} from "@/features/theme/utils/theme-preview-params";
 import { CACHE_CONTROL } from "@/lib/constants";
 import type { PublicCacheReason } from "./types";
 
@@ -84,6 +89,33 @@ export function workersCacheKey(url: string | URL): string {
     return query ? `${pathname}?${query}` : pathname;
   }
   return pathname;
+}
+
+/**
+ * How the default fetch handler passes a request to the cached `App`
+ * entrypoint. A Theme preview never meets the cache: without a session
+ * cookie its parameters are dropped and the request is an ordinary one, so
+ * anonymous traffic cannot force uncached renders; with one, the request
+ * skips the cache (neither read nor stored) and `App` checks the session.
+ */
+export type WorkersCacheRoute =
+  | { cache: "lookup"; request: Request; cacheKey: string }
+  | { cache: "bypass"; request: Request };
+
+export function workersCacheRoute(request: Request): WorkersCacheRoute {
+  const url = new URL(request.url);
+  if (!hasThemePreviewParams(url)) {
+    return { cache: "lookup", request, cacheKey: workersCacheKey(url) };
+  }
+  if (hasSessionCookie(request.headers)) {
+    return { cache: "bypass", request };
+  }
+  const stripped = withoutThemePreviewParams(url);
+  return {
+    cache: "lookup",
+    request: new Request(stripped, request),
+    cacheKey: workersCacheKey(stripped),
+  };
 }
 
 export function workersCachePolicy(pathname: string): WorkersCachePolicy {
@@ -215,7 +247,11 @@ export function applyWorkersCachePolicy(
   request: Request,
   response: Response,
 ): Response {
-  const policy = workersCachePolicy(new URL(request.url).pathname);
+  const url = new URL(request.url);
+  // Only a bypassing request still has the preview parameters here.
+  const policy: WorkersCachePolicy = hasThemePreviewParams(url)
+    ? { cache: "private" }
+    : workersCachePolicy(url.pathname);
   const headers = new Headers(response.headers);
 
   if (policy.cache === "private") {

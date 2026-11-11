@@ -6,6 +6,7 @@ import {
   purgeOptionsFor,
   workersCacheKey,
   workersCachePolicy,
+  workersCacheRoute,
 } from "./workers-cache-policy";
 
 describe("workersCacheKey", () => {
@@ -383,5 +384,87 @@ describe("applyWorkersCachePolicy", () => {
     expect(response.headers.get("Cache-Tag")).toBe(
       "html,posts,popularity,moments",
     );
+  });
+});
+
+describe("Theme previews and the cache", () => {
+  const PREVIEW =
+    "themePreview=fixture&themePreviewOptions=%7B%22marker%22%3A%22off%22%7D";
+  const SESSION = "better-auth.session_token=abc.def";
+
+  it("leaves a request without the preview parameters as it is", () => {
+    const request = new Request("https://blog.example/posts?tagName=rust", {
+      headers: { Cookie: SESSION },
+    });
+    expect(workersCacheRoute(request)).toEqual({
+      cache: "lookup",
+      request,
+      cacheKey: "/posts?tagName=rust",
+    });
+  });
+
+  it("drops the preview without a session cookie, keeping the key and policy of the plain page", () => {
+    for (const cookie of [undefined, "theme=dark; lang=zh"]) {
+      const route = workersCacheRoute(
+        new Request(`https://blog.example/?page=2&${PREVIEW}`, {
+          headers: cookie ? { Cookie: cookie } : {},
+        }),
+      );
+      expect(route.cache).toBe("lookup");
+      if (route.cache !== "lookup") return;
+      expect(route.cacheKey).toBe(
+        workersCacheKey("https://blog.example/?page=2"),
+      );
+      expect(route.request.url).toBe("https://blog.example/?page=2");
+      expect(route.request.headers.get("Cookie")).toBe(cookie ?? null);
+
+      const response = applyWorkersCachePolicy(
+        route.request,
+        new Response("<html></html>", { headers: CACHE_CONTROL.html }),
+      );
+      expect(response.headers.get("Cache-Control")).toBe(
+        CACHE_CONTROL.html["Cache-Control"],
+      );
+      expect(response.headers.get("Cache-Tag")).toBe(
+        "html,posts,popularity,moments",
+      );
+    }
+  });
+
+  it("bypasses the cache for a preview with a session cookie, on HTTP and HTTPS names", () => {
+    for (const cookie of [SESSION, `lang=zh; __Secure-${SESSION}`]) {
+      const request = new Request(`https://blog.example/posts?${PREVIEW}`, {
+        headers: { Cookie: cookie },
+      });
+      expect(workersCacheRoute(request)).toEqual({ cache: "bypass", request });
+    }
+    // Either parameter alone asks for a preview.
+    const request = new Request("https://blog.example/?themePreview=", {
+      headers: { Cookie: SESSION },
+    });
+    expect(workersCacheRoute(request).cache).toBe("bypass");
+  });
+
+  it("makes a page rendered with the preview parameters private and untagged", () => {
+    for (const path of ["/", "/posts", "/post/hello", "/moments/3"]) {
+      const response = applyWorkersCachePolicy(
+        new Request(`https://blog.example${path}?${PREVIEW}`, {
+          headers: { Cookie: SESSION },
+        }),
+        new Response("<html></html>", {
+          headers: { ...CACHE_CONTROL.html, "Cache-Tag": "html" },
+        }),
+      );
+      expect(response.headers.get("Cache-Control")).toBe(
+        CACHE_CONTROL.private["Cache-Control"],
+      );
+      expect(response.headers.get("Cache-Control")).toMatch(
+        /^private, no-store/,
+      );
+      expect(response.headers.get("CDN-Cache-Control")).toBe(
+        CACHE_CONTROL.private["CDN-Cache-Control"],
+      );
+      expect(response.headers.get("Cache-Tag")).toBeNull();
+    }
   });
 });
