@@ -123,22 +123,21 @@ export async function renderShell({
     onScreen.goTo = (kind) => act(() => setNamed(kind));
     const replace = (kind: PageKind) =>
       setRendered(({ serial }) => ({ kind, serial: serial + 1 }));
-    // The shell hears of the page that was replaced a microtask later.
     onScreen.arrive = async () => {
       await act(async () => {
         replace(named);
       });
-      await act(async () => {});
     };
     onScreen.visit = async (kind) => {
       await act(async () => {
         setNamed(kind);
         replace(kind);
       });
-      await act(async () => {});
     };
     const props: ThemeShellProps = {
       pageKind: named,
+      // The host says so in the commit that replaces the page.
+      pageOnScreen: rendered.kind,
       options: resolveThemeOptions(theme, stored),
       navOptions: NAV_OPTIONS,
       sidebarCards: cards ?? cardsFor(named),

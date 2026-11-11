@@ -54,6 +54,7 @@ async function renderShell({
 }) {
   const props: ThemeShellProps = {
     pageKind,
+    pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
     navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
     sidebarCards: cards,
@@ -339,41 +340,34 @@ describe("the sidebar cards", () => {
   );
 });
 
-// The page that is left stays on screen while it fades out (PageFade),
-// after the address has changed. The cards change places with the page, as
-// the shared hook has it (hooks/use-reading-column.test.ts covers the
-// rest); here, that the shell takes it from that hook and from its `main`.
+// During a navigation the address names the next page while `main` still
+// holds the one that is left, for as long as the next takes to load. The
+// body is laid out for the page `main` holds (the host says which:
+// components/public-shell.test.ts).
 describe("going from one page to another", () => {
+  /** The address names a page of this kind; `main` still holds the last one. */
   let goTo: (pageKind: PageKind) => void;
-  let setLeaving: (leaving: boolean) => void;
+  /** The page the address names is rendered in `main`. */
+  let arrive: () => void;
 
-  /** The shell on a page it can leave for another kind of page. */
-  async function renderShellOn(
-    pageKind: PageKind,
-    /** The page in its transition, which says when it is leaving. */
-    page: (leaving: boolean) => ReturnType<typeof createElement> = () =>
-      createElement("p", null, "Page content"),
-  ) {
+  async function renderShellOn(pageKind: PageKind) {
     const root = createRootRoute({
       beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
       loader: () => ({ currentYear: 2026 }),
       component: () => {
-        const [kind, setKind] = useState(pageKind);
-        const [leaving, setLeavingState] = useState(false);
-        setLeaving = setLeavingState;
-        goTo = (next) => {
-          act(() => {
-            setKind(next);
-          });
-        };
+        const [named, setNamed] = useState(pageKind);
+        const [onScreen, setOnScreen] = useState(pageKind);
+        goTo = (next) => act(() => setNamed(next));
+        arrive = () => act(() => setOnScreen(named));
         return createElement(theme.shell.Shell, {
-          pageKind: kind,
+          pageKind: named,
+          pageOnScreen: onScreen,
           options: resolveThemeOptions(theme, undefined),
           navOptions: [],
-          sidebarCards: cardsFor(kind),
+          sidebarCards: cardsFor(named),
           isSessionLoading: false,
           logout: async () => {},
-          children: page(leaving),
+          children: createElement("p", null, "Page content"),
           footer: null,
           floatingActions: null,
         });
@@ -395,67 +389,33 @@ describe("going from one page to another", () => {
       vi.advanceTimersByTime(ms);
     });
   }
-  /** By when the page that is left is at a few hundredths of its opacity. */
-  const ALL_BUT_GONE_MS = PAGE_FADE_MS - 20;
   const places = () => cardGroups().map((group) => group.place);
 
-  it("keeps the cards beside the list while it fades out, and has them after the article when the Post shows", async () => {
+  it("keeps the cards beside the list for as long as it is on screen, and has them after the article in the commit the Post comes in", async () => {
     await renderShellOn("inner");
 
     goTo("post");
     expect(places()).toEqual(["beside"]);
-    after(ALL_BUT_GONE_MS);
+    // However long the Post takes to load: no timer of the shell's own.
+    after(10 * PAGE_FADE_MS);
     expect(places()).toEqual(["beside"]);
 
-    after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+    arrive();
     expect(places()).toEqual(["after"]);
   });
 
-  it("keeps the right column free while the Post fades out, and has the cards there when the list shows", async () => {
+  it("keeps the right column free for as long as the Post is on screen, and has the cards there in the commit the list comes in", async () => {
     await renderShellOn("post");
 
     goTo("home");
-    expect(places()).toEqual(["after"]);
-    after(ALL_BUT_GONE_MS);
+    after(10 * PAGE_FADE_MS);
     expect(places()).toEqual(["after"]);
 
-    after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+    arrive();
     expect(places()).toEqual(["beside"]);
   });
 
-  // The transition around the page drops the class the page fades out
-  // under in the commit that swaps the pages; a timer could be a frame
-  // off either way.
-  it("moves the cards in the commit that lets the next page in, without waiting for its own timer", async () => {
-    await renderShellOn("inner", (leaving) =>
-      createElement(
-        "div",
-        { className: leaving ? "page-fade is-leaving" : "page-fade" },
-        "Page content",
-      ),
-    );
-
-    goTo("post");
-    await act(async () => setLeaving(true));
-    expect(places()).toEqual(["beside"]);
-
-    after(PAGE_FADE_MS / 2);
-    await act(async () => setLeaving(false));
-    expect(places()).toEqual(["after"]);
-  });
-
-  it("moves them at once for a reader who asked for less motion", async () => {
-    reducedMotion.matches = true;
-    await renderShellOn("inner");
-
-    goTo("post");
-    expect(places()).toEqual(["after"]);
-
-    goTo("inner");
-    expect(places()).toEqual(["beside"]);
-  });
-
-  it("keeps a focused page alone in its one column while it fades out before a Post", async () => {
+  it("keeps a focused page alone in its one column until the Post comes in", async () => {
     await renderShellOn("focused");
     expect(region("body").dataset.focused).toBe("true");
 
@@ -463,18 +423,18 @@ describe("going from one page to another", () => {
     expect(region("body").dataset.focused).toBe("true");
     expect(places()).toEqual([]);
 
-    after(PAGE_FADE_MS);
+    arrive();
     expect(region("body").dataset.focused).toBe("false");
     expect(places()).toEqual(["after"]);
   });
 
-  it("keeps the Post in its column while it fades out before a focused page", async () => {
+  it("keeps the Post in its column until the focused page comes in", async () => {
     await renderShellOn("post");
 
     goTo("focused");
     expect(region("body").dataset.focused).toBe("false");
 
-    after(PAGE_FADE_MS);
+    arrive();
     expect(region("body").dataset.focused).toBe("true");
   });
 

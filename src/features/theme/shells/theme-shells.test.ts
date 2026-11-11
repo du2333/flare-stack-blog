@@ -104,6 +104,7 @@ async function renderShell(
 ) {
   const props: ThemeShellProps = {
     pageKind,
+    pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, undefined),
     navOptions: NAV_OPTIONS,
     sidebarCards: pageKind === "focused" ? [] : CARDS,

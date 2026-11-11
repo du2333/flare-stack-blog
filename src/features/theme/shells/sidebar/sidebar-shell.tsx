@@ -15,7 +15,6 @@ import {
 } from "./options";
 import { Rail } from "./rail";
 import { TopBar } from "./top-bar";
-import { usePageOnScreen } from "./use-page-on-screen";
 
 /** The cards come in after the content, 50ms apart. */
 const CARD_DELAY_MS = 150;
@@ -39,10 +38,9 @@ const CARD_STEP_MS = 50;
  * in the rail, in the place of who writes here, which folds away for it;
  * with the option 「文章页目录位置」 set beside the article it stands right of
  * the column instead and the rail is as on any page (options.ts,
- * sidebar.css). The shell lays every page out from the frame that shows it,
- * not from the address (use-page-on-screen.ts), and the rail folds by what
- * the page itself says, so nothing of one page shows in the layout of the
- * other.
+ * sidebar.css). The shell lays every page out by the page `main` holds, not
+ * by the address (`pageOnScreen`), and the rail folds by what the page
+ * itself says, so nothing of one page shows in the layout of the other.
  *
  * The rail says what the profile card says, so the stylesheet hides that
  * card's slot wherever the rail shows who writes here, and shows it
@@ -55,6 +53,7 @@ const CARD_STEP_MS = 50;
  */
 function SidebarShell({
   pageKind,
+  pageOnScreen,
   options,
   navOptions,
   sidebarCards,
@@ -69,11 +68,23 @@ function SidebarShell({
     ? options.banner
     : DEFAULT_INNER_BANNER;
   const tocPlace = isTocPlace(options.toc) ? options.toc : DEFAULT_TOC_PLACE;
-  const mainRef = useRef<HTMLElement>(null);
-  const { page, swapped } = usePageOnScreen(pageKind, mainRef);
-  const isHomePage = page === "home";
-  const isPostPage = page === "post";
-  const hasBanner = isHomePage || (page === "inner" && innerBanner === "low");
+  const isHomePage = pageOnScreen === "home";
+  const isPostPage = pageOnScreen === "post";
+  const hasBanner =
+    isHomePage || (pageOnScreen === "inner" && innerBanner === "low");
+  // Whether a Post's page was on either side of the last change of the page
+  // on screen. What stands above the page (the banner, the headline) then
+  // comes or goes at once rather than folds, because the column changes
+  // width in the same frame.
+  const [last, setLast] = useState({
+    page: pageOnScreen,
+    before: pageOnScreen,
+  });
+  if (pageOnScreen !== last.page) {
+    setLast({ page: pageOnScreen, before: last.page });
+  }
+  const before = pageOnScreen === last.page ? last.before : last.page;
+  const swapped = isPostPage || before === "post";
   // On the way into a Post's page what stands above the page fades with it.
   const leaving = pageKind === "post" && !isPostPage;
   const bannerRef = useRef<HTMLDivElement>(null);
@@ -126,11 +137,7 @@ function SidebarShell({
               leaving={leaving}
             />
 
-            <main
-              ref={mainRef}
-              className="sidebar-main"
-              data-shell-region="main"
-            >
+            <main className="sidebar-main" data-shell-region="main">
               {children}
             </main>
 

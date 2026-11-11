@@ -9,10 +9,9 @@ import type { SiteConfig } from "@/features/config/site-config.schema";
  * own, so a shell can lay it out apart from the other inner pages (the width
  * of the reading column, the cards beside the article or after it); the host
  * gives it the cards of an inner page. A shell that does not tell the two
- * apart treats `post` as `inner`. The kind changes with the address, while
- * the page that is left is still fading out; what must change with the page
- * on screen, such as the reading column, takes `useReadingColumn`
- * (`hooks/use-reading-column.ts`).
+ * apart treats `post` as `inner`. A shell is told two of them: the kind of
+ * the page the address names (`pageKind`) and that of the page `main` holds
+ * (`pageOnScreen`), which differ for as long as a navigation takes.
  */
 export type PageKind = "home" | "inner" | "post" | "focused";
 
@@ -109,12 +108,26 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  * `[data-table-of-contents]` from the first paint exactly while it has a
  * table of contents, so the stylesheet can show something else in the
  * slot's place with `:has()`, without the Post page knowing of it. The slot
- * stays while a Post's page fades out: render it on every page, or switch
- * it with `useReadingColumn` (`hooks/use-reading-column.ts`), never with
- * `pageKind`, which changes before the page that is left has gone.
+ * stays for as long as a Post's page is in `main`: render it on every page,
+ * or switch it with `pageOnScreen`, never with `pageKind`, which changes
+ * before the page that is left has gone.
  */
 export interface ThemeShellProps {
+  /**
+   * The kind of the page the address names. It changes with the click, so
+   * what answers the reader at once follows it (a first screen that opens
+   * or folds away).
+   */
   pageKind: PageKind;
+  /**
+   * The kind of the page `main` holds. During a navigation the page that is
+   * left stays in `main` until the next one has loaded, however long that
+   * takes, and the two are swapped in one commit; this changes in that
+   * commit. Everything a shell lays out around the page follows it (a
+   * reading column, where the cards stand, a slot for the table of
+   * contents), so no page is ever seen in the layout of another.
+   */
+  pageOnScreen: PageKind;
   /** Its Theme's own options (`Theme.options` in `themes.ts`). */
   options: ThemeOptionValues;
   navOptions: Array<NavOption>;

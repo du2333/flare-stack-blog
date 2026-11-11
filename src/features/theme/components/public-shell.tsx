@@ -51,6 +51,18 @@ export function PublicShell({
       ),
   });
   const pageKind = resolvePageKind({ pathname, isAuthRoute, hasRouteError });
+  // The page the router has handed `<Outlet />`, which is the page `main`
+  // holds: the address names the next page from the click on, the matches
+  // change in the commit that replaces the page.
+  const pathnameOnScreen = useRouterState({
+    select: (state) =>
+      state.matches.at(-1)?.pathname ?? state.location.pathname,
+  });
+  const pageOnScreen = resolvePageKind({
+    pathname: pathnameOnScreen,
+    isAuthRoute,
+    hasRouteError,
+  });
   const { shell } = theme;
   const { Shell } = shell;
 
@@ -60,6 +72,7 @@ export function PublicShell({
         <TocSlotProvider>
           <Shell
             pageKind={pageKind}
+            pageOnScreen={pageOnScreen}
             options={options}
             navOptions={navOptions}
             sidebarCards={sidebarCardsFor(pageKind, shell)}

@@ -1,8 +1,6 @@
-import { useCallback, useRef, useState, type RefObject } from "react";
+import { useCallback, useRef } from "react";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
-import { useReadingColumn } from "@/features/theme/hooks/use-reading-column";
 import type {
-  PageKind,
   SidebarCard,
   ThemeShell,
   ThemeShellProps,
@@ -15,27 +13,6 @@ import { Navbar } from "./navbar";
 /** Sidebar cards come in after the navbar, 50ms apart. */
 const CARD_DELAY_MS = 100;
 const CARD_STEP_MS = 50;
-
-/**
- * The kind of the page on screen. `pageKind` changes with the address, while
- * the page that is left is still fading out; the body is laid out for the
- * page that can be seen, so neither page shows in the layout of the other.
- * A Post's page takes over, and gives way, in the commit that swaps the
- * pages (`useReadingColumn`). Among the other kinds nothing waits.
- */
-function usePageOnScreen(
-  pageKind: PageKind,
-  mainRef: RefObject<HTMLElement | null>,
-): PageKind {
-  const reading = useReadingColumn(pageKind === "post", mainRef);
-  // The page a Post's page comes in after: the one that is fading out.
-  const [left, setLeft] = useState<PageKind>(
-    pageKind === "post" ? "inner" : pageKind,
-  );
-  if (pageKind !== "post" && pageKind !== left) setLeft(pageKind);
-  if (reading) return "post";
-  return pageKind === "post" ? left : pageKind;
-}
 
 /**
  * 「名片」: a bare navbar and, on the home page, a first screen that
@@ -51,6 +28,7 @@ function usePageOnScreen(
  */
 function NamecardShell({
   pageKind,
+  pageOnScreen,
   options,
   navOptions,
   sidebarCards,
@@ -63,11 +41,11 @@ function NamecardShell({
 }: ThemeShellProps) {
   const isHomePage = pageKind === "home";
   const frame = isFrame(options.frame) ? options.frame : DEFAULT_FRAME;
-  const mainRef = useRef<HTMLElement>(null);
-  const page = usePageOnScreen(pageKind, mainRef);
-  const isFocusedPage = page === "focused";
+  // The first screen answers the click; the body is laid out for the page
+  // that can be seen, so neither page shows in the layout of the other.
+  const isFocusedPage = pageOnScreen === "focused";
   // A focused page shows only its content, also while it fades out.
-  const cards = placeCards(page, isFocusedPage ? [] : sidebarCards);
+  const cards = placeCards(pageOnScreen, isFocusedPage ? [] : sidebarCards);
   const firstScreenRef = useRef<HTMLElement>(null);
   // The navbar and, on the home page, what unfolds under it.
   const firstScreenHeight = useCallback(() => {
@@ -96,11 +74,7 @@ function NamecardShell({
           data-focused={isFocusedPage}
           data-shell-region="body"
         >
-          <main
-            ref={mainRef}
-            className="namecard-main"
-            data-shell-region="main"
-          >
+          <main className="namecard-main" data-shell-region="main">
             {children}
           </main>
 
