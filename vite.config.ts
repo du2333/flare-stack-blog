@@ -7,6 +7,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import packageJson from "./package.json";
+import { paraglideOptions } from "./scripts/paraglide-options.ts";
 import { routedFirstSegmentsPlugin } from "./scripts/vite-routed-segments.ts";
 import { themeFixturePlugin } from "./scripts/vite-theme-fixture.ts";
 
@@ -25,12 +26,7 @@ const config = defineConfig({
     },
   },
   plugins: [
-    paraglideVitePlugin({
-      project: "./project.inlang",
-      outdir: "./src/paraglide",
-      strategy: ["cookie", "preferredLanguage", "baseLocale"],
-      cookieName: "LOCALE",
-    }),
+    paraglideVitePlugin(paraglideOptions),
     cloudflare({
       viteEnvironment: {
         name: "ssr",

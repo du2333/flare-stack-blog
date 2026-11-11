@@ -21,7 +21,7 @@
     "orpc:contract": "bun run i18n:compile && bun scripts/generate-orpc-contract.ts && oxfmt src/lib/orpc/contract.generated.json",
     "typecheck": "bun run orpc:contract && cf workers types && ./node_modules/typescript/bin/tsc --noEmit",
     "check": "bun run orpc:contract && cf workers types && oxlint && oxfmt --check && ./node_modules/typescript/bin/tsc --noEmit",
-    "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
+    "i18n:compile": "bun scripts/compile-messages.ts",
     "i18n:verify": "bun scripts/verify-translations.ts",
     "i18n:prune-unused": "bun scripts/prune-unused-translations.ts",
     "wrangler:prepare": "bun scripts/wrangler-prepare-deprecated.ts",
