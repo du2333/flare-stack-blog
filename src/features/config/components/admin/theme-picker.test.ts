@@ -24,7 +24,8 @@ afterEach(cleanup);
 const plain: Theme = { ...fixtureTheme, id: "plain", name: () => "Plain" };
 delete plain.thumbnail;
 delete plain.optionFields;
-const themes = [...THEMES, fixtureTheme, plain];
+// A fixed list, so registering another Theme does not change what this test sees.
+const themes = [THEMES[0], fixtureTheme, plain];
 
 function renderPicker() {
   const form: { current?: UseFormReturn<SystemConfig> } = {};
