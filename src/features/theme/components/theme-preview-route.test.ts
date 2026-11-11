@@ -6,7 +6,10 @@ import {
 } from "@tanstack/react-router";
 import { fixtureTheme } from "tests/theme-fixture/theme";
 import { describe, expect, it, vi } from "vitest";
+import { categoriesQueryOptions } from "@/features/categories/queries";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
+import { momentsExistQuery } from "@/features/moments/queries";
+import { tagsQueryOptions } from "@/features/tags/queries";
 import { Route as PublicRoute } from "@/routes/_public/route";
 import { THEMES } from "../themes";
 import { documentThemeId } from "../utils/document-theme";
@@ -22,6 +25,31 @@ vi.mock("virtual:fixture-themes", async () => ({
 
 const saved = resolveSiteConfig({});
 const preview = { id: fixtureTheme.id, options: { marker: "off" } };
+
+// A card that waits for its entries shows a placeholder, which gives way to
+// nothing on a site without categories or tags, and what follows it jumps.
+describe("what every public page has before it is rendered", () => {
+  it("has the Moments answer, the categories and the tags, so a sidebar card never stands in for itself", async () => {
+    const prefetchQuery = vi.fn(async () => {});
+    type LoaderContext = Parameters<
+      Extract<NonNullable<typeof PublicRoute.options.loader>, Function>
+    >[0];
+
+    await (PublicRoute.options.loader as (context: LoaderContext) => unknown)({
+      context: { queryClient: { prefetchQuery } },
+    } as unknown as LoaderContext);
+
+    expect(
+      prefetchQuery.mock.calls.map(
+        ([options]) => (options as { queryKey: unknown }).queryKey,
+      ),
+    ).toEqual([
+      momentsExistQuery.queryKey,
+      categoriesQueryOptions.queryKey,
+      tagsQueryOptions.queryKey,
+    ]);
+  });
+});
 
 describe("the page while previewing", () => {
   type HeadContext = Parameters<

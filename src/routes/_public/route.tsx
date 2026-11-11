@@ -9,6 +9,7 @@ import {
 import { useCallback, useEffect } from "react";
 import { Toaster } from "@/components/layout/toaster";
 import { NameGate } from "@/features/auth/components/name-gate";
+import { categoriesQueryOptions } from "@/features/categories/queries";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useSession } from "@/lib/auth/auth-client";
 import { CACHE_CONTROL } from "@/lib/constants";
@@ -16,6 +17,7 @@ import { clientEnv } from "@/lib/env/client.env";
 import { isExternalNavHref } from "@/features/config/utils/nav-links";
 import { useIsAdmin } from "@/features/moments/hooks/use-is-admin";
 import { momentsExistQuery } from "@/features/moments/queries";
+import { tagsQueryOptions } from "@/features/tags/queries";
 import { PublicShell } from "@/features/theme/components/public-shell";
 import { ThemePreviewBar } from "@/features/theme/components/theme-preview-bar";
 import { activeTheme } from "@/features/theme/theme-preview";
@@ -39,8 +41,19 @@ export const Route = createFileRoute("/_public")({
   // The navigation shows the Moments entry only once a Moment exists, so the
   // answer is in the server-rendered page. A failed lookup only leaves the
   // entry out.
+  //
+  // So are the categories and the tags, which the sidebar cards show on
+  // every page that has cards: a card is there from the first paint, and a
+  // site without any never shows one. Left to load while the page streams,
+  // a placeholder stood in for each and gave way, and on a site without
+  // categories or tags what followed it jumped. A failed lookup leaves the
+  // card to ask again by itself.
   loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(momentsExistQuery);
+    await Promise.all([
+      context.queryClient.prefetchQuery(momentsExistQuery),
+      context.queryClient.prefetchQuery(categoriesQueryOptions),
+      context.queryClient.prefetchQuery(tagsQueryOptions),
+    ]);
   },
   headers: () => {
     return CACHE_CONTROL.html;
