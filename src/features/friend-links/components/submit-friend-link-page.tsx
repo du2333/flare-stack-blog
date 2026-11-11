@@ -46,7 +46,7 @@ export function SubmitFriendLinkPage({
     `${isLoading}:${current?.id}:${current?.status}:${editing}`,
   );
   return (
-    <section className="friend-application fuwari-card-base fuwari-card-panel">
+    <section className="friend-application fuwari-card-base fuwari-card-standalone">
       <ThemedPageHeading
         title={m.friend_link_submit_title()}
         back={{ to: "/friend-links", label: m.friend_link_back_to_list() }}
