@@ -739,6 +739,57 @@ describe("the navbar", () => {
     expect(navbar().dataset.ready).toBe("true");
   });
 
+  // A shape is a layout that changes at once, and the parts glide to it
+  // with transforms (glide.ts): a transition of anything that places a part
+  // would move it in the layout frame after frame, which a browser counts
+  // as layout shift.
+  it("changes shape without a transition of anything that places a part", () => {
+    const css = readFileSync(join(import.meta.dirname, "navbar.css"), "utf8");
+    const transitions = [...css.matchAll(/transition:\s*([^;]+);/g)].flatMap(
+      ([, value]) =>
+        value!.split(",").map((part) => part.trim().split(/\s+/)[0]),
+    );
+
+    expect(transitions.length).toBeGreaterThan(0);
+    expect(new Set(transitions)).toEqual(
+      new Set([
+        "opacity",
+        "color",
+        "text-shadow",
+        "background-color",
+        "border-color",
+        "box-shadow",
+        "-webkit-backdrop-filter",
+        "backdrop-filter",
+        // The brand mark under the pointer, the menu icon turning.
+        "transform",
+        // The wordmark folds where it stands, out of the row in the pill.
+        "grid-template-columns",
+      ]),
+    );
+    // What is drawn of a shape has no content to push, so its edges travel.
+    expect(css).toMatch(
+      /\.immersive-bar::before,\s*\.immersive-search::before\s*\{\s*margin: 0 var\(--glide-right, 0px\) var\(--glide-bottom, 0px\) 0;/,
+    );
+  });
+
+  it("glides as long and as the stylesheet's own motion of the navbar does", () => {
+    const shell = readFileSync(
+      join(import.meta.dirname, "immersive.css"),
+      "utf8",
+    );
+    const source = readFileSync(
+      join(import.meta.dirname, "navbar.tsx"),
+      "utf8",
+    );
+    const [, duration, easing] = source.match(
+      /const MORPH = \{ duration: (\d+), easing: "([^"]+)" \};/,
+    )!;
+
+    expect(shell).toContain(`--immersive-morph: ${duration}ms;`);
+    expect(shell).toContain(`--immersive-ease: ${easing};`);
+  });
+
   it("names the search field for those who cannot see its label", async () => {
     await renderShell({ pageKind: "home" });
 
@@ -1273,8 +1324,7 @@ describe("a Post's page", () => {
       ),
     );
     const pillBottom =
-      px(declared(pill, "transform").match(/translateY\((.+)\)/)![1]!, {}) +
-      px(declared(pill, "height"), {});
+      px(declared(pill, "margin-top"), {}) + px(declared(pill, "height"), {});
 
     expect(px(properties["--shell-toc-top"]!, properties)).toBeGreaterThan(
       pillBottom,

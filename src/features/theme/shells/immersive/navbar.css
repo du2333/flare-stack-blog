@@ -1,5 +1,10 @@
 /* The navbar: one element in two shapes, a bar lying on the banner and a
-   floating frosted pill. */
+   floating frosted pill. A shape is a layout, and the layout changes at
+   once; navbar.tsx then lets every part glide from where it was to where it
+   is now, with transforms, so nothing the browser lays out moves in time.
+   What is drawn of a shape (the frost of the pill, the glass of the search
+   field) is a ::before of its own for that: it has no content to push, so
+   its edges can travel. */
 
 .immersive-nav {
   position: fixed;
@@ -48,12 +53,22 @@
   --immersive-ring: #fff;
   --immersive-seal-fg: oklch(var(--immersive-ink));
   --immersive-icon-shadow: 0 1px 3px oklch(var(--immersive-ink) / 0.35);
-  /* Room around the brand, and whether the wordmark is unfolded. */
+  /* Room around the brand, and whether the wordmark is unfolded and has a
+     place in the row. */
   --immersive-brand-pad: 0px;
   --immersive-wordmark: 1fr;
   --immersive-wordmark-opacity: 1;
+  --immersive-wordmark-position: static;
+  --immersive-wordmark-width: auto;
   /* 1 while search is a field with its label, 0 while it is an icon. */
   --immersive-field: 1;
+  /* The surface under it all: none on the banner. */
+  --immersive-surface: transparent;
+  --immersive-surface-edge: transparent;
+  --immersive-surface-blur: blur(0) saturate(1);
+  --immersive-surface-shadow:
+    0 14px 40px -14px transparent, 0 2px 8px transparent,
+    inset 0 1px 0 transparent;
 
   position: relative;
   display: flex;
@@ -62,22 +77,35 @@
   flex: 1 1 auto;
   min-width: 0;
   height: 4.5rem;
+  margin-top: 0;
   padding-inline: 0;
   border: 1px solid transparent;
   border-radius: 999px;
-  background-color: transparent;
-  -webkit-backdrop-filter: blur(0) saturate(1);
-  backdrop-filter: blur(0) saturate(1);
-  box-shadow:
-    0 14px 40px -14px transparent,
-    0 2px 8px transparent,
-    inset 0 1px 0 transparent;
   color: var(--immersive-fg);
   text-shadow:
     0 1px 2px oklch(var(--immersive-ink) / 0.28),
     0 0 14px oklch(var(--immersive-ink) / 0.2);
   transform: translateY(0);
   pointer-events: auto;
+}
+.immersive-bar::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid var(--immersive-surface-edge);
+  border-radius: inherit;
+  background-color: var(--immersive-surface);
+  -webkit-backdrop-filter: var(--immersive-surface-blur);
+  backdrop-filter: var(--immersive-surface-blur);
+  box-shadow: var(--immersive-surface-shadow);
+  pointer-events: none;
+}
+/* While a shape changes, the far edges of a surface are where they were and
+   ease in from there (glide.ts). */
+.immersive-bar::before,
+.immersive-search::before {
+  margin: 0 var(--glide-right, 0px) var(--glide-bottom, 0px) 0;
 }
 
 /* The pill. The keyframes say the same as the rule, declaration for
@@ -96,19 +124,18 @@
   --immersive-icon-shadow: 0 0 0 transparent;
   --immersive-brand-pad: 6px;
   --immersive-field: 0;
+  --immersive-surface: var(--immersive-frost-bg);
+  --immersive-surface-edge: var(--immersive-frost-edge);
+  --immersive-surface-blur: blur(22px) saturate(1.8);
+  --immersive-surface-shadow: var(--immersive-frost-shadow);
   flex-grow: 0;
   gap: 6px;
   height: 3.25rem;
+  margin-top: 0.75rem;
   padding-inline: 6px;
-  border-color: var(--immersive-frost-edge);
-  background-color: var(--immersive-frost-bg);
-  -webkit-backdrop-filter: blur(22px) saturate(1.8);
-  backdrop-filter: blur(22px) saturate(1.8);
-  box-shadow: var(--immersive-frost-shadow);
   text-shadow:
     0 0 0 transparent,
     0 0 0 transparent;
-  transform: translateY(0.75rem);
 }
 @keyframes immersive-pill {
   to {
@@ -127,47 +154,59 @@
     --immersive-icon-shadow: 0 0 0 transparent;
     --immersive-brand-pad: 6px;
     --immersive-field: 0;
+    --immersive-surface: var(--immersive-frost-bg);
+    --immersive-surface-edge: var(--immersive-frost-edge);
+    --immersive-surface-blur: blur(22px) saturate(1.8);
+    --immersive-surface-shadow: var(--immersive-frost-shadow);
     flex-grow: 0;
     gap: 6px;
     height: 3.25rem;
+    margin-top: 0.75rem;
     padding-inline: 6px;
-    border-color: var(--immersive-frost-edge);
-    background-color: var(--immersive-frost-bg);
-    -webkit-backdrop-filter: blur(22px) saturate(1.8);
-    backdrop-filter: blur(22px) saturate(1.8);
-    box-shadow: var(--immersive-frost-shadow);
     text-shadow:
       0 0 0 transparent,
       0 0 0 transparent;
-    transform: translateY(0.75rem);
   }
 }
 /* With a mark to stand for it, the wordmark folds away in the pill where the
-   links are shown beside it. */
+   links are shown beside it. It has no place in the row from the start, so
+   the row is at once as short as it will be, and folds where it stood. */
 @media (min-width: 1100px) {
   .immersive-nav[data-state="pill"]:not([data-brand="none"]) .immersive-bar {
     --immersive-wordmark: 0fr;
     --immersive-wordmark-opacity: 0;
+    --immersive-wordmark-position: absolute;
+    --immersive-wordmark-width: max-content;
   }
 }
 @keyframes immersive-pill-fold {
   to {
     --immersive-wordmark: 0fr;
     --immersive-wordmark-opacity: 0;
+    --immersive-wordmark-position: absolute;
+    --immersive-wordmark-width: max-content;
   }
 }
 
 /* Scrolling down past the first screen slides the pill away; keyboard focus
-   inside it brings it back. */
+   inside it brings it back. What fades is the surface and what lies on it,
+   each by itself: a bar that was translucent as a whole would have nothing
+   behind its surface to blur. */
 .immersive-nav[data-hidden="true"] .immersive-bar {
-  transform: translateY(-130%);
-  opacity: 0;
+  transform: translateY(-150%);
   pointer-events: none;
 }
+.immersive-nav[data-hidden="true"] .immersive-bar::before,
+.immersive-nav[data-hidden="true"] .immersive-bar > * {
+  opacity: 0;
+}
 .immersive-nav[data-hidden="true"]:has(:focus-visible) .immersive-bar {
-  transform: translateY(0.75rem);
-  opacity: 1;
+  transform: translateY(0);
   pointer-events: auto;
+}
+.immersive-nav[data-hidden="true"]:has(:focus-visible) .immersive-bar::before,
+.immersive-nav[data-hidden="true"]:has(:focus-visible) .immersive-bar > * {
+  opacity: 1;
 }
 
 .immersive-bar :is(a, button):focus-visible {
@@ -193,6 +232,7 @@
 }
 
 .immersive-brand {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-width: 0;
@@ -243,10 +283,17 @@
   }
 }
 /* A column that goes from 1fr to 0fr folds the wordmark from the width it
-   has, and the space before it with it. */
+   has, and the space before it with it. Out of the row it stands where it
+   stood in it, right of the mark, as wide as its column makes it. */
 .immersive-wordmark {
+  position: var(--immersive-wordmark-position);
+  top: 0;
+  bottom: 0;
+  left: calc(100% - var(--immersive-brand-pad));
+  width: var(--immersive-wordmark-width);
   display: grid;
   grid-template-columns: var(--immersive-wordmark);
+  align-items: center;
   min-width: 0;
   opacity: var(--immersive-wordmark-opacity);
 }
@@ -302,16 +349,29 @@
 }
 
 /* Search: a glass field on the bar where there is room, otherwise an icon
-   like the tools beside it. */
+   like the tools beside it. The glass is its ::before; the label of an icon
+   is still there, unseen and out of the pointer's way. */
 .immersive-search {
+  position: relative;
+  isolation: isolate;
   justify-content: flex-start;
   gap: 8px;
   width: calc(2.5rem + var(--immersive-field) * 8rem);
   height: 2.5rem;
   margin-right: calc(var(--immersive-field) * 8px);
   padding-inline: 0.6875rem;
-  overflow: hidden;
   border-radius: 999px;
+  background-color: transparent;
+  color: var(--immersive-fg-soft);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.immersive-search::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background-color: color-mix(
     in srgb,
     var(--immersive-chip) calc(var(--immersive-field) * 100%),
@@ -323,20 +383,21 @@
       var(--immersive-chip-edge) calc(var(--immersive-field) * 100%),
       transparent
     );
-  color: var(--immersive-fg-soft);
-  font-size: 0.875rem;
-  white-space: nowrap;
 }
 .immersive-search span {
   opacity: calc(var(--immersive-field) * 0.92);
+  pointer-events: none;
 }
 .immersive-search:hover {
+  background-color: transparent;
+  color: var(--immersive-accent);
+}
+.immersive-search:hover::before {
   background-color: color-mix(
     in srgb,
     var(--immersive-chip-strong) calc(var(--immersive-field) * 100%),
     var(--immersive-chip)
   );
-  color: var(--immersive-accent);
 }
 
 .immersive-desktop-tools {
@@ -502,26 +563,28 @@
   .immersive-scrim[data-ready="true"] {
     transition: opacity 420ms ease;
   }
+  /* What places a part is not in these lists (the bar's box and where it
+     slides away to, the brand's padding, the width of the search field):
+     that changes at once, and navbar.tsx carries what it moved. */
   .immersive-nav[data-ready="true"] .immersive-bar {
     transition:
-      flex-grow var(--immersive-morph) var(--immersive-ease),
-      height var(--immersive-morph) var(--immersive-ease),
-      padding var(--immersive-morph) var(--immersive-ease),
-      gap var(--immersive-morph) var(--immersive-ease),
-      transform var(--immersive-morph) var(--immersive-ease),
+      color 240ms ease 90ms,
+      text-shadow 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-bar::before {
+    transition:
       background-color 420ms ease,
       border-color 420ms ease,
       box-shadow 420ms ease,
       -webkit-backdrop-filter 420ms ease,
       backdrop-filter 420ms ease,
-      color 240ms ease 90ms,
-      text-shadow 240ms ease 90ms,
       opacity 260ms ease;
   }
+  .immersive-nav[data-ready="true"] .immersive-bar > * {
+    transition: opacity 260ms ease;
+  }
   .immersive-nav[data-ready="true"] .immersive-brand {
-    transition:
-      padding var(--immersive-morph) var(--immersive-ease),
-      color 240ms ease 90ms;
+    transition: color 240ms ease 90ms;
   }
   .immersive-nav[data-ready="true"] .immersive-brand-mark {
     transition:
@@ -541,12 +604,12 @@
       color 240ms ease 90ms;
   }
   .immersive-nav[data-ready="true"] .immersive-search {
+    transition: color 240ms ease 90ms;
+  }
+  .immersive-nav[data-ready="true"] .immersive-search::before {
     transition:
-      width var(--immersive-morph) var(--immersive-ease),
-      margin var(--immersive-morph) var(--immersive-ease),
       background-color 200ms ease,
-      box-shadow 300ms ease,
-      color 240ms ease 90ms;
+      box-shadow 300ms ease;
   }
   .immersive-nav[data-ready="true"] .immersive-search span {
     transition: opacity 200ms ease;
