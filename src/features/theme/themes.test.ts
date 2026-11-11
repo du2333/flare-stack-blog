@@ -76,6 +76,14 @@ describe("the Theme registry", () => {
     }
   });
 
+  it("lists Posts as cards in classic, rows in namecard and tiles in immersive", () => {
+    expect(
+      Object.fromEntries(
+        THEMES.map((theme) => [theme.id, theme.recipe.postCard]),
+      ),
+    ).toEqual({ classic: "card", namecard: "row", immersive: "tile" });
+  });
+
   it.each(WITH_FIXTURE.map((theme) => [theme.id, theme] as const))(
     "gives %s a name, its own shell, a stylesheet and option defaults",
     (id, theme) => {

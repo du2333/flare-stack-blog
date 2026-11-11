@@ -40,6 +40,7 @@
  * derived one follows its source wherever that is overridden:
  *   --theme-rule             separator colour: lines, dots and slashes between items, quiet box edges
  *   --theme-panel-pad-x      side padding of a content panel
+ *   --theme-card-shadow-hover  the shadow of a post tile under the pointer
  *   --theme-page-title-size  a post page's title
  *   --theme-kicker-color     the pinned and popular label
  *   --theme-solid-fg         text on --theme-solid-bg
@@ -138,6 +139,7 @@
     --theme-link-underline-style: dashed !important;
     --theme-rule: initial !important;
     --theme-panel-pad-x: initial !important;
+    --theme-card-shadow-hover: initial !important;
     --theme-page-title-size: initial !important;
     --theme-kicker-color: initial !important;
     --theme-solid-fg: initial !important;

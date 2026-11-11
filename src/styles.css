@@ -261,6 +261,160 @@
   .fuwari-kicker[data-kind="popular"] {
     color: var(--theme-kicker-color, var(--fuwari-popular));
   }
+
+  /* Posts as tiles (Theme Recipe). The list is one column, and two once the
+     list itself is 42rem wide, whatever stands beside it. A cell and its tile
+     pass the rows of the grid on, so the leads of a row share one height and
+     the texts another: a plate is as tall as the cover beside it, two plates
+     make a low row, titles start on one line and metas end on one. Without
+     subgrid the tiles of a row are still equally tall, and a plate is low. */
+  .fuwari-tile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @container (min-width: 42rem) {
+    .fuwari-tile-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+  .fuwari-tile-cell,
+  .fuwari-tile {
+    display: grid;
+    min-width: 0;
+  }
+  .fuwari-tile {
+    position: relative;
+    grid-template-rows: auto 1fr;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @supports (grid-template-rows: subgrid) {
+    .fuwari-tile-cell,
+    .fuwari-tile {
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
+  }
+  /* What leads a tile: the cover at one shape, cropped, or for a Post without
+     one a plate, which has no shape of its own. The lead clips itself, not
+     the tile, so the tile's link can reach past the tile's edge (below). */
+  .fuwari-tile-lead {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 7rem;
+    border-radius: var(--theme-card-radius) var(--theme-card-radius) 0 0;
+    background-color: var(--theme-tonal-bg);
+    transition: background-color 0.3s;
+  }
+  .fuwari-tile-lead[data-lead="cover"] {
+    aspect-ratio: 16 / 9;
+  }
+  .fuwari-tile-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* The plate: a wash of the accent with the first character of the title,
+     as large as the plate allows, so a low one shows it whole. */
+  .fuwari-tile-plate {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+    background:
+      radial-gradient(
+        85% 120% at 100% 0%,
+        color-mix(in oklab, var(--theme-accent) 30%, transparent),
+        transparent 64%
+      ),
+      radial-gradient(
+        70% 110% at 0% 100%,
+        color-mix(in oklab, var(--theme-accent) 14%, transparent),
+        transparent 70%
+      );
+  }
+  .fuwari-tile-plate span {
+    position: absolute;
+    right: 6%;
+    bottom: -0.16em;
+    font-family: var(--theme-heading-font);
+    font-size: clamp(5rem, min(36cqw, 96cqh), 13rem);
+    font-weight: 800;
+    line-height: 1;
+    color: color-mix(in oklab, var(--theme-accent) 26%, transparent);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    user-select: none;
+  }
+  /* The pinned or popular label, on a corner of the lead. */
+  .fuwari-tile-flag {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 1.625rem;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.5);
+    -webkit-backdrop-filter: blur(8px) saturate(1.4);
+    backdrop-filter: blur(8px) saturate(1.4);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  /* The title is the tile's one link to the Post and covers the whole tile;
+     a link of the meta lies over it. The ring of the title goes around the
+     tile. */
+  .fuwari-tile-title {
+    transition: color 0.2s;
+  }
+  .fuwari-tile-title::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--theme-card-radius);
+  }
+  .fuwari-tile:has(.fuwari-tile-title:focus-visible) {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: 2px;
+  }
+  .fuwari-tile:has(.fuwari-tile-title:focus-visible) .fuwari-tile-title {
+    outline: none;
+  }
+  @media (hover: hover) {
+    .fuwari-tile:hover {
+      box-shadow: var(--theme-card-shadow-hover, var(--theme-card-shadow));
+    }
+    .fuwari-tile:hover .fuwari-tile-title {
+      color: var(--theme-accent);
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .fuwari-tile:hover {
+      transform: translateY(-3px);
+    }
+    /* The pointer stays on the tile where the tile rose from under it. */
+    .fuwari-tile:hover .fuwari-tile-title::after {
+      bottom: -3px;
+    }
+    .fuwari-tile:hover .fuwari-tile-cover {
+      transform: scale(1.04);
+    }
+    .fuwari-tile:hover .fuwari-tile-plate span {
+      transform: translate(-3%, -4%);
+    }
+  }
+
   .fuwari-widget-title {
     font-size: var(--theme-widget-title-size);
     line-height: calc(1.75 / 1.125);

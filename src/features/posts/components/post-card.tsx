@@ -31,29 +31,37 @@ interface PostCardProps {
   popular?: boolean;
 }
 
-/** A Post in the home list, as a card or a row (Theme Recipe). */
+/** A Post in the home list, as a card, a row or a tile (Theme Recipe). */
 export function PostCard(props: PostCardProps) {
-  return useThemeRecipe().postCard === "row" ? (
+  const { postCard } = useThemeRecipe();
+  if (postCard === "tile") return <PostTile {...props} />;
+  return postCard === "row" ? (
     <PostRow {...props} />
   ) : (
     <PostCardBox {...props} />
   );
 }
 
-function PostKicker({ pinned }: { pinned?: boolean }) {
+/** The pinned or popular label: over the title, or on the lead of a tile. */
+function PostKicker({ pinned, tile }: { pinned?: boolean; tile?: boolean }) {
+  const size = tile ? 12 : 16;
   return (
     <div
-      className="fuwari-kicker flex items-center gap-1.5 font-medium mb-3"
+      className={
+        tile
+          ? "fuwari-tile-flag"
+          : "fuwari-kicker flex items-center gap-1.5 font-medium mb-3"
+      }
       data-kind={pinned ? "pinned" : "popular"}
     >
       {pinned ? (
         <>
-          <Pin size={16} className="fill-current" />
+          <Pin size={size} className="fill-current" />
           <span>{m.home_pinned_posts()}</span>
         </>
       ) : (
         <>
-          <Flame size={16} />
+          <Flame size={size} />
           <span>{m.home_popular_posts()}</span>
         </>
       )}
@@ -314,5 +322,115 @@ function PostRow({ post, pinned, popular }: PostCardProps) {
         </Link>
       ) : null}
     </div>
+  );
+}
+
+const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+/**
+ * What a plate shows: the first letter or digit of the title, so not an
+ * opening bracket or an emoji; without one, its first character.
+ */
+function plateCharacter(title: string) {
+  const characters = Array.from(
+    graphemes.segment(title.trim()),
+    (part) => part.segment,
+  );
+  return (
+    characters.find((character) => /[\p{L}\p{N}]/u.test(character)) ??
+    characters[0] ??
+    ""
+  );
+}
+
+/**
+ * A tile: the lead, then the title, up to two lines of summary and one line
+ * of meta. The lead is the cover, cropped to one shape, or for a Post without
+ * one a plate with the first character of its title; the pinned or popular
+ * label sits on its corner, so it never makes a tile larger. The home list
+ * sets the tiles of a row to one height. The whole tile opens the Post
+ * through its title, and the Category stays a link of its own. Half a column
+ * has no room for a bar before the title, icon blocks or the Tags, so the
+ * meta is plain text with a dot between the items in every Theme. The cover
+ * loads lazily but is not decoded asynchronously: one that has loaded would
+ * come in after its tile has scrolled into view.
+ */
+function PostTile({ post, pinned, popular }: PostCardProps) {
+  return (
+    <article className="fuwari-card-item fuwari-tile">
+      <div
+        className="fuwari-tile-lead"
+        data-lead={post.cover ? "cover" : "plate"}
+      >
+        {post.cover ? (
+          <img
+            src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.cover)}
+            srcSet={getPublicImageSrcSet(post.cover.url, [
+              PUBLIC_IMAGE_WIDTH.cover,
+              PUBLIC_IMAGE_WIDTH.cover * 2,
+            ])}
+            sizes="(min-width: 44rem) min(50vw, 36rem), 100vw"
+            alt=""
+            loading="lazy"
+            className="fuwari-tile-cover"
+          />
+        ) : (
+          <div className="fuwari-tile-plate" aria-hidden="true">
+            <span>{plateCharacter(post.title)}</span>
+          </div>
+        )}
+        {(pinned || popular) && <PostKicker pinned={pinned} tile />}
+      </div>
+
+      <div className="flex min-w-0 flex-col px-5 pt-4 pb-5">
+        <Link
+          to="/post/$slug"
+          params={{ slug: post.slug }}
+          className="fuwari-heading fuwari-list-title fuwari-tile-title mb-2 line-clamp-2 font-bold wrap-break-word fuwari-text-90"
+        >
+          {post.title}
+        </Link>
+
+        {post.summary ? (
+          <p className="mb-3 line-clamp-2 text-[0.9375rem] leading-relaxed wrap-break-word fuwari-text-75">
+            {post.summary}
+          </p>
+        ) : null}
+
+        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 fuwari-text-50 fuwari-meta-inline">
+          <div className="flex items-center">
+            <time
+              dateTime={post.publishedAt?.toISOString()}
+              className="fuwari-meta-text"
+            >
+              {formatPublicPostDate(post.publishedAt)}
+            </time>
+          </div>
+          {post.category ? (
+            <div className="flex items-center">
+              <Link
+                to="/posts"
+                search={withCategoryFilter(post.category.name)}
+                className="fuwari-meta-text relative z-10 -m-1 rounded-md p-1 outline-(--theme-accent) transition hover:text-(--theme-accent) focus-visible:outline-2"
+              >
+                {post.category.name}
+              </Link>
+            </div>
+          ) : null}
+          <div className="flex items-center">
+            <span className="fuwari-meta-text">
+              {m.read_time({ count: post.readTimeInMinutes })}
+            </span>
+          </div>
+          {post.viewCount !== undefined && (
+            <div className="flex items-center">
+              <span className="fuwari-meta-text">
+                {m.post_views_count({ count: post.viewCount })}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }

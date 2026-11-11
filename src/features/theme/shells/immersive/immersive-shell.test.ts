@@ -29,7 +29,6 @@ import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
-import { DEFAULT_THEME_RECIPE } from "../../theme-recipe";
 import type { PageKind, SidebarCard, ThemeShellProps } from "../../theme-shell";
 import { resolveThemeOptions, selectTheme } from "../../themes";
 
@@ -147,10 +146,17 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「沉浸」, with the default recipe and no options of its own", () => {
+  it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent and a standfirst, and no options of its own", () => {
     expect(theme.id).toBe("immersive");
     expect(theme.name()).toBe(m.theme_immersive_name());
-    expect(theme.recipe).toBe(DEFAULT_THEME_RECIPE);
+    expect(theme.recipe).toEqual({
+      postCard: "tile",
+      meta: "inline",
+      noCoverStrip: "remove",
+      headingAccent: "off",
+      summary: "standfirst",
+      archive: "timeline",
+    });
     expect(theme.optionFields).toBeUndefined();
     expect(resolveThemeOptions(theme, { stale: 1 })).toEqual({});
   });

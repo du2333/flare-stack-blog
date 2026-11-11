@@ -5,12 +5,20 @@
  */
 export interface ThemeRecipe {
   /**
-   * A Post in the home list: a card on its own surface, or a flat row under a
+   * A Post in the home list: a card on its own surface, a flat row under a
    * rule with the meta on one line after the summary and a small cover on the
-   * right. A row never has the no-cover strip. The Moments timeline follows:
-   * each Moment a card, or a flat row under a rule, its composer included.
+   * right, or a tile led by its cover with the title, the summary and one
+   * line of meta under it. A form includes its arrangement: cards and rows
+   * are one column; tiles stand two abreast where the list is wide enough,
+   * each row of them as tall as its tallest. A tile without a cover is led by
+   * a plate with the first character of its title, and pinned and popular
+   * are a label on the lead. A row and a tile never have the no-cover strip;
+   * a tile never has the bar before its title either, and its meta is always
+   * plain text. The Moments timeline follows, always in one column: each
+   * Moment a card (also where Posts are tiles), or a flat row under a rule,
+   * its composer included.
    */
-  postCard: "card" | "row";
+  postCard: "card" | "row" | "tile";
   /**
    * The meta of a Post (in the list, on its page, the word count line and the
    * card's reading time and views): items led by an icon block, or plain text
