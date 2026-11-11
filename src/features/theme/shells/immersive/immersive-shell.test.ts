@@ -1230,14 +1230,22 @@ describe("a Post's page", () => {
   // moment before the next one shows, when the last has all but gone.
   describe("going from one page to another", () => {
     let goTo: (pageKind: PageKind) => void;
+    let setLeaving: (leaving: boolean) => void;
 
     /** The shell on a page it can leave for another kind of page. */
-    async function renderShellOn(pageKind: PageKind) {
+    async function renderShellOn(
+      pageKind: PageKind,
+      /** The page in its transition, which says when it is leaving. */
+      page: (leaving: boolean) => ReturnType<typeof createElement> = () =>
+        createElement("p", null, "Page content"),
+    ) {
       const root = createRootRoute({
         beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
         loader: () => ({ currentYear: 2026 }),
         component: () => {
           const [kind, setKind] = useState(pageKind);
+          const [leaving, setLeavingState] = useState(false);
+          setLeaving = setLeavingState;
           goTo = (next) => {
             act(() => {
               setKind(next);
@@ -1250,7 +1258,7 @@ describe("a Post's page", () => {
             sidebarCards: cardsFor(kind),
             isSessionLoading: false,
             logout: async () => {},
-            children: createElement("p", null, "Page content"),
+            children: page(leaving),
             footer: null,
             floatingActions: null,
           });
@@ -1296,6 +1304,27 @@ describe("a Post's page", () => {
 
       after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
       expect(shell().dataset.column).toBeUndefined();
+    });
+
+    // The transition around the page drops the class the page fades out
+    // under in the commit that swaps the pages; a timer could be a frame
+    // off either way.
+    it("changes the column in the commit that lets the next page in, without waiting for its own timer", async () => {
+      await renderShellOn("inner", (leaving) =>
+        createElement(
+          "div",
+          { className: leaving ? "page-fade is-leaving" : "page-fade" },
+          "Page content",
+        ),
+      );
+
+      goTo("post");
+      await act(async () => setLeaving(true));
+      expect(shell().dataset.column).toBeUndefined();
+
+      after(PAGE_FADE_MS / 2);
+      await act(async () => setLeaving(false));
+      expect(shell().dataset.column).toBe("reading");
     });
 
     it("leaves the column alone on the way back to a page left a moment ago", async () => {
