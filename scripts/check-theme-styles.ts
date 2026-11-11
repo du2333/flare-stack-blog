@@ -169,8 +169,10 @@ try {
   const original = (await api("GET")).config.site.theme.id;
   restore = () => select(original);
 
-  // The fixture first, so the check ends on the default Theme.
-  for (const id of [FIXTURE_THEME_ID, ...BUILT_IN_THEME_IDS]) {
+  // Every other Theme first and the default one last, so the preview part
+  // below starts from the default Theme being the saved one.
+  const [saved, ...others] = BUILT_IN_THEME_IDS;
+  for (const id of [FIXTURE_THEME_ID, ...others, saved]) {
     await select(id);
     const home = await readPage("/");
     expectEqual(`/ with ${id}: data-theme`, home.dataTheme, id);
@@ -190,7 +192,6 @@ try {
 
   // The loop ended on the default Theme. Fill its cache entries first, so a
   // preview stored under their keys would show below.
-  const [saved] = BUILT_IN_THEME_IDS;
   const previewPath = themePreviewHref(FIXTURE_THEME_ID, { marker: "off" });
   const postsPreviewPath = `/posts${previewPath.slice(1)}`;
   await readPage("/");
