@@ -4,6 +4,7 @@ import type { ThemeRecipe } from "@/features/theme/theme-recipe";
 import { FooterBand } from "./band";
 import { FooterCaption } from "./caption";
 import type { FooterFormProps } from "./footer-form";
+import { FooterSignature } from "./signature";
 
 /**
  * The forms of the footer, by the value of the Theme Recipe's `footer` item
@@ -14,6 +15,7 @@ import type { FooterFormProps } from "./footer-form";
 const FOOTER_FORMS = {
   caption: FooterCaption,
   band: FooterBand,
+  signature: FooterSignature,
 } satisfies Record<ThemeRecipe["footer"], ComponentType<FooterFormProps>>;
 
 /** The footer of the public pages, in the form the Theme Recipe picks. */
