@@ -307,8 +307,9 @@
 /* ── The footer region ───────────────────────────────────────────────────── */
 
 /* At the end of the content column, and at the foot of the window on a
-   short page. It stands clear of what is before it and keeps a gutter where
-   the frame has none. */
+   short page. The colophon (Theme Recipe, footer: "colophon") lies flat on
+   the page under its rule; it stands clear of what is before it and keeps a
+   gutter where the frame has none. */
 .sidebar-footer {
   margin: auto 1.25rem 0;
   padding-top: 2.5rem;

@@ -3,6 +3,7 @@ import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import type { ThemeRecipe } from "@/features/theme/theme-recipe";
 import { FooterBand } from "./band";
 import { FooterCaption } from "./caption";
+import { FooterColophon } from "./colophon";
 import type { FooterFormProps } from "./footer-form";
 
 /**
@@ -14,6 +15,7 @@ import type { FooterFormProps } from "./footer-form";
 const FOOTER_FORMS = {
   caption: FooterCaption,
   band: FooterBand,
+  colophon: FooterColophon,
 } satisfies Record<ThemeRecipe["footer"], ComponentType<FooterFormProps>>;
 
 /** The footer of the public pages, in the form the Theme Recipe picks. */

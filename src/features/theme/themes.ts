@@ -152,7 +152,7 @@ const sidebarTheme: Theme = {
     headingAccent: "on",
     summary: "standfirst",
     archive: "timeline",
-    footer: "caption",
+    footer: "colophon",
   },
   options: z.object({}),
   thumbnail: SidebarThumbnail,

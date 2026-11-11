@@ -49,10 +49,14 @@ export interface ThemeRecipe {
    * shell lets its footer region be: the brand mark and the site title over
    * the tagline and the social links on one side, every navigation entry on
    * the other, then one quiet line with the copyright and the feed and
-   * sitemap links, without the credit. Each form is a module of its own in
-   * `components/layout/footer/`, whose `index.tsx` picks it by this value.
+   * sitemap links, without the credit; or a colophon, one quiet line under a
+   * rule at the end of the content: the feed and sitemap links at one end
+   * and the copyright in small at the other, naming nobody, for a Theme
+   * whose frame already shows who writes here. Each form is a module of its
+   * own in `components/layout/footer/`, whose `index.tsx` picks it by this
+   * value.
    */
-  footer: "caption" | "band";
+  footer: "caption" | "band" | "colophon";
 }
 
 /** Today's look, which the classic Theme keeps. */

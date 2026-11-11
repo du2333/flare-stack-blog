@@ -89,7 +89,7 @@ describe("the Theme registry", () => {
     });
   });
 
-  it("closes the page with a caption in classic, namecard and sidebar and a band in immersive", () => {
+  it("closes the page with a caption in classic and namecard, a band in immersive and a colophon in sidebar", () => {
     expect(
       Object.fromEntries(
         THEMES.map((theme) => [theme.id, theme.recipe.footer]),
@@ -98,7 +98,7 @@ describe("the Theme registry", () => {
       classic: "caption",
       namecard: "caption",
       immersive: "band",
-      sidebar: "caption",
+      sidebar: "colophon",
     });
   });
 

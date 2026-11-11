@@ -191,7 +191,7 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「侧栏」, with Posts as tiles, plain meta, the heading accent, a standfirst and, for now, the footer as a caption", () => {
+  it("is 「侧栏」, with Posts as tiles, plain meta, the heading accent, a standfirst and the footer as a colophon", () => {
     expect(theme.id).toBe("sidebar");
     expect(theme.name()).toBe(m.theme_sidebar_name());
     expect(theme.recipe).toEqual({
@@ -201,7 +201,7 @@ describe("the Theme", () => {
       headingAccent: "on",
       summary: "standfirst",
       archive: "timeline",
-      footer: "caption",
+      footer: "colophon",
     });
   });
 
