@@ -1,6 +1,6 @@
 import { useRouteContext } from "@tanstack/react-router";
 import { ArrowDown } from "lucide-react";
-import type { CSSProperties, Ref } from "react";
+import { useEffect, useRef, type CSSProperties, type Ref } from "react";
 import { SocialLinks } from "@/components/layout/social-links";
 import {
   focalObjectPosition,
@@ -18,12 +18,71 @@ import { m } from "@/paraglide/messages";
 /** How long the introduction takes to fade once the home page is left; first-screen.css. */
 const INTRO_FADE_MS = 260;
 /**
- * Where the scroll cue stops short of the end of the first screen: the
- * content's 56px overlap, the 64px the floating navbar takes and 12px of air,
- * so the content starts right under the navbar.
+ * Where the scroll cue leaves the top of what follows the first screen: under
+ * the 64px the floating navbar takes, with 12px of air.
  */
-const CUE_REST_PX = 132;
+const CUE_REST_PX = 76;
+/** How far that is above the end of the first screen when nothing can be measured: the content's 56px overlap. */
+const CUE_OVERLAP_PX = 56;
 const AVATAR_SIZE = 28;
+/** How far down the window the navbar reaches, with some air: a line of the introduction above that is under it. */
+const NAVBAR_REACH_PX = 80;
+
+/**
+ * How far down the page the first thing after the first screen starts:
+ * whichever region of the shell stands highest, the cards that lead the
+ * content where there are some, or the content. Regions that show nothing
+ * have no box. Without a layout to measure, the lower edge of the first
+ * screen less the content's overlap.
+ */
+function contentTop(cue: HTMLElement, firstScreenHeight: number) {
+  const tops = [
+    ...(cue
+      .closest("[data-theme-shell]")
+      ?.querySelectorAll(
+        '[data-shell-region="main"], [data-shell-region="sidebar"]',
+      ) ?? []),
+  ]
+    .map((region) => region.getBoundingClientRect())
+    .filter((box) => box.height > 0)
+    .map((box) => box.top + window.scrollY);
+  return tops.length > 0
+    ? Math.min(...tops)
+    : firstScreenHeight - CUE_OVERLAP_PX;
+}
+
+/**
+ * Takes each line of the introduction away as it scrolls up to the navbar,
+ * so none is read through the bar or beside the pill. Where the browser ties
+ * the introduction to the scroll position it has faded out by then
+ * (first-screen.css); elsewhere, and for a reader who asked for less motion,
+ * this is all that happens to it. Written straight to the lines so scrolling
+ * does not re-render.
+ */
+function useLinesClearOfNavbar(present: boolean) {
+  const introRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!present) return;
+    const clear = () => {
+      for (const line of introRef.current?.querySelectorAll(
+        ".immersive-rise",
+      ) ?? []) {
+        const under = line.getBoundingClientRect().top < NAVBAR_REACH_PX;
+        if (under !== line.hasAttribute("data-under")) {
+          line.toggleAttribute("data-under", under);
+        }
+      }
+    };
+    clear();
+    window.addEventListener("scroll", clear, { passive: true });
+    window.addEventListener("resize", clear);
+    return () => {
+      window.removeEventListener("scroll", clear);
+      window.removeEventListener("resize", clear);
+    };
+  }, [present]);
+  return introRef;
+}
 
 /** The place of an element in the entrance order. */
 function step(index: number) {
@@ -50,6 +109,7 @@ export function FirstScreen({
   const firstScreenHeight = useFirstScreenHeight();
   const reducedMotion = useReducedMotion();
   const present = useMotionPresence(home, INTRO_FADE_MS);
+  const introRef = useLinesClearOfNavbar(present);
   const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
 
   return (
@@ -79,7 +139,12 @@ export function FirstScreen({
         </div>
         <div className="immersive-shade" aria-hidden="true" />
         {present ? (
-          <div className="immersive-intro" inert={!home} aria-hidden={!home}>
+          <div
+            ref={introRef}
+            className="immersive-intro"
+            inert={!home}
+            aria-hidden={!home}
+          >
             <div className="immersive-intro-inner">
               <div className="immersive-intro-text">
                 <h1 className="immersive-title immersive-rise" style={step(0)}>
@@ -125,9 +190,13 @@ export function FirstScreen({
                 className="immersive-cue immersive-rise"
                 style={step(4)}
                 label={m.theme_immersive_scroll_down()}
-                onClick={() =>
+                onClick={(event) =>
                   window.scrollTo({
-                    top: Math.max(0, firstScreenHeight() - CUE_REST_PX),
+                    top: Math.max(
+                      0,
+                      contentTop(event.currentTarget, firstScreenHeight()) -
+                        CUE_REST_PX,
+                    ),
                     behavior: reducedMotion ? "auto" : "smooth",
                   })
                 }

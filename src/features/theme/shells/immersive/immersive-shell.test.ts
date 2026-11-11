@@ -270,6 +270,72 @@ describe("the first screen", () => {
       behavior: "auto",
     });
   });
+
+  // The strip of cards that leads the list starts lower than the list does
+  // without it: the cue goes by where the regions really are.
+  it("lands whatever region stands highest under the navbar, the cards that lead the content if they do", async () => {
+    await renderShell({ pageKind: "home" });
+    Object.defineProperty(window, "scrollY", { value: 40, configurable: true });
+    const tops = new Map<Element, number>([
+      [region("main"), 720],
+      // In the window, so 40 less than on the page.
+      [document.querySelector('[data-place="before"]')!, 630],
+      [document.querySelector('[data-place="after"]')!, 2400],
+    ]);
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        const top = tops.get(this);
+        return { top: top ?? 0, height: top ? 60 : 0 } as DOMRect;
+      },
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: m.theme_immersive_scroll_down() }),
+    );
+
+    // 64px of navbar and 12px of air above the strip.
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 630 + 40 - 76,
+      behavior: "smooth",
+    });
+  });
+
+  // Where the browser does not fade the introduction with the scroll
+  // position, and for a reader who asked for less motion, a line would be
+  // read through the bar or beside the pill.
+  it("takes each line of the introduction away as it scrolls up to the navbar, and brings it back", async () => {
+    await renderShell({
+      pageKind: "home",
+      site: { title: "Site title", tagline: "Site tagline" },
+    });
+    const title = screen.getByRole("heading", { name: "Site title" });
+    const tagline = screen.getByText("Site tagline");
+    const tops = new Map<Element, number>([
+      [title, 60],
+      [tagline, 150],
+    ]);
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        return { top: tops.get(this) ?? 400 } as DOMRect;
+      },
+    );
+
+    scrollTo(300);
+    expect(title.hasAttribute("data-under")).toBe(true);
+    expect(tagline.hasAttribute("data-under")).toBe(false);
+
+    tops.set(title, 200);
+    scrollTo(160);
+    expect(title.hasAttribute("data-under")).toBe(false);
+
+    const css = readFileSync(
+      join(import.meta.dirname, "first-screen.css"),
+      "utf8",
+    );
+    expect(
+      declarations(blockAfter(css, ".immersive-rise[data-under] {")),
+    ).toEqual(["opacity: 0", "pointer-events: none"]);
+  });
 });
 
 /**

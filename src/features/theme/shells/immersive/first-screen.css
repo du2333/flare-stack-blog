@@ -203,6 +203,13 @@
   background-color: var(--immersive-glass-strong);
   color: #fff;
 }
+/* A line that has scrolled up to the navbar is gone (first-screen.tsx): it
+   would be read through the bar, or beside the pill. It can still be
+   focused, which brings it back into view. */
+.immersive-rise[data-under] {
+  opacity: 0;
+  pointer-events: none;
+}
 .immersive-first-screen :is(a, button):focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
@@ -323,7 +330,13 @@
   }
   /* Tied to the scroll position where the browser can: the image drifts
      slower than the page, and the introduction is gone before it could
-     slide under the navbar. Elsewhere the banner simply scrolls away. */
+     slide under the navbar. Elsewhere the banner simply scrolls away, and
+     a line fades as it reaches the navbar. */
+  @supports not (animation-timeline: scroll()) {
+    .immersive-rise {
+      transition: opacity 160ms ease;
+    }
+  }
   @supports (animation-timeline: scroll()) {
     .immersive-banner {
       animation: immersive-drift linear both;
