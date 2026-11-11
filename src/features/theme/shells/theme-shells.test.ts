@@ -13,15 +13,18 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import { createElement } from "react";
+import { createElement, type ReactNode } from "react";
 import { findInPopover } from "tests/popover";
 import { fixtureTheme } from "tests/theme-fixture/theme";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FloatingActionsProvider } from "@/components/layout/floating-actions";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
+import TableOfContents from "@/features/posts/components/table-of-contents";
 import { m } from "@/paraglide/messages";
 import { useFirstScreenHeight } from "../components/first-screen";
+import { TocSlotProvider } from "../components/toc-slot";
 import type { PageKind, SidebarCard, ThemeShellProps } from "../theme-shell";
 import { resolveThemeOptions, THEMES, type Theme } from "../themes";
 
@@ -78,6 +81,10 @@ function PageContent() {
   );
 }
 
+/**
+ * The shell as the host renders it, inside the places the host provides
+ * for what renders outside the shell's tree (public-shell.tsx).
+ */
 async function renderShell(
   theme: Theme,
   {
@@ -85,11 +92,14 @@ async function renderShell(
     user,
     logout = vi.fn(async () => {}),
     site,
+    children = createElement(PageContent),
   }: {
     pageKind: PageKind;
     user?: UserInfo;
     logout?: () => Promise<void>;
     site?: SystemConfig["site"];
+    /** The page; it must show "Page content". */
+    children?: ReactNode;
   },
 ) {
   const props: ThemeShellProps = {
@@ -100,14 +110,23 @@ async function renderShell(
     user,
     isSessionLoading: false,
     logout,
-    children: createElement(PageContent),
+    children,
     footer: createElement("p", null, "Footer content"),
     floatingActions: createElement("button", { type: "button" }, "Floating"),
   };
   const root = createRootRoute({
     beforeLoad: () => ({ siteConfig: resolveSiteConfig({ site }) }),
     loader: () => ({ currentYear: 2026 }),
-    component: () => createElement(theme.shell.Shell, props),
+    component: () =>
+      createElement(
+        FloatingActionsProvider,
+        null,
+        createElement(
+          TocSlotProvider,
+          null,
+          createElement(theme.shell.Shell, props),
+        ),
+      ),
   });
   const router = createRouter({
     routeTree: root,
@@ -142,6 +161,31 @@ function sidebars() {
 
 function linkCount(label: string) {
   return screen.queryAllByRole("link", { name: label }).length;
+}
+
+const HEADINGS = [
+  { id: "first", text: "First heading", level: 2 },
+  { id: "second", text: "Second heading", level: 2 },
+];
+
+/** A Post's page with this table of contents, as post-page.tsx has it. */
+function PostPage({ headers }: { headers: typeof HEADINGS }) {
+  return createElement(
+    "div",
+    { className: "relative" },
+    createElement(TableOfContents, { headers }),
+    createElement(PageContent),
+  );
+}
+
+/** The shell's slots for the side table of contents. */
+function tocSlots() {
+  return [...document.querySelectorAll<HTMLElement>("[data-toc-slot]")];
+}
+
+/** The side table of contents, wherever it stands. */
+function sideList() {
+  return document.querySelector('a[href="#first"]')?.closest("nav") ?? null;
 }
 
 beforeEach(() => {
@@ -299,6 +343,34 @@ describe.each(
     expect(screen.getByAltText("banner").style.objectPosition).toBe("");
   });
 
+  // The list renders into the shell's slot where it gives one (TocSlot),
+  // and is fixed to the window beside the article where it does not.
+  it("gives the side table of contents of a Post at most one slot, in its body, or leaves it beside the article", async () => {
+    await renderShell(theme, {
+      pageKind: "post",
+      children: createElement(PostPage, { headers: HEADINGS }),
+    });
+    const [slot] = tocSlots();
+
+    expect(tocSlots().length).toBeLessThanOrEqual(1);
+    expect(sideList()).not.toBeNull();
+    expect(sideList()!.parentElement).toBe(slot ?? document.body);
+    if (slot) expect(region("body")!.contains(slot)).toBe(true);
+  });
+
+  it("has nothing in a slot on a Post without headings, and no mark of a table of contents", async () => {
+    await renderShell(theme, {
+      pageKind: "post",
+      children: createElement(PostPage, { headers: [] }),
+    });
+
+    for (const slot of tocSlots()) {
+      expect(slot.childNodes).toHaveLength(0);
+    }
+    expect(sideList()).toBeNull();
+    expect(document.querySelector("[data-table-of-contents]")).toBeNull();
+  });
+
   it("renders no sidebar on a focused page", async () => {
     await renderShell(theme, { pageKind: "focused" });
 
@@ -405,4 +477,15 @@ describe.each(
     });
     expect(logout).toHaveBeenCalledOnce();
   });
+});
+
+// So the tests above see the list in a slot as well as beside the article.
+it("has the fixture shell give the side table of contents a slot", async () => {
+  await renderShell(fixtureTheme, {
+    pageKind: "post",
+    children: createElement(PostPage, { headers: HEADINGS }),
+  });
+
+  expect(tocSlots()).toHaveLength(1);
+  expect(tocSlots()[0]!.contains(sideList())).toBe(true);
 });
