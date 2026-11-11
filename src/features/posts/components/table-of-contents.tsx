@@ -30,6 +30,13 @@ function removeTailingHash(text: string) {
   return text;
 }
 
+/**
+ * The table of contents of a Post: a list fixed beside the article, or a
+ * button in the floating column that opens it. Which of the two shows, and
+ * where the side one stands, is the Theme Shell's to say through the
+ * `--shell-toc-*` properties (`theme-shell.ts`); nothing here knows a
+ * breakpoint.
+ */
 export default function TableOfContents({
   headers,
 }: {
@@ -220,11 +227,11 @@ export default function TableOfContents({
     <nav
       className={cn(
         // The portal must sit above the full-width public content wrapper (z-30).
-        // The shell says where the gutter is: --shell-toc-top, --shell-toc-width.
-        "hidden 2xl:block fixed top-(--shell-toc-top) z-40 pl-4 transition duration-300",
+        "fixed top-(--shell-toc-top) z-40 transition duration-300",
         isVisible && isReady ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
       style={{
+        display: "var(--shell-toc-side, none)",
         left: left ?? 0,
         width: "var(--shell-toc-width)",
       }}
@@ -281,9 +288,11 @@ export default function TableOfContents({
 
   return (
     <>
+      {/* Where the side list starts (--shell-toc-left). */}
       <div
         ref={slotRef}
-        className="hidden 2xl:block absolute top-0 right-0 w-0 h-0"
+        className="absolute top-0 left-(--shell-toc-left) w-0 h-0"
+        style={{ display: "var(--shell-toc-side, none)" }}
         aria-hidden
       />
       {!isSSR && left != null
@@ -336,8 +345,8 @@ function TocBadge({ heading }: { heading: VisibleHeader }) {
 }
 
 /**
- * Below 2xl the side TOC has no room, so a button in the floating column
- * opens it instead.
+ * Where the shell has no room for the side TOC (--shell-toc-compact), a
+ * button in the floating column opens it instead.
  */
 function CompactToc({
   headers,
@@ -361,6 +370,17 @@ function CompactToc({
   useEffect(() => {
     if (!shown) setOpen(false);
   }, [shown]);
+
+  // Where the shell hides the button (the side TOC takes over), an open list
+  // goes with it.
+  useEffect(() => {
+    if (!open) return;
+    const closeIfHidden = () => {
+      if (buttonRef.current?.getClientRects().length === 0) setOpen(false);
+    };
+    window.addEventListener("resize", closeIfHidden);
+    return () => window.removeEventListener("resize", closeIfHidden);
+  }, [open]);
 
   // Written straight to the button so scrolling does not re-render.
   useEffect(() => {
@@ -410,11 +430,12 @@ function CompactToc({
               aria-expanded={open}
               className={cn(
                 FLOATING_ACTION_BUTTON_CLASS,
-                "fuwari-progress-ring 2xl:hidden duration-300",
+                "fuwari-progress-ring duration-300",
                 shown
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-90 pointer-events-none",
               )}
+              style={{ display: "var(--shell-toc-compact, flex)" }}
             >
               <TocIcon className="w-6 h-6 lg:w-7 lg:h-7" strokeWidth={2.5} />
             </button>,
@@ -432,7 +453,7 @@ function CompactToc({
           listRef.current?.querySelector<HTMLElement>("a") ??
           null
         }
-        className="2xl:hidden w-[min(20rem,calc(100vw-2rem))]"
+        className="w-[min(20rem,calc(100vw-2rem))]"
       >
         <nav aria-label={m.post_toc()}>
           <div
