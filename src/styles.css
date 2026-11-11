@@ -272,6 +272,49 @@
     width: calc(100% + 2 * var(--theme-widget-row-bleed));
     margin-inline: calc(-1 * var(--theme-widget-row-bleed));
   }
+  /* An expandable sidebar card in its wide form (expandable-sidebar-card.tsx,
+     in a `card` container from 20rem, `@xs/card:` there). Until the reader
+     asks for all of them, the entries show through a window: the title's
+     line and two rows of pills under it, and from 28rem (`@md/card:`) the
+     one row beside the title. The window is a little larger than that, for
+     the focus ring of what lies at its edge; a row further down starts
+     beyond it.
+     「更多」 shows only while the window cuts entries off, and the stylesheet
+     can tell without a script, so it is right from the first paint: the grid
+     area of 「更多」 is as tall as the title's line and all the entries (as
+     all the entries, beside the title), and unless that is taller than the
+     window, 「更多」 is moved down, out of it. The component then measures the
+     same thing and says so (`data-cut-off`), which settles it wherever the
+     percentage resolves differently, and takes a 「更多」 that is out of
+     sight from the keyboard too. */
+  @container card (width >= 20rem) {
+    .fuwari-widget-window {
+      --widget-window: 7rem;
+      max-height: calc(var(--widget-window) + 0.5rem);
+      margin: -0.25rem -0.5rem;
+      padding: 0.25rem 0.5rem;
+      overflow: clip;
+    }
+    .fuwari-widget-more {
+      position: relative;
+      top: clamp(
+        0px,
+        (var(--widget-window) + 0.25rem - 100%) * 9999,
+        var(--widget-window) + 1rem
+      );
+    }
+    [data-cut-off="true"] .fuwari-widget-more {
+      top: 0;
+    }
+    [data-cut-off="false"] .fuwari-widget-more {
+      visibility: hidden;
+    }
+  }
+  @container card (width >= 28rem) {
+    .fuwari-widget-window {
+      --widget-window: 2rem;
+    }
+  }
 
   .fuwari-btn-regular {
     display: flex;

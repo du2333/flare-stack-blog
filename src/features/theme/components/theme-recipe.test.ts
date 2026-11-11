@@ -389,7 +389,8 @@ describe("Theme Recipe", () => {
   describe("heading accent", () => {
     const sidebar = createElement(ExpandableSidebarCard, {
       title: "Tags",
-      collapsed: false,
+      long: false,
+      expanded: false,
       onExpand: () => {},
       children: "x",
     });
