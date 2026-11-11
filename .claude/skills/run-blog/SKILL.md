@@ -20,6 +20,8 @@ Stop it with `lsof -ti:3000 -sTCP:LISTEN | xargs -r kill`.
 
 After pulling or merging, `bun run db:migrate:local` applies pending migrations to the local database and exits.
 
+In a git worktree the local data and secrets are missing, because neither is checked in. Copy `.wrangler` and `.dev.vars` from the main checkout into the worktree (read the main checkout's, write only your copy), and serve on a port of your own: `bunx vite dev --port <port>`, with that port in place of 3000 below.
+
 If pages answer 500 or the log shows `Cannot read properties of null (reading 'useContext')` after dependencies changed, the Vite prebundle is stale: stop the server, `rm -rf node_modules/.vite`, start again.
 
 ## 2. Throwaway Admin
@@ -29,6 +31,8 @@ bun scripts/dev-admin-session.ts seed   # prints the cookie value
 ```
 
 Set it as cookie `better-auth.session_token` on domain `localhost`, path `/`. `curl -b "better-auth.session_token=<value>" http://localhost:3000/api/auth/get-session` confirms it.
+
+Saving Site Config through the Admin API replaces the whole site section, and every field left out returns to its default. Read the current config and send all of it back with your change.
 
 ## 3. Screenshots: `shots`
 
