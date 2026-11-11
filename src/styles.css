@@ -614,10 +614,7 @@
 
   :not(pre) > code {
     @apply px-1 py-0.5 rounded-md overflow-hidden;
-    background-color: var(
-      --fuwari-inline-code-bg,
-      var(--theme-tonal-bg)
-    );
+    background-color: var(--fuwari-inline-code-bg, var(--theme-tonal-bg));
     color: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
   }
   code {
