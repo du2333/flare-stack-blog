@@ -7,7 +7,8 @@ export interface ThemeRecipe {
   /**
    * A Post in the home list: a card on its own surface, or a flat row under a
    * rule with the meta on one line after the summary and a small cover on the
-   * right. A row never has the no-cover strip.
+   * right. A row never has the no-cover strip. The Moments timeline follows:
+   * each Moment a card, or a flat row under a rule, its composer included.
    */
   postCard: "card" | "row";
   /**
