@@ -1194,4 +1194,95 @@ describe("a Post's page", () => {
     expect(across(1392).listWidth).toBeCloseTo(14 * 16);
     expect(across(2560).listWidth).toBeCloseTo(14 * 16);
   });
+
+  // The table of contents and back to top are fixed, and the band is as
+  // wide as the window: what lies on what at the end of a Post is a matter
+  // of layers. The list and the floating column have z 40 (their classes).
+  describe("the band at the end of the page", () => {
+    const FLOATING_Z = 40;
+    const FOOTER = ".immersive-body > .immersive-footer {";
+    const FLOATING = ".immersive-body > .fuwari-floating-actions";
+    /** The declarations of every block that follows `head` in `block`. */
+    function everyBlockAfter(block: string, head: string) {
+      const found: Array<Array<string>> = [];
+      for (
+        let at = block.indexOf(head);
+        at >= 0;
+        at = block.indexOf(head, at + 1)
+      ) {
+        found.push(declarations(blockAfter(block.slice(at), head)));
+      }
+      return found;
+    }
+    const z = (block: string, head: string) =>
+      Number(declared(declarations(blockAfter(block, head)), "z-index"));
+    const fromLg = css
+      .split("@media (width >= 64rem)")
+      .slice(1)
+      .map((rest) => blockAfter(`@media ${rest}`, "@media"))
+      .find((block) => block.includes(FOOTER))!;
+
+    it("is over the table of contents and back to top from 1024px, in a body that is no layer itself", () => {
+      const body = everyBlockAfter(css, "} .immersive-body {")
+        .flat()
+        .filter((declaration) => declaration.startsWith("z-index:"));
+
+      expect(body.at(-1)).toBe("z-index: auto");
+      expect(z(fromLg, FOOTER)).toBeGreaterThan(FLOATING_Z);
+    });
+
+    it("keeps each region of the page a layer over the banner and the navbar's scrim, under the list", () => {
+      const regions = z(
+        css,
+        ".immersive-body > :is(.immersive-main, .immersive-cards, .immersive-footer) {",
+      );
+      const scrim = z(read("navbar.css"), ".immersive-scrim {");
+
+      expect(regions).toBeGreaterThan(scrim);
+      expect(regions).toBeLessThan(FLOATING_Z);
+    });
+
+    it("leaves back to top over it from 1392px, where the button stands right of all the band shows", () => {
+      const wide = "@media (width >= 87rem)";
+      const from = px(wide.match(/[\d.]+rem/)![0], properties);
+      const backToTop = (width: number) =>
+        px(properties["--shell-floating-actions-left"]!, properties, width);
+      const rightOfThePage = (width: number) =>
+        width / 2 + px(properties["--fuwari-page-width"]!, properties) / 2;
+
+      expect(z(blockAfter(css, wide), `${FLOATING} {`)).toBeGreaterThan(
+        z(fromLg, FOOTER),
+      );
+      expect(backToTop(from)).toBeGreaterThan(rightOfThePage(from));
+      // A pixel narrower, it is against the edge of the window instead, and
+      // nearer the page than it stands when it has the room.
+      expect(backToTop(from - 1)).toBeLessThan(backToTop(from) - 0.5);
+    });
+
+    it("shows a button the keyboard is on over the band", () => {
+      expect(z(fromLg, `${FLOATING}:has(:focus-visible) {`)).toBeGreaterThan(
+        z(fromLg, FOOTER),
+      );
+    });
+
+    it("lets the pointer through the room above the band, to the end of the list and to back to top", () => {
+      expect(everyBlockAfter(css, "} .immersive-footer {")).toContainEqual([
+        "pointer-events: none",
+      ]);
+      expect(declarations(blockAfter(css, ".immersive-footer > * {"))).toEqual([
+        "pointer-events: auto",
+      ]);
+    });
+
+    it("covers the second button of a Post below 1280px with that room, where the button reaches over the band", () => {
+      const narrow = blockAfter(css, "@media (64rem <= width < 80rem)");
+
+      expect(
+        declarations(blockAfter(narrow, `${POST} .immersive-footer {`)),
+      ).toEqual([
+        "background-color: var(--fuwari-page-bg)",
+        "pointer-events: auto",
+      ]);
+    });
+  });
 });
