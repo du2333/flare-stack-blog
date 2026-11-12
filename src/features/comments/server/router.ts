@@ -22,7 +22,7 @@ import {
   optionalSessionProcedure,
   rateLimitErrors,
   turnstileErrors,
-  turnstileMiddleware,
+  turnstileUnlessAdmin,
   withRateLimit,
 } from "@/lib/orpc/procedure";
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
@@ -92,7 +92,7 @@ function createProcedure<
     .use(
       withRateLimit({ capacity: 10, interval: "1m", key: "comments:create" }),
     )
-    .use(turnstileMiddleware)
+    .use(turnstileUnlessAdmin)
     .errors(commentErrors)
     .route({ method: "POST", path, ...text, tags: ["Comments"] })
     .input(input)

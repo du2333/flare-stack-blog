@@ -4,21 +4,6 @@
  * sidebar marks the current page; the conversation is on the card, the chosen
  * Comment set apart in it, and the reply box stays under it.
  */
-/* One height for the search, the Post filter and 「全部标为已处理」, as on Posts. */
-.admin-comments-toolbar .admin-page-tools {
-  --admin-control-height: calc(40 * var(--admin-unit));
-  --fuwari-field-height: var(--admin-control-height);
-  --fuwari-button-height: var(--admin-control-height);
-  gap: calc(10 * var(--admin-unit));
-}
-.admin-comments-search {
-  width: calc(280 * var(--admin-unit));
-  min-width: calc(150 * var(--admin-unit));
-}
-.admin-comments-post {
-  width: calc(220 * var(--admin-unit));
-}
-
 /* ── The queue ── */
 .cmt-inbox > .admin-split-list {
   background: var(--admin-sunken);
@@ -339,16 +324,6 @@ a.cmt-source:hover > svg {
 .cmt-reply-hint > .admin-kbd:not(:first-child) {
   margin-left: 8px;
 }
-/* The challenge, when it has something to show, takes a line under the bar. */
-.cmt-reply-foot > div:not(.cmt-reply-hint) {
-  order: 3;
-  display: flex;
-  justify-content: flex-end;
-  flex-basis: 100%;
-}
-.cmt-reply-foot > div:not(.cmt-reply-hint):empty {
-  display: none;
-}
 .cmt-reply-none {
   max-width: 760px;
   margin-top: -10px;
@@ -366,13 +341,6 @@ a.cmt-source:hover > svg {
 
 /* Below 768px the queue and the conversation take turns (AdminSplit). */
 @media (max-width: 767px) {
-  .admin-comments-search {
-    flex: 1;
-    width: auto;
-  }
-  .admin-comments-post {
-    width: 44%;
-  }
   .cmt-inbox > .admin-split-detail {
     background: var(--admin-surface);
   }

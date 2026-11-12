@@ -9,7 +9,7 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchField } from "@/components/ui/search-field";
-import { Select } from "@/components/ui/select";
+import DropdownMenu from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import {
@@ -148,7 +148,8 @@ export function AdminCommentsPage({
     view === "all" ? (
       <>
         <SearchField
-          className="admin-comments-search"
+          variant="raised"
+          shortcut="/"
           value={searchInput}
           onValueChange={typeSearch}
           placeholder={m.admin_comments_search()}
@@ -156,9 +157,10 @@ export function AdminCommentsPage({
           maxLength={200}
           clearLabel={m.admin_comments_search_clear()}
         />
-        <Select
-          className="admin-comments-post"
-          aria-label={m.admin_comments_filter_post()}
+        <DropdownMenu
+          variant="chip"
+          neutral=""
+          ariaLabel={m.admin_comments_filter_post()}
           value={post == null ? "" : String(post)}
           options={postOptions}
           onChange={(value) =>
@@ -171,7 +173,9 @@ export function AdminCommentsPage({
       // appear (and push the list down) once it is known.
       <Button
         ref={markAllTrigger}
-        icon={<CheckCheck size={16} />}
+        variant="outline"
+        size="sm"
+        icon={<CheckCheck size={15} />}
         disabled={unrepliedCount === undefined}
         onClick={() => setConfirmAll(true)}
       >

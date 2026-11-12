@@ -20,7 +20,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { AdminSplit } from "@/components/admin/admin-page";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,7 +101,7 @@ function shortcutsBlocked(target: EventTarget | null) {
 /**
  * The Comments page as an inbox: the page's Comments in a queue on the left,
  * the conversation the chosen one belongs to on the right with a reply box
- * under it. Replying (as the Admin) or marking a Comment handled takes it off
+ * under it. Replying (as the Admin, whom the API does not challenge) or marking a Comment handled takes it off
  * the unreplied queue at once and moves on to the next; delete and mute ask
  * first. J and K (or the arrows, in the queue) move, R replies, E marks
  * handled.
@@ -130,8 +129,6 @@ export function AdminCommentInbox({
   const [left, setLeft] = useState<ReadonlySet<number>>(new Set());
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [pending, setPending] = useState<PendingAction | null>(null);
-  // The challenge starts with the first reply, not with the page.
-  const [challenged, setChallenged] = useState(false);
   const lastIndex = useRef(0);
   const queueRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
@@ -166,12 +163,6 @@ export function AdminCommentInbox({
   );
   const { markHandled, unmarkHandled } = useAdminCommentActions();
   const refresh = useRefreshAdminComments();
-  const {
-    isPending: challengePending,
-    reset: resetChallenge,
-    turnstileProps,
-  } = useTurnstile("comment");
-
   useContentMotion(detailRef, String(selected?.id));
   useEffect(() => {
     if (detailOpen && stacked) backRef.current?.focus();
@@ -209,8 +200,7 @@ export function AdminCommentInbox({
     comment.commentPath !== null && !comment.author.isAdmin;
 
   const draft = selected ? (drafts[selected.id] ?? "") : "";
-  const canSend =
-    Boolean(draft.trim()) && challenged && !challengePending && !isCreating;
+  const canSend = Boolean(draft.trim()) && !isCreating;
   const send = async () => {
     if (!selected || !canSend) return;
     const comment = selected;
@@ -225,8 +215,6 @@ export function AdminCommentInbox({
     } catch {
       // The draft stays; the hook has said what went wrong.
       return;
-    } finally {
-      resetChallenge();
     }
     setDrafts(({ [comment.id]: _sent, ...rest }) => rest);
     toast.success(m.admin_comments_reply_sent());
@@ -436,7 +424,6 @@ export function AdminCommentInbox({
                           name: authorName(selected),
                         })}
                         disabled={isCreating}
-                        onFocus={() => setChallenged(true)}
                         onChange={(event) =>
                           setDrafts((previous) => ({
                             ...previous,
@@ -464,9 +451,6 @@ export function AdminCommentInbox({
                           <Kbd>Ctrl ↵</Kbd>
                           {m.admin_overview_reply_send()}
                         </span>
-                        {challenged ? (
-                          <Turnstile {...turnstileProps} size="compact" />
-                        ) : null}
                         <Button
                           variant="ink"
                           size="sm"
