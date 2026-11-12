@@ -26,6 +26,7 @@
     "i18n:compile": "bun scripts/compile-messages.ts",
     "i18n:verify": "bun scripts/verify-translations.ts",
     "i18n:prune-unused": "bun scripts/prune-unused-translations.ts",
+    "i18n:add": "bun scripts/i18n-add.ts",
     "wrangler:prepare": "bun scripts/wrangler-prepare-deprecated.ts",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
