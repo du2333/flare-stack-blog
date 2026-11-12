@@ -325,3 +325,10 @@
     }
   }
 }
+
+/* Unlayered, so it holds against a page-wide focus outline: an Admin field
+   shows focus with its own edge and ring. */
+:root:has(.admin-layout)
+  :is(.fuwari-input, .fuwari-field-shell input, textarea):focus-visible {
+  outline: none;
+}

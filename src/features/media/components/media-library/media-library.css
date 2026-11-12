@@ -96,9 +96,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--admin-hover);
   overflow: hidden;
-  border-radius: calc(10 * var(--admin-unit));
+  border-radius: 12px;
   flex-shrink: 0;
 }
 .media-gallery .media-thumbnail {
@@ -114,7 +114,7 @@
   object-fit: cover;
 }
 .media-gallery-item[aria-pressed="true"] .media-thumbnail {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--admin-accent);
   outline-offset: 3px;
 }
 .media-gallery-item:hover .media-thumbnail {

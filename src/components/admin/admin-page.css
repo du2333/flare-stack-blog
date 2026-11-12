@@ -59,6 +59,7 @@
 }
 .admin-page-header h1 {
   min-width: 0;
+  color: var(--admin-fg);
   overflow: hidden;
   font-size: 24px;
   line-height: 32px;

@@ -21,19 +21,21 @@
   outline: none;
 }
 
-.admin-comment {
-  border-bottom: 1px solid var(--admin-hairline);
+.admin-comment-list {
+  padding-block: 2px;
 }
 .admin-comment-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 12px var(--admin-row-x);
+  border-radius: 12px;
   transition: background-color 150ms;
 }
 .admin-comment-row:hover,
+.admin-comment-row:focus-within,
 .admin-comment[data-replying] > .admin-comment-row {
-  background: var(--fuwari-btn-plain-bg-hover);
+  background: var(--admin-hover);
 }
 .admin-comment-row > .comment-avatar {
   width: 32px;
@@ -52,7 +54,7 @@
   gap: 4px 8px;
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
-  color: var(--fuwari-fg-50);
+  color: var(--admin-fg-3);
 }
 .admin-comment-author {
   font-size: var(--admin-text-body);
@@ -66,7 +68,7 @@
   margin-top: 2px;
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
-  color: var(--fuwari-fg);
+  color: var(--admin-fg-2);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -94,10 +96,10 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
-  color: var(--fuwari-fg-50);
+  color: var(--admin-fg-3);
 }
 .admin-comment-source {
   display: inline-flex;
@@ -134,18 +136,30 @@ a.admin-comment-source:hover .admin-comment-source-title {
   flex-shrink: 0;
   margin-top: -2px;
 }
+/* With a pointer the actions wait for the row; a keyboard or a finger always has them. */
+@media (hover: hover) {
+  .admin-comment-actions {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .admin-comment-row:hover .admin-comment-actions,
+  .admin-comment-row:focus-within .admin-comment-actions,
+  .admin-comment[data-replying] .admin-comment-actions,
+  .admin-comment-actions:has([aria-expanded="true"]) {
+    opacity: 1;
+  }
+}
 .admin-comment-editor {
   padding: 0 var(--admin-row-x) 14px 56px;
 }
-/* The reply field takes the Admin field's look (field.css): a hairline, and in
-   focus a card-coloured field with a 1px ink ring, so the focus is visible. */
+/* The reply field takes the Admin field's look (field.css). */
 .admin-comment-editor .comment-composer-input {
-  border-color: var(--admin-hairline);
+  border-color: var(--admin-line-strong);
+  background: var(--admin-surface);
 }
 .admin-comment-editor .comment-composer-input:focus-within {
-  background: var(--theme-surface);
-  border-color: var(--theme-accent);
-  box-shadow: 0 0 0 1px var(--theme-accent);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-accent-soft);
 }
 
 /* Below 768px: each Comment stacks, actions in the menu, the editor full width. */
