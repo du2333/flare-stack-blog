@@ -7,7 +7,7 @@ import { PairingStep } from "./pairing-step";
 import { TryStep } from "./try-step";
 import "./agent-skill.css";
 
-/** One step of the stepper: its number and the line to the next, then its content. */
+/** One step: a card with its number, its title and what to do. */
 function Step({
   number,
   title,
@@ -34,17 +34,19 @@ export function AgentSkillSection() {
   return (
     <div className="agent-skill">
       <SettingsLead description={m.agent_skill_intro()} />
-      <ol className="agent-skill-steps">
-        <Step number={1} title={m.agent_skill_step_install()}>
-          <InstallStep />
-        </Step>
-        <Step number={2} title={m.agent_skill_step_pair()}>
-          <PairingStep />
-        </Step>
-        <Step number={3} title={m.agent_skill_step_try()}>
-          <TryStep />
-        </Step>
-      </ol>
+      <div className="agent-skill-guide">
+        <ol className="agent-skill-steps">
+          <Step number={1} title={m.agent_skill_step_install()}>
+            <InstallStep />
+          </Step>
+          <Step number={2} title={m.agent_skill_step_pair()}>
+            <PairingStep />
+          </Step>
+          <Step number={3} title={m.agent_skill_step_try()}>
+            <TryStep />
+          </Step>
+        </ol>
+      </div>
       <PairedAgents />
     </div>
   );

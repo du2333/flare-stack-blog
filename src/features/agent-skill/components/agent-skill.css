@@ -1,107 +1,149 @@
 /*
- * 「接入」 · Agent Skill: three numbered steps as a vertical stepper, in a
- * column of at most 760px, and the connected agents as a list below them.
+ * 「接入」 · Agent Skill: the three steps as cards down the page, and beside
+ * them (under them below 1180px) the agents already connected.
  */
 .agent-skill {
-  max-width: 760px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1120px;
+  min-width: 0;
+}
+@media (min-width: 1180px) {
+  .agent-skill {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+  }
+  .agent-skill-agents {
+    position: sticky;
+    top: 0;
+  }
+}
+/* The line on what the page is for runs above both columns. */
+.agent-skill > .settings-lead {
+  grid-column: 1 / -1;
+  margin-bottom: -4px;
+}
+.agent-skill-guide {
   min-width: 0;
 }
 .agent-skill-steps {
   display: grid;
-  margin: 0 0 32px;
+  gap: 12px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
+/* A step: its number in the margin, the title and what to do beside it. */
 .agent-skill-step {
-  position: relative;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   column-gap: 16px;
   min-width: 0;
-}
-/* The line from this step's number to the next one's. */
-.agent-skill-step:not(:last-child)::before {
-  content: "";
-  position: absolute;
-  top: 34px;
-  bottom: 6px;
-  left: 13.5px;
-  width: 1px;
-  background: var(--admin-rule);
+  padding: 20px 24px 22px 20px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
 .agent-skill-step-number {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--fuwari-input-border);
-  border-radius: 50%;
-  background: var(--fuwari-card-bg);
-  color: var(--fuwari-fg-75);
-  font-size: var(--admin-text-meta);
-  font-weight: 600;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-text);
+  font-size: var(--admin-text-body);
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .agent-skill-step-main {
   display: grid;
   gap: 10px;
   min-width: 0;
-  padding-bottom: 28px;
 }
-.agent-skill-step:last-child .agent-skill-step-main {
-  padding-bottom: 0;
-}
-/* The title centres on the 28px number beside it. */
+/* The title centres on the number beside it. */
 .agent-skill-step-main > h2 {
   display: flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 32px;
   font-size: var(--admin-text-section);
   line-height: var(--admin-leading-section);
-  font-weight: 600;
+  font-weight: 620;
+  color: var(--admin-fg);
 }
 .agent-skill-hint {
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-body);
-  line-height: var(--admin-leading-body);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
 }
 .agent-skill-hint a {
-  color: var(--fuwari-fg);
+  color: var(--admin-fg);
 }
-/* A command to copy: a block with its copy button inside. */
+/* Something to copy, with its button inside: said to an agent, or... */
 .agent-skill-copyline {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   max-width: 100%;
-  padding: 6px 6px 6px 12px;
-  border: 1px solid var(--admin-rule);
-  border-radius: 8px;
-  background: var(--fuwari-btn-regular-bg);
+  padding: 5px 6px 5px 14px;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
 }
 .agent-skill-copyline code {
   flex: 1;
   min-width: 0;
-  padding: 4px 0;
+  padding: 5px 0;
   background: none;
-  font-size: var(--admin-text-meta);
-  line-height: 20px;
+  color: var(--admin-fg);
+  font-family: inherit;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   overflow-wrap: anywhere;
+}
+/* ...typed into a terminal: dark in either scheme, with a prompt. */
+.agent-skill-copyline[data-kind="command"] {
+  align-items: flex-start;
+  padding: 10px 8px 10px 16px;
+  background: #16161a;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+.agent-skill-copyline[data-kind="command"] code {
+  color: #e7e7ea;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 20px;
+}
+.agent-skill-copyline[data-kind="command"] code::before {
+  content: "$ ";
+  color: rgb(255 255 255 / 0.4);
+}
+.agent-skill-copyline[data-kind="command"] .fuwari-icon-button {
+  color: rgb(255 255 255 / 0.6);
+}
+.agent-skill-copyline[data-kind="command"] .fuwari-icon-button:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
 }
 .agent-skill-examples {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .agent-skill-waiting {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-body);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-small);
 }
 .agent-skill-actions {
   display: flex;
@@ -110,22 +152,41 @@
   gap: 8px;
 }
 .agent-skill-expiry {
-  opacity: 0.7;
+  color: var(--admin-fg-3);
 }
 
-/* The connected agents. */
+/* The connected agents: a card of its own, a name and its dates to a row. */
 .agent-skill-agents {
   display: grid;
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--admin-rule);
+  gap: 4px;
+  min-width: 0;
+  padding: 18px 12px 10px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
-.agent-skill-agents .key-head {
-  padding: 0 var(--admin-row-x);
+.agent-skill-agents > :first-child {
+  padding-inline: 8px;
+  margin-bottom: 6px;
 }
-@media (min-width: 761px) {
-  .key-grid.agent-skill-grid,
-  .admin-list-row.key-grid.agent-skill-grid {
-    grid-template-columns: minmax(0, 1fr) 148px 148px 36px;
-  }
+.agent-skill-agents .key-head,
+.agent-skill-agents .key-grid > .key-cell {
+  display: none;
+}
+.agent-skill-agents .key-grid,
+.agent-skill-agents .admin-list-row.key-grid {
+  grid-template-columns: minmax(0, 1fr) 36px;
+  gap: 8px;
+  padding-inline: 8px;
+}
+.agent-skill-agents .key-summary {
+  display: block;
+  overflow: hidden;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

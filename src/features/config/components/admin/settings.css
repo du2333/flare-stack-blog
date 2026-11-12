@@ -40,6 +40,12 @@
   /* Keeps a focused field clear of the save bar. */
   scroll-padding-bottom: calc(120 * var(--admin-unit));
 }
+/* While the save bar is up, a toast rises above it instead of covering its
+   buttons. Sonner sets these on the toaster itself, hence !important. */
+:root:has(.settings-savebar) [data-sonner-toaster][data-y-position="bottom"] {
+  --offset-bottom: 96px !important;
+  --mobile-offset-bottom: 120px !important;
+}
 /* The sections with a save bar park it at the foot of a short page. */
 .settings-workspace:is(
     [data-section="site"],
@@ -273,47 +279,73 @@
 }
 
 /*
- * 「维护」: groups of action rows. A row has the list rows' hairline and
- * hover: the name and what it does on the left, the last result under them,
- * the button on the right.
+ * 「维护」: the actions as tiles, two to a row: an icon, what the action does
+ * and how the last run went, and the button at the foot.
  */
-.settings-maintenance-list .admin-form-section-body {
-  margin-top: 4px;
-}
-.settings-maintenance-list > .settings-muted {
-  max-width: 960px;
-  padding-top: 8px;
+.settings-maintenance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: var(--admin-form-max);
 }
 .settings-maintenance-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: center;
-  min-height: var(--admin-row-max);
-  padding: 12px 0;
-  border-bottom: 1px solid var(--admin-line);
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 16px 14px;
+  min-height: 168px;
+  padding: 20px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
-.settings-maintenance-item:last-child {
-  border-bottom: 0;
+.settings-maintenance-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--admin-hover);
+  color: var(--admin-fg-2);
 }
-.settings-maintenance-item > .fuwari-button {
-  min-width: 112px;
+.settings-maintenance-item[data-danger] .settings-maintenance-icon {
+  background: color-mix(in srgb, var(--fuwari-danger) 10%, transparent);
+  color: var(--fuwari-danger);
+}
+.settings-maintenance-copy {
+  min-width: 0;
 }
 .settings-maintenance-title {
-  font-size: var(--admin-text-body);
-  line-height: var(--admin-leading-body);
-  font-weight: 500;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
+  font-weight: 620;
+  color: var(--admin-fg);
 }
 .settings-maintenance-desc,
 .settings-maintenance-item [data-tone] {
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
 }
 .settings-maintenance-desc {
-  color: var(--fuwari-fg-50);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
 }
 .settings-maintenance-item [data-tone] {
-  margin-top: 2px;
+  margin-top: 6px;
+}
+.settings-maintenance-action {
+  grid-column: 2;
+  align-self: end;
+}
+.settings-maintenance-action > .fuwari-button {
+  min-width: 96px;
 }
 @media (max-width: 600px) {
   .settings-body {
@@ -327,11 +359,12 @@
   .settings-savebar > div:not(.fuwari-callout) {
     margin-left: auto;
   }
-  .settings-maintenance-item {
+  .settings-maintenance-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-    justify-items: start;
-    padding-block: 12px;
+    gap: 12px;
+  }
+  .settings-maintenance-item {
+    min-height: 0;
   }
   .settings-lead {
     align-items: flex-start;

@@ -53,7 +53,7 @@ export function PairingStep() {
   const generateButton = (label: string, primary = false) => (
     <Button
       ref={generateRef}
-      variant={primary ? "primary" : undefined}
+      variant={primary ? "ink" : "outline"}
       loading={isGenerating}
       disabled={isCancelling}
       onClick={() => void run(generate)}
@@ -68,7 +68,7 @@ export function PairingStep() {
       <Callout
         tone="warning"
         action={
-          <Button size="sm" onClick={() => void reload()}>
+          <Button variant="outline" size="sm" onClick={() => void reload()}>
             {m.settings_design_retry()}
           </Button>
         }
@@ -110,7 +110,7 @@ export function PairingStep() {
         <div className="agent-skill-actions">
           {generateButton(m.agent_skill_pair_regenerate())}
           <Button
-            variant="plain"
+            variant="quiet"
             loading={isCancelling}
             disabled={isGenerating}
             onClick={() => void run(cancel)}

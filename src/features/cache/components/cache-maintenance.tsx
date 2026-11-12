@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { DatabaseZap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,15 @@ export function CacheMaintenance() {
   return (
     <>
       <MaintenanceItem
+        icon={DatabaseZap}
+        danger
+        flag={m.settings_maintenance_group_danger()}
         title={m.settings_maintenance_cache_title()}
         lines={[m.settings_maintenance_cache_desc_short()]}
         action={
           <Button
             variant="danger"
+            size="sm"
             onClick={() => setIsModalOpen(true)}
             loading={mutation.isPending}
           >

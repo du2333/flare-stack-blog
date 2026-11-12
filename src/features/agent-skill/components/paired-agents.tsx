@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Bot, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export function PairedAgents() {
           size="compact"
           description={m.settings_design_load_failed()}
           action={
-            <Button onClick={() => void reload()}>
+            <Button variant="outline" size="sm" onClick={() => void reload()}>
               {m.settings_design_retry()}
             </Button>
           }
@@ -69,7 +69,11 @@ export function PairedAgents() {
           ))}
         </div>
       ) : agents.length === 0 ? (
-        <EmptyState size="compact" description={m.agent_skill_agents_empty()} />
+        <EmptyState
+          size="compact"
+          icon={Bot}
+          description={m.agent_skill_agents_empty()}
+        />
       ) : (
         <div role="table" aria-label={m.agent_skill_agents_title()}>
           <div role="row" className="key-head key-grid agent-skill-grid">

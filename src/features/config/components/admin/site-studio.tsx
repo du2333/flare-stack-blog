@@ -162,7 +162,37 @@ function TextFields() {
           </>
         )}
       </SettingRow>
+      <SearchPreview />
     </>
+  );
+}
+
+/** The title and the description as a search engine lists them, live. */
+function SearchPreview() {
+  const { control } = useFormContext<SystemConfig>();
+  const title = useWatch({ control, name: "site.title" }) ?? "";
+  const description = useWatch({ control, name: "site.description" }) ?? "";
+  const icon =
+    previewSrc(useWatch({ control, name: "site.icons.favicon96" })) ??
+    previewSrc(useWatch({ control, name: "site.icons.faviconSvg" }));
+  const host = typeof window === "undefined" ? "" : window.location.host;
+  return (
+    <AdminFormRow
+      label={m.settings_site_search_preview()}
+      description={m.settings_site_search_preview_hint()}
+    >
+      <div className="site-search-preview" aria-hidden="true">
+        <div className="site-search-preview-site">
+          <span>{icon ? <img src={icon} alt="" /> : null}</span>
+          <p>
+            <b>{title}</b>
+            <i>{host}</i>
+          </p>
+        </div>
+        <p className="site-search-preview-title">{title}</p>
+        <p className="site-search-preview-text">{description}</p>
+      </div>
+    </AdminFormRow>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { SearchCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,10 +37,13 @@ export function SearchMaintenance() {
   return (
     <>
       <MaintenanceItem
+        icon={SearchCheck}
         title={m.settings_maintenance_search_title()}
         lines={[m.settings_maintenance_search_desc_short()]}
         action={
           <Button
+            variant="outline"
+            size="sm"
             onClick={() => setIsModalOpen(true)}
             loading={rebuildSearchIndexMutation.isPending}
           >

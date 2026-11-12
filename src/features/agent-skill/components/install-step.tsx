@@ -29,6 +29,7 @@ export function InstallStep() {
         )}
       </p>
       <CopyLine
+        kind="command"
         text={AGENT_SKILL_INSTALL_COMMAND}
         copyLabel={m.common_copy_code()}
         copiedLabel={m.common_code_copied()}
