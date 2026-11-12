@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { TaxonomyNameDialog } from "@/components/admin/taxonomy-name-dialog";
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
@@ -55,11 +55,12 @@ const copy = {
 } satisfies Record<TaxonomyKind, Record<string, () => string>>;
 
 /**
- * One of the two lists of the taxonomy page: a header with the name, the
- * count and 新建, a search field, and a row per Category or Tag with the
- * number of Posts (a link to the Posts list filtered by it) and a menu to
- * rename or delete it. For Tags the header also holds the way to delete every
- * unused one.
+ * One of the two panes of the taxonomy page: a header with the name, the
+ * count and 新建, and a search field. Categories are rows, each with its
+ * share of the Posts drawn as a bar, the number of Posts (a link to the
+ * Posts list filtered by it) and a menu to rename or delete it. Tags are
+ * chips: the name opens that menu, the number is that link. For Tags the
+ * header also holds the way to delete every unused one.
  */
 export function TaxonomyColumn({
   kind,
@@ -112,6 +113,8 @@ export function TaxonomyColumn({
   const visible = filterTaxonomy(all, query);
   const unused = kind === "tag" ? unusedTags(all) : [];
   const searching = Boolean(query.trim());
+  // The widest bar is the Category with the most Posts.
+  const most = Math.max(1, ...all.map((item) => item.postCount));
 
   const header = compact ? null : (
     <div className="taxonomy-column-head">
@@ -134,7 +137,9 @@ export function TaxonomyColumn({
         ) : null}
         <Button
           ref={createTrigger}
-          icon={<Plus size={16} />}
+          variant="outline"
+          size="sm"
+          icon={<Plus size={15} />}
           onClick={() => onCreateOpenChange(true)}
         >
           {m.category_manager_create()}
@@ -174,22 +179,38 @@ export function TaxonomyColumn({
       </div>
       <div className="taxonomy-column-list custom-scrollbar">
         {isPending ? (
-          <div role="list" aria-busy="true" aria-hidden="true">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div key={index} className="admin-list-row taxonomy-row">
-                <Skeleton className="h-4 w-1/3 rounded" />
-                <Skeleton className="ml-auto h-3 w-10 rounded" />
-                <Skeleton className="size-8 rounded-lg" />
-              </div>
-            ))}
-          </div>
+          kind === "tag" ? (
+            <div className="taxonomy-chips" aria-hidden="true">
+              {[76, 104, 58, 88, 66, 120, 72, 94, 60, 84, 110, 68].map(
+                (width, index) => (
+                  <Skeleton
+                    key={index}
+                    shimmer
+                    className="h-8 rounded-[10px]"
+                    style={{ width }}
+                  />
+                ),
+              )}
+            </div>
+          ) : (
+            <div className="taxonomy-bars" aria-hidden="true">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={index} className="taxonomy-bar-row">
+                  <Skeleton shimmer className="h-4 w-24 rounded" />
+                  <Skeleton shimmer className="taxonomy-bar" />
+                  <Skeleton shimmer className="ml-auto h-3 w-8 rounded" />
+                  <span />
+                </div>
+              ))}
+            </div>
+          )
         ) : isError ? (
           <EmptyState
             size="compact"
             role="alert"
             description={m.admin_taxonomy_load_error()}
             action={
-              <Button variant="text" onClick={onRetry}>
+              <Button variant="outline" size="sm" onClick={onRetry}>
                 {m.error_retry()}
               </Button>
             }
@@ -205,66 +226,115 @@ export function TaxonomyColumn({
             }
             action={
               all.length && searching ? (
-                <Button variant="text" onClick={() => setQuery("")}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuery("")}
+                >
                   {m.tag_manager_clear_search()}
                 </Button>
               ) : (
-                <Button variant="text" onClick={() => onCreateOpenChange(true)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCreateOpenChange(true)}
+                >
                   {text.createTitle()}
                 </Button>
               )
             }
           />
         ) : (
-          <ul>
-            {visible.map((item) => (
-              <li key={item.id} className="admin-list-row taxonomy-row">
-                <span className="taxonomy-row-name" title={item.name}>
-                  {item.name}
-                </span>
-                {item.postCount > 0 ? (
-                  <Link
-                    to="/admin/posts"
-                    search={
-                      kind === "category"
-                        ? { category: item.id }
-                        : { tag: item.id }
-                    }
-                    className="taxonomy-row-count"
-                    aria-label={m.admin_taxonomy_posts_link({
-                      name: item.name,
-                      count: item.postCount,
-                    })}
+          <ul className={kind === "tag" ? "taxonomy-chips" : "taxonomy-bars"}>
+            {visible.map((item) => {
+              const postsSearch =
+                kind === "category" ? { category: item.id } : { tag: item.id };
+              const postsLabel = m.admin_taxonomy_posts_link({
+                name: item.name,
+                count: item.postCount,
+              });
+              const actions = [
+                {
+                  label: m.admin_taxonomy_rename(),
+                  icon: Pencil,
+                  onSelect: () => setRenaming(item),
+                },
+                {
+                  label: m.category_manager_delete(),
+                  icon: Trash2,
+                  danger: true,
+                  onSelect: (trigger: HTMLButtonElement) => {
+                    deleteTrigger.current = trigger;
+                    setToDelete(item);
+                  },
+                },
+              ];
+              // A Tag is a chip in two parts: its name opens what can be done
+              // with it, its number goes to the Posts that carry it.
+              if (kind === "tag")
+                return (
+                  <li
+                    key={item.id}
+                    className="taxonomy-chip"
+                    data-unused={item.postCount === 0 ? "" : undefined}
                   >
-                    {m.admin_taxonomy_post_count({ count: item.postCount })}
-                  </Link>
-                ) : (
-                  <span className="taxonomy-row-count" data-empty="">
-                    {m.admin_taxonomy_post_count({ count: 0 })}
+                    <ActionMenu
+                      label={m.admin_taxonomy_row_actions({ name: item.name })}
+                      placement="bottom-start"
+                      trigger={<span>{item.name}</span>}
+                      triggerClassName="taxonomy-chip-name"
+                      items={actions}
+                    />
+                    {item.postCount > 0 ? (
+                      <Link
+                        to="/admin/posts"
+                        search={postsSearch}
+                        className="taxonomy-chip-count"
+                        aria-label={postsLabel}
+                        title={postsLabel}
+                      >
+                        {item.postCount}
+                      </Link>
+                    ) : (
+                      <span className="taxonomy-chip-count">0</span>
+                    )}
+                  </li>
+                );
+              // A Category is a row with its share of the Posts drawn under it.
+              return (
+                <li key={item.id} className="taxonomy-bar-row">
+                  <span className="taxonomy-row-name" title={item.name}>
+                    {item.name}
                   </span>
-                )}
-                <ActionMenu
-                  label={m.admin_taxonomy_row_actions({ name: item.name })}
-                  placement="bottom-end"
-                  items={[
-                    {
-                      label: m.admin_taxonomy_rename(),
-                      icon: Pencil,
-                      onSelect: () => setRenaming(item),
-                    },
-                    {
-                      label: m.category_manager_delete(),
-                      icon: Trash2,
-                      danger: true,
-                      onSelect: (trigger) => {
-                        deleteTrigger.current = trigger;
-                        setToDelete(item);
-                      },
-                    },
-                  ]}
-                />
-              </li>
-            ))}
+                  <span
+                    className="taxonomy-bar"
+                    style={
+                      { "--share": item.postCount / most } as CSSProperties
+                    }
+                    aria-hidden="true"
+                  />
+                  {item.postCount > 0 ? (
+                    <Link
+                      to="/admin/posts"
+                      search={postsSearch}
+                      className="taxonomy-row-count"
+                      aria-label={postsLabel}
+                    >
+                      {m.admin_taxonomy_post_count({ count: item.postCount })}
+                    </Link>
+                  ) : (
+                    <span className="taxonomy-row-count" data-empty="">
+                      {m.admin_taxonomy_post_count({ count: 0 })}
+                    </span>
+                  )}
+                  <ActionMenu
+                    label={m.admin_taxonomy_row_actions({ name: item.name })}
+                    placement="bottom-end"
+                    items={actions}
+                  />
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

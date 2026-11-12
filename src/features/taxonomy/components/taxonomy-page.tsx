@@ -75,6 +75,7 @@ export function TaxonomyPage() {
         )
       }
       body="split"
+      inset={false}
     >
       <div className="taxonomy-columns">
         {wide || tab === "category" ? column("category", categories) : null}
