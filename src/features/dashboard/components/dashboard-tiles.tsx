@@ -78,11 +78,7 @@ function NoticesTile({
     else void navigate({ to: notice.target.to });
   };
   return (
-    <Menu
-      label={tile.label}
-      trigger={body}
-      triggerClassName="glance-tile"
-    >
+    <Menu label={tile.label} trigger={body} triggerClassName="glance-tile">
       {notices.map((notice) => (
         <MenuItem key={notice.key} onSelect={() => open(notice)}>
           <span className="flex min-w-0 flex-1 flex-col">
