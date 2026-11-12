@@ -43,7 +43,7 @@ const nextFrame = () =>
 beforeEach(() => {
   wide = true;
   vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("min-width: 1280px") ? wide : false,
+    matches: query.includes("min-width: 1320px") ? wide : false,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   }));
@@ -226,12 +226,21 @@ describe("on a wide screen", () => {
     renderStudio();
     const [frame] = frames();
     loaded(frame);
-    expect(frame.style.width).toBe("1280px");
+    expect([frame.style.width, frame.style.height]).toEqual([
+      "1440px",
+      "900px",
+    ]);
+    // The size of the viewport is stated near the switch.
+    expect(screen.getByText("1440 × 900")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("radio", { name: m.personalize_preview_device_phone() }),
     );
     expect(frames()).toHaveLength(1);
-    expect(frames()[0].style.width).toBe("390px");
+    expect([frames()[0].style.width, frames()[0].style.height]).toEqual([
+      "390px",
+      "844px",
+    ]);
+    expect(screen.getByText("390 × 844")).toBeTruthy();
 
     // The newest published Post is found once the page is open.
     const post = await screen.findByRole("radio", {
@@ -291,7 +300,10 @@ describe("on a narrow screen", () => {
       within(dialog).getAllByTitle(m.personalize_preview_frame_title()),
     ).toHaveLength(1);
     // A phone's screen shows the phone frame.
-    expect(frames()[0].style.width).toBe("390px");
+    expect([frames()[0].style.width, frames()[0].style.height]).toEqual([
+      "390px",
+      "844px",
+    ]);
 
     fireEvent.click(
       within(dialog).getByRole("button", {

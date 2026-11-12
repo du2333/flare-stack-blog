@@ -999,6 +999,7 @@
   "personalize_preview_heading": "实时预览",
   "personalize_preview_frame_title": "站点前台预览",
   "personalize_preview_device": "预览设备",
+  "personalize_preview_size": "预览视口尺寸（CSS 像素）",
   "personalize_preview_device_desktop": "桌面",
   "personalize_preview_device_phone": "手机",
   "personalize_preview_page": "预览页面",

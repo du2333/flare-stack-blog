@@ -1006,6 +1006,7 @@
   "personalize_preview_heading": "Live preview",
   "personalize_preview_frame_title": "Preview of the public site",
   "personalize_preview_device": "Preview device",
+  "personalize_preview_size": "Preview viewport size (CSS pixels)",
   "personalize_preview_device_desktop": "Desktop",
   "personalize_preview_device_phone": "Phone",
   "personalize_preview_page": "Preview page",
