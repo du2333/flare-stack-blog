@@ -28,11 +28,11 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  --settings-pad-y: calc(24 * var(--admin-unit));
+  --settings-pad-y: 24px;
   padding: 6px var(--admin-scroll-end) var(--settings-pad-y)
     var(--admin-frame-x);
   /* Keeps a focused field clear of the save bar. */
-  scroll-padding-bottom: calc(120 * var(--admin-unit));
+  scroll-padding-bottom: 120px;
 }
 /* While the save bar is up, a toast rises above it instead of covering its
    buttons. Sonner sets these on the toaster itself, hence !important. */

@@ -176,7 +176,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: calc(14 * var(--admin-unit));
+  gap: 14px;
   min-width: 0;
 }
 .site-brand-choice {
@@ -235,7 +235,7 @@
   position: sticky;
   top: calc(-1 * var(--settings-pad-y));
   z-index: 2;
-  margin: calc(-1 * var(--settings-pad-y)) 0 calc(8 * var(--admin-unit));
+  margin: calc(-1 * var(--settings-pad-y)) 0 8px;
   padding: var(--settings-pad-y) 0 12px;
   background: var(--admin-canvas);
 }

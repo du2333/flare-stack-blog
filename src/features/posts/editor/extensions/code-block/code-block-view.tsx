@@ -174,8 +174,10 @@ export function CodeBlockView({
         {showPreview ? (
           <div
             contentEditable={false}
+            // The size of the code while it is edited (above), and of a
+            // code block on the public page: not the body's.
             className={cn(
-              "overflow-x-auto custom-scrollbar",
+              "overflow-x-auto font-mono text-sm leading-relaxed custom-scrollbar",
               editor.isEditable && "cursor-text",
             )}
             onMouseDown={handlePreviewMouseDown}
@@ -204,7 +206,7 @@ function MermaidPreview({
       source={code}
       fallback={
         highlightedHtml ? (
-          <div className="overflow-x-auto custom-scrollbar">
+          <div className="overflow-x-auto font-mono text-sm leading-relaxed custom-scrollbar">
             <ShikiHtml html={highlightedHtml} />
           </div>
         ) : (
