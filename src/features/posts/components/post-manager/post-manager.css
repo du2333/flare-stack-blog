@@ -1,8 +1,12 @@
 /*
- * The Posts list (index.tsx, components/post-row.tsx): two-line rows in a
- * list card on the canvas. The columns are one grid for the names, the rows
- * and the placeholders.
+ * The Posts list (index.tsx, components/post-row.tsx): two-line rows in the
+ * page frame's list card. The columns are one grid for the names, the rows
+ * and the placeholders; the card's width decides when they fold.
  */
+
+.post-manager > .admin-page-body {
+  container-type: inline-size;
+}
 
 .post-cols,
 .post-row,
@@ -22,9 +26,9 @@
 
 .post-row {
   position: relative;
-  min-height: 58px;
+  min-height: var(--admin-row-max);
   padding: 8px 4px 8px 12px;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   transition: background 0.15s;
 }
 .post-row:hover,
@@ -46,8 +50,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
   font-weight: 550;
   letter-spacing: -0.003em;
 }
@@ -55,7 +59,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
 }
 .post-title a:focus-visible {
   outline: 0;
@@ -80,8 +84,8 @@
   margin-top: 1px;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 12.5px;
-  line-height: 18px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
   color: var(--admin-fg-3);
 }
 .post-sub b {
@@ -109,7 +113,7 @@
   align-items: center;
   gap: 6px;
   height: 24px;
-  font-size: 12.5px;
+  font-size: var(--admin-text-meta);
   font-weight: 500;
   color: var(--admin-fg-3);
   white-space: nowrap;
@@ -130,16 +134,16 @@
   background: none;
   box-shadow: inset 0 0 0 1.5px currentColor;
 }
-.post-state[data-state="changed"] {
+.post-state[data-state="published-changed"] {
   color: var(--admin-accent-text);
 }
-.post-state[data-state="changed"] i {
+.post-state[data-state="published-changed"] i {
   background: var(--admin-accent);
   box-shadow: 0 0 0 3px var(--admin-accent-soft);
 }
 
 .post-count {
-  font-size: 13px;
+  font-size: var(--admin-text-small);
   color: var(--admin-fg-2);
 }
 .post-count[data-zero] {
@@ -150,7 +154,7 @@
   font-weight: 600;
 }
 .post-time {
-  font-size: 12.5px;
+  font-size: var(--admin-text-meta);
   color: var(--admin-fg-3);
   white-space: nowrap;
 }
@@ -184,7 +188,7 @@
 }
 
 .post-skel {
-  height: 58px;
+  height: var(--admin-row-max);
   padding: 0 4px 0 12px;
 }
 .post-skel > div:first-child {
@@ -194,46 +198,6 @@
 }
 .post-skel .fuwari-skeleton-shimmer {
   height: 12px;
-}
-
-/* The page's placeholders while the first page loads, at the controls' sizes. */
-.post-skel-primary {
-  margin-left: auto;
-  width: 106px;
-  height: 36px;
-  border-radius: 10px;
-}
-.post-skel-tabs {
-  display: inline-flex;
-  width: 296px;
-  max-width: 100%;
-  height: 36px;
-  padding: 3px;
-  border-radius: 12px;
-  background: var(--admin-hover);
-}
-.post-skel-tabs > .fuwari-skeleton-shimmer {
-  width: 64px;
-  border-radius: 9px;
-}
-.post-skel-search {
-  width: 220px;
-  height: 36px;
-  border-radius: 10px;
-}
-.post-skel-chip {
-  width: 68px;
-  height: 36px;
-  border-radius: 10px;
-}
-.post-skel-chip.is-wide {
-  width: 126px;
-}
-@media (max-width: 767px) {
-  .admin-canvas-tools > .post-skel-search {
-    flex: 1 1 100%;
-    width: auto;
-  }
 }
 
 /* Narrower than a table: the numbers leave, state and time join the second line. */

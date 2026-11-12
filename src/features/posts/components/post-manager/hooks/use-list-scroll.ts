@@ -14,6 +14,7 @@ import {
   type ListScrollPosition,
   type PostListLocation,
 } from "../list-position";
+import { PHONE_LAYOUT_QUERY } from "../types";
 
 export function useListScroll(
   ref: RefObject<HTMLDivElement | null>,
@@ -21,6 +22,8 @@ export function useListScroll(
   ready: boolean,
 ) {
   const lowHeight = useMediaQuery(LOW_WORKSPACE_HEIGHT);
+  // On a phone the page scrolls as one (AdminPage stackOnPhone), not the rows.
+  const phone = useMediaQuery(PHONE_LAYOUT_QUERY);
   const key = JSON.stringify(location);
   const applied = useRef<string | null>(null);
   const pending = useRef<{ key: string; position: ListScrollPosition } | null>(
@@ -40,8 +43,10 @@ export function useListScroll(
     () =>
       lowHeight
         ? ref.current?.closest<HTMLElement>(".admin-list-region")
-        : ref.current,
-    [ref, lowHeight],
+        : phone
+          ? ref.current?.closest<HTMLElement>(".admin-page")
+          : ref.current,
+    [ref, lowHeight, phone],
   );
 
   useEffect(() => {

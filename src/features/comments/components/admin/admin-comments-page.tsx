@@ -4,9 +4,9 @@ import { CheckCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pendingCommentsCountQuery } from "@/components/admin/admin-counts";
 import { AdminPage, AdminPageToolbar } from "@/components/admin/admin-page";
-import { AdminPagination } from "@/components/admin/admin-pagination";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { PaginationBar } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchField } from "@/components/ui/search-field";
 import { Select } from "@/components/ui/select";
@@ -225,13 +225,24 @@ export function AdminCommentsPage({
           comments={comments}
           fallbackFocus={() => headingRef.current}
         />
-        <AdminPagination
-          currentPage={page}
+        <PaginationBar
+          page={page}
           totalPages={totalPages}
-          totalItems={total}
-          itemsPerPage={ADMIN_COMMENTS_PAGE_SIZE}
-          currentPageItemCount={comments.length}
           onPageChange={(next) => onChange({ page: next })}
+          summary={m.admin_pagination_info({
+            startItem: Math.min(
+              (page - 1) * ADMIN_COMMENTS_PAGE_SIZE + 1,
+              total,
+            ),
+            endItem: Math.min(
+              (page - 1) * ADMIN_COMMENTS_PAGE_SIZE + comments.length,
+              total,
+            ),
+            totalItems: total,
+          })}
+          label={m.admin_pagination_label()}
+          previousLabel={m.admin_pagination_previous()}
+          nextLabel={m.admin_pagination_next()}
         />
       </>
     );

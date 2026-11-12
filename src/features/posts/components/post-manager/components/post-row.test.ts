@@ -94,7 +94,7 @@ it("labels a draft, a published post and a published post with changes", () => {
   cleanup();
 
   renderRow({ ...PUBLISHED, hasUnpublishedChanges: true });
-  expect(state()).toBe(m.admin_posts_status_changed());
+  expect(state()).toBe(m.admin_posts_status_published_changed());
 });
 
 it("opens the editor from the title, the one link of the row, with no slug", () => {
