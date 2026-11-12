@@ -78,7 +78,6 @@ function renderShell() {
       QueryClientProvider,
       { client: new QueryClient() },
       createElement(AdminShell, {
-        sheet: false,
         topBar: (open: () => void) =>
           createElement(
             "button",
@@ -235,7 +234,6 @@ describe("The phone drawer", () => {
         QueryClientProvider,
         { client: new QueryClient() },
         createElement(AdminShell, {
-          sheet: false,
           topBar: () => null,
           children: null,
         }),

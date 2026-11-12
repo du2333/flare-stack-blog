@@ -37,7 +37,6 @@ import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { useCreatePost } from "@/features/posts/components/post-manager/hooks/use-create-post";
 import { useMediaQuery } from "@/hooks/use-motion";
 import { getAuthClient } from "@/lib/auth/auth-client";
-import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { adminCommands } from "./admin-commands";
 import { useAdminCounts } from "./admin-counts";
@@ -53,16 +52,13 @@ const SCHEMES = [
 /**
  * The Admin's shell: the navigation and the page on one canvas. Below
  * 1024px the navigation is a drawer (a modal `Sheet`) opened from the top
- * bar. Ctrl/⌘ K opens the command palette anywhere. The overview and the
- * Posts list lay their cards straight on the canvas; a page not redesigned
- * yet sits on a white sheet (`sheet`), the surface it was drawn for.
+ * bar. Ctrl/⌘ K opens the command palette anywhere. Every page lies on the
+ * canvas and draws its own surfaces (the page frame, the cards).
  */
 export function AdminShell({
-  sheet,
   topBar,
   children,
 }: {
-  sheet: boolean;
   topBar: (openNavigation: () => void) => ReactNode;
   children: ReactNode;
 }) {
@@ -112,7 +108,7 @@ export function AdminShell({
           creating={create.isPending}
         />
       </Sheet>
-      <main className={cn("admin-main", sheet && "is-sheet")}>
+      <main className="admin-main">
         {topBar(() => setNavOpen(true))}
         <div className="admin-stage">{children}</div>
       </main>

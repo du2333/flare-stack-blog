@@ -75,9 +75,6 @@ function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
   return "";
 }
 
-/** Pages drawn for the canvas; the others sit on the shell's white sheet. */
-const REDESIGNED_PAGES = new Set(["/admin", "/admin/posts"]);
-
 function AdminLayout() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const editorWorkspace = isPostEditorPath(pathname);
@@ -97,10 +94,7 @@ function AdminLayout() {
 
   return (
     <AdminChromeProvider>
-      <AdminShell
-        sheet={!REDESIGNED_PAGES.has(pathname.replace(/\/+$/, ""))}
-        topBar={(open) => <MobileTopBar onOpenSidebar={open} />}
-      >
+      <AdminShell topBar={(open) => <MobileTopBar onOpenSidebar={open} />}>
         <AdminMain />
       </AdminShell>
       <Toaster />
