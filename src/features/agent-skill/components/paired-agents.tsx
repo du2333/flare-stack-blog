@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-heading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isPairedApiKey } from "@/features/agent-pairing/agent-pairing.schema";
 import {
   type ApiKeyListItem,
@@ -51,10 +52,22 @@ export function PairedAgents() {
           }
         />
       ) : isLoading ? (
-        <EmptyState
-          size="compact"
-          description={m.settings_api_keys_loading()}
-        />
+        <div role="status" aria-label={m.settings_api_keys_loading()}>
+          {Array.from({ length: 2 }, (_, index) => (
+            <div
+              key={index}
+              className="admin-list-row key-row key-grid agent-skill-grid"
+              aria-hidden
+            >
+              <div className="key-name">
+                <Skeleton className="h-4 w-1/3 rounded" />
+              </div>
+              <Skeleton className="key-cell h-3 w-24 rounded" />
+              <Skeleton className="key-cell h-3 w-24 rounded" />
+              <span />
+            </div>
+          ))}
+        </div>
       ) : agents.length === 0 ? (
         <EmptyState size="compact" description={m.agent_skill_agents_empty()} />
       ) : (
