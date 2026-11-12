@@ -444,11 +444,15 @@ describe("the content column", () => {
     expect(column.parentElement).toBe(region("body"));
   });
 
-  it("has the floating actions in the body, outside the column", async () => {
+  it("has the floating actions in a box of its own in the body, outside the column and the rail", async () => {
     await renderShell({ pageKind: "inner" });
     const floating = screen.getByRole("button", { name: "Floating" });
+    const box = floating.parentElement!;
 
-    expect(floating.parentElement).toBe(region("body"));
+    expect(box.className).toBe("sidebar-floating");
+    expect(box.children).toHaveLength(1);
+    expect(box.parentElement).toBe(region("body"));
+    expect(rail().contains(box)).toBe(false);
   });
 });
 
@@ -886,14 +890,147 @@ describe("the stylesheet", () => {
     ).toContain("height: var(--sidebar-topbar-h)");
   });
 
-  it("floats back to top in the gutter right of the frame, and on screen where there is none", () => {
-    const root = rootProperties(shellCss);
-
-    expect(root["--sidebar-frame"]).toBe("81rem");
-    expect(root["--shell-floating-actions-left"]).toBe(
-      "min(calc(50% + var(--sidebar-frame) / 2 + 0.25rem), calc(100% - 4.75rem))",
+  describe("back to top", () => {
+    /** From 1024px to where the window has room right of the frame. */
+    const IN_THE_RAIL = "(64rem <= width < 89.5rem)";
+    const inTheRail = mediaBlocks(shellCss, IN_THE_RAIL).join("\n");
+    /** What the root has at every width: without that query's blocks. */
+    const elsewhere = mediaBlocks(shellCss, IN_THE_RAIL).reduce(
+      (css, block) => css.replace(block, ""),
+      shellCss,
     );
-    expect(root["--shell-floating-actions-position"]).toBeUndefined();
+    const rem = (value: string) => {
+      expect(value).toMatch(/^[\d.]+rem$/);
+      return Number.parseFloat(value) * 16;
+    };
+
+    it("floats in the gutter right of the frame where the window has one, in the window's own corner below 1024px", () => {
+      const root = rootProperties(elsewhere);
+
+      expect(root["--sidebar-frame"]).toBe("81rem");
+      expect(root["--shell-floating-actions-left"]).toBe(
+        "min(calc(50% + var(--sidebar-frame) / 2 + 0.25rem), calc(100% - 4.75rem))",
+      );
+      expect(root["--shell-floating-actions-position"]).toBeUndefined();
+      expect(root["--shell-floating-actions-size"]).toBeUndefined();
+      expect(
+        declarations(blockAfter(elsewhere, ".sidebar-floating {")),
+      ).toEqual(["display: contents"]);
+    });
+
+    // The window has that gutter where back to top, 3.75rem wide and 1rem
+    // from the edge, stands 0.5rem clear of the column, which ends 1rem
+    // inside the frame.
+    it("has room right of the frame from 89.5rem", () => {
+      const from = 89.5 * 16;
+      const frame = rem(rootProperties(elsewhere)["--sidebar-frame"]!);
+      const columnRight = from / 2 + frame / 2 - 16;
+
+      expect(from - 4.75 * 16 - columnRight).toBeGreaterThanOrEqual(8);
+      expect(
+        from - 1 - 4.75 * 16 - (from - 1) / 2 - frame / 2 + 16,
+      ).toBeLessThan(8);
+    });
+
+    it("rests in the foot of the rail between the two, as large as a social link", () => {
+      const root = rootProperties(inTheRail);
+      const box = declarations(blockAfter(inTheRail, ".sidebar-floating {"));
+      const railCssInTheRail = mediaBlocks(railCss, IN_THE_RAIL).join("\n");
+      const socials = declarations(
+        blockAfter(railCssInTheRail, ".sidebar-socials:empty {"),
+      );
+      const link = declarations(blockAfter(railCss, ".sidebar-socials a {"));
+
+      expect(root["--shell-floating-actions-position"]).toBe("static");
+      expect(root["--shell-floating-actions-size"]).toBe(
+        link
+          .find((entry) => entry.startsWith("width:"))!
+          .slice("width: ".length),
+      );
+      expect(box).toEqual(
+        expect.arrayContaining(["position: fixed", "z-index: 40"]),
+      );
+      // Flush with the end of the row of social links: the frame's edge and
+      // padding, the rail, less the padding of its foot and of the row.
+      expect(box).toContain(
+        "left: calc(max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) - 0.5rem - var(--shell-floating-actions-size))",
+      );
+      // Level with those links: over the foot's padding, the tools, the gap
+      // and the rule.
+      expect(box).toContain(
+        "bottom: calc(1rem + 2.75rem + 0.5rem + 0.5rem + 1px)",
+      );
+      const foot = declarations(
+        blockAfter(
+          mediaBlocks(railCss, "(width >= 64rem)")[0]!,
+          ".sidebar-rail-foot {",
+        ),
+      );
+      expect(foot).toEqual(
+        expect.arrayContaining([
+          "gap: 0.5rem",
+          "padding: 0.25rem 0.25rem 1rem",
+        ]),
+      );
+      expect(declarations(blockAfter(railCss, ".sidebar-tool {"))).toContain(
+        "height: 2.75rem",
+      );
+      expect(declarations(blockAfter(railCss, ".sidebar-socials {"))).toEqual(
+        expect.arrayContaining([
+          "padding: 0 0.25rem 0.5rem",
+          "border-bottom: 1px solid var(--sidebar-hairline)",
+        ]),
+      );
+      // The row keeps its end free for it, and is there without a link.
+      expect(socials).toEqual(
+        expect.arrayContaining([
+          "display: flex",
+          "padding-right: calc(var(--shell-floating-actions-size) + 0.75rem)",
+        ]),
+      );
+    });
+  });
+
+  // The bar of a Theme preview floats centred over the foot of the window,
+  // where the foot of the rail is until the window is some 1100px wide.
+  it("says where its content column stands in the window from 1024px, so nothing centred over the foot of the window lies on the rail", () => {
+    const fromLg = rootProperties(
+      mediaBlocks(shellCss, "(width >= 64rem)").join("\n"),
+    );
+    const below = rootProperties(
+      mediaBlocks(shellCss, "(width >= 64rem)").reduce(
+        (css, block) => css.replace(block, ""),
+        shellCss,
+      ),
+    );
+    const frame = declarations(
+      blockAfter(
+        mediaBlocks(shellCss, "(width >= 64rem)").find((block) =>
+          block.includes(".sidebar-frame {"),
+        )!,
+        ".sidebar-frame {",
+      ),
+    );
+
+    // The frame's edge and padding, the rail, and the gap after it.
+    expect(fromLg["--shell-content-inset-left"]).toBe(
+      "calc(max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) + 1.75rem)",
+    );
+    expect(fromLg["--shell-content-inset-right"]).toBe(
+      "calc(max(0px, 50% - var(--sidebar-frame) / 2) + 1rem)",
+    );
+    expect(frame).toContain("gap: 1.75rem");
+    expect(
+      declarations(
+        blockAfter(
+          mediaBlocks(shellCss, "(width >= 48rem)").join("\n"),
+          ".sidebar-frame {",
+        ),
+      ),
+    ).toContain("padding-inline: 1rem");
+    // Below 1024px there is no rail: the whole window.
+    expect(below["--shell-content-inset-left"]).toBeUndefined();
+    expect(below["--shell-content-inset-right"]).toBeUndefined();
   });
 
   it("uses no !important", () => {

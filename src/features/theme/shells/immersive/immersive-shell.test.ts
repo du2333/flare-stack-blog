@@ -74,6 +74,7 @@ async function renderShell({
 }) {
   const props: ThemeShellProps = {
     pageKind,
+    pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
     navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
     sidebarCards: cards,
@@ -1225,41 +1226,34 @@ describe("a Post's page", () => {
     },
   );
 
-  // The page that is left stays on screen while it fades out (PageFade),
-  // after the address has changed. The column changes with the page, as
-  // the shared hook has it (hooks/use-reading-column.test.ts covers the
-  // rest); here, that the shell takes it from that hook and from its `main`.
+  // During a navigation the address names the next page while `main` still
+  // holds the one that is left, for as long as the next takes to load. The
+  // column is that of the page `main` holds (the host says which:
+  // components/public-shell.test.ts).
   describe("going from one page to another", () => {
+    /** The address names a page of this kind; `main` still holds the last one. */
     let goTo: (pageKind: PageKind) => void;
-    let setLeaving: (leaving: boolean) => void;
+    /** The page the address names is rendered in `main`. */
+    let arrive: () => void;
 
-    /** The shell on a page it can leave for another kind of page. */
-    async function renderShellOn(
-      pageKind: PageKind,
-      /** The page in its transition, which says when it is leaving. */
-      page: (leaving: boolean) => ReturnType<typeof createElement> = () =>
-        createElement("p", null, "Page content"),
-    ) {
+    async function renderShellOn(pageKind: PageKind) {
       const root = createRootRoute({
         beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
         loader: () => ({ currentYear: 2026 }),
         component: () => {
-          const [kind, setKind] = useState(pageKind);
-          const [leaving, setLeavingState] = useState(false);
-          setLeaving = setLeavingState;
-          goTo = (next) => {
-            act(() => {
-              setKind(next);
-            });
-          };
+          const [named, setNamed] = useState(pageKind);
+          const [onScreen, setOnScreen] = useState(pageKind);
+          goTo = (next) => act(() => setNamed(next));
+          arrive = () => act(() => setOnScreen(named));
           return createElement(theme.shell.Shell, {
-            pageKind: kind,
+            pageKind: named,
+            pageOnScreen: onScreen,
             options: resolveThemeOptions(theme, undefined),
             navOptions: [],
-            sidebarCards: cardsFor(kind),
+            sidebarCards: cardsFor(named),
             isSessionLoading: false,
             logout: async () => {},
-            children: page(leaving),
+            children: createElement("p", null, "Page content"),
             footer: null,
             floatingActions: null,
           });
@@ -1281,40 +1275,41 @@ describe("a Post's page", () => {
         vi.advanceTimersByTime(ms);
       });
     }
-    /** By when the page that is left is at a few hundredths of its opacity. */
-    const ALL_BUT_GONE_MS = PAGE_FADE_MS - 20;
 
-    it("keeps the wide column while the page that is left fades out, and has the reading column when the Post shows", async () => {
+    it("keeps the wide column for as long as the page that is left is on screen, and has the reading column in the commit the Post comes in", async () => {
       await renderShellOn("inner");
 
       goTo("post");
       expect(shell().dataset.column).toBeUndefined();
-      after(ALL_BUT_GONE_MS);
+      // However long the Post takes to load: no timer of the shell's own.
+      after(10 * PAGE_FADE_MS);
       expect(shell().dataset.column).toBeUndefined();
 
-      after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+      arrive();
       expect(shell().dataset.column).toBe("reading");
     });
 
-    // The transition around the page drops the class the page fades out
-    // under in the commit that swaps the pages; a timer could be a frame
-    // off either way.
-    it("changes the column in the commit that lets the next page in, without waiting for its own timer", async () => {
-      await renderShellOn("inner", (leaving) =>
-        createElement(
-          "div",
-          { className: leaving ? "page-fade is-leaving" : "page-fade" },
-          "Page content",
-        ),
-      );
+    it("keeps the reading column for as long as the Post that is left is on screen, and has the wide one in the commit the next page comes in", async () => {
+      await renderShellOn("post");
+
+      goTo("inner");
+      after(10 * PAGE_FADE_MS);
+      expect(shell().dataset.column).toBe("reading");
+
+      arrive();
+      expect(shell().dataset.column).toBeUndefined();
+    });
+
+    // The banner answers the click: it is on its way to the height of the
+    // page the address names before that page has come in.
+    it("resizes the banner with the address, before the next page is on screen", async () => {
+      await renderShellOn("home");
+      expect(shell().dataset.home).toBe("true");
 
       goTo("post");
-      await act(async () => setLeaving(true));
-      expect(shell().dataset.column).toBeUndefined();
 
-      after(PAGE_FADE_MS / 2);
-      await act(async () => setLeaving(false));
-      expect(shell().dataset.column).toBe("reading");
+      expect(shell().dataset.home).toBe("false");
+      expect(shell().dataset.column).toBeUndefined();
     });
   });
 

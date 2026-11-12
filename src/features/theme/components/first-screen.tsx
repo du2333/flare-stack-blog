@@ -6,10 +6,12 @@ export type FirstScreenHeight = () => number;
 const FirstScreenContext = createContext<FirstScreenHeight | null>(null);
 
 /**
- * Every shell provides this around its tree. Back to top and the table of
- * contents appear once the page has scrolled past it, and the classic navbar
- * starts hiding there. Keep the function stable while the height rule stays
- * the same; readers re-subscribe when it changes.
+ * Every shell provides this around its tree. The table of contents of a
+ * Post appears once the page has scrolled past it, and the classic navbar
+ * starts hiding there. A page that has no first screen says 0: the table of
+ * contents is then there from the top of the page. Keep the function stable
+ * while the height rule stays the same; readers re-subscribe when it
+ * changes.
  */
 export function FirstScreenProvider({
   height,

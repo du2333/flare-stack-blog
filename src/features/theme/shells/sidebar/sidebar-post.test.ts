@@ -570,18 +570,16 @@ describe("the option 「文章页目录位置」 set beside the article", () => 
     }
   });
 
-  // The list waits for the first screen to pass; a Post has none, and the
-  // list is there from the top of the page as it is in the rail.
-  it("shows the list from the top of the page", async () => {
+  // The list waits for the first screen to pass; a Post has none, so the
+  // list is there from the top of the page as it is in the rail
+  // (table-of-contents.test.ts).
+  it("shows the list from the top of the page: a Post has no first screen", async () => {
     await renderShell({ pageKind: "post", stored });
-    expect(onScreen.firstScreenHeight()).toBe(-1);
-    cleanup();
-
-    await renderShell({ pageKind: "post" });
+    expect(banner()).toBeNull();
     expect(onScreen.firstScreenHeight()).toBe(0);
     cleanup();
 
-    await renderShell({ pageKind: "focused", stored });
+    await renderShell({ pageKind: "post" });
     expect(onScreen.firstScreenHeight()).toBe(0);
   });
 

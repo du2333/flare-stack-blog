@@ -1,13 +1,27 @@
 /*
  * Over the bottom of the window, above the page and its floating actions but
  * under the navbar's menus and sheets; it takes no room in the layout.
+ *
+ * It is centred over the content, which is the window unless the Theme
+ * Shell keeps a part of the window's width for a frame of its own, such as
+ * a rail (--shell-content-inset-left and -right, theme-shell.ts): then it
+ * is centred in the rest and no wider than that, so it never lies on the
+ * frame.
  */
 .theme-preview-bar {
+  --preview-inset-left: var(--shell-content-inset-left, 0px);
+  --preview-inset-right: var(--shell-content-inset-right, 0px);
   position: fixed;
-  left: 50%;
+  left: calc(
+    var(--preview-inset-left) +
+      (100% - var(--preview-inset-left) - var(--preview-inset-right)) / 2
+  );
   bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 50;
-  width: min(560px, calc(100vw - 32px));
+  width: min(
+    560px,
+    calc(100vw - var(--preview-inset-left) - var(--preview-inset-right) - 32px)
+  );
   transform: translateX(-50%);
   border-radius: 12px;
   background: var(--theme-raised);

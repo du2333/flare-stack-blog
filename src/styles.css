@@ -243,11 +243,33 @@
       var(--theme-rule, var(--fuwari-meta-divider));
   }
   /* A meta row in the inline form of the Theme Recipe: plain text with a dot
-     before every item but the first. */
+     between the items. The dot hangs before its item and takes no room there:
+     its room is the invisible one that ends the item before, so two items on
+     a line stand exactly as far apart as a dot in the flow would set them.
+     An item that starts a line therefore starts flush with the row, and its
+     dot hangs outside the row, which cuts it off: the row reaches 0.4375rem
+     past its items on either side, enough for the focus ring of a link at
+     its end and short of the dot, which ends 0.5rem out. */
+  .fuwari-meta-inline {
+    margin-inline: -0.4375rem;
+    padding-inline: 0.4375rem;
+    overflow-x: clip;
+  }
   .fuwari-meta-inline > :not(:first-child)::before {
     content: "·";
-    margin-right: 0.5rem;
+    display: inline-flex;
+    flex: none;
+    justify-content: flex-end;
+    width: 0;
+    margin-inline: -0.5rem 0.5rem;
+    white-space: pre;
     color: var(--theme-rule, var(--fuwari-meta-divider));
+  }
+  .fuwari-meta-inline > :not(:last-child)::after {
+    content: "·";
+    flex: none;
+    margin-left: 0.5rem;
+    visibility: hidden;
   }
   /* The pinned or popular label above a post in a list. */
   .fuwari-kicker {

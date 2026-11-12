@@ -71,8 +71,9 @@
   --theme-kicker-tracking: 0.04em;
   --theme-widget-title-size: 1rem;
 
-  /* Back to top from lg: in the gutter right of the frame, and 4.75rem from
-     the edge of the window where that gutter is too narrow for it. */
+  /* Back to top from lg, where the window has room right of the frame
+     (89.5rem, below): in that gutter, and 4.75rem from the edge of the
+     window where the gutter is no wider. */
   --shell-floating-actions-left: min(
     calc(50% + var(--sidebar-frame) / 2 + 0.25rem),
     calc(100% - 4.75rem)
@@ -95,6 +96,32 @@
   :root[data-theme="sidebar"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;
+  }
+}
+/* Where the rail stands, the content is the column right of it: after the
+   rail and the room that follows it, and 1rem inside the frame. What floats
+   centred over the foot of the window, such as the bar of a Theme preview,
+   is centred over that column, clear of the foot of the rail. */
+@media (width >= 64rem) {
+  :root[data-theme="sidebar"] {
+    --shell-content-inset-left: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) +
+        1.75rem
+    );
+    --shell-content-inset-right: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem
+    );
+  }
+}
+/* From 1024px to where the window has room right of the frame, the column
+   reaches the edge of the window and back to top would lie on it. There it
+   rests in the foot of the rail instead, in a box of the shell's (below),
+   as large as a social link and rounded as a tool of the rail is. */
+@media (64rem <= width < 89.5rem) {
+  :root[data-theme="sidebar"] {
+    --shell-floating-actions-position: static;
+    --shell-floating-actions-size: 2.5rem;
+    --theme-floating-radius: 0.75rem;
   }
 }
 
@@ -225,6 +252,33 @@
         var(--sidebar-toc-lane)
     );
     padding-right: calc(var(--sidebar-toc-gap) + var(--sidebar-toc-lane));
+  }
+}
+
+/* Back to top and the page's actions. Below 1024px, and where the window
+   has room right of the frame, they float where the shared styles and the
+   root put them, and this box is none. Between the two it holds them
+   (--shell-floating-actions-position, above) in the foot of the rail, which
+   keeps the end of its row of social links free for it (rail.css): level
+   with those links and flush with their end, in every window, however far
+   the page has scrolled. */
+.sidebar-floating {
+  display: contents;
+}
+@media (64rem <= width < 89.5rem) {
+  .sidebar-floating {
+    position: fixed;
+    /* Over the foot's padding, the row of tools, the gap above it and the
+       rule under the social links (rail.css). */
+    bottom: calc(1rem + 2.75rem + 0.5rem + 0.5rem + 1px);
+    /* The frame's edge and padding, then the rail less the padding of its
+       foot and of the row. */
+    left: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) -
+        0.5rem - var(--shell-floating-actions-size)
+    );
+    z-index: 40;
+    display: block;
   }
 }
 

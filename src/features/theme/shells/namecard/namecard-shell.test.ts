@@ -15,6 +15,7 @@ import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
+import { useFirstScreenHeight } from "../../components/first-screen";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
 import type { PageKind, SidebarCard, ThemeShellProps } from "../../theme-shell";
 import { resolveThemeOptions, selectTheme } from "../../themes";
@@ -54,6 +55,7 @@ async function renderShell({
 }) {
   const props: ThemeShellProps = {
     pageKind,
+    pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
     navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
     sidebarCards: cards,
@@ -123,6 +125,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -275,14 +278,16 @@ describe("the sidebar cards", () => {
     ]);
   });
 
-  it("all follow the article on a Post's page, where the right column is the table of contents', with no box to keep in view", async () => {
+  // The box of the ways into the Posts is in the document there too: the
+  // stylesheet makes it a box only where the group has the right column.
+  it("all follow the article on a Post's page, where the right column is the table of contents'", async () => {
     await renderShell({ pageKind: "post" });
 
     expect(cardGroups()).toEqual([
       {
         place: "after",
         cards: ["Card profile", "Card categories", "Card tags"],
-        pinned: [],
+        pinned: ["Card categories", "Card tags"],
       },
     ]);
   });
@@ -339,41 +344,41 @@ describe("the sidebar cards", () => {
   );
 });
 
-// The page that is left stays on screen while it fades out (PageFade),
-// after the address has changed. The cards change places with the page, as
-// the shared hook has it (hooks/use-reading-column.test.ts covers the
-// rest); here, that the shell takes it from that hook and from its `main`.
+// During a navigation the address names the next page while `main` still
+// holds the one that is left, for as long as the next takes to load. The
+// body is laid out for the page `main` holds (the host says which:
+// components/public-shell.test.ts).
 describe("going from one page to another", () => {
+  /** The address names a page of this kind; `main` still holds the last one. */
   let goTo: (pageKind: PageKind) => void;
-  let setLeaving: (leaving: boolean) => void;
+  /** The page the address names is rendered in `main`. */
+  let arrive: () => void;
+  /** What the page in `main` is told. */
+  const onScreen = { firstScreenHeight: (): number => 0 };
 
-  /** The shell on a page it can leave for another kind of page. */
-  async function renderShellOn(
-    pageKind: PageKind,
-    /** The page in its transition, which says when it is leaving. */
-    page: (leaving: boolean) => ReturnType<typeof createElement> = () =>
-      createElement("p", null, "Page content"),
-  ) {
+  function PageContent() {
+    onScreen.firstScreenHeight = useFirstScreenHeight();
+    return createElement("p", null, "Page content");
+  }
+
+  async function renderShellOn(pageKind: PageKind) {
     const root = createRootRoute({
       beforeLoad: () => ({ siteConfig: resolveSiteConfig({}) }),
       loader: () => ({ currentYear: 2026 }),
       component: () => {
-        const [kind, setKind] = useState(pageKind);
-        const [leaving, setLeavingState] = useState(false);
-        setLeaving = setLeavingState;
-        goTo = (next) => {
-          act(() => {
-            setKind(next);
-          });
-        };
+        const [named, setNamed] = useState(pageKind);
+        const [onScreen, setOnScreen] = useState(pageKind);
+        goTo = (next) => act(() => setNamed(next));
+        arrive = () => act(() => setOnScreen(named));
         return createElement(theme.shell.Shell, {
-          pageKind: kind,
+          pageKind: named,
+          pageOnScreen: onScreen,
           options: resolveThemeOptions(theme, undefined),
           navOptions: [],
-          sidebarCards: cardsFor(kind),
+          sidebarCards: cardsFor(named),
           isSessionLoading: false,
           logout: async () => {},
-          children: page(leaving),
+          children: createElement(PageContent),
           footer: null,
           floatingActions: null,
         });
@@ -395,67 +400,33 @@ describe("going from one page to another", () => {
       vi.advanceTimersByTime(ms);
     });
   }
-  /** By when the page that is left is at a few hundredths of its opacity. */
-  const ALL_BUT_GONE_MS = PAGE_FADE_MS - 20;
   const places = () => cardGroups().map((group) => group.place);
 
-  it("keeps the cards beside the list while it fades out, and has them after the article when the Post shows", async () => {
+  it("keeps the cards beside the list for as long as it is on screen, and has them after the article in the commit the Post comes in", async () => {
     await renderShellOn("inner");
 
     goTo("post");
     expect(places()).toEqual(["beside"]);
-    after(ALL_BUT_GONE_MS);
+    // However long the Post takes to load: no timer of the shell's own.
+    after(10 * PAGE_FADE_MS);
     expect(places()).toEqual(["beside"]);
 
-    after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+    arrive();
     expect(places()).toEqual(["after"]);
   });
 
-  it("keeps the right column free while the Post fades out, and has the cards there when the list shows", async () => {
+  it("keeps the right column free for as long as the Post is on screen, and has the cards there in the commit the list comes in", async () => {
     await renderShellOn("post");
 
     goTo("home");
-    expect(places()).toEqual(["after"]);
-    after(ALL_BUT_GONE_MS);
+    after(10 * PAGE_FADE_MS);
     expect(places()).toEqual(["after"]);
 
-    after(PAGE_FADE_MS - ALL_BUT_GONE_MS);
+    arrive();
     expect(places()).toEqual(["beside"]);
   });
 
-  // The transition around the page drops the class the page fades out
-  // under in the commit that swaps the pages; a timer could be a frame
-  // off either way.
-  it("moves the cards in the commit that lets the next page in, without waiting for its own timer", async () => {
-    await renderShellOn("inner", (leaving) =>
-      createElement(
-        "div",
-        { className: leaving ? "page-fade is-leaving" : "page-fade" },
-        "Page content",
-      ),
-    );
-
-    goTo("post");
-    await act(async () => setLeaving(true));
-    expect(places()).toEqual(["beside"]);
-
-    after(PAGE_FADE_MS / 2);
-    await act(async () => setLeaving(false));
-    expect(places()).toEqual(["after"]);
-  });
-
-  it("moves them at once for a reader who asked for less motion", async () => {
-    reducedMotion.matches = true;
-    await renderShellOn("inner");
-
-    goTo("post");
-    expect(places()).toEqual(["after"]);
-
-    goTo("inner");
-    expect(places()).toEqual(["beside"]);
-  });
-
-  it("keeps a focused page alone in its one column while it fades out before a Post", async () => {
+  it("keeps a focused page alone in its one column until the Post comes in", async () => {
     await renderShellOn("focused");
     expect(region("body").dataset.focused).toBe("true");
 
@@ -463,18 +434,18 @@ describe("going from one page to another", () => {
     expect(region("body").dataset.focused).toBe("true");
     expect(places()).toEqual([]);
 
-    after(PAGE_FADE_MS);
+    arrive();
     expect(region("body").dataset.focused).toBe("false");
     expect(places()).toEqual(["after"]);
   });
 
-  it("keeps the Post in its column while it fades out before a focused page", async () => {
+  it("keeps the Post in its column until the focused page comes in", async () => {
     await renderShellOn("post");
 
     goTo("focused");
     expect(region("body").dataset.focused).toBe("false");
 
-    after(PAGE_FADE_MS);
+    arrive();
     expect(region("body").dataset.focused).toBe("true");
   });
 
@@ -484,6 +455,26 @@ describe("going from one page to another", () => {
 
     goTo("post");
     expect(firstScreen().dataset.open).toBe("false");
+  });
+
+  // The table of contents of a Post waits for the first screen to pass
+  // (table-of-contents.tsx). Only the home page has one: on a Post's page
+  // the list stands in the right column from the top of the page.
+  it("has a first screen only while the home page is in main, so the table of contents of a Post shows from the top", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetTop", "get").mockReturnValue(60);
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(540);
+    await renderShellOn("home");
+    expect(onScreen.firstScreenHeight()).toBe(600);
+
+    goTo("post");
+    expect(onScreen.firstScreenHeight()).toBe(600);
+    arrive();
+    expect(onScreen.firstScreenHeight()).toBe(0);
+
+    goTo("home");
+    expect(onScreen.firstScreenHeight()).toBe(0);
+    arrive();
+    expect(onScreen.firstScreenHeight()).toBe(600);
   });
 });
 
@@ -639,6 +630,16 @@ describe("the stylesheet", () => {
     ...rootProperties(narrow),
   };
   const GUTTER_PX = px(properties["--namecard-gutter"]!, properties);
+  /** What the root has from 1024px: the spread's own values. */
+  const spreadProperties: Record<string, string> = {
+    ...properties,
+    ...rootProperties(under(css, SPREAD_FROM).join(" ")),
+  };
+  /** Back to top is as wide from lg (floating-actions.tsx, `lg:w-15`). */
+  const BACK_TO_TOP_PX = 60;
+  /** From where the window has room for back to top right of the page. */
+  const BESIDE_PAGE_FROM = "@media (min-width: 1024px) and (max-width: 1343px)";
+  const BESIDE_PAGE_FROM_PX = 1344;
 
   /** Where the columns, the side list and back to top stand in a window. */
   function across(width: number) {
@@ -648,13 +649,13 @@ describe("the stylesheet", () => {
     const aside = px(properties["--namecard-aside"]!, properties, {
       basis: between,
     });
-    const gap = px(properties["--namecard-col-gap"]!, properties, {
+    const gap = px(spreadProperties["--namecard-col-gap"]!, properties, {
       window: width,
     });
     const content = between - gap - aside;
     const listLeft =
       left +
-      px(properties["--shell-toc-left"]!, properties, {
+      px(properties["--shell-toc-left"]!, spreadProperties, {
         basis: content,
         window: width,
       });
@@ -669,11 +670,35 @@ describe("the stylesheet", () => {
       listRight:
         listLeft +
         px(properties["--shell-toc-width"]!, properties, { basis: width }),
-      backToTop: px(properties["--shell-floating-actions-left"]!, properties, {
-        basis: width,
-      }),
+      // Right of the page from 1344px; until then in the shell's box, which
+      // starts with the content and is pushed this far into the columns.
+      backToTop:
+        width >= BESIDE_PAGE_FROM_PX
+          ? px(properties["--shell-floating-actions-left"]!, properties, {
+              basis: width,
+            })
+          : left +
+            px(
+              declared(
+                declarations(
+                  blockAfter(
+                    blockAfter(css, BESIDE_PAGE_FROM),
+                    `${BODY} > .namecard-floating {`,
+                  ),
+                ),
+                "margin-left",
+              ).replace(
+                "var(--namecard-col-gap)",
+                spreadProperties["--namecard-col-gap"]!,
+              ),
+              properties,
+              { basis: between, window: width },
+            ),
     };
   }
+
+  /** The body of a page that has no table of contents (table-of-contents.tsx). */
+  const NO_CONTENTS = `${BODY}:not(:has([data-table-of-contents]))`;
 
   describe("the sidebar cards", () => {
     // The cards take their wide or narrow form from this container; nothing
@@ -706,9 +731,13 @@ describe("the stylesheet", () => {
     });
 
     it("keeps the ways into the Posts in view below the navbar from 1024px, in a box that scrolls when the window is too low for it", () => {
-      const PINNED =
-        '.namecard-cards[data-place="beside"] > .namecard-cards-pinned {';
+      const PINNED = `${NO_CONTENTS} > .namecard-cards[data-place="after"] > .namecard-cards-pinned {`;
       const box = declarations(blockAfter(spread, PINNED));
+      // In the right column: beside the content, and beside a Post that has
+      // no table of contents.
+      expect(spread).toContain(
+        `.namecard-cards[data-place="beside"] > .namecard-cards-pinned, ${PINNED}`,
+      );
       const navbar = px(properties["--namecard-nav-height"]!, properties);
       const top = px(declared(box, "top"), properties);
       const padding = px(declared(box, "padding").split(" ")[0]!, properties);
@@ -750,6 +779,7 @@ describe("the stylesheet", () => {
       ).toEqual([
         "@media (max-width: 719px)",
         SPREAD_FROM,
+        BESIDE_PAGE_FROM,
         "@media (prefers-reduced-motion: reduce)",
       ]);
       expect(px(SPREAD_FROM.match(/[\d.]+px/)![0], {})).toBe(SPREAD_FROM_PX);
@@ -783,6 +813,21 @@ describe("the stylesheet", () => {
       expect(
         declarations(blockAfter(spread, `${BODY} > .namecard-footer {`)),
       ).toEqual(["grid-column: 1 / -1"]);
+    });
+
+    // The right column of a Post is the table of contents'. A Post without
+    // headings has none, and the column would stand empty beside it.
+    it("keeps the cards of a Post without a table of contents in the right column", () => {
+      expect(
+        declarations(
+          blockAfter(
+            spread,
+            `${NO_CONTENTS} > .namecard-cards[data-place="after"] {`,
+          ),
+        ),
+      ).toEqual(["grid-area: 1 / 2", "margin-top: 0"]);
+      // Below 1024px they follow the article, as on every page.
+      expect(narrow).not.toContain("data-table-of-contents");
     });
 
     it("leaves a focused page its one column", () => {
@@ -876,7 +921,12 @@ describe("the stylesheet", () => {
       )!;
       expect(
         declarations(blockAfter(fromSpread, ':root[data-theme="namecard"] {')),
-      ).toEqual(["--shell-toc-side: block", "--shell-toc-compact: none"]);
+      ).toEqual(
+        expect.arrayContaining([
+          "--shell-toc-side: block",
+          "--shell-toc-compact: none",
+        ]),
+      );
       // Nowhere else: the list shows from 1024px and from no other width.
       expect(css.match(/--shell-toc-side:/g)).toHaveLength(2);
     });
@@ -890,7 +940,7 @@ describe("the stylesheet", () => {
     });
 
     it.each([SPREAD_FROM_PX, 1100, 1200, 1280, 1366, 1392, 1440, 1920, 2560])(
-      "starts the list where the right column does and keeps it in that column, clear of back to top, in a window %ipx wide",
+      "starts the list where the right column does and keeps it in that column in a window %ipx wide",
       (width) => {
         const {
           contentRight,
@@ -898,18 +948,98 @@ describe("the stylesheet", () => {
           asideRight,
           listLeft,
           listRight,
-          backToTop,
           gap,
         } = across(width);
 
         expect(listLeft).toBeCloseTo(asideLeft);
         expect(listLeft - contentRight).toBeCloseTo(gap);
         expect(listRight).toBeLessThanOrEqual(asideRight);
-        // Back to top is 3.75rem wide and stands on the end of the column
-        // in a window that has no gutter for it; the list ends 0.75rem
-        // short of it at least.
-        expect(backToTop - listRight).toBeGreaterThanOrEqual(12);
         expect(listRight - listLeft).toBeGreaterThanOrEqual(15 * 16);
+      },
+    );
+  });
+
+  describe("back to top", () => {
+    const box = (block: string, selector: string) =>
+      declarations(blockAfter(block, selector));
+
+    it("floats in the corner of the window below 1024px, where the shell's box is none", () => {
+      expect(box(narrow, ".namecard-floating {")).toEqual([
+        "display: contents",
+      ]);
+      expect(properties["--shell-floating-actions-position"]).toBeUndefined();
+    });
+
+    it("stands in the shell's box from 1024px, which floats right of the page", () => {
+      expect(spreadProperties["--shell-floating-actions-position"]).toBe(
+        "static",
+      );
+      const floating = box(
+        under(css, SPREAD_FROM).find((block) =>
+          block.includes(".namecard-floating {"),
+        )!,
+        ".namecard-floating {",
+      );
+      expect(floating).toEqual(
+        expect.arrayContaining([
+          "position: fixed",
+          "bottom: 10rem",
+          "left: var(--shell-floating-actions-left)",
+          "z-index: 40",
+        ]),
+      );
+    });
+
+    // The right column reaches the edge of a window that narrow: the cards,
+    // or the table of contents of a Post, would lie under it.
+    it("floats in the room between the two columns until the window has room right of the page, and rests where the columns end", () => {
+      const between = box(
+        blockAfter(css, BESIDE_PAGE_FROM),
+        `${BODY} > .namecard-floating {`,
+      );
+
+      expect(between).toEqual(
+        expect.arrayContaining([
+          "position: sticky",
+          "left: auto",
+          // The row of the columns, which ends where the footer begins.
+          "grid-area: 1 / 1 / 2 / -1",
+          "align-self: end",
+          "justify-self: start",
+          "height: 0",
+        ]),
+      );
+      // A focused page has one narrow column: it keeps the place right of
+      // the page.
+      expect(blockAfter(css, BESIDE_PAGE_FROM)).not.toContain(
+        '[data-focused="true"]',
+      );
+    });
+
+    it.each([SPREAD_FROM_PX, 1100, 1200, 1280, BESIDE_PAGE_FROM_PX - 1])(
+      "lies on neither column in a window %ipx wide",
+      (width) => {
+        const { contentRight, asideLeft, backToTop, gap } = across(width);
+
+        expect(gap).toBeGreaterThanOrEqual(BACK_TO_TOP_PX + 12);
+        expect(backToTop - contentRight).toBeGreaterThanOrEqual(6);
+        expect(asideLeft - (backToTop + BACK_TO_TOP_PX)).toBeGreaterThanOrEqual(
+          6,
+        );
+        // Centred in that room.
+        expect(backToTop - contentRight).toBeCloseTo(
+          asideLeft - (backToTop + BACK_TO_TOP_PX),
+        );
+      },
+    );
+
+    it.each([BESIDE_PAGE_FROM_PX, 1366, 1392, 1440, 1920, 2560])(
+      "stands right of the page, inside the window, in a window %ipx wide",
+      (width) => {
+        const { asideRight, backToTop } = across(width);
+
+        expect(backToTop - asideRight).toBeGreaterThanOrEqual(8);
+        expect(width - (backToTop + BACK_TO_TOP_PX)).toBeGreaterThanOrEqual(16);
       },
     );
   });

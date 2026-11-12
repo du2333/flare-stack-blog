@@ -1,7 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
-import { useReadingColumn } from "@/features/theme/hooks/use-reading-column";
 import type {
   SidebarCard,
   ThemeShell,
@@ -42,6 +41,7 @@ const CARD_STEP_MS = 50;
  */
 function ImmersiveShell({
   pageKind,
+  pageOnScreen,
   options,
   navOptions,
   sidebarCards,
@@ -53,10 +53,9 @@ function ImmersiveShell({
   floatingActions,
 }: ThemeShellProps) {
   // The banner and the cards of a Post's page are those of any other inner
-  // page; its column is the reading column.
+  // page; its column is the reading column, for as long as it is on screen.
   const isHomePage = pageKind === "home";
-  const mainRef = useRef<HTMLElement>(null);
-  const readingColumn = useReadingColumn(pageKind === "post", mainRef);
+  const readingColumn = pageOnScreen === "post";
   const cards = placeCards(
     pageKind,
     sidebarCards,
@@ -102,11 +101,7 @@ function ImmersiveShell({
         <div className="immersive-body" data-shell-region="body">
           <Cards place="before" cards={cards.before} />
 
-          <main
-            ref={mainRef}
-            className="immersive-main"
-            data-shell-region="main"
-          >
+          <main className="immersive-main" data-shell-region="main">
             {children}
           </main>
 

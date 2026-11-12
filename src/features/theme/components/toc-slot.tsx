@@ -42,10 +42,10 @@ export function TocSlotProvider({ children }: { children: ReactNode }) {
  * with the list. A Post without headings leaves it empty: the table of
  * contents marks the page with `[data-table-of-contents]` from the first
  * paint while it has one, so the stylesheet can show something else in the
- * slot's place with `:has()`. Keep the slot mounted while a Post's page
- * fades out (render it on every page, or switch it with `useReadingColumn`
- * rather than with `pageKind`); a list whose slot goes would stand at the
- * fixed place for that moment.
+ * slot's place with `:has()`. Keep the slot mounted for as long as a Post's
+ * page is in `main` (render it on every page, or switch it with
+ * `pageOnScreen` rather than with `pageKind`); a list whose slot goes would
+ * stand at the fixed place for that moment.
  */
 export function TocSlot({ className }: { className?: string }) {
   const register = useContext(TocSlotContext)?.[1];
