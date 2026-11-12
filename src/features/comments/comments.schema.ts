@@ -158,6 +158,76 @@ export const CommentsHandledCountSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
+/** The Admin's Comments page: what awaits a reply, or every Comment. */
+export const ADMIN_COMMENT_VIEWS = ["unreplied", "all"] as const;
+export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
+
+export const AdminCommentsInputSchema = z.strictObject({
+  view: z
+    .enum(ADMIN_COMMENT_VIEWS)
+    .default("all")
+    .describe(
+      "unreplied: the visitor Comments the dashboard counts as awaiting a reply; all: every published Comment.",
+    ),
+  search: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .describe("Matches the author's name or the body, ignoring case."),
+  postId: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe("Only the Comments on this Post."),
+  offset: PageOffsetSchema.optional(),
+  limit: pageLimitSchema(100).optional(),
+});
+
+/** A published Comment as the Admin's Comments page lists it. */
+export const AdminCommentSchema = z.object({
+  id: z.number().int().positive(),
+  content: z.string().nullable(),
+  postId: z.number().int().positive().nullable(),
+  momentId: z.number().int().positive().nullable(),
+  rootId: z.number().int().positive().nullable(),
+  replyToCommentId: z.number().int().positive().nullable(),
+  createdAt: coercedDate,
+  author: z.object({
+    id: z.string().nullable(),
+    name: z.string().nullable(),
+    image: z.string().nullable(),
+    isAdmin: z.boolean(),
+    muted: z.boolean(),
+  }),
+  /** Whom a reply answers; null for a root Comment. */
+  replyToName: z.string().nullable(),
+  /** The Post's public title (its draft title while it is not public), or the Moment's heading. */
+  pageTitle: z.string(),
+  /** The Comment's public link; null while its Post is not public. */
+  commentPath: z.string().nullable(),
+  /** A published Admin Comment answers it. */
+  answered: z.boolean(),
+  /** An Admin replied to it or marked it handled. */
+  handled: z.boolean(),
+  /** It is on the unreplied list the dashboard and the sidebar count. */
+  awaitingReply: z.boolean(),
+});
+
+export const AdminCommentsPageSchema = z.object({
+  items: z.array(AdminCommentSchema),
+  /** Every Comment the view, search and filter match, not only this page's. */
+  total: z.number().int().nonnegative(),
+});
+
+/** A Post that has published Comments, for the Comments page's filter. */
+export const AdminCommentedPostSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+  comments: z.number().int().positive(),
+});
+
 // Types
 // A Post's or a Moment's: the services take either.
 export type GetRootCommentsInput =
@@ -179,3 +249,7 @@ export type RootCommentWithReplyCount = z.infer<
   typeof RootCommentWithReplyCountSchema
 >;
 export type CommentWithUser = z.infer<typeof CommentWithUserSchema>;
+export type AdminCommentsInput = z.input<typeof AdminCommentsInputSchema>;
+export type AdminComment = z.infer<typeof AdminCommentSchema>;
+export type AdminCommentsPage = z.infer<typeof AdminCommentsPageSchema>;
+export type AdminCommentedPost = z.infer<typeof AdminCommentedPostSchema>;

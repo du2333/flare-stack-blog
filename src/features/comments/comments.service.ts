@@ -1,4 +1,6 @@
 import type {
+  AdminComment,
+  AdminCommentsInput,
   CreateCommentInput,
   DeleteCommentInput,
   GetMyCommentsInput,
@@ -17,6 +19,7 @@ import {
   publicCommentUrl,
   type CommentPage,
 } from "@/features/comments/comment-url";
+import * as AdminCommentRepo from "@/features/comments/data/admin-comments.data";
 import * as CommentRepo from "@/features/comments/data/comments.data";
 import * as DashboardRepo from "@/features/dashboard/data/dashboard.data";
 import { sendReplyNotification } from "@/features/comments/workflows/helpers";
@@ -418,6 +421,80 @@ export async function markAllUnrepliedCommentsHandled(context: DbContext) {
     new Date(),
   );
   return { count };
+}
+
+export const ADMIN_COMMENTS_PAGE_SIZE = 20;
+
+/**
+ * One page of the Admin's Comments page, newest first, with how many match:
+ * the Comments awaiting a reply (the dashboard's and the sidebar's count) or
+ * every published one, by author name or body, on one Post or all. Each says
+ * which page it is on, whom it answers and whether an Admin dealt with it;
+ * when it was handled stays private. A Post that does not exist is refused.
+ */
+export async function listAdminComments(
+  context: DbContext,
+  input: AdminCommentsInput,
+) {
+  const filter = {
+    view: input.view ?? "all",
+    search: input.search,
+    postId: input.postId,
+  };
+  if (
+    filter.postId !== undefined &&
+    !(await AdminCommentRepo.postExists(context.db, filter.postId))
+  ) {
+    return err({ reason: "POST_NOT_FOUND" });
+  }
+  const [rows, total] = await Promise.all([
+    AdminCommentRepo.listAdminComments(context.db, filter, {
+      offset: input.offset ?? 0,
+      limit: input.limit ?? ADMIN_COMMENTS_PAGE_SIZE,
+    }),
+    AdminCommentRepo.countAdminComments(context.db, filter),
+  ]);
+  const items = rows.map((row): AdminComment => {
+    const onMoment = row.momentId !== null;
+    const page: CommentPage | null = onMoment
+      ? { type: "moment", id: row.momentId! }
+      : row.postSlug
+        ? { type: "post", slug: row.postSlug }
+        : null;
+    return {
+      id: row.id,
+      content: row.content,
+      postId: row.postId,
+      momentId: row.momentId,
+      rootId: row.rootId,
+      replyToCommentId: row.replyToCommentId,
+      createdAt: row.createdAt,
+      author: {
+        id: row.userId,
+        name: row.userName,
+        image: row.userImage,
+        isAdmin: row.userRole === "admin",
+        muted: isMuted(row.userMutedAt),
+      },
+      replyToName: row.rootId === null ? null : (row.replyToName ?? null),
+      pageTitle: onMoment
+        ? momentHeading({
+            text: row.momentText ?? "",
+            hasVideo: row.momentHasVideo,
+          })
+        : (row.postTitle ?? ""),
+      commentPath: page ? publicCommentPath(page, row.id) : null,
+      answered: row.answered,
+      handled: row.handled,
+      awaitingReply: row.awaitingReply,
+    };
+  });
+  return ok({ items, total });
+}
+
+/** Posts that have published Comments, for the Comments page's filter. */
+export async function listCommentedPosts(context: DbContext) {
+  return AdminCommentRepo.listCommentedPosts(context.db);
 }
 
 /**

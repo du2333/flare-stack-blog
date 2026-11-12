@@ -1,0 +1,200 @@
+/*
+ * The Admin's Comments page. A row is a line of conversation, taller than a
+ * plain list row (--admin-row-max) because it carries the body: about 76px
+ * for two lines, with the frame's hairline and hover fill.
+ */
+/* One height for the search, the Post filter and 「全部标为已处理」, as on Posts. */
+.admin-comments-toolbar .admin-page-tools {
+  --admin-control-height: calc(40 * var(--admin-unit));
+  --fuwari-field-height: var(--admin-control-height);
+  --fuwari-button-height: var(--admin-control-height);
+  gap: calc(10 * var(--admin-unit));
+}
+.admin-comments-search {
+  width: calc(280 * var(--admin-unit));
+  min-width: calc(150 * var(--admin-unit));
+}
+.admin-comments-post {
+  width: calc(220 * var(--admin-unit));
+}
+.admin-comments-body {
+  outline: none;
+}
+
+.admin-comment-list {
+  margin-inline: -12px;
+}
+.admin-comment {
+  border-bottom: 1px solid var(--admin-rule);
+}
+.admin-comment-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  transition: background-color 150ms;
+}
+.admin-comment-row:hover,
+.admin-comment[data-replying] > .admin-comment-row {
+  background: var(--fuwari-btn-plain-bg-hover);
+}
+.admin-comment-row > .comment-avatar {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+  font-size: 13px;
+}
+.admin-comment-main {
+  flex: 1;
+  min-width: 0;
+}
+.admin-comment-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--fuwari-fg-50);
+}
+.admin-comment-author {
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  color: var(--fuwari-fg);
+}
+.admin-comment-time {
+  font-variant-numeric: tabular-nums;
+}
+.admin-comment-text {
+  margin-top: 2px;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--fuwari-fg);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.admin-comment-text[data-expanded] {
+  display: block;
+}
+.admin-comment-text > div {
+  display: inline;
+}
+.admin-comment-text a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.admin-comment-reply-to {
+  margin-right: 6px;
+  color: var(--fuwari-fg-50);
+}
+.admin-comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin-top: 2px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--fuwari-fg-50);
+}
+.admin-comment-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+a.admin-comment-source:hover {
+  color: var(--fuwari-fg);
+}
+a.admin-comment-source:hover .admin-comment-source-title {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.admin-comment-source-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-comment-source > svg {
+  flex-shrink: 0;
+}
+.admin-comment-expand {
+  --fuwari-button-height: 18px;
+  flex-shrink: 0;
+  padding-inline: 0;
+  font-size: var(--admin-text-meta);
+}
+.admin-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: -2px;
+}
+.admin-comment-editor {
+  padding: 0 12px 14px 56px;
+}
+
+/* Below 768px: each Comment stacks, actions in the menu, the editor full width. */
+@media (max-width: 767px) {
+  .admin-comments-toolbar {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+  .admin-comments-toolbar > .admin-page-tools {
+    width: 100%;
+    padding-bottom: 10px;
+  }
+  .admin-comments-search {
+    flex: 1;
+    width: auto;
+  }
+  .admin-comments-post {
+    width: 44%;
+  }
+  .admin-comment-list {
+    margin-inline: 0;
+  }
+  /* Avatar, byline and menu on top; the body and its page under them. */
+  .admin-comment-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 14px 0;
+  }
+  .admin-comment-main {
+    display: contents;
+  }
+  .admin-comment-byline {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .admin-comment-actions {
+    grid-column: 3;
+    grid-row: 1;
+    margin-top: 0;
+  }
+  .admin-comment-text,
+  .admin-comment-meta {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+  .admin-comment-row:hover,
+  .admin-comment[data-replying] > .admin-comment-row {
+    background: none;
+  }
+  .admin-comment-text {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  .admin-comment-editor {
+    padding: 0 0 14px;
+  }
+}

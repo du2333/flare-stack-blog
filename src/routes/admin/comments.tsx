@@ -1,22 +1,48 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AdminPlaceholderPage } from "@/components/admin/admin-placeholder-page";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useRef } from "react";
+import { z } from "zod";
+import { ADMIN_COMMENT_VIEWS } from "@/features/comments/comments.schema";
+import {
+  AdminCommentsPage,
+  type AdminCommentsSearch,
+} from "@/features/comments/components/admin/admin-comments-page";
 import { m } from "@/paraglide/messages";
 
-// A placeholder in the page frame; ticket #301 brings the comments page.
+const searchSchema = z.object({
+  view: z
+    .enum(ADMIN_COMMENT_VIEWS)
+    .optional()
+    .default("unreplied")
+    .catch("unreplied"),
+  page: z.number().int().positive().optional().default(1).catch(1),
+  search: z.string().max(200).optional().default("").catch(""),
+  post: z.number().int().positive().optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/admin/comments")({
+  ssr: false,
+  validateSearch: searchSchema,
   loader: () => ({ title: m.admin_comments_title() }),
   head: ({ loaderData }) => ({
     meta: [{ title: loaderData?.title }],
   }),
-  component: CommentsPage,
+  component: CommentsRoute,
 });
 
-function CommentsPage() {
-  return (
-    <AdminPlaceholderPage
-      title={m.admin_comments_title()}
-      message={m.admin_comments_placeholder()}
-      action={{ to: "/admin", label: m.admin_comments_placeholder_action() }}
-    />
+function CommentsRoute() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const current = useRef(search);
+  current.current = search;
+  const onChange = useCallback(
+    (updates: Partial<AdminCommentsSearch>, replace = false) => {
+      void navigate({
+        to: "/admin/comments",
+        search: { ...current.current, ...updates },
+        replace,
+      });
+    },
+    [navigate],
   );
+  return <AdminCommentsPage search={search} onChange={onChange} />;
 }
