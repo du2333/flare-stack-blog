@@ -15,6 +15,7 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Spinner } from "@/components/ui/spinner";
 import { useListScroll } from "./hooks/use-list-scroll";
 import {
+  useAppliedPostSort,
   useDeletePost,
   usePosts,
   useTogglePostPin,
@@ -39,7 +40,8 @@ interface PostManagerProps {
   tag?: number;
   onPageChange: (page: number) => void;
   onStatusChange: (status: StatusFilter) => void;
-  onSortByChange: (sortBy: SortField) => void;
+  /** `replace` corrects the address without a history entry. */
+  onSortByChange: (sortBy: SortField, replace?: boolean) => void;
   onSearchChange: (search: string) => void;
   onCategoryChange: (category?: CategoryFilter, replace?: boolean) => void;
   onTagChange: (tag?: number, replace?: boolean) => void;
@@ -119,6 +121,9 @@ export function PostManager({
     error,
     refetch,
   } = usePosts({ page, status, sortBy, search, category, tag });
+  // What the server applied, which differs from the address's sort while
+  // views cannot be sorted by.
+  const shownSort = useAppliedPostSort(sortBy, popularity, onSortByChange);
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   useListScroll(
@@ -235,7 +240,7 @@ export function PostManager({
           onCategoryChange={onCategoryChange}
           tag={tag}
           onTagChange={onTagChange}
-          sortBy={sortBy}
+          sortBy={shownSort}
           onSortByChange={onSortByChange}
           onClearTaxonomy={() => onTaxonomyFilter({})}
           popularity={popularity}
@@ -271,7 +276,7 @@ export function PostManager({
                 aria-label={m.admin_posts_title()}
               >
                 <PostListHeader
-                  sortBy={sortBy}
+                  sortBy={shownSort}
                   viewsSortable={viewsSortable}
                   onSortByChange={onSortByChange}
                 />
@@ -283,7 +288,7 @@ export function PostManager({
                       <PostRow
                         key={post.id}
                         post={post}
-                        sortBy={sortBy}
+                        sortBy={shownSort}
                         popularity={popularity}
                         onDelete={(target, trigger) => {
                           deleteTriggerRef.current = trigger;

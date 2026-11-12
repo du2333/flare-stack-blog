@@ -57,6 +57,10 @@
     /* The edge of a button, a badge, a callout, a card: a hairline, so no
        control rests on its fill alone. Only the Admin has it. */
     --admin-hairline: rgb(70 50 20 / 0.13);
+    /* The same line under its older name, which dashboard.css, the Settings
+       and Personalize stylesheets, agent-skill.css, api-key-settings.css,
+       media-library.css and notify-studio.tsx still read. Use --admin-hairline. */
+    --admin-rule: var(--admin-hairline);
 
     /* Radii a little tighter than the base layer: the Tailwind scale, the
        large card, the form fields and the buttons (theme-variables.css). */
@@ -91,6 +95,8 @@
     --admin-sidebar-row: 36px;
     --admin-sidebar-text: 14px;
     --admin-form-control-max: 480px;
+    /* A form body's rows and groups are at most this wide. */
+    --admin-form-max: 960px;
   }
 
   :root.dark:has(.admin-layout) {

@@ -19,7 +19,7 @@
   }
   .taxonomy-column + .taxonomy-column {
     padding-left: 40px;
-    border-left: 1px solid var(--admin-rule);
+    border-left: 1px solid var(--admin-hairline);
   }
 }
 .taxonomy-column {
@@ -69,7 +69,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-top: 1px solid var(--admin-rule);
+  border-top: 1px solid var(--admin-hairline);
 }
 .taxonomy-row {
   height: 48px;

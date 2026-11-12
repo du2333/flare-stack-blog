@@ -1,9 +1,11 @@
-/* Every Admin workspace scales with one unit and draws one hairline rule. */
+/*
+ * Every Admin workspace scales with one unit and draws one hairline rule:
+ * --admin-hairline (admin-variables.css).
+ */
 .admin-workspace {
   --admin-unit: clamp(1px, 0.07vw, 1.5px);
-  --admin-rule: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
   --fuwari-tabs-gap: calc(28 * var(--admin-unit));
-  --fuwari-tabs-rule: var(--admin-rule);
+  --fuwari-tabs-rule: var(--admin-hairline);
   --fuwari-tab-height: calc(46 * var(--admin-unit));
   --fuwari-tab-font-size: calc(14 * var(--admin-unit));
   --fuwari-segment-height: calc(36 * var(--admin-unit));
@@ -94,7 +96,11 @@
 .admin-frame-bleed {
   margin-inline: calc(-1 * var(--admin-frame-x));
 }
-/* Tabs on the left, the page's controls on the right, one rule under both. */
+/*
+ * Tabs on the left, the page's controls on the right. The rule is the bottom
+ * edge of the whole sticky head (.admin-page-head), at every width, so
+ * neither the tabs nor this row draw one.
+ */
 .admin-frame-toolbar {
   --fuwari-tabs-rule-width: 0;
   display: flex;
@@ -102,7 +108,6 @@
   justify-content: space-between;
   gap: calc(20 * var(--admin-unit));
   min-height: var(--fuwari-tab-height);
-  border-bottom: 1px solid var(--admin-rule);
 }
 .admin-frame-toolbar > .fuwari-tabs {
   align-self: stretch;
@@ -111,16 +116,14 @@
 /*
  * Below 1024px the tabs and the tools do not share a row: the tabs take the
  * full width and scroll sideways when they do not fit, and the tools go on a
- * line of their own under them, full width. The rule moves under the tabs.
+ * line of their own under them, full width.
  */
 @media (max-width: 1023px) {
   .admin-frame-toolbar {
     flex-wrap: wrap;
     gap: 0;
-    border-bottom: 0;
   }
   .admin-frame-toolbar > .fuwari-tabs {
-    --fuwari-tabs-rule-width: 1px;
     flex: 1 1 100%;
     max-width: 100%;
   }

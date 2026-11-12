@@ -7,6 +7,7 @@ import {
   isMediaGone,
   syncPostMedia,
 } from "@/features/posts/data/post-media.data";
+import { popularityState } from "@/features/dashboard/dashboard";
 import { withViewCounts } from "@/features/post-popularity/post-popularity";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
@@ -468,13 +469,7 @@ export async function createEmptyPost(context: DbContext) {
 async function readPopularity(context: DbContext) {
   const { status, snapshot } =
     await postPopularityService.getStatusWithSnapshot(context);
-  const state = !status.configured
-    ? ("unconfigured" as const)
-    : !snapshot
-      ? ("missing" as const)
-      : status.expired
-        ? ("expired" as const)
-        : ("ready" as const);
+  const state = popularityState(status, snapshot !== null);
   return { state, snapshot: state === "ready" ? snapshot : null };
 }
 
@@ -510,6 +505,7 @@ async function getPostsByViews(
     ids: pageIds,
     taxonomy: data.taxonomy,
     includeContent: data.includeContent,
+    includeCommentCount: true,
     limit: 50,
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
@@ -536,11 +532,15 @@ export async function listAdminPostsPage(
             ]),
           ),
         )
-      : getPosts(context, {
-          ...data,
-          // Without view counts the sort has nothing to go by.
-          sortBy: data.sortBy === "viewCount" ? undefined : data.sortBy,
-        }),
+      : getPosts(
+          context,
+          {
+            ...data,
+            // Without view counts the sort has nothing to go by.
+            sortBy: data.sortBy === "viewCount" ? undefined : data.sortBy,
+          },
+          { includeCommentCount: true },
+        ),
     PostRepo.getAdminPostStatusCounts(context.db, {
       publicOnly: data.publicOnly,
       search: data.search,
@@ -578,6 +578,8 @@ export async function listAdminPostsPage(
   const viewCounts = new Map(published.map((row) => [row.id, row.viewCount]));
   const items = rows.map(({ categoryId: _categoryId, ...row }) => ({
     ...row,
+    // Both readers above ask for it.
+    commentCount: row.commentCount ?? 0,
     viewCount: viewCounts.get(row.id),
     category: assignments.get(row.id)?.category ?? null,
     tags: (assignments.get(row.id)?.tags ?? []).map(({ id, name }) => ({
@@ -588,8 +590,13 @@ export async function listAdminPostsPage(
   return { items, total, statusCounts, popularity: popularity.state };
 }
 
-export async function getPosts(context: DbContext, data: GetPostsInput) {
+export async function getPosts(
+  context: DbContext,
+  data: GetPostsInput,
+  options: { includeCommentCount?: boolean } = {},
+) {
   return await PostRepo.getPosts(context.db, {
+    includeCommentCount: options.includeCommentCount,
     offset: data.offset ?? 0,
     limit: data.limit ?? 10,
     status: data.status,

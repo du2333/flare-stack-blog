@@ -12,10 +12,12 @@ import { SearchField } from "@/components/ui/search-field";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import type { AdminCommentView } from "@/features/comments/comments.schema";
+import {
+  ADMIN_COMMENTS_PAGE_SIZE,
+  type AdminCommentView,
+} from "@/features/comments/comments.schema";
 import { useAdminCommentActions } from "@/features/comments/hooks/use-admin-comment-actions";
 import {
-  ADMIN_COMMENTS_PER_PAGE,
   adminCommentsQuery,
   commentedPostsQuery,
   type AdminCommentsParams,
@@ -89,7 +91,7 @@ export function AdminCommentsPage({
   };
 
   const total = query.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / ADMIN_COMMENTS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(total / ADMIN_COMMENTS_PAGE_SIZE));
   const settled = query.isSuccess && !query.isPlaceholderData;
   useEffect(() => {
     if (settled && page > totalPages) onChange({ page: totalPages }, true);
@@ -227,7 +229,7 @@ export function AdminCommentsPage({
           currentPage={page}
           totalPages={totalPages}
           totalItems={total}
-          itemsPerPage={ADMIN_COMMENTS_PER_PAGE}
+          itemsPerPage={ADMIN_COMMENTS_PAGE_SIZE}
           currentPageItemCount={comments.length}
           onPageChange={(next) => onChange({ page: next })}
         />

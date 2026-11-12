@@ -131,6 +131,8 @@ export async function getPosts(
     sortDir?: SortDirection;
     sortBy?: SortField;
     includeContent?: boolean;
+    /** One sub-query per row: only the Admin list shows the count. */
+    includeCommentCount?: boolean;
   } = {},
 ) {
   if (options.ids?.length === 0) return [];
@@ -140,6 +142,7 @@ export async function getPosts(
     sortDir,
     sortBy,
     includeContent = false,
+    includeCommentCount = false,
     ...filters
   } = options;
   const whereClause = buildPostWhereClause(filters);
@@ -168,7 +171,9 @@ export async function getPosts(
         : PostsTable.categoryId,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
-      commentCount: commentCountSql().mapWith(Number),
+      ...(includeCommentCount
+        ? { commentCount: commentCountSql().mapWith(Number) }
+        : {}),
       // contentJson is the editable draft body. In public-snapshot scope every
       // other column is read from publicSnapshotJson, so returning the draft
       // here would mix an unpublished body into a published row.

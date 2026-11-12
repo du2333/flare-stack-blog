@@ -14,13 +14,14 @@
   --admin-frame-bottom: 0px;
 }
 
-/* Rows one and two stay on top, with a hairline under them. */
+/* Rows one and two stay on top, with one hairline under both at any width. */
 .admin-page-head {
   position: sticky;
   top: 0;
   z-index: 3;
   flex-shrink: 0;
   background: var(--fuwari-card-bg);
+  border-bottom: 1px solid var(--admin-hairline);
 }
 .admin-page-header {
   --fuwari-button-height: 36px;
@@ -36,7 +37,6 @@
 }
 .admin-page-header:not([data-toolbar]) {
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--admin-rule);
 }
 .admin-page-header[data-toolbar] {
   margin-bottom: 8px;
@@ -109,13 +109,36 @@
   flex-shrink: 0;
 }
 
+/*
+ * A link in a page body is ink with an underline. The links that say so by
+ * their colour (text-(--fuwari-primary), or .text-link) get the underline here
+ * instead of each page adding it; a button, a tab, a menu item, a row that is
+ * a link and a card are not text links and keep their own look.
+ */
+.admin-page-body
+  a:is(.text-\(--fuwari-primary\), .text-link):not(
+    .fuwari-button,
+    .fuwari-icon-button,
+    .fuwari-tab,
+    .admin-list-row,
+    .no-styling,
+    [role="tab"],
+    [role="button"],
+    [role="menuitem"],
+    [class*="card"]
+  ) {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 /* The form body: one setting per row. */
 .admin-form-row {
   display: grid;
   gap: 8px;
-  max-width: 960px;
+  max-width: var(--admin-form-max);
   padding: 16px 0;
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
 }
 .admin-form-row:first-child {
   padding-top: 0;
@@ -152,14 +175,14 @@
  * its own, the group's does that.
  */
 .admin-form-section {
-  max-width: 960px;
+  max-width: var(--admin-form-max);
   padding: 24px 0;
 }
 .admin-form-section:first-child {
   padding-top: 0;
 }
 .admin-form-section + .admin-form-section {
-  border-top: 1px solid var(--admin-rule);
+  border-top: 1px solid var(--admin-hairline);
 }
 .admin-form-section-head {
   display: flex;
@@ -230,7 +253,7 @@
   min-height: 44px;
   max-height: var(--admin-row-max);
   padding: 0 var(--admin-row-x);
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
   transition: background-color 150ms;

@@ -1,3 +1,4 @@
+export { appliedPostSort, useAppliedPostSort } from "./use-applied-sort";
 export {
   adminPostsListParams,
   invalidatePostQueries,

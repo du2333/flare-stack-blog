@@ -1,9 +1,9 @@
 import { keepPreviousData } from "@tanstack/react-query";
-import type { AdminCommentView } from "@/features/comments/comments.schema";
+import {
+  ADMIN_COMMENTS_PAGE_SIZE,
+  type AdminCommentView,
+} from "@/features/comments/comments.schema";
 import { orpc } from "@/lib/orpc";
-
-/** Comments per page on the Admin's Comments page. */
-export const ADMIN_COMMENTS_PER_PAGE = 20;
 
 export interface AdminCommentsParams {
   view: AdminCommentView;
@@ -12,7 +12,10 @@ export interface AdminCommentsParams {
   postId?: number;
 }
 
-/** One page of the Comments page, as its address names it. */
+/**
+ * One page of the Comments page, as its address names it. Only the 全部 view
+ * has a search and a Post filter, so the unreplied one sends neither.
+ */
 export function adminCommentsQuery({
   view,
   page,
@@ -22,10 +25,10 @@ export function adminCommentsQuery({
   return orpc.comments.admin.list.queryOptions({
     input: {
       view,
-      search: search.trim() || undefined,
-      postId,
-      offset: (page - 1) * ADMIN_COMMENTS_PER_PAGE,
-      limit: ADMIN_COMMENTS_PER_PAGE,
+      search: view === "all" ? search.trim() || undefined : undefined,
+      postId: view === "all" ? postId : undefined,
+      offset: (page - 1) * ADMIN_COMMENTS_PAGE_SIZE,
+      limit: ADMIN_COMMENTS_PAGE_SIZE,
     },
     placeholderData: keepPreviousData,
   });

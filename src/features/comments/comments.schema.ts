@@ -162,6 +162,9 @@ export const CommentsHandledCountSchema = z.object({
 export const ADMIN_COMMENT_VIEWS = ["unreplied", "all"] as const;
 export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
 
+/** Comments per page on the Admin's Comments page, unless a caller asks for fewer. */
+export const ADMIN_COMMENTS_PAGE_SIZE = 20;
+
 export const AdminCommentsInputSchema = z.strictObject({
   view: z
     .enum(ADMIN_COMMENT_VIEWS)

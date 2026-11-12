@@ -5,10 +5,13 @@ import "@/components/ui/tabs.css";
 /**
  * The primary action's place in a loading page's header (AdminPage
  * `actions`), so nothing moves when the page arrives. The top bar has the
- * action below 1024px, so it is hidden there.
+ * action below 1024px, so it is hidden there. It is as tall as the real
+ * button, which the page header sizes with --fuwari-button-height.
  */
 export function FrameActionSkeleton() {
-  return <Skeleton className="h-9 w-24 rounded-lg max-lg:hidden" />;
+  return (
+    <Skeleton className="h-(--fuwari-button-height) w-24 rounded-lg max-lg:hidden" />
+  );
 }
 
 /** Tabs as tall as the real ones, with placeholder labels. */

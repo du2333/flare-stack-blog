@@ -1,14 +1,15 @@
-import type {
-  AdminComment,
-  AdminCommentsInput,
-  CreateCommentInput,
-  DeleteCommentInput,
-  GetMyCommentsInput,
-  GetRepliesByRootIdInput,
-  GetRootCommentsInput,
-  GetThreadByCommentIdInput,
-  MyComment,
-  RootCommentWithReplyCount,
+import {
+  ADMIN_COMMENTS_PAGE_SIZE,
+  type AdminComment,
+  type AdminCommentsInput,
+  type CreateCommentInput,
+  type DeleteCommentInput,
+  type GetMyCommentsInput,
+  type GetRepliesByRootIdInput,
+  type GetRootCommentsInput,
+  type GetThreadByCommentIdInput,
+  type MyComment,
+  type RootCommentWithReplyCount,
 } from "@/features/comments/comments.schema";
 import {
   commentTargetOf,
@@ -422,8 +423,6 @@ export async function markAllUnrepliedCommentsHandled(context: DbContext) {
   );
   return { count };
 }
-
-export const ADMIN_COMMENTS_PAGE_SIZE = 20;
 
 /**
  * One page of the Admin's Comments page, newest first, with how many match:

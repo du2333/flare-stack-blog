@@ -37,12 +37,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: calc(8 * var(--admin-unit));
-  padding-top: calc(12 * var(--admin-unit));
+  padding-block: calc(12 * var(--admin-unit));
 }
 /*
  * The one-row toolbar lays itself out by its own width, which the sidebar
  * narrows, not by the screen's. Too narrow for the tabs and the tools side by
- * side, the tools take a row of their own under the tabs and the rule.
+ * side, the tools take a row of their own under the tabs. The rule is the
+ * head's, under everything.
  */
 .post-list-toolbar-shell {
   container-type: inline-size;
@@ -52,10 +53,6 @@
   .post-list-toolbar-shell .admin-frame-toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    border-bottom: 0;
-  }
-  .post-list-toolbar-shell .post-list-tabs {
-    --fuwari-tabs-rule-width: 1px;
   }
   .post-list-toolbar-shell .post-list-tools {
     padding-block: calc(10 * var(--admin-unit));
@@ -108,7 +105,7 @@
   height: var(--post-head-height);
   padding: 0 12px;
   background: var(--fuwari-card-bg);
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
   color: var(--fuwari-fg-50);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);

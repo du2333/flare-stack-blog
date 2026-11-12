@@ -22,7 +22,7 @@
 }
 
 .admin-comment {
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
 }
 .admin-comment-row {
   display: flex;

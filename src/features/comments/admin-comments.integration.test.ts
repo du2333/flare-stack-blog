@@ -272,6 +272,7 @@ describe("over the HTTP API", () => {
     expect(
       (await get("/admin/comments/posts", aliceContext.session)).status,
     ).toBe(403);
+    expect((await get("/admin/comments/posts", null)).status).toBe(401);
     expect(
       (
         await get(
