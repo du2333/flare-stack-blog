@@ -10,10 +10,7 @@
   --fuwari-button-font-size: 14px;
   --fuwari-segment-height: 34px;
   --fuwari-segment-font-size: 14px;
-  --posts-filter-rule: var(
-    --admin-rule,
-    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent)
-  );
+  --posts-filter-rule: var(--admin-hairline);
 }
 .posts-filter-popover {
   width: 20rem;

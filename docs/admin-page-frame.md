@@ -18,9 +18,9 @@ Every Admin page except the post editor and its history renders inside `AdminPag
 ```
 
 - **Row one**: `title`, `count`, `description`, `actions`, `primaryAction`. There is at most one primary action. Below 1024px the top bar shows the title and the primary action instead, and row one keeps only the description and the secondary actions.
-- **Row two** (optional): `tabs` and `tools`, under one hairline. Below 1024px the frame puts the tools on their own line under the tabs, full width, and the tabs scroll sideways when they do not fit; a page never wraps row two itself. A page that builds row two itself passes it as `toolbar` and uses `AdminPageToolbar` (or the `.admin-frame-toolbar` row) inside it; see `PostsToolbar`.
-- **Primary action from deeper down**: a component inside the body can call `useAdminPrimaryAction(action)` (`admin-chrome.tsx`) instead; the header and the top bar show it while that component is mounted. The API Key tab of 「接入」 does this under the shared header.
-- **Head**: rows one and two stay on top while the body scrolls, with a hairline under them.
+- **Row two** (optional): `tabs` and `tools`. Below 1024px the frame puts the tools on their own line under the tabs, full width, and the tabs scroll sideways when they do not fit; a page never wraps row two itself. Neither the tabs nor the row draw a rule: the head's hairline does (below). A page that builds row two itself passes it as `toolbar` and uses `AdminPageToolbar` (or the `.admin-frame-toolbar` row) inside it; see `PostsToolbar`.
+- **Primary action from deeper down**: a component inside the body can call `useAdminPrimaryAction(action)` (`admin-chrome.tsx`) instead; the header and the top bar show it while that component is mounted, and the deepest one wins. When it unmounts, the action it covered (the page's own) comes back. A changed label, state or icon is registered again; the click handler and the ref follow the latest call. The API Key tab of 「接入」 does this under the shared header.
+- **Head**: rows one and two stay on top while the body scrolls. `.admin-page-head` draws one hairline as its bottom edge, at every width, whatever the rows hold (a page with no tabs, tools below the tabs, a row that is hidden on a phone); a row inside it never draws a rule of its own.
 - **Loading**: render the same `AdminPage` with the real title, `count="—"`, `actions={<FrameActionSkeleton />}` where the primary action will be, and skeleton rows as tall as the real ones (`PostManagerPageSkeleton`).
 
 ## Body forms
@@ -44,8 +44,10 @@ In a `list` body, a row is at most 56px tall, has a hairline under it and a ligh
 Type and density are variables in `src/styles/admin-variables.css`; read them instead of writing sizes:
 
 - `--admin-text-title` / `--admin-leading-title` 20/28 (page title, semibold), `--admin-text-section` 15/22 (section title, semibold), `--admin-text-body` 14/22, `--admin-text-meta` 12.5/18. Numbers use `font-variant-numeric: tabular-nums`.
-- `--admin-row-max` 56px, `--admin-form-control-max` 480px, `--admin-sidebar-width` 232px, `--admin-sidebar-row` 36px, `--admin-sidebar-text` 14px.
-- The accent is ink (`--fuwari-primary`, text on it `--admin-on-accent`). Links are ink with an underline. Only success, warning and danger have a hue.
+- `--admin-row-max` 56px, `--admin-form-control-max` 480px, `--admin-form-max` 960px (the widest a form body's rows and groups get), `--admin-sidebar-width` 232px, `--admin-sidebar-row` 36px, `--admin-sidebar-text` 14px.
+- The accent is ink (`--fuwari-primary`, text on it `--admin-on-accent`). Links are ink with an underline: an anchor in a page body that carries `text-(--fuwari-primary)` (or `.text-link`) is underlined by `admin-page.css`; a button, tab, menu item, list row or card is not a text link and is left out. Only success, warning and danger have a hue.
+- The one line is `--admin-hairline` (head, tabs, rows, groups, controls). `--admin-rule` is kept as an alias of it for the stylesheets that still read it; new code reads `--admin-hairline`.
+- A skeleton takes a size from the variable the real thing uses (`FrameActionSkeleton` is `--fuwari-button-height` tall, the height the header gives its button), never a literal beside it.
 
 ## Navigation and counts
 

@@ -13,8 +13,10 @@
   color: var(--fuwari-fg-75);
   container-type: inline-size;
 }
-.media-workspace-toolbar {
-  margin-bottom: calc(18 * var(--admin-unit));
+/* The gap below the toolbar is the body's: the page head's rule sits right
+   under the toolbar. */
+.media-workspace > .admin-page-body {
+  padding-top: calc(18 * var(--admin-unit));
 }
 /* The toolbar row lays itself out by its own width, which the open detail
    panel narrows, not by the screen's. */
@@ -39,17 +41,15 @@
   min-width: calc(150 * var(--admin-unit));
 }
 /* Too narrow for tabs, search, sort and the view switch in one row: the tabs
-   and the view switch keep the first row and the rule, search and sort take
-   their own row under it. */
+   and the view switch keep the first row, search and sort take their own row
+   under it. The rule is the page head's. */
 @container (max-width: 719px) {
   .media-toolbar-shell .media-workspace-toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    border-bottom: 0;
   }
   .media-workspace-tabs {
-    --fuwari-tabs-rule-width: 1px;
     grid-area: 1 / 1 / 2 / 3;
   }
   .media-view-switch {
@@ -470,8 +470,8 @@ aside.media-inspector {
   }
 }
 @media (max-width: 600px) {
-  .media-workspace-toolbar {
-    margin-bottom: calc(22 * var(--admin-unit));
+  .media-workspace > .admin-page-body {
+    padding-top: calc(22 * var(--admin-unit));
   }
   .media-view-switch {
     --fuwari-segment-padding-x: calc(10 * var(--admin-unit));

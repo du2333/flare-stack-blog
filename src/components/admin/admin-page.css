@@ -14,13 +14,14 @@
   --admin-frame-bottom: 0px;
 }
 
-/* Rows one and two stay on top, with a hairline under them. */
+/* Rows one and two stay on top, with one hairline under both at any width. */
 .admin-page-head {
   position: sticky;
   top: 0;
   z-index: 3;
   flex-shrink: 0;
   background: var(--fuwari-card-bg);
+  border-bottom: 1px solid var(--admin-hairline);
 }
 .admin-page-header {
   --fuwari-button-height: 36px;
@@ -36,7 +37,6 @@
 }
 .admin-page-header:not([data-toolbar]) {
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--admin-rule);
 }
 .admin-page-header[data-toolbar] {
   margin-bottom: 8px;
@@ -113,9 +113,9 @@
 .admin-form-row {
   display: grid;
   gap: 8px;
-  max-width: 960px;
+  max-width: var(--admin-form-max);
   padding: 16px 0;
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
 }
 .admin-form-row:first-child {
   padding-top: 0;
@@ -152,14 +152,14 @@
  * its own, the group's does that.
  */
 .admin-form-section {
-  max-width: 960px;
+  max-width: var(--admin-form-max);
   padding: 24px 0;
 }
 .admin-form-section:first-child {
   padding-top: 0;
 }
 .admin-form-section + .admin-form-section {
-  border-top: 1px solid var(--admin-rule);
+  border-top: 1px solid var(--admin-hairline);
 }
 .admin-form-section-head {
   display: flex;
@@ -230,7 +230,7 @@
   min-height: 44px;
   max-height: var(--admin-row-max);
   padding: 0 var(--admin-row-x);
-  border-bottom: 1px solid var(--admin-rule);
+  border-bottom: 1px solid var(--admin-hairline);
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
   transition: background-color 150ms;
