@@ -41,7 +41,13 @@ function status(
 function snapshot(
   entries: Array<{ postId: number; score: number }>,
 ): PostPopularitySnapshot {
-  return { entries, windowStart: 0, windowEnd: 1, syncedAt: Date.now() };
+  return {
+    entries,
+    windowStart: 0,
+    windowEnd: 1,
+    syncedAt: Date.now(),
+    daily: [],
+  };
 }
 
 function mockPopularity(

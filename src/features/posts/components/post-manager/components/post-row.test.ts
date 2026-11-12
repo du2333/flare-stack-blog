@@ -6,7 +6,7 @@ import { findInPopover } from "tests/popover";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { AdminPostListItem } from "../types";
-import { PostListHeader, PostRow, taxonomySummary } from "./post-row";
+import { PostListColumns, PostRow } from "./post-row";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
@@ -24,7 +24,6 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
       { href: `/admin/posts/edit/${params.id}`, className },
       children,
     ),
-  ClientOnly: ({ children }: { children: ReactNode }) => children,
 }));
 
 vi.mock("@/hooks/use-motion", () => ({
@@ -66,33 +65,39 @@ function renderRow(
   render(
     createElement(PostRow, {
       post: { ...POST, ...post },
+      index: 0,
       sortBy: "updatedAt",
+      pinPending: false,
+      onTogglePin: vi.fn(),
       onDelete: vi.fn(),
+      onUnpublish: vi.fn(),
       ...props,
     }),
   );
 }
 
-/** The text of one cell of the row, by its class. */
-const cell = (name: string) =>
-  document.querySelector(`.post-row-${name}`)?.textContent;
+/** The cells of the row that carry a class, by it. */
+const cells = (name: string) =>
+  [...document.querySelectorAll(`.post-row > .${name}`)].map(
+    (cell) => cell.textContent,
+  );
 
-it("badges a draft, a published post and a published post with changes", () => {
+it("labels a draft, a published post and a published post with changes", () => {
+  const state = () =>
+    document.querySelector(".post-row > .post-state")?.textContent;
   renderRow({ status: "draft" });
-  expect(screen.getByText(m.admin_posts_status_draft())).toBeDefined();
+  expect(state()).toBe(m.admin_posts_status_draft());
   cleanup();
 
   renderRow(PUBLISHED);
-  expect(screen.getByText(m.admin_posts_status_published())).toBeDefined();
+  expect(state()).toBe(m.admin_posts_status_published());
   cleanup();
 
   renderRow({ ...PUBLISHED, hasUnpublishedChanges: true });
-  expect(
-    screen.getByText(m.admin_posts_status_published_changed()),
-  ).toBeDefined();
+  expect(state()).toBe(m.admin_posts_status_changed());
 });
 
-it("opens the editor from the title, the one link of the row, with no edit link or slug", () => {
+it("opens the editor from the title, the one link of the row, with no slug", () => {
   renderRow({ title: "Hello", slug: "hello-slug", status: "draft" });
 
   const links = screen.getAllByRole("link");
@@ -102,69 +107,81 @@ it("opens the editor from the title, the one link of the row, with no edit link 
   expect(screen.queryByText("hello-slug")).toBeNull();
 });
 
-it("leaves the menu as the row's only button, with every action", async () => {
-  renderRow(
-    { ...PUBLISHED, category: { id: 3, name: "Notes" } },
-    {
-      onTogglePin: vi.fn(),
-      onUnpublish: vi.fn(),
-    },
-  );
+it("names an untitled post as such", () => {
+  renderRow({ title: "  " });
+  expect(screen.getByRole("link").textContent).toBe(m.common_untitled());
+});
+
+it("opens the published page beside the menu, which holds every action", async () => {
+  const onTogglePin = vi.fn();
+  renderRow(PUBLISHED, { onTogglePin });
 
   expect(
     screen
       .getAllByRole("button")
       .map((button) => button.getAttribute("aria-label")),
-  ).toEqual([m.admin_posts_more_named({ title: "Post" })]);
-  fireEvent.click(screen.getByRole("button"));
+  ).toEqual([
+    m.admin_posts_view_published_named({ title: "Post" }),
+    m.admin_posts_more_named({ title: "Post" }),
+  ]);
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: m.admin_posts_more_named({ title: "Post" }),
+    }),
+  );
   await findInPopover("menuitem", { name: m.admin_posts_action_pin() });
   expect(
     screen.getAllByRole("menuitem").map((item) => item.textContent),
   ).toEqual([
-    m.admin_posts_action_view_live(),
+    m.admin_posts_view_published(),
     m.admin_posts_action_pin(),
     m.editor_header_unpublish(),
     m.admin_posts_action_delete_post(),
   ]);
+  fireEvent.click(
+    screen.getByRole("menuitem", { name: m.admin_posts_action_pin() }),
+  );
+  expect(onTogglePin).toHaveBeenCalledOnce();
 });
 
-it("names the category first, then up to two tags, then how many more", () => {
-  const tags = ["Rust", "Go", "C", "Zig"].map((name, index) => ({
+it("offers a draft no published page and no unpublishing", async () => {
+  renderRow({ pinnedAt: daysAgo(1) });
+  expect(screen.getAllByRole("button")).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button"));
+  await findInPopover("menuitem", { name: m.admin_posts_action_unpin() });
+  expect(
+    screen.getAllByRole("menuitem").map((item) => item.textContent),
+  ).toEqual([m.admin_posts_action_unpin(), m.admin_posts_action_delete_post()]);
+});
+
+it("names the category first, then up to three tags, then how many more", () => {
+  const tags = ["Rust", "Go", "C", "Zig", "Lua"].map((name, index) => ({
     id: index + 1,
     name,
   }));
-  expect(taxonomySummary({ id: 3, name: "Notes" }, tags)).toEqual({
-    category: "Notes",
-    tags: ["Rust", "Go"],
-    more: 2,
-    full: "Notes  #Rust  #Go  #C  #Zig",
-  });
-  expect(taxonomySummary(null, tags.slice(0, 1))).toMatchObject({
-    category: null,
-    tags: ["Rust"],
-    more: 0,
-  });
-
   renderRow({ category: { id: 3, name: "Notes" }, tags });
-  expect(cell("taxonomy")).toBe("Notes#Rust#Go+2");
+  const sub = document.querySelector(".post-sub")!;
   expect(
-    document.querySelector(".post-row-taxonomy")?.getAttribute("title"),
-  ).toBe("Notes  #Rust  #Go  #C  #Zig");
-});
+    [...sub.children]
+      .filter((part) => !part.classList.contains("post-sub-only"))
+      .map((part) => part.textContent),
+  ).toEqual(["Notes", "#Rust", "#Go", "#C", "+2"]);
+  cleanup();
 
-it("shows a dash, not a hint line, for a post with neither category nor tags", () => {
   renderRow({});
-  expect(cell("taxonomy")).toBe("—");
+  expect(
+    document.querySelector(".post-sub > span:not(.post-sub-only)")?.textContent,
+  ).toBe(m.post_uncategorized());
 });
 
 it("shows the modified time as a relative time, with the full date and time on hover", () => {
   const updatedAt = daysAgo(27);
   renderRow({ updatedAt, publishedAt: daysAgo(40) });
 
-  const time = screen.getByText(m.time_ago_days({ count: 27 }));
-  expect(time.tagName).toBe("TIME");
-  expect(time.getAttribute("datetime")).toBe(updatedAt.toISOString());
-  expect(time.getAttribute("title")).toBe(
+  const [time] = screen.getAllByText(m.time_ago_days({ count: 27 }));
+  expect(time!.tagName).toBe("TIME");
+  expect(time!.getAttribute("datetime")).toBe(updatedAt.toISOString());
+  expect(time!.getAttribute("title")).toBe(
     formatDate(updatedAt, { includeTime: true }),
   );
 });
@@ -176,39 +193,32 @@ it("shows the publish time when the list is sorted by it", () => {
     { sortBy: "publishedAt" },
   );
 
-  const time = screen.getByText(m.time_ago_days({ count: 40 }));
-  expect(time.getAttribute("datetime")).toBe(publishedAt.toISOString());
+  const [time] = screen.getAllByText(m.time_ago_days({ count: 40 }));
+  expect(time!.getAttribute("datetime")).toBe(publishedAt.toISOString());
 });
 
-it("names the pin for screen readers, before the title, and keeps unpinned rows from reserving its place", () => {
+it("names the pin for screen readers, after the title, only on pinned posts", () => {
   renderRow({ pinnedAt: daysAgo(1) });
   const pin = screen.getByRole("img", { name: m.admin_posts_pinned() });
-  expect(pin.nextElementSibling?.tagName).toBe("A");
+  expect(pin.previousElementSibling?.tagName).toBe("A");
   cleanup();
 
   renderRow({ pinnedAt: null });
   expect(
     screen.queryByRole("img", { name: m.admin_posts_pinned() }),
   ).toBeNull();
-  expect(screen.getByRole("link").parentElement?.firstElementChild).toBe(
-    screen.getByRole("link"),
-  );
 });
 
 it("shows the views and the comments, and 0 only for a count that is known", () => {
   renderRow({ ...PUBLISHED, viewCount: 1234, commentCount: 7 });
-  expect(cell("views")).toBe((1234).toLocaleString());
-  expect(cell("comments")).toBe("7");
+  expect(cells("post-count")).toEqual([(1234).toLocaleString(), "7"]);
   cleanup();
 
   renderRow(
     { ...PUBLISHED, viewCount: 0, commentCount: 0 },
-    {
-      popularity: "ready",
-    },
+    { popularity: "ready" },
   );
-  expect(cell("views")).toBe("0");
-  expect(cell("comments")).toBe("0");
+  expect(cells("post-count")).toEqual(["0", "0"]);
 });
 
 it("shows a dash with the reason where the views are not known, never 0", () => {
@@ -226,18 +236,19 @@ it("shows a dash with the reason where the views are not known, never 0", () => 
   ];
   for (const [post, popularity, reason] of cases) {
     renderRow(post, { popularity });
-    expect(cell("views")).toBe(`—${reason}`);
-    expect(
-      document.querySelector(".post-row-views span")?.getAttribute("title"),
-    ).toBe(reason);
+    const views = document.querySelector(".post-row > .post-count")!;
+    expect(views.textContent).toBe("—");
+    expect(views.getAttribute("title")).toBe(reason);
     cleanup();
   }
 });
 
 it("sorts from the column names: comments always, views while they can be read, the time by what the list shows", () => {
   const onSortByChange = vi.fn();
-  const header = (props: Partial<ComponentProps<typeof PostListHeader>> = {}) =>
-    createElement(PostListHeader, {
+  const columns = (
+    props: Partial<ComponentProps<typeof PostListColumns>> = {},
+  ) =>
+    createElement(PostListColumns, {
       sortBy: "updatedAt",
       viewsSortable: true,
       onSortByChange,
@@ -248,20 +259,19 @@ it("sorts from the column names: comments always, views while they can be read, 
       name: m.admin_posts_sort_by_column({ column }),
     });
 
-  render(header());
+  render(columns());
   fireEvent.click(sortButton(m.admin_posts_col_views())!);
   expect(onSortByChange).toHaveBeenLastCalledWith("viewCount");
   fireEvent.click(sortButton(m.admin_posts_col_comments())!);
   expect(onSortByChange).toHaveBeenLastCalledWith("commentCount");
-  expect(sortButton(m.admin_posts_sort_recent_upd())).not.toBeNull();
   expect(
     sortButton(m.admin_posts_sort_recent_upd())!.getAttribute("aria-pressed"),
   ).toBe("true");
   cleanup();
 
-  render(header({ viewsSortable: false, sortBy: "publishedAt" }));
+  render(columns({ viewsSortable: false, sortBy: "publishedAt" }));
   expect(sortButton(m.admin_posts_col_views())).toBeNull();
   expect(screen.getByText(m.admin_posts_col_views())).toBeDefined();
-  expect(sortButton(m.admin_posts_sort_recent_pub())).not.toBeNull();
+  expect(sortButton(m.admin_posts_col_published_at())).not.toBeNull();
   expect(sortButton(m.admin_posts_sort_recent_upd())).toBeNull();
 });

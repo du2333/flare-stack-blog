@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { StudioPosts } from "@/features/posts/components/post-manager/studio/studio-posts";
+import { PostManager } from "@/features/posts/components/post-manager";
 import { adminPostsListParams } from "@/features/posts/components/post-manager/hooks";
 import { PostManagerPageSkeleton } from "@/features/posts/components/post-manager/post-manager-skeleton";
 import { adminPostsQuery } from "@/features/posts/queries";
@@ -78,7 +78,7 @@ function PostManagerPage() {
   };
 
   return (
-    <StudioPosts
+    <PostManager
       page={page}
       status={status}
       sortBy={sortBy}
