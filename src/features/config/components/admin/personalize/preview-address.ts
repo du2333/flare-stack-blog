@@ -20,8 +20,6 @@ export interface PreviewValues {
   tagline: string;
 }
 
-export type PreviewTarget = { kind: "home" } | { kind: "post"; path: string };
-
 /** How long a change that reloads the preview waits for the next one. */
 export const PREVIEW_DEBOUNCE_MS = 400;
 
@@ -36,22 +34,32 @@ function draftOf(values: PreviewValues): SiteConfigDraft {
   };
 }
 
+// Where the Admin's own pages and the API live: never a page to preview.
+const NOT_PUBLIC = /^\/(?:admin|api)(?:\/|$)/;
+
 /**
- * The address the preview loads: the home page, or the path of a Post, with
- * the preview parameters of `themePreviewHref` (which carry across the
- * navigations inside the preview). It holds the focus and hue it is given, so
- * a reload shows the latest of them.
+ * The path of a public page, or null for anything else: a path that is not
+ * one, or one that is the Admin's or the API's.
  */
-export function previewAddress(
-  values: PreviewValues,
-  target: PreviewTarget,
-): string {
+export function publicPreviewPath(path: unknown): string | null {
+  if (typeof path !== "string" || !path.startsWith("/")) return null;
+  if (path.startsWith("//") || NOT_PUBLIC.test(path)) return null;
+  return path;
+}
+
+/**
+ * The address the preview loads: the page at `path` (the home page by
+ * default) with the preview parameters of `themePreviewHref`, which carry
+ * across the navigations inside the preview. It holds the focus and hue it is
+ * given, so a reload shows the latest of them.
+ */
+export function previewAddress(values: PreviewValues, path = "/"): string {
   // Marked as embedded, so the page leaves out the bar that names the preview.
   const home = embeddedThemePreviewHref(
     themePreviewHref(values.themeId, values.themeOptions, draftOf(values)),
   );
-  if (target.kind === "home") return home;
-  return `${target.path}${home.slice(home.indexOf("?"))}`;
+  const page = publicPreviewPath(path) ?? "/";
+  return page === "/" ? home : `${page}${home.slice(home.indexOf("?"))}`;
 }
 
 /** The fields that change the address; the focus and the hue do not. */
@@ -66,47 +74,37 @@ function reloadKey(values: PreviewValues): string {
   ]);
 }
 
-const targetKeyOf = (target: PreviewTarget) =>
-  target.kind === "home" ? "" : target.path;
-
 /**
  * The address to load for `values`. A change of the Theme, its options, the
  * images, the brand mark or the tagline gives a new address after a short
- * wait; a change of the target gives one at once. A change of the banner focus
- * or the hue alone gives none: the preview follows those in place. Whatever
- * address is built carries the latest focus and hue.
+ * wait; a change of the banner focus or the hue alone gives none, since the
+ * preview follows those in place. The new address is on the page the Admin
+ * has navigated to in the preview (`currentPath`, null when it cannot be
+ * read) and carries the latest focus and hue.
  */
 export function usePreviewAddress(
   values: PreviewValues,
-  target: PreviewTarget,
+  currentPath: () => string | null,
   debounceMs = PREVIEW_DEBOUNCE_MS,
 ): string {
-  const latest = useRef({ values, target });
-  latest.current = { values, target };
-  const [address, setAddress] = useState(() => previewAddress(values, target));
+  const latest = useRef({ values, currentPath });
+  latest.current = { values, currentPath };
+  const [address, setAddress] = useState(() => previewAddress(values));
   const valuesKey = reloadKey(values);
-  const targetKey = targetKeyOf(target);
   // What the address stands for, so an effect that finds nothing new does
   // not build one: the focus and hue in it would be the moment's, not the
   // address's own.
-  const built = useRef({ valuesKey, targetKey });
+  const built = useRef(valuesKey);
 
   useEffect(() => {
-    if (built.current.valuesKey === valuesKey) return;
+    if (built.current === valuesKey) return;
     const timer = setTimeout(() => {
-      // A change of the target in the meantime built the address already.
-      if (built.current.valuesKey === valuesKey) return;
-      built.current = { ...built.current, valuesKey };
-      setAddress(previewAddress(latest.current.values, latest.current.target));
+      built.current = valuesKey;
+      const { values, currentPath } = latest.current;
+      setAddress(previewAddress(values, currentPath() ?? "/"));
     }, debounceMs);
     return () => clearTimeout(timer);
   }, [valuesKey, debounceMs]);
-
-  useEffect(() => {
-    if (built.current.targetKey === targetKey) return;
-    built.current = { valuesKey: reloadKey(latest.current.values), targetKey };
-    setAddress(previewAddress(latest.current.values, latest.current.target));
-  }, [targetKey]);
 
   return address;
 }

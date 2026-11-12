@@ -24,13 +24,6 @@ import { PREVIEW_LOAD_TIMEOUT_MS } from "./preview-stage";
 vi.mock("@/lib/orpc", () => ({
   orpcClient: { config: { admin: { uploadAsset: vi.fn() } } },
 }));
-vi.mock("@/features/posts/queries", () => ({
-  adminPostsQuery: () => ({
-    queryKey: ["admin-posts", "newest-published"],
-    queryFn: async () => ({ items: [{ publicSlug: "a-post" }] }),
-  }),
-}));
-
 let wide = true;
 let queued: Array<() => void> = [];
 /** Runs what was asked of the next animation frame. */
@@ -222,7 +215,7 @@ describe("on a wide screen", () => {
     expect(draftOf(frames()[1]).tagline).toBe("Hello");
   });
 
-  it("switches between the desktop and the phone frame without a new address, and to a Post", async () => {
+  it("switches between the desktop and the phone frame without a new address", () => {
     renderStudio();
     const [frame] = frames();
     loaded(frame);
@@ -242,15 +235,9 @@ describe("on a wide screen", () => {
     ]);
     expect(screen.getByText("390 × 844")).toBeTruthy();
 
-    // The newest published Post is found once the page is open.
-    const post = await screen.findByRole("radio", {
-      name: m.personalize_preview_page_post(),
-    });
-    fireEvent.click(post);
-    expect(frames()).toHaveLength(2);
-    const url = paramsOf(frames()[1]);
-    expect(url.pathname).toBe("/post/a-post");
-    expect(url.searchParams.get("themePreview")).toBe("classic");
+    // There is no switch for the page: the preview is a page to click through.
+    expect(screen.queryByRole("radio", { name: "文章" })).toBeNull();
+    expect(screen.queryByRole("radio", { name: "首页" })).toBeNull();
   });
 
   it("offers a retry when a load fails, and the form stays usable", async () => {

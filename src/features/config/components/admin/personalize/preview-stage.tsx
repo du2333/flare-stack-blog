@@ -5,12 +5,14 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type MutableRefObject,
   type RefObject,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import { Spinner } from "@/components/ui/spinner";
 import { m } from "@/paraglide/messages";
+import { publicPreviewPath } from "./preview-address";
 import { previewFrameLayout, type PreviewDevice } from "./preview-geometry";
 import {
   usePreviewLiveLink,
@@ -55,18 +57,23 @@ function PreviewFrame({
   size,
   live,
   onLoad,
+  register,
 }: {
   frame: Frame;
   shown: boolean;
   size: { width: number; height: number };
   live: PreviewLiveValues;
   onLoad: (key: number) => void;
+  register: (key: number, element: HTMLIFrameElement | null) => void;
 }) {
-  const ref = useRef<HTMLIFrameElement>(null);
+  const ref = useRef<HTMLIFrameElement | null>(null);
   usePreviewLiveLink(() => ref.current?.contentWindow, live);
   return (
     <iframe
-      ref={ref}
+      ref={(element) => {
+        ref.current = element;
+        register(frame.key, element);
+      }}
       src={frame.src}
       title={m.personalize_preview_frame_title()}
       // A picture of the page, not a place to tab into; loading it takes no focus.
@@ -90,10 +97,13 @@ export function PreviewStage({
   address,
   device,
   live,
+  readPath,
 }: {
   address: string;
   device: PreviewDevice;
   live: PreviewLiveValues;
+  /** Set to a function that reads the path of the page in view, for the next address. */
+  readPath: MutableRefObject<() => string | null>;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const space = useStageSpace(stageRef);
@@ -116,6 +126,28 @@ export function PreviewStage({
 
   const framesRef = useRef(frames);
   framesRef.current = frames;
+  const elements = useRef(new Map<number, HTMLIFrameElement>());
+  const register = useCallback(
+    (key: number, element: HTMLIFrameElement | null) => {
+      if (element) elements.current.set(key, element);
+      else elements.current.delete(key);
+    },
+    [],
+  );
+  useEffect(() => {
+    // The page the Admin has clicked through to, so a reload stays on it.
+    readPath.current = () => {
+      const inView = framesRef.current
+        .filter((frame) => frame.ready)
+        .slice(-1)[0];
+      const element = inView && elements.current.get(inView.key);
+      try {
+        return publicPreviewPath(element?.contentWindow?.location.pathname);
+      } catch {
+        return null;
+      }
+    };
+  }, [readPath]);
   useEffect(() => {
     if (framesRef.current[framesRef.current.length - 1]?.src !== address) {
       load(address);
@@ -176,6 +208,7 @@ export function PreviewStage({
                 size={size}
                 live={live}
                 onLoad={loaded}
+                register={register}
               />
             ))}
           </div>

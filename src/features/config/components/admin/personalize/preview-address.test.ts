@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   THEME_PREVIEW_DRAFT_PARAM,
@@ -9,8 +9,8 @@ import {
 import {
   PREVIEW_DEBOUNCE_MS,
   previewAddress,
+  publicPreviewPath,
   usePreviewAddress,
-  type PreviewTarget,
   type PreviewValues,
 } from "./preview-address";
 
@@ -24,7 +24,6 @@ const values: PreviewValues = {
   brandMark: "default",
   tagline: "Notes",
 };
-const home: PreviewTarget = { kind: "home" };
 
 const draftOf = (address: string) =>
   JSON.parse(
@@ -35,10 +34,10 @@ const draftOf = (address: string) =>
 
 describe("previewAddress", () => {
   it("is the home page with the Theme, its options and the draft", () => {
-    const address = previewAddress(
-      { ...values, themeOptions: { cards: "below" } },
-      home,
-    );
+    const address = previewAddress({
+      ...values,
+      themeOptions: { cards: "below" },
+    });
     const url = new URL(address, "https://blog.example");
     expect(url.pathname).toBe("/");
     expect(url.searchParams.get(THEME_PREVIEW_PARAM)).toBe("classic");
@@ -55,38 +54,60 @@ describe("previewAddress", () => {
     });
   });
 
-  it("is marked as embedded, on a Post's path too, so the page shows no preview bar", () => {
-    for (const target of [
-      home,
-      { kind: "post", path: "/post/a-post" },
-    ] as const) {
-      const url = new URL(
-        previewAddress(values, target),
-        "https://blog.example",
-      );
+  it("is marked as embedded, on any page, so the page shows no preview bar", () => {
+    for (const path of ["/", "/post/a-post"]) {
+      const url = new URL(previewAddress(values, path), "https://blog.example");
       expect(url.searchParams.get("themePreviewEmbed")).toBe("1");
     }
   });
 
-  it("puts the same parameters on the path of a Post", () => {
-    const post = previewAddress(values, { kind: "post", path: "/post/a-post" });
-    const url = new URL(post, "https://blog.example");
+  it("puts the same parameters on the path of another public page", () => {
+    const url = new URL(
+      previewAddress(values, "/post/a-post"),
+      "https://blog.example",
+    );
     expect(url.pathname).toBe("/post/a-post");
     expect(url.search).toBe(
-      new URL(previewAddress(values, home), "https://blog.example").search,
+      new URL(previewAddress(values), "https://blog.example").search,
     );
+  });
+
+  it("falls back to the home page for a path that is not a public page", () => {
+    for (const path of ["/admin/posts", "/api/x", "//evil.example", "post"]) {
+      expect(previewAddress(values, path)).toBe(previewAddress(values));
+    }
+  });
+});
+
+describe("publicPreviewPath", () => {
+  it("keeps the path of a public page and drops anything else", () => {
+    expect(publicPreviewPath("/")).toBe("/");
+    expect(publicPreviewPath("/post/a-post")).toBe("/post/a-post");
+    expect(publicPreviewPath("/posts")).toBe("/posts");
+    expect(publicPreviewPath("/admin")).toBeNull();
+    expect(publicPreviewPath("/admin/settings/site")).toBeNull();
+    expect(publicPreviewPath("/api/auth/session")).toBeNull();
+    expect(publicPreviewPath("//evil.example/x")).toBeNull();
+    expect(publicPreviewPath("about:blank")).toBeNull();
+    expect(publicPreviewPath(undefined)).toBeNull();
   });
 });
 
 describe("usePreviewAddress", () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
 
+  let path: string | null = null;
+  const currentPath = () => path;
   function render(initial: PreviewValues = values) {
+    path = null;
     return renderHook(
-      (props: { values: PreviewValues; target: PreviewTarget }) =>
-        usePreviewAddress(props.values, props.target),
-      { initialProps: { values: initial, target: home } },
+      (props: { values: PreviewValues }) =>
+        usePreviewAddress(props.values, currentPath),
+      { initialProps: { values: initial } },
     );
   }
   const wait = (ms = PREVIEW_DEBOUNCE_MS) =>
@@ -94,9 +115,9 @@ describe("usePreviewAddress", () => {
       vi.advanceTimersByTime(ms);
     });
 
-  it("starts at the address of the values", () => {
+  it("starts at the home page address of the values", () => {
     const { result } = render();
-    expect(result.current).toBe(previewAddress(values, home));
+    expect(result.current).toBe(previewAddress(values));
   });
 
   it("gives no new address for a banner focus or a hue change: the preview follows in place", () => {
@@ -104,7 +125,6 @@ describe("usePreviewAddress", () => {
     const first = result.current;
     rerender({
       values: { ...values, bannerFocus: { x: 20, y: 70 }, primaryHue: 10 },
-      target: home,
     });
     wait(PREVIEW_DEBOUNCE_MS * 3);
     expect(result.current).toBe(first);
@@ -122,21 +142,19 @@ describe("usePreviewAddress", () => {
     (_, change) => {
       const { result, rerender } = render();
       const first = result.current;
-      rerender({ values: { ...values, ...change }, target: home });
+      rerender({ values: { ...values, ...change } });
       expect(result.current).toBe(first);
       wait(PREVIEW_DEBOUNCE_MS - 1);
       expect(result.current).toBe(first);
       wait(1);
       expect(result.current).not.toBe(first);
-      expect(result.current).toBe(
-        previewAddress({ ...values, ...change }, home),
-      );
+      expect(result.current).toBe(previewAddress({ ...values, ...change }));
     },
   );
 
   it("builds the new address with the latest focus and hue", () => {
     const { result, rerender } = render();
-    rerender({ values: { ...values, tagline: "Other" }, target: home });
+    rerender({ values: { ...values, tagline: "Other" } });
     // Dragged and moved while the change was waiting.
     rerender({
       values: {
@@ -145,7 +163,6 @@ describe("usePreviewAddress", () => {
         bannerFocus: { x: 5, y: 95 },
         primaryHue: 330,
       },
-      target: home,
     });
     wait();
     expect(draftOf(result.current)).toMatchObject({
@@ -159,7 +176,7 @@ describe("usePreviewAddress", () => {
     const { result, rerender } = render();
     const first = result.current;
     for (const tagline of ["O", "Ot", "Oth"]) {
-      rerender({ values: { ...values, tagline }, target: home });
+      rerender({ values: { ...values, tagline } });
       wait(PREVIEW_DEBOUNCE_MS - 100);
     }
     expect(result.current).toBe(first);
@@ -167,36 +184,25 @@ describe("usePreviewAddress", () => {
     expect(draftOf(result.current).tagline).toBe("Oth");
   });
 
-  it("changes at once for another page, with the latest focus and hue", () => {
+  it("reloads on the page the Admin has navigated to in the preview", () => {
     const { result, rerender } = render();
-    const dragged = { ...values, bannerFocus: { x: 1, y: 2 }, primaryHue: 99 };
-    rerender({ values: dragged, target: home });
-    rerender({
-      values: dragged,
-      target: { kind: "post", path: "/post/a-post" },
-    });
+    path = "/post/a-post";
+    rerender({ values: { ...values, themeId: "immersive" } });
+    wait();
     const url = new URL(result.current, "https://blog.example");
     expect(url.pathname).toBe("/post/a-post");
-    expect(draftOf(result.current)).toMatchObject({
-      bannerFocus: { x: 1, y: 2 },
-      primaryHue: 99,
-    });
+    expect(url.searchParams.get(THEME_PREVIEW_PARAM)).toBe("immersive");
   });
 
-  it("does not load again for a change that was already built in", () => {
+  it("reloads on the home page when the path cannot be read or is not a public page", () => {
     const { result, rerender } = render();
-    rerender({ values: { ...values, tagline: "Other" }, target: home });
-    rerender({
-      values: { ...values, tagline: "Other" },
-      target: { kind: "post", path: "/post/a-post" },
-    });
-    const built = result.current;
-    // The focus moves before the wait for the tagline is over.
-    rerender({
-      values: { ...values, tagline: "Other", bannerFocus: { x: 3, y: 4 } },
-      target: { kind: "post", path: "/post/a-post" },
-    });
-    wait(PREVIEW_DEBOUNCE_MS * 2);
-    expect(result.current).toBe(built);
+    path = null;
+    rerender({ values: { ...values, tagline: "A" } });
+    wait();
+    expect(new URL(result.current, "https://blog.example").pathname).toBe("/");
+    path = "/admin/settings";
+    rerender({ values: { ...values, tagline: "B" } });
+    wait();
+    expect(new URL(result.current, "https://blog.example").pathname).toBe("/");
   });
 });
