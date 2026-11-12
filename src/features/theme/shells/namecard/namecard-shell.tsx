@@ -25,6 +25,10 @@ const CARD_STEP_MS = 50;
  * follow the article (card-placement.ts says which card goes where,
  * namecard.css how each place looks). Below 1024px there is one column, the
  * cards after the content.
+ *
+ * Back to top and the page's actions stand in a box of the shell's, which
+ * the stylesheet places from 1024px: right of the page where the window has
+ * room there, and in the room between the two columns where it has not.
  */
 function NamecardShell({
   pageKind,
@@ -89,7 +93,7 @@ function NamecardShell({
             {footer}
           </div>
 
-          {floatingActions}
+          <div className="namecard-floating">{floatingActions}</div>
         </div>
       </div>
     </FirstScreenProvider>

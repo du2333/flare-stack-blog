@@ -71,6 +71,10 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *     which it then places itself, sets `static` (「沉浸」 does: its box
  *     sticks to the foot of the window and ends where the footer begins, so
  *     they rest above the footer at the end of a page).
+ *   - `--shell-floating-actions-size`: optional. From lg, the side of back
+ *     to top and of each of the page's actions; left out, 3.75rem. A shell
+ *     that rests them where there is less room says how large they are
+ *     (「侧栏」 does, in the foot of its rail).
  *   - `--shell-toc-side`: `block` where the table of contents of a Post
  *     stands beside the article or in the shell's slot, `none` where it
  *     does not (the default).

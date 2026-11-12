@@ -293,6 +293,17 @@
 .sidebar-socials:empty {
   display: none;
 }
+/* Where back to top rests in the foot of the rail (sidebar.css), the end of
+   this row is its place: the links wrap short of it, and the row is there
+   for it without them. */
+@media (64rem <= width < 89.5rem) {
+  .sidebar-socials,
+  .sidebar-socials:empty {
+    display: flex;
+    min-height: 3rem;
+    padding-right: calc(var(--shell-floating-actions-size) + 0.75rem);
+  }
+}
 .sidebar-socials a {
   width: 2.5rem;
   height: 2.5rem;

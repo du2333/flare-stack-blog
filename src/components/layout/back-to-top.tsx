@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
   FLOATING_ACTION_BUTTON_CLASS,
+  FLOATING_ACTION_ICON_CLASS,
   useFloatingActionsSlotRef,
 } from "./floating-actions";
 
@@ -43,7 +44,7 @@ export function BackToTop() {
         aria-label={m.post_back_to_top()}
         className={FLOATING_ACTION_BUTTON_CLASS}
       >
-        <ArrowUp className="w-6 h-6 lg:w-7 lg:h-7" strokeWidth={2.5} />
+        <ArrowUp className={FLOATING_ACTION_ICON_CLASS} strokeWidth={2.5} />
       </button>
     </div>
   );

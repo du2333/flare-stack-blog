@@ -126,16 +126,16 @@
   /* The table of contents of a Post: from 1024px (below) a list in the right
      column, which the sidebar cards have on every other page; until then
      the button in the floating column opens it. The list starts where that
-     column does, below the navbar. Near 1024px back to top stands on the
-     last 3.75rem of the column, so the list is 15.5rem wide: 0.75rem short
-     of it and more in every window, and never on it. */
+     column does, below the navbar, and is 15.5rem wide: within the column
+     in every window. */
   --shell-toc-side: none;
   --shell-toc-compact: flex;
   --shell-toc-top: calc(var(--namecard-nav-height) + 1rem);
   --shell-toc-left: calc(100% + var(--namecard-col-gap));
   --shell-toc-width: 15.5rem;
-  /* Back to top from lg: just right of the content, kept on screen when the
-     gutter is too narrow. */
+  /* Back to top where the window has room right of the page: 1.25rem clear
+     of it, and no closer than 1rem to the edge of the window. From lg the
+     shell stands it in a box of its own, which it places (below). */
   --shell-floating-actions-left: min(
     calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
     calc(100% - 4.75rem)
@@ -145,6 +145,12 @@
   :root[data-theme="namecard"] {
     --shell-toc-side: block;
     --shell-toc-compact: none;
+    --shell-floating-actions-position: static;
+    /* The room between the two columns holds back to top, 3.75rem wide,
+       until the window has room for it right of the page (below): never
+       under 4.5rem, so it stands 0.375rem clear of either column, and the
+       content keeps a line of 37 characters at 1024px. */
+    --namecard-col-gap: clamp(4.5rem, 6vw, 5.5rem);
   }
 }
 
@@ -285,6 +291,49 @@
   .namecard-cards[data-place="beside"]
     > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))) {
     display: none;
+  }
+}
+
+/* ── Back to top ──────────────────────────────────────────────────────────
+   Below 1024px back to top and the page's actions float in the corner of
+   the window, as the shared styles have them, and this box is none. From
+   1024px they stand in it (--shell-floating-actions-position, above), and
+   it floats right of the page, 10rem above the foot of the window, where
+   the window has that room: from 1344px, and on a focused page, whose one
+   column is narrow and centred.
+
+   In a narrower window nothing is free right of the page: the right column
+   reaches the edge. There the box floats in the room between the two
+   columns instead, centred in it, so back to top lies on neither the
+   content nor the cards. It sticks 10rem above the foot of the window for
+   as long as the columns run, and comes to rest at their end, above the
+   footer. */
+.namecard-floating {
+  display: contents;
+}
+@media (min-width: 1024px) {
+  .namecard-floating {
+    position: fixed;
+    bottom: 10rem;
+    left: var(--shell-floating-actions-left);
+    z-index: 40;
+    display: block;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1343px) {
+  .namecard-body[data-focused="false"] > .namecard-floating {
+    position: sticky;
+    left: auto;
+    grid-area: 1 / 1 / 2 / -1;
+    align-self: end;
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 0;
+    margin-left: calc(
+      100% - var(--namecard-aside) - var(--namecard-col-gap) / 2 - 1.875rem
+    );
   }
 }
 @media (prefers-reduced-motion: reduce) {

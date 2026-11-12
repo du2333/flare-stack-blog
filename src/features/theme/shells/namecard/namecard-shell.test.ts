@@ -599,6 +599,16 @@ describe("the stylesheet", () => {
     ...rootProperties(narrow),
   };
   const GUTTER_PX = px(properties["--namecard-gutter"]!, properties);
+  /** What the root has from 1024px: the spread's own values. */
+  const spreadProperties: Record<string, string> = {
+    ...properties,
+    ...rootProperties(under(css, SPREAD_FROM).join(" ")),
+  };
+  /** Back to top is as wide from lg (floating-actions.tsx, `lg:w-15`). */
+  const BACK_TO_TOP_PX = 60;
+  /** From where the window has room for back to top right of the page. */
+  const BESIDE_PAGE_FROM = "@media (min-width: 1024px) and (max-width: 1343px)";
+  const BESIDE_PAGE_FROM_PX = 1344;
 
   /** Where the columns, the side list and back to top stand in a window. */
   function across(width: number) {
@@ -608,13 +618,13 @@ describe("the stylesheet", () => {
     const aside = px(properties["--namecard-aside"]!, properties, {
       basis: between,
     });
-    const gap = px(properties["--namecard-col-gap"]!, properties, {
+    const gap = px(spreadProperties["--namecard-col-gap"]!, properties, {
       window: width,
     });
     const content = between - gap - aside;
     const listLeft =
       left +
-      px(properties["--shell-toc-left"]!, properties, {
+      px(properties["--shell-toc-left"]!, spreadProperties, {
         basis: content,
         window: width,
       });
@@ -629,9 +639,30 @@ describe("the stylesheet", () => {
       listRight:
         listLeft +
         px(properties["--shell-toc-width"]!, properties, { basis: width }),
-      backToTop: px(properties["--shell-floating-actions-left"]!, properties, {
-        basis: width,
-      }),
+      // Right of the page from 1344px; until then in the shell's box, which
+      // starts with the content and is pushed this far into the columns.
+      backToTop:
+        width >= BESIDE_PAGE_FROM_PX
+          ? px(properties["--shell-floating-actions-left"]!, properties, {
+              basis: width,
+            })
+          : left +
+            px(
+              declared(
+                declarations(
+                  blockAfter(
+                    blockAfter(css, BESIDE_PAGE_FROM),
+                    `${BODY} > .namecard-floating {`,
+                  ),
+                ),
+                "margin-left",
+              ).replace(
+                "var(--namecard-col-gap)",
+                spreadProperties["--namecard-col-gap"]!,
+              ),
+              properties,
+              { basis: between, window: width },
+            ),
     };
   }
 
@@ -710,6 +741,7 @@ describe("the stylesheet", () => {
       ).toEqual([
         "@media (max-width: 719px)",
         SPREAD_FROM,
+        BESIDE_PAGE_FROM,
         "@media (prefers-reduced-motion: reduce)",
       ]);
       expect(px(SPREAD_FROM.match(/[\d.]+px/)![0], {})).toBe(SPREAD_FROM_PX);
@@ -836,7 +868,12 @@ describe("the stylesheet", () => {
       )!;
       expect(
         declarations(blockAfter(fromSpread, ':root[data-theme="namecard"] {')),
-      ).toEqual(["--shell-toc-side: block", "--shell-toc-compact: none"]);
+      ).toEqual(
+        expect.arrayContaining([
+          "--shell-toc-side: block",
+          "--shell-toc-compact: none",
+        ]),
+      );
       // Nowhere else: the list shows from 1024px and from no other width.
       expect(css.match(/--shell-toc-side:/g)).toHaveLength(2);
     });
@@ -850,7 +887,7 @@ describe("the stylesheet", () => {
     });
 
     it.each([SPREAD_FROM_PX, 1100, 1200, 1280, 1366, 1392, 1440, 1920, 2560])(
-      "starts the list where the right column does and keeps it in that column, clear of back to top, in a window %ipx wide",
+      "starts the list where the right column does and keeps it in that column in a window %ipx wide",
       (width) => {
         const {
           contentRight,
@@ -858,18 +895,98 @@ describe("the stylesheet", () => {
           asideRight,
           listLeft,
           listRight,
-          backToTop,
           gap,
         } = across(width);
 
         expect(listLeft).toBeCloseTo(asideLeft);
         expect(listLeft - contentRight).toBeCloseTo(gap);
         expect(listRight).toBeLessThanOrEqual(asideRight);
-        // Back to top is 3.75rem wide and stands on the end of the column
-        // in a window that has no gutter for it; the list ends 0.75rem
-        // short of it at least.
-        expect(backToTop - listRight).toBeGreaterThanOrEqual(12);
         expect(listRight - listLeft).toBeGreaterThanOrEqual(15 * 16);
+      },
+    );
+  });
+
+  describe("back to top", () => {
+    const box = (block: string, selector: string) =>
+      declarations(blockAfter(block, selector));
+
+    it("floats in the corner of the window below 1024px, where the shell's box is none", () => {
+      expect(box(narrow, ".namecard-floating {")).toEqual([
+        "display: contents",
+      ]);
+      expect(properties["--shell-floating-actions-position"]).toBeUndefined();
+    });
+
+    it("stands in the shell's box from 1024px, which floats right of the page", () => {
+      expect(spreadProperties["--shell-floating-actions-position"]).toBe(
+        "static",
+      );
+      const floating = box(
+        under(css, SPREAD_FROM).find((block) =>
+          block.includes(".namecard-floating {"),
+        )!,
+        ".namecard-floating {",
+      );
+      expect(floating).toEqual(
+        expect.arrayContaining([
+          "position: fixed",
+          "bottom: 10rem",
+          "left: var(--shell-floating-actions-left)",
+          "z-index: 40",
+        ]),
+      );
+    });
+
+    // The right column reaches the edge of a window that narrow: the cards,
+    // or the table of contents of a Post, would lie under it.
+    it("floats in the room between the two columns until the window has room right of the page, and rests where the columns end", () => {
+      const between = box(
+        blockAfter(css, BESIDE_PAGE_FROM),
+        `${BODY} > .namecard-floating {`,
+      );
+
+      expect(between).toEqual(
+        expect.arrayContaining([
+          "position: sticky",
+          "left: auto",
+          // The row of the columns, which ends where the footer begins.
+          "grid-area: 1 / 1 / 2 / -1",
+          "align-self: end",
+          "justify-self: start",
+          "height: 0",
+        ]),
+      );
+      // A focused page has one narrow column: it keeps the place right of
+      // the page.
+      expect(blockAfter(css, BESIDE_PAGE_FROM)).not.toContain(
+        '[data-focused="true"]',
+      );
+    });
+
+    it.each([SPREAD_FROM_PX, 1100, 1200, 1280, BESIDE_PAGE_FROM_PX - 1])(
+      "lies on neither column in a window %ipx wide",
+      (width) => {
+        const { contentRight, asideLeft, backToTop, gap } = across(width);
+
+        expect(gap).toBeGreaterThanOrEqual(BACK_TO_TOP_PX + 12);
+        expect(backToTop - contentRight).toBeGreaterThanOrEqual(6);
+        expect(asideLeft - (backToTop + BACK_TO_TOP_PX)).toBeGreaterThanOrEqual(
+          6,
+        );
+        // Centred in that room.
+        expect(backToTop - contentRight).toBeCloseTo(
+          asideLeft - (backToTop + BACK_TO_TOP_PX),
+        );
+      },
+    );
+
+    it.each([BESIDE_PAGE_FROM_PX, 1366, 1392, 1440, 1920, 2560])(
+      "stands right of the page, inside the window, in a window %ipx wide",
+      (width) => {
+        const { asideRight, backToTop } = across(width);
+
+        expect(backToTop - asideRight).toBeGreaterThanOrEqual(8);
+        expect(width - (backToTop + BACK_TO_TOP_PX)).toBeGreaterThanOrEqual(16);
       },
     );
   });

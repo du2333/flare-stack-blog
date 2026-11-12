@@ -50,6 +50,11 @@ const CARD_STEP_MS = 50;
  * document.
  *
  * A focused page keeps the rail, as any other page does.
+ *
+ * Back to top and the page's actions stand in a box of the shell's. Where
+ * the window has no room right of the frame, from 1024px, the stylesheet
+ * rests that box in the foot of the rail, at the end of the row of social
+ * links, so back to top never lies on the content.
  */
 function SidebarShell({
   pageKind,
@@ -152,7 +157,7 @@ function SidebarShell({
             </div>
           </div>
 
-          {floatingActions}
+          <div className="sidebar-floating">{floatingActions}</div>
         </div>
       </div>
     </FirstScreenProvider>

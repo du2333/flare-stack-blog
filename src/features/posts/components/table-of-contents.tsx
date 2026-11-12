@@ -11,6 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   FLOATING_ACTION_BUTTON_CLASS,
+  FLOATING_ACTION_ICON_CLASS,
   useFloatingActionsSlot,
 } from "@/components/layout/floating-actions";
 import { FloatingPopover } from "@/components/ui/floating-popover";
@@ -512,7 +513,10 @@ function CompactToc({
               )}
               style={{ display: "var(--shell-toc-compact, flex)" }}
             >
-              <TocIcon className="w-6 h-6 lg:w-7 lg:h-7" strokeWidth={2.5} />
+              <TocIcon
+                className={FLOATING_ACTION_ICON_CLASS}
+                strokeWidth={2.5}
+              />
             </button>,
             slot,
           )
