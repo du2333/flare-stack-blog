@@ -788,7 +788,7 @@ describe("Theme Recipe", () => {
       const host = render(
         createElement(ArchivePanel, {
           posts: [
-            post({ cover: COVER }),
+            post({ cover: COVER } as Partial<PostItem>),
             post({
               slug: "b",
               title: "《Second》",
