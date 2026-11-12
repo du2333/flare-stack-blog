@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PostPopularitySnapshotSchema } from "./post-popularity.schema";
 import {
   buildPostPopularitySnapshot,
   getPostPopularityWindow,
@@ -71,12 +72,41 @@ describe("post popularity", () => {
     ]);
   });
 
+  it("keeps the daily series with the snapshot, empty when none is given", () => {
+    const base = {
+      metrics: [],
+      posts: [],
+      window: {
+        startAt: Date.parse("2026-07-24T00:00:00.000Z"),
+        endAt: Date.parse("2026-08-22T23:59:59.999Z"),
+      },
+      syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+    };
+    const daily = [{ day: Date.parse("2026-07-24T00:00:00.000Z"), views: 3 }];
+
+    expect(buildPostPopularitySnapshot({ ...base, daily }).daily).toEqual(
+      daily,
+    );
+    expect(buildPostPopularitySnapshot(base).daily).toEqual([]);
+  });
+
+  it("reads a snapshot stored before the daily series existed", () => {
+    const stored = {
+      entries: [{ postId: 1, score: 2 }],
+      windowStart: 1,
+      windowEnd: 2,
+      syncedAt: 3,
+    };
+    expect(PostPopularitySnapshotSchema.parse(stored).daily).toEqual([]);
+  });
+
   it("expires a snapshot after seven days", () => {
     const snapshot = {
       entries: [{ postId: 1, score: 2 }],
       windowStart: Date.parse("2026-07-24T00:00:00.000Z"),
       windowEnd: Date.parse("2026-08-22T23:59:59.999Z"),
       syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+      daily: [],
     };
 
     expect(
@@ -99,6 +129,7 @@ describe("post popularity", () => {
       windowStart: Date.parse("2026-07-24T00:00:00.000Z"),
       windowEnd: Date.parse("2026-08-22T23:59:59.999Z"),
       syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+      daily: [],
     };
     const now = Date.parse("2026-08-23T12:00:00.000Z");
 
@@ -116,7 +147,7 @@ describe("isPostPopularityUnchanged", () => {
   const snapshot = (
     entries: Array<{ postId: number; score: number }>,
     syncedAt = Date.parse("2026-08-22T00:15:00.000Z"),
-  ) => ({ entries, windowStart: 0, windowEnd: 0, syncedAt });
+  ) => ({ entries, windowStart: 0, windowEnd: 0, syncedAt, daily: [] });
   const now = Date.parse("2026-08-23T00:15:00.000Z");
 
   it("matches the same posts, scores and order", () => {
@@ -130,6 +161,17 @@ describe("isPostPopularityUnchanged", () => {
     expect(isPostPopularityUnchanged(snapshot([]), snapshot([]), now)).toBe(
       true,
     );
+  });
+
+  it("ignores the daily series", () => {
+    const entries = [{ postId: 1, score: 4 }];
+    expect(
+      isPostPopularityUnchanged(
+        snapshot(entries),
+        { ...snapshot(entries), daily: [{ day: 0, views: 9 }] },
+        now,
+      ),
+    ).toBe(true);
   });
 
   it("differs when a score, the order or the post set changes", () => {
