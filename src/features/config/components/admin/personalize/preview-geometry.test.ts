@@ -1,31 +1,49 @@
 import { expect, it } from "vitest";
-import { previewFrameLayout } from "./preview-geometry";
+import { PREVIEW_VIEWPORT, previewFrameLayout } from "./preview-geometry";
 
-it("scales a desktop frame to the width of the space and makes it as tall as the space", () => {
-  const layout = previewFrameLayout("desktop", { width: 640, height: 800 });
-  expect(layout.scale).toBe(0.5);
-  expect(layout.frame).toEqual({ width: 1280, height: 1600 });
-  expect(layout.canvas).toEqual({ width: 640, height: 800 });
+it("renders the desktop in a true 1440 x 900 viewport and the phone in 390 x 844", () => {
+  expect(PREVIEW_VIEWPORT.desktop).toEqual({ width: 1440, height: 900 });
+  expect(PREVIEW_VIEWPORT.phone).toEqual({ width: 390, height: 844 });
+  for (const device of ["desktop", "phone"] as const) {
+    for (const space of [
+      { width: 700, height: 700 },
+      { width: 3000, height: 3000 },
+      { width: 0, height: 0 },
+    ]) {
+      expect(previewFrameLayout(device, space).frame).toEqual(
+        PREVIEW_VIEWPORT[device],
+      );
+    }
+  }
 });
 
-it("keeps a phone frame at its natural size where it fits, full height and in the middle", () => {
-  const layout = previewFrameLayout("phone", { width: 600, height: 900 });
+it("scales the desktop frame by the tighter of the width and the height of the space", () => {
+  const wide = previewFrameLayout("desktop", { width: 720, height: 900 });
+  expect(wide.scale).toBe(0.5);
+  expect(wide.canvas).toEqual({ width: 720, height: 450 });
+
+  const short = previewFrameLayout("desktop", { width: 2880, height: 450 });
+  expect(short.scale).toBe(0.5);
+  expect(short.canvas).toEqual({ width: 720, height: 450 });
+});
+
+it("keeps a phone frame at its natural size where it fits", () => {
+  const layout = previewFrameLayout("phone", { width: 700, height: 900 });
   expect(layout.scale).toBe(1);
-  expect(layout.frame).toEqual({ width: 390, height: 900 });
-  expect(layout.canvas).toEqual({ width: 390, height: 900 });
+  expect(layout.canvas).toEqual({ width: 390, height: 844 });
 });
 
 it("scales a phone frame down only for a space narrower or shorter than a phone", () => {
-  const narrow = previewFrameLayout("phone", { width: 195, height: 2000 });
-  expect(narrow.scale).toBe(0.5);
-  expect(narrow.canvas.width).toBe(195);
-  expect(narrow.frame.height).toBe(4000);
-
-  const short = previewFrameLayout("phone", { width: 800, height: 422 });
-  expect(short.scale).toBe(0.5);
-  expect(short.frame.height).toBe(844);
+  expect(previewFrameLayout("phone", { width: 195, height: 2000 }).scale).toBe(
+    0.5,
+  );
+  expect(previewFrameLayout("phone", { width: 800, height: 422 }).scale).toBe(
+    0.5,
+  );
 });
 
 it("has no scale before the space is measured", () => {
-  expect(previewFrameLayout("desktop", { width: 0, height: 0 }).scale).toBe(0);
+  const layout = previewFrameLayout("desktop", { width: 0, height: 0 });
+  expect(layout.scale).toBe(0);
+  expect(layout.canvas).toEqual({ width: 0, height: 0 });
 });

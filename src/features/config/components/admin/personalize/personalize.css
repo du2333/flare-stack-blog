@@ -171,8 +171,9 @@
 }
 .personalize[data-wide] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(440px, 42%, 680px);
-  gap: calc(40 * var(--admin-unit));
+  /* A customizer: the controls in a column of their own width, the preview in the rest. */
+  grid-template-columns: 22rem minmax(0, 1fr);
+  gap: 32px;
   align-items: start;
 }
 .personalize-form {
@@ -225,10 +226,31 @@
   background: var(--fuwari-btn-regular-bg);
   overflow: hidden;
 }
+/* The room for the device: the stage less a margin, where the frame is centred. */
+.personalize-fit {
+  position: absolute;
+  inset: 16px;
+  display: grid;
+  place-items: center;
+}
+/* The scaled viewport, a surface of its own on the quiet ground. */
 .personalize-canvas {
   position: relative;
-  margin-inline: auto;
   overflow: hidden;
+  border-radius: 10px;
+  background: var(--fuwari-card-bg);
+  box-shadow:
+    0 0 0 1px var(--admin-rule),
+    0 6px 24px rgb(0 0 0 / 0.12);
+}
+.personalize-canvas[data-device="phone"] {
+  border-radius: 22px;
+}
+.personalize-preview-size {
+  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .personalize-scaler {
   position: absolute;

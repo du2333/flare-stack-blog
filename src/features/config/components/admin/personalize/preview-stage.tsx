@@ -148,37 +148,37 @@ export function PreviewStage({
   const loading = pending !== undefined && !failed;
 
   return (
-    <div
-      ref={stageRef}
-      className="personalize-stage"
-      data-loading={loading || undefined}
-    >
-      <div
-        className="personalize-canvas"
-        style={{
-          width: canvas.width,
-          height: canvas.height,
-          visibility: scale > 0 ? undefined : "hidden",
-        }}
-      >
+    <div className="personalize-stage" data-loading={loading || undefined}>
+      {/* What the device's viewport is scaled to fit: the stage less its margin. */}
+      <div ref={stageRef} className="personalize-fit">
         <div
-          className="personalize-scaler"
+          className="personalize-canvas"
+          data-device={device}
           style={{
-            width: size.width,
-            height: size.height,
-            transform: `scale(${scale})`,
+            width: canvas.width,
+            height: canvas.height,
+            visibility: scale > 0 ? undefined : "hidden",
           }}
         >
-          {frames.map((frame) => (
-            <PreviewFrame
-              key={frame.key}
-              frame={frame}
-              shown={frame.key === lastShown?.key}
-              size={size}
-              live={live}
-              onLoad={loaded}
-            />
-          ))}
+          <div
+            className="personalize-scaler"
+            style={{
+              width: size.width,
+              height: size.height,
+              transform: `scale(${scale})`,
+            }}
+          >
+            {frames.map((frame) => (
+              <PreviewFrame
+                key={frame.key}
+                frame={frame}
+                shown={frame.key === lastShown?.key}
+                size={size}
+                live={live}
+                onLoad={loaded}
+              />
+            ))}
+          </div>
         </div>
       </div>
       {loading ? (

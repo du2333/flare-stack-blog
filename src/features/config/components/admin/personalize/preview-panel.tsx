@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { adminPostsQuery } from "@/features/posts/queries";
 import { m } from "@/paraglide/messages";
-import type { PreviewDevice } from "./preview-geometry";
+import { PREVIEW_VIEWPORT, type PreviewDevice } from "./preview-geometry";
 import {
   usePreviewAddress,
   type PreviewTarget,
@@ -79,6 +79,12 @@ export function PreviewPanel({
             onValueChange={setPage}
           />
         ) : null}
+        <span
+          className="personalize-preview-size"
+          aria-label={m.personalize_preview_size()}
+        >
+          {PREVIEW_VIEWPORT[device].width} × {PREVIEW_VIEWPORT[device].height}
+        </span>
         {actions}
       </div>
       <PreviewStage

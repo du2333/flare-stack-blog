@@ -48,7 +48,7 @@ const BRAND_MARK_SIZE = 28;
 const BANNER_FOCUS_HINT_ID = "site-banner-focus-hint";
 
 /** From this width the preview sits beside the form; below it is a button. */
-const WIDE_PREVIEW_QUERY = "(min-width: 1280px)";
+const WIDE_PREVIEW_QUERY = "(min-width: 1320px)";
 
 function useBannerFocus() {
   const { control, setValue } = useFormContext<SystemConfig>();
