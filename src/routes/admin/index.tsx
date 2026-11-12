@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { StudioOverview } from "@/features/dashboard/components/studio/studio-overview";
+import { OverviewPage } from "@/features/dashboard/components/overview-page";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
 import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin/")({
   ssr: "data-only",
-  component: StudioOverview,
+  component: OverviewPage,
   pendingComponent: DashboardSkeleton,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(dashboardOverviewQuery);

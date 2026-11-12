@@ -125,7 +125,9 @@ describe("The Admin's variables", () => {
       ].map((match) => match[1]);
       return (
         refs.length > 0 &&
-        refs.every((ref) => ref.startsWith("--admin-") && followsScheme(ref, seen))
+        refs.every(
+          (ref) => ref.startsWith("--admin-") && followsScheme(ref, seen),
+        )
       );
     };
     const missing = [...adminLight.keys()].filter(

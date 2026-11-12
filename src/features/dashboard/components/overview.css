@@ -1,14 +1,17 @@
-/* PROTOTYPE (throwaway): the Admin redesign, round 3. Never merge. */
+/*
+ * The overview (overview-page.tsx): cards on the canvas. What to write next,
+ * how the site is doing, and what waits for an answer.
+ */
 
 /* The overview is a workspace route: the frame gives it the height, it scrolls. */
-.so-scroll {
+.overview-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--admin-line-strong) transparent;
 }
-.so {
+.overview {
   container-type: inline-size;
   width: 100%;
   max-width: 1400px;
@@ -17,14 +20,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.so-rise {
-  animation: so-rise 0.62s var(--admin-ease) both;
+.overview-rise {
+  animation: overview-rise 0.62s var(--admin-ease) both;
   animation-delay: calc(var(--i, 0) * 55ms);
 }
 
 /* ── Head ── */
 
-.so-head {
+.overview-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -32,29 +35,29 @@
   flex-wrap: wrap;
   margin-bottom: 22px;
 }
-.so-date {
+.overview-date {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   color: var(--admin-fg-3);
 }
-.so-date svg {
+.overview-date svg {
   color: var(--admin-accent);
 }
-.so-hello {
+.overview-hello {
   margin-top: 4px;
   font-size: 28px;
   line-height: 36px;
   font-weight: 620;
   letter-spacing: -0.022em;
 }
-.so-notices {
+.overview-notices {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
-.so-notice {
+.overview-notice {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -71,59 +74,59 @@
     color 0.15s,
     box-shadow 0.15s;
 }
-.so-notice:hover {
+.overview-notice:hover {
   color: var(--admin-fg);
   box-shadow:
     0 0 0 1px var(--admin-line-strong),
     var(--admin-shadow-card);
 }
-.so-notice i {
+.overview-notice i {
   width: 6px;
   height: 6px;
   border-radius: 999px;
   background: var(--admin-accent);
 }
-.so-notice svg {
+.overview-notice svg {
   color: var(--admin-fg-3);
   transition: transform 0.25s var(--admin-ease);
 }
-.so-notice:hover svg {
+.overview-notice:hover svg {
   transform: translateX(2px);
 }
 
 /* ── Layout ── */
 
-.so-grid {
+.overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 384px;
   gap: 20px;
   align-items: start;
 }
-.so-col {
+.overview-col {
   display: flex;
   flex-direction: column;
   gap: 20px;
   min-width: 0;
 }
-.so-two {
+.overview-two {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
   gap: 20px;
 }
 @container (max-width: 1060px) {
-  .so-grid {
+  .overview-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 @container (max-width: 700px) {
-  .so-two {
+  .overview-two {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 /* ── Card ── */
 
-.so-card {
+.overview-card {
   min-width: 0;
   border-radius: var(--admin-radius-card);
   background: var(--admin-surface);
@@ -131,23 +134,23 @@
     0 0 0 1px var(--admin-line),
     var(--admin-shadow-card);
 }
-.so-card-head {
+.overview-card-head {
   display: flex;
   align-items: center;
   gap: 8px;
   min-height: 52px;
   padding: 10px 12px 4px 20px;
 }
-.so-card-title {
+.overview-card-title {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.005em;
 }
-.so-card-sub {
+.overview-card-sub {
   font-size: 12.5px;
   color: var(--admin-fg-3);
 }
-.so-count {
+.overview-count {
   display: inline-grid;
   place-items: center;
   min-width: 22px;
@@ -159,7 +162,7 @@
   font-size: 11.5px;
   font-weight: 600;
 }
-.so-card-link {
+.overview-card-link {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -173,17 +176,17 @@
     color 0.15s,
     background 0.15s;
 }
-.so-card-link svg {
+.overview-card-link svg {
   transition: transform 0.25s var(--admin-ease);
 }
-.so-card-link:hover {
+.overview-card-link:hover {
   color: var(--admin-fg);
   background: var(--admin-hover);
 }
-.so-card-link:hover svg {
+.overview-card-link:hover svg {
   transform: translateX(2px);
 }
-.so-empty {
+.overview-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -193,13 +196,13 @@
   font-size: 13px;
   text-align: center;
 }
-.so-empty svg {
+.overview-empty svg {
   color: var(--admin-accent);
 }
 
 /* ── Hero ── */
 
-.so-hero {
+.overview-hero {
   --hero-accent: var(--admin-accent);
   position: relative;
   isolation: isolate;
@@ -216,13 +219,13 @@
     0 1px 2px rgb(0 0 0 / 0.1),
     0 16px 36px -16px rgb(0 0 0 / 0.42);
 }
-:root.dark .so-hero {
+:root.dark .overview-hero {
   background: #17171b;
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 0.09),
     0 16px 36px -16px rgb(0 0 0 / 0.6);
 }
-.so-hero-glow {
+.overview-hero-glow {
   position: absolute;
   z-index: -1;
   top: -78%;
@@ -237,9 +240,9 @@
   );
   filter: blur(28px);
   opacity: 0.55;
-  animation: so-drift 15s ease-in-out infinite alternate;
+  animation: overview-drift 15s ease-in-out infinite alternate;
 }
-.so-hero-glow.is-b {
+.overview-hero-glow.is-b {
   top: 30%;
   right: 22%;
   width: 44%;
@@ -253,7 +256,7 @@
   animation-direction: alternate-reverse;
 }
 /* A soft light that follows the pointer across the card. */
-.so-hero-spot {
+.overview-hero-spot {
   position: absolute;
   z-index: -1;
   inset: 0;
@@ -265,16 +268,16 @@
   opacity: 0;
   transition: opacity 0.4s ease;
 }
-.so-hero:hover .so-hero-spot {
+.overview-hero:hover .overview-hero-spot {
   opacity: 1;
 }
-:root.dark .so-hero-glow {
+:root.dark .overview-hero-glow {
   opacity: 0.42;
 }
-:root.dark .so-hero-glow.is-b {
+:root.dark .overview-hero-glow.is-b {
   opacity: 0.16;
 }
-.so-hero-grain {
+.overview-hero-grain {
   position: absolute;
   z-index: -1;
   inset: 0;
@@ -282,13 +285,13 @@
   opacity: 0.2;
   mix-blend-mode: soft-light;
 }
-.so-hero-main {
+.overview-hero-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
-.so-eyebrow {
+.overview-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -297,22 +300,22 @@
   letter-spacing: 0.02em;
   color: rgb(255 255 255 / 0.62);
 }
-.so-eyebrow i {
+.overview-eyebrow i {
   position: relative;
   width: 6px;
   height: 6px;
   border-radius: 999px;
   background: var(--hero-accent);
 }
-.so-eyebrow i::after {
+.overview-eyebrow i::after {
   content: "";
   position: absolute;
   inset: -4px;
   border-radius: 999px;
   border: 1px solid var(--hero-accent);
-  animation: so-ping 2.4s var(--admin-ease-soft) infinite;
+  animation: overview-ping 2.4s var(--admin-ease-soft) infinite;
 }
-.so-hero-title {
+.overview-hero-title {
   max-width: 26em;
   margin-top: 10px;
   display: -webkit-box;
@@ -325,61 +328,31 @@
   letter-spacing: -0.018em;
   text-wrap: balance;
 }
-.so-hero-meta {
+.overview-hero-meta {
   margin-top: 6px;
   font-size: 13px;
   color: rgb(255 255 255 / 0.56);
 }
-.so-hero-actions {
+.overview-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: auto;
   padding-top: 22px;
 }
-.so-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 550;
-  transition:
-    transform 0.2s var(--admin-ease),
-    background 0.15s,
-    opacity 0.15s;
-}
-.so-btn:active {
-  transform: scale(0.97);
-}
-.so-btn:disabled {
-  opacity: 0.6;
-}
-.so-btn svg {
-  transition: transform 0.28s var(--admin-ease);
-}
-.so-btn.is-light {
+/* The hero's buttons are the inverse and glass Buttons; the inverse one
+   leads with a little more room and nudges its arrow under the pointer. */
+.overview-hero-actions .fuwari-button-inverse {
   padding-left: 16px;
-  background: #fff;
-  color: #131316;
-  box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.5);
 }
-.so-btn.is-light:hover svg {
+.overview-hero-actions .fuwari-button-inverse:hover svg {
   transform: translateX(3px);
 }
-.so-btn.is-ghost {
-  background: rgb(255 255 255 / 0.1);
-  color: #fff;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
-  backdrop-filter: blur(10px);
-}
-.so-btn.is-ghost:hover {
-  background: rgb(255 255 255 / 0.16);
+.overview-hero-actions .fuwari-button:disabled {
+  opacity: 0.6;
 }
 
-.so-week {
+.overview-week {
   align-self: flex-end;
   flex: none;
   display: flex;
@@ -387,21 +360,21 @@
   align-items: flex-end;
   gap: 10px;
 }
-.so-week-label {
+.overview-week-label {
   font-size: 11.5px;
   color: rgb(255 255 255 / 0.5);
 }
-.so-week-label b {
+.overview-week-label b {
   color: #fff;
   font-weight: 600;
 }
-.so-week-bars {
+.overview-week-bars {
   display: flex;
   align-items: flex-end;
   gap: 9px;
   height: 78px;
 }
-.so-week-day {
+.overview-week-day {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -411,34 +384,34 @@
   font-size: 10.5px;
   color: rgb(255 255 255 / 0.42);
 }
-.so-week-bar {
+.overview-week-bar {
   width: 16px;
   min-height: 4px;
   height: calc(var(--v) * 54px + 4px);
   border-radius: 5px;
   background: rgb(255 255 255 / 0.16);
   transform-origin: bottom;
-  animation: so-grow-y 0.7s var(--admin-ease) both;
+  animation: overview-grow-y 0.7s var(--admin-ease) both;
   animation-delay: calc(var(--i) * 45ms + 260ms);
 }
-.so-week-day[data-on] .so-week-bar {
+.overview-week-day[data-on] .overview-week-bar {
   background: rgb(255 255 255 / 0.72);
 }
-.so-week-day[data-today] {
+.overview-week-day[data-today] {
   color: #fff;
 }
-.so-week-day[data-today] .so-week-bar {
+.overview-week-day[data-today] .overview-week-bar {
   background: var(--hero-accent);
   box-shadow: 0 0 14px -2px var(--hero-accent);
 }
 @container (max-width: 620px) {
-  .so-week {
+  .overview-week {
     display: none;
   }
-  .so-hero {
+  .overview-hero {
     padding: 22px 20px 20px;
   }
-  .so-hero-title {
+  .overview-hero-title {
     font-size: 22px;
     line-height: 30px;
   }
@@ -446,39 +419,39 @@
 
 /* ── Pulse: the window's views, and the site's three counts ── */
 
-.so-pulse {
+.overview-pulse {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
 }
-.so-pulse-side {
+.overview-pulse-side {
   display: flex;
   flex-direction: column;
   padding: 20px 14px 12px 20px;
   border-right: 1px solid var(--admin-line);
 }
-.so-kicker {
+.overview-kicker {
   font-size: 12.5px;
   color: var(--admin-fg-3);
 }
-.so-big {
+.overview-big {
   margin-top: 6px;
   font-size: 40px;
   line-height: 44px;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
-.so-range {
+.overview-range {
   margin-top: 4px;
   font-size: 12px;
   color: var(--admin-fg-3);
 }
-.so-minis {
+.overview-minis {
   display: flex;
   flex-direction: column;
   margin: auto -6px 0;
   padding-top: 16px;
 }
-.so-mini {
+.overview-mini {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -491,33 +464,33 @@
     background 0.15s,
     color 0.15s;
 }
-.so-mini:hover {
+.overview-mini:hover {
   background: var(--admin-hover);
   color: var(--admin-fg);
 }
-.so-mini svg {
+.overview-mini svg {
   flex: none;
   color: var(--admin-fg-3);
 }
-.so-mini small {
+.overview-mini small {
   font-size: 11.5px;
   color: var(--admin-fg-3);
 }
-.so-mini small[data-alert] {
+.overview-mini small[data-alert] {
   color: var(--admin-accent-text);
 }
-.so-mini b {
+.overview-mini b {
   margin-left: auto;
   color: var(--admin-fg);
   font-weight: 600;
 }
-.so-pulse-main {
+.overview-pulse-main {
   min-width: 0;
   display: flex;
   flex-direction: column;
   padding: 14px 10px 8px 8px;
 }
-.so-pulse-top {
+.overview-pulse-top {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -525,46 +498,39 @@
   font-size: 12.5px;
   color: var(--admin-fg-3);
 }
-.so-legend {
+.overview-legend {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.so-legend i {
+.overview-legend i {
   width: 10px;
   height: 3px;
   border-radius: 2px;
   background: var(--admin-accent);
 }
-.so-stub {
-  margin-left: auto;
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px dashed var(--admin-line-strong);
-  font-size: 11px;
-}
-.so-chart {
+.trend-chart {
   position: relative;
   margin-top: auto;
   height: 208px;
 }
-.so-chart svg {
+.trend-chart svg {
   display: block;
   overflow: visible;
   touch-action: pan-y;
 }
-.so-chart-grid {
+.trend-chart-grid {
   stroke: var(--admin-line);
   stroke-dasharray: 3 4;
 }
-.so-chart-base {
+.trend-chart-base {
   stroke: var(--admin-line-strong);
 }
-.so-chart-tick {
+.trend-chart-tick {
   fill: var(--admin-fg-3);
   font-size: 11px;
 }
-.so-chart-line {
+.trend-chart-line {
   fill: none;
   stroke: var(--admin-accent);
   stroke-width: 2;
@@ -572,33 +538,33 @@
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: so-draw 1.3s var(--admin-ease) 0.25s forwards;
+  animation: overview-draw 1.3s var(--admin-ease) 0.25s forwards;
 }
-.so-chart-area {
+.trend-chart-area {
   animation: admin-fade 0.9s ease 0.7s both;
 }
-.so-chart-now circle:first-child {
+.trend-chart-now circle:first-child {
   fill: var(--admin-accent);
   opacity: 0.18;
   transform-box: fill-box;
   transform-origin: center;
   animation:
     admin-fade 0.3s ease 1.4s both,
-    so-breathe 2.6s ease-in-out 1.4s infinite;
+    overview-breathe 2.6s ease-in-out 1.4s infinite;
 }
-.so-chart-now circle:last-child,
-.so-chart-dot {
+.trend-chart-now circle:last-child,
+.trend-chart-dot {
   fill: var(--admin-accent);
   stroke: var(--admin-surface);
   stroke-width: 2;
 }
-.so-chart-now circle:last-child {
+.trend-chart-now circle:last-child {
   animation: admin-fade 0.3s ease 1.4s both;
 }
-.so-chart-cursor {
+.trend-chart-cursor {
   stroke: var(--admin-line-strong);
 }
-.so-chart-tip {
+.trend-chart-tip {
   position: absolute;
   z-index: 2;
   transform: translate(-50%, calc(-100% - 14px));
@@ -615,26 +581,28 @@
   pointer-events: none;
   box-shadow: 0 8px 20px -8px rgb(0 0 0 / 0.4);
 }
-.so-chart-tip b {
+.trend-chart-tip b {
   font-size: 14px;
   font-weight: 620;
 }
-.so-chart-tip span {
+.trend-chart-tip span {
   opacity: 0.6;
 }
-.so-chart-none {
-  flex: 1;
+/* In the chart's place when there is no daily series to draw. */
+.overview-chart-note {
   display: grid;
   place-items: center;
-  min-height: 200px;
+  height: 100%;
+  padding: 0 16px;
   color: var(--admin-fg-3);
   font-size: 13px;
+  text-align: center;
 }
 @container (max-width: 700px) {
-  .so-pulse {
+  .overview-pulse {
     grid-template-columns: minmax(0, 1fr);
   }
-  .so-pulse-side {
+  .overview-pulse-side {
     border-right: 0;
     border-bottom: 1px solid var(--admin-line);
   }
@@ -642,10 +610,10 @@
 
 /* ── Popular ── */
 
-.so-rank {
+.overview-rank {
   padding: 2px 10px 12px;
 }
-.so-rank a {
+.overview-rank a {
   position: relative;
   isolation: isolate;
   display: flex;
@@ -656,7 +624,7 @@
   border-radius: 10px;
   transition: background 0.15s;
 }
-.so-rank a::before {
+.overview-rank a::before {
   content: "";
   position: absolute;
   z-index: -1;
@@ -666,23 +634,23 @@
   border-radius: 8px;
   background: var(--admin-accent-soft);
   transform-origin: left;
-  animation: so-grow-x 0.9s var(--admin-ease) both;
+  animation: overview-grow-x 0.9s var(--admin-ease) both;
   animation-delay: calc(var(--i) * 70ms + 320ms);
 }
-.so-rank a:hover {
+.overview-rank a:hover {
   background: var(--admin-hover);
 }
-.so-rank-no {
+.overview-rank-no {
   width: 16px;
   flex: none;
   font-size: 12px;
   font-weight: 600;
   color: var(--admin-fg-3);
 }
-.so-rank li:first-child .so-rank-no {
+.overview-rank li:first-child .overview-rank-no {
   color: var(--admin-accent-text);
 }
-.so-rank-title {
+.overview-rank-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -691,7 +659,7 @@
   font-size: 13.5px;
   font-weight: 500;
 }
-.so-rank-views {
+.overview-rank-views {
   font-size: 12.5px;
   font-weight: 550;
   color: var(--admin-fg-2);
@@ -699,78 +667,78 @@
 
 /* ── Writing heatmap ── */
 
-.so-heat {
+.overview-heat {
   padding: 2px 20px 18px;
 }
-.so-heat-facts {
+.overview-heat-facts {
   display: flex;
   gap: 22px;
   margin-bottom: 16px;
 }
-.so-heat-fact b {
+.overview-heat-fact b {
   display: block;
   font-size: 22px;
   line-height: 28px;
   font-weight: 620;
   letter-spacing: -0.02em;
 }
-.so-heat-fact b small {
+.overview-heat-fact b small {
   margin-left: 3px;
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0;
   color: var(--admin-fg-2);
 }
-.so-heat-fact span {
+.overview-heat-fact span {
   font-size: 12px;
   color: var(--admin-fg-3);
 }
-.so-heat-wrap {
+.overview-heat-wrap {
   position: relative;
 }
-.so-heat-months,
-.so-heat-grid {
+.overview-heat-months,
+.overview-heat-grid {
   display: grid;
   grid-template-columns: repeat(var(--weeks), minmax(0, 1fr));
   gap: 3px;
 }
-.so-heat-months {
+.overview-heat-months {
   height: 18px;
   font-size: 11px;
   color: var(--admin-fg-3);
   white-space: nowrap;
 }
-.so-heat-grid {
+.overview-heat-grid {
   grid-template-rows: repeat(7, auto);
   grid-auto-flow: column;
 }
-.so-heat-cell {
+.overview-heat-cell {
   aspect-ratio: 1;
   border-radius: 22%;
   background: var(--admin-hover);
   transition: transform 0.15s var(--admin-ease);
 }
-.so-heat-cell[data-future] {
+.overview-heat-cell[data-future] {
   background: none;
 }
-.so-heat-cell[data-level="1"] {
+.overview-heat-cell[data-level="1"] {
   background: color-mix(in srgb, var(--admin-accent) 30%, transparent);
 }
-.so-heat-cell[data-level="2"] {
+.overview-heat-cell[data-level="2"] {
   background: color-mix(in srgb, var(--admin-accent) 52%, transparent);
 }
-.so-heat-cell[data-level="3"] {
+.overview-heat-cell[data-level="3"] {
   background: color-mix(in srgb, var(--admin-accent) 76%, transparent);
 }
-.so-heat-cell[data-level="4"] {
+.overview-heat-cell[data-level="4"] {
   background: var(--admin-accent);
 }
-.so-heat-cell[data-label]:hover {
+.overview-heat-cell[data-label]:hover {
   transform: scale(1.35);
   outline: 1.5px solid var(--admin-fg);
   outline-offset: 1px;
 }
-.so-heat-tip {
+.overview-heat-tip {
   position: absolute;
   z-index: 2;
   transform: translate(-50%, calc(-100% - 8px));
@@ -782,7 +750,7 @@
   white-space: nowrap;
   pointer-events: none;
 }
-.so-heat-foot {
+.overview-heat-foot {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -791,16 +759,16 @@
   font-size: 11px;
   color: var(--admin-fg-3);
 }
-.so-heat-foot .so-heat-cell {
+.overview-heat-foot .overview-heat-cell {
   width: 10px;
 }
 
 /* ── Inbox rows: Comments and Friend Links ── */
 
-.so-list {
+.overview-list {
   padding: 0 8px 8px;
 }
-.so-item {
+.overview-item {
   display: grid;
   grid-template-rows: 1fr;
   transition:
@@ -808,16 +776,16 @@
     opacity 0.24s ease,
     transform 0.36s var(--admin-ease);
 }
-.so-item > div {
+.overview-item > div {
   min-height: 0;
   overflow: hidden;
 }
-.so-item[data-leaving] {
+.overview-item[data-leaving] {
   grid-template-rows: 0fr;
   opacity: 0;
   transform: translateX(12px);
 }
-.so-cmt {
+.overview-cmt {
   position: relative;
   display: flex;
   gap: 12px;
@@ -825,11 +793,11 @@
   border-radius: 12px;
   transition: background 0.15s;
 }
-.so-cmt:hover,
-.so-cmt:focus-within {
+.overview-cmt:hover,
+.overview-cmt:focus-within {
   background: var(--admin-hover);
 }
-.so-face {
+.overview-face {
   width: 32px;
   height: 32px;
   flex: none;
@@ -842,28 +810,28 @@
   font-size: 13px;
   font-weight: 600;
 }
-:root.dark .so-face {
+:root.dark .overview-face {
   background: hsl(var(--h) 28% 24%);
   color: hsl(var(--h) 70% 82%);
 }
-.so-face.is-square {
+.overview-face.is-square {
   border-radius: 9px;
 }
-.so-face img {
+.overview-face img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.so-cmt-body {
+.overview-cmt-body {
   flex: 1;
   min-width: 0;
 }
-.so-cmt-by {
+.overview-cmt-by {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
-.so-cmt-by b {
+.overview-cmt-by b {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -871,12 +839,12 @@
   font-size: 13.5px;
   font-weight: 600;
 }
-.so-cmt-by time {
+.overview-cmt-by time {
   flex: none;
   font-size: 12px;
   color: var(--admin-fg-3);
 }
-.so-cmt-text {
+.overview-cmt-text {
   margin-top: 2px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -886,7 +854,7 @@
   line-height: 20px;
   color: var(--admin-fg-2);
 }
-.so-cmt-src {
+.overview-cmt-src {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -894,16 +862,16 @@
   font-size: 12px;
   color: var(--admin-fg-3);
 }
-.so-cmt-src span {
+.overview-cmt-src span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.so-cmt-src svg {
+.overview-cmt-src svg {
   flex: none;
 }
-.so-acts {
+.overview-acts {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -921,65 +889,42 @@
     opacity 0.16s,
     transform 0.24s var(--admin-ease);
 }
-.so-cmt:hover .so-acts,
-.so-cmt:focus-within .so-acts {
+.overview-cmt:hover .overview-acts,
+.overview-cmt:focus-within .overview-acts {
   opacity: 1;
   transform: none;
 }
 @media (pointer: coarse) {
-  .so-acts {
+  .overview-acts {
     opacity: 1;
     transform: none;
   }
 }
-.so-act {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
-  padding: 0 8px;
-  border-radius: 8px;
-  color: var(--admin-fg-2);
-  font-size: 12.5px;
-  font-weight: 500;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.so-act:hover {
-  background: var(--admin-hover);
-  color: var(--admin-fg);
-}
-.so-act.is-icon {
-  width: 28px;
-  padding: 0;
-  justify-content: center;
-}
-.so-reply {
+.overview-reply {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.34s var(--admin-ease);
 }
-.so-reply[data-open] {
+.overview-reply[data-open] {
   grid-template-rows: 1fr;
 }
-.so-reply > div {
+.overview-reply > div {
   min-height: 0;
   overflow: hidden;
 }
-.so-reply-box {
+.overview-reply-box {
   margin: 2px 12px 12px 56px;
   border-radius: 12px;
   background: var(--admin-surface);
   box-shadow: 0 0 0 1px var(--admin-line-strong);
   transition: box-shadow 0.2s;
 }
-.so-reply-box:focus-within {
+.overview-reply-box:focus-within {
   box-shadow:
     0 0 0 1px var(--admin-accent),
     0 0 0 4px var(--admin-accent-soft);
 }
-.so-reply-box textarea {
+.overview-reply-box textarea {
   display: block;
   width: 100%;
   min-height: 64px;
@@ -992,45 +937,26 @@
   font-size: 13.5px;
   line-height: 20px;
 }
-.so-reply-box textarea:focus-visible {
+.overview-reply-box textarea:focus-visible {
   outline: 0;
 }
-.so-reply-box textarea::placeholder {
+.overview-reply-box textarea::placeholder {
   color: var(--admin-fg-3);
 }
-.so-reply-foot {
+.overview-reply-foot {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
   padding: 4px 6px 6px;
 }
-.so-reply-foot span {
+.overview-reply-foot > span {
   margin-right: auto;
   padding-left: 6px;
   font-size: 11.5px;
   color: var(--admin-fg-3);
 }
-.so-send {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background: var(--admin-ink);
-  color: var(--admin-on-ink);
-  font-size: 12.5px;
-  font-weight: 550;
-  transition:
-    opacity 0.15s,
-    transform 0.2s var(--admin-ease);
-}
-.so-send:disabled {
-  opacity: 0.35;
-}
-.so-send:not(:disabled):active {
-  transform: scale(0.96);
-}
-
-.so-link {
+.overview-link {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1038,44 +964,33 @@
   border-radius: 12px;
   transition: background 0.15s;
 }
-.so-link:hover {
+.overview-link:hover {
   background: var(--admin-hover);
 }
-.so-link-copy {
+.overview-link-copy {
   flex: 1;
   min-width: 0;
 }
-.so-link-copy b,
-.so-link-copy span {
+.overview-link-copy b,
+.overview-link-copy span {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.so-link-copy b {
+.overview-link-copy b {
   font-size: 13.5px;
   font-weight: 600;
 }
-.so-link-copy span {
+.overview-link-copy span {
   font-size: 12px;
   color: var(--admin-fg-3);
 }
-.so-approve {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
+/* An outline Button that fills with ink under the pointer. */
+.overview-approve.fuwari-button {
   padding: 0 10px 0 8px;
-  border-radius: 8px;
-  box-shadow: inset 0 0 0 1px var(--admin-line-strong);
-  font-size: 12.5px;
-  font-weight: 550;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    box-shadow 0.15s;
 }
-.so-approve:hover {
+.overview-approve.fuwari-button:not(:disabled):hover {
   background: var(--admin-ink);
   color: var(--admin-on-ink);
   box-shadow: none;
@@ -1083,10 +998,10 @@
 
 /* ── Recent edits ── */
 
-.so-recent {
+.overview-recent {
   padding: 0 8px 10px;
 }
-.so-recent a {
+.overview-recent a {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1095,24 +1010,24 @@
   border-radius: 10px;
   transition: background 0.15s;
 }
-.so-recent a:hover {
+.overview-recent a:hover {
   background: var(--admin-hover);
 }
-.so-state {
+.overview-state {
   width: 7px;
   height: 7px;
   flex: none;
   border-radius: 999px;
   background: var(--admin-line-strong);
 }
-.so-state[data-state="draft"] {
+.overview-state[data-state="draft"] {
   background: none;
   box-shadow: inset 0 0 0 1.5px var(--admin-accent);
 }
-.so-state[data-state="changed"] {
+.overview-state[data-state="changed"] {
   background: var(--admin-accent);
 }
-.so-recent-title {
+.overview-recent-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -1120,40 +1035,40 @@
   white-space: nowrap;
   font-size: 13.5px;
 }
-.so-recent-tag {
+.overview-recent-tag {
   flex: none;
   font-size: 11.5px;
   color: var(--admin-accent-text);
 }
-.so-recent svg {
+.overview-recent svg {
   flex: none;
   color: var(--admin-fg-3);
 }
-.so-recent time {
+.overview-recent time {
   flex: none;
   font-size: 12px;
   color: var(--admin-fg-3);
 }
 
 @container (max-width: 520px) {
-  .so-hello {
+  .overview-hello {
     font-size: 24px;
     line-height: 32px;
   }
 }
 @media (max-width: 640px) {
-  .so {
+  .overview {
     padding: 18px 16px 84px;
   }
 }
 
-@keyframes so-rise {
+@keyframes overview-rise {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
 }
-@keyframes so-drift {
+@keyframes overview-drift {
   from {
     transform: translate(0, 0) scale(1);
   }
@@ -1161,7 +1076,7 @@
     transform: translate(-9%, 10%) scale(1.14);
   }
 }
-@keyframes so-ping {
+@keyframes overview-ping {
   0% {
     opacity: 0.9;
     transform: scale(0.6);
@@ -1172,24 +1087,119 @@
     transform: scale(1.7);
   }
 }
-@keyframes so-breathe {
+@keyframes overview-breathe {
   50% {
     transform: scale(1.35);
     opacity: 0.08;
   }
 }
-@keyframes so-draw {
+@keyframes overview-draw {
   to {
     stroke-dashoffset: 0;
   }
 }
-@keyframes so-grow-x {
+@keyframes overview-grow-x {
   from {
     transform: scaleX(0);
   }
 }
-@keyframes so-grow-y {
+@keyframes overview-grow-y {
   from {
     transform: scaleY(0);
   }
+}
+
+/* ── The skeleton (dashboard-skeleton.tsx): the cards at their sizes ── */
+
+.overview-skel-hello {
+  display: inline-block;
+  width: 280px;
+  height: 28px;
+  vertical-align: middle;
+}
+/* On the dark hero, the shimmer's band is light. */
+.overview-skel-dark.fuwari-skeleton-shimmer {
+  display: block;
+  border-radius: 8px;
+  background-image: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.08) 25%,
+    rgb(255 255 255 / 0.14) 45%,
+    rgb(255 255 255 / 0.08) 65%
+  );
+}
+.overview-skel-dark.is-eyebrow {
+  width: 72px;
+  height: 14px;
+  margin-top: 2px;
+}
+.overview-skel-dark.is-title {
+  width: min(60%, 420px);
+  height: 26px;
+  margin-top: 14px;
+}
+.overview-skel-dark.is-meta {
+  width: 200px;
+  height: 13px;
+  margin-top: 10px;
+}
+.overview-skel-dark.is-button {
+  width: 96px;
+  height: 36px;
+  border-radius: 10px;
+}
+.overview-skel-big {
+  display: block;
+  width: 120px;
+  height: 40px;
+  margin-top: 2px;
+}
+.overview-skel-line {
+  display: block;
+  width: 70%;
+  height: 12px;
+}
+.overview-skel-line.is-mid {
+  width: 50%;
+}
+.overview-skel-line.is-short {
+  width: 80px;
+}
+.overview-skel-line.is-tiny {
+  width: 48px;
+  height: 10px;
+}
+.overview-skel-fact {
+  display: block;
+  width: 44px;
+  height: 22px;
+  margin: 3px 0;
+}
+.overview-skel-chart {
+  display: block;
+  height: 100%;
+  border-radius: 10px;
+}
+.overview-skel-row {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 12px;
+}
+.overview-skel-row.is-recent {
+  height: 38px;
+}
+.overview-skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 4px 0;
+}
+.overview-link .overview-skel-stack {
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.overview-face.fuwari-skeleton-shimmer {
+  background: revert-layer;
 }

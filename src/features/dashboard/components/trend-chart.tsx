@@ -1,52 +1,16 @@
-// PROTOTYPE (throwaway): the Admin redesign, round 3. Never merge.
-import { type PointerEvent, useLayoutEffect, useRef, useState } from "react";
-import { formatCount } from "../format";
+import {
+  type PointerEvent,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { formatCount, formatUtcDay, formatUtcDayLong } from "./format";
 
 export interface TrendPoint {
   /** UTC midnight, in milliseconds. */
   day: number;
   views: number;
-}
-
-const DAY_MS = 86_400_000;
-
-/**
- * STUB: the snapshot holds the window's total only. Until a daily series is
- * stored, this spreads the total over the window with a weekly rhythm, the
- * same way for the same total.
- */
-export function stubDailySeries(
-  total: number,
-  start: number,
-  end: number,
-): Array<TrendPoint> {
-  const days = Math.max(2, Math.round((end - start) / DAY_MS) + 1);
-  let seed = (total * 2654435761) >>> 0 || 1;
-  const random = () => {
-    seed = (seed + 0x6d2b79f5) >>> 0;
-    let t = seed;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  const spike = Math.floor(random() * (days - 6)) + 3;
-  const weights = Array.from({ length: days }, (_, index) => {
-    const weekday = new Date(start + index * DAY_MS).getUTCDay();
-    const rhythm = weekday === 0 || weekday === 6 ? 0.72 : 1;
-    const drift = 0.85 + 0.3 * Math.sin((index / days) * Math.PI * 1.6);
-    const bump =
-      index === spike ? 2.3 : Math.abs(index - spike) === 1 ? 1.45 : 1;
-    return rhythm * drift * bump * (0.75 + random() * 0.5);
-  });
-  const sum = weights.reduce((a, b) => a + b, 0);
-  const views = weights.map((weight) => Math.round((weight / sum) * total));
-  const rest = total - views.reduce((a, b) => a + b, 0);
-  const peak = views.indexOf(Math.max(...views));
-  views[peak] = Math.max(0, (views[peak] ?? 0) + rest);
-  return views.map((value, index) => ({
-    day: start + index * DAY_MS,
-    views: value,
-  }));
 }
 
 function niceMax(value: number) {
@@ -86,23 +50,22 @@ function smoothPath(points: Array<[number, number]>) {
   return d;
 }
 
-const dayFormat = new Intl.DateTimeFormat("zh-CN", {
-  month: "numeric",
-  day: "numeric",
-  timeZone: "UTC",
-});
-const tipFormat = new Intl.DateTimeFormat("zh-CN", {
-  month: "long",
-  day: "numeric",
-  weekday: "short",
-  timeZone: "UTC",
-});
-
 const HEIGHT = 208;
 const PAD = { top: 16, right: 12, bottom: 26, left: 12 };
 
-/** Views per day as an area: it draws itself in, and reads out the day under the pointer. */
-export function TrendChart({ series }: { series: Array<TrendPoint> }) {
+/**
+ * Views per day as an area: it draws itself in, and reads out the day under
+ * the pointer. Takes a series of two days or more.
+ */
+export function TrendChart({
+  series,
+  label,
+}: {
+  series: Array<TrendPoint>;
+  /** Names the chart for assistive tech. */
+  label: string;
+}) {
+  const gradientId = `trend-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const boxRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
@@ -142,18 +105,18 @@ export function TrendChart({ series }: { series: Array<TrendPoint> }) {
   const focus = hover === null ? null : series[hover]!;
 
   return (
-    <div ref={boxRef} className="so-chart">
+    <div ref={boxRef} className="trend-chart">
       {width > 0 ? (
         <svg
           width={width}
           height={HEIGHT}
           role="img"
-          aria-label="近 30 天每日访问"
+          aria-label={label}
           onPointerMove={onMove}
           onPointerLeave={() => setHover(null)}
         >
           <defs>
-            <linearGradient id="so-area" x1="0" x2="0" y1="0" y2="1">
+            <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
               <stop
                 offset="0"
                 stopColor="var(--admin-accent)"
@@ -169,14 +132,14 @@ export function TrendChart({ series }: { series: Array<TrendPoint> }) {
           {[0.5, 1].map((share) => (
             <g key={share}>
               <line
-                className="so-chart-grid"
+                className="trend-chart-grid"
                 x1={PAD.left}
                 x2={width - PAD.right}
                 y1={y(max * share)}
                 y2={y(max * share)}
               />
               <text
-                className="so-chart-tick"
+                className="trend-chart-tick"
                 x={PAD.left}
                 y={y(max * share) - 6}
               >
@@ -185,18 +148,22 @@ export function TrendChart({ series }: { series: Array<TrendPoint> }) {
             </g>
           ))}
           <line
-            className="so-chart-base"
+            className="trend-chart-base"
             x1={PAD.left}
             x2={width - PAD.right}
             y1={floor}
             y2={floor}
           />
-          <path className="so-chart-area" d={area} fill="url(#so-area)" />
-          <path className="so-chart-line" d={line} pathLength={1} />
+          <path
+            className="trend-chart-area"
+            d={area}
+            fill={`url(#${gradientId})`}
+          />
+          <path className="trend-chart-line" d={line} pathLength={1} />
           {ticks.map((index, order) => (
             <text
               key={index}
-              className="so-chart-tick"
+              className="trend-chart-tick"
               x={x(index)}
               y={HEIGHT - 6}
               textAnchor={
@@ -207,25 +174,25 @@ export function TrendChart({ series }: { series: Array<TrendPoint> }) {
                     : "middle"
               }
             >
-              {dayFormat.format(series[index]!.day)}
+              {formatUtcDay(series[index]!.day)}
             </text>
           ))}
           {hover === null ? (
-            <g className="so-chart-now">
+            <g className="trend-chart-now">
               <circle cx={last[0]} cy={last[1]} r="9" />
               <circle cx={last[0]} cy={last[1]} r="3.5" />
             </g>
           ) : (
             <g>
               <line
-                className="so-chart-cursor"
+                className="trend-chart-cursor"
                 x1={x(hover)}
                 x2={x(hover)}
                 y1={PAD.top}
                 y2={floor}
               />
               <circle
-                className="so-chart-dot"
+                className="trend-chart-dot"
                 cx={x(hover)}
                 cy={y(focus!.views)}
                 r="4.5"
@@ -236,14 +203,14 @@ export function TrendChart({ series }: { series: Array<TrendPoint> }) {
       ) : null}
       {focus && hover !== null ? (
         <div
-          className="so-chart-tip"
+          className="trend-chart-tip"
           style={{
             left: Math.min(Math.max(x(hover), 64), width - 64),
             top: y(focus.views),
           }}
         >
           <b>{formatCount(focus.views)}</b>
-          <span>{tipFormat.format(focus.day)}</span>
+          <span>{formatUtcDayLong(focus.day)}</span>
         </div>
       ) : null}
     </div>
