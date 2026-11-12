@@ -2,84 +2,6 @@
   display: flex;
   flex-direction: column;
 }
-.site-identity {
-  display: flex;
-  flex-direction: column;
-  gap: calc(6 * var(--admin-unit));
-  padding-bottom: calc(24 * var(--admin-unit));
-}
-.site-title-edit,
-.site-author-edit,
-.site-description-edit {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border-radius: 6px;
-}
-.site-title-edit {
-  width: fit-content;
-  max-width: 100%;
-  color: var(--fuwari-fg);
-}
-.site-title-edit input {
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
-  background: transparent;
-  border: 0;
-  padding: 4px 0;
-  color: inherit;
-  font-size: calc(24 * var(--admin-unit));
-  line-height: 1.4;
-  font-weight: 650;
-  outline: none;
-}
-.site-title-edit svg {
-  flex-shrink: 0;
-  color: var(--fuwari-fg-50);
-}
-.site-author-edit {
-  max-width: calc(320 * var(--admin-unit));
-}
-.site-author-edit input,
-.site-description-edit textarea {
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: var(--fuwari-fg);
-  width: 100%;
-  min-width: 0;
-  padding: 4px 0;
-}
-.site-author-edit input {
-  font-size: calc(21 * var(--admin-unit));
-  font-weight: 650;
-}
-.site-description-edit {
-  margin-top: 5px;
-  max-width: 680px;
-  align-items: flex-start;
-}
-.site-description-edit textarea {
-  color: var(--fuwari-fg-50);
-  font-size: calc(14 * var(--admin-unit));
-  line-height: 1.7;
-  min-height: 3.4em;
-  resize: vertical;
-}
-.site-author-edit svg,
-.site-description-edit svg {
-  color: var(--fuwari-fg-50);
-  flex-shrink: 0;
-}
-.site-description-edit svg {
-  margin-top: 9px;
-}
-.site-author-edit:focus-within,
-.site-description-edit:focus-within {
-  background: var(--fuwari-input-bg);
-}
 .site-section-copy h2,
 .site-section-copy > label,
 .site-section-copy > strong {
@@ -115,22 +37,6 @@
 }
 .site-nav-section > .site-add-link {
   margin-top: 10px;
-}
-.site-social {
-  margin-top: 8px;
-}
-.site-social-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-.site-social-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 0 4px;
-  max-width: 700px;
 }
 .site-icons {
   padding: calc(22 * var(--admin-unit)) 0 6px;
@@ -182,60 +88,52 @@
   cursor: default;
 }
 
-/* Inline editing highlights the entire label, never a second box inside it. */
-.settings-workspace .site-studio .site-inline-input,
-.settings-workspace .site-studio .site-inline-input:focus,
-.settings-workspace .site-studio .site-inline-input:focus-visible {
-  outline: none;
-  outline-offset: 0;
-  border: 0;
-  box-shadow: none;
-  background: transparent;
+/* The title, the author and the description: one labelled row each. */
+.site-fields {
+  display: grid;
+  gap: calc(22 * var(--admin-unit));
+  max-width: calc(760 * var(--admin-unit));
+  padding-bottom: calc(24 * var(--admin-unit));
 }
-.site-title-edit,
-.site-author-edit,
-.site-description-edit {
-  transition:
-    background-color 240ms ease,
-    box-shadow 240ms ease;
-  border-radius: 9px;
-  padding: 4px 8px;
-  margin-left: -8px;
+.site-char-count {
+  float: right;
+  margin-left: 12px;
+  font-variant-numeric: tabular-nums;
 }
-.site-title-edit:focus-within,
-.site-author-edit:focus-within,
-.site-description-edit:focus-within {
-  background: color-mix(
-    in srgb,
-    var(--fuwari-primary) 6%,
-    var(--fuwari-card-bg)
-  );
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--fuwari-primary) 18%, transparent);
+/* The social links, as rows of platform, address and remove. */
+.site-social-rows {
+  display: grid;
+  gap: 12px;
+  max-width: calc(760 * var(--admin-unit));
+  margin-top: 18px;
 }
-.site-author-edit {
-  width: fit-content;
-  max-width: 100%;
+.site-social-item {
+  display: grid;
+  gap: 8px;
 }
-.site-author-edit input {
-  width: auto;
-  max-width: 100%;
+.site-social-row {
+  display: grid;
+  grid-template-columns: calc(150 * var(--admin-unit)) minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
 }
-.site-description-edit textarea {
-  resize: none;
+.site-social-custom {
+  grid-template-columns: calc(150 * var(--admin-unit)) auto;
+  justify-content: start;
 }
-@media (prefers-reduced-motion: reduce) {
-  .site-title-edit,
-  .site-author-edit,
-  .site-description-edit {
-    transition: none;
-  }
+/* Where the presentation settings went: a hint at the foot of the page. */
+.site-moved-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding-top: calc(20 * var(--admin-unit));
+  border-top: 1px solid var(--admin-rule);
+  color: var(--fuwari-fg-50);
+  font-size: calc(13 * var(--admin-unit));
+  line-height: 1.6;
 }
-
 @media (max-width: 750px) {
-  .site-title-edit input {
-    font-size: 20px;
-  }
   .site-icon-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -243,7 +141,21 @@
     grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
     gap: 8px;
   }
-  .site-social-editor > .flex {
-    flex-wrap: wrap;
+  .site-social-row {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
+    gap: 8px;
+  }
+  .site-social-custom {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+@media (max-width: 450px) {
+  /* Platform and address stack, the remove button beside the platform. */
+  .site-social-row:not(.site-social-custom) {
+    grid-template-columns: minmax(0, 1fr) 36px;
+  }
+  .site-social-row:not(.site-social-custom) > :nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
