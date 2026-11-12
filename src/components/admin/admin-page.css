@@ -109,6 +109,29 @@
   flex-shrink: 0;
 }
 
+/*
+ * A link in a page body is ink with an underline. The links that say so by
+ * their colour (text-(--fuwari-primary), or .text-link) get the underline here
+ * instead of each page adding it; a button, a tab, a menu item, a row that is
+ * a link and a card are not text links and keep their own look.
+ */
+.admin-page-body
+  a:is(.text-\(--fuwari-primary\), .text-link):not(
+    .fuwari-button,
+    .fuwari-icon-button,
+    .fuwari-tab,
+    .admin-list-row,
+    .no-styling,
+    [role="tab"],
+    [role="button"],
+    [role="menuitem"],
+    [class*="card"]
+  ) {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 /* The form body: one setting per row. */
 .admin-form-row {
   display: grid;
