@@ -3,24 +3,11 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import "./list-card.css";
 
-/**
- * The card a list sits in (the Admin's, admin-variables.css): a column
- * header, the rows that scroll, and a foot. While `loading`, a thin line
- * runs along its top.
+/*
+ * The pieces of a list in a card: the Admin page frame's list body
+ * (AdminPage body="list" inset={false}) is the card, and these pad
+ * themselves inside it: the column names, the rows that scroll, the foot.
  */
-export function ListCard({
-  loading = false,
-  className,
-  ...props
-}: ComponentProps<"section"> & { loading?: boolean }) {
-  return (
-    <section
-      {...props}
-      className={cn("fuwari-list-card", className)}
-      data-loading={loading ? "" : undefined}
-    />
-  );
-}
 
 /** The row of column names; the page sets its grid. */
 export function ListCardColumns({

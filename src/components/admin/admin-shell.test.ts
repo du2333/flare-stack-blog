@@ -214,9 +214,18 @@ describe("The phone drawer", () => {
     const panel = drawer();
     expect(panel.getAttribute("role")).toBe("dialog");
     expect(panel.getAttribute("data-state")).toBe("open");
-    expect(panel.contains(document.activeElement)).toBe(true);
+    const close = screen.getByRole("button", {
+      name: m.admin_shell_close_navigation(),
+    });
+    expect(document.activeElement).toBe(close);
 
     fireEvent.keyDown(document.activeElement!, { key: "Escape" });
+    expect(drawer().getAttribute("data-state")).not.toBe("open");
+    expect(document.activeElement).toBe(menuButton);
+
+    fireEvent.click(menuButton);
+    expect(drawer().getAttribute("data-state")).toBe("open");
+    fireEvent.click(close);
     expect(drawer().getAttribute("data-state")).not.toBe("open");
     expect(document.activeElement).toBe(menuButton);
   });

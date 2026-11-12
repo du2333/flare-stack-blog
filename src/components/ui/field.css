@@ -329,7 +329,7 @@
     min-height: 0;
     padding: 0 8px 0 11px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--admin-radius-control);
     background: var(--admin-surface);
     box-shadow:
       0 0 0 1px var(--admin-line),

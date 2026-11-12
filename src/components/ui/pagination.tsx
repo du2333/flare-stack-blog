@@ -90,3 +90,26 @@ export function Pagination({
     </nav>
   );
 }
+
+/**
+ * The pages under a list that has no foot of its own: what is shown on the
+ * left, the page buttons on the right. Renders nothing for a single page.
+ */
+export function PaginationBar({
+  summary,
+  className,
+  ...pagination
+}: Parameters<typeof Pagination>[0] & {
+  /** Such as "21–40 of 75". */
+  summary: string;
+}) {
+  if (pagination.totalPages <= 1) return null;
+  return (
+    <div
+      className={["fuwari-pagination-bar", className].filter(Boolean).join(" ")}
+    >
+      <span>{summary}</span>
+      <Pagination {...pagination} />
+    </div>
+  );
+}

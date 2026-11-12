@@ -8,13 +8,13 @@
     gap: 6px;
     height: 36px;
     padding: 0 9px 0 12px;
-    border-radius: 10px;
+    border-radius: var(--admin-radius-control);
     background: var(--admin-surface);
     box-shadow:
       0 0 0 1px var(--admin-line),
       var(--admin-shadow-card);
     color: var(--admin-fg-2);
-    font-size: 13px;
+    font-size: var(--admin-text-small);
     font-weight: 500;
     white-space: nowrap;
     transition:

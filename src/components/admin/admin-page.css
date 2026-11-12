@@ -6,8 +6,10 @@
  */
 .admin-page {
   --admin-frame-top: 24px;
+  /* The canvas's side inset, the overview's too (admin-variables.css). */
+  --admin-frame-x: var(--admin-page-x);
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--admin-page-max);
   margin-inline: auto;
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
@@ -61,8 +63,8 @@
   min-width: 0;
   color: var(--admin-fg);
   overflow: hidden;
-  font-size: 24px;
-  line-height: 32px;
+  font-size: var(--admin-text-title);
+  line-height: var(--admin-leading-title);
   font-weight: 620;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
@@ -70,15 +72,15 @@
 }
 .admin-page-count {
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
   font-weight: 500;
   color: var(--admin-fg-3);
 }
 .admin-page-description {
   margin-top: 2px;
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   color: var(--admin-fg-3);
 }
 .admin-page-actions {
@@ -87,8 +89,8 @@
   gap: 8px;
   flex-shrink: 0;
 }
-.admin-page-primary {
-  box-shadow: 0 6px 16px -8px rgb(18 18 23 / 0.5);
+.admin-page-primary.fuwari-button {
+  padding-left: 12px;
 }
 .admin-page-toolbar {
   gap: 10px 12px;
@@ -98,58 +100,16 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
 }
 
-/* Tabs in a page are one track; the chosen one is a raised piece of it. */
-.admin-page .fuwari-tabs {
+/* The tabs in the head are the segmented track (Tabs, TabNav): as wide as
+   its tabs, also where the row gives the tabs a line of their own. */
+.admin-frame-toolbar > .fuwari-tabs[data-variant="segmented"] {
   flex: 0 1 auto;
   align-self: center;
-  gap: 0;
-  width: fit-content;
-  max-width: 100%;
-  padding: 3px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--admin-hover);
-}
-.admin-page .fuwari-tab {
-  min-height: 30px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--admin-fg-2);
-  transition:
-    color 0.2s,
-    background-color 0.2s,
-    box-shadow 0.2s;
-}
-.admin-page .fuwari-tab:hover:not(:disabled) {
-  color: var(--admin-fg);
-}
-.admin-page .fuwari-tab:is([aria-selected="true"], [aria-current="page"]) {
-  background: var(--admin-surface);
-  box-shadow:
-    0 0 0 1px var(--admin-line),
-    var(--admin-shadow-card);
-  color: var(--admin-fg);
-}
-.admin-page .fuwari-tab:focus-visible {
-  outline: 2px solid var(--admin-accent);
-  outline-offset: 1px;
-}
-.admin-page .fuwari-tab-count {
-  font-size: 12px;
-  font-weight: 450;
-  color: var(--admin-fg-3);
-}
-.admin-page .fuwari-tab-mark {
-  top: 5px;
-  right: 4px;
-  background: var(--admin-accent);
 }
 
 /* The body: a column that fills the rest of the frame. */
@@ -185,21 +145,47 @@
   box-shadow:
     0 0 0 1px var(--admin-line),
     var(--admin-shadow-card);
-  animation: admin-page-in 0.5s var(--admin-ease) both;
 }
 .admin-page-body:is([data-form="list"], [data-form="split"])[data-scroll] {
   overflow-y: auto;
   padding: 8px var(--admin-scroll-end) 8px var(--admin-frame-x);
 }
-@keyframes admin-page-in {
+/* A list whose pieces pad themselves (ListCardColumns, ListCardRows,
+   ListCardFoot): the card has no inset of its own. */
+.admin-page-body[data-inset="none"],
+.admin-page-body[data-inset="none"][data-scroll] {
+  padding: 0;
+}
+/* A thin line runs along the card's top while its list is fetched. */
+.admin-page-body:is([data-form="list"], [data-form="split"])::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 34%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--admin-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.admin-page-body[data-loading]::before {
+  opacity: 1;
+  animation: admin-page-loading 1.1s var(--admin-ease-soft) infinite;
+}
+@keyframes admin-page-loading {
   from {
-    opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .admin-page-body {
-    animation: none !important;
+  .admin-page-body[data-loading]::before {
+    animation: none;
   }
 }
 
@@ -241,8 +227,8 @@
 }
 .admin-form-row-description {
   margin-top: 2px;
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   color: var(--admin-fg-3);
 }
 .admin-form-row-control {
@@ -284,8 +270,8 @@
 }
 .admin-form-section-title {
   min-width: 0;
-  font-size: 15px;
-  line-height: 24px;
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
   font-weight: 620;
   letter-spacing: -0.005em;
 }
@@ -293,8 +279,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--admin-fg-3);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -316,8 +302,8 @@
 .admin-form-section-description {
   margin-top: 2px;
   color: var(--admin-fg-3);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
 }
 .admin-form-section-body {
   margin-top: 4px;
@@ -343,7 +329,7 @@
   min-height: 44px;
   max-height: var(--admin-row-max);
   padding: 0 var(--admin-row-x);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-control);
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
   transition: background-color 150ms;
@@ -354,8 +340,10 @@
 
 /* Below 1024px the top bar has the title and the primary action. */
 @media (max-width: 1023px) {
-  .admin-page-head {
-    padding-bottom: 10px;
+  /* The tools' own line sits 10px under the tabs; the card 14px under both,
+     as at full width. */
+  .admin-page-toolbar > .admin-page-tools {
+    padding-block: 10px 0;
   }
   .admin-page-header[data-toolbar] {
     margin-bottom: 8px;
@@ -364,5 +352,32 @@
   .admin-page-primary,
   .admin-page-header[data-compact] {
     display: none;
+  }
+}
+
+/* On a phone the raised search takes the tools' first line. */
+@media (max-width: 767px) {
+  .admin-page-tools .fuwari-field-shell[data-variant="raised"],
+  .admin-page-tools .fuwari-field-shell[data-variant="raised"]:focus-within {
+    flex: 1 1 100%;
+    width: auto;
+  }
+}
+
+/* A page that stacks on a phone: it scrolls, the head with it, and its card
+   grows with the rows. */
+@media (max-width: 767px) {
+  .admin-page[data-stack] {
+    display: block;
+    overflow-y: auto;
+  }
+  .admin-page[data-stack] > .admin-page-head {
+    position: static;
+  }
+  .admin-page[data-stack] > .admin-page-body {
+    overflow: visible;
+  }
+  .admin-page[data-stack] .fuwari-list-card-rows {
+    overflow: visible;
   }
 }

@@ -9,7 +9,7 @@
     align-items: center;
     gap: 8px;
     padding: 0 8px 0 10px;
-    border-radius: 10px;
+    border-radius: var(--admin-radius-control);
     background: var(--admin-surface);
     box-shadow:
       0 0 0 1px var(--admin-line),
@@ -46,7 +46,7 @@
   .fuwari-palette {
     width: min(600px, 100%);
     overflow: hidden;
-    border-radius: 16px;
+    border-radius: var(--admin-radius-card);
     background: color-mix(in srgb, var(--admin-surface) 94%, transparent);
     backdrop-filter: blur(24px) saturate(1.5);
     box-shadow: var(--admin-shadow-pop);
@@ -94,7 +94,7 @@
     gap: 10px;
     height: 40px;
     padding: 0 10px;
-    border-radius: 10px;
+    border-radius: var(--admin-radius-control);
     color: var(--admin-fg-2);
     font-size: 14px;
     text-align: left;
