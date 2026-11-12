@@ -1,3 +1,4 @@
+import { Moon, Sun, Sunrise, Sunset } from "lucide-react";
 import { type ReactNode, type Ref, useEffect, useState } from "react";
 import { formatCount } from "./format";
 
@@ -66,4 +67,19 @@ export function OverviewCard({
       {children}
     </section>
   );
+}
+
+/** The time of day beside the date: night, sunrise, day, sunset. */
+export function TimeIcon({ hour }: { hour: number }) {
+  const Icon =
+    hour < 5
+      ? Moon
+      : hour < 9
+        ? Sunrise
+        : hour < 17
+          ? Sun
+          : hour < 20
+            ? Sunset
+            : Moon;
+  return <Icon size={14} aria-hidden />;
 }

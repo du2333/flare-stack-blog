@@ -5,11 +5,7 @@ import {
   FileText,
   Link2,
   MessageSquare,
-  Moon,
   Pin,
-  Sun,
-  Sunrise,
-  Sunset,
 } from "lucide-react";
 import {
   type PointerEvent,
@@ -32,25 +28,11 @@ import {
   formatWindow,
 } from "./format";
 import { greeting } from "./greeting";
-import { Count, OverviewCard, riseOrder } from "./overview-card";
+import { Count, OverviewCard, riseOrder, TimeIcon } from "./overview-card";
 import { OverviewHero } from "./overview-hero";
 import { OverviewComments, OverviewFriendLinks } from "./overview-inbox";
 import { TrendChart } from "./trend-chart";
 import "./overview.css";
-
-function TimeIcon({ hour }: { hour: number }) {
-  const Icon =
-    hour < 5
-      ? Moon
-      : hour < 9
-        ? Sunrise
-        : hour < 17
-          ? Sun
-          : hour < 20
-            ? Sunset
-            : Moon;
-  return <Icon size={14} aria-hidden />;
-}
 
 /**
  * 「概览」: the greeting with what needs attention beside it; the next thing

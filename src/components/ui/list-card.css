@@ -42,6 +42,7 @@
     font-weight: 500;
   }
   .fuwari-sort-header {
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     gap: 3px;

@@ -460,6 +460,7 @@
   border-radius: 9px;
   color: var(--admin-fg-2);
   font-size: 13px;
+  white-space: nowrap;
   transition:
     background 0.15s,
     color 0.15s;
@@ -473,6 +474,9 @@
   color: var(--admin-fg-3);
 }
 .overview-mini small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 11.5px;
   color: var(--admin-fg-3);
 }
@@ -1199,7 +1203,7 @@
 }
 .overview-link .overview-skel-stack {
   gap: 8px;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .overview-face.fuwari-skeleton-shimmer {

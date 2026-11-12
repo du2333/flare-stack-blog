@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DASHBOARD_UNREPLIED_COMMENTS_LIMIT } from "@/features/dashboard/dashboard-limits";
 import { buildWritingCalendar } from "@/features/dashboard/writing-calendar";
 import { m } from "@/paraglide/messages";
-import { riseOrder } from "./overview-card";
+import { riseOrder, TimeIcon } from "./overview-card";
 import { formatToday } from "./format";
 import { greeting } from "./greeting";
 import "./overview.css";
@@ -49,7 +49,10 @@ export function DashboardSkeleton() {
         <header className="overview-head overview-rise" style={riseOrder(0)}>
           <div>
             <p className="overview-date">
-              <ClientOnly fallback={" "}>{formatToday(now)}</ClientOnly>
+              <ClientOnly fallback={" "}>
+                <TimeIcon hour={now.getHours()} />
+                {formatToday(now)}
+              </ClientOnly>
             </p>
             <h1 className="overview-hello">
               <ClientOnly
