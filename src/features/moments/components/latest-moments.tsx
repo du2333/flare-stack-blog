@@ -14,10 +14,11 @@ import {
 import {
   getPublicImageSrc,
   getPublicImageSrcSet,
+  PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { m } from "@/paraglide/messages";
 
-const THUMBNAIL_WIDTH = 120;
+const THUMBNAIL_WIDTH = PUBLIC_IMAGE_WIDTH.thumbnail;
 
 /** What stands at the right of an entry: the first image with its count, or a video mark. */
 function Thumbnail({ moment }: { moment: PublicMoment }) {
@@ -27,10 +28,7 @@ function Thumbnail({ moment }: { moment: PublicMoment }) {
       <div className="relative size-14 shrink-0 overflow-hidden rounded-lg">
         <img
           src={getPublicImageSrc(first.url, THUMBNAIL_WIDTH)}
-          srcSet={getPublicImageSrcSet(first.url, [
-            THUMBNAIL_WIDTH,
-            THUMBNAIL_WIDTH * 2,
-          ])}
+          srcSet={getPublicImageSrcSet(first.url, [THUMBNAIL_WIDTH])}
           sizes="3.5rem"
           alt=""
           loading="lazy"

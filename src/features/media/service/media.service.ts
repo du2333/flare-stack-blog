@@ -16,10 +16,10 @@ import {
   cleanMediaName,
   getContentTypeFromKey,
   getOriginalImageUrl,
-  getTransformSourceUrl,
   importedMediaName,
   imageExtensionOf,
   isSameImageType,
+  normalizeImageType,
   parseImageTransform,
   isGifKey,
 } from "@/features/media/utils/media.utils";
@@ -351,103 +351,65 @@ export async function handleImageRequest(
         {},
       );
     }
-
-    const contentType =
-      object.httpMetadata?.contentType ||
-      getContentTypeFromKey(key) ||
-      "application/octet-stream";
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set("Content-Type", contentType);
-    headers.set("ETag", object.httpEtag);
-
-    return withImageHeaders(
-      new Response(object.body, { headers }),
-      CACHE_CONTROL.public,
-    );
+    return originalResponse(object, storedContentType(object, key));
   };
 
-  // 1. 防止循环调用 & 显式请求原图
-  const viaHeader = request.headers.get("via");
-  const isLoop = viaHeader && /image-resizing/.test(viaHeader);
+  // 1. 显式请求原图
   const wantsOriginal = searchParams.get("original") === "true";
 
   const isLocalDev =
     url.hostname === "localhost" || url.hostname === "127.0.0.1";
 
-  // Miniflare's local Image Resizing encodes AVIF extremely slowly (~30s for a
-  // ~1MB hero image). Serve the R2 original in local dev; production still
-  // goes through Cloudflare Image Resizing.
-  // 2. 构建 Cloudflare Image Resizing 参数（只接受允许的宽度，其余返回原图）
+  // Local image transforms are slow (AVIF took ~30s for a ~1MB hero image)
+  // and unlike production's, so local dev serves the R2 original.
+  // 2. 解析变换参数（只接受允许的宽度，其余返回原图）
   const transformOptions = parseImageTransform(
     searchParams,
     request.headers.get("Accept") || "",
   );
-  if (
-    isLoop ||
-    wantsOriginal ||
-    isLocalDev ||
-    isGifKey(key) ||
-    !transformOptions
-  ) {
+  if (wantsOriginal || isLocalDev || isGifKey(key) || !transformOptions) {
     return await serveOriginal();
   }
 
-  // 3. 尝试进行图片处理
+  // 3. 读取 R2 原图，交给 Images 绑定缩放。Every read takes the stored
+  // file's current version, so a replaced file is transformed afresh; this
+  // runs only when the edge has no copy.
+  const object = await env.R2.get(key);
+  if (!object) {
+    return await serveOriginal();
+  }
+  const contentType = storedContentType(object, key);
+  const sourceFormat = transformSourceFormat(contentType);
+  if (!sourceFormat) {
+    return originalResponse(object, contentType);
+  }
+
   try {
-    // The transform names the stored file's version, so a replaced file is
-    // transformed afresh; this read runs only when the edge has no copy.
-    const stored = await env.R2.head(key);
-    if (!stored) {
-      return await serveOriginal();
-    }
-    const sourceImageUrl = getTransformSourceUrl(url, key, stored.etag);
-
-    const subRequestHeaders = new Headers();
-
-    const headersToKeep = ["user-agent", "accept"];
-    for (const [k, v] of request.headers.entries()) {
-      if (headersToKeep.includes(k.toLowerCase())) {
-        subRequestHeaders.set(k, v);
-      }
-    }
-
-    const imageRequest = new Request(sourceImageUrl, {
-      headers: subRequestHeaders,
-    });
-
-    // 调用 Cloudflare Images 变换
-    const response = await fetch(imageRequest, {
-      cf: { image: transformOptions },
-    });
-
-    // 如果变换失败 (如格式不支持)，降级回原图
-    if (!response.ok) {
-      console.error(
-        JSON.stringify({
-          message: "image transform failed",
-          key,
-          status: response.status,
-          statusText: response.statusText,
-        }),
-      );
-      return await serveOriginal();
-    }
+    const result = await env.IMAGES.input(object.body)
+      .transform({ width: transformOptions.width })
+      .output({
+        format: transformOptions.format
+          ? `image/${transformOptions.format}`
+          : sourceFormat,
+        quality: transformOptions.quality,
+      });
 
     // 4. 返回处理后的图片
-    // 使用 new Response(response.body, response) 保持状态码和其它优化头信息
-    const newResponse = new Response(response.body, response);
+    // 使用 new Response(body, response) 得到可写的头信息
+    const transformed = result.response();
+    const response = new Response(transformed.body, transformed);
 
-    newResponse.headers.set("Vary", "Accept");
+    response.headers.set("Vary", "Accept");
     // Browsers revalidate (the address outlives a replaced file); the tag
     // lets a revalidation of an unchanged variant answer without a body.
-    newResponse.headers.set(
+    response.headers.set(
       "ETag",
-      `"${stored.etag}-${transformOptions.width}-${transformOptions.format ?? "auto"}"`,
+      `"${object.etag}-${transformOptions.width}-${transformOptions.format ?? "auto"}"`,
     );
-    return withImageHeaders(newResponse, CACHE_CONTROL.media);
+    return withImageHeaders(response, CACHE_CONTROL.media);
   } catch (e) {
+    // 变换出错（如额度用尽、格式不支持）时降级回原图。The binding has
+    // consumed the R2 stream, so the original is read again.
     console.error(
       JSON.stringify({
         message: "image transform error",
@@ -457,4 +419,37 @@ export async function handleImageRequest(
     );
     return await serveOriginal();
   }
+}
+
+function storedContentType(object: R2Object, key: string) {
+  return (
+    object.httpMetadata?.contentType ||
+    getContentTypeFromKey(key) ||
+    "application/octet-stream"
+  );
+}
+
+function originalResponse(object: R2ObjectBody, contentType: string) {
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set("Content-Type", contentType);
+  headers.set("ETag", object.httpEtag);
+
+  return withImageHeaders(
+    new Response(object.body, { headers }),
+    CACHE_CONTROL.public,
+  );
+}
+
+// The stored types the Images binding resizes, each with the output type that
+// keeps its format when the browser accepts neither AVIF nor WebP. An SVG is
+// vector and a GIF may be animated, so both are served as stored.
+const TRANSFORM_SOURCE_FORMATS = new Map<string, ImageOutputOptions["format"]>([
+  ["image/jpeg", "image/jpeg"],
+  ["image/png", "image/png"],
+  ["image/webp", "image/webp"],
+]);
+
+function transformSourceFormat(contentType: string) {
+  return TRANSFORM_SOURCE_FORMATS.get(normalizeImageType(contentType));
 }

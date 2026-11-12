@@ -19,10 +19,9 @@
 2. [准备两份变量清单](#2-准备两份变量清单)
 3. [创建 GitHub OAuth App](#3-创建-github-oauth-app)
 4. [创建 Cloudflare 资源](#4-创建-cloudflare-资源)
-5. [可选：开启图片优化](#5-可选开启图片优化)
-6. [创建 Worker 并部署](#6-创建-worker-并部署)
-7. [登录博客，成为管理员](#7-登录博客成为管理员)
-8. [以后如何更新](#8-以后如何更新)
+5. [创建 Worker 并部署](#5-创建-worker-并部署)
+6. [登录博客，成为管理员](#6-登录博客成为管理员)
+7. [以后如何更新](#7-以后如何更新)
 
 ### 1. Fork 仓库
 
@@ -49,7 +48,7 @@
 
 | 变量 | 示例 / 从哪里获取 | 作用 |
 | --- | --- | --- |
-| `WORKER_NAME` | `flare-blog` | Worker 应用名称，第 6 步的 Project name 必须与它一致 |
+| `WORKER_NAME` | `flare-blog` | Worker 应用名称，第 5 步的 Project name 必须与它一致 |
 | `DOMAIN` | `blog.example.com` | 博客的纯域名 |
 | `D1_DATABASE_ID` | 第 4 步复制的 Database ID / UUID | 找到存放文章、用户等数据的数据库 |
 | `BUCKET_NAME` | `blog-media` | 找到存放图片等文件的 R2 存储桶 |
@@ -153,19 +152,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 
 ![KV 命名空间列表中的 ID](./assets/deployment/06-kv-id.png)
 
-### 5. 可选：开启图片优化
-
-开启 Cloudflare **Image Transformations（图片转换）** 后，博客会按需要对图片进行缩放和压缩。
-
-在 Cloudflare 账号侧栏打开 **Images & Stream → Transformations**（部分界面位于 Images 下），找到博客所属的根域名，例如 `example.com`，为该域名启用转换。
-
-进入域名的转换设置，Sources 选择 **This zone only**，允许本域名及其子域名作为图片来源，点击 **Save** 保存修改。
-
-![已启用图片转换的域名设置，Sources 选择 This zone only](./assets/deployment/08-images.png)
-
-域名列表显示 **Enabled**，或设置页显示 **Disable for zone**，即表示已启用。跳过此步骤时，博客使用原图。转换额度及价格见 [Cloudflare Images 定价](https://developers.cloudflare.com/images/pricing/)。
-
-### 6. 创建 Worker 并部署
+### 5. 创建 Worker 并部署
 
 #### 连接自己的 Fork
 
@@ -214,7 +201,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 
 最后在 Worker 的 **Domains**（部分界面为 Settings → Domains & Routes）中确认自己的域名已绑定；DNS 和证书生效后，通过 `https://blog.example.com` 访问。
 
-### 7. 登录博客，成为管理员
+### 6. 登录博客，成为管理员
 
 打开自己的博客域名，点击右上角的登录入口，选择 **GitHub 登录**，完成 GitHub 授权。第一次登录会自动创建博客用户。
 
@@ -226,7 +213,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 
 进入后台后，可以设置博客名称、介绍和外观，上传一张图片并发布第一篇文章。GitHub 登录不依赖邮件配置；读者使用邮箱登录（输入邮件里的 6 位登录码）以及通知邮件，都需要之后在后台配置邮件发送服务。配置前，登录页只显示 GitHub 登录。
 
-### 8. 以后如何更新
+### 7. 以后如何更新
 
 上游有新代码时，先阅读 [更新说明](https://github.com/du2333/flare-stack-blog/releases)，然后：
 
@@ -256,6 +243,8 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 | Umami 访问统计 | `VITE_UMAMI_WEBSITE_ID` | `UMAMI_WEBSITE_ID`、`UMAMI_SRC` | 两边 Website ID 填同一个，`UMAMI_SRC` 填服务地址，例如 `https://cloud.umami.is` |
 | Umami 文章热度同步 | 同上 | Cloud 使用 `UMAMI_API_KEY`；自托管使用 `UMAMI_USERNAME`、`UMAMI_PASSWORD` | API Key 和密码设为 Secret；两种认证方式二选一。API 地址可按模板配置 `UMAMI_API_URL` |
 | 后台更新检查改走 GitHub API | 无 | `GITHUB_TOKEN`（Secret） | 不配也能检查更新：默认读取 GitHub 发布页的跳转。配了 token 会优先走 API，更稳定；API 失败时仍会退回发布页。按模板链接创建 Fine-grained token，权限保留默认的公共仓库只读访问 |
+
+图片优化无需额外配置：Worker 通过 Images 绑定对 R2 中的公开图片按需缩放和压缩，部署后自动生效，不需要在 Cloudflare 控制台开启。Cloudflare Images 免费计划每个自然月包含 5,000 次唯一转换，同一张图片的同一组尺寸参数每月只计一次，格式和质量不产生新的组合。额度及价格见 [Cloudflare Images 定价](https://developers.cloudflare.com/images/pricing/)。
 
 修改**构建时变量**后，需要重新触发构建，新值才会进入部署产物。修改**运行时变量**后，使用保存并部署使其生效。
 
@@ -300,7 +289,7 @@ GitHub OAuth Redirect URI：   https://blog.example.com/api/auth/callback/github
 
 ### 图片能显示，但没有优化效果
 
-确认博客所属域名的 Transformations 已启用，Sources 允许博客域名及其子域名，并且转换额度可用。本地环境、GIF、原图请求不会转换，转换失败也会回退原图。应使用博客公开页面中请求了宽度或质量参数的图片检查效果。
+确认 Worker 的 **Bindings** 中存在 Images 绑定，并在 Cloudflare 的 Images 页面检查本月转换额度。额度用尽后新的转换会失败并回退原图，可在 Workers 日志中搜索 `image transform error`。本地环境、GIF、SVG、`original=true` 请求以及不在预设宽度内的请求不会转换。应使用博客公开页面中请求了宽度或质量参数的图片检查效果。
 
 ---
 

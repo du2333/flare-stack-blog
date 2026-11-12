@@ -1,3 +1,4 @@
+import { imageServedFormat } from "@/features/media/utils/media.utils";
 import { CACHE_CONTROL } from "@/lib/constants";
 import type { PublicCacheReason } from "./types";
 
@@ -54,7 +55,10 @@ function mediaCacheTag(key: string): string {
   return `media:${encodeURIComponent(key)}`;
 }
 
-export function workersCacheKey(url: string | URL): string {
+export function workersCacheKey(
+  url: string | URL,
+  accept: string = "",
+): string {
   const parsed = typeof url === "string" ? new URL(url) : url;
   const pathname = parsed.pathname;
   if (pathname === "/" || normalizePathname(pathname) === "/moments") {
@@ -80,10 +84,37 @@ export function workersCacheKey(url: string | URL): string {
       const value = parsed.searchParams.get(name);
       if (value) params.set(name, value);
     }
+    // The route answers in the format the Accept header allows, and the
+    // edge cache must not hand one browser another's. Spellings of Accept
+    // that give the same format share the entry; the original needs no part.
+    const format = imageServedFormat(
+      pathname.slice("/images/".length),
+      parsed.searchParams,
+      accept,
+    );
+    if (format) params.set("format", format === "source" ? "original" : format);
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
   }
   return pathname;
+}
+
+/**
+ * The key the edge cache stores a request under. Cached pages name the hashed
+ * assets of the build that rendered them, and a deploy removes those assets,
+ * so each build gets its own keys; images do not depend on the build and keep
+ * theirs across deploys.
+ */
+export function workersEdgeCacheKey(
+  url: string | URL,
+  accept: string,
+  buildId: string,
+): string {
+  const parsed = typeof url === "string" ? new URL(url) : url;
+  const key = workersCacheKey(parsed, accept);
+  return parsed.pathname.startsWith("/images/")
+    ? key
+    : `/_build/${buildId}${key}`;
 }
 
 export function workersCachePolicy(pathname: string): WorkersCachePolicy {

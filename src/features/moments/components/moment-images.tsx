@@ -76,7 +76,7 @@ export function MomentImages({
           )}
         >
           {images.slice(0, shown).map((image, index) => {
-            const displayWidth = columns === 2 ? 400 : 300;
+            const displayWidth = 400;
             const covered = more > 0 && index === shown - 1;
             return (
               <a

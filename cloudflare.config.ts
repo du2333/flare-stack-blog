@@ -60,6 +60,8 @@ export default defineConfig((ctx) => {
         KV: bindings.kv({ id: kvNamespaceId }),
         R2: bindings.r2({ name: bucketName }),
         QUEUE: bindings.queue({ name: queueName }),
+        // Resizes public images in the Worker; billed per unique transform.
+        IMAGES: bindings.images(),
       },
       // Durable Objects are reached through `exports` from `cloudflare:workers`,
       // so they need no binding. Once deployed this way, rolling back to a
