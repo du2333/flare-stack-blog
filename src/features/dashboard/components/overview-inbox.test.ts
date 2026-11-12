@@ -20,6 +20,8 @@ const calls = vi.hoisted(() => ({
   reject: vi.fn(),
 }));
 
+const toasts = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }));
+vi.mock("sonner", () => ({ toast: toasts }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...rest }: { children: ReactNode }) =>
     createElement("a", rest, children),
@@ -52,6 +54,7 @@ vi.mock("@/features/friend-links/hooks/use-friend-links", () => ({
 beforeEach(() => {
   vi.useFakeTimers();
   for (const call of Object.values(calls)) call.mockReset();
+  toasts.error.mockReset();
 });
 afterEach(() => {
   cleanup();
@@ -231,12 +234,18 @@ it("approves and rejects a Friend Link in place, by its name", async () => {
   expect(screen.getByText(m.admin_overview_links_done())).toBeDefined();
 });
 
-it("brings a Friend Link back when its review fails", async () => {
+it("brings a Friend Link back when its review fails, says so and reloads the overview", async () => {
   calls.approve.mockRejectedValue(new Error("offline"));
-  wrap(
-    createElement(OverviewFriendLinks, {
-      pending: { items: [LINK], remainingCount: 0 },
-    }),
+  const client = new QueryClient();
+  const invalidate = vi.spyOn(client, "invalidateQueries");
+  render(
+    createElement(
+      QueryClientProvider,
+      { client },
+      createElement(OverviewFriendLinks, {
+        pending: { items: [LINK], remainingCount: 0 },
+      }),
+    ),
   );
   fireEvent.click(
     screen.getByRole("button", {
@@ -245,6 +254,44 @@ it("brings a Friend Link back when its review fails", async () => {
   );
   await slide();
   expect(rows()).toEqual([{ text: "Sure Blog", leaving: false }]);
+  expect(toasts.error).toHaveBeenCalledWith(m.admin_overview_link_failed());
+  expect(invalidate).toHaveBeenCalledWith({ queryKey: expect.anything() });
+});
+
+it("shows a handled Comment again, and counts it again, once an undo brings it back", async () => {
+  calls.markHandled.mockResolvedValue({});
+  const both = [comment({ id: 1 }), comment({ id: 2, userName: "Other" })];
+  const view = wrap(
+    createElement(OverviewComments, { comments: both, total: 2 }),
+  );
+  fireEvent.click(
+    screen.getAllByRole("button", {
+      name: m.dashboard_comment_mark_handled(),
+    })[0]!,
+  );
+  await slide();
+  // The handled Comment leaves the data, as the hook's optimistic update does.
+  view.rerender(
+    createElement(
+      QueryClientProvider,
+      { client: new QueryClient() },
+      createElement(OverviewComments, { comments: [both[1]!], total: 1 }),
+    ),
+  );
+  expect(rows().map((row) => row.text)).toEqual(["Other"]);
+  // Undo: the Comment is back in the data.
+  view.rerender(
+    createElement(
+      QueryClientProvider,
+      { client: new QueryClient() },
+      createElement(OverviewComments, { comments: both, total: 2 }),
+    ),
+  );
+  expect(rows()).toEqual([
+    { text: "Reader", leaving: false },
+    { text: "Other", leaving: false },
+  ]);
+  expect(document.querySelector(".overview-count")?.textContent).toBe("2");
 });
 
 it("leaves the Friend Links card out while none wait", () => {

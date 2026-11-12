@@ -4,7 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DASHBOARD_UNREPLIED_COMMENTS_LIMIT } from "@/features/dashboard/dashboard-limits";
 import { buildWritingCalendar } from "@/features/dashboard/writing-calendar";
 import { m } from "@/paraglide/messages";
-import { riseOrder, TimeIcon } from "./overview-card";
+import { riseOrder } from "@/components/admin/rise";
+import { TimeIcon } from "./overview-card";
 import { formatToday } from "./format";
 import { greeting } from "./greeting";
 import "./overview.css";
@@ -22,7 +23,7 @@ function CardSkeleton({
   children: ReactNode;
 }) {
   return (
-    <section className="overview-card overview-rise" style={riseOrder(i)}>
+    <section className="overview-card admin-rise" style={riseOrder(i)}>
       <header className="overview-card-head">
         <h2 className="overview-card-title">{title}</h2>
         {sub ? <span className="overview-card-sub">{sub}</span> : null}
@@ -46,7 +47,7 @@ export function DashboardSkeleton() {
   return (
     <div className="overview-scroll" aria-busy="true">
       <div className="overview">
-        <header className="overview-head overview-rise" style={riseOrder(0)}>
+        <header className="overview-head admin-rise" style={riseOrder(0)}>
           <div>
             <p className="overview-date">
               <ClientOnly fallback={" "}>
@@ -66,10 +67,7 @@ export function DashboardSkeleton() {
 
         <div className="overview-grid" aria-hidden>
           <div className="overview-col">
-            <section
-              className="overview-hero overview-rise"
-              style={riseOrder(1)}
-            >
+            <section className="overview-hero admin-rise" style={riseOrder(1)}>
               <span className="overview-hero-glow" />
               <span className="overview-hero-glow is-b" />
               <div className="overview-hero-main">
@@ -84,7 +82,7 @@ export function DashboardSkeleton() {
             </section>
 
             <section
-              className="overview-card overview-pulse overview-rise"
+              className="overview-card overview-pulse admin-rise"
               style={riseOrder(2)}
             >
               <div className="overview-pulse-side">

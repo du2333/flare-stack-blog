@@ -46,7 +46,7 @@ it("explains the new version with the running one", () => {
   expect(notice?.description).toContain(__APP_VERSION__);
 });
 
-it("orders the notices: a failed sync first, an update last", () => {
+it("orders the notices: a new release, the email, the popularity, the site identity", () => {
   const notices = settingsNotices({
     popularityAlert: "failed",
     adminEmailNeedsSetup: true,
@@ -54,12 +54,12 @@ it("orders the notices: a failed sync first, an update last", () => {
     update: { latestVersion: "9.9.9", releaseUrl: "https://example.com/r" },
   });
   expect(notices.map((notice) => notice.key)).toEqual([
-    "popularity-failed",
-    "email",
-    "identity",
     "update",
+    "email",
+    "popularity-failed",
+    "identity",
   ]);
-  expect(notices[3]?.target).toEqual({
+  expect(notices[0]?.target).toEqual({
     kind: "external",
     href: "https://example.com/r",
   });

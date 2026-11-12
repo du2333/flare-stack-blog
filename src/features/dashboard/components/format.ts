@@ -4,10 +4,7 @@ function intlLocale() {
   return getLocale() === "zh" ? "zh-CN" : "en-US";
 }
 
-/** A whole number with the locale's thousands separators. */
-export function formatCount(value: number) {
-  return new Intl.NumberFormat(intlLocale()).format(value);
-}
+export { formatCount } from "@/lib/utils";
 
 /** A popularity window's first to last UTC day, e.g. "Sep 14 – Oct 13". */
 export function formatWindow(start: number, end: number) {
