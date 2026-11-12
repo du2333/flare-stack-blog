@@ -23,7 +23,7 @@ export interface KeyToAdd {
   key: string;
   after: string;
   /** Message text by locale, e.g. `{ zh: "...", en: "..." }`. */
-  values: Record<string, string>;
+  values: Record<string, string | undefined>;
 }
 
 /** `text` (a messages file) with `key` inserted right after the entry of `after`. */
@@ -103,7 +103,10 @@ function main() {
         key: key!,
         after: values.after as string,
         values: Object.fromEntries(
-          locales.map((locale) => [locale, values[locale] as string]),
+          locales.map((locale) => [
+            locale,
+            (values as Record<string, string | undefined>)[locale],
+          ]),
         ),
       },
     ];
