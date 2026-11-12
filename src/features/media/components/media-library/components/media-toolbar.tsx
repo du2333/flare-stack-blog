@@ -1,15 +1,12 @@
 import { LayoutGrid, List } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { AdminPageToolbar } from "@/components/admin/admin-page";
 import DropdownMenu from "@/components/ui/dropdown-menu";
 import { SearchField } from "@/components/ui/search-field";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Tabs } from "@/components/ui/tabs";
 import type { MediaSort } from "@/features/media/media.schema";
 import { m } from "@/paraglide/messages";
-
-/** Never squeezed: the search field gives way to it, so its label stays whole. */
-const SORT_TRIGGER =
-  "group fuwari-input inline-flex w-auto shrink-0 items-center gap-2 whitespace-nowrap py-0 text-left";
 
 export type MediaView = "grid" | "list";
 
@@ -54,10 +51,10 @@ export function MediaToolbar({
   };
 
   return (
-    <div className="media-toolbar-shell">
-      <div className="media-workspace-toolbar admin-frame-toolbar">
+    <AdminPageToolbar
+      className="media-toolbar"
+      tabs={
         <Tabs
-          className="media-workspace-tabs"
           aria-label={m.media_filter_label()}
           value={unusedOnly ? "unused" : "all"}
           onValueChange={(value) => onUnusedOnlyChange(value === "unused")}
@@ -74,9 +71,12 @@ export function MediaToolbar({
             },
           ]}
         />
-        <div className="media-filters">
+      }
+      tools={
+        <>
           <SearchField
-            className="media-search"
+            variant="raised"
+            shortcut="/"
             aria-label={m.media_search_placeholder()}
             placeholder={m.media_search_placeholder()}
             value={input}
@@ -84,36 +84,37 @@ export function MediaToolbar({
             clearLabel={m.search_clear()}
           />
           <DropdownMenu
+            variant="chip"
             value={sort}
-            ariaLabel={m.media_sort_label()}
-            triggerClassName={SORT_TRIGGER}
+            ariaLabel={m.admin_posts_sort_label()}
             onChange={(value) => onSortChange(value as MediaSort)}
             options={(Object.keys(sortLabels) as Array<MediaSort>).map(
               (value) => ({ value, label: sortLabels[value] }),
             )}
           />
-        </div>
-        <SegmentedControl
-          className="media-view-switch"
-          aria-label={m.media_view_label()}
-          value={view}
-          onValueChange={onViewChange}
-          items={(
-            [
-              ["grid", LayoutGrid, m.media_view_grid()],
-              ["list", List, m.media_view_list()],
-            ] as const
-          ).map(([value, Icon, label]) => ({
-            value,
-            label: (
-              <>
-                <Icon size={16} aria-hidden="true" />
-                {label}
-              </>
-            ),
-          }))}
-        />
-      </div>
-    </div>
+          <SegmentedControl
+            className="media-view-switch"
+            size="sm"
+            aria-label={m.media_view_label()}
+            value={view}
+            onValueChange={onViewChange}
+            items={(
+              [
+                ["grid", LayoutGrid, m.media_view_grid()],
+                ["list", List, m.media_view_list()],
+              ] as const
+            ).map(([value, Icon, label]) => ({
+              value,
+              label: (
+                <>
+                  <Icon size={16} aria-hidden="true" />
+                  <span className="sr-only">{label}</span>
+                </>
+              ),
+            }))}
+          />
+        </>
+      }
+    />
   );
 }

@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Copy, ExternalLink, FileText, Images, Upload, X } from "lucide-react";
+import {
+  Copy,
+  ExternalLink,
+  FileText,
+  Images,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +28,7 @@ import {
 } from "@/features/media/media.schema";
 import { linkedMomentsQuery, linkedPostsQuery } from "@/features/media/queries";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { MediaAsset } from "../types";
 
@@ -125,12 +133,13 @@ export function MediaDetail({
         title={m.media_preview_title()}
         actions={
           <IconButton
+            variant="quiet"
             label={m.common_close()}
-            size="md"
+            size="sm"
             disabled={preventClose || busy}
             onClick={onClose}
           >
-            <X size={19} />
+            <X size={17} />
           </IconButton>
         }
       />
@@ -148,15 +157,67 @@ export function MediaDetail({
             }}
           />
         </div>
-        <div className="media-inspector-name">
-          <span>{asset.fileName}</span>
+        <h3 className="media-inspector-name">{asset.fileName}</h3>
+        <dl className="media-inspector-facts">
+          {asset.width && asset.height ? (
+            <div>
+              <dt>{m.media_col_dimensions()}</dt>
+              <dd>
+                {asset.width} × {asset.height}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>{m.media_preview_size()}</dt>
+            <dd>{formatBytes(asset.sizeInBytes)}</dd>
+          </div>
+          <div>
+            <dt>{m.media_col_uploaded()}</dt>
+            <dd>{formatDate(asset.createdAt)}</dd>
+          </div>
+        </dl>
+        <div className="media-inspector-actions">
+          <Button
+            variant="ink"
+            size="sm"
+            icon={<Copy size={15} />}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  new URL(asset.url, window.location.origin).href,
+                );
+                toast.success(m.media_copied());
+              } catch {
+                toast.error(m.media_copy_failed());
+              }
+            }}
+          >
+            {m.media_copy_link()}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Upload size={15} />}
+            loading={isReplacing}
+            disabled={busy}
+            onClick={() => fileRef.current?.click()}
+          >
+            {isReplacing ? m.common_processing() : m.media_replace()}
+          </Button>
+          {usage === "none" ? (
+            <IconButton
+              className="media-inspector-delete"
+              variant="quiet"
+              size="sm"
+              tone="danger"
+              label={m.media_delete()}
+              disabled={busy}
+              onClick={() => onDelete(asset)}
+            >
+              <Trash2 size={16} />
+            </IconButton>
+          ) : null}
         </div>
-        <p className="media-inspector-facts">
-          {asset.width && asset.height
-            ? `${asset.width} × ${asset.height} · `
-            : ""}
-          {formatBytes(asset.sizeInBytes)}
-        </p>
         {showPosts ? (
           <section className="media-inspector-usage">
             <h3>
@@ -210,43 +271,6 @@ export function MediaDetail({
           </section>
         ) : null}
         {asset.momentCount > 0 ? <MomentReferences asset={asset} /> : null}
-        <div className="media-inspector-actions">
-          <Button
-            icon={<Copy size={16} />}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(
-                  new URL(asset.url, window.location.origin).href,
-                );
-                toast.success(m.media_copied());
-              } catch {
-                toast.error(m.media_copy_failed());
-              }
-            }}
-          >
-            {m.media_copy_link()}
-          </Button>
-          <Button
-            icon={<Upload size={16} />}
-            loading={isReplacing}
-            disabled={busy}
-            onClick={() => fileRef.current?.click()}
-          >
-            {isReplacing ? m.common_processing() : m.media_replace()}
-          </Button>
-        </div>
-        {usage === "none" ? (
-          <Button
-            variant="text"
-            size="sm"
-            tone="danger"
-            className="media-inspector-delete"
-            disabled={busy}
-            onClick={() => onDelete(asset)}
-          >
-            {m.media_delete()}
-          </Button>
-        ) : null}
         <input
           ref={fileRef}
           type="file"

@@ -1,10 +1,21 @@
 import { useLayoutEffect, type RefObject } from "react";
 import { useReducedMotion } from "@/hooks/use-motion";
 
-// Keep the inspector's presence aligned with --media-layout-duration in CSS.
-export const MEDIA_LAYOUT_DURATION = 420;
+// How long the detail panel takes to come and go (media-library.css).
+export const MEDIA_LAYOUT_DURATION = 320;
 
-/** Animate only column-count changes; ordinary width interpolation stays in CSS. */
+interface Box {
+  element: HTMLElement;
+  x: number;
+  y: number;
+  width: number;
+}
+
+/**
+ * The wall's tiles glide to their new places when its rows break
+ * differently, as when the detail panel opens beside it. A resize that
+ * keeps every tile on its row is left to the layout.
+ */
 export function useMediaGridMotion(
   ref: RefObject<HTMLDivElement | null>,
   contentKey: string,
@@ -13,64 +24,48 @@ export function useMediaGridMotion(
   useLayoutEffect(() => {
     const grid = ref.current;
     if (!grid || reduced) return;
-    const read = () =>
+    const read = (): Array<Box> =>
       Array.from(
-        grid.querySelectorAll<HTMLButtonElement>(".media-gallery-item"),
+        grid.querySelectorAll<HTMLElement>(".media-gallery-item"),
         (element) => ({
           element,
           x: element.offsetLeft,
           y: element.offsetTop,
+          width: element.offsetWidth,
         }),
       );
-    const columnCount = () =>
-      getComputedStyle(grid).gridTemplateColumns.split(" ").length;
     let previous = read();
-    let columns = columnCount();
     const animations = new Map<HTMLElement, Animation>();
     const observer = new ResizeObserver(() => {
-      const nextColumns = columnCount();
       const next = read();
-      if (nextColumns !== columns) {
-        const oldByElement = new Map(
-          previous.map((item) => [item.element, item]),
-        );
-        const moves = next.map((item) => {
-          const old = oldByElement.get(item.element);
-          if (!old) return null;
-          const matrix = new DOMMatrixReadOnly(
-            getComputedStyle(item.element).transform,
-          );
-          return {
-            item,
-            x: old.x - item.x + matrix.e,
-            y: old.y - item.y + matrix.f,
-          };
-        });
-        for (const move of moves) {
-          if (!move) continue;
-          const { item, x, y } = move;
-          animations.get(item.element)?.cancel();
+      const before = new Map(previous.map((box) => [box.element, box]));
+      const rebroken = next.some((box) => {
+        const old = before.get(box.element);
+        return old !== undefined && old.y !== box.y;
+      });
+      if (rebroken)
+        for (const box of next) {
+          const old = before.get(box.element);
+          if (!old || !box.width) continue;
+          animations.get(box.element)?.cancel();
           animations.set(
-            item.element,
-            item.element.animate(
+            box.element,
+            box.element.animate(
               [
                 {
-                  transform: `translate(${x}px, ${y}px)`,
+                  transformOrigin: "0 0",
+                  transform: `translate(${old.x - box.x}px, ${old.y - box.y}px) scaleX(${old.width / box.width})`,
                 },
-                {
-                  transform: "translate(0, 0)",
-                },
+                { transformOrigin: "0 0", transform: "none" },
               ],
               {
-                duration: 320,
-                easing: "cubic-bezier(0.25, 0.8, 0.25, 1)",
+                duration: MEDIA_LAYOUT_DURATION,
+                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
               },
             ),
           );
         }
-      }
       previous = next;
-      columns = nextColumns;
     });
     observer.observe(grid);
     return () => {

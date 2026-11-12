@@ -1,4 +1,4 @@
-import { Search, Upload } from "lucide-react";
+import { CheckCheck, ImageOff, Images, Search, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/admin-page";
@@ -16,6 +16,7 @@ import { MediaDetail, MediaToolbar } from "./components";
 import { MediaCollection } from "./components/media-collection";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { Spinner } from "@/components/ui/spinner";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import { useMediaScroll } from "./hooks/use-media-scroll";
 import { MEDIA_LAYOUT_DURATION } from "./hooks/use-media-grid-motion";
@@ -167,6 +168,7 @@ export function MediaLibrary() {
       toolbar={toolbar}
       body="list"
       scroll={false}
+      inset={false}
       onDragEnter={(event) => {
         if (!event.dataTransfer.types.includes("Files")) return;
         event.preventDefault();
@@ -189,14 +191,6 @@ export function MediaLibrary() {
           handleFiles(event.dataTransfer.files);
       }}
     >
-      {progress ? (
-        <p role="status" className="media-upload-progress">
-          {m.media_uploading({
-            current: progress.current,
-            total: progress.total,
-          })}
-        </p>
-      ) : null}
       <div className={cn("media-workspace-body", active && "has-preview")}>
         <div
           className="media-browser custom-scrollbar"
@@ -212,16 +206,23 @@ export function MediaLibrary() {
               <MediaCollectionSkeleton view={view} />
             ) : isError && !mediaItems.length ? (
               <EmptyState
+                variant="tile"
                 role="alert"
+                icon={ImageOff}
                 description={m.media_load_fail()}
                 action={
-                  <Button onClick={() => void refetch()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void refetch()}
+                  >
                     {m.media_load_retry()}
                   </Button>
                 }
               />
             ) : isEmpty && searchTerm ? (
               <EmptyState
+                variant="tile"
                 icon={Search}
                 title={
                   unusedOnly
@@ -229,19 +230,27 @@ export function MediaLibrary() {
                     : m.media_search_empty({ query: searchTerm })
                 }
                 action={
-                  <Button onClick={() => setSearch("")}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearch("")}
+                  >
                     {m.search_clear()}
                   </Button>
                 }
               />
             ) : isEmpty ? (
               <EmptyState
+                variant="tile"
+                icon={unusedOnly ? CheckCheck : Images}
                 title={
                   unusedOnly ? m.media_unreferenced_empty() : m.media_empty()
                 }
                 description={!unusedOnly ? m.media_empty_hint() : null}
                 action={
                   <Button
+                    variant="outline"
+                    size="sm"
                     onClick={
                       unusedOnly ? () => setUnusedOnly(false) : openFilePicker
                     }
@@ -264,11 +273,20 @@ export function MediaLibrary() {
                 />
                 <footer className="media-browser-footer">
                   {isError && !isFetchNextPageError ? (
-                    <Button onClick={() => void refetch()}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void refetch()}
+                    >
                       {m.media_load_retry()}
                     </Button>
                   ) : hasMore || isFetchNextPageError ? (
-                    <Button loading={isLoadingMore} onClick={loadMore}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      loading={isLoadingMore}
+                      onClick={loadMore}
+                    >
                       {isLoadingMore
                         ? m.media_grid_loading()
                         : isFetchNextPageError
@@ -314,8 +332,22 @@ export function MediaLibrary() {
           ) : null}
         </div>
       </div>
+      {progress ? (
+        <p role="status" className="media-upload-progress">
+          <Spinner size={14} />
+          {m.media_uploading({
+            current: progress.current,
+            total: progress.total,
+          })}
+        </p>
+      ) : null}
       {dragging ? (
-        <div className="media-drop-overlay">{m.media_drop()}</div>
+        <div className="media-drop-overlay">
+          <span>
+            <Upload size={22} aria-hidden="true" />
+          </span>
+          {m.media_drop()}
+        </div>
       ) : null}
       <input
         ref={fileRef}

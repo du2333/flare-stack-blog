@@ -1,147 +1,195 @@
+/*
+ * The media library: the images as a wall of photographs, each in its own
+ * shape, rows of one height; the chosen one opens in a panel beside the wall
+ * (a dialog below 1200px). A clean list is the other view.
+ */
 .media-workspace,
 .media-inspector {
-  --fuwari-button-height: calc(40 * var(--admin-unit));
-  --fuwari-button-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-padding-x: calc(18 * var(--admin-unit));
+  --fuwari-button-font-size: calc(13.5 * var(--admin-unit));
 }
 .media-workspace {
-  --fuwari-field-height: calc(36 * var(--admin-unit));
-  --fuwari-field-font-size: calc(14 * var(--admin-unit));
-  --media-layout-duration: 420ms;
-  --media-layout-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  color: var(--fuwari-fg-75);
-  container-type: inline-size;
+  /* A row of the wall. */
+  --media-row: calc(172 * var(--admin-unit));
+  --media-gap: 6px;
+  --media-inset: 14px;
+  --media-panel: calc(344 * var(--admin-unit));
+  --media-layout-duration: 320ms;
+  color: var(--admin-fg-2);
 }
-/* The gap below the toolbar is the body's: the page head's rule sits right
-   under the toolbar. */
-.media-workspace > .admin-page-body {
-  padding-top: calc(18 * var(--admin-unit));
+/* The view switch is two icons. */
+.media-view-switch {
+  --fuwari-segment-padding-x: 9px;
 }
-/* The toolbar row lays itself out by its own width, which the open detail
-   panel narrows, not by the screen's. */
-.media-toolbar-shell {
-  /* One height for the search, the sort and the view switch, the same as
-     Posts'. The switch's track pads its pills by 4px on each side. */
-  --admin-control-height: calc(40 * var(--admin-unit));
-  --fuwari-field-height: var(--admin-control-height);
-  --fuwari-segment-height: calc(var(--admin-control-height) - 8px);
-  container-type: inline-size;
-  flex-shrink: 0;
-}
-.media-filters {
-  display: flex;
-  align-items: center;
-  gap: calc(10 * var(--admin-unit));
-  min-width: 0;
-  margin-left: auto;
-}
-.media-search {
-  flex: 0 1 calc(240 * var(--admin-unit));
-  min-width: calc(150 * var(--admin-unit));
-}
-/* Too narrow for tabs, search, sort and the view switch in one row: the tabs
-   and the view switch keep the first row, search and sort take their own row
-   under it. The rule is the page head's. */
-@container (max-width: 719px) {
-  .media-toolbar-shell .media-workspace-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-  }
-  .media-workspace-tabs {
-    grid-area: 1 / 1 / 2 / 3;
-  }
-  .media-view-switch {
-    grid-area: 1 / 2;
-  }
-  .media-filters {
-    grid-area: 2 / 1 / 3 / 3;
-    margin-left: 0;
-    padding-top: calc(12 * var(--admin-unit));
-  }
-  .media-search {
-    flex: 1 1 auto;
-  }
-}
+
+/* ── The wall and the panel ── */
 .media-workspace-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-}
-.media-workspace-body.has-preview {
-  grid-template-columns: minmax(0, 1fr) calc(330 * var(--admin-unit));
-  gap: calc(24 * var(--admin-unit));
+  grid-template-columns: minmax(0, 1fr) 0;
+  flex: 1;
+  min-height: 0;
 }
 .media-browser {
-  min-width: 0;
-}
-.media-gallery {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(calc(185 * var(--admin-unit)), 1fr)
-  );
-  gap: calc(26 * var(--admin-unit)) calc(18 * var(--admin-unit));
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+  padding: var(--media-inset) calc(var(--media-inset) - var(--admin-scrollbar))
+    var(--media-inset) var(--media-inset);
 }
-.media-gallery-item {
+/* A narrower wall, as beside the open panel, takes lower rows, so a row still
+   holds three or four images. */
+.media-browser {
+  container: media-wall / inline-size;
+}
+@container media-wall (max-width: 860px) {
+  .media-gallery {
+    --media-row: calc(144 * var(--admin-unit));
+  }
+}
+@container media-wall (max-width: 520px) {
+  .media-gallery {
+    --media-row: 116px;
+  }
+}
+.media-browser-content {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  text-align: left;
-  border-radius: calc(12 * var(--admin-unit));
+  min-height: 100%;
+}
+.media-panel-slot {
+  min-width: 0;
+  min-height: 0;
+  overflow: clip;
+}
+@media (min-width: 1200px) {
+  .media-workspace-body.has-preview {
+    grid-template-columns: minmax(0, 1fr) var(--media-panel);
+  }
+  .media-workspace-body.has-preview > .media-panel-slot {
+    border-left: 1px solid var(--admin-line);
+  }
+}
+@media (max-width: 1199px) {
+  .media-panel-slot {
+    display: contents;
+  }
+}
+
+/* ── A tile ── */
+.media-gallery {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--media-gap);
+}
+/* The last row keeps its tiles at their own widths. */
+.media-gallery::after {
+  content: "";
+  flex: 1000000 1 0;
+}
+.media-gallery-item {
+  position: relative;
+  flex: var(--media-ratio) 1 calc(var(--media-ratio) * var(--media-row));
+  min-width: 0;
+  height: var(--media-row);
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--admin-hover);
 }
 .media-thumbnail {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-hover);
-  overflow: hidden;
-  border-radius: 12px;
   flex-shrink: 0;
-}
-.media-gallery .media-thumbnail {
-  width: 100%;
-  aspect-ratio: 1.12;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--admin-hover);
+  color: var(--admin-fg-3);
 }
 .media-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.media-gallery-item[aria-pressed="true"] .media-thumbnail {
-  outline: 2px solid var(--admin-accent);
-  outline-offset: 3px;
+.media-gallery .media-thumbnail {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
 }
-.media-gallery-item:hover .media-thumbnail {
-  box-shadow: 0 3px calc(10 * var(--admin-unit))
-    color-mix(in srgb, var(--fuwari-fg-50) 12%, transparent);
-  transform: translateY(-2px);
+.media-gallery .media-thumbnail img {
+  transition: transform 0.5s var(--admin-ease);
 }
-.media-gallery-name {
+.media-gallery-item:hover .media-thumbnail img {
+  transform: scale(1.035);
+}
+.media-gallery-flag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+/* The name and what uses the image rise over its foot under the pointer. */
+.media-gallery-caption {
+  position: absolute;
+  inset: auto 0 0;
   display: flex;
-  max-width: 100%;
-  margin-top: calc(11 * var(--admin-unit));
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.5;
-  color: var(--fuwari-fg-75);
+  flex-direction: column;
+  gap: 1px;
+  padding: 28px 10px 8px;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.66), rgb(0 0 0 / 0));
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.18s,
+    transform 0.25s var(--admin-ease);
+}
+.media-gallery-item:is(:hover, :focus-visible, [aria-pressed="true"])
+  .media-gallery-caption {
+  opacity: 1;
+  transform: none;
 }
 .media-gallery-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: calc(6 * var(--admin-unit));
-  margin-top: 4px;
-  font-size: calc(12 * var(--admin-unit));
-  line-height: 1.5;
-  color: var(--fuwari-fg-50);
+  gap: 5px;
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 16px;
+  color: rgb(255 255 255 / 0.82);
+  white-space: nowrap;
 }
+.media-gallery-item[aria-pressed="true"] {
+  z-index: 1;
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+.media-workspace .media-gallery-item:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+@media (hover: none) {
+  .media-gallery-caption {
+    display: none;
+  }
+}
+
+/* ── The list ── */
 .media-table-scroll {
-  overflow-x: auto;
+  overflow: visible;
   container: media-list / inline-size;
+  padding: 2px 6px 0;
 }
 .media-table {
   width: 100%;
@@ -152,8 +200,9 @@
 .media-table th {
   text-align: left;
   padding: 0 calc(10 * var(--admin-unit)) calc(15 * var(--admin-unit));
-  color: var(--fuwari-fg-50);
-  font-weight: 400;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  font-weight: 500;
 }
 .media-table th:first-child {
   width: 36%;
@@ -172,11 +221,12 @@
 }
 .media-table td {
   padding: calc(12 * var(--admin-unit)) calc(10 * var(--admin-unit));
-  border-bottom: 1px solid var(--admin-rule);
-  color: var(--fuwari-fg-50);
+  border-bottom: 1px solid var(--admin-line);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
 }
 .media-table tr[data-selected="true"] td {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--admin-hover);
 }
 .media-table tr[data-selected="true"] td:first-child {
   border-radius: calc(9 * var(--admin-unit)) 0 0 calc(9 * var(--admin-unit));
@@ -271,103 +321,187 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: calc(16 * var(--admin-unit));
-  margin-top: calc(30 * var(--admin-unit));
-  min-height: calc(44 * var(--admin-unit));
-  font-size: calc(12 * var(--admin-unit));
-  color: var(--fuwari-fg-50);
+  gap: 16px;
+  min-height: 44px;
+  margin-top: auto;
+  padding-top: 22px;
+  font-size: var(--admin-text-meta);
+  color: var(--admin-fg-3);
 }
 .media-cleanup {
   margin-left: auto;
 }
+
+/* ── Uploading, and a file held over the page ── */
 .media-upload-progress {
-  margin-bottom: calc(20 * var(--admin-unit));
-  font-size: calc(14 * var(--admin-unit));
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 999px;
+  background: var(--admin-ink);
+  color: var(--admin-on-ink);
+  font-size: var(--admin-text-small);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--admin-shadow-raised);
+  transform: translateX(-50%);
+  animation: media-progress-in 0.3s var(--admin-ease);
+}
+@keyframes media-progress-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
 }
 .media-drop-overlay {
   position: absolute;
-  inset: 0;
+  inset: 8px;
   z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  border: 2px dashed var(--admin-accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--admin-surface) 88%, transparent);
+  backdrop-filter: blur(3px);
+  color: var(--admin-fg);
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  animation: admin-fade 0.15s;
+}
+.media-drop-overlay > span {
   display: grid;
   place-items: center;
-  pointer-events: none;
-  border: 2px dashed var(--fuwari-primary);
-  border-radius: inherit;
-  color: var(--fuwari-primary);
-  background: color-mix(in srgb, var(--fuwari-card-bg) 92%, transparent);
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-text);
 }
+
+/* ── The panel ── */
 .media-inspector {
   min-width: 0;
-  color: var(--fuwari-fg-75);
+  color: var(--admin-fg-2);
 }
 aside.media-inspector {
-  position: sticky;
-  top: calc(24 * var(--admin-unit));
-  max-height: calc(100dvh - 80px);
+  width: var(--media-panel);
+  height: 100%;
   overflow-y: auto;
-  padding-left: calc(24 * var(--admin-unit));
-  border-left: 1px solid var(--admin-rule);
-  scrollbar-width: thin;
-  animation: media-inspector-enter 0.24s ease-out;
+  overscroll-behavior: contain;
+  padding: 0 18px 22px;
+  animation: media-detail-in var(--media-layout-duration) var(--admin-ease) both;
+}
+aside.media-inspector[data-state="closing"] {
+  animation: none;
+  opacity: 0;
+}
+@keyframes media-detail-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
 }
 .media-inspector-header {
-  margin-bottom: calc(16 * var(--admin-unit));
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin-bottom: 0;
+  padding-block: 12px 10px;
+  background: var(--admin-surface);
 }
 .media-inspector-preview {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--fuwari-btn-regular-bg);
-  border-radius: calc(10 * var(--admin-unit));
+  display: grid;
+  place-items: center;
+  min-height: calc(150 * var(--admin-unit));
   overflow: hidden;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
 }
 .media-inspector-preview img {
   max-width: 100%;
-  max-height: calc(330 * var(--admin-unit));
+  max-height: calc(300 * var(--admin-unit));
   object-fit: contain;
 }
 .media-inspector-name {
-  display: flex;
-  align-items: center;
-  gap: calc(8 * var(--admin-unit));
-  margin-top: calc(18 * var(--admin-unit));
-  font-size: calc(14 * var(--admin-unit));
-  font-weight: 500;
-  color: var(--fuwari-fg-75);
-}
-.media-inspector-name > span {
-  min-width: 0;
+  margin-top: 16px;
+  font-size: var(--admin-text-section);
+  font-weight: 600;
+  line-height: var(--admin-leading-section);
+  color: var(--admin-fg);
   overflow-wrap: anywhere;
 }
 .media-inspector-facts {
-  margin-top: 5px;
-  font-size: calc(13 * var(--admin-unit));
-  color: var(--fuwari-fg-50);
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+}
+.media-inspector-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.media-inspector-facts dt {
+  color: var(--admin-fg-3);
+}
+.media-inspector-facts dd {
+  color: var(--admin-fg);
+  font-variant-numeric: tabular-nums;
+}
+.media-inspector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.media-inspector-delete {
+  margin-left: auto;
 }
 .media-inspector-usage {
-  margin-top: calc(32 * var(--admin-unit));
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-line);
 }
 .media-inspector-usage h3 {
-  font-size: calc(14 * var(--admin-unit));
-  font-weight: 500;
-  margin-bottom: calc(12 * var(--admin-unit));
+  margin-bottom: 6px;
+  font-size: var(--admin-text-small);
+  font-weight: 600;
+  color: var(--admin-fg);
 }
 .media-inspector-usage > p {
-  font-size: calc(13 * var(--admin-unit));
-  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-small);
+  color: var(--admin-fg-3);
+}
+.media-inspector-usage > .media-inspector-note {
+  margin-bottom: 8px;
 }
 .media-reference {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: calc(10 * var(--admin-unit));
-  row-gap: calc(6 * var(--admin-unit));
-  padding: calc(12 * var(--admin-unit));
-  margin-top: calc(8 * var(--admin-unit));
-  font-size: calc(13 * var(--admin-unit));
-  border-radius: calc(10 * var(--admin-unit));
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-fg-75);
+  gap: 6px 10px;
+  margin-inline: -10px;
+  padding: 9px 10px;
+  border-radius: var(--admin-radius-control);
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg);
+  transition: background-color 0.15s;
+}
+.media-reference:hover {
+  background: var(--admin-hover);
 }
 /* A long title wraps without leaving a lone character, and the badges sit on
    their own line under it instead of squeezing it. */
@@ -380,44 +514,19 @@ aside.media-inspector {
   grid-column: 2;
   display: flex;
   flex-wrap: wrap;
-  gap: calc(6 * var(--admin-unit));
+  gap: 6px;
 }
 .media-reference svg {
   flex-shrink: 0;
+  color: var(--admin-fg-3);
 }
-.media-inspector-usage > .media-inspector-note {
-  margin: calc(-6 * var(--admin-unit)) 0 calc(12 * var(--admin-unit));
-}
-.media-inspector-actions {
-  display: flex;
-  gap: calc(10 * var(--admin-unit));
-  flex-wrap: wrap;
-  margin-top: calc(22 * var(--admin-unit));
-}
-.media-inspector-delete {
-  margin-top: calc(20 * var(--admin-unit));
-}
-.media-inspector-dialog {
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  border: none;
-  width: min(
-    calc(520 * var(--admin-unit)),
-    calc(100% - calc(24 * var(--admin-unit)))
-  );
+/* Below 1200px the panel is a dialog (FuwariModal brings its own motion). */
+.fuwari-modal.media-inspector-dialog {
+  width: min(calc(520 * var(--admin-unit)), calc(100% - 24px));
   max-height: calc(100dvh - 24px);
-  padding: calc(22 * var(--admin-unit));
-  border-radius: calc(18 * var(--admin-unit));
-  background: var(--fuwari-card-bg);
-  overflow-y: auto;
-}
-.media-inspector-dialog[open] {
-  animation: media-inspector-enter 0.24s ease-out;
-}
-.media-inspector-dialog::backdrop {
-  background: #0005;
-  backdrop-filter: blur(3px);
+  padding: 4px 20px 22px;
+  border-radius: 18px;
+  background: var(--admin-surface);
 }
 :is(.media-workspace, .media-inspector)
   :is(
@@ -425,61 +534,48 @@ aside.media-inspector {
       .fuwari-button,
       .fuwari-icon-button,
       .fuwari-tab,
-      .fuwari-segment
+      .fuwari-segment,
+      .media-gallery-item
     ),
     a,
     input:not(.fuwari-field-shell > input)
   ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
-  outline-offset: 3px;
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
 }
+
+/* ── While it loads ── */
 .media-skeleton-image {
-  aspect-ratio: 1.12;
-  border-radius: calc(10 * var(--admin-unit));
+  display: block;
+  border-radius: 8px;
 }
 .media-skeleton-label {
-  height: calc(15 * var(--admin-unit));
-  width: 65%;
-  margin-top: calc(12 * var(--admin-unit));
-  border-radius: calc(6 * var(--admin-unit));
+  display: block;
+  height: 15px;
+  width: 45%;
+  border-radius: 6px;
+}
+.media-list-skeleton {
+  padding-inline: 16px;
 }
 .media-list-skeleton > div {
   display: flex;
   align-items: center;
-  gap: calc(16 * var(--admin-unit));
-  padding: calc(12 * var(--admin-unit)) 0;
+  gap: 16px;
+  padding: 12px 0;
 }
 .media-list-skeleton .media-skeleton-image {
   width: calc(64 * var(--admin-unit));
   height: calc(52 * var(--admin-unit));
 }
-@keyframes media-inspector-enter {
-  from {
-    opacity: 0;
-    transform: translateY(calc(8 * var(--admin-unit)));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (max-width: 1199px) {
-  .media-workspace-body.has-preview {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
-}
+
 @media (max-width: 600px) {
-  .media-workspace > .admin-page-body {
-    padding-top: calc(22 * var(--admin-unit));
+  .media-workspace {
+    --media-gap: 4px;
+    --media-inset: 8px;
   }
-  .media-view-switch {
-    --fuwari-segment-padding-x: calc(10 * var(--admin-unit));
-    --fuwari-segment-font-size: calc(13 * var(--admin-unit));
-  }
-  .media-gallery {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: calc(22 * var(--admin-unit)) calc(14 * var(--admin-unit));
+  .media-gallery-item {
+    border-radius: 8px;
   }
   .media-file {
     gap: calc(8 * var(--admin-unit));
@@ -490,26 +586,18 @@ aside.media-inspector {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .media-inspector,
-  .media-inspector-dialog[open] {
+  aside.media-inspector,
+  .media-upload-progress,
+  .media-drop-overlay {
     animation: none;
   }
-  .media-gallery .media-thumbnail {
+  .media-gallery .media-thumbnail img,
+  .media-gallery-caption {
     transition: none;
   }
-}
-
-@media (min-width: 1200px) {
-  .media-workspace:has(.has-preview) .media-toolbar-shell {
-    margin-right: calc(354 * var(--admin-unit));
+  .media-gallery-item:hover .media-thumbnail img {
+    transform: none;
   }
-}
-.media-workspace .media-gallery-item:focus-visible {
-  outline: none;
-}
-.media-gallery-item:focus-visible .media-thumbnail {
-  outline: 2px solid var(--fuwari-primary);
-  outline-offset: 3px;
 }
 
 :is(.media-workspace, .media-inspector) svg[width="12"] {
@@ -555,121 +643,4 @@ aside.media-inspector {
 :is(.media-workspace, .media-inspector) svg[width="30"] {
   width: calc(30 * var(--admin-unit));
   height: calc(30 * var(--admin-unit));
-}
-
-/* Both grid tracks exist before opening, allowing the inspector space to interpolate. */
-.media-workspace-body {
-  grid-template-columns: minmax(0, 1fr) 0px;
-  gap: 0;
-  transition:
-    grid-template-columns var(--media-layout-duration) var(--media-layout-ease),
-    gap var(--media-layout-duration) var(--media-layout-ease);
-}
-.media-panel-slot {
-  min-width: 0;
-  overflow: clip;
-  align-self: stretch;
-}
-.media-panel-slot > .media-inspector {
-  width: calc(330 * var(--admin-unit));
-}
-.media-toolbar-shell {
-  transition: margin-right var(--media-layout-duration) var(--media-layout-ease);
-}
-aside.media-inspector[data-state="open"] {
-  animation: media-detail-in var(--media-layout-duration)
-    var(--media-layout-ease) both;
-}
-aside.media-inspector[data-state="closing"] {
-  animation: media-detail-out var(--media-layout-duration)
-    var(--media-layout-ease) both;
-}
-@keyframes media-detail-in {
-  from {
-    opacity: 0;
-    transform: translateX(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-@keyframes media-detail-out {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(12px);
-  }
-}
-@media (max-width: 1199px) {
-  .media-workspace-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .media-panel-slot {
-    display: contents;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .media-workspace-body,
-  .media-toolbar-shell {
-    transition: none;
-  }
-  aside.media-inspector[data-state] {
-    animation: none;
-  }
-}
-
-.media-upload-progress {
-  flex-shrink: 0;
-}
-.media-workspace-body {
-  flex: 1;
-  min-height: 0;
-}
-.media-browser {
-  position: relative;
-  min-height: 0;
-  height: 100%;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  overflow-anchor: none;
-  padding: 4px 6px 8px 4px;
-  margin: -4px -6px -8px -4px;
-  margin-right: calc(-6px - var(--admin-scrollbar));
-}
-.media-browser-content {
-  position: relative;
-  min-width: 0;
-}
-.media-table-scroll {
-  overflow: visible;
-}
-.media-panel-slot {
-  min-height: 0;
-}
-aside.media-inspector {
-  position: static;
-  top: auto;
-  height: 100%;
-  max-height: none;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  padding-right: 4px;
-  margin-right: calc(-1 * var(--admin-scrollbar));
-}
-.media-inspector-header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--fuwari-card-bg);
-}
-@media (max-width: 600px) {
-  .media-workspace-tabs {
-    --fuwari-tabs-gap: 12px;
-    --fuwari-tab-padding-x: 0;
-  }
 }
