@@ -27,7 +27,11 @@
   scroll-padding-bottom: calc(120 * var(--admin-unit));
 }
 /* The sections with a save bar park it at the foot of a short page. */
-.settings-workspace:is([data-section="site"], [data-section="notify"])
+.settings-workspace:is(
+    [data-section="site"],
+    [data-section="notify"],
+    [data-section="personalize"]
+  )
   .settings-body {
   display: flex;
   flex-direction: column;

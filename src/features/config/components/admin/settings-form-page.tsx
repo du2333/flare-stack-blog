@@ -12,6 +12,7 @@ import {
 } from "@/features/config/components/admin/settings-shell";
 import { SettingsInnerSkeleton } from "@/features/config/components/admin/settings-skeleton";
 import { useSystemConfigForm } from "@/features/config/hooks/use-system-config-form";
+import type { PERSONALIZE_PAGE } from "@/features/config/utils/site-field-pages";
 
 export function SettingsSectionFrame({
   title,
@@ -19,7 +20,7 @@ export function SettingsSectionFrame({
   children,
 }: {
   title: string;
-  nav: SettingsPageId | null;
+  nav: SettingsPageId | typeof PERSONALIZE_PAGE | null;
   children: ReactNode;
 }) {
   const {
@@ -33,10 +34,18 @@ export function SettingsSectionFrame({
     baseline,
     conflict,
     discardSection,
+    reloadSection,
   } = useSystemConfigForm(nav);
+  const personalize = nav === "personalize";
   const blocker = useBlocker({
+    // The settings pages share one form; 「个性化」 has a form of its own.
     shouldBlockFn: ({ next }) =>
-      isDirty && !/^\/admin\/settings(?:\/|$)/.test(next.pathname),
+      isDirty &&
+      !(
+        personalize
+          ? /^\/admin\/personalize(?:\/|$)/
+          : /^\/admin\/settings(?:\/|$)/
+      ).test(next.pathname),
     enableBeforeUnload: isDirty,
     withResolver: true,
   });
@@ -45,7 +54,7 @@ export function SettingsSectionFrame({
     typeof hueRaw === "number" && !Number.isNaN(hueRaw)
       ? hueRaw
       : blogConfig.primaryHue;
-  const needsSave = nav === "site" || nav === "notify";
+  const needsSave = nav === "site" || nav === "notify" || personalize;
   useLiveDocumentHue(
     hue,
     baseline.config.site?.primaryHue ?? blogConfig.primaryHue,
@@ -71,6 +80,9 @@ export function SettingsSectionFrame({
                     dirty: sectionDirty,
                     conflict,
                     onDiscard: () => void discardSection(),
+                    // Only Site Config is shared by two pages.
+                    onReload:
+                      nav === "notify" ? undefined : () => void reloadSection(),
                   }
                 : undefined
             }
