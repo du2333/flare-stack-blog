@@ -1,5 +1,5 @@
 .taxonomy-name-dialog .fuwari-modal-content {
-  padding: clamp(24px, 1.5vw, 32px);
+  padding: 24px;
 }
 .taxonomy-name-dialog header {
   display: flex;
@@ -8,7 +8,7 @@
   gap: 16px;
 }
 .taxonomy-name-dialog h2 {
-  font-size: clamp(18px, 1.2vw, 22px);
+  font-size: 18px;
   font-weight: 600;
   color: var(--fuwari-fg-75);
 }

@@ -1,24 +1,22 @@
 /*
  * Every Admin workspace draws one hairline rule: --admin-hairline
- * (admin-variables.css). --admin-unit is one pixel at every width: the sizes
- * written with it used to grow with the window (up to 1.5 times on a wide
- * screen), which set them apart from everything sized by the type variables.
+ * (admin-variables.css). Its sizes are plain pixels: nothing in the Admin
+ * grows with the window.
  */
 .admin-workspace {
-  --admin-unit: 1px;
-  --fuwari-tabs-gap: calc(28 * var(--admin-unit));
+  --fuwari-tabs-gap: 28px;
   --fuwari-tabs-rule: var(--admin-hairline);
-  --fuwari-tab-height: calc(46 * var(--admin-unit));
-  --fuwari-tab-font-size: calc(14 * var(--admin-unit));
-  --fuwari-segment-height: calc(36 * var(--admin-unit));
-  --fuwari-segment-padding-x: calc(12 * var(--admin-unit));
-  --fuwari-segment-font-size: calc(14 * var(--admin-unit));
+  --fuwari-tab-height: 46px;
+  --fuwari-tab-font-size: 14px;
+  --fuwari-segment-height: 36px;
+  --fuwari-segment-padding-x: 12px;
+  --fuwari-segment-font-size: 14px;
   /* The side inset of every workspace, the dashboard included. */
-  --admin-frame-x: calc(30 * var(--admin-unit));
+  --admin-frame-x: 30px;
 }
 @media (max-width: 1023px) {
   .admin-workspace {
-    --admin-frame-x: calc(24 * var(--admin-unit));
+    --admin-frame-x: 24px;
   }
 }
 @media (max-width: 767px) {
@@ -53,7 +51,7 @@
   min-height: 0;
   overflow: hidden;
   padding: var(--admin-frame-top) var(--admin-frame-x)
-    var(--admin-frame-bottom, calc(20 * var(--admin-unit)));
+    var(--admin-frame-bottom, 20px);
 }
 @media (hover: hover) and (pointer: fine) {
   .admin-frame {
@@ -108,7 +106,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: calc(20 * var(--admin-unit));
+  gap: 20px;
   min-height: var(--fuwari-tab-height);
 }
 .admin-frame-toolbar > .fuwari-tabs {
