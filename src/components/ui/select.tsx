@@ -20,8 +20,11 @@ export function Select({
   className,
   placeholder,
   id,
+  "aria-label": ariaLabel,
 }: {
   id?: string;
+  /** Names the control when no label points at its `id`. */
+  "aria-label"?: string;
   value: string;
   options: Array<SelectOption>;
   onChange: (value: string) => void;
@@ -73,6 +76,7 @@ export function Select({
         ref={triggerRef}
         id={id}
         type="button"
+        aria-label={ariaLabel}
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}

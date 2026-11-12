@@ -21,6 +21,7 @@ export const PRIMARY_HUE_MAX = 360;
 export const BANNER_FOCUS_MIN = 0;
 export const BANNER_FOCUS_MAX = 100;
 export const TAGLINE_MAX = 80;
+export const SITE_DESCRIPTION_MAX = 300;
 
 /** The Theme ids live with the Theme registry; Site Config only checks them. */
 export {
@@ -255,7 +256,7 @@ function createLegacyFuwariSchema() {
 export const FullSiteConfigSchema = z.object({
   title: createSiteTextSchema(120),
   author: createSiteTextSchema(80),
-  description: createSiteTextSchema(300),
+  description: createSiteTextSchema(SITE_DESCRIPTION_MAX),
   social: z.array(SocialLinkSchema),
   navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX),
   icons: z.object({
@@ -283,7 +284,10 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
   return z.object({
     title: createSiteTextFormSchema(120, messages).optional(),
     author: createSiteTextFormSchema(80, messages).optional(),
-    description: createSiteTextFormSchema(300, messages).optional(),
+    description: createSiteTextFormSchema(
+      SITE_DESCRIPTION_MAX,
+      messages,
+    ).optional(),
     social: z.array(SocialLinkSchema).optional(),
     navLinks: createNavLinksFormSchema(messages).optional(),
     icons: z
@@ -315,7 +319,7 @@ export function createSiteConfigInputFormSchema(messages: Messages) {
 export const SiteConfigInputSchema = z.object({
   title: createSiteTextSchema(120).optional(),
   author: createSiteTextSchema(80).optional(),
-  description: createSiteTextSchema(300).optional(),
+  description: createSiteTextSchema(SITE_DESCRIPTION_MAX).optional(),
   social: z.array(SocialLinkSchema).optional(),
   navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX).optional(),
   icons: z

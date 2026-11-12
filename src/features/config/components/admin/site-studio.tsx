@@ -3,20 +3,20 @@ import {
   ArrowRight,
   ExternalLink,
   GripVertical,
-  Pencil,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
-import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button, buttonClass } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
+import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
+import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
   isExternalNavHref,
@@ -29,7 +29,6 @@ import {
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { SettingsDisclosure } from "./settings-disclosure";
-import { SettingsLead } from "./settings-lead";
 import { useNavSort } from "./use-nav-sort";
 import "./site-studio.css";
 
@@ -75,57 +74,10 @@ const ICON_FIELDS = [
 ];
 
 export function SiteStudio() {
-  const { register, control } = useFormContext<SystemConfig>();
-  const title = useWatch({ control, name: "site.title" }) ?? "";
-  const author = useWatch({ control, name: "site.author" }) ?? "";
-
   return (
     <div className="site-studio">
-      <SettingsLead
-        description={m.settings_site_moved_to_personalize()}
-        actions={
-          <Link
-            to="/admin/personalize"
-            className={buttonClass({ variant: "text", size: "sm" })}
-          >
-            {m.settings_site_moved_to_personalize_link()}
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        }
-      />
-      <section className="site-identity">
-        <label className="site-title-edit">
-          <input
-            {...register("site.title")}
-            className="site-inline-input"
-            size={Math.min(28, Math.max(8, title.length * 2))}
-            placeholder={m.settings_site_field_title_ph()}
-            aria-label={m.settings_site_field_title()}
-          />
-          <Pencil size={17} aria-hidden="true" />
-        </label>
-        <label className="site-author-edit">
-          <input
-            {...register("site.author")}
-            className="site-inline-input"
-            size={Math.min(24, Math.max(4, author.length * 2))}
-            placeholder={m.settings_site_field_author_ph()}
-            aria-label={m.settings_site_field_author()}
-          />
-          <Pencil size={15} aria-hidden="true" />
-        </label>
-        <label className="site-description-edit">
-          <textarea
-            {...register("site.description")}
-            className="site-inline-input"
-            rows={2}
-            placeholder={m.settings_site_field_description_ph()}
-            aria-label={m.settings_site_field_description()}
-          />
-          <Pencil size={14} aria-hidden="true" />
-        </label>
-        <SocialPills />
-      </section>
+      <TextFields />
+      <SocialLinksEditor />
       <NavLinksEditor />
       <SettingsDisclosure
         className="site-icons"
@@ -142,7 +94,69 @@ export function SiteStudio() {
           ))}
         </div>
       </SettingsDisclosure>
+      <p className="site-moved-hint">
+        {m.settings_site_moved_to_personalize()}
+        <Link
+          to="/admin/personalize"
+          className={buttonClass({ variant: "text", size: "sm" })}
+        >
+          {m.settings_site_moved_to_personalize_link()}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </p>
     </div>
+  );
+}
+
+/** The title, the author and the description: a labelled row each, with where it shows. */
+function TextFields() {
+  const { register, control, formState } = useFormContext<SystemConfig>();
+  const errors = formState.errors.site;
+  const description = useWatch({ control, name: "site.description" }) ?? "";
+  return (
+    <section className="site-fields">
+      <FormField
+        label={m.settings_site_field_title()}
+        hint={m.settings_site_title_hint()}
+        error={errors?.title?.message}
+      >
+        <Input
+          {...register("site.title")}
+          placeholder={m.settings_site_field_title_ph()}
+        />
+      </FormField>
+      <FormField
+        label={m.settings_site_field_author()}
+        hint={m.settings_site_author_hint()}
+        error={errors?.author?.message}
+      >
+        <Input
+          {...register("site.author")}
+          placeholder={m.settings_site_field_author_ph()}
+        />
+      </FormField>
+      <FormField
+        label={m.settings_site_field_description()}
+        hint={
+          <>
+            {m.settings_site_description_hint()}
+            <span className="site-char-count">
+              {m.settings_site_char_count({
+                count: description.length,
+                max: SITE_DESCRIPTION_MAX,
+              })}
+            </span>
+          </>
+        }
+        error={errors?.description?.message}
+      >
+        <Textarea
+          {...register("site.description")}
+          rows={3}
+          placeholder={m.settings_site_field_description_ph()}
+        />
+      </FormField>
+    </section>
   );
 }
 
@@ -272,141 +286,117 @@ function NavLinksEditor() {
   );
 }
 
-function SocialPills() {
-  const { control, register, watch, setValue } = useFormContext<SystemConfig>();
+function SocialLinksEditor() {
+  const { control, register, watch, setValue, formState } =
+    useFormContext<SystemConfig>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "site.social",
   });
   const social = useWatch({ control, name: "site.social" }) ?? [];
-  const [selected, setSelected] = useState<number | null>(null);
   const taken = (key: string, except: number) =>
     key !== "custom" &&
     social.some((item, index) => index !== except && item.platform === key);
   const unused = SOCIAL_PLATFORM_KEYS.filter(
     (key) => key === "custom" || !social.some((item) => item.platform === key),
   );
+  const error = formState.errors.site?.social;
 
   return (
-    <div className="site-social">
-      <div className="site-social-actions">
+    <section className="site-nav-section">
+      <div className="site-section-copy">
+        <h2>{m.settings_social_title()}</h2>
+        <p>{m.settings_social_hint()}</p>
+      </div>
+      <div className="site-social-rows">
         {fields.map((field, index) => {
           const platform = watch(`site.social.${index}.platform`);
-          const preset =
-            platform && platform !== "custom"
-              ? SOCIAL_PLATFORMS[platform]
-              : null;
-          const Icon = preset?.icon;
-          const iconSrc = watch(`site.social.${index}.icon`);
+          const urlPlaceholder =
+            platform === "email"
+              ? m.settings_social_email_ph()
+              : platform === "rss"
+                ? m.settings_social_rss_ph()
+                : m.settings_social_url_ph();
+          const rowError =
+            error?.[index]?.url?.message ?? error?.[index]?.label?.message;
           return (
-            <IconButton
-              key={field.id}
-              onClick={() =>
-                setSelected((current) => (current === index ? null : index))
-              }
-              label={preset?.label ?? field.label ?? ""}
-              aria-expanded={selected === index}
-            >
-              {Icon ? (
-                <Icon size={18} strokeWidth={1.5} />
-              ) : iconSrc ? (
-                <img src={iconSrc} alt="" className="w-4 h-4" />
-              ) : (
-                <Plus size={16} />
-              )}
-            </IconButton>
+            <div key={field.id} className="site-social-item">
+              <div className="site-social-row">
+                <Select
+                  value={platform ?? ""}
+                  aria-label={m.settings_social_platform_label()}
+                  onChange={(next) =>
+                    setValue(
+                      `site.social.${index}.platform`,
+                      next as (typeof SOCIAL_PLATFORM_KEYS)[number],
+                      { shouldDirty: true },
+                    )
+                  }
+                  options={SOCIAL_PLATFORM_KEYS.map((key) => ({
+                    value: key,
+                    label:
+                      key === "custom"
+                        ? m.settings_social_custom()
+                        : SOCIAL_PLATFORMS[key].label,
+                    disabled: taken(key, index),
+                  }))}
+                />
+                <Input
+                  {...register(`site.social.${index}.url`)}
+                  aria-label={m.settings_social_address_label()}
+                  placeholder={urlPlaceholder}
+                />
+                <IconButton
+                  size="md"
+                  tone="danger"
+                  onClick={() => remove(index)}
+                  label={m.settings_social_remove()}
+                >
+                  <X size={16} />
+                </IconButton>
+              </div>
+              {platform === "custom" ? (
+                <div className="site-social-row site-social-custom">
+                  <Input
+                    {...register(`site.social.${index}.label`)}
+                    aria-label={m.settings_social_label_label()}
+                    placeholder={m.settings_social_label_ph()}
+                  />
+                  <OverlayUpload
+                    name={`site.social.${index}.icon`}
+                    assetPath={`social/custom-${index}`}
+                    accept=".svg,.png,.webp"
+                    variant="regular"
+                    label={
+                      watch(`site.social.${index}.icon`)
+                        ? m.settings_replace()
+                        : m.settings_social_custom_icon_upload()
+                    }
+                  />
+                </div>
+              ) : null}
+              {rowError ? (
+                <p className="fuwari-form-field-error">{rowError}</p>
+              ) : null}
+            </div>
           );
         })}
-        {unused.length > 0 ? (
-          <Button
-            variant="text"
-            size="sm"
-            onClick={() => {
-              const next = unused[0];
-              if (!next) return;
-              append({ platform: next, url: "" });
-              setSelected(fields.length);
-            }}
-            icon={<Plus size={14} />}
-          >
-            {m.settings_social_add()}
-          </Button>
-        ) : null}
       </div>
-
-      {selected !== null && fields[selected]
-        ? (() => {
-            const platform = watch(`site.social.${selected}.platform`);
-            const urlPlaceholder =
-              platform === "email"
-                ? m.settings_social_email_ph()
-                : platform === "rss"
-                  ? m.settings_social_rss_ph()
-                  : m.settings_social_url_ph();
-
-            return (
-              <div className="site-social-editor">
-                <div className="flex gap-2">
-                  <Select
-                    className="w-36 shrink-0"
-                    value={platform ?? ""}
-                    onChange={(next) =>
-                      setValue(
-                        `site.social.${selected}.platform`,
-                        next as (typeof SOCIAL_PLATFORM_KEYS)[number],
-                        { shouldDirty: true },
-                      )
-                    }
-                    options={SOCIAL_PLATFORM_KEYS.map((key) => ({
-                      value: key,
-                      label:
-                        key === "custom"
-                          ? m.settings_social_custom()
-                          : SOCIAL_PLATFORMS[key].label,
-                      disabled: taken(key, selected),
-                    }))}
-                  />
-                  <Input
-                    {...register(`site.social.${selected}.url`)}
-                    placeholder={urlPlaceholder}
-                  />
-                  <IconButton
-                    size="md"
-                    tone="danger"
-                    onClick={() => {
-                      remove(selected);
-                      setSelected(null);
-                    }}
-                    label={m.settings_social_remove()}
-                  >
-                    <X size={16} />
-                  </IconButton>
-                </div>
-                {platform === "custom" ? (
-                  <div className="flex gap-2">
-                    <Input
-                      {...register(`site.social.${selected}.label`)}
-                      placeholder={m.settings_social_label_ph()}
-                      className="w-36 shrink-0"
-                    />
-                    <OverlayUpload
-                      name={`site.social.${selected}.icon`}
-                      assetPath={`social/custom-${selected}`}
-                      accept=".svg,.png,.webp"
-                      variant="regular"
-                      label={
-                        watch(`site.social.${selected}.icon`)
-                          ? m.settings_replace()
-                          : m.settings_social_custom_icon_upload()
-                      }
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })()
-        : null}
-    </div>
+      {unused.length > 0 ? (
+        <Button
+          variant="text"
+          size="sm"
+          onClick={() => {
+            const next = unused[0];
+            if (next) append({ platform: next, url: "" });
+          }}
+          icon={<Plus size={14} />}
+          className="site-add-link"
+        >
+          {m.settings_social_add()}
+        </Button>
+      ) : null}
+    </section>
   );
 }
 
