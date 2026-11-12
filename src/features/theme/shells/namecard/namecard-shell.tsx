@@ -23,8 +23,10 @@ const CARD_STEP_MS = 50;
  * that width calls for and the ways into the Posts staying in view. On a
  * Post's page the right column is the table of contents', there from the
  * top of the page, and the cards follow the article (card-placement.ts says
- * which card goes where, namecard.css how each place looks). Below 1024px
- * there is one column, the cards after the content.
+ * which card goes where, namecard.css how each place looks); a Post without
+ * headings has no table of contents, and the stylesheet keeps its cards in
+ * the right column, which would stand empty. Below 1024px there is one
+ * column, the cards after the content.
  *
  * Back to top and the page's actions stand in a box of the shell's, which
  * the stylesheet places from 1024px: right of the page where the window has
@@ -109,8 +111,9 @@ function NamecardShell({
  * card. Every card gets a slot of its own, which the stylesheet makes a
  * `card` container: the card takes the form the slot's width calls for.
  *
- * Beside the content the ways into the Posts stand together below the other
- * cards, in a box of their own that the stylesheet keeps in view.
+ * The ways into the Posts stand together below the other cards, in a box of
+ * their own, which the stylesheet keeps in view where the group stands in
+ * the right column and which is no box anywhere else.
  */
 function Cards({
   place,
@@ -120,8 +123,7 @@ function Cards({
   cards: Array<SidebarCard>;
 }) {
   if (cards.length === 0) return null;
-  const pinned =
-    place === "beside" ? cards.filter((card) => card.kind === "index") : [];
+  const pinned = cards.filter((card) => card.kind === "index");
   const others = cards.filter((card) => !pinned.includes(card));
   const slot = (card: SidebarCard, position: number) => (
     <div

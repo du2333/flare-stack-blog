@@ -218,7 +218,8 @@
   min-width: 0;
 }
 /* The box around the ways into the Posts (namecard-shell.tsx) is no box
-   until the cards have a column of their own. */
+   unless the cards have a column of their own: below 1024px, and after the
+   article of a Post, they stand as any other card does. */
 .namecard-cards-pinned {
   display: contents;
 }
@@ -261,17 +262,29 @@
   .namecard-body[data-focused="false"] > .namecard-cards[data-place="after"] {
     grid-area: 2 / 1;
   }
+  /* A Post without headings has no table of contents, and the right column
+     would stand empty beside it: its cards stay there, as they stand beside
+     every other page. The page says whether it has one from the first
+     paint ([data-table-of-contents], toc-slot.tsx). */
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"] {
+    grid-area: 1 / 2;
+    margin-top: 0;
+  }
   .namecard-body[data-focused="false"] > .namecard-footer {
     grid-column: 1 / -1;
   }
-  /* The ways into the Posts stay in view below the navbar, while the rest
-     of the column scrolls away with the page. Where they are taller than
-     the window has room for (a list shown in full, a low window), their box
-     scrolls by itself, so its end can be reached from anywhere on the page,
-     and what it cuts off fades out over its last 1rem. The box is larger
-     than the cards by its padding: room for the focus rings it would
-     otherwise cut off, and under them for that fade. */
-  .namecard-cards[data-place="beside"] > .namecard-cards-pinned {
+  /* In the right column the ways into the Posts stay in view below the
+     navbar, while the rest of the column scrolls away with the page. Where
+     they are taller than the window has room for (a list shown in full, a
+     low window), their box scrolls by itself, so its end can be reached
+     from anywhere on the page, and what it cuts off fades out over its last
+     1rem. The box is larger than the cards by its padding: room for the
+     focus rings it would otherwise cut off, and under them for that fade. */
+  .namecard-cards[data-place="beside"] > .namecard-cards-pinned,
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"]
+    > .namecard-cards-pinned {
     position: sticky;
     top: calc(var(--namecard-nav-height) + 0.5rem);
     display: flex;
@@ -284,12 +297,13 @@
     scrollbar-width: none;
     mask-image: linear-gradient(#000 calc(100% - 1rem), transparent);
   }
-  .namecard-cards[data-place="beside"]
-    > .namecard-cards-pinned
-    > .namecard-card {
+  .namecard-cards-pinned > .namecard-card {
     flex: none;
   }
   .namecard-cards[data-place="beside"]
+    > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))),
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"]
     > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))) {
     display: none;
   }

@@ -12,7 +12,9 @@ export type CardPlace = "beside" | "after";
  * The cards of a page by the place 「名片」 gives them, in the order given;
  * every card goes to exactly one. They stand in the right column, except on
  * a Post's page: there that column is the table of contents', and the cards
- * follow the article.
+ * follow the article. Whether a Post has a table of contents only its page
+ * says: the stylesheet keeps the cards of one that has none in the right
+ * column (namecard.css).
  */
 export function placeCards(
   pageKind: PageKind,

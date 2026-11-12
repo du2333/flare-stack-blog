@@ -278,14 +278,16 @@ describe("the sidebar cards", () => {
     ]);
   });
 
-  it("all follow the article on a Post's page, where the right column is the table of contents', with no box to keep in view", async () => {
+  // The box of the ways into the Posts is in the document there too: the
+  // stylesheet makes it a box only where the group has the right column.
+  it("all follow the article on a Post's page, where the right column is the table of contents'", async () => {
     await renderShell({ pageKind: "post" });
 
     expect(cardGroups()).toEqual([
       {
         place: "after",
         cards: ["Card profile", "Card categories", "Card tags"],
-        pinned: [],
+        pinned: ["Card categories", "Card tags"],
       },
     ]);
   });
@@ -695,6 +697,9 @@ describe("the stylesheet", () => {
     };
   }
 
+  /** The body of a page that has no table of contents (table-of-contents.tsx). */
+  const NO_CONTENTS = `${BODY}:not(:has([data-table-of-contents]))`;
+
   describe("the sidebar cards", () => {
     // The cards take their wide or narrow form from this container; nothing
     // else tells them where they stand.
@@ -726,9 +731,13 @@ describe("the stylesheet", () => {
     });
 
     it("keeps the ways into the Posts in view below the navbar from 1024px, in a box that scrolls when the window is too low for it", () => {
-      const PINNED =
-        '.namecard-cards[data-place="beside"] > .namecard-cards-pinned {';
+      const PINNED = `${NO_CONTENTS} > .namecard-cards[data-place="after"] > .namecard-cards-pinned {`;
       const box = declarations(blockAfter(spread, PINNED));
+      // In the right column: beside the content, and beside a Post that has
+      // no table of contents.
+      expect(spread).toContain(
+        `.namecard-cards[data-place="beside"] > .namecard-cards-pinned, ${PINNED}`,
+      );
       const navbar = px(properties["--namecard-nav-height"]!, properties);
       const top = px(declared(box, "top"), properties);
       const padding = px(declared(box, "padding").split(" ")[0]!, properties);
@@ -804,6 +813,21 @@ describe("the stylesheet", () => {
       expect(
         declarations(blockAfter(spread, `${BODY} > .namecard-footer {`)),
       ).toEqual(["grid-column: 1 / -1"]);
+    });
+
+    // The right column of a Post is the table of contents'. A Post without
+    // headings has none, and the column would stand empty beside it.
+    it("keeps the cards of a Post without a table of contents in the right column", () => {
+      expect(
+        declarations(
+          blockAfter(
+            spread,
+            `${NO_CONTENTS} > .namecard-cards[data-place="after"] {`,
+          ),
+        ),
+      ).toEqual(["grid-area: 1 / 2", "margin-top: 0"]);
+      // Below 1024px they follow the article, as on every page.
+      expect(narrow).not.toContain("data-table-of-contents");
     });
 
     it("leaves a focused page its one column", () => {
