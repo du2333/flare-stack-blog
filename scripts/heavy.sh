@@ -28,6 +28,12 @@ holder() {
   fi
 }
 
+# A heavy command that starts another one (a script calling heavy.sh) already
+# holds the lock: waiting for it again would wait for itself.
+if [ -n "$HEAVY_HELD" ]; then
+  exec timeout -k 10 "$LIMIT" "$@"
+fi
+
 exec 9>>"$LOCK"
 if ! flock -w "$WAIT" 9; then
   echo "heavy: waited ${WAIT}s (HEAVY_WAIT) for $LOCK, held by: $(holder)" >&2
@@ -40,7 +46,7 @@ trap 'exit 130' INT TERM
 
 # The command runs without the lock's file descriptor, so a process it leaves
 # behind cannot keep the lock.
-timeout -k 10 "$LIMIT" "$@" 9>&-
+HEAVY_HELD=1 timeout -k 10 "$LIMIT" "$@" 9>&-
 status=$?
 if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
   echo "heavy: '$*' ran longer than ${LIMIT}s (HEAVY_TIMEOUT) and was stopped" >&2

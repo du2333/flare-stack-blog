@@ -8,6 +8,7 @@
  * `./.dev.vars` from the main checkout's with BETTER_AUTH_URL for that port.
  * It reads the main checkout and never writes there.
  */
+import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -31,13 +32,11 @@ export function mainCheckoutOf(porcelain: string) {
 }
 
 function git(...args: Array<string>) {
-  const result = Bun.spawnSync(["git", ...args]);
-  if (result.exitCode !== 0) {
-    throw new Error(
-      `git ${args.join(" ")}: ${result.stderr.toString().trim()}`,
-    );
+  const result = spawnSync("git", args, { encoding: "utf8" });
+  if (result.status !== 0) {
+    throw new Error(`git ${args.join(" ")}: ${result.stderr.trim()}`);
   }
-  return result.stdout.toString().trim();
+  return result.stdout.trim();
 }
 
 function fail(message: string): never {
@@ -62,7 +61,9 @@ function main() {
   const mainDir = mainCheckoutOf(git("worktree", "list", "--porcelain"));
   if (!mainDir) fail("cannot find the main checkout");
   if (path.resolve(here) === path.resolve(mainDir)) {
-    fail(`this is the main checkout (${mainDir}); run it inside a git worktree`);
+    fail(
+      `this is the main checkout (${mainDir}); run it inside a git worktree`,
+    );
   }
 
   const common = git("rev-parse", "--path-format=absolute", "--git-common-dir");
@@ -73,11 +74,12 @@ function main() {
   const mainVars = path.join(mainDir, ".dev.vars");
   if (!existsSync(mainVars)) fail(`${mainVars} is missing`);
 
-  const install = Bun.spawnSync(
-    [path.join(here, "scripts", "heavy.sh"), "bun", "install"],
-    { cwd: here, stdio: ["inherit", "inherit", "inherit"] },
+  const install = spawnSync(
+    path.join(here, "scripts", "heavy.sh"),
+    ["bun", "install"],
+    { cwd: here, stdio: "inherit" },
   );
-  if (install.exitCode !== 0) fail("bun install failed");
+  if (install.status !== 0) fail("bun install failed");
 
   if (existsSync(path.join(here, ".wrangler"))) {
     console.log(".wrangler already here, kept as it is");
