@@ -6,7 +6,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: color-mix(in srgb, var(--fuwari-page-bg) 86%, transparent);
+  background-color: color-mix(in srgb, var(--theme-ground) 86%, transparent);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   backdrop-filter: blur(20px) saturate(1.6);
 }

@@ -20,7 +20,7 @@ const FloatingActionsContext = createContext<SlotState | null>(null);
  * (`--shell-floating-actions-size`, theme-shell.ts).
  */
 export const FLOATING_ACTION_BUTTON_CLASS =
-  "flex items-center justify-center size-12 lg:size-(--shell-floating-actions-size,3.75rem) rounded-(--theme-floating-radius,var(--radius-2xl)) fuwari-card-base fuwari-card-floating shadow-md text-(--theme-accent) hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) active:scale-90 transition-all";
+  "flex items-center justify-center size-12 lg:size-(--shell-floating-actions-size,3.75rem) rounded-(--theme-floating-radius,var(--radius-2xl)) fuwari-card-base fuwari-card-floating text-(--theme-accent) hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) active:scale-90 transition-all";
 
 /** The icon of such a button: 1.5rem, and from lg 7/15 of its button. */
 export const FLOATING_ACTION_ICON_CLASS =

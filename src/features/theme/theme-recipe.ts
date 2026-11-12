@@ -39,10 +39,13 @@ export interface ThemeRecipe {
    */
   summary: "box" | "standfirst";
   /**
-   * The archive of Posts: a dotted time axis, or each year as a heading over
-   * a ruled index of its Posts.
+   * The archive of Posts: a dotted time axis; each year as a heading over a
+   * ruled index of its Posts; or each year as a heading over its Posts as
+   * rows led by a small cover, the title over one line with the date and the
+   * Tags. A Post without a cover is led by a plate with the first character
+   * of its title, as a tile is.
    */
-  archive: "timeline" | "index";
+  archive: "timeline" | "index" | "covers";
   /**
    * The footer: a centred caption under a rule (the copyright, the feed and
    * sitemap links, the credit), or a closing band, a surface as wide as the

@@ -26,17 +26,26 @@ export function ArchivePanel({ posts }: ArchivePanelProps) {
     .map(Number)
     .sort((a, b) => b - a);
 
-  // The timeline runs on from year to year; an index sets the years apart.
-  const index = useThemeRecipe().archive === "index";
+  // The timeline runs on from year to year; the other forms set the years
+  // apart.
+  const archive = useThemeRecipe().archive;
+  const index = archive !== "timeline";
 
   return (
     <div className="fuwari-card-base fuwari-card-panel px-[var(--theme-panel-pad-x,2rem)] py-6">
       {years.map((year) => (
         <div key={year} className={index ? "not-first:mt-10" : undefined}>
           <ArchiveYear year={year} count={groupedPosts[year].length} />
-          {groupedPosts[year].map((post) => (
-            <ArchivePost key={post.id} post={post} />
-          ))}
+          {/* Rows led by a cover stand two abreast where there is room. */}
+          <div
+            className={
+              archive === "covers" ? "fuwari-archive-covers" : undefined
+            }
+          >
+            {groupedPosts[year].map((post) => (
+              <ArchivePost key={post.id} post={post} />
+            ))}
+          </div>
         </div>
       ))}
     </div>

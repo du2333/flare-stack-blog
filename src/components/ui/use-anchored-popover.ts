@@ -5,8 +5,7 @@ export const POPOVER_TRIGGER_CLASS =
   "flex items-center gap-1 rounded-lg bg-(--theme-accent)/10 px-2 py-0.5 font-mono text-xs font-bold uppercase text-(--theme-accent)";
 
 /** Card surface for a popover portalled to the body. */
-export const POPOVER_PANEL_CLASS =
-  "fuwari-popover-motion z-80 rounded-xl bg-(--theme-raised) shadow-md ring-1 ring-(--fuwari-input-border)";
+export const POPOVER_PANEL_CLASS = "fuwari-popover-motion fuwari-float z-80";
 
 /**
  * Where a popover's open and close motion grows from: the anchor-side corner

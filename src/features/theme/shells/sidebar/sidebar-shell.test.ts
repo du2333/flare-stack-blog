@@ -66,16 +66,16 @@ afterEach(() => {
 });
 
 describe("the Theme", () => {
-  it("is 「侧栏」, with Posts as tiles, plain meta, the heading accent, a standfirst and the footer as a colophon", () => {
+  it("is 「侧栏」, with Posts as tiles, plain meta, no heading accent, a standfirst, the archive as an index and the footer as a colophon", () => {
     expect(theme.id).toBe("sidebar");
     expect(theme.name()).toBe(m.theme_sidebar_name());
     expect(theme.recipe).toEqual({
       postCard: "tile",
       meta: "inline",
       noCoverStrip: "remove",
-      headingAccent: "on",
+      headingAccent: "off",
       summary: "standfirst",
-      archive: "timeline",
+      archive: "index",
       footer: "colophon",
     });
   });

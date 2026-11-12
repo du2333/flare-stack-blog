@@ -97,6 +97,10 @@ function step(index: number) {
  * the author's name and the social links. That is what the profile card
  * says, so the home page has none (`identityInFirstScreen`). The
  * introduction is gone, not hidden, once the home page is left.
+ *
+ * With it comes the wash: the same image again, out of focus and faint,
+ * fixed behind every page, so the ground of the site has the banner's
+ * colours (first-screen.css).
  */
 export function FirstScreen({
   gaugeRef,
@@ -121,6 +125,18 @@ export function FirstScreen({
         className="immersive-first-screen-gauge"
         aria-hidden="true"
       />
+      {/* The wash under the whole page: the same file the banner shows, so
+          it costs no request of its own. */}
+      <div className="immersive-ambient" aria-hidden="true">
+        <img
+          src={getPublicImageSrc(
+            siteConfig.bannerImage,
+            PUBLIC_IMAGE_WIDTH.banner,
+          )}
+          alt=""
+          decoding="async"
+        />
+      </div>
       <section className="immersive-first-screen" data-home={home}>
         <div className="immersive-banner">
           <img

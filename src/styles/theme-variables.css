@@ -9,6 +9,7 @@
  * nothing a Theme sets reaches the workbench, its dialogs or its toasts.
  *
  * Declared here, the same everywhere today:
+ *   --theme-ground           the ground of the page, under every surface
  *   --theme-surface          the surface content sits on (panels, list items, sidebar blocks)
  *   --theme-raised           a raised surface: code blocks, floating buttons, menus, dialogs
  *   --theme-accent           links, thin accent lines, tag and label text
@@ -50,9 +51,17 @@
  *   --theme-widget-pad-x     side padding of a sidebar block
  *   --theme-count-bg, --theme-count-fg  the count beside a category
  *   --theme-floating-radius  back to top and the buttons stacked above it
+ *   --theme-float-bg, --theme-float-shadow, --theme-float-backdrop  what floats over the page (menus, popovers,
+ *                            toasts, dialogs, sheets, back to top, the bar of a Theme preview): its fill
+ *                            (--theme-raised without one), its shadow with any edge, and what it does to
+ *                            the page behind it (a backdrop-filter value; nothing without one)
+ *   --theme-float-radius     menus, popovers, toasts and the bar of a Theme preview
+ *   --theme-dialog-radius, --theme-dialog-shadow  dialogs
+ *   --theme-toast-pad        the padding of a toast
  */
 @layer base {
   :root {
+    --theme-ground: var(--fuwari-page-bg);
     --theme-surface: var(--fuwari-card-bg);
     --theme-raised: var(--fuwari-card-bg);
     --theme-accent: var(--fuwari-primary);
@@ -97,6 +106,7 @@
 
   /* The Admin pin: the defaults above, plus initial for the undeclared ones. */
   :root:has(.admin-layout) {
+    --theme-ground: var(--fuwari-page-bg) !important;
     --theme-surface: var(--fuwari-card-bg) !important;
     --theme-raised: var(--fuwari-card-bg) !important;
     --theme-accent: var(--fuwari-primary) !important;
@@ -150,5 +160,12 @@
     --theme-count-bg: initial !important;
     --theme-count-fg: initial !important;
     --theme-floating-radius: initial !important;
+    --theme-float-bg: initial !important;
+    --theme-float-shadow: initial !important;
+    --theme-float-backdrop: initial !important;
+    --theme-float-radius: initial !important;
+    --theme-dialog-radius: initial !important;
+    --theme-dialog-shadow: initial !important;
+    --theme-toast-pad: initial !important;
   }
 }

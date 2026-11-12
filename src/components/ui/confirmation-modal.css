@@ -7,10 +7,12 @@
   overflow-y: auto;
   border: 0;
   padding: clamp(24px, 1.5vw, 32px);
-  border-radius: 20px;
-  background: var(--theme-raised);
+  border-radius: var(--theme-dialog-radius, 20px);
+  background: var(--theme-float-bg, var(--theme-raised));
   color: var(--fuwari-fg-75);
-  box-shadow: 0 20px 70px rgb(0 0 0 / 0.12);
+  box-shadow: var(--theme-dialog-shadow, 0 20px 70px rgb(0 0 0 / 0.12));
+  -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+  backdrop-filter: var(--theme-float-backdrop, none);
   font-size: clamp(15px, 0.88vw, 18px);
   --fuwari-button-height: 2.75em;
   --fuwari-button-font-size: 1em;

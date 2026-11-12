@@ -147,6 +147,8 @@ export const PUBLIC_IMAGE_WIDTH = {
   cover: 800,
   body: 800,
   avatar: 400,
+  // A cover as a small lead of a row.
+  thumb: 400,
   // The lightbox; Cloudflare never upscales, so smaller originals keep their size.
   zoom: 2560,
 } as const;
