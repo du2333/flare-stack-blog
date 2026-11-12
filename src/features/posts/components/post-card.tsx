@@ -331,7 +331,7 @@ const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
  * What a plate shows: the first letter or digit of the title, so not an
  * opening bracket or an emoji; without one, its first character.
  */
-function plateCharacter(title: string) {
+export function plateCharacter(title: string) {
   const characters = Array.from(
     graphemes.segment(title.trim()),
     (part) => part.segment,

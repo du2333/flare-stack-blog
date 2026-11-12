@@ -47,7 +47,7 @@ function ClassicShell({
   return (
     <FirstScreenProvider height={firstScreenHeight}>
       <div
-        className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors"
+        className="relative min-h-screen bg-(--theme-ground) transition-colors"
         data-theme-shell="classic"
       >
         {/* Top row: Navbar - sticky */}

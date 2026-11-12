@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  getPublicImageSrc,
+  PUBLIC_IMAGE_WIDTH,
+} from "@/features/media/utils/media.utils";
+import { plateCharacter } from "@/features/posts/components/post-card";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { formatPublicPostDate } from "@/features/posts/utils/format-public-post-date";
 import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
@@ -10,9 +15,57 @@ interface ArchivePostProps {
 
 export function ArchivePost({ post }: ArchivePostProps) {
   const date = post.publishedAt ? new Date(post.publishedAt) : null;
+  const archive = useThemeRecipe().archive;
+
+  // A row led by its cover: the title over one line with the date and the
+  // Tags. The cover loads as its row comes near the window.
+  if (archive === "covers") {
+    return (
+      <Link
+        to="/post/$slug"
+        params={{ slug: post.slug }}
+        className="fuwari-archive-cover-row group"
+        aria-label={post.title}
+      >
+        <span
+          className="fuwari-archive-cover"
+          data-lead={post.cover ? "cover" : "plate"}
+          aria-hidden="true"
+        >
+          {post.cover ? (
+            <img
+              src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.thumb)}
+              alt=""
+              loading="lazy"
+            />
+          ) : (
+            <span>{plateCharacter(post.title)}</span>
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-bold fuwari-text-90 transition-colors group-hover:text-(--theme-accent)">
+            {post.title}
+          </span>
+          <span className="mt-1 flex min-w-0 items-baseline gap-2 text-sm fuwari-text-50">
+            <time
+              dateTime={date?.toISOString()}
+              className="shrink-0 tabular-nums"
+            >
+              {formatPublicPostDate(date, { monthDay: true })}
+            </time>
+            {post.tags?.length ? (
+              <span className="min-w-0 truncate fuwari-text-30">
+                {post.tags.map((t) => `#${t.name}`).join(" ")}
+              </span>
+            ) : null}
+          </span>
+        </span>
+      </Link>
+    );
+  }
 
   // An index entry: the date, the title and the Tags under a rule.
-  if (useThemeRecipe().archive === "index") {
+  if (archive === "index") {
     return (
       <Link
         to="/post/$slug"
@@ -85,7 +138,19 @@ export function ArchivePost({ post }: ArchivePostProps) {
 
 /** An entry while the next page of the archive loads, in the same form. */
 export function ArchivePostSkeleton() {
-  if (useThemeRecipe().archive === "index") {
+  const archive = useThemeRecipe().archive;
+  if (archive === "covers") {
+    return (
+      <div className="fuwari-archive-cover-row">
+        <Skeleton className="fuwari-archive-cover" />
+        <div className="min-w-0 flex-1">
+          <Skeleton className="h-5 w-3/4 max-w-80" />
+          <Skeleton className="mt-2 h-4 w-32" />
+        </div>
+      </div>
+    );
+  }
+  if (archive === "index") {
     return (
       <div className="flex items-center gap-4 md:gap-6 py-3 fuwari-list-rule">
         <Skeleton className="h-4 w-12 shrink-0" />

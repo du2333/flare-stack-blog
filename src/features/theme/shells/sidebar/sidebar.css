@@ -5,32 +5,30 @@
 @import "./top-bar.css";
 
 /* What the values below and the shell share. The frame is the rail and the
-   content column together, centred in a wider window. The ink is a
-   near-black tinted with the hue, for shadows; the hairline and the hover
-   tint are those of the rail, which lies on the page itself; the pill is
-   the surface that marks the current entry of the navigation. */
+   content column together, centred in a wider window. The ground is a
+   neutral with only a trace of the hue, and nothing on it casts a shadow:
+   an edge, one hairline of ink, is what sets a surface off it, and a
+   stronger one what is under the pointer. The hairline and the hover tint
+   are those of the rail, which lies on the page itself; the pill marks the
+   current entry of the navigation. */
 :root[data-theme="sidebar"] {
   --sidebar-frame: 81rem;
   --sidebar-rail-w: 15rem;
   --sidebar-topbar-h: 3.5rem;
-  --sidebar-ink: 0.22 0.05 var(--fuwari-hue);
-  --sidebar-hairline: color-mix(in srgb, var(--fuwari-fg-50) 16%, transparent);
-  --sidebar-hover: color-mix(in srgb, var(--fuwari-fg-50) 9%, transparent);
-  --sidebar-pill-bg: var(--fuwari-card-bg);
-  --sidebar-pill-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.03), 0 1px 2px rgb(0 0 0 / 0.04),
-    0 6px 16px -6px rgb(0 0 0 / 0.1);
-  --sidebar-card-shadow:
-    0 0 0 1px oklch(var(--sidebar-ink) / 0.035),
-    0 1px 2px oklch(var(--sidebar-ink) / 0.03),
-    0 12px 28px -20px oklch(var(--sidebar-ink) / 0.28);
+  --sidebar-ground: oklch(0.973 0.004 var(--fuwari-hue));
+  --sidebar-edge: rgb(0 0 0 / 0.09);
+  --sidebar-edge-strong: rgb(0 0 0 / 0.2);
+  --sidebar-hairline: var(--sidebar-edge);
+  --sidebar-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --sidebar-pill-bg: color-mix(in srgb, var(--fuwari-fg) 7%, transparent);
+  --sidebar-pill-shadow: none;
+  --sidebar-card-shadow: 0 0 0 1px var(--sidebar-edge);
   --sidebar-tile-shadow-hover:
-    0 0 0 1px oklch(var(--sidebar-ink) / 0.04),
-    0 2px 4px oklch(var(--sidebar-ink) / 0.04),
-    0 20px 40px -22px oklch(var(--sidebar-ink) / 0.4);
+    0 0 0 1px var(--sidebar-edge-strong), 0 6px 16px -10px rgb(0 0 0 / 0.18);
   --sidebar-panel-shadow:
-    0 0 0 1px var(--fuwari-input-border), 0 12px 36px rgb(0 0 0 / 0.14);
-  --sidebar-wash: oklch(0.9 0.055 var(--fuwari-hue) / 0.55);
+    0 0 0 1px var(--sidebar-edge), 0 10px 28px -10px rgb(0 0 0 / 0.2);
+  --sidebar-dialog-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 24px 64px -20px rgb(0 0 0 / 0.3);
   --sidebar-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* The banner changing height between the home page and the others, and
      the headline folding with it (banner.tsx waits as long). */
@@ -40,36 +38,75 @@
   --sidebar-fold: 520ms;
 }
 :root[data-theme="sidebar"].dark {
-  --sidebar-pill-bg: color-mix(in srgb, var(--fuwari-card-bg) 80%, white 6%);
-  --sidebar-pill-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.05), 0 6px 16px -6px rgb(0 0 0 / 0.5);
-  --sidebar-card-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.04), 0 14px 32px -22px rgb(0 0 0 / 0.7);
+  --sidebar-ground: oklch(0.155 0.006 var(--fuwari-hue));
+  --sidebar-surface: oklch(0.2 0.008 var(--fuwari-hue));
+  --sidebar-raised: oklch(0.235 0.01 var(--fuwari-hue));
+  --sidebar-edge: rgb(255 255 255 / 0.09);
+  --sidebar-edge-strong: rgb(255 255 255 / 0.22);
   --sidebar-tile-shadow-hover:
-    0 0 0 1px rgb(255 255 255 / 0.09), 0 22px 44px -22px rgb(0 0 0 / 0.85);
+    0 0 0 1px var(--sidebar-edge-strong), 0 8px 20px -10px rgb(0 0 0 / 0.6);
   --sidebar-panel-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.08), 0 16px 44px -12px rgb(0 0 0 / 0.65);
-  --sidebar-wash: oklch(0.34 0.07 var(--fuwari-hue) / 0.4);
+    0 0 0 1px var(--sidebar-edge), 0 12px 32px -10px rgb(0 0 0 / 0.7);
+  --sidebar-dialog-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 24px 64px -20px rgb(0 0 0 / 0.8);
 }
 
 :root[data-theme="sidebar"] {
-  /* Soft raised surfaces on a tinted page. */
-  --theme-card-radius: 1.125rem;
+  /* Flat surfaces with a hairline edge and tight corners on a neutral
+     ground. */
+  --theme-ground: var(--sidebar-ground);
+  --theme-surface: var(--sidebar-surface, var(--fuwari-card-bg));
+  --theme-raised: var(--sidebar-raised, var(--fuwari-card-bg));
+  --theme-card-radius: 0.75rem;
   --theme-card-shadow: var(--sidebar-card-shadow);
   --theme-card-shadow-hover: var(--sidebar-tile-shadow-hover);
-  --theme-cover-radius: 0.75rem;
-  --theme-standalone-radius: 1.125rem;
-  --theme-floating-radius: 1rem;
+  --theme-cover-radius: 0.5rem;
+  --theme-standalone-border: 1px solid var(--sidebar-edge);
+  --theme-standalone-radius: 0.75rem;
+  --theme-floating-radius: 0.625rem;
+  --theme-chip-radius: 0.375rem;
+  --theme-button-radius: 0.5rem;
+  --theme-pager-radius: 0.5rem;
+  --theme-rule: var(--sidebar-edge);
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
-  --theme-heading-tracking: -0.005em;
+  --theme-heading-tracking: -0.012em;
+
+  /* Ink for what is tonal: a tag, a count, a regular button and the row
+     under the pointer are a thin layer of the text colour, and the text on
+     them is ink. The hue is for links, the current entry and what is solid. */
+  --theme-tonal-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-tonal-bg-hover: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --theme-tonal-bg-active: color-mix(
+    in srgb,
+    var(--fuwari-fg) 14%,
+    transparent
+  );
+  --theme-tonal-fg: var(--fuwari-fg-75);
+  --theme-plain-bg-hover: var(--sidebar-hover);
+  --theme-plain-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-bg-hover: var(--sidebar-hover);
+  --theme-toc-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-badge-bg: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+
+  /* A block beside or under the content is named by a small, spaced,
+     quiet label. */
+  --theme-widget-title-size: 0.75rem;
+  --theme-widget-title-tracking: 0.08em;
+  --theme-widget-title-color: var(--fuwari-fg-50);
+
+  /* What floats is a surface with the same edge and one short shadow. */
+  --theme-float-shadow: var(--sidebar-panel-shadow);
+  --theme-float-radius: 0.625rem;
+  --theme-dialog-radius: 0.875rem;
+  --theme-dialog-shadow: var(--sidebar-dialog-shadow);
+  --theme-toast-pad: 0.75rem 0.875rem 0.75rem 1rem;
   /* A column narrowed by a rail: titles a size smaller than 「经典」's. */
   --theme-list-title-size: 1.5rem;
   --theme-page-title-size: clamp(1.75rem, 1.35rem + 1.3vw, 2.375rem);
   --theme-meta-size: 0.8125rem;
   --theme-kicker-size: 0.75rem;
   --theme-kicker-tracking: 0.04em;
-  --theme-widget-title-size: 1rem;
 
   /* Back to top from lg, where the window has room right of the frame
      (89.5rem, below): in that gutter, and 4.75rem from the edge of the
@@ -121,7 +158,7 @@
   :root[data-theme="sidebar"] {
     --shell-floating-actions-position: static;
     --shell-floating-actions-size: 2.5rem;
-    --theme-floating-radius: 0.75rem;
+    --theme-floating-radius: 0.5rem;
   }
 }
 
@@ -157,7 +194,7 @@
   --sidebar-banner-h: 6rem;
   position: relative;
   min-height: 100vh;
-  background-color: var(--fuwari-page-bg);
+  background-color: var(--theme-ground);
 }
 .sidebar-shell[data-home="true"] {
   --sidebar-banner-h: clamp(12rem, 36svh, 20rem);
@@ -170,23 +207,6 @@
     --sidebar-banner-h: clamp(14rem, 40svh, 28rem);
   }
 }
-/* A wash of the site hue behind the head of the rail. It scrolls away with
-   the page and takes no pointer. */
-.sidebar-shell::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: max(0px, 50% - var(--sidebar-frame) / 2 - 6rem);
-  width: min(100%, 56rem);
-  height: 34rem;
-  background: radial-gradient(
-    ellipse 60% 70% at 14% 0%,
-    var(--sidebar-wash),
-    transparent 72%
-  );
-  pointer-events: none;
-}
-
 /* Below 1024px the frame is the content column alone, under the top bar.
    From 1024px it is a row: the rail, which stays in the window, and the
    column, which scrolls with the page. */

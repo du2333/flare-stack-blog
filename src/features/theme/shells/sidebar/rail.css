@@ -24,6 +24,18 @@
     height: 100vh;
     height: 100dvh;
   }
+  /* The line between the rail and the page, in the middle of the room
+     between them, from the top of the window to its foot. */
+  .sidebar-rail::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -0.875rem;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--sidebar-edge);
+    pointer-events: none;
+  }
   .sidebar-rail-body {
     display: flex;
     flex: 1 1 auto;
@@ -65,7 +77,7 @@
   min-width: 0;
   min-height: 2.75rem;
   padding: 0 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   color: var(--fuwari-fg);
   font-size: 1.0625rem;
   font-weight: 700;
@@ -127,11 +139,9 @@
   height: 5.5rem;
   margin: 1.5rem 0 1rem;
   overflow: hidden;
-  border-radius: 1.5rem;
-  background-color: var(--fuwari-card-bg);
-  box-shadow:
-    0 0 0 1px var(--sidebar-hairline),
-    0 10px 24px -12px oklch(0.45 0.12 var(--fuwari-hue) / 0.35);
+  border-radius: 1rem;
+  background-color: var(--theme-surface);
+  box-shadow: 0 0 0 1px var(--sidebar-edge);
 }
 .sidebar-avatar img {
   width: 100%;
@@ -170,26 +180,22 @@
   height: 2.5rem;
   margin: 1.25rem 0.25rem 0;
   padding: 0 0.75rem;
-  border-radius: 0.75rem;
-  background-color: color-mix(in srgb, var(--fuwari-card-bg) 35%, transparent);
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--fuwari-fg-50) 24%, transparent);
+  border-radius: 0.5rem;
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1px var(--sidebar-edge);
   color: var(--fuwari-fg-50);
   font-size: 0.875rem;
   font-weight: 400;
 }
 .sidebar-search:hover {
-  background-color: color-mix(in srgb, var(--fuwari-card-bg) 80%, transparent);
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--fuwari-fg-50) 38%, transparent);
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1px var(--sidebar-edge-strong);
   color: var(--fuwari-fg-75);
 }
 .sidebar-search[data-current="true"] {
-  background-color: var(--fuwari-card-bg);
-  box-shadow:
-    inset 0 0 0 1.5px var(--theme-accent),
-    var(--sidebar-pill-shadow);
-  color: var(--theme-tonal-fg);
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1.5px var(--theme-accent);
+  color: var(--fuwari-fg);
 }
 
 /* ── The navigation ──────────────────────────────────────────────────────── */
@@ -211,7 +217,7 @@
   right: 0;
   left: 0;
   height: var(--sidebar-nav-h);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   background-color: var(--sidebar-pill-bg);
   box-shadow: var(--sidebar-pill-shadow);
   opacity: 0;
@@ -247,7 +253,7 @@
   min-width: 0;
   height: 100%;
   padding: 0 0.75rem 0 2.75rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   color: var(--fuwari-fg-75);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -258,7 +264,7 @@
 }
 .sidebar-nav-link.sidebar-nav-current {
   background-color: transparent;
-  color: var(--theme-tonal-fg);
+  color: var(--fuwari-fg);
 }
 /* The icon leads the row from outside the link, so the link's name is its
    label alone. */
@@ -328,7 +334,7 @@
   min-width: 0;
   height: 2.75rem;
   padding: 0 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -366,7 +372,7 @@
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   background-color: transparent;
   color: var(--fuwari-fg-75);
 }
@@ -390,12 +396,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px;
-  border-radius: 1.125rem;
+  border-radius: 0.75rem;
   background-color: var(--theme-raised);
   box-shadow: var(--sidebar-panel-shadow);
 }
 .sidebar-panel .public-menu-item {
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 /* The account menu opens above its row, from the row's left edge. */
 .sidebar-account-panel {
@@ -468,7 +474,7 @@
     width: 4rem;
     height: 4rem;
     margin: 1rem 0 0.75rem;
-    border-radius: 1.125rem;
+    border-radius: 0.75rem;
   }
   .sidebar-search {
     margin-top: 1rem;

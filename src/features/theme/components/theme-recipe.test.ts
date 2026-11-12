@@ -784,6 +784,42 @@ describe("Theme Recipe", () => {
       expect(entry.textContent).toContain("#one #two");
     });
 
+    it("covers: a heading per year over rows led by the cover, or by a plate with the title's first character", () => {
+      const host = render(
+        createElement(ArchivePanel, {
+          posts: [
+            post({ cover: COVER } as Partial<PostItem>),
+            post({
+              slug: "b",
+              title: "《Second》",
+              publishedAt: new Date("2025-06-01T00:00:00Z"),
+            }),
+          ],
+        }),
+        { archive: "covers" },
+      );
+      expect(
+        [...host.querySelectorAll("h2")].map((year) => year.textContent),
+      ).toEqual(["2026", "2025"]);
+
+      const [withCover] = linksTo(host, "/post/a-post");
+      const lead = withCover.firstElementChild!;
+      expect(lead.getAttribute("data-lead")).toBe("cover");
+      expect(lead.getAttribute("aria-hidden")).toBe("true");
+      const image = lead.querySelector("img")!;
+      expect(image.getAttribute("src")).toContain("width=400");
+      expect(image.getAttribute("loading")).toBe("lazy");
+      expect(image.getAttribute("alt")).toBe("");
+      expect(withCover.querySelector("time")).not.toBeNull();
+      expect(withCover.textContent).toContain("#one #two");
+
+      const [withPlate] = linksTo(host, "/post/b");
+      expect(withPlate.firstElementChild!.getAttribute("data-lead")).toBe(
+        "plate",
+      );
+      expect(withPlate.firstElementChild!.textContent).toBe("S");
+    });
+
     it("index: the entries loading next take the same form", () => {
       const props = {
         posts,

@@ -4,9 +4,12 @@ import { buttonClass } from "@/components/ui/button";
 const MOTION =
   "transition-all duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-10 data-[state=open]:slide-in-from-bottom-4";
 
-/** The public site's toast: a raised card in the Theme's colours. */
+/**
+ * The public site's toast: a float with the Theme's fill, corners and shadow
+ * (`.fuwari-toast`, styles.css).
+ */
 const SITE = {
-  toast: `group w-full max-w-[350px] flex items-center justify-between gap-4 p-5 bg-(--theme-raised) rounded-(--fuwari-radius-large) shadow-lg ${MOTION}`,
+  toast: `fuwari-toast group w-full max-w-[350px] flex items-center justify-between gap-4 ${MOTION}`,
   icon: "relative flex size-4 shrink-0 items-center justify-center",
   title: "text-sm font-medium fuwari-text-90 tracking-tight",
   description: "text-xs fuwari-text-50 mt-1",

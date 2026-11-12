@@ -7,8 +7,8 @@ interface ArchiveYearProps {
 }
 
 export function ArchiveYear({ year, count }: ArchiveYearProps) {
-  // An index heading: the year, with its count of Posts on the right.
-  if (useThemeRecipe().archive === "index") {
+  // A heading: the year, with its count of Posts on the right.
+  if (useThemeRecipe().archive !== "timeline") {
     return (
       <div className="flex items-baseline justify-between gap-4 pb-3">
         <h2 className="fuwari-heading text-2xl font-bold fuwari-text-90">

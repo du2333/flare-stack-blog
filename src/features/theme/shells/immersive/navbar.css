@@ -484,8 +484,12 @@
   overscroll-behavior: contain;
   padding: 8px;
   border-radius: 20px;
-  background: var(--theme-raised);
-  box-shadow: var(--immersive-panel-shadow);
+  background: var(--theme-float-bg);
+  -webkit-backdrop-filter: var(--theme-float-backdrop);
+  backdrop-filter: var(--theme-float-backdrop);
+  box-shadow:
+    var(--immersive-panel-shadow),
+    inset 0 1px 0 var(--immersive-frost-edge);
   color: var(--fuwari-fg);
   text-shadow: none;
   transform-origin: top right;

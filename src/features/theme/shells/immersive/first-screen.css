@@ -1,6 +1,38 @@
 /* The first screen: the banner from edge to edge and, on the home page, the
    introduction on it. */
 
+/* The wash: the banner again, out of focus and faint, fixed behind the whole
+   page, so the ground under every page of the site has the colours of the
+   image the Admin chose and the surfaces lie on those. It is under the
+   banner and everything else, takes no pointer and never moves: the blur is
+   drawn once. 100lvh, so a phone's toolbar sliding away uncovers none of the
+   bare ground. The image reaches past every edge by more than the blur
+   spreads. */
+.immersive-ambient {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: 100lvh;
+  overflow: hidden;
+  contain: strict;
+  pointer-events: none;
+}
+.immersive-ambient img {
+  position: absolute;
+  inset: -10rem;
+  width: calc(100% + 20rem);
+  height: calc(100% + 20rem);
+  max-width: none;
+  object-fit: cover;
+  opacity: var(--immersive-ambient-strength);
+  filter: var(--immersive-ambient-filter);
+}
+@media print {
+  .immersive-ambient {
+    display: none;
+  }
+}
+
 /* As tall as the banner is on its way to be; the shell measures it. */
 .immersive-first-screen-gauge {
   position: absolute;

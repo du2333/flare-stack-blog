@@ -46,7 +46,7 @@
   html {
     scroll-behavior: smooth;
     color: var(--fuwari-fg);
-    background-color: var(--fuwari-page-bg);
+    background-color: var(--theme-ground);
   }
 
   /* Admin workbench: 16px through laptop width, 18px at 1920, 20px from 2560. */
@@ -209,7 +209,42 @@
     background-color: var(--theme-surface);
   }
   .fuwari-card-floating {
-    background-color: var(--theme-raised);
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
+  }
+  /* A toast of the public site: a float with room of its own. */
+  .fuwari-toast {
+    padding: var(--theme-toast-pad, 1.25rem);
+    border-radius: var(--theme-float-radius, var(--fuwari-radius-large));
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
+  }
+  /* What floats over the page and is no dialog: a menu, a popover, a toast,
+     the bar of a Theme preview. A Theme gives it its fill, its shadow with
+     any edge, its corners and what it does to the page behind it. */
+  .fuwari-float {
+    border-radius: var(--theme-float-radius, 0.75rem);
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 0 0 1px var(--fuwari-input-border),
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
   }
   /* The Admin (styles/admin-variables.css) only: every card has a hairline
      edge. Public pages keep the cards above as they are. */
@@ -390,6 +425,79 @@
     color: color-mix(in oklab, var(--theme-accent) 26%, transparent);
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     user-select: none;
+  }
+  /* The archive as rows led by a cover (Theme Recipe, archive: "covers"):
+     the row reaches past its text on either side, so what shows under the
+     pointer has room around the cover. */
+  .fuwari-archive-covers {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 2rem;
+  }
+  @media (width >= 56rem) {
+    .fuwari-archive-covers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .fuwari-archive-cover-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-inline: -0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: calc(var(--theme-cover-radius) + 0.25rem);
+    transition: background-color 0.15s;
+  }
+  a.fuwari-archive-cover-row:hover {
+    background-color: var(--theme-plain-bg-hover);
+  }
+  a.fuwari-archive-cover-row:active {
+    background-color: var(--theme-plain-bg-active);
+  }
+  .fuwari-archive-cover {
+    position: relative;
+    flex: none;
+    width: 5.25rem;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: calc(var(--theme-cover-radius) * 0.75);
+    background-color: var(--theme-tonal-bg);
+  }
+  .fuwari-archive-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fuwari-archive-cover[data-lead="plate"] {
+    display: grid;
+    place-items: center;
+    background: radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in oklab, var(--theme-accent) 30%, transparent),
+      color-mix(in oklab, var(--theme-accent) 10%, transparent) 70%
+    );
+  }
+  .fuwari-archive-cover[data-lead="plate"] span {
+    font-family: var(--theme-heading-font);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: color-mix(in oklab, var(--theme-accent) 55%, transparent);
+    user-select: none;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .fuwari-archive-cover-row:hover .fuwari-archive-cover img {
+      transform: scale(1.06);
+    }
+  }
+  @media (width < 30rem) {
+    .fuwari-archive-cover-row {
+      gap: 0.75rem;
+    }
+    .fuwari-archive-cover {
+      width: 4.25rem;
+    }
   }
   /* The pinned or popular label, on a corner of the lead. */
   .fuwari-tile-flag {

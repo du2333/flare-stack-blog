@@ -126,7 +126,7 @@ const immersiveTheme: Theme = {
     noCoverStrip: "remove",
     headingAccent: "off",
     summary: "standfirst",
-    archive: "timeline",
+    archive: "covers",
     footer: "band",
   },
   options: z.object({
@@ -165,9 +165,9 @@ const sidebarTheme: Theme = {
     postCard: "tile",
     meta: "inline",
     noCoverStrip: "remove",
-    headingAccent: "on",
+    headingAccent: "off",
     summary: "standfirst",
-    archive: "timeline",
+    archive: "index",
     footer: "colophon",
   },
   options: z.object({

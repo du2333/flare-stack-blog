@@ -7,7 +7,9 @@
     display: flex;
     flex-direction: column;
     width: min(100%, 23rem);
-    background: var(--theme-raised);
+    background: var(--theme-float-bg, var(--theme-raised));
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
     outline: none;
   }
   .fuwari-sheet[data-size="lg"] {

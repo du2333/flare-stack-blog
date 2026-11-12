@@ -33,6 +33,11 @@
   --immersive-panel-shadow:
     0 20px 56px -16px oklch(var(--immersive-ink) / 0.4),
     0 0 0 1px oklch(var(--immersive-ink) / 0.06);
+  /* The dark edge of a float, outside its light one. */
+  --immersive-float-edge: oklch(var(--immersive-ink) / 0.07);
+  /* How much of the banner shows in the wash under the page. */
+  --immersive-ambient-strength: 0.36;
+  --immersive-ambient-filter: blur(72px) saturate(1.25);
   /* How far the content rises over the lower edge of the banner, and how
      tall the strip of cards that leads the home page is (a card in one row:
      2rem between twice 0.875rem), to stand astride that edge. */
@@ -60,6 +65,17 @@
     inset 0 1px 0 rgb(255 255 255 / 0.07);
   --immersive-panel-shadow:
     0 20px 56px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --immersive-float-edge: rgb(0 0 0 / 0.4);
+  --immersive-ambient-strength: 0.34;
+  --immersive-ambient-filter: blur(72px) saturate(1.3) brightness(0.72);
+}
+/* A reader who asked for less transparency gets what floats as a plain
+   surface, and no wash. */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme="immersive"] {
+    --immersive-frost-bg: var(--fuwari-card-bg);
+    --immersive-ambient-strength: 0;
+  }
 }
 
 :root[data-theme="immersive"] {
@@ -84,6 +100,56 @@
   --theme-widget-title-size: 1rem;
   --theme-rule-style: solid;
   --theme-link-underline-style: solid;
+
+  /* Smoke for what is tonal: a neutral ink with a breath of the hue, laid
+     thin, so a tag, a count or a regular button reads on a surface and on
+     the washed ground alike, and the text on it is ink, not the hue. The
+     hue stays where it says something: links, the current entry, what is
+     solid. */
+  --immersive-smoke: color-mix(
+    in oklab,
+    var(--fuwari-fg) 80%,
+    var(--fuwari-primary)
+  );
+  --theme-tonal-bg: color-mix(in oklab, var(--immersive-smoke) 8%, transparent);
+  --theme-tonal-bg-hover: color-mix(
+    in oklab,
+    var(--immersive-smoke) 13%,
+    transparent
+  );
+  --theme-tonal-bg-active: color-mix(
+    in oklab,
+    var(--immersive-smoke) 18%,
+    transparent
+  );
+  --theme-tonal-fg: var(--fuwari-fg-75);
+  --theme-plain-bg-hover: color-mix(
+    in oklab,
+    var(--immersive-smoke) 6%,
+    transparent
+  );
+  --theme-plain-bg-active: color-mix(
+    in oklab,
+    var(--immersive-smoke) 10%,
+    transparent
+  );
+  --theme-toc-bg-hover: var(--theme-plain-bg-hover);
+  --theme-toc-bg-active: var(--theme-plain-bg-active);
+  --theme-toc-badge-bg: var(--theme-tonal-bg-hover);
+  --theme-rule: color-mix(in oklab, var(--immersive-smoke) 12%, transparent);
+
+  /* What floats is frost: menus, popovers, toasts, dialogs, sheets, back to
+     top and the bar of a Theme preview blur the page behind them, as the
+     navbar's pill does. */
+  --theme-float-bg: var(--immersive-frost-bg);
+  --theme-float-backdrop: blur(22px) saturate(1.8);
+  --theme-float-shadow:
+    var(--immersive-frost-shadow), 0 0 0 1px var(--immersive-float-edge);
+  --theme-float-radius: 1.125rem;
+  --theme-dialog-radius: 1.75rem;
+  --theme-dialog-shadow:
+    var(--immersive-panel-shadow), inset 0 1px 0 var(--immersive-frost-edge);
+  --theme-toast-pad: 0.875rem 1rem 0.875rem 1.25rem;
 
   /* Back to top from lg: just right of the content, and 4.75rem from the
      edge of the window where the gutter is no wider than the lane the shell
@@ -141,7 +207,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--fuwari-page-bg);
+  background-color: var(--theme-ground);
 }
 .immersive-shell[data-home="true"] {
   --immersive-banner-h: max(78svh, 24rem);

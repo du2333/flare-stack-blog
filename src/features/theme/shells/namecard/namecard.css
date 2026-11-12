@@ -116,6 +116,15 @@
   --theme-pager-radius: 999px;
   --theme-floating-radius: 999px;
 
+  /* What floats is a sheet of paper with a hairline round it. */
+  --theme-float-shadow:
+    0 0 0 1px var(--namecard-hairline), 0 14px 36px -14px rgb(0 0 0 / 0.22);
+  --theme-float-radius: 0.875rem;
+  --theme-dialog-radius: 1.25rem;
+  --theme-dialog-shadow:
+    0 0 0 1px var(--namecard-hairline), 0 28px 72px -24px rgb(0 0 0 / 0.32);
+  --theme-toast-pad: 0.875rem 1rem 0.875rem 1.25rem;
+
   /* Sign-in, status and profile panels: a frame instead of a fill. */
   --theme-standalone-border: 1px solid var(--namecard-hairline);
   --theme-standalone-radius: 1.25rem;
@@ -158,7 +167,7 @@
 .namecard-shell {
   position: relative;
   min-height: 100vh;
-  background: var(--fuwari-page-bg);
+  background: var(--theme-ground);
   transition: background-color 300ms;
 }
 

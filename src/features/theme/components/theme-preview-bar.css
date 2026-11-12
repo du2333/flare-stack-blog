@@ -23,7 +23,9 @@
     calc(100vw - var(--preview-inset-left) - var(--preview-inset-right) - 32px)
   );
   transform: translateX(-50%);
-  border-radius: 12px;
-  background: var(--theme-raised);
-  box-shadow: 0 8px 28px rgb(0 0 0/0.16);
+  border-radius: var(--theme-float-radius, 12px);
+  background: var(--theme-float-bg, var(--theme-raised));
+  box-shadow: var(--theme-float-shadow, 0 8px 28px rgb(0 0 0/0.16));
+  -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+  backdrop-filter: var(--theme-float-backdrop, none);
 }
