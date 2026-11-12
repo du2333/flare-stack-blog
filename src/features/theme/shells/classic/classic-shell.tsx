@@ -10,6 +10,7 @@ import {
 } from "@/features/media/utils/media.utils";
 import { FirstScreenProvider } from "@/features/theme/components/first-screen";
 import type { ThemeShell, ThemeShellProps } from "@/features/theme/theme-shell";
+import { useBannerFocus } from "@/features/theme/utils/theme-preview-live";
 import { cn } from "@/lib/utils";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
@@ -35,7 +36,8 @@ function ClassicShell({
   const isHomePage = pageKind === "home";
   const isFocusedPage = pageKind === "focused";
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
-  const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
+  const bannerFocus = useBannerFocus();
+  const bannerCentred = isFocalPointCentred(bannerFocus);
   // The banner is the first screen.
   const firstScreenHeight = useCallback(
     () => (window.innerHeight * bannerHeightVh) / 100,
@@ -82,7 +84,7 @@ function ClassicShell({
               bannerCentred
                 ? undefined
                 : {
-                    objectPosition: focalObjectPosition(siteConfig.bannerFocus),
+                    objectPosition: focalObjectPosition(bannerFocus),
                   }
             }
           />

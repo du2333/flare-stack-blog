@@ -11,6 +11,7 @@ import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
+import { useBannerFocus } from "@/features/theme/utils/theme-preview-live";
 import { useMotionPresence } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 
@@ -51,7 +52,8 @@ export function FirstScreen({
       ),
     [router],
   );
-  const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
+  const bannerFocus = useBannerFocus();
+  const bannerCentred = isFocalPointCentred(bannerFocus);
   const [beforeName, afterName] = m
     .theme_namecard_greeting_name({ author: NAME_SLOT })
     .split(NAME_SLOT);
@@ -104,11 +106,7 @@ export function FirstScreen({
                 style={
                   bannerCentred
                     ? undefined
-                    : {
-                        objectPosition: focalObjectPosition(
-                          siteConfig.bannerFocus,
-                        ),
-                      }
+                    : { objectPosition: focalObjectPosition(bannerFocus) }
                 }
               />
             </div>

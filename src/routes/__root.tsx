@@ -18,6 +18,7 @@ import {
 } from "@/features/theme/theme-preview";
 import { documentThemeId } from "@/features/theme/utils/document-theme";
 import { previewViewerIsAdmin } from "@/features/theme/utils/preview-viewer";
+import { useThemePreviewLive } from "@/features/theme/utils/theme-preview-live";
 import { getLocale } from "@/paraglide/runtime";
 import appCss from "@/styles.css?url";
 
@@ -135,6 +136,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const locale = getLocale();
   const { siteConfig, themePreview } = useRouteContext({ from: "__root__" });
+  const liveHue = useThemePreviewLive("primaryHue");
   // Follows client navigation: set on public pages, removed under /admin.
   const themeId = useRouterState({
     select: (state) =>
@@ -149,7 +151,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       lang={locale}
       suppressHydrationWarning
       data-theme={themeId}
-      style={getFuwariThemeStyle(siteConfig)}
+      style={getFuwariThemeStyle(siteConfig, liveHue)}
     >
       <head>
         <HeadContent />
