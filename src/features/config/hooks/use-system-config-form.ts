@@ -9,7 +9,10 @@ import {
   type SecretChange,
 } from "../config.admin.schema";
 import type { ConfigFormValues } from "../components/admin/config-editing";
-import { countChangedSettings } from "../components/admin/save-bar";
+import {
+  countChangedNotificationSettings,
+  countChangedSettings,
+} from "../components/admin/save-bar";
 import type { SettingsPageId } from "../components/admin/settings-pages";
 import {
   ownsDirtySiteField,
@@ -312,12 +315,7 @@ export function useSystemConfigForm(
                 ),
               ),
             )
-          : countChangedSettings({
-              email: dirtyFields.email,
-              notification: dirtyFields.notification,
-              clearEmailPassword: dirtyFields.clearEmailPassword,
-              clearWebhookSecret: dirtyFields.clearWebhookSecret,
-            }),
+          : countChangedNotificationSettings(dirtyFields),
     onSubmit,
     baseline,
     conflict: conflicts[section],
