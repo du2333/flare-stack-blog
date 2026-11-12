@@ -1555,7 +1555,7 @@
       }
     }
   ],
-  "dashboard_comments_title": "最近评论",
+  "dashboard_comments_title": "待回复评论",
   "dashboard_comments_empty": "没有待回复的评论，新的访客评论会出现在这里。",
   "dashboard_tiles_label": "待处理",
   "dashboard_tile_drafts": "草稿",

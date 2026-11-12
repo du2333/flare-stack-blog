@@ -1568,7 +1568,7 @@
       }
     }
   ],
-  "dashboard_comments_title": "Latest comments",
+  "dashboard_comments_title": "Comments awaiting reply",
   "dashboard_comments_empty": "No comments are waiting for a reply. New visitor comments will show up here.",
   "dashboard_tiles_label": "To do",
   "dashboard_tile_drafts": "Drafts",

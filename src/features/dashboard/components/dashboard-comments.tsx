@@ -10,13 +10,11 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { UnrepliedCommentList } from "./unreplied-comment-list";
 
-/** How many of the Comments awaiting a reply the overview lists. */
-export const DASHBOARD_LATEST_COMMENTS = 3;
-
 /**
- * The latest Comments awaiting an Admin, with reply, mark handled, delete and
- * mute at hand; the Comments page has the rest. A Comment leaves the list
- * once an Admin replies to it or marks it handled.
+ * The latest Comments awaiting an Admin (the overview loads
+ * DASHBOARD_UNREPLIED_COMMENTS_LIMIT of them), with reply, mark handled,
+ * delete and mute at hand; the Comments page has the rest. A Comment leaves
+ * the list once an Admin replies to it or marks it handled.
  */
 export function DashboardComments({
   comments,
@@ -53,7 +51,7 @@ export function DashboardComments({
         <EmptyState size="compact" description={m.dashboard_comments_empty()} />
       ) : (
         <UnrepliedCommentList
-          comments={comments.slice(0, DASHBOARD_LATEST_COMMENTS)}
+          comments={comments}
           onMarkHandled={markHandled}
           fallbackFocus={() => headingRef.current}
         />
