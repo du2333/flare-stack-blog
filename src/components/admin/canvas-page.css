@@ -1,0 +1,101 @@
+/* A redesigned list page on the canvas (canvas-page.tsx). */
+
+.admin-canvas-page {
+  container-type: inline-size;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px 66px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The head, the bar and the body rise in one after another; --i is the place. */
+.admin-rise {
+  animation: admin-rise 0.55s var(--admin-ease) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+.admin-canvas-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 40px;
+  margin-bottom: 18px;
+}
+.admin-canvas-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+.admin-canvas-title small {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--admin-fg-3);
+}
+.admin-canvas-primary.fuwari-button {
+  margin-left: auto;
+  padding: 0 14px 0 12px;
+}
+
+.admin-canvas-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.admin-canvas-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Below the sidebar's breakpoint the top bar names the page and holds its action. */
+@media (max-width: 1023px) {
+  .admin-canvas-head {
+    display: none;
+  }
+}
+
+/* A phone: the page scrolls as one, and the card grows with its rows. */
+@media (max-width: 767px) {
+  .admin-canvas-page {
+    display: block;
+    overflow-y: auto;
+    padding: 16px 16px 84px;
+  }
+  .admin-canvas-page > .fuwari-list-card {
+    overflow: visible;
+  }
+  .admin-canvas-page .fuwari-list-card-rows {
+    overflow: visible;
+  }
+  .admin-canvas-tools {
+    width: 100%;
+    margin-left: 0;
+  }
+  .admin-canvas-tools > .fuwari-field-shell[data-variant="raised"],
+  .admin-canvas-tools
+    > .fuwari-field-shell[data-variant="raised"]:focus-within {
+    flex: 1 1 100%;
+    width: auto;
+  }
+}
+
+@keyframes admin-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
