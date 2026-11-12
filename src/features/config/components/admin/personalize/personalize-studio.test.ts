@@ -43,7 +43,7 @@ const nextFrame = () =>
 beforeEach(() => {
   wide = true;
   vi.stubGlobal("matchMedia", (query: string) => ({
-    matches: query.includes("min-width: 1200px") ? wide : false,
+    matches: query.includes("min-width: 1280px") ? wide : false,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   }));

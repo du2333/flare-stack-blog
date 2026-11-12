@@ -35,12 +35,10 @@ function useNewestPostPath(): string | null {
  */
 export function PreviewPanel({
   values,
-  fit,
   initialDevice,
   actions,
 }: {
   values: PreviewValues;
-  fit: "width" | "box";
   initialDevice: PreviewDevice;
   actions?: ReactNode;
 }) {
@@ -86,7 +84,6 @@ export function PreviewPanel({
       <PreviewStage
         address={address}
         device={device}
-        fit={fit}
         live={{
           bannerFocus: values.bannerFocus,
           primaryHue: values.primaryHue,
