@@ -191,7 +191,9 @@ export default function TableOfContents({
 
   useEffect(() => {
     const onScroll = () => {
-      setIsVisible(window.scrollY > firstScreenHeight());
+      // Past the first screen; on a page that has none (a height of 0)
+      // that is from the top of the page.
+      setIsVisible(window.scrollY >= firstScreenHeight());
       computeActive();
       clearFooter();
     };

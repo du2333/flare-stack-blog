@@ -32,12 +32,15 @@ const HEADERS = [
 /** The side list in the window: 14rem wide, 5rem down, 580px tall. */
 const LIST = { left: 1100, right: 1324, top: 80, height: 580 };
 
+/** Where the shell's first screen ends; a test's own to change. */
+let firstScreen = 0;
+
 /** A page with this content, inside what a shell and the host provide. */
 async function mount(...content: Array<ReactNode>) {
   const root = createRootRoute({
     component: () =>
       createElement(FirstScreenProvider, {
-        height: () => 0,
+        height: () => firstScreen,
         children: createElement(FloatingActionsProvider, null, ...content),
       }),
   });
@@ -97,6 +100,8 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  firstScreen = 0;
+  Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -321,6 +326,7 @@ describe("the side table of contents in the shell's slot", () => {
   });
 
   it("shows from the top of the page once ready, where the list beside the article waits for the first screen to pass", async () => {
+    firstScreen = 300;
     const { ready } = await renderPost();
     expect(sideList().className).toContain("opacity-0");
 
@@ -331,6 +337,26 @@ describe("the side table of contents in the shell's slot", () => {
     const beside = await renderPost({ slot: false });
     beside.ready();
     expect(sideList().className).toContain("opacity-0");
+
+    Object.defineProperty(window, "scrollY", {
+      value: 300,
+      configurable: true,
+    });
+    act(() => {
+      fireEvent.scroll(window);
+    });
+    expect(sideList().className).toContain("opacity-100");
+  });
+
+  // A shell whose Post page has no first screen says 0 (first-screen.tsx).
+  it("shows the list beside the article from the top of a page that has no first screen, once ready", async () => {
+    const { ready } = await renderPost({ slot: false });
+    expect(sideList().className).toContain("opacity-0");
+
+    ready();
+
+    expect(sideList().className).toContain("opacity-100");
+    expect(sideList().className).not.toContain("pointer-events-none");
   });
 
   it("keeps to the slot at the end of the page, whatever runs under it", async () => {

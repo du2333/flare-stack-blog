@@ -21,10 +21,10 @@ const CARD_STEP_MS = 50;
  * the page, under the greeting, and from 1024px the sidebar cards in a right
  * column under the frame, as wide as the portrait frame, each in the form
  * that width calls for and the ways into the Posts staying in view. On a
- * Post's page the right column is the table of contents' and the cards
- * follow the article (card-placement.ts says which card goes where,
- * namecard.css how each place looks). Below 1024px there is one column, the
- * cards after the content.
+ * Post's page the right column is the table of contents', there from the
+ * top of the page, and the cards follow the article (card-placement.ts says
+ * which card goes where, namecard.css how each place looks). Below 1024px
+ * there is one column, the cards after the content.
  *
  * Back to top and the page's actions stand in a box of the shell's, which
  * the stylesheet places from 1024px: right of the page where the window has
@@ -51,11 +51,15 @@ function NamecardShell({
   // A focused page shows only its content, also while it fades out.
   const cards = placeCards(pageOnScreen, isFocusedPage ? [] : sidebarCards);
   const firstScreenRef = useRef<HTMLElement>(null);
-  // The navbar and, on the home page, what unfolds under it.
+  // The navbar and what unfolds under it, on the home page. Every other
+  // page has no first screen: the table of contents of a Post is there
+  // from the top of the page, in the right column.
+  const homeOnScreen = pageOnScreen === "home";
   const firstScreenHeight = useCallback(() => {
     const firstScreen = firstScreenRef.current;
-    return firstScreen ? firstScreen.offsetTop + firstScreen.offsetHeight : 0;
-  }, []);
+    if (!homeOnScreen || !firstScreen) return 0;
+    return firstScreen.offsetTop + firstScreen.offsetHeight;
+  }, [homeOnScreen]);
 
   return (
     <FirstScreenProvider height={firstScreenHeight}>

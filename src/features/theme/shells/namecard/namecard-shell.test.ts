@@ -15,6 +15,7 @@ import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
+import { useFirstScreenHeight } from "../../components/first-screen";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
 import type { PageKind, SidebarCard, ThemeShellProps } from "../../theme-shell";
 import { resolveThemeOptions, selectTheme } from "../../themes";
@@ -124,6 +125,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -349,6 +351,13 @@ describe("going from one page to another", () => {
   let goTo: (pageKind: PageKind) => void;
   /** The page the address names is rendered in `main`. */
   let arrive: () => void;
+  /** What the page in `main` is told. */
+  const onScreen = { firstScreenHeight: (): number => 0 };
+
+  function PageContent() {
+    onScreen.firstScreenHeight = useFirstScreenHeight();
+    return createElement("p", null, "Page content");
+  }
 
   async function renderShellOn(pageKind: PageKind) {
     const root = createRootRoute({
@@ -367,7 +376,7 @@ describe("going from one page to another", () => {
           sidebarCards: cardsFor(named),
           isSessionLoading: false,
           logout: async () => {},
-          children: createElement("p", null, "Page content"),
+          children: createElement(PageContent),
           footer: null,
           floatingActions: null,
         });
@@ -444,6 +453,26 @@ describe("going from one page to another", () => {
 
     goTo("post");
     expect(firstScreen().dataset.open).toBe("false");
+  });
+
+  // The table of contents of a Post waits for the first screen to pass
+  // (table-of-contents.tsx). Only the home page has one: on a Post's page
+  // the list stands in the right column from the top of the page.
+  it("has a first screen only while the home page is in main, so the table of contents of a Post shows from the top", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetTop", "get").mockReturnValue(60);
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(540);
+    await renderShellOn("home");
+    expect(onScreen.firstScreenHeight()).toBe(600);
+
+    goTo("post");
+    expect(onScreen.firstScreenHeight()).toBe(600);
+    arrive();
+    expect(onScreen.firstScreenHeight()).toBe(0);
+
+    goTo("home");
+    expect(onScreen.firstScreenHeight()).toBe(0);
+    arrive();
+    expect(onScreen.firstScreenHeight()).toBe(600);
   });
 });
 

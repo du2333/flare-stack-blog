@@ -127,7 +127,8 @@
      column, which the sidebar cards have on every other page; until then
      the button in the floating column opens it. The list starts where that
      column does, below the navbar, and is 15.5rem wide: within the column
-     in every window. */
+     in every window. It is there from the top of the page: a Post's page
+     has no first screen (namecard-shell.tsx). */
   --shell-toc-side: none;
   --shell-toc-compact: flex;
   --shell-toc-top: calc(var(--namecard-nav-height) + 1rem);

@@ -58,8 +58,9 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  * keeps its narrow form.
  *
  * Every shell also:
- * - wraps its tree in `FirstScreenProvider`, which back to top, the table of
- *   contents and the navbar read;
+ * - wraps its tree in `FirstScreenProvider`, which the table of contents and
+ *   the navbar read; on a page that has no first screen it says 0, and the
+ *   table of contents of a Post is there from the top of the page;
  * - sets the `--shell-*` positioning properties on `:root[data-theme="<id>"]`
  *   in its Theme's stylesheet, each value from the shell's own media queries
  *   (see `shells/classic/classic-shell.css`). What renders outside the shell

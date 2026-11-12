@@ -94,15 +94,13 @@ function SidebarShell({
   const leaving = pageKind === "post" && !isPostPage;
   const bannerRef = useRef<HTMLDivElement>(null);
   // The first screen ends at the lower edge of the banner. A page without
-  // one has no first screen to scroll past; where the table of contents of
-  // a Post stands beside the article, it is there from the top of the page,
-  // as it is in the rail.
-  const tocFromTop = isPostPage && tocPlace === "beside";
+  // one has no first screen to scroll past: the table of contents of a Post
+  // is there from the top of the page, beside the article as in the rail.
   const firstScreenHeight = useCallback(() => {
     const banner = bannerRef.current;
-    if (!banner) return tocFromTop ? -1 : 0;
+    if (!banner) return 0;
     return Math.max(0, banner.getBoundingClientRect().bottom + window.scrollY);
-  }, [tocFromTop]);
+  }, []);
   // Going back or forward resizes the banner at once: the router restores
   // the scroll position then, and needs the page at its final height.
   const router = useRouter();
