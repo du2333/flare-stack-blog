@@ -9,6 +9,7 @@ import {
   Link2,
   LogOut,
   PanelLeftClose,
+  Palette,
   PanelLeftOpen,
   Settings,
   User,
@@ -104,6 +105,12 @@ export function SideBar({
       path: "/admin/friend-links",
       icon: Link2,
       label: m.admin_sidebar_friend_links(),
+      exact: false,
+    },
+    {
+      path: "/admin/personalize",
+      icon: Palette,
+      label: m.admin_sidebar_personalize(),
       exact: false,
     },
     {

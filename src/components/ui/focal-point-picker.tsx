@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from "react";
+import { useRef, type CSSProperties, type PointerEvent } from "react";
 import { cn } from "@/lib/utils";
 import {
   focalPointFromPointer,
@@ -10,8 +10,8 @@ import "./focal-point-picker.css";
 /**
  * Picks a point on whatever fills its parent. Lay it over an image inside a
  * positioned parent, before any other control that sits on the image: a click
- * or tap sets the point, and the marker moves with the arrow keys (by 1, by
- * 10 with Shift). The marker is a `slider` whose value text names both axes.
+ * or tap sets the point, dragging moves it with the pointer, and the marker
+ * moves with the arrow keys (by 1, by 10 with Shift). The marker is a `slider` whose value text names both axes.
  */
 export function FocalPointPicker({
   value,
@@ -32,9 +32,34 @@ export function FocalPointPicker({
   className?: string;
 }) {
   const markerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const pointAt = (event: PointerEvent<HTMLDivElement>) =>
+    onValueChange(
+      focalPointFromPointer(
+        event.currentTarget.getBoundingClientRect(),
+        event.clientX,
+        event.clientY,
+      ),
+    );
   return (
     <div
       className={cn("fuwari-focal-picker", className)}
+      // Dragging moves the point with the pointer, a click sets it.
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        dragging.current = true;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        pointAt(event);
+      }}
+      onPointerMove={(event) => {
+        if (dragging.current) pointAt(event);
+      }}
+      onPointerUp={() => {
+        dragging.current = false;
+      }}
+      onPointerCancel={() => {
+        dragging.current = false;
+      }}
       onClick={(event) => {
         onValueChange(
           focalPointFromPointer(

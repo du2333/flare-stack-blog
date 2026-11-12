@@ -28,6 +28,7 @@ import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminSplatRouteImport } from './routes/admin/$'
+import { Route as AdminPersonalizeRouteImport } from './routes/admin/personalize'
 import { Route as AdminPostsRouteRouteImport } from './routes/admin/posts/route'
 import { Route as AdminSettingsRouteRouteImport } from './routes/admin/settings/route'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
@@ -153,6 +154,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminSplatRoute = AdminSplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPersonalizeRoute = AdminPersonalizeRouteImport.update({
+  id: '/personalize',
+  path: '/personalize',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPostsRouteRoute = AdminPostsRouteRouteImport.update({
@@ -349,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
+  '/admin/personalize': typeof AdminPersonalizeRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
@@ -398,6 +405,7 @@ export interface FileRoutesByTo {
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
+  '/admin/personalize': typeof AdminPersonalizeRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
@@ -452,6 +460,7 @@ export interface FileRoutesById {
   '/_public/search': typeof PublicSearchRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
+  '/admin/personalize': typeof AdminPersonalizeRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
   '/api/send': typeof ApiSendRoute
@@ -507,6 +516,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/unsubscribe'
     | '/admin/$'
+    | '/admin/personalize'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
@@ -556,6 +566,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/unsubscribe'
     | '/admin/$'
+    | '/admin/personalize'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
@@ -609,6 +620,7 @@ export interface FileRouteTypes {
     | '/_public/search'
     | '/_public/unsubscribe'
     | '/admin/$'
+    | '/admin/personalize'
     | '/api/$'
     | '/api/auth'
     | '/api/send'
@@ -797,6 +809,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/admin/$'
       preLoaderRoute: typeof AdminSplatRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/personalize': {
+      id: '/admin/personalize'
+      path: '/personalize'
+      fullPath: '/admin/personalize'
+      preLoaderRoute: typeof AdminPersonalizeRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/posts': {
@@ -1165,6 +1184,7 @@ interface AdminRouteRouteChildren {
   AdminPostsRouteRoute: typeof AdminPostsRouteRouteWithChildren
   AdminSettingsRouteRoute: typeof AdminSettingsRouteRouteWithChildren
   AdminSplatRoute: typeof AdminSplatRoute
+  AdminPersonalizeRoute: typeof AdminPersonalizeRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminFriendLinksIndexRoute: typeof AdminFriendLinksIndexRoute
   AdminMediaIndexRoute: typeof AdminMediaIndexRoute
@@ -1174,6 +1194,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminPostsRouteRoute: AdminPostsRouteRouteWithChildren,
   AdminSettingsRouteRoute: AdminSettingsRouteRouteWithChildren,
   AdminSplatRoute: AdminSplatRoute,
+  AdminPersonalizeRoute: AdminPersonalizeRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminFriendLinksIndexRoute: AdminFriendLinksIndexRoute,
   AdminMediaIndexRoute: AdminMediaIndexRoute,

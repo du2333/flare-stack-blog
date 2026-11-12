@@ -113,3 +113,21 @@ it("says the server was unreachable when the request never got an answer", async
     m.admin_overview_popularity_sync_unreachable_desc(),
   );
 });
+
+it("sends the default-identity notice to the site settings, which keep the title and author", () => {
+  render(
+    createElement(DashboardNotices, {
+      update: null,
+      popularityAlert: null,
+      adminEmailNeedsSetup: false,
+      defaultSiteIdentity: true,
+    }),
+  );
+  expect(
+    screen
+      .getByRole("link", {
+        name: new RegExp(m.admin_overview_default_site_identity()),
+      })
+      .getAttribute("href"),
+  ).toBe("/admin/settings/site");
+});

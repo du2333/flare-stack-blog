@@ -10,6 +10,8 @@
     position: absolute;
     inset: 0;
     cursor: crosshair;
+    /* A touch drag moves the point instead of scrolling the page. */
+    touch-action: none;
   }
   .fuwari-focal-marker {
     position: absolute;

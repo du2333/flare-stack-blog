@@ -10,6 +10,11 @@ import {
 } from "../config.admin.schema";
 import type { ConfigFormValues } from "../components/admin/config-editing";
 import type { SettingsPageId } from "../components/admin/settings-pages";
+import {
+  ownsDirtySiteField,
+  PERSONALIZE_PAGE,
+  siteForSave,
+} from "../utils/site-field-pages";
 import { useSystemSetting } from "./use-system-setting";
 import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
 import { m } from "@/paraglide/messages";
@@ -48,7 +53,13 @@ function webhookInput(webhook: WebhookEndpoint | undefined) {
   };
 }
 
-export function useSystemConfigForm(nav: SettingsPageId | null = null) {
+/**
+ * The form of a page that edits System Config: a settings page, or
+ * 「个性化」, which edits the presentation fields of Site Config only.
+ */
+export function useSystemConfigForm(
+  nav: SettingsPageId | typeof PERSONALIZE_PAGE | null = null,
+) {
   const { snapshot, saveSettings, isLoading, reload } = useSystemSetting();
   const methods = useForm<ConfigFormValues>({
     defaultValues: valuesOf(emptySnapshot),
@@ -69,10 +80,13 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
       methods.reset(valuesOf(snapshot));
     }
   }, [snapshot, isDirty, isSubmitting, methods]);
-  const section = nav === "site" ? "site" : "notifications";
+  const sitePage = nav === PERSONALIZE_PAGE ? PERSONALIZE_PAGE : "site";
+  const section =
+    nav === "site" || nav === PERSONALIZE_PAGE ? "site" : "notifications";
+  const siteDirty = ownsDirtySiteField(sitePage, dirtyFields.site);
   const sectionDirty =
     section === "site"
-      ? !!dirtyFields.site
+      ? siteDirty
       : !!(
           dirtyFields.email ||
           dirtyFields.notification ||
@@ -136,17 +150,39 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
     );
     setConflicts((previous) => ({ ...previous, [section]: false }));
   };
+  // Takes in what was saved elsewhere and keeps what is typed in the fields
+  // this page owns.
+  const reloadSection = async () => {
+    if (section !== "site") return;
+    const result = await reload();
+    if (!result.data || result.isError) {
+      toast.error(m.settings_toast_save_error());
+      return;
+    }
+    const desired = methods.getValues();
+    accept(result.data, {
+      ...desired,
+      site: siteForSave(valuesOf(result.data).site, desired.site, sitePage),
+    });
+    setConflicts((previous) => ({ ...previous, site: false }));
+  };
   const onSubmit = async (event?: FormEvent) => {
     event?.preventDefault();
-    if (isSubmitting || !sectionDirty || (nav !== "site" && nav !== "notify"))
+    if (
+      isSubmitting ||
+      !sectionDirty ||
+      (nav !== "site" && nav !== "notify" && nav !== PERSONALIZE_PAGE)
+    )
       return;
     methods.clearErrors();
     const submitted = structuredClone(methods.getValues());
     const email = submitted.email ?? {};
     const notification = submitted.notification;
+    // The Site Config as loaded, with this page's own fields from the form.
+    const site = siteForSave(baseline.config.site, submitted.site, sitePage);
     const parsedSite =
       section === "site"
-        ? createSiteConfigInputFormSchema(m).safeParse(submitted.site)
+        ? createSiteConfigInputFormSchema(m).safeParse(site)
         : null;
     if (parsedSite && !parsedSite.success) {
       const issue = parsedSite.error.issues[0];
@@ -161,7 +197,7 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
         ? {
             section,
             expectedRevision: baseline.revisions.site,
-            site: parsedSite?.success ? parsedSite.data : submitted.site,
+            site: parsedSite?.success ? parsedSite.data : site,
           }
         : {
             section,
@@ -234,7 +270,9 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
         error && typeof error === "object" && "code" in error ? error.code : "";
       if (code === "CONFIG_CONFLICT") {
         setConflicts((previous) => ({ ...previous, [section]: true }));
-        toast.error(m.settings_config_conflict());
+        // The save bar says it for Site Config, with the way on. A toast
+        // there would cover its buttons.
+        if (section !== "site") toast.error(m.settings_config_conflict());
       } else
         toast.error(
           code === "CONFIG_INVALID"
@@ -252,7 +290,7 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
     isDirty,
     sectionDirty,
     dirtySections: {
-      site: !!dirtyFields.site,
+      site: siteDirty,
       notifications: !!(
         dirtyFields.email ||
         dirtyFields.notification ||
@@ -264,5 +302,6 @@ export function useSystemConfigForm(nav: SettingsPageId | null = null) {
     baseline,
     conflict: conflicts[section],
     discardSection,
+    reloadSection,
   };
 }

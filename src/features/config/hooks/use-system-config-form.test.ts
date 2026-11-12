@@ -150,27 +150,50 @@ it("retains edits after a conflict and only discards the requested section on re
   expect(result.current.methods.getValues("email.senderName")).toBe("Keep me");
   expect(result.current.baseline.revisions.site).toBe(4);
 });
-it("submits the shared fields and the Theme settings that have no control", async () => {
+const presentationSite = {
+  bannerFocus: { x: 10, y: 80 },
+  brandMark: "avatar" as const,
+  tagline: "Saved tagline",
+  primaryHue: 200,
+  theme: { id: "classic" as const, options: { classic: { kept: true } } },
+};
+const identitySite = {
+  title: "Saved title",
+  author: "Saved author",
+  description: "Saved description",
+};
+
+function loadSavedSite() {
   state.snapshot = {
     ...state.snapshot!,
     config: {
       ...state.snapshot!.config,
       site: {
         ...state.snapshot!.config.site,
-        bannerFocus: { x: 10, y: 80 },
-        brandMark: "avatar",
-        tagline: "Saved tagline",
-        theme: { id: "classic", options: { classic: { kept: true } } },
+        ...identitySite,
+        ...presentationSite,
       },
     },
   };
+  return state.snapshot.config.site!;
+}
+
+it("saves the site page's fields in the Site Config as loaded, leaving the presentation fields untouched", async () => {
+  const loaded = loadSavedSite();
   const { result } = renderHook(() => useSystemConfigForm("site"));
   await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
-  act(() =>
+  act(() => {
+    result.current.methods.setValue("site.title", "New title", {
+      shouldDirty: true,
+    });
+    // Not a field of this page: a stray edit never reaches the save.
     result.current.methods.setValue("site.primaryHue", 30, {
       shouldDirty: true,
-    }),
-  );
+    });
+    result.current.methods.setValue("site.tagline", "Stray", {
+      shouldDirty: true,
+    });
+  });
   state.save.mockResolvedValue({
     ...state.snapshot!,
     revisions: { site: 3, notifications: 3 },
@@ -178,39 +201,26 @@ it("submits the shared fields and the Theme settings that have no control", asyn
   await act(async () => {
     await result.current.onSubmit();
   });
-  expect(state.save.mock.calls[0][0].site).toMatchObject({
-    primaryHue: 30,
-    bannerImage: DEFAULT_CONFIG.site?.bannerImage,
-    avatar: DEFAULT_CONFIG.site?.avatar,
-    bannerFocus: { x: 10, y: 80 },
-    brandMark: "avatar",
-    tagline: "Saved tagline",
-    theme: { id: "classic", options: { classic: { kept: true } } },
+  const saved = state.save.mock.calls[0][0];
+  expect(saved).toMatchObject({ section: "site", expectedRevision: 2 });
+  expect(saved.site).toMatchObject({
+    ...identitySite,
+    title: "New title",
+    ...presentationSite,
+    bannerImage: loaded.bannerImage,
+    avatar: loaded.avatar,
   });
 });
-it("marks the site dirty by the brand mark, tagline and banner focus, and saves them", async () => {
-  const { result } = renderHook(() => useSystemConfigForm("site"));
+
+it("saves the personalize page's fields in the Site Config as loaded, leaving the identity fields untouched", async () => {
+  const loaded = loadSavedSite();
+  const { result } = renderHook(() => useSystemConfigForm("personalize"));
   await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
-  expect(result.current.dirtySections.site).toBe(false);
-
   act(() => {
-    result.current.methods.setValue("site.brandMark", "siteIcon", {
+    result.current.methods.setValue("site.primaryHue", 30, {
       shouldDirty: true,
     });
-  });
-  expect(result.current.dirtySections.site).toBe(true);
-  act(() => {
-    result.current.methods.setValue("site.brandMark", "default", {
-      shouldDirty: true,
-    });
-  });
-  expect(result.current.dirtySections.site).toBe(false);
-
-  act(() => {
     result.current.methods.setValue("site.brandMark", "none", {
-      shouldDirty: true,
-    });
-    result.current.methods.setValue("site.tagline", "Notes", {
       shouldDirty: true,
     });
     result.current.methods.setValue(
@@ -218,8 +228,10 @@ it("marks the site dirty by the brand mark, tagline and banner focus, and saves 
       { x: 25, y: 60 },
       { shouldDirty: true },
     );
+    result.current.methods.setValue("site.title", "Stray", {
+      shouldDirty: true,
+    });
   });
-  expect(result.current.dirtySections.site).toBe(true);
   state.save.mockResolvedValue({
     ...state.snapshot!,
     revisions: { site: 3, notifications: 3 },
@@ -227,11 +239,147 @@ it("marks the site dirty by the brand mark, tagline and banner focus, and saves 
   await act(async () => {
     await result.current.onSubmit();
   });
-  expect(state.save.mock.calls[0][0].site).toMatchObject({
+  const saved = state.save.mock.calls[0][0];
+  expect(saved).toMatchObject({ section: "site", expectedRevision: 2 });
+  expect(saved.site).toMatchObject({
+    ...identitySite,
+    ...presentationSite,
+    primaryHue: 30,
     brandMark: "none",
-    tagline: "Notes",
     bannerFocus: { x: 25, y: 60 },
+    bannerImage: loaded.bannerImage,
+    avatar: loaded.avatar,
+    navLinks: loaded.navLinks,
+    social: loaded.social,
+    icons: loaded.icons,
   });
+});
+
+it("marks the page dirty only by the fields it owns", async () => {
+  const personalize = renderHook(() => useSystemConfigForm("personalize"));
+  const site = renderHook(() => useSystemConfigForm("site"));
+  await waitFor(() =>
+    expect(personalize.result.current.baseline.revisions.site).toBe(2),
+  );
+  await waitFor(() =>
+    expect(site.result.current.baseline.revisions.site).toBe(2),
+  );
+  expect(personalize.result.current.dirtySections.site).toBe(false);
+
+  act(() => {
+    personalize.result.current.methods.setValue("site.brandMark", "siteIcon", {
+      shouldDirty: true,
+    });
+    site.result.current.methods.setValue("site.brandMark", "siteIcon", {
+      shouldDirty: true,
+    });
+  });
+  expect(personalize.result.current.sectionDirty).toBe(true);
+  expect(site.result.current.sectionDirty).toBe(false);
+  act(() => {
+    personalize.result.current.methods.setValue("site.brandMark", "default", {
+      shouldDirty: true,
+    });
+  });
+  expect(personalize.result.current.dirtySections.site).toBe(false);
+
+  act(() => {
+    personalize.result.current.methods.setValue("site.title", "Elsewhere", {
+      shouldDirty: true,
+    });
+  });
+  expect(personalize.result.current.sectionDirty).toBe(false);
+});
+
+it("on a conflict keeps what is typed, and reloading takes in the other page's save and keeps it", async () => {
+  loadSavedSite();
+  const { result } = renderHook(() => useSystemConfigForm("personalize"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() =>
+    result.current.methods.setValue("site.tagline", "Typed here", {
+      shouldDirty: true,
+    }),
+  );
+  // The site page saved first: the revision has moved.
+  state.save.mockRejectedValueOnce({ code: "CONFIG_CONFLICT" });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(result.current.conflict).toBe(true);
+  expect(result.current.methods.getValues("site.tagline")).toBe("Typed here");
+  expect(result.current.sectionDirty).toBe(true);
+  expect(state.save.mock.calls[0][0].expectedRevision).toBe(2);
+
+  state.reload.mockResolvedValue({
+    data: {
+      ...state.snapshot!,
+      config: {
+        ...state.snapshot!.config,
+        site: {
+          ...state.snapshot!.config.site,
+          title: "Saved on the site page",
+          tagline: "Saved tagline, replaced",
+        },
+      },
+      revisions: { site: 3, notifications: 3 },
+    },
+    isError: false,
+  });
+  await act(async () => {
+    await result.current.reloadSection();
+  });
+  expect(result.current.conflict).toBe(false);
+  expect(result.current.baseline.revisions.site).toBe(3);
+  expect(result.current.methods.getValues("site.title")).toBe(
+    "Saved on the site page",
+  );
+  expect(result.current.methods.getValues("site.tagline")).toBe("Typed here");
+  expect(result.current.sectionDirty).toBe(true);
+
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 4, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[1][0]).toMatchObject({
+    expectedRevision: 3,
+    site: { title: "Saved on the site page", tagline: "Typed here" },
+  });
+});
+
+it("discarding after a conflict is the Admin's choice and drops what is typed", async () => {
+  const { result } = renderHook(() => useSystemConfigForm("personalize"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() =>
+    result.current.methods.setValue("site.tagline", "Typed here", {
+      shouldDirty: true,
+    }),
+  );
+  state.save.mockRejectedValueOnce({ code: "CONFIG_CONFLICT" });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  const reloaded = {
+    ...state.snapshot!,
+    config: {
+      ...state.snapshot!.config,
+      site: { ...state.snapshot!.config.site, tagline: "Saved elsewhere" },
+    },
+    revisions: { site: 3, notifications: 3 },
+  };
+  state.reload.mockResolvedValue({ data: reloaded, isError: false });
+  // The refetch also reaches the query the form reads.
+  state.snapshot = reloaded;
+  await act(async () => {
+    await result.current.discardSection();
+  });
+  expect(result.current.methods.getValues("site.tagline")).toBe(
+    "Saved elsewhere",
+  );
+  expect(result.current.sectionDirty).toBe(false);
+  expect(result.current.conflict).toBe(false);
 });
 
 it("saves the Theme chosen in the picker with its options and keeps it through a conflict", async () => {
@@ -247,7 +395,7 @@ it("saves the Theme chosen in the picker with its options and keeps it through a
   };
   const form: { current?: ReturnType<typeof useSystemConfigForm> } = {};
   function Settings() {
-    const current = useSystemConfigForm("site");
+    const current = useSystemConfigForm("personalize");
     form.current = current;
     return createElement(FormProvider<ConfigFormValues>, {
       ...current.methods,
