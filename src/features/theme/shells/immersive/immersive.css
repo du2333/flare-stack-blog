@@ -212,6 +212,12 @@
 .immersive-shell[data-home="true"] {
   --immersive-banner-h: max(78svh, 24rem);
 }
+/* A focused page is one panel, and what it asks for is at its foot (the
+   button of a sign-in form): under a band this low the panel is whole in
+   the first screen of a laptop and of a phone. */
+.immersive-shell[data-focused="true"] {
+  --immersive-banner-h: max(24svh, 11rem);
+}
 @media (width >= 64rem) {
   .immersive-shell {
     --immersive-lane: 5.5rem;

@@ -150,6 +150,35 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("a focused page", () => {
+  it("is marked on the shell, and its banner is the lowest band", async () => {
+    await renderShell({ pageKind: "focused" });
+    const shell = document.querySelector(".immersive-shell")!;
+    expect(shell.getAttribute("data-focused")).toBe("true");
+    expect(shell.getAttribute("data-home")).toBe("false");
+
+    const css = readFileSync(
+      join(import.meta.dirname, "immersive.css"),
+      "utf8",
+    ).replace(/\s+/g, " ");
+    expect(css).toContain(
+      '.immersive-shell[data-focused="true"] { --immersive-banner-h: max(24svh, 11rem); }',
+    );
+  });
+
+  it.each(["home", "inner", "post"] as const)(
+    "is not marked on a page of kind %s",
+    async (pageKind) => {
+      await renderShell({ pageKind });
+      expect(
+        document
+          .querySelector(".immersive-shell")!
+          .hasAttribute("data-focused"),
+      ).toBe(false);
+    },
+  );
+});
+
 describe("the Theme", () => {
   it("is 「沉浸」, with Posts as tiles, plain meta, no heading accent, a standfirst, the archive led by covers and the footer as a band", () => {
     expect(theme.id).toBe("immersive");
