@@ -155,23 +155,6 @@ export function getOriginalImageUrl(key: string) {
   return `/images/${key}`;
 }
 
-/**
- * The original an image transform reads. Cloudflare keeps transformed images
- * by their source URL, and only a zone purge clears that, so the source names
- * the stored file's version (its R2 ETag): once a file is replaced at the same
- * key, transforms read and cache the new one.
- */
-export function getTransformSourceUrl(
-  requestUrl: URL,
-  key: string,
-  fileVersion: string,
-) {
-  const source = new URL(getOriginalImageUrl(key), requestUrl.origin);
-  source.searchParams.set("original", "true");
-  source.searchParams.set("v", fileVersion);
-  return source.toString();
-}
-
 export function getOptimizedImageUrl(key: string, width?: number) {
   if (isGifKey(key)) {
     return `/images/${key}?original=true`;
