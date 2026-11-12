@@ -1,0 +1,99 @@
+/*
+ * The taxonomy page: two lists side by side from 1024px, one below it. Rows
+ * are the frame's .admin-list-row; sizes come from admin-variables.css.
+ */
+.taxonomy-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  padding-top: 16px;
+}
+@media (min-width: 1024px) {
+  .taxonomy-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-top: 20px;
+  }
+  .taxonomy-column:not(:last-child) {
+    padding-right: 40px;
+  }
+  .taxonomy-column + .taxonomy-column {
+    padding-left: 40px;
+    border-left: 1px solid var(--admin-rule);
+  }
+}
+.taxonomy-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  --fuwari-button-height: 36px;
+  --fuwari-field-height: 36px;
+  --fuwari-button-font-size: var(--admin-text-body);
+  --fuwari-button-padding-x: 14px;
+}
+.taxonomy-column-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+.taxonomy-column-head h2 {
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
+  font-weight: 600;
+}
+.taxonomy-column-count {
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-body);
+  font-variant-numeric: tabular-nums;
+}
+.taxonomy-column-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.taxonomy-column-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 12px 8px;
+}
+.taxonomy-column-search > [role="search"] {
+  flex: 1;
+  min-width: 0;
+}
+.taxonomy-column-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--admin-rule);
+}
+.taxonomy-row {
+  height: 48px;
+  min-height: 0;
+  padding-inline: 4px 0;
+}
+.taxonomy-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.taxonomy-row-count {
+  flex-shrink: 0;
+  color: var(--fuwari-fg-75);
+  font-size: var(--admin-text-meta);
+  font-variant-numeric: tabular-nums;
+}
+a.taxonomy-row-count {
+  color: var(--fuwari-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.taxonomy-row-count[data-empty] {
+  color: var(--fuwari-fg-50);
+}

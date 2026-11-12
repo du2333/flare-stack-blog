@@ -6,40 +6,52 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
-import { PostListColgroup } from "./components/post-row";
+import { PostListHeader } from "./components/post-row";
 import { WIDE_TOOLBAR_QUERY } from "./types";
 import "./post-manager.css";
 
-function PostRowSkeleton() {
+/** The row's cells as placeholders, in the grid and at the height of a real row. */
+function PostRowSkeleton({ index }: { index: number }) {
+  // Titles of different lengths, so the list does not read as a block.
+  const titleWidth = ["w-2/3", "w-1/2", "w-3/4", "w-3/5"][index % 4];
   return (
-    <tr aria-hidden="true">
-      <td>
-        <div className="post-list-title-line">
-          {/* One text line of the title link, with the same padding. */}
-          <span className="post-list-title-link w-2/3">
-            <Skeleton className="h-[1.5em] w-full rounded" />
-          </span>
-          <Skeleton className="h-(--fuwari-badge-height) w-14 shrink-0 rounded-full" />
+    <div
+      role="row"
+      aria-hidden="true"
+      className="admin-list-row post-row post-row-skeleton"
+    >
+      <div className="post-row-title">
+        <Skeleton className={`h-4 rounded ${titleWidth}`} />
+      </div>
+      <div className="post-row-status">
+        <Skeleton className="h-(--fuwari-badge-height) w-14 rounded-full" />
+      </div>
+      <div className="post-row-meta">
+        <div className="post-row-taxonomy">
+          <Skeleton className="h-3 w-24 rounded" />
         </div>
-        <div className="post-list-meta-line">
-          <Skeleton className="h-3 w-1/4 rounded" />
+        <div className="post-row-number post-row-views">
+          <Skeleton className="ml-auto h-3 w-8 rounded" />
         </div>
-      </td>
-      <td className="post-list-date">
-        <Skeleton className="ml-auto h-3 w-16 rounded" />
-      </td>
-      <td className="post-list-actions">
-        <Skeleton className="ml-auto size-8 rounded-lg max-[620px]:size-11" />
-      </td>
-    </tr>
+        <div className="post-row-number post-row-comments">
+          <Skeleton className="ml-auto h-3 w-6 rounded" />
+        </div>
+        <div className="post-row-time">
+          <Skeleton className="ml-auto h-3 w-14 rounded" />
+        </div>
+      </div>
+      <div className="post-row-actions">
+        <Skeleton className="ml-auto size-8 rounded-lg" />
+      </div>
+    </div>
   );
 }
 
 export function PostManagerSkeleton() {
   return (
     <>
-      {[1, 2, 3, 4, 5].map((id) => (
-        <PostRowSkeleton key={id} />
+      {Array.from({ length: 12 }, (_, index) => (
+        <PostRowSkeleton key={index} index={index} />
       ))}
     </>
   );
@@ -85,23 +97,22 @@ export function PostManagerPageSkeleton() {
       body="list"
       scroll={false}
     >
-      <table className="post-list-table">
-        <PostListColgroup />
-        <thead aria-hidden="true">
-          <tr>
-            <th>
-              <Skeleton className="h-3 w-12 rounded" />
-            </th>
-            <th>
-              <Skeleton className="ml-auto h-3 w-16 rounded" />
-            </th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <PostManagerSkeleton />
-        </tbody>
-      </table>
+      <div className="post-list-scroll">
+        <div
+          className="post-list"
+          role="table"
+          aria-label={m.admin_posts_title()}
+        >
+          <PostListHeader
+            sortBy="updatedAt"
+            viewsSortable={false}
+            onSortByChange={() => {}}
+          />
+          <div role="rowgroup">
+            <PostManagerSkeleton />
+          </div>
+        </div>
+      </div>
     </AdminPage>
   );
 }

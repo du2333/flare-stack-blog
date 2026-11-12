@@ -11,7 +11,7 @@ import { createElement } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
-import { WIDE_TOOLBAR_QUERY } from "../types";
+import { WIDE_TOOLBAR_QUERY, type PostPopularity } from "../types";
 import { PostsToolbar } from "./posts-toolbar";
 
 vi.mock("@/hooks/use-motion", async (importOriginal) => ({
@@ -47,14 +47,16 @@ function setViewport(wide: boolean) {
 
 function renderToolbar(
   filters: { category?: number | "none"; tag?: number },
-  { wide = true } = {},
+  {
+    wide = true,
+    popularity,
+  }: { wide?: boolean; popularity?: PostPopularity } = {},
 ) {
   setViewport(wide);
   const onCategoryChange = vi.fn();
   const onTagChange = vi.fn();
   const onSortByChange = vi.fn();
   const onClearTaxonomy = vi.fn();
-  const onManageTaxonomy = vi.fn();
   render(
     createElement(
       QueryClientProvider,
@@ -74,7 +76,7 @@ function renderToolbar(
         onCategoryChange,
         onTagChange,
         onClearTaxonomy,
-        onManageTaxonomy,
+        popularity,
         ...filters,
       }),
     ),
@@ -84,7 +86,6 @@ function renderToolbar(
     onTagChange,
     onSortByChange,
     onClearTaxonomy,
-    onManageTaxonomy,
   };
 }
 
@@ -253,19 +254,41 @@ it("drops a filter whose category or tag no longer exists without a history entr
   expect(staleTag.onCategoryChange).not.toHaveBeenCalled();
 });
 
-it("opens the categories and tags sheet from the panel and closes the panel", async () => {
-  const { onManageTaxonomy } = renderToolbar({});
-  await openFilters();
-  const manage = screen.getByRole("button", {
-    name: m.admin_posts_manage_taxonomy(),
+it("offers the sorts by comments, and by views only while views can be read", async () => {
+  const sorts = async (popularity: PostPopularity) => {
+    renderToolbar({}, { popularity });
+    fireEvent.click(
+      screen.getByRole("button", { name: m.admin_posts_sort_label() }),
+    );
+    await findInPopover("menuitemradio", {
+      name: m.admin_posts_sort_recent_upd(),
+    });
+    const options = screen
+      .getAllByRole("menuitemradio")
+      .map((option) => option.textContent);
+    cleanup();
+    return options;
+  };
+  const withoutViews = [
+    m.admin_posts_sort_recent_pub(),
+    m.admin_posts_sort_recent_upd(),
+    m.admin_posts_sort_comments(),
+  ];
+  expect(await sorts("ready")).toEqual([
+    ...withoutViews.slice(0, 2),
+    m.admin_posts_sort_views(),
+    m.admin_posts_sort_comments(),
+  ]);
+  for (const popularity of ["unconfigured", "missing", "expired"] as const)
+    expect(await sorts(popularity)).toEqual(withoutViews);
+});
+
+it("names the recent sort instead of the views when the address asks for views that cannot be read", () => {
+  renderToolbar({}, { popularity: "missing" });
+  const trigger = screen.getByRole("button", {
+    name: m.admin_posts_sort_label(),
   });
-  expect(manage.getAttribute("aria-haspopup")).toBe("dialog");
-  fireEvent.click(manage);
-  expect(onManageTaxonomy).toHaveBeenCalledOnce();
-  expect(
-    screen.queryByRole("dialog", { name: m.admin_posts_filter_button() }),
-  ).toBeNull();
-  expect(filterButton().getAttribute("aria-expanded")).toBe("false");
+  expect(trigger.textContent).toBe(m.admin_posts_sort_recent_upd());
 });
 
 it("below 1024px puts the search on its own row and moves the sort into a bottom sheet", async () => {
@@ -282,9 +305,7 @@ it("below 1024px puts the search on its own row and moves the sort into a bottom
     name: m.admin_posts_filter_button(),
   });
   expect(sheet.getAttribute("data-side")).toBe("bottom");
-  fireEvent.click(
-    screen.getByRole("radio", { name: m.admin_posts_sort_recent_pub() }),
-  );
+  await pick(m.admin_posts_sort_label(), m.admin_posts_sort_recent_pub());
   expect(onSortByChange).toHaveBeenCalledWith("publishedAt");
 
   fireEvent.click(screen.getByRole("button", { name: m.common_close() }));

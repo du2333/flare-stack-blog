@@ -7,6 +7,8 @@ import {
   isMediaGone,
   syncPostMedia,
 } from "@/features/posts/data/post-media.data";
+import { withViewCounts } from "@/features/post-popularity/post-popularity";
+import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
@@ -462,14 +464,83 @@ export async function createEmptyPost(context: DbContext) {
   return { id: post.id, saveToken: post.saveToken };
 }
 
+/** Whether view counts can be read: the Umami config, a snapshot, and its age. */
+async function readPopularity(context: DbContext) {
+  const { status, snapshot } =
+    await postPopularityService.getStatusWithSnapshot(context);
+  const state = !status.configured
+    ? ("unconfigured" as const)
+    : !snapshot
+      ? ("missing" as const)
+      : status.expired
+        ? ("expired" as const)
+        : ("ready" as const);
+  return { state, snapshot: state === "ready" ? snapshot : null };
+}
+
+/**
+ * One page of Posts ordered by their views of the last 30 days. The views are
+ * in the popularity snapshot, not the database, so the matching ids are
+ * ordered here and only the page's rows are read.
+ */
+async function getPostsByViews(
+  context: DbContext,
+  data: GetPostsInput,
+  scores: Map<number, number>,
+) {
+  const ids = await PostRepo.getPostIds(context.db, {
+    status: data.status,
+    publicOnly: data.publicOnly,
+    search: data.search,
+    taxonomy: data.taxonomy,
+    categoryId: data.categoryId,
+    uncategorized: data.uncategorized,
+    tagId: data.tagId,
+    hasUnpublishedChanges: data.hasUnpublishedChanges,
+  });
+  const direction = data.sortDir === "ASC" ? 1 : -1;
+  ids.sort(
+    (a, b) =>
+      direction * ((scores.get(a) ?? 0) - (scores.get(b) ?? 0)) ||
+      direction * (a - b),
+  );
+  const offset = data.offset ?? 0;
+  const pageIds = ids.slice(offset, offset + Math.min(data.limit ?? 10, 50));
+  const rows = await PostRepo.getPosts(context.db, {
+    ids: pageIds,
+    taxonomy: data.taxonomy,
+    includeContent: data.includeContent,
+    limit: 50,
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return pageIds.flatMap((id) => byId.get(id) ?? []);
+}
+
 export async function listAdminPostsPage(
   context: DbContext,
   data: GetPostsInput,
 ) {
   // The list filters and counts in SQL, which compares fingerprints.
   await UnpublishedChangesService.settleFingerprints(context.db);
+  const popularity = await readPopularity(context);
+  const sortByViews = data.sortBy === "viewCount" && popularity.snapshot;
   const [rows, statusCounts] = await Promise.all([
-    getPosts(context, data),
+    sortByViews
+      ? getPostsByViews(
+          context,
+          data,
+          new Map(
+            popularity.snapshot?.entries.map((entry) => [
+              entry.postId,
+              entry.score,
+            ]),
+          ),
+        )
+      : getPosts(context, {
+          ...data,
+          // Without view counts the sort has nothing to go by.
+          sortBy: data.sortBy === "viewCount" ? undefined : data.sortBy,
+        }),
     PostRepo.getAdminPostStatusCounts(context.db, {
       publicOnly: data.publicOnly,
       search: data.search,
@@ -498,15 +569,23 @@ export async function listAdminPostsPage(
     data.taxonomy?.scope === "public"
       ? await PublicAssignmentRepo.findPublicAssignments(context.db, ids)
       : await PostRepo.findCurrentAssignments(context.db, ids);
+  // A Post with no public page has no views to speak of; 0 is only for one
+  // that has a page and no entry in the snapshot.
+  const published = withViewCounts(
+    rows.filter((row) => row.publicSlug !== null),
+    popularity.snapshot,
+  );
+  const viewCounts = new Map(published.map((row) => [row.id, row.viewCount]));
   const items = rows.map(({ categoryId: _categoryId, ...row }) => ({
     ...row,
+    viewCount: viewCounts.get(row.id),
     category: assignments.get(row.id)?.category ?? null,
     tags: (assignments.get(row.id)?.tags ?? []).map(({ id, name }) => ({
       id,
       name,
     })),
   }));
-  return { items, total, statusCounts };
+  return { items, total, statusCounts, popularity: popularity.state };
 }
 
 export async function getPosts(context: DbContext, data: GetPostsInput) {
@@ -522,7 +601,7 @@ export async function getPosts(context: DbContext, data: GetPostsInput) {
     tagId: data.tagId,
     hasUnpublishedChanges: data.hasUnpublishedChanges,
     sortDir: data.sortDir,
-    sortBy: data.sortBy,
+    sortBy: data.sortBy === "viewCount" ? undefined : data.sortBy,
     includeContent: data.includeContent,
   });
 }

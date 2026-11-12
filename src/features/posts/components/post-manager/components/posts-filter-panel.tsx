@@ -1,8 +1,4 @@
-import { Settings2 } from "lucide-react";
-import { useId } from "react";
-import { Button } from "@/components/ui/button";
 import DropdownMenu from "@/components/ui/dropdown-menu";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import { m } from "@/paraglide/messages";
 import type { CategoryFilter, SortField } from "../types";
 import { SORT_FIELDS } from "../types";
@@ -23,20 +19,27 @@ interface PostsFilterPanelProps {
   /** Where the toolbar has no room for the sort, it is chosen here. */
   sortBy?: SortField;
   onSortByChange?: (sortBy: SortField) => void;
-  /** Opens the categories and tags sheet. */
-  onManageTaxonomy?: () => void;
+  /** The sorts on offer. */
+  sortFields?: ReadonlyArray<SortField>;
 }
 
 export function sortLabel(sortBy: SortField) {
-  return sortBy === "updatedAt"
-    ? m.admin_posts_sort_recent_upd()
-    : m.admin_posts_sort_recent_pub();
+  switch (sortBy) {
+    case "updatedAt":
+      return m.admin_posts_sort_recent_upd();
+    case "publishedAt":
+      return m.admin_posts_sort_recent_pub();
+    case "viewCount":
+      return m.admin_posts_sort_views();
+    case "commentCount":
+      return m.admin_posts_sort_comments();
+  }
 }
 
 /**
  * The choosers behind the Posts toolbar's 「筛选」 button: Category and Tag,
- * the sort where the toolbar has no room for it, and the way into managing
- * Categories and Tags. The popover and the bottom sheet both hold it.
+ * and the sort where the toolbar has no room for it. The popover and the
+ * bottom sheet both hold it.
  */
 export function PostsFilterPanel({
   categories,
@@ -47,20 +50,21 @@ export function PostsFilterPanel({
   onTagChange,
   sortBy,
   onSortByChange,
-  onManageTaxonomy,
+  sortFields = SORT_FIELDS,
 }: PostsFilterPanelProps) {
-  const sortId = useId();
   return (
     <div className="posts-filter-panel">
       {sortBy !== undefined && onSortByChange ? (
         <div className="posts-filter-field">
-          <span id={sortId}>{m.admin_posts_sort_label()}</span>
-          <SegmentedControl
-            aria-labelledby={sortId}
-            stretch
-            value={sortBy}
-            onValueChange={onSortByChange}
-            items={SORT_FIELDS.map((value) => ({
+          <span>{m.admin_posts_sort_label()}</span>
+          <DropdownMenu
+            value={sortFields.includes(sortBy) ? sortBy : "updatedAt"}
+            ariaLabel={m.admin_posts_sort_label()}
+            triggerClassName={FIELD_TRIGGER}
+            matchTriggerWidth
+            placement="bottom-start"
+            onChange={(value) => onSortByChange(value as SortField)}
+            options={sortFields.map((value) => ({
               value,
               label: sortLabel(value),
             }))}
@@ -108,18 +112,6 @@ export function PostsFilterPanel({
           ]}
         />
       </div>
-      {onManageTaxonomy ? (
-        <div className="posts-filter-footer">
-          <Button
-            variant="text"
-            icon={<Settings2 size={16} />}
-            aria-haspopup="dialog"
-            onClick={onManageTaxonomy}
-          >
-            {m.admin_posts_manage_taxonomy()}
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }

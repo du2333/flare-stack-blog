@@ -14,6 +14,10 @@ export type AdminPostListItem = Omit<
 > & {
   /** A published post whose draft differs from what is live. */
   hasUnpublishedChanges: boolean;
+  /** Published Comments, replies included. */
+  commentCount: number;
+  /** Views of the last 30 days; absent when unknown, which is not 0. */
+  viewCount?: number;
   /** The draft's Category and Tags (Current Assignment). */
   category: { id: number; name: string } | null;
   tags: Array<{ id: number; name: string }>;
@@ -24,8 +28,22 @@ export const STATUS_FILTERS = ["ALL", "PUBLISHED", "CHANGED", "DRAFT"] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 /** Sort fields options */
-export const SORT_FIELDS = ["publishedAt", "updatedAt"] as const;
+export const SORT_FIELDS = [
+  "publishedAt",
+  "updatedAt",
+  "viewCount",
+  "commentCount",
+] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
+
+/**
+ * Whether the views of the last 30 days can be read: only `ready` carries
+ * them. The Overview tells the same four apart.
+ */
+export type PostPopularity = "unconfigured" | "missing" | "expired" | "ready";
+
+/** Posts per page: enough to fill a 1440x900 screen of 52px rows. */
+export const POSTS_PER_PAGE = 20;
 
 /**
  * From here the toolbar is one row with the sort beside the search; below it
