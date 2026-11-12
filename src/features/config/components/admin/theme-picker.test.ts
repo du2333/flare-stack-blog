@@ -110,42 +110,12 @@ it("edits the chosen Theme's options and keeps them when switching away and back
   expect(form().getValues("site.theme.options.fixture.marker")).toBe("off");
 });
 
-it("previews each Theme with the options in the form, without touching it", () => {
-  const form = renderPicker();
+// The page's preview shows the draft, so a card carries no link of its own.
+it("offers no preview link on a card: choosing a Theme is how it is previewed", () => {
+  renderPicker();
   fireEvent.click(card("Fixture"));
-  fireEvent.click(
-    within(screen.getByRole("radiogroup", { name: "Marker" })).getByRole(
-      "radio",
-      { name: "Off" },
-    ),
-  );
-  const values = structuredClone(form().getValues());
-  const dirty = form().formState.isDirty;
-
-  const link = screen.getByRole("link", {
-    name: m.settings_theme_preview_label({ name: "Fixture" }),
-  });
-  expect(link.getAttribute("target")).toBe("_blank");
-  const url = new URL(link.getAttribute("href")!, "https://blog.example");
-  expect(url.pathname).toBe("/");
-  expect(url.searchParams.get("themePreview")).toBe("fixture");
-  expect(JSON.parse(url.searchParams.get("themePreviewOptions")!)).toEqual({
-    marker: "off",
-  });
-  // The other Themes' links carry their own options, resolved.
-  const classic = screen.getByRole("link", {
-    name: m.settings_theme_preview_label({ name: m.theme_classic_name() }),
-  });
-  expect(
-    new URL(
-      classic.getAttribute("href")!,
-      "https://blog.example",
-    ).searchParams.get("themePreviewOptions"),
-  ).toBe("{}");
-
-  fireEvent.click(link);
-  expect(form().getValues()).toEqual(values);
-  expect(form().formState.isDirty).toBe(dirty);
+  expect(within(group()).queryAllByRole("link")).toEqual([]);
+  expect(screen.queryByRole("link")).toBeNull();
 });
 
 // The picker as the Admin gets it: 「沉浸」's own option, 「卡片位置」.
@@ -190,25 +160,11 @@ describe("with the registered Themes", () => {
     ).toBeTruthy();
   });
 
-  it("stores the column, marks the form unsaved and previews 「沉浸」 with it, the thumbnail unchanged", () => {
+  it("stores the column and marks the form unsaved, the thumbnail unchanged", () => {
     const form = renderPicker(THEMES);
     expect(form().formState.dirtyFields).toEqual({});
     fireEvent.click(immersive());
     const thumbnail = immersive().querySelector("svg")!.outerHTML;
-    const options = () =>
-      JSON.parse(
-        new URL(
-          screen
-            .getByRole("link", {
-              name: m.settings_theme_preview_label({
-                name: m.theme_immersive_name(),
-              }),
-            })
-            .getAttribute("href")!,
-          "https://blog.example",
-        ).searchParams.get("themePreviewOptions")!,
-      );
-    expect(options()).toEqual({ cards: "below" });
 
     fireEvent.click(choice(m.theme_immersive_cards_beside()));
 
@@ -219,7 +175,6 @@ describe("with the registered Themes", () => {
     expect(
       choice(m.theme_immersive_cards_beside()).getAttribute("aria-checked"),
     ).toBe("true");
-    expect(options()).toEqual({ cards: "beside" });
     expect(immersive().querySelector("svg")!.outerHTML).toBe(thumbnail);
   });
 

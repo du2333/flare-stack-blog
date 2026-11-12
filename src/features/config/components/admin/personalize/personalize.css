@@ -1,0 +1,315 @@
+.site-banner {
+  position: relative;
+  height: clamp(170px, 21vh, 290px);
+  border-radius: 14px;
+  background: var(--fuwari-btn-regular-bg);
+  overflow: hidden;
+}
+.site-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.site-banner-upload {
+  position: absolute;
+  top: calc(16 * var(--admin-unit));
+  right: calc(16 * var(--admin-unit));
+}
+.site-avatar-edit {
+  position: relative;
+  flex-shrink: 0;
+  width: calc(120 * var(--admin-unit));
+  min-width: 92px;
+}
+.site-avatar {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--fuwari-card-bg);
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+}
+.site-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.site-avatar-upload {
+  position: absolute;
+  bottom: calc(6 * var(--admin-unit));
+  left: 50%;
+  transform: translateX(-50%);
+}
+/* Each row names the setting above its control: the form shares its page with the preview. */
+.site-theme-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(16 * var(--admin-unit));
+  padding: calc(24 * var(--admin-unit)) 0;
+  border-top: 1px solid var(--admin-rule);
+}
+.personalize-form > .site-theme-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.site-hue-control {
+  display: flex;
+  align-items: center;
+  gap: calc(24 * var(--admin-unit));
+}
+.site-hue-control input {
+  flex: 1;
+  min-width: 0;
+  height: 9px;
+  border-radius: 999px;
+  appearance: none;
+  accent-color: var(--fuwari-primary);
+  cursor: pointer;
+}
+.site-hue-control input::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--fuwari-primary);
+  border: 3px solid var(--fuwari-card-bg);
+  box-shadow: 0 0 0 1px var(--fuwari-input-border);
+}
+.site-hue-control input::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--fuwari-primary);
+  border: 3px solid var(--fuwari-card-bg);
+}
+.site-hue-control output {
+  display: grid;
+  place-items: center;
+  min-width: calc(72 * var(--admin-unit));
+  min-height: 38px;
+  border: 1px solid var(--fuwari-input-border);
+  background: var(--fuwari-input-bg);
+  border-radius: 8px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.site-focus-control {
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--admin-unit));
+}
+.site-focus-control output {
+  color: var(--fuwari-fg-50);
+  font-size: calc(13 * var(--admin-unit));
+  font-variant-numeric: tabular-nums;
+}
+/* Touch targets: at least 44px high where the pointer is a finger. */
+@media (pointer: coarse) {
+  .site-focus-control {
+    --fuwari-button-height-sm: 44px;
+  }
+  .site-brand-choice,
+  .site-theme-option-choice {
+    --fuwari-segment-height: 44px;
+  }
+}
+.site-theme-option-control {
+  display: flex;
+  min-width: 0;
+}
+.site-theme-option-choice {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.site-brand-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(14 * var(--admin-unit));
+  min-width: 0;
+}
+.site-brand-choice {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.site-brand-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--fuwari-btn-regular-bg);
+  color: var(--fuwari-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+.site-brand-preview img {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.site-brand-preview img[data-mark="avatar"] {
+  border-radius: 50%;
+  object-fit: cover;
+}
+.site-brand-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The page: the form, and the preview beside it where there is room. */
+.personalize {
+  display: block;
+}
+.personalize[data-wide] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 38%, 560px);
+  gap: calc(40 * var(--admin-unit));
+  align-items: start;
+}
+.personalize-form {
+  min-width: 0;
+}
+.personalize-aside {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+}
+.personalize-launcher {
+  position: sticky;
+  top: calc(-1 * var(--settings-pad-y));
+  z-index: 2;
+  margin: calc(-1 * var(--settings-pad-y)) 0 calc(8 * var(--admin-unit));
+  padding: var(--settings-pad-y) 0 12px;
+  background: var(--fuwari-card-bg);
+}
+.personalize-launcher .fuwari-button {
+  width: 100%;
+}
+
+/* The preview: its switches, then the page at the device's width, scaled to fit. */
+.personalize-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.personalize-preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.personalize-close {
+  margin-left: auto;
+}
+.personalize-stage {
+  position: relative;
+  min-width: 0;
+  border-radius: 14px;
+  background: var(--fuwari-btn-regular-bg);
+  overflow: hidden;
+}
+.personalize-stage[data-fit="box"] {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.personalize-canvas {
+  position: relative;
+  margin-inline: auto;
+  overflow: hidden;
+}
+.personalize-scaler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+.personalize-stage[data-fit="width"] .personalize-canvas {
+  /* A phone frame narrower than the panel sits in the middle of it. */
+  box-shadow: 0 0 0 1px var(--admin-rule);
+}
+/* Every frame stacks at the same place; the one in view is the newest loaded. */
+.personalize-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  background: var(--fuwari-card-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+.personalize-frame[data-shown] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.personalize-loading {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 20px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--fuwari-card-bg);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.16);
+  color: var(--fuwari-fg-75);
+  font-size: 13px;
+  transform: translateX(-50%);
+}
+.personalize-loading[data-first] {
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.personalize-failed {
+  position: absolute;
+  inset: auto 12px 12px;
+  z-index: 1;
+  background: var(--fuwari-card-bg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .personalize-frame {
+    transition: opacity 160ms ease-out;
+  }
+}
+
+/* The full-screen preview on a narrow screen. */
+.personalize-sheet {
+  top: 0;
+  max-height: none;
+  height: 100dvh;
+  border-radius: 0;
+  padding: 12px 16px;
+  background: var(--fuwari-card-bg);
+}
+.personalize-sheet .personalize-preview {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 750px) {
+  .site-banner {
+    height: 180px;
+  }
+}
+@media (max-width: 450px) {
+  .site-banner-upload {
+    top: auto;
+    bottom: 14px;
+    right: 12px;
+  }
+}

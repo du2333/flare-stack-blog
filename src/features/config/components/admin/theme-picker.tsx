@@ -1,6 +1,5 @@
-import { Eye, Palette } from "lucide-react";
+import { Palette } from "lucide-react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { buttonClass } from "@/components/ui/button";
 import { ChoiceCards } from "@/components/ui/choice-cards";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -11,7 +10,6 @@ import {
   THEMES,
   type Theme,
 } from "@/features/theme/themes";
-import { themePreviewHref } from "@/features/theme/utils/theme-preview-params";
 import { m } from "@/paraglide/messages";
 
 type OptionField = NonNullable<Theme["optionFields"]>[number];
@@ -28,7 +26,6 @@ export function ThemePicker({
 }) {
   const { control, setValue } = useFormContext<SystemConfig>();
   const themeId = useWatch({ control, name: "site.theme.id" });
-  const options = useWatch({ control, name: "site.theme.options" });
   const selected = selectTheme(themeId ?? "", themes);
 
   return (
@@ -47,34 +44,13 @@ export function ThemePicker({
           }
           items={themes.map((theme) => {
             const Thumbnail = theme.thumbnail;
-            const name = theme.name();
             return {
               value: theme.id,
-              label: name,
+              label: theme.name(),
               media: Thumbnail ? (
                 <Thumbnail />
               ) : (
                 <Palette size={26} strokeWidth={1.5} />
-              ),
-              // Opens the home page in a new tab, so the draft stays here.
-              action: (
-                <a
-                  className={buttonClass({
-                    variant: "text",
-                    size: "sm",
-                    className: "site-theme-preview",
-                  })}
-                  href={themePreviewHref(
-                    theme.id,
-                    resolveThemeOptions(theme, options?.[theme.id]),
-                  )}
-                  target="_blank"
-                  rel="noopener"
-                  aria-label={m.settings_theme_preview_label({ name })}
-                >
-                  <Eye size={14} aria-hidden="true" />
-                  {m.settings_theme_preview()}
-                </a>
               ),
             };
           })}
