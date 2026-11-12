@@ -3,7 +3,7 @@ import { defaultParseSearch } from "@tanstack/react-router";
 import { env, exports } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { fixtureTheme } from "tests/theme-fixture/theme";
-import { beforeEach, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import { getAuth } from "@/lib/auth/auth.server";
 import { CACHE_CONTROL } from "@/lib/constants";
@@ -29,7 +29,8 @@ vi.mock("@tanstack/react-start/server", () => ({
 }));
 
 vi.resetModules();
-const { activeTheme, resolveThemePreview } = await import("./theme-preview");
+const { activeTheme, previewSiteConfig, resolveThemePreview } =
+  await import("./theme-preview");
 const { previewViewerIsAdmin } = await import("./utils/preview-viewer");
 const { THEMES } = await import("./themes");
 const { themePreviewHref } = await import("./utils/theme-preview-params");
@@ -64,9 +65,10 @@ beforeEach(() => {
         preview,
         themes,
       );
+      const siteConfig = previewSiteConfig(saved, preview);
       rendered.push({ url: request.url, theme: theme.id });
       return new Response(
-        `<html data-theme="${theme.id}" data-options='${JSON.stringify(themeOptions)}'><head><link rel="stylesheet" href="${theme.stylesheet}"></head></html>`,
+        `<html data-theme="${theme.id}" data-options='${JSON.stringify(themeOptions)}' data-tagline="${siteConfig.tagline}" data-hue="${siteConfig.primaryHue}"><head><link rel="stylesheet" href="${theme.stylesheet}"></head></html>`,
         { headers: { "Content-Type": "text/html", ...CACHE_CONTROL.html } },
       );
     },
@@ -109,6 +111,8 @@ async function get(path: string, cookie?: string) {
   return {
     dataTheme: /<html data-theme="([^"]*)"/.exec(html)?.[1],
     options: /data-options='([^']*)'/.exec(html)?.[1],
+    tagline: /data-tagline="([^"]*)"/.exec(html)?.[1],
+    hue: /data-hue="([^"]*)"/.exec(html)?.[1],
     stylesheet: /<link rel="stylesheet" href="([^"]*)"/.exec(html)?.[1],
     cacheControl: response.headers.get("Cache-Control"),
     cacheTag: response.headers.get("Cache-Tag"),
@@ -182,4 +186,37 @@ it("leaves nothing of an Admin's preview for the next visitor", async () => {
   }
   // The Admin's own next plain visit is the saved Theme too.
   expect((await get("/", adminCookie)).dataTheme).toBe("classic");
+});
+
+describe("a preview with a draft of Site Config", () => {
+  const DRAFT_PREVIEW = themePreviewHref(
+    fixtureTheme.id,
+    {},
+    { tagline: "Draft line", primaryHue: 120 },
+  );
+
+  it("renders the draft for the Admin only, uncached", async () => {
+    const admin = await get(DRAFT_PREVIEW, adminCookie);
+    expect(admin.tagline).toBe("Draft line");
+    expect(admin.hue).toBe("120");
+    expect(admin.cacheControl).toMatch(/^private, no-store/);
+    expect(admin.cacheTag).toBeNull();
+
+    const reader = await get(DRAFT_PREVIEW, readerCookie);
+    expect(reader.tagline).toBe(saved.tagline);
+    expect(reader.hue).toBe(String(saved.primaryHue));
+    expect(reader.cacheControl).toBe(CACHE_CONTROL.private["Cache-Control"]);
+    expect(reader.cacheTag).toBeNull();
+  });
+
+  it("gives an anonymous visitor the saved page on the same address", async () => {
+    await get(DRAFT_PREVIEW, adminCookie);
+    const page = await get(DRAFT_PREVIEW);
+    expect(page.tagline).toBe(saved.tagline);
+    expect(page.hue).toBe(String(saved.primaryHue));
+    expect(page.cacheControl).toBe(CACHE_CONTROL.html["Cache-Control"]);
+    expect(page.cacheTag).toBe("html,posts,popularity,moments");
+    // Rendered from the address without the preview parameters.
+    expect(new URL(rendered.at(-1)!.url).search).toBe("");
+  });
 });

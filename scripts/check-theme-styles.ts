@@ -16,7 +16,9 @@
  * no rebuild. Then, with the default Theme saved, it previews the fixture
  * Theme as the Admin and checks that the preview is rendered only for the
  * Admin, is never cacheable, and leaves the next anonymous visit on the saved
- * Theme. The Theme that was selected before is saved back at the end.
+ * Theme; likewise for a preview carrying a draft of Site Config (a tagline and
+ * a hue), whose draft only the Admin sees. The Theme that was selected before
+ * is saved back at the end.
  *
  * Needs a `.dev.vars` (see .dev.vars.example) whose DOMAIN is a domain name,
  * not localhost, and BETTER_AUTH_URL=http://localhost:3100.
@@ -27,6 +29,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { FIXTURE_THEME_ID } from "../tests/theme-fixture/theme-id.ts";
 import { BUILT_IN_THEME_IDS } from "../src/features/theme/theme-ids.ts";
 import { themePreviewHref } from "../src/features/theme/utils/theme-preview-params.ts";
+import { contrastingHue, readRenderedPage } from "./theme-styles-page.ts";
 
 const PORT = 3100;
 const BASE = `http://localhost:${PORT}`;
@@ -52,11 +55,7 @@ async function isServing() {
   }
 }
 
-function attribute(tag: string, name: string) {
-  return new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
-}
-
-/** The `data-theme` of `<html>` and the stylesheets the page links. */
+/** The `data-theme` and hue of `<html>`, the stylesheets the page links. */
 async function readPage(path: string, cookie?: string) {
   const response = await fetch(BASE + path, {
     headers: cookie ? { Cookie: cookie } : {},
@@ -66,14 +65,12 @@ async function readPage(path: string, cookie?: string) {
     throw new Error(`GET ${path} answered ${response.status}`);
   }
   const html = await response.text();
-  const htmlTag = /<html[^>]*>/.exec(html)?.[0] ?? "";
-  const hrefs = [...html.matchAll(/<link[^>]*>/g)]
-    .map(([tag]) => tag)
-    .filter((tag) => attribute(tag, "rel") === "stylesheet")
-    .map((tag) => attribute(tag, "href")!);
+  const page = readRenderedPage(html);
   return {
-    dataTheme: attribute(htmlTag, "data-theme"),
-    hrefs,
+    dataTheme: page.dataTheme,
+    hue: page.hue,
+    hrefs: page.stylesheetHrefs,
+    html,
     cacheControl: response.headers.get("Cache-Control"),
     cacheTag: response.headers.get("Cache-Tag"),
   };
@@ -225,6 +222,56 @@ try {
       [saved],
     );
   }
+
+  // A draft of Site Config in the preview: a tagline the saved Theme shows on
+  // the home page, and a hue the saved one is not.
+  const savedHue = String((await api("GET")).config.site.primaryHue);
+  const draftHue = contrastingHue(Number(savedHue));
+  const draftTagline = `Draft check ${Date.now()}`;
+  const draftPath = themePreviewHref(
+    saved,
+    {},
+    { tagline: draftTagline, primaryHue: draftHue },
+  );
+  for (const [who, cookieHeader] of [
+    ["the Admin", cookie],
+    ["an unknown session", "better-auth.session_token=invalid"],
+    ["an anonymous visitor", undefined],
+  ] as const) {
+    const page = await readPage(draftPath, cookieHeader);
+    const isAdmin = who === "the Admin";
+    expectEqual(
+      `draft preview as ${who}: shows the draft tagline`,
+      page.html.includes(draftTagline),
+      isAdmin,
+    );
+    expectEqual(
+      `draft preview as ${who}: hue`,
+      page.hue,
+      isAdmin ? String(draftHue) : savedHue,
+    );
+    if (cookieHeader === undefined) {
+      expectEqual(
+        `draft preview as ${who}: the saved page's Cache-Tag`,
+        page.cacheTag !== null,
+        true,
+      );
+    } else {
+      expectEqual(
+        `draft preview as ${who}: private`,
+        page.cacheControl?.startsWith("private, no-store"),
+        true,
+      );
+      expectEqual(`draft preview as ${who}: Cache-Tag`, page.cacheTag, null);
+    }
+  }
+  const home = await readPage("/");
+  expectEqual(
+    "/ anonymously after the draft preview: no draft tagline",
+    home.html.includes(draftTagline),
+    false,
+  );
+  expectEqual("/ anonymously after the draft preview: hue", home.hue, savedHue);
 } finally {
   await restore?.().catch((error) => {
     console.error(`Could not select the original Theme again: ${error}`);

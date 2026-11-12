@@ -445,6 +445,39 @@ describe("Theme previews and the cache", () => {
     expect(workersCacheRoute(request).cache).toBe("bypass");
   });
 
+  it("treats a preview with a draft of Site Config the same way", () => {
+    const DRAFT = `themePreviewDraft=${encodeURIComponent(
+      JSON.stringify({ tagline: "Draft", primaryHue: 120 }),
+    )}`;
+    for (const query of [`${PREVIEW}&${DRAFT}`, DRAFT]) {
+      const withSession = new Request(`https://blog.example/?${query}`, {
+        headers: { Cookie: SESSION },
+      });
+      expect(workersCacheRoute(withSession)).toEqual({
+        cache: "bypass",
+        request: withSession,
+      });
+      const rendered = applyWorkersCachePolicy(
+        withSession,
+        new Response("<html></html>", {
+          headers: { ...CACHE_CONTROL.html, "Cache-Tag": "html" },
+        }),
+      );
+      expect(rendered.headers.get("Cache-Control")).toMatch(
+        /^private, no-store/,
+      );
+      expect(rendered.headers.get("Cache-Tag")).toBeNull();
+
+      const anonymous = workersCacheRoute(
+        new Request(`https://blog.example/?${query}`),
+      );
+      expect(anonymous.cache).toBe("lookup");
+      if (anonymous.cache !== "lookup") return;
+      expect(anonymous.request.url).toBe("https://blog.example/");
+      expect(anonymous.cacheKey).toBe("/");
+    }
+  });
+
   it("makes a page rendered with the preview parameters private and untagged", () => {
     for (const path of ["/", "/posts", "/post/hello", "/moments/3"]) {
       const response = applyWorkersCachePolicy(

@@ -12,6 +12,7 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
+import { useBannerFocus } from "@/features/theme/utils/theme-preview-live";
 import { useMotionPresence, useReducedMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 
@@ -110,7 +111,8 @@ export function FirstScreen({
   const reducedMotion = useReducedMotion();
   const present = useMotionPresence(home, INTRO_FADE_MS);
   const introRef = useLinesClearOfNavbar(present);
-  const bannerCentred = isFocalPointCentred(siteConfig.bannerFocus);
+  const bannerFocus = useBannerFocus();
+  const bannerCentred = isFocalPointCentred(bannerFocus);
 
   return (
     <>
@@ -132,7 +134,7 @@ export function FirstScreen({
               bannerCentred
                 ? undefined
                 : {
-                    objectPosition: focalObjectPosition(siteConfig.bannerFocus),
+                    objectPosition: focalObjectPosition(bannerFocus),
                   }
             }
           />

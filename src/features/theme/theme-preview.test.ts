@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import {
   activeTheme,
+  previewSiteConfig,
   readThemePreview,
   resolveThemePreview,
 } from "./theme-preview";
@@ -17,6 +18,7 @@ import {
 
 const themes = [...THEMES, fixtureTheme];
 const [classic] = THEMES;
+const saved = resolveSiteConfig({});
 
 /** The search the router parses from a preview address. */
 function searchOf(href: string) {
@@ -71,11 +73,86 @@ describe("resolveThemePreview", () => {
 
   it("gives the preview to an Admin only", async () => {
     expect(await resolveThemePreview(search, async () => true, themes)).toEqual(
-      { id: "fixture", options: { marker: "on" } },
+      { id: "fixture", options: { marker: "on" }, draft: {} },
     );
     expect(await resolveThemePreview(search, async () => false, themes)).toBe(
       null,
     );
+  });
+
+  it("gives an Admin the draft of presentation fields, each valid one only", async () => {
+    const draftSearch = searchOf(
+      themePreviewHref(
+        "fixture",
+        {},
+        {
+          tagline: "Draft line",
+          primaryHue: 120,
+          bannerFocus: { x: 85, y: 15 },
+        },
+      ),
+    );
+    expect(
+      await resolveThemePreview(draftSearch, async () => true, themes),
+    ).toEqual({
+      id: "fixture",
+      options: { marker: "on" },
+      draft: {
+        tagline: "Draft line",
+        primaryHue: 120,
+        bannerFocus: { x: 85, y: 15 },
+      },
+    });
+    expect(
+      await resolveThemePreview(
+        {
+          ...search,
+          themePreviewDraft: JSON.stringify({
+            primaryHue: 999,
+            brandMark: "none",
+          }),
+        },
+        async () => true,
+        themes,
+      ),
+    ).toMatchObject({ draft: { brandMark: "none" } });
+  });
+
+  it("gives anyone else no draft, so the saved Site Config renders", async () => {
+    const draftSearch = searchOf(
+      themePreviewHref("fixture", {}, { tagline: "Draft line" }),
+    );
+    const preview = await resolveThemePreview(
+      draftSearch,
+      async () => false,
+      themes,
+    );
+    expect(preview).toBeNull();
+    expect(previewSiteConfig(saved, preview)).toBe(saved);
+  });
+});
+
+describe("previewSiteConfig", () => {
+  it("renders the saved Site Config itself without a draft", () => {
+    expect(previewSiteConfig(saved, null)).toBe(saved);
+    expect(
+      previewSiteConfig(saved, { id: "classic", options: {}, draft: {} }),
+    ).toBe(saved);
+  });
+
+  it("puts the Admin's draft over the saved fields and keeps the rest", () => {
+    const rendered = previewSiteConfig(saved, {
+      id: "classic",
+      options: {},
+      draft: { tagline: "Draft line", primaryHue: 120, brandMark: "none" },
+    });
+    expect(rendered).toEqual({
+      ...saved,
+      tagline: "Draft line",
+      primaryHue: 120,
+      brandMark: "none",
+    });
+    expect(saved.tagline).not.toBe("Draft line");
   });
 });
 
@@ -95,7 +172,7 @@ describe("activeTheme", () => {
     expect(
       activeTheme(
         siteConfig,
-        { id: "fixture", options: { marker: "on" } },
+        { id: "fixture", options: { marker: "on" }, draft: {} },
         themes,
       ),
     ).toEqual({ theme: fixtureTheme, options: { marker: "on" } });
@@ -115,13 +192,50 @@ describe("preview parameters on navigation", () => {
 
   it("drops it when the navigation leaves the preview", () => {
     const next = carryThemePreview(
-      previewing,
-      withoutThemePreview({ ...previewing, page: 2 }),
+      { ...previewing, themePreviewDraft: { tagline: "Draft" } },
+      withoutThemePreview({
+        ...previewing,
+        themePreviewDraft: { tagline: "Draft" },
+        page: 2,
+      }),
     );
-    expect(next).toEqual({
+    expect(next).toStrictEqual({
       page: 2,
       themePreview: undefined,
       themePreviewOptions: undefined,
+      themePreviewDraft: undefined,
+    });
+  });
+
+  it("carries the draft with the Theme", () => {
+    const withDraft = { ...previewing, themePreviewDraft: { primaryHue: 120 } };
+    expect(carryThemePreview(withDraft, { page: 2 })).toStrictEqual({
+      page: 2,
+      ...withDraft,
+    });
+    // A preview without a draft gains none.
+    expect(carryThemePreview(previewing, {})).toStrictEqual(previewing);
+  });
+});
+
+describe("themePreviewHref", () => {
+  it("keeps the address of a preview without a draft as it was", () => {
+    expect(themePreviewHref("classic", { a: 1 })).toBe(
+      "/?themePreview=classic&themePreviewOptions=%7B%22a%22%3A1%7D",
+    );
+    expect(themePreviewHref("classic", { a: 1 }, {})).toBe(
+      themePreviewHref("classic", { a: 1 }),
+    );
+  });
+
+  it("adds the draft as one more JSON parameter", () => {
+    const url = new URL(
+      themePreviewHref("classic", {}, { tagline: "Hi", primaryHue: 120 }),
+      "https://blog.example",
+    );
+    expect(JSON.parse(url.searchParams.get("themePreviewDraft")!)).toEqual({
+      tagline: "Hi",
+      primaryHue: 120,
     });
   });
 });

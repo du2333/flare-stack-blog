@@ -21,6 +21,7 @@ import { tagsQueryOptions } from "@/features/tags/queries";
 import { PublicShell } from "@/features/theme/components/public-shell";
 import { ThemePreviewBar } from "@/features/theme/components/theme-preview-bar";
 import { activeTheme } from "@/features/theme/theme-preview";
+import { useThemePreviewMessages } from "@/features/theme/utils/theme-preview-live";
 import {
   carryThemePreview,
   searchHasThemePreview,
@@ -85,6 +86,8 @@ function PublicLayout() {
   const navigate = useNavigate();
   const { siteConfig, themePreview } = useRouteContext({ from: "__root__" });
   const { theme, options } = activeTheme(siteConfig, themePreview);
+  // An embedding Admin page moves the banner focus and the hue in place.
+  useThemePreviewMessages(Boolean(themePreview));
   const hasPreviewParams = useLocation({
     select: (location) => searchHasThemePreview(location.search),
   });

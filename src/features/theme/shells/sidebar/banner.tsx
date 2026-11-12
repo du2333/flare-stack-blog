@@ -8,6 +8,7 @@ import {
   getPublicImageSrc,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
+import { useBannerFocus } from "@/features/theme/utils/theme-preview-live";
 import { useMotionPresence, useReducedMotion } from "@/hooks/use-motion";
 
 /**
@@ -112,8 +113,9 @@ export function Banner({
 }) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const { present, open } = useFold(shown, instant);
+  const bannerFocus = useBannerFocus();
   if (!present) return null;
-  const centred = isFocalPointCentred(siteConfig.bannerFocus);
+  const centred = isFocalPointCentred(bannerFocus);
   return (
     <div
       ref={ref}
@@ -132,7 +134,7 @@ export function Banner({
         style={
           centred
             ? undefined
-            : { objectPosition: focalObjectPosition(siteConfig.bannerFocus) }
+            : { objectPosition: focalObjectPosition(bannerFocus) }
         }
       />
     </div>
