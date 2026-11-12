@@ -4,7 +4,7 @@ import type { SystemConfig } from "@/features/config/config.schema";
 import { isEmailConfigured } from "@/features/email/service/email.service";
 import { DASHBOARD_WRITING_WEEKS } from "@/features/dashboard/writing-calendar";
 
-export const DASHBOARD_RECENT_POSTS_LIMIT = 3;
+export const DASHBOARD_RECENT_POSTS_LIMIT = 8;
 export const DASHBOARD_PENDING_FRIEND_LINKS_LIMIT = 5;
 export const DASHBOARD_UNREPLIED_COMMENTS_LIMIT = 5;
 export const DASHBOARD_TOP_POSTS_LIMIT = 5;

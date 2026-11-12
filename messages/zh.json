@@ -434,7 +434,6 @@
   "admin_overview_popularity_expired": "热度数据已过期",
   "admin_overview_activity_anonymous": "匿名用户",
   "admin_overview_all_posts": "全部文章",
-  "admin_overview_review_friend_links": "去处理",
   "admin_overview_email_needs_setup": "邮件未配置",
   "admin_overview_default_site_identity": "站点还是默认信息",
   "admin_overview_comment_mute": "禁言该用户",
@@ -1374,8 +1373,8 @@
   "friend_review_preview_hint_rejected": "该友链已被拒绝，不会在前台友链页展示",
   "friend_review_previous": "上一条",
   "friend_review_next": "下一条",
-  "dashboard_first_post": "从第一篇文章开始",
   "dashboard_recent_edits": "最近编辑",
+  "dashboard_recent_empty": "还没有文章，从第一篇开始写。",
   "muted_manager_hint": "管理被禁言的用户，必要时恢复其评论权限。",
   "muted_manager_count": "{count} 人",
   "muted_manager_search": "搜索用户名",
@@ -1482,18 +1481,14 @@
   "comments_load_failed": "评论暂时无法加载。",
   "comments_replies_failed": "回复暂时无法加载。",
   "comments_retry": "重试",
-  "admin_overview_email_needs_setup_desc": "新评论和友链申请不会发邮件提醒你",
-  "admin_overview_popularity_failed_desc": "去维护页查看原因并重新同步",
   "admin_overview_popularity_expired_desc": "超过 7 天没有同步，首页热门已改用置顶和最新文章",
   "admin_overview_popularity_sync": "立即同步",
   "admin_overview_popularity_syncing": "同步中",
   "admin_overview_popularity_maintenance_link": "前往维护页",
   "admin_overview_popularity_sync_failed_desc": "Umami 没有返回数据或写入失败，请稍后重试，详细原因见维护页",
   "admin_overview_popularity_sync_unreachable_desc": "没有连上服务器，请检查网络后重试",
-  "admin_overview_default_site_identity_desc": "换成你自己的站点名称和作者",
   "admin_overview_update_available": "有新版本 {version}",
-  "admin_overview_update_available_desc": "当前是 v{current}，看看更新了什么",
-  "dashboard_stats_label": "博客数据",
+  "dashboard_stats_label": "站点状况",
   "dashboard_stat_posts": "文章",
   "dashboard_stat_drafts": [
     {
@@ -1536,87 +1531,31 @@
   "dashboard_popular_sync": "去同步",
   "dashboard_popular_no_views": "近 30 天还没有文章被阅读",
   "dashboard_unreplied_title": "待回复评论",
-  "dashboard_unreplied_more": [
+  "dashboard_unreplied_all": [
     {
       "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
-        "count=*": "还有 {formattedCountZh} 条待回复"
+        "count=*": "查看全部 {formattedCountZh} 条"
       }
     }
   ],
-  "dashboard_unreplied_empty_title": "都回复完了",
-  "dashboard_unreplied_empty_desc": "新的访客评论会出现在这里",
+  "dashboard_comments_title": "最近评论",
+  "dashboard_comments_empty": "没有待回复的评论，新的访客评论会出现在这里。",
+  "dashboard_tiles_label": "待处理",
+  "dashboard_tile_drafts": "草稿",
+  "dashboard_tile_notices": "设置提醒",
+  "dashboard_tile_none": "没有待处理",
+  "dashboard_tile_comment_line": "{name}：{snippet}",
+  "dashboard_continue_writing": "继续写",
   "dashboard_comment_mark_handled": "标为已处理",
   "dashboard_comment_source_moment": "动态",
   "dashboard_comment_marked_handled": "已标为已处理",
   "dashboard_comment_handled_undo": "撤销",
   "dashboard_comment_handled_error": "操作失败，请重试",
-  "dashboard_unreplied_handle_all": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "全部标为已处理（{formattedCountZh}）"
-      }
-    }
-  ],
-  "dashboard_unreplied_handle_all_title": "全部标为已处理？",
-  "dashboard_unreplied_handle_all_desc": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "这 {formattedCountZh} 条评论会离开待回复列表。评论本身不受影响，也不会通知评论者。"
-      }
-    }
-  ],
-  "dashboard_unreplied_handle_all_confirm": "全部标为已处理",
-  "dashboard_unreplied_handled_all": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "已将 {formattedCountZh} 条评论标为已处理"
-      }
-    }
-  ],
-  "dashboard_unreplied_load_more": "加载更多",
-  "dashboard_unreplied_load_error": "待回复评论加载失败",
   "dashboard_pending_links_title": "待审核友链",
-  "dashboard_pending_links_more": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "还有 {formattedCountZh} 条申请"
-      }
-    }
-  ],
   "dashboard_greeting_morning": "上午好，{name}",
   "dashboard_greeting_afternoon": "下午好，{name}",
   "dashboard_greeting_evening": "晚上好，{name}",
-  "dashboard_summary_views": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "近 30 天 {formattedCountZh} 次访问"
-      }
-    }
-  ],
-  "dashboard_summary_unreplied": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "{formattedCountZh} 条评论等你回复"
-      }
-    }
-  ],
-  "dashboard_summary_pending_links": [
-    {
-      "declarations": ["input count", "local formattedCountZh = count: number"],
-      "match": {
-        "count=*": "{formattedCountZh} 个友链待审核"
-      }
-    }
-  ],
-  "dashboard_summary_clear": "都处理好了，今天适合写点什么",
-  "dashboard_hero_continue": "继续写《{title}》",
   "dashboard_writing_title": "写作记录",
   "dashboard_writing_days": [
     {

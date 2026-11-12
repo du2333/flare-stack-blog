@@ -8,14 +8,18 @@ import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { formatWindow } from "./format";
+import { PopularityExpiredNotice } from "./popularity-expired-notice";
 import { RankedBarList, RankedBarRow } from "./ranked-bar-list";
 
 /** The most-read public Posts of the popularity snapshot's 30 days. */
 export function DashboardPopular({
   popularity,
+  expired = false,
   className,
 }: {
   popularity: DashboardOverview["popularity"];
+  /** The snapshot is stale: say so here, with the sync at hand. */
+  expired?: boolean;
   className?: string;
 }) {
   const { state, topPosts, windowStart, windowEnd } = popularity;
@@ -32,6 +36,7 @@ export function DashboardPopular({
         title={m.dashboard_popular_title()}
         description={window}
       />
+      {expired ? <PopularityExpiredNotice /> : null}
       {state === "unconfigured" ? (
         <EmptyState
           size="compact"
