@@ -202,6 +202,7 @@ export function PostRow({
       </div>
       <div role="cell" className="post-row-status">
         <PostStatusBadge
+          quiet
           state={postStateOf({
             published,
             hasUnpublishedChanges: post.hasUnpublishedChanges,

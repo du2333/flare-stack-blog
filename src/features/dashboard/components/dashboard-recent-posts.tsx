@@ -53,6 +53,7 @@ export function DashboardRecentPosts({
                   />
                 ) : null}
                 <PostStatusBadge
+                  quiet
                   state={postStateOf({
                     published: post.status === "published",
                     hasUnpublishedChanges: post.hasUnpublishedChanges,
