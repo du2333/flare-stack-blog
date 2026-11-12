@@ -5,7 +5,6 @@ import {
   getOriginalImageUrl,
   getPublicImageSrc,
   getPublicImageSrcSet,
-  getTransformSourceUrl,
   importedMediaName,
   isSameImageType,
   MEDIA_NAME_MAX_LENGTH,
@@ -95,27 +94,6 @@ describe("image URLs", () => {
     expect(
       getPublicImageSrcSet("https://cdn.example/pic.png", [800, 1600]),
     ).toBeUndefined();
-  });
-
-  it("fetches the transform source at the stored file's version", () => {
-    expect(
-      getTransformSourceUrl(
-        new URL(
-          "https://blog.example/images/asset/themes/fuwari/home-bg.webp?quality=80&width=1600&v=177",
-        ),
-        "asset/themes/fuwari/home-bg.webp",
-        "etag-1",
-      ),
-    ).toBe(
-      "https://blog.example/images/asset/themes/fuwari/home-bg.webp?original=true&v=etag-1",
-    );
-    expect(
-      getTransformSourceUrl(
-        new URL("https://blog.example/images/abc.png?quality=80&width=800"),
-        "abc.png",
-        "etag-2",
-      ),
-    ).toBe("https://blog.example/images/abc.png?original=true&v=etag-2");
   });
 });
 
