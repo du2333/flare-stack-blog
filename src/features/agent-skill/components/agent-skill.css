@@ -51,9 +51,13 @@
 .agent-skill-step:last-child .agent-skill-step-main {
   padding-bottom: 0;
 }
+/* The title centres on the 28px number beside it. */
 .agent-skill-step-main > h2 {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
   font-size: var(--admin-text-section);
-  line-height: 28px;
+  line-height: var(--admin-leading-section);
   font-weight: 600;
 }
 .agent-skill-hint {
@@ -117,7 +121,7 @@
   border-top: 1px solid var(--admin-rule);
 }
 .agent-skill-agents .key-head {
-  padding: 0 12px;
+  padding: 0 var(--admin-row-x);
 }
 @media (min-width: 761px) {
   .key-grid.agent-skill-grid,
