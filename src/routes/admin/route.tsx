@@ -95,9 +95,7 @@ function AdminLayout() {
   return (
     <AdminChromeProvider>
       <StudioShell
-        sheet={
-          !["/admin", "/admin/posts"].includes(pathname.replace(/\/+$/, ""))
-        }
+        sheet={false}
         topBar={(open) => <MobileTopBar onOpenSidebar={open} />}
       >
         <AdminMain />

@@ -46,24 +46,36 @@
     box-shadow: 0 0 0 3px
       color-mix(in srgb, var(--theme-accent) 12%, transparent);
   }
-  /* The Admin (admin-variables.css) only: a hairline border, and in focus a
-     card-coloured field with a 1px accent ring instead of a tinted fill and
-     a glow. */
+  /* The Admin (admin-variables.css) only: a white field with a hairline
+     edge, on a card or on the canvas; in focus an accent edge with a soft
+     ring instead of a tinted fill. */
+  :root:has(.admin-layout)
+    :is(.fuwari-input, .fuwari-field-shell):not([data-bare]) {
+    background: var(--admin-surface);
+  }
   :root:has(.admin-layout)
     :is(.fuwari-input, .fuwari-field-shell):not(
       [data-bare],
       [aria-invalid="true"]
     ) {
-    border-color: var(--admin-hairline);
+    border-color: var(--admin-line-strong);
+  }
+  :root:has(.admin-layout)
+    :is(.fuwari-input:hover, .fuwari-field-shell:hover):not(
+      [data-bare],
+      [aria-invalid="true"],
+      :focus,
+      :focus-within
+    ) {
+    border-color: color-mix(in srgb, var(--admin-fg) 26%, transparent);
   }
   :root:has(.admin-layout)
     :is(.fuwari-input:focus, .fuwari-field-shell:focus-within):not(
       [data-bare],
       [aria-invalid="true"]
     ) {
-    background: var(--theme-surface);
-    border-color: var(--theme-accent);
-    box-shadow: 0 0 0 1px var(--theme-accent);
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 3px var(--admin-accent-soft);
   }
   .fuwari-input[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--fuwari-danger-fg) 60%, transparent);

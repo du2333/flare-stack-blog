@@ -1,8 +1,9 @@
 .site-banner {
   position: relative;
   height: clamp(170px, 21vh, 290px);
-  border-radius: 14px;
-  background: var(--fuwari-btn-regular-bg);
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-hover);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
   overflow: hidden;
 }
 .site-banner-image {
@@ -48,13 +49,16 @@
 .site-theme-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: calc(16 * var(--admin-unit));
-  padding: calc(24 * var(--admin-unit)) 0;
-  border-top: 1px solid var(--admin-rule);
+  gap: 14px;
+  padding: 18px 20px 20px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
-.personalize-form > .site-theme-row:first-child {
-  border-top: 0;
-  padding-top: 0;
+.site-theme-row + .site-theme-row {
+  margin-top: 12px;
 }
 .site-hue-control {
   display: flex;
@@ -172,8 +176,8 @@
 .personalize[data-wide] {
   display: grid;
   /* A customizer: the controls in a column of their own width, the preview in the rest. */
-  grid-template-columns: 22rem minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: 23.5rem minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 .personalize-form {
@@ -192,7 +196,7 @@
   z-index: 2;
   margin: calc(-1 * var(--settings-pad-y)) 0 calc(8 * var(--admin-unit));
   padding: var(--settings-pad-y) 0 12px;
-  background: var(--fuwari-card-bg);
+  background: var(--admin-canvas);
 }
 .personalize-launcher .fuwari-button {
   width: 100%;
@@ -222,8 +226,9 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  border-radius: 14px;
-  background: var(--fuwari-btn-regular-bg);
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-hover);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
   overflow: hidden;
 }
 /* The room for the device: the stage less a margin, where the frame is centred. */

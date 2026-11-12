@@ -5,41 +5,48 @@
  * gutter. Sizes come from admin-variables.css.
  */
 .admin-page {
+  --admin-frame-top: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
-  color: var(--fuwari-fg);
+  color: var(--admin-fg);
+  font-variant-numeric: tabular-nums;
 }
-/* A body that scrolls runs to the bottom edge and pads itself. */
-.admin-page:has(> .admin-page-body[data-scroll]) {
+/* A form body scrolls to the bottom edge and pads itself. */
+.admin-page:has(> .admin-page-body[data-form="form"][data-scroll]) {
   --admin-frame-bottom: 0px;
 }
 
-/* Rows one and two stay on top, with one hairline under both at any width. */
+/* A card body keeps a gap under it, whatever its page set for a bar. */
+.admin-page:has(
+  > .admin-page-body:is([data-form="list"], [data-form="split"])
+) {
+  --admin-frame-bottom: 20px;
+}
+
+/* The head sits on the canvas: the title, then the tabs and the tools. */
 .admin-page-head {
   position: sticky;
   top: 0;
   z-index: 3;
   flex-shrink: 0;
-  background: var(--fuwari-card-bg);
-  border-bottom: 1px solid var(--admin-hairline);
+  padding-bottom: 14px;
+  background: var(--admin-canvas);
 }
 .admin-page-header {
   --fuwari-button-height: 36px;
-  --fuwari-button-font-size: var(--admin-text-body);
+  --fuwari-button-font-size: 13.5px;
   --fuwari-button-padding-x: 14px;
   display: flex;
-  /* Top aligned, so the title sits at the same height on every page, with or
-     without a description under it; the actions line up with the title. */
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px 20px;
-  min-height: 36px;
-}
-.admin-page-header:not([data-toolbar]) {
-  padding-bottom: 16px;
+  min-height: 40px;
 }
 .admin-page-header[data-toolbar] {
-  margin-bottom: 8px;
+  margin-bottom: 18px;
 }
 .admin-page-heading {
   min-width: 0;
@@ -49,30 +56,29 @@
   align-items: baseline;
   gap: 10px;
   min-width: 0;
-  /* Centres the 28px title line on the 36px actions. */
-  margin-top: 4px;
 }
 .admin-page-header h1 {
   min-width: 0;
   overflow: hidden;
-  font-size: var(--admin-text-title);
-  line-height: var(--admin-leading-title);
-  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .admin-page-count {
   flex-shrink: 0;
-  font-size: var(--admin-text-body);
+  font-size: 14px;
   line-height: var(--admin-leading-body);
-  color: var(--fuwari-fg-50);
-  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--admin-fg-3);
 }
 .admin-page-description {
   margin-top: 2px;
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
-  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--admin-fg-3);
 }
 .admin-page-actions {
   display: flex;
@@ -80,8 +86,12 @@
   gap: 8px;
   flex-shrink: 0;
 }
-.admin-page-toolbar > .fuwari-tabs {
-  align-self: stretch;
+.admin-page-primary {
+  box-shadow: 0 6px 16px -8px rgb(18 18 23 / 0.5);
+}
+.admin-page-toolbar {
+  gap: 10px 12px;
+  min-height: 36px;
 }
 .admin-page-tools {
   display: flex;
@@ -89,6 +99,56 @@
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
+}
+
+/* Tabs in a page are one track; the chosen one is a raised piece of it. */
+.admin-page .fuwari-tabs {
+  flex: 0 1 auto;
+  align-self: center;
+  gap: 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--admin-hover);
+}
+.admin-page .fuwari-tab {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-fg-2);
+  transition:
+    color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+.admin-page .fuwari-tab:hover:not(:disabled) {
+  color: var(--admin-fg);
+}
+.admin-page .fuwari-tab:is([aria-selected="true"], [aria-current="page"]) {
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+  color: var(--admin-fg);
+}
+.admin-page .fuwari-tab:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 1px;
+}
+.admin-page .fuwari-tab-count {
+  font-size: 12px;
+  font-weight: 450;
+  color: var(--admin-fg-3);
+}
+.admin-page .fuwari-tab-mark {
+  top: 5px;
+  right: 4px;
+  background: var(--admin-accent);
 }
 
 /* The body: a column that fills the rest of the frame. */
@@ -103,10 +163,43 @@
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   margin-inline: calc(-1 * var(--admin-frame-x));
-  padding: 20px var(--admin-scroll-end) 32px var(--admin-frame-x);
+  padding: 6px var(--admin-scroll-end) 40px var(--admin-frame-x);
 }
 .admin-page-body[data-scroll] > * {
   flex-shrink: 0;
+}
+/*
+ * A list or a split body is one card. Inside it the frame's inset is the
+ * card's, so whatever bleeds to the frame's edge ends at the card's.
+ */
+.admin-page-body:is([data-form="list"], [data-form="split"]) {
+  --admin-frame-x: 20px;
+  --admin-scroll-end: calc(var(--admin-frame-x) - var(--admin-scrollbar));
+  position: relative;
+  overflow: hidden;
+  margin-inline: 0;
+  padding-inline: var(--admin-frame-x);
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+  animation: admin-page-in 0.5s var(--admin-ease) both;
+}
+.admin-page-body:is([data-form="list"], [data-form="split"])[data-scroll] {
+  overflow-y: auto;
+  padding: 8px var(--admin-scroll-end) 8px var(--admin-frame-x);
+}
+@keyframes admin-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-body {
+    animation: none !important;
+  }
 }
 
 /*
@@ -138,21 +231,18 @@
   gap: 8px;
   max-width: var(--admin-form-max);
   padding: 16px 0;
-  border-bottom: 1px solid var(--admin-hairline);
-}
-.admin-form-row:first-child {
-  padding-top: 0;
+  border-bottom: 1px solid var(--admin-line);
 }
 .admin-form-row-label {
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
-  font-weight: 500;
+  font-weight: 550;
 }
 .admin-form-row-description {
   margin-top: 2px;
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
-  color: var(--fuwari-fg-50);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--admin-fg-3);
 }
 .admin-form-row-control {
   min-width: 0;
@@ -170,70 +260,69 @@
 }
 
 /*
- * A titled group of settings (AdminFormSection): the title, an optional line,
- * its rows; a hairline between groups. The last row of a group has no rule of
- * its own, the group's does that.
+ * A titled group of settings (AdminFormSection) is a card: the title, an
+ * optional line, its rows with a hairline between them.
  */
 .admin-form-section {
   max-width: var(--admin-form-max);
-  padding: 24px 0;
-}
-.admin-form-section:first-child {
-  padding-top: 0;
+  padding: 18px 24px 4px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
 .admin-form-section + .admin-form-section {
-  border-top: 1px solid var(--admin-hairline);
+  margin-top: 16px;
 }
 .admin-form-section-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: var(--admin-leading-section);
+  min-height: 24px;
 }
 .admin-form-section-title {
   min-width: 0;
-  font-size: var(--admin-text-section);
-  line-height: var(--admin-leading-section);
-  font-weight: 600;
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 620;
+  letter-spacing: -0.005em;
 }
 .admin-form-section-summary {
   min-width: 0;
   overflow: hidden;
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+  font-size: 13px;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .admin-form-section-trigger {
   width: 100%;
+  margin-bottom: 14px;
   border-radius: 6px;
   text-align: left;
 }
 .admin-form-section-trigger > .fuwari-disclosure-chevron {
   flex-shrink: 0;
   margin-left: auto;
-  color: var(--fuwari-fg-50);
+  color: var(--admin-fg-3);
 }
 .admin-form-section-trigger:focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--admin-accent);
   outline-offset: 4px;
 }
 .admin-form-section-description {
   margin-top: 2px;
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+  font-size: 13px;
+  line-height: 20px;
 }
 .admin-form-section-body {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 .admin-form-section-body > .admin-form-row:last-child {
-  padding-bottom: 0;
   border-bottom: 0;
-}
-.admin-form-section-body > .admin-form-row:first-child {
-  padding-top: 12px;
 }
 
 /*
@@ -253,22 +342,22 @@
   min-height: 44px;
   max-height: var(--admin-row-max);
   padding: 0 var(--admin-row-x);
-  border-bottom: 1px solid var(--admin-hairline);
+  border-radius: 10px;
   font-size: var(--admin-text-body);
   line-height: var(--admin-leading-body);
   transition: background-color 150ms;
 }
 .admin-list-row:hover {
-  background: var(--fuwari-btn-plain-bg-hover);
+  background: var(--admin-hover);
 }
 
 /* Below 1024px the top bar has the title and the primary action. */
 @media (max-width: 1023px) {
-  .admin-page-header {
-    align-items: center;
+  .admin-page-head {
+    padding-bottom: 10px;
   }
-  .admin-page-title-line {
-    margin-top: 0;
+  .admin-page-header[data-toolbar] {
+    margin-bottom: 8px;
   }
   .admin-page-header :is(h1, .admin-page-count),
   .admin-page-primary,
