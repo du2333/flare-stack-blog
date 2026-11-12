@@ -23,6 +23,11 @@ const pairing = vi.hoisted(() => ({
 const authKeys = vi.hoisted(() => ({ list: vi.fn(), delete: vi.fn() }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+// Close the menu at once; exit motion is not under test.
+vi.mock("@/hooks/use-motion", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
+  useMotionPresence: (open: boolean) => open,
+}));
 vi.mock("@/lib/orpc", () => ({
   orpcClient: { pairing: { admin: pairing } },
 }));
@@ -150,9 +155,9 @@ it("lays out the install, pair and try steps in order", async () => {
     .getAllByRole("heading", { level: 2 })
     .map((heading) => heading.textContent);
   expect(headings).toEqual([
-    `1 ${m.agent_skill_step_install()}`,
-    `2 ${m.agent_skill_step_pair()}`,
-    `3 ${m.agent_skill_step_try()}`,
+    m.agent_skill_step_install(),
+    m.agent_skill_step_pair(),
+    m.agent_skill_step_try(),
     m.agent_skill_agents_title(),
   ]);
 });
@@ -569,11 +574,17 @@ it("deletes a paired agent's key after confirmation", async () => {
   });
   mountPage();
   await flush();
+  // The row's overflow menu holds 撤销.
   fireEvent.click(
     within(screen.getByRole("table")).getByRole("button", {
-      name: m.settings_api_keys_delete(),
+      name: m.settings_api_keys_row_actions({ name: "Claude Code" }),
     }),
   );
+  await flush();
+  fireEvent.click(
+    screen.getByRole("menuitem", { name: m.settings_api_keys_delete() }),
+  );
+  await flush();
   const dialog = screen.getByRole("dialog");
   expect(dialog.textContent).toContain(
     m.settings_api_keys_delete_desc({ name: "Claude Code" }),

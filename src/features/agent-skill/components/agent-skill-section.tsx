@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
-import { SectionHeading } from "@/components/ui/page-heading";
 import { SettingsLead } from "@/features/config/components/admin/settings-lead";
 import { m } from "@/paraglide/messages";
 import { InstallStep } from "./install-step";
@@ -9,6 +7,7 @@ import { PairingStep } from "./pairing-step";
 import { TryStep } from "./try-step";
 import "./agent-skill.css";
 
+/** One step of the stepper: its number and the line to the next, then its content. */
 function Step({
   number,
   title,
@@ -20,26 +19,20 @@ function Step({
 }) {
   return (
     <li className="agent-skill-step">
-      <SectionHeading
-        level={2}
-        size="md"
-        title={
-          <>
-            <Badge tone="primary" size="sm">
-              {number}
-            </Badge>{" "}
-            {title}
-          </>
-        }
-      />
-      {children}
+      <span className="agent-skill-step-number" aria-hidden="true">
+        {number}
+      </span>
+      <div className="agent-skill-step-main">
+        <h2>{title}</h2>
+        {children}
+      </div>
     </li>
   );
 }
 
 export function AgentSkillSection() {
   return (
-    <div className="agent-skill settings-column">
+    <div className="agent-skill">
       <SettingsLead description={m.agent_skill_intro()} />
       <ol className="agent-skill-steps">
         <Step number={1} title={m.agent_skill_step_install()}>

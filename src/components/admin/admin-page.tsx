@@ -1,5 +1,12 @@
-import type { HTMLAttributes, ReactNode, Ref } from "react";
+import {
+  useId,
+  useState,
+  type HTMLAttributes,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { Button } from "@/components/ui/button";
+import { DisclosureChevron, DisclosurePanel } from "@/components/ui/disclosure";
 import { cn } from "@/lib/utils";
 import {
   type AdminPageAction,
@@ -228,5 +235,73 @@ export function AdminFormRow({
       </div>
       <div className="admin-form-row-control">{children}</div>
     </div>
+  );
+}
+
+/**
+ * A titled group of settings in a `form` body: a section title (with an
+ * optional line, and `status` beside the title), then its AdminFormRows,
+ * with a hairline between groups. `collapsible` turns the heading into a
+ * disclosure that opens the group in place.
+ */
+export function AdminFormSection({
+  title,
+  description,
+  status,
+  collapsible = false,
+  defaultOpen = !collapsible,
+  summary,
+  className,
+  children,
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  /** Beside the title: a status chip. */
+  status?: ReactNode;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  /** On a collapsible group, after the title: what is set, in a few words. */
+  summary?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  const id = useId();
+  const [open, setOpen] = useState(defaultOpen);
+  const heading = (
+    <>
+      <h2 className="admin-form-section-title">{title}</h2>
+      {status}
+      {summary == null ? null : (
+        <span className="admin-form-section-summary">{summary}</span>
+      )}
+    </>
+  );
+  return (
+    <section className={cn("admin-form-section", className)}>
+      {collapsible ? (
+        <button
+          type="button"
+          className="admin-form-section-head admin-form-section-trigger"
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {heading}
+          <DisclosureChevron />
+        </button>
+      ) : (
+        <div className="admin-form-section-head">{heading}</div>
+      )}
+      {description == null ? null : (
+        <p className="admin-form-section-description">{description}</p>
+      )}
+      {collapsible ? (
+        <DisclosurePanel id={id} open={open}>
+          <div className="admin-form-section-body">{children}</div>
+        </DisclosurePanel>
+      ) : (
+        <div className="admin-form-section-body">{children}</div>
+      )}
+    </section>
   );
 }

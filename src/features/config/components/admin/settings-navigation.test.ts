@@ -16,6 +16,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
 import { createElement } from "react";
 import { useFormContext } from "react-hook-form";
@@ -242,6 +243,12 @@ it("shows the save bar only once the section has unsaved changes", async () => {
     name: m.settings_config_save_site(),
   });
   expect(bar.closest(".settings-savebar")).not.toBeNull();
+  // It says how many settings changed.
+  expect(
+    within(bar.closest<HTMLElement>(".settings-savebar")!).getByText(
+      m.settings_config_changed_count({ count: 1 }),
+    ),
+  ).not.toBeNull();
   // The tab names the section; the page header carries no description.
   expect(
     screen.queryByText(m.settings_nav_site(), { selector: "h2" }),

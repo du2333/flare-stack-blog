@@ -1,17 +1,31 @@
 .settings-workspace {
+  --admin-frame-bottom: 0;
+  color: var(--fuwari-fg);
+}
+/*
+ * The settings, access and muted-user pages take the Admin's own control and
+ * button sizes (admin-variables.css); 「个性化」 keeps its larger ones.
+ */
+.settings-workspace:not([data-section="personalize"]) {
+  --fuwari-field-height: 36px;
+  --fuwari-field-font-size: var(--admin-text-body);
+  --fuwari-label-font-size: var(--admin-text-body);
+  --fuwari-button-height: 36px;
+  --fuwari-button-font-size: var(--admin-text-body);
+  --fuwari-button-padding-x: 14px;
+}
+.settings-workspace[data-section="personalize"] {
   --fuwari-field-height: calc(42 * var(--admin-unit));
   --fuwari-field-font-size: calc(14 * var(--admin-unit));
   --fuwari-label-font-size: calc(13 * var(--admin-unit));
   --fuwari-button-height: calc(40 * var(--admin-unit));
   --fuwari-button-font-size: calc(14 * var(--admin-unit));
   --fuwari-button-padding-x: calc(18 * var(--admin-unit));
-  --admin-frame-bottom: 0;
-  color: var(--fuwari-fg);
 }
 .settings-muted {
   color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.7;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
   margin-top: 8px;
 }
 .settings-body {
@@ -63,17 +77,24 @@
   margin: auto calc(-1 * var(--admin-scroll-end)) 0
     calc(-1 * var(--admin-frame-x));
   border-top: 1px solid var(--admin-rule);
-  padding: 14px var(--admin-scroll-end) 14px var(--admin-frame-x);
+  padding: 12px var(--admin-scroll-end) 12px var(--admin-frame-x);
   background: var(--fuwari-card-bg);
   flex-shrink: 0;
   animation: settings-savebar-in 180ms ease-out;
-  --fuwari-callout-font-size: calc(13 * var(--admin-unit));
+  --fuwari-callout-font-size: var(--admin-text-meta);
 }
 @keyframes settings-savebar-in {
   from {
     opacity: 0;
     transform: translateY(8px);
   }
+}
+.settings-savebar-status {
+  min-width: 0;
+  color: var(--fuwari-fg-75);
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-variant-numeric: tabular-nums;
 }
 .settings-savebar > div:not(.fuwari-callout) {
   display: flex;
@@ -93,25 +114,20 @@
   outline: 2px solid var(--fuwari-primary);
   outline-offset: 3px;
 }
-/* Sections other than Site read in a column, left-aligned to the frame inset. */
-.settings-column {
-  width: 100%;
-  max-width: calc(720 * var(--admin-unit));
-  min-width: 0;
-}
 /* A section's description and actions, now that the tab names the section. */
 .settings-lead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: calc(20 * var(--admin-unit));
+  max-width: 960px;
+  margin-bottom: 16px;
   flex-shrink: 0;
 }
 .settings-lead > p {
   min-width: 0;
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.6;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
   color: var(--fuwari-fg-50);
 }
 .settings-lead-actions {
@@ -120,56 +136,82 @@
   gap: 10px;
   flex-shrink: 0;
 }
-/*
- * The email form and its preview keep their pairing. The form column stops at
- * the readable width: the pair is capped where the form reaches it, and the
- * webhook channel below sits in the form's column.
- */
-.notify-studio {
+
+/* The control column of a row: a control, its error, and what goes with it. */
+.setting-control,
+.setting-parts,
+.setting-test {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(250px, 1fr);
-  column-gap: calc(32 * var(--admin-unit));
-  max-width: calc((720 * 2.4 / 1.4 + 32) * var(--admin-unit));
-}
-.notify-email {
-  display: contents;
-}
-.notify-form {
+  gap: 8px;
   min-width: 0;
 }
+.setting-parts {
+  gap: 14px;
+}
+.setting-parts-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 10px;
+}
+.setting-part {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.setting-part-label {
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--fuwari-fg-50);
+}
+.setting-test {
+  justify-items: start;
+}
+.setting-test .settings-muted {
+  margin-top: 0;
+}
+
+/*
+ * A switch sits at the right end of its row, level with the name. Stacked
+ * rows keep it there: the row becomes name left, switch right.
+ */
+.setting-switch {
+  display: flex;
+  justify-content: flex-end;
+}
+.setting-switch .fuwari-switch {
+  min-height: 26px;
+  margin-top: -2px;
+}
+@media (max-width: 1023px) {
+  .admin-form-row:has(> .admin-form-row-control > .setting-switch) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+  }
+}
+
+/* 「通知」: the e-mail group, then the Webhook group. */
+.notify-studio {
+  display: flex;
+  flex-direction: column;
+}
+/* The e-mail preview opens in place, at the width of the content. */
 .notify-preview {
-  border-left: 1px solid var(--admin-rule);
-  padding-left: calc(28 * var(--admin-unit));
-  min-width: 0;
+  max-width: 960px;
+  padding-top: 14px;
 }
-.notify-preview h3 {
-  font-size: calc(17 * var(--admin-unit));
-  font-weight: 600;
+.notify-preview .settings-disclosure-trigger {
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-weight: 500;
 }
 .notify-preview-card {
-  margin-top: 22px;
+  margin-top: 14px;
   border: 1px solid var(--admin-rule);
   border-radius: 12px;
-  padding: 22px;
+  padding: 20px;
   display: grid;
-  gap: 18px;
+  gap: 14px;
   overflow-wrap: anywhere;
-}
-.notify-switch {
-  gap: 20px;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--admin-rule);
-  border-radius: 0;
-  font-size: calc(14 * var(--admin-unit));
-}
-.settings-group-title {
-  margin: 24px 0 18px;
-}
-.settings-field-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
 }
 .settings-secret {
   min-width: 0;
@@ -188,77 +230,78 @@
   flex: 1;
   min-width: 0;
 }
-.notify-webhook {
-  grid-column: 1;
-  border-top: 1px solid var(--admin-rule);
-  margin-top: 28px;
-  padding-top: 20px;
-}
-.notify-webhook-content {
-  display: grid;
-  gap: 20px;
-  max-width: 760px;
-  padding: 24px 0;
-}
+
 /*
- * One maintenance item: what it does on the left, its button on the right,
- * both inside the section's column.
+ * 「维护」: groups of action rows. A row has the list rows' hairline and
+ * hover: the name and what it does on the left, the last result under them,
+ * the button on the right.
  */
+.settings-maintenance-list .admin-form-section-body {
+  margin-top: 4px;
+}
+.settings-maintenance-list > .settings-lead + .admin-form-section {
+  padding-top: 0;
+}
+.settings-maintenance-list > .settings-muted {
+  max-width: 960px;
+  padding-top: 8px;
+}
 .settings-maintenance-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: center;
-  padding: calc(22 * var(--admin-unit)) 0;
+  min-height: var(--admin-row-max);
+  padding: 10px 0;
   border-bottom: 1px solid var(--admin-rule);
+  transition: background-color 150ms;
+}
+.settings-maintenance-item:hover {
+  background: var(--fuwari-btn-plain-bg-hover);
+  /* The fill reaches past the text's edge, as in the other lists. */
+  box-shadow:
+    -12px 0 0 var(--fuwari-btn-plain-bg-hover),
+    12px 0 0 var(--fuwari-btn-plain-bg-hover);
+}
+.settings-maintenance-item:last-child {
+  border-bottom: 0;
 }
 .settings-maintenance-item > .fuwari-button {
-  min-width: calc(116 * var(--admin-unit));
+  min-width: 112px;
 }
 .settings-maintenance-title {
-  font-size: calc(16 * var(--admin-unit));
-  font-weight: 550;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-weight: 500;
+}
+.settings-maintenance-desc,
+.settings-maintenance-item [data-tone] {
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
 .settings-maintenance-desc {
-  margin-top: 7px;
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.65;
   color: var(--fuwari-fg-50);
 }
-@media (max-width: 1050px) {
-  .notify-studio {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .notify-preview {
-    border-left: 0;
-    border-top: 1px solid var(--admin-rule);
-    padding: 20px 0 0;
-  }
-  .notify-preview-card {
-    max-width: 650px;
-  }
+.settings-maintenance-item [data-tone] {
+  margin-top: 2px;
 }
 @media (max-width: 600px) {
   .settings-body {
     --settings-pad-y: 20px;
   }
-  .settings-field-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
   .settings-savebar {
     padding-block: 12px;
     flex-wrap: wrap;
     gap: 10px;
-    --fuwari-callout-font-size: 12px;
   }
   .settings-savebar > div:not(.fuwari-callout) {
     margin-left: auto;
   }
   .settings-maintenance-item {
     grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
+    gap: 10px;
     justify-items: start;
+    padding-block: 12px;
   }
   .settings-lead {
     align-items: flex-start;
@@ -275,16 +318,4 @@
 .settings-disclosure-trigger > span {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-.notify-preview .settings-disclosure-trigger {
-  font-size: calc(17 * var(--admin-unit));
-  font-weight: 600;
-}
-.notify-webhook > .settings-disclosure-trigger {
-  font-size: calc(16 * var(--admin-unit));
-  font-weight: 550;
-}
-.notify-webhook .settings-disclosure-trigger .settings-muted {
-  margin-left: 18px;
-  font-weight: 400;
 }

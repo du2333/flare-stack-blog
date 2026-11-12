@@ -1,5 +1,6 @@
-import { Bot } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ActionMenu } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +12,7 @@ import {
 } from "@/features/api-keys/hooks/use-api-keys";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import "@/features/api-keys/components/api-key-settings.css";
 
 /** The agent's own name, not the key's `<agent> · <date>`; pairing time has its column. */
 function pairedAgentName(key: ApiKeyListItem) {
@@ -54,56 +56,66 @@ export function PairedAgents() {
           description={m.settings_api_keys_loading()}
         />
       ) : agents.length === 0 ? (
-        <EmptyState
-          size="compact"
-          icon={Bot}
-          description={m.agent_skill_agents_empty()}
-        />
+        <EmptyState size="compact" description={m.agent_skill_agents_empty()} />
       ) : (
-        <div className="agent-skill-table">
-          <table>
-            <thead>
-              <tr>
-                <th>{m.settings_api_keys_name_label()}</th>
-                <th>{m.agent_skill_agents_paired_at()}</th>
-                <th>{m.agent_skill_agents_last_used()}</th>
-                <th>
-                  <span className="sr-only">
-                    {m.settings_api_keys_delete()}
+        <div role="table" aria-label={m.agent_skill_agents_title()}>
+          <div role="row" className="key-head key-grid agent-skill-grid">
+            <span role="columnheader">{m.settings_api_keys_name_label()}</span>
+            <span role="columnheader" className="key-cell">
+              {m.agent_skill_agents_paired_at()}
+            </span>
+            <span role="columnheader" className="key-cell">
+              {m.agent_skill_agents_last_used()}
+            </span>
+            <span role="columnheader" className="sr-only">
+              {m.settings_api_keys_delete()}
+            </span>
+          </div>
+          {agents.map((key) => {
+            const name = pairedAgentName(key);
+            const pairedAt = formatDate(key.createdAt, { includeTime: true });
+            const lastUsed = key.lastRequest
+              ? formatDate(key.lastRequest, { includeTime: true })
+              : m.agent_skill_agents_never_used();
+            return (
+              <div
+                key={key.id}
+                role="row"
+                className="admin-list-row key-row key-grid agent-skill-grid"
+              >
+                <div role="cell" className="key-name">
+                  <span className="key-name-line">
+                    <strong title={name}>{name}</strong>
                   </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {agents.map((key) => {
-                const name = pairedAgentName(key);
-                return (
-                  <tr key={key.id}>
-                    <td>
-                      <strong>{name}</strong>
-                    </td>
-                    <td>{formatDate(key.createdAt, { includeTime: true })}</td>
-                    <td>
-                      {key.lastRequest
-                        ? formatDate(key.lastRequest, { includeTime: true })
-                        : m.agent_skill_agents_never_used()}
-                    </td>
-                    <td>
-                      <Button
-                        variant="plain"
-                        tone="danger"
-                        size="sm"
-                        disabled={isDeleting}
-                        onClick={() => setPendingDelete({ id: key.id, name })}
-                      >
-                        {m.settings_api_keys_delete()}
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  <span className="key-summary">
+                    {formatDate(key.createdAt)} ·{" "}
+                    {m.agent_skill_agents_last_used()} {lastUsed}
+                  </span>
+                </div>
+                <div role="cell" className="key-cell">
+                  {pairedAt}
+                </div>
+                <div role="cell" className="key-cell">
+                  {lastUsed}
+                </div>
+                <div role="cell" className="key-actions">
+                  <ActionMenu
+                    label={m.settings_api_keys_row_actions({ name })}
+                    placement="bottom-end"
+                    disabled={isDeleting}
+                    items={[
+                      {
+                        label: m.settings_api_keys_delete(),
+                        icon: Trash2,
+                        danger: true,
+                        onSelect: () => setPendingDelete({ id: key.id, name }),
+                      },
+                    ]}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
       <ConfirmationModal

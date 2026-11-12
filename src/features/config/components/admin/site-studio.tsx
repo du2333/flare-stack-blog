@@ -8,9 +8,9 @@ import {
   X,
 } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button, buttonClass } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import { FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
@@ -28,7 +28,7 @@ import {
 } from "@/features/config/utils/social-platforms";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { SettingsDisclosure } from "./settings-disclosure";
+import { SettingRow } from "./setting-row";
 import { useNavSort } from "./use-nav-sort";
 import "./site-studio.css";
 
@@ -76,24 +76,23 @@ const ICON_FIELDS = [
 export function SiteStudio() {
   return (
     <div className="site-studio">
-      <TextFields />
-      <SocialLinksEditor />
-      <NavLinksEditor />
-      <SettingsDisclosure
-        className="site-icons"
-        title={
-          <span className="site-section-copy">
-            <strong>{m.settings_icons()}</strong>
-            <span className="site-section-hint">{m.settings_icons_hint()}</span>
-          </span>
-        }
+      <AdminFormSection title={m.settings_group_site_identity()}>
+        <TextFields />
+      </AdminFormSection>
+      <AdminFormSection title={m.settings_group_site_links()}>
+        <SocialLinksEditor />
+        <NavLinksEditor />
+      </AdminFormSection>
+      <AdminFormSection
+        title={m.settings_icons()}
+        description={m.settings_icons_hint()}
       >
         <div className="site-icon-grid">
           {ICON_FIELDS.map((item) => (
             <IconTile key={item.name} {...item} />
           ))}
         </div>
-      </SettingsDisclosure>
+      </AdminFormSection>
       <p className="site-moved-hint">
         {m.settings_site_moved_to_personalize()}
         <Link
@@ -108,55 +107,62 @@ export function SiteStudio() {
   );
 }
 
-/** The title, the author and the description: a labelled row each, with where it shows. */
+/** The title, the author and the description: a row each, with where it shows. */
 function TextFields() {
   const { register, control, formState } = useFormContext<SystemConfig>();
   const errors = formState.errors.site;
   const description = useWatch({ control, name: "site.description" }) ?? "";
   return (
-    <section className="site-fields">
-      <FormField
+    <>
+      <SettingRow
         label={m.settings_site_field_title()}
-        hint={m.settings_site_title_hint()}
+        description={m.settings_site_title_hint()}
         error={errors?.title?.message}
       >
-        <Input
-          {...register("site.title")}
-          placeholder={m.settings_site_field_title_ph()}
-        />
-      </FormField>
-      <FormField
+        {(field) => (
+          <Input
+            {...register("site.title")}
+            {...field}
+            placeholder={m.settings_site_field_title_ph()}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
         label={m.settings_site_field_author()}
-        hint={m.settings_site_author_hint()}
+        description={m.settings_site_author_hint()}
         error={errors?.author?.message}
       >
-        <Input
-          {...register("site.author")}
-          placeholder={m.settings_site_field_author_ph()}
-        />
-      </FormField>
-      <FormField
+        {(field) => (
+          <Input
+            {...register("site.author")}
+            {...field}
+            placeholder={m.settings_site_field_author_ph()}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
         label={m.settings_site_field_description()}
-        hint={
+        description={m.settings_site_description_hint()}
+        error={errors?.description?.message}
+      >
+        {(field) => (
           <>
-            {m.settings_site_description_hint()}
-            <span className="site-char-count">
+            <Textarea
+              {...register("site.description")}
+              {...field}
+              rows={3}
+              placeholder={m.settings_site_field_description_ph()}
+            />
+            <p className="site-char-count">
               {m.settings_site_char_count({
                 count: description.length,
                 max: SITE_DESCRIPTION_MAX,
               })}
-            </span>
+            </p>
           </>
-        }
-        error={errors?.description?.message}
-      >
-        <Textarea
-          {...register("site.description")}
-          rows={3}
-          placeholder={m.settings_site_field_description_ph()}
-        />
-      </FormField>
-    </section>
+        )}
+      </SettingRow>
+    </>
   );
 }
 
@@ -174,15 +180,15 @@ function NavLinksEditor() {
   );
 
   return (
-    <section className="site-nav-section">
-      <div className="site-section-copy">
-        <h2>{m.settings_site_nav_title()}</h2>
-        <p className="mt-1 text-xs fuwari-text-50">
+    <AdminFormRow
+      label={m.settings_site_nav_title()}
+      description={
+        <>
           {m.settings_site_nav_hint()}
-        </p>
-      </div>
-
-      <p className="site-sort-hint">{m.settings_nav_drag_hint()}</p>
+          <span className="site-sort-hint">{m.settings_nav_drag_hint()}</span>
+        </>
+      }
+    >
       <div className="site-nav-fields">
         {fields.map((field, index) => {
           const href = watch(`site.navLinks.${index}.href`) ?? "";
@@ -282,7 +288,7 @@ function NavLinksEditor() {
           {m.settings_site_nav_add()}
         </Button>
       ) : null}
-    </section>
+    </AdminFormRow>
   );
 }
 
@@ -303,11 +309,10 @@ function SocialLinksEditor() {
   const error = formState.errors.site?.social;
 
   return (
-    <section className="site-nav-section">
-      <div className="site-section-copy">
-        <h2>{m.settings_social_title()}</h2>
-        <p>{m.settings_social_hint()}</p>
-      </div>
+    <AdminFormRow
+      label={m.settings_social_title()}
+      description={m.settings_social_hint()}
+    >
       <div className="site-social-rows">
         {fields.map((field, index) => {
           const platform = watch(`site.social.${index}.platform`);
@@ -396,7 +401,7 @@ function SocialLinksEditor() {
           {m.settings_social_add()}
         </Button>
       ) : null}
-    </section>
+    </AdminFormRow>
   );
 }
 

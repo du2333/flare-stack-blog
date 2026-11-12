@@ -1,24 +1,25 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { Bot, Copy, KeyRound, Plus } from "lucide-react";
+import { Copy, Plus, Trash2 } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAdminPrimaryAction } from "@/components/admin/admin-chrome";
+import { ActionMenu } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Callout } from "@/components/ui/callout";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { Input } from "@/components/ui/input";
-import { SettingsLead } from "@/features/config/components/admin/settings-lead";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isPairedApiKey } from "@/features/agent-pairing/agent-pairing.schema";
 import { useApiKeys } from "@/features/api-keys/hooks/use-api-keys";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import "./api-key-settings.css";
 
-function AgentSkillPointer() {
+/** One quiet line above the list: what keys are for, and where agents go instead. */
+function KeysNote() {
   const link = (
     <Link
       to="/admin/access/agent-skill"
@@ -32,13 +33,12 @@ function AgentSkillPointer() {
     .settings_api_keys_agent_pointer({ link: "\0link\0" })
     .split("\0");
   return (
-    <Callout icon={Bot} className="settings-key-skill">
-      <p>
-        {parts.map((part, index) =>
-          index % 2 ? <Fragment key={part}>{link}</Fragment> : part,
-        )}
-      </p>
-    </Callout>
+    <p className="key-note">
+      {m.settings_design_keys_hint()}{" "}
+      {parts.map((part, index) =>
+        index % 2 ? <Fragment key={part}>{link}</Fragment> : part,
+      )}
+    </p>
   );
 }
 
@@ -67,16 +67,17 @@ export function ApiKeySettingsSection() {
     setOpen(false);
     setRevealedKey(null);
   };
+  const openCreate = () => {
+    setName("");
+    setRevealedKey(null);
+    setOpen(true);
+  };
   // The frame's header (and the phone top bar) shows it.
   useAdminPrimaryAction({
     label: m.settings_api_keys_create(),
     icon: <Plus size={16} />,
     ref: createRef,
-    onClick: () => {
-      setName("");
-      setRevealedKey(null);
-      setOpen(true);
-    },
+    onClick: openCreate,
   });
   const create = async () => {
     if (!name.trim() || isCreating) return;
@@ -89,10 +90,9 @@ export function ApiKeySettingsSection() {
     }
   };
   return (
-    <div className="settings-keys settings-column">
-      <SettingsLead description={m.settings_design_keys_hint()} />
-      <AgentSkillPointer />
-      <div className="settings-key-list" aria-busy={isLoading}>
+    <div className="settings-keys">
+      <KeysNote />
+      <div className="key-list" aria-busy={isLoading}>
         {isError ? (
           <EmptyState
             description={m.settings_design_load_failed()}
@@ -103,79 +103,107 @@ export function ApiKeySettingsSection() {
             }
           />
         ) : isLoading ? (
-          <EmptyState description={m.settings_api_keys_loading()} />
+          <div role="status" aria-label={m.settings_api_keys_loading()}>
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="admin-list-row key-row" aria-hidden>
+                <Skeleton className="h-4 w-1/3 rounded" />
+                <Skeleton className="ml-auto h-3 w-24 rounded" />
+              </div>
+            ))}
+          </div>
         ) : keys.length === 0 ? (
           <EmptyState
-            icon={KeyRound}
+            size="compact"
             description={m.settings_api_keys_empty()}
+            action={
+              <Button onClick={openCreate}>
+                {m.settings_api_keys_create()}
+              </Button>
+            }
           />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>{m.settings_api_keys_name_label()}</th>
-                <th>{m.settings_design_key_prefix()}</th>
-                <th>{m.settings_design_created_at()}</th>
-                <th>
-                  <span className="sr-only">
-                    {m.settings_api_keys_delete()}
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {keys.map((key) => (
-                <tr key={key.id}>
-                  <td>
-                    <strong>{key.name || m.settings_api_keys_unnamed()}</strong>
-                    {isPairedApiKey(key.metadata) && (
-                      <Badge tone="primary" size="sm" className="ml-2">
-                        {m.settings_api_keys_paired_badge()}
-                      </Badge>
-                    )}
-                  </td>
-                  <td>
-                    <code>{key.start ? `${key.start}…` : "—"}</code>
-                  </td>
-                  <td>
-                    <ClientOnly fallback="—">
-                      {formatDate(key.createdAt, { includeTime: true })}
+          <div role="table" aria-label={m.settings_nav_api_keys()}>
+            <div role="row" className="key-head key-grid">
+              <span role="columnheader">
+                {m.settings_api_keys_name_label()}
+              </span>
+              <span role="columnheader" className="key-cell">
+                {m.settings_design_key_prefix()}
+              </span>
+              <span role="columnheader" className="key-cell">
+                {m.settings_design_created_at()}
+              </span>
+              <span role="columnheader" className="key-cell">
+                {m.settings_api_keys_last_used()}
+              </span>
+              <span role="columnheader" className="sr-only">
+                {m.settings_api_keys_delete()}
+              </span>
+            </div>
+            {keys.map((key) => {
+              const name = key.name || m.settings_api_keys_unnamed();
+              const created = formatDate(key.createdAt, { includeTime: true });
+              const lastUsed = key.lastRequest
+                ? formatDate(key.lastRequest, { includeTime: true })
+                : m.settings_api_keys_never_used();
+              return (
+                <div
+                  key={key.id}
+                  role="row"
+                  className="admin-list-row key-row key-grid"
+                >
+                  <div role="cell" className="key-name">
+                    <span className="key-name-line">
+                      <strong title={name}>{name}</strong>
+                      {isPairedApiKey(key.metadata) && (
+                        <Badge tone="primary" size="sm">
+                          {m.settings_api_keys_paired_badge()}
+                        </Badge>
+                      )}
+                    </span>
+                    <ClientOnly fallback={null}>
+                      <span className="key-summary">
+                        {formatDate(key.createdAt)} ·{" "}
+                        {m.settings_api_keys_last_used()} {lastUsed}
+                      </span>
                     </ClientOnly>
-                  </td>
-                  <td>
-                    <Button
-                      variant="plain"
-                      tone="danger"
-                      size="sm"
+                  </div>
+                  <div role="cell" className="key-cell">
+                    <code>{key.start ? `${key.start}…` : "—"}</code>
+                  </div>
+                  <div role="cell" className="key-cell">
+                    <ClientOnly fallback="—">{created}</ClientOnly>
+                  </div>
+                  <div role="cell" className="key-cell">
+                    <ClientOnly fallback="—">{lastUsed}</ClientOnly>
+                  </div>
+                  <div role="cell" className="key-actions">
+                    <ActionMenu
+                      label={m.settings_api_keys_row_actions({ name })}
+                      placement="bottom-end"
                       disabled={isDeleting}
-                      onClick={() =>
-                        setPendingDelete({
-                          id: key.id,
-                          name: key.name || m.settings_api_keys_unnamed(),
-                        })
-                      }
-                    >
-                      {m.settings_api_keys_delete()}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      items={[
+                        {
+                          label: m.settings_api_keys_delete(),
+                          icon: Trash2,
+                          danger: true,
+                          onSelect: () =>
+                            setPendingDelete({ id: key.id, name }),
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
-      <footer className="settings-key-footer">
-        <p>
-          {m.settings_api_keys_created_hint()}
-          <br />
-          {m.settings_design_immediate()}
+      {isLoading || isError || keys.length === 0 ? null : (
+        <p className="key-count">
+          {m.settings_design_key_count({ count: keys.length })}
         </p>
-        <span>
-          {isLoading || isError
-            ? "—"
-            : m.settings_design_key_count({ count: keys.length })}
-        </span>
-      </footer>
+      )}
       <ClientOnly>
         <FuwariModal
           open={open}

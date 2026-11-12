@@ -1,100 +1,99 @@
-.settings-workspace[data-section="api-keys"] .settings-body {
-  display: flex;
-  overflow: hidden;
-  /* It does not scroll; the list inside does, and its scrollbar takes the right inset. */
-  scrollbar-gutter: auto;
-  padding-right: var(--admin-frame-x);
-}
+/*
+ * 「接入」 · API Key and the list of connected agents: a list body. A row is
+ * the frame's .admin-list-row on a grid of name, details and the overflow
+ * menu; a phone keeps the name and the menu and puts the dates under the name.
+ */
 .settings-keys {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
   min-width: 0;
 }
-.settings-key-skill {
-  flex-shrink: 0;
-  margin-bottom: 16px;
-}
-/* Bot's body sits low in its box, and Windows sets CJK text high in the line. */
-.settings-key-skill .fuwari-callout-icon {
-  translate: 0 -3px;
-}
-.settings-key-list {
-  overflow: auto;
-  flex: 1;
-  min-height: 0;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  margin-right: calc(-1 * var(--admin-scrollbar));
-}
-.settings-key-list table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: calc(14 * var(--admin-unit));
-}
-.settings-key-list th {
-  text-align: left;
-  position: sticky;
-  top: 0;
-  background: var(--fuwari-card-bg);
-  font-weight: 500;
+.key-note {
+  margin-bottom: 12px;
   color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
-.settings-key-list th,
-.settings-key-list td {
-  padding: 18px 12px;
+.key-note a {
+  color: var(--fuwari-fg);
+}
+.key-grid,
+.admin-list-row.key-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 148px 148px 36px;
+  align-items: center;
+  gap: 16px;
+}
+.key-head {
+  min-height: 36px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--admin-rule);
-}
-.settings-key-list td:first-child {
-  overflow-wrap: anywhere;
-  max-width: 280px;
-}
-.settings-key-list td:not(:first-child) {
-  white-space: nowrap;
-}
-.settings-key-list td:last-child {
-  text-align: right;
-}
-.settings-key-list code,
-.settings-key-list td:nth-child(3) {
   color: var(--fuwari-fg-50);
-  font-size: calc(12 * var(--admin-unit));
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
-.settings-key-footer {
+.key-row {
+  min-height: 48px;
+}
+.key-name {
+  min-width: 0;
+}
+.key-name-line {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  padding-top: 18px;
-  border-top: 1px solid var(--admin-rule);
-  color: var(--fuwari-fg-50);
-  font-size: 12px;
-  line-height: 1.7;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
-.settings-key-footer span {
+.key-name-line > strong {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-@media (max-width: 600px) {
-  .settings-key-list th,
-  .settings-key-list td {
-    padding: 14px 8px;
+.key-cell {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.key-cell code {
+  font-size: inherit;
+}
+.key-summary {
+  display: none;
+}
+.key-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.key-count {
+  padding-top: 12px;
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+@media (max-width: 760px) {
+  .key-grid,
+  .admin-list-row.key-grid {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    gap: 8px;
   }
-  .settings-key-list th:nth-child(2),
-  .settings-key-list td:nth-child(2) {
+  .key-head {
     display: none;
   }
-  .settings-key-footer {
-    flex-wrap: wrap;
+  .key-grid > .key-cell {
+    display: none;
   }
-}
-@media (max-height: 540px) {
-  .settings-workspace[data-section="api-keys"] .settings-body,
-  .settings-keys {
+  .key-summary {
     display: block;
-    overflow: visible;
-  }
-  .settings-key-list {
-    overflow-x: auto;
+    overflow: hidden;
+    color: var(--fuwari-fg-50);
+    font-size: var(--admin-text-meta);
+    line-height: var(--admin-leading-meta);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

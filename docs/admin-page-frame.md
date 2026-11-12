@@ -35,6 +35,8 @@ Every Admin page except the post editor and its history renders inside `AdminPag
 
 In a `form` body, put each setting in an `AdminFormRow` (`label`, `description`, `htmlFor`, the control as children): from 1024px the name and description are on the left and the control on the right, at most 480px wide; narrower, they stack. A page with unsaved changes pins its save bar at the foot of the body, as `SettingsShell` does.
 
+Group settings under `AdminFormSection` (`title`, an optional `description`, `status` beside the title, `collapsible` with `summary` for a group that opens in place): the group's title is the section size, a hairline separates groups, and the last row of a group draws none. A setting with a control that needs a name, a description and an error wired up is a `SettingRow` (`src/features/config/components/admin/setting-row.tsx`, `SwitchRow` for an on/off setting, `SettingPart` for one labelled part of a multi-part setting). A multi-part setting (links, an account's fields) is one row whose control column stacks its parts.
+
 In a `list` body, a row is at most 56px tall, has a hairline under it and a light fill under the pointer, the whole row is the link or button, and its actions go into an `ActionMenu` at the end. `.admin-list-row` gives those values. An empty list is one sentence and one action (`EmptyState`), as `AdminPlaceholderPage` shows.
 
 ## Values
