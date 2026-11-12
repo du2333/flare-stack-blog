@@ -94,8 +94,8 @@ function PostManagerPage() {
       onStatusChange={(newStatus: StatusFilter) =>
         updateSearch({ status: newStatus })
       }
-      onSortByChange={(nextSortBy: SortField) =>
-        updateSearch({ sortBy: nextSortBy })
+      onSortByChange={(nextSortBy: SortField, replace?: boolean) =>
+        updateSearch({ sortBy: nextSortBy }, replace)
       }
       onSearchChange={(newSearch) => updateSearch({ search: newSearch })}
       onCategoryChange={(nextCategory?: CategoryFilter, replace?: boolean) =>
