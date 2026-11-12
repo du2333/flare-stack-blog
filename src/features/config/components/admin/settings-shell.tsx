@@ -24,6 +24,7 @@ export function SettingsShell({
   tabs,
   tools,
   body = "form",
+  scrollKey,
   save,
   children,
 }: {
@@ -38,6 +39,8 @@ export function SettingsShell({
   tools?: ReactNode;
   /** `form` for settings, `list` for a list of rows (keys, muted users). */
   body?: "form" | "list";
+  /** The body scrolls back to the top whenever this changes (a search, a sort). */
+  scrollKey?: string;
   save?: {
     disabled: boolean;
     busy: boolean;
@@ -55,7 +58,7 @@ export function SettingsShell({
   useContentMotion(scrollRef, section);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [section]);
+  }, [section, scrollKey]);
   const saveLabel = save?.busy
     ? m.settings_saving()
     : section === "personalize"
