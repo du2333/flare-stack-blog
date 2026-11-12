@@ -9,7 +9,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as CommentService from "@/features/comments/comments.service";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import { DASHBOARD_RECENT_POSTS_LIMIT } from "@/features/dashboard/dashboard";
+import {
+  DASHBOARD_RECENT_POSTS_LIMIT,
+  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
+} from "@/features/dashboard/dashboard-limits";
 import {
   getDashboardOverview,
   listUnrepliedComments,
@@ -442,10 +445,10 @@ describe("Dashboard overview", () => {
     expect(overview.unrepliedComments.total).toBe(1);
   });
 
-  it("caps unreplied comments at five, newest first, with the total", async () => {
+  it("caps unreplied comments at what the overview lists, newest first, with the total", async () => {
     const postId = await publishPost("busy");
     const ids: Array<number> = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < DASHBOARD_UNREPLIED_COMMENTS_LIMIT + 4; i++) {
       const comment = unwrap(
         await CommentService.createComment(userContext, {
           postId,
@@ -460,10 +463,10 @@ describe("Dashboard overview", () => {
     }
 
     const overview = await getDashboardOverview(adminContext);
-    expect(overview.unrepliedComments.total).toBe(7);
+    expect(overview.unrepliedComments.total).toBe(ids.length);
     expect(
       overview.unrepliedComments.items.map((comment) => comment.id),
-    ).toEqual(ids.slice(2).reverse());
+    ).toEqual(ids.slice(-DASHBOARD_UNREPLIED_COMMENTS_LIMIT).reverse());
   });
 
   it("carries what the Admin needs to reply to, delete or mute a comment", async () => {

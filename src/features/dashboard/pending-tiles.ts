@@ -15,6 +15,8 @@ export type NoticeTarget =
 export type SettingsNotice = {
   key: "popularity-failed" | "email" | "identity" | "update";
   title: string;
+  /** One line on what the notice means. */
+  description: string;
   target: NoticeTarget;
 };
 
@@ -37,18 +39,21 @@ export function settingsNotices(
     notices.push({
       key: "popularity-failed",
       title: m.admin_overview_popularity_failed(),
+      description: m.admin_overview_popularity_sync_failed_desc(),
       target: { kind: "settings", to: "/admin/settings/maintenance" },
     });
   if (data.adminEmailNeedsSetup)
     notices.push({
       key: "email",
       title: m.admin_overview_email_needs_setup(),
+      description: m.admin_overview_email_needs_setup_desc(),
       target: { kind: "settings", to: "/admin/settings/notifications" },
     });
   if (data.defaultSiteIdentity)
     notices.push({
       key: "identity",
       title: m.admin_overview_default_site_identity(),
+      description: m.admin_overview_default_site_identity_desc(),
       target: { kind: "settings", to: "/admin/settings/site" },
     });
   if (data.update)
@@ -56,6 +61,9 @@ export function settingsNotices(
       key: "update",
       title: m.admin_overview_update_available({
         version: data.update.latestVersion,
+      }),
+      description: m.admin_overview_update_available_desc({
+        current: __APP_VERSION__,
       }),
       target: { kind: "external", href: data.update.releaseUrl },
     });
@@ -74,8 +82,10 @@ export type PendingTile =
       key: "notices";
       label: string;
       count: number;
+      /** The most urgent notice's title. */
       latest: string | null;
-      target: NoticeTarget;
+      /** Every notice, most urgent first: one links, several open a menu. */
+      notices: Array<SettingsNotice>;
     };
 
 /**
@@ -113,14 +123,13 @@ export function pendingTiles(data: DashboardOverview): Array<PendingTile> {
       latest: draft ? draft.title.trim() || m.common_untitled() : null,
     },
   ];
-  const first = notices[0];
-  if (first)
+  if (notices.length > 0)
     tiles.push({
       key: "notices",
       label: m.dashboard_tile_notices(),
       count: notices.length,
-      latest: first.title,
-      target: first.target,
+      latest: notices[0]?.title ?? null,
+      notices,
     });
   return tiles;
 }

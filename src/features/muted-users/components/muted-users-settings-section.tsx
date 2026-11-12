@@ -87,6 +87,7 @@ export function MutedUsersSettingsSection() {
       description={m.muted_manager_hint()}
       tools={tools}
       body="list"
+      scrollKey={`${search}\0${sort}`}
     >
       <div className="muted-users">
         <div ref={contentRef} aria-busy={isPending}>

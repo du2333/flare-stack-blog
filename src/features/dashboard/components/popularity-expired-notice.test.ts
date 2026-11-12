@@ -28,14 +28,14 @@ afterEach(() => {
 
 const status = { configured: true, expired: false };
 
-function renderExpired() {
+function renderExpired(alert: "failed" | "expired" = "expired") {
   const client = new QueryClient();
   const invalidate = vi.spyOn(client, "invalidateQueries");
   render(
     createElement(
       QueryClientProvider,
       { client },
-      createElement(PopularityExpiredNotice),
+      createElement(PopularityExpiredNotice, { alert }),
     ),
   );
   return { invalidate };
@@ -50,6 +50,22 @@ it("offers the sync in the banner and sends nothing to the maintenance page yet"
   expect(screen.getByText(m.admin_overview_popularity_expired())).toBeTruthy();
   expect(syncButton()).toBeTruthy();
   expect(screen.queryByRole("link")).toBeNull();
+});
+
+it("states the recorded failure, with the sync and the maintenance page, when the alert is failed", () => {
+  renderExpired("failed");
+
+  const alert = screen.getByRole("alert");
+  expect(alert.textContent).toContain(m.admin_overview_popularity_failed());
+  expect(alert.textContent).toContain(
+    m.admin_overview_popularity_sync_failed_desc(),
+  );
+  expect(syncButton()).toBeTruthy();
+  expect(
+    screen.getByRole("link", {
+      name: m.admin_overview_popularity_maintenance_link(),
+    }),
+  ).toBeTruthy();
 });
 
 it("shows progress while syncing and refreshes the overview on success", async () => {

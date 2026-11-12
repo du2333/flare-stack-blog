@@ -7,9 +7,7 @@ import {
   commentSnippet,
   DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
   DASHBOARD_RECENT_COMMENT_DAYS,
-  DASHBOARD_RECENT_POSTS_LIMIT,
   DASHBOARD_TOP_POST_CANDIDATES,
-  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
   DASHBOARD_WRITING_LOOKBACK_DAYS,
   popularityAlertFromStatus,
   popularityState,
@@ -17,6 +15,10 @@ import {
   siteIdentityIsDefault,
   totalViews,
 } from "@/features/dashboard/dashboard";
+import {
+  DASHBOARD_RECENT_POSTS_LIMIT,
+  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
+} from "@/features/dashboard/dashboard-limits";
 import type {
   DashboardComment,
   DashboardOverview,

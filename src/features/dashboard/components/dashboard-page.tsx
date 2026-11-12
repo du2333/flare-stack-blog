@@ -106,7 +106,7 @@ export function DashboardPage() {
           <DashboardPopular
             className="glance-slot-popular"
             popularity={data.popularity}
-            expired={data.popularityAlert === "expired"}
+            alert={data.popularityAlert}
           />
           <DashboardWritingActivity
             className="glance-slot-activity"

@@ -694,7 +694,7 @@ function WebhookChannel() {
 
       <AdminFormRow
         label={m.settings_connection_test_label()}
-        description={m.settings_webhook_empty()}
+        description={m.settings_webhook_test_hint()}
       >
         <Button
           onClick={() => void handleTest()}

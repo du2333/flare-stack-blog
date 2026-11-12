@@ -24,14 +24,15 @@
 }
 .key-head {
   min-height: 36px;
-  padding: 0 12px;
+  padding: 0 var(--admin-row-x);
   border-bottom: 1px solid var(--admin-rule);
   color: var(--fuwari-fg-50);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
 }
+/* Name over details on a phone needs the full row; the frame caps it there. */
 .key-row {
-  min-height: 48px;
+  min-height: var(--admin-row-max);
 }
 .key-name {
   min-width: 0;

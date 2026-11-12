@@ -2,6 +2,10 @@ import { ClientOnly, useRouteContext } from "@tanstack/react-router";
 import { AdminPage } from "@/components/admin/admin-page";
 import { FrameActionSkeleton } from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DASHBOARD_RECENT_POSTS_LIMIT,
+  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
+} from "@/features/dashboard/dashboard-limits";
 import "@/components/ui/page-heading.css";
 import "./dashboard.css";
 import "./ranked-bar-list.css";
@@ -101,23 +105,29 @@ export function DashboardSkeleton() {
         <div className="glance-col glance-col-side">
           <div className="dashboard-section glance-slot-comments">
             <SectionTitle width="w-28" />
-            {[0, 1, 2].map((row) => (
-              <div key={row} className="flex gap-3 py-3">
-                <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-[22px] w-1/3" />
-                  <Skeleton className="h-[22px] w-full" />
-                  <Skeleton className="h-[18px] w-1/2" />
+            {Array.from(
+              { length: DASHBOARD_UNREPLIED_COMMENTS_LIMIT },
+              (_, row) => (
+                <div key={row} className="flex gap-3 py-3">
+                  <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-[22px] w-1/3" />
+                    <Skeleton className="h-[22px] w-full" />
+                    <Skeleton className="h-[18px] w-1/2" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
           <div className="dashboard-section glance-slot-recent">
             <SectionTitle width="w-24" />
             <div className="dashboard-recent-list">
-              {[0, 1, 2, 3, 4].map((row) => (
-                <RowSkeleton key={row} />
-              ))}
+              {Array.from(
+                { length: DASHBOARD_RECENT_POSTS_LIMIT },
+                (_, row) => (
+                  <RowSkeleton key={row} />
+                ),
+              )}
             </div>
           </div>
         </div>

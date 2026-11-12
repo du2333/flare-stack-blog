@@ -6,7 +6,7 @@
   min-width: 0;
 }
 .muted-row {
-  height: 52px;
+  height: var(--admin-row-max);
   min-height: 0;
 }
 .muted-avatar {
@@ -71,8 +71,6 @@
     grid-template-rows: auto auto;
     align-content: center;
     column-gap: 10px;
-    height: 56px;
-    padding-inline: 4px;
   }
   .muted-row > :first-child,
   .muted-row > :last-child {
