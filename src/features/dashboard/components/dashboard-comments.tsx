@@ -1,22 +1,22 @@
-import { ClientOnly } from "@tanstack/react-router";
-import { MessageCircleHeart } from "lucide-react";
-import { useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
+import { useRef } from "react";
+import { buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-heading";
 import type { DashboardComment } from "@/features/dashboard/dashboard.schema";
 import { useHandledComments } from "@/features/dashboard/hooks/use-handled-comments";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { formatCount } from "./format";
 import { UnrepliedCommentList } from "./unreplied-comment-list";
-import { UnrepliedCommentsSheet } from "./unreplied-comments-sheet";
+
+/** How many of the Comments awaiting a reply the overview lists. */
+export const DASHBOARD_LATEST_COMMENTS = 3;
 
 /**
- * Visitor Comments still waiting for an Admin, with reply, mark handled,
- * delete and mute at hand; the rest open in a sheet. A Comment leaves the
- * list once an Admin replies to it or marks it handled.
+ * The latest Comments awaiting an Admin, with reply, mark handled, delete and
+ * mute at hand; the Comments page has the rest. A Comment leaves the list
+ * once an Admin replies to it or marks it handled.
  */
 export function DashboardComments({
   comments,
@@ -28,62 +28,36 @@ export function DashboardComments({
   className?: string;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const { markHandled, markAllHandled, isMarkingAll } = useHandledComments();
+  const { markHandled } = useHandledComments();
 
   return (
-    <section
-      id="dashboard-unreplied"
-      className={cn("dashboard-section dashboard-comments", className)}
-    >
+    <section className={cn("dashboard-section dashboard-comments", className)}>
       <SectionHeading
         size="md"
-        title={
-          <span className="dashboard-heading-count">
-            {m.dashboard_unreplied_title()}
-            {total > 0 ? (
-              <Badge tone="primary">{formatCount(total)}</Badge>
-            ) : null}
-          </span>
-        }
+        title={m.dashboard_comments_title()}
         titleProps={{ ref: headingRef, tabIndex: -1 }}
+        actions={
+          total > 0 ? (
+            <Link
+              to="/admin/comments"
+              search={{ view: "unreplied" }}
+              className={buttonClass({ variant: "text", size: "sm" })}
+            >
+              {m.dashboard_unreplied_all({ count: total })}
+              <ArrowRight size={16} />
+            </Link>
+          ) : undefined
+        }
       />
       {comments.length === 0 ? (
-        <EmptyState
-          size="compact"
-          icon={MessageCircleHeart}
-          title={m.dashboard_unreplied_empty_title()}
-          description={m.dashboard_unreplied_empty_desc()}
-        />
+        <EmptyState size="compact" description={m.dashboard_comments_empty()} />
       ) : (
         <UnrepliedCommentList
-          comments={comments}
+          comments={comments.slice(0, DASHBOARD_LATEST_COMMENTS)}
           onMarkHandled={markHandled}
           fallbackFocus={() => headingRef.current}
         />
       )}
-      {total > comments.length ? (
-        <div className="dashboard-footnote">
-          <Button
-            variant="text"
-            size="sm"
-            aria-haspopup="dialog"
-            onClick={() => setSheetOpen(true)}
-          >
-            {m.dashboard_unreplied_more({ count: total - comments.length })}
-          </Button>
-        </div>
-      ) : null}
-      <ClientOnly>
-        <UnrepliedCommentsSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-          total={total}
-          onMarkHandled={markHandled}
-          onMarkAllHandled={markAllHandled}
-          isMarkingAll={isMarkingAll}
-        />
-      </ClientOnly>
     </section>
   );
 }

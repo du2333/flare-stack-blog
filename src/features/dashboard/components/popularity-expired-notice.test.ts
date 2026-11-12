@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { createElement } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
-import { DashboardNotices } from "./dashboard-notices";
+import { PopularityExpiredNotice } from "./popularity-expired-notice";
 
 const sync = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/orpc", () => ({
@@ -35,12 +35,7 @@ function renderExpired() {
     createElement(
       QueryClientProvider,
       { client },
-      createElement(DashboardNotices, {
-        update: null,
-        popularityAlert: "expired",
-        adminEmailNeedsSetup: false,
-        defaultSiteIdentity: false,
-      }),
+      createElement(PopularityExpiredNotice),
     ),
   );
   return { invalidate };
@@ -112,22 +107,4 @@ it("says the server was unreachable when the request never got an answer", async
   expect(alert.textContent).toContain(
     m.admin_overview_popularity_sync_unreachable_desc(),
   );
-});
-
-it("sends the default-identity notice to the site settings, which keep the title and author", () => {
-  render(
-    createElement(DashboardNotices, {
-      update: null,
-      popularityAlert: null,
-      adminEmailNeedsSetup: false,
-      defaultSiteIdentity: true,
-    }),
-  );
-  expect(
-    screen
-      .getByRole("link", {
-        name: new RegExp(m.admin_overview_default_site_identity()),
-      })
-      .getAttribute("href"),
-  ).toBe("/admin/settings/site");
 });

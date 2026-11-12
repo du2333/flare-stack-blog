@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as CommentService from "@/features/comments/comments.service";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
+import { DASHBOARD_RECENT_POSTS_LIMIT } from "@/features/dashboard/dashboard";
 import {
   getDashboardOverview,
   listUnrepliedComments,
@@ -108,11 +109,20 @@ describe("Dashboard overview", () => {
       "first-edited",
       "fourth",
       "third",
+      "second",
     ]);
     expect(overview.latestDraft).toBeNull();
   });
 
-  it("offers the latest draft once and keeps it out of recent edits", async () => {
+  it("caps the recent posts at the limit", async () => {
+    for (let i = 0; i < DASHBOARD_RECENT_POSTS_LIMIT + 2; i++)
+      await publishPost(`post-${i}`);
+
+    const overview = await getDashboardOverview(adminContext);
+    expect(overview.recentPosts).toHaveLength(DASHBOARD_RECENT_POSTS_LIMIT);
+  });
+
+  it("offers the latest draft for continuing and lists it among the recent edits", async () => {
     await publishPost("published");
     const older = await PostService.createEmptyPost(adminContext);
     unwrap(
@@ -140,6 +150,7 @@ describe("Dashboard overview", () => {
       status: "draft",
     });
     expect(overview.recentPosts.map((post) => post.title)).toEqual([
+      "newer draft",
       "older draft",
       "published",
     ]);

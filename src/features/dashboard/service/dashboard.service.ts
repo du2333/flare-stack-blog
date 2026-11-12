@@ -98,8 +98,7 @@ export async function getDashboardOverview(
     DashboardRepo.countPublicComments(db, recentCommentsSince),
     FriendLinkRepo.getFriendLinkStatusCounts(db),
     DashboardRepo.findLatestDraft(db),
-    // One extra so the list stays full after leaving out the latest draft.
-    DashboardRepo.listRecentPosts(db, DASHBOARD_RECENT_POSTS_LIMIT + 1),
+    DashboardRepo.listRecentPosts(db, DASHBOARD_RECENT_POSTS_LIMIT),
     FriendLinkRepo.getAllFriendLinks(db, {
       status: "pending",
       limit: DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
@@ -134,9 +133,7 @@ export async function getDashboardOverview(
     popularity,
     writingActivity,
     latestDraft,
-    recentPosts: recentPosts
-      .filter((post) => post.id !== latestDraft?.id)
-      .slice(0, DASHBOARD_RECENT_POSTS_LIMIT),
+    recentPosts,
     pendingFriendLinks: {
       items: pendingItems.map((item) => ({
         id: item.id,

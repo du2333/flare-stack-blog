@@ -12,6 +12,8 @@ import { getLocale } from "@/paraglide/runtime";
 import { formatDay, formatMonth } from "./format";
 import "./writing-heatmap.css";
 
+/** Room kept either side of the tip, so the box's edge does not cut it. */
+const TIP_HALF_WIDTH = 84;
 const LEVELS: Array<WritingLevel> = [0, 1, 2, 3, 4];
 /** Monday, Wednesday and Friday label rows 1, 3 and 5. */
 const LABELLED_ROWS = [0, 2, 4];
@@ -78,9 +80,11 @@ export function DashboardWritingActivity({
     if (!cell || !frame) return setTip(null);
     const cellBox = cell.getBoundingClientRect();
     const frameBox = frame.getBoundingClientRect();
+    // Keep the tip inside the scrolling box, which would cut it off.
+    const x = cellBox.left + cellBox.width / 2 - frameBox.left;
     setTip({
       text: cell.dataset.label ?? "",
-      x: cellBox.left + cellBox.width / 2 - frameBox.left,
+      x: Math.min(Math.max(x, TIP_HALF_WIDTH), frameBox.width - TIP_HALF_WIDTH),
       y: cellBox.top - frameBox.top,
     });
   };
@@ -92,61 +96,66 @@ export function DashboardWritingActivity({
         title={m.dashboard_writing_title()}
         description={summary}
       />
-      <div
-        ref={frameRef}
-        className="writing-heatmap"
-        style={{ "--writing-weeks": calendar.weeks.length } as object}
-      >
-        <div className="writing-heatmap-months" aria-hidden="true">
-          {months.map((month) => (
-            <span key={month.week} style={{ gridColumnStart: month.week + 1 }}>
-              {formatMonth(month.date)}
-            </span>
-          ))}
-        </div>
-        <div className="writing-heatmap-weekdays" aria-hidden="true">
-          {weekdays.map((name, row) => (
-            <span key={row}>{LABELLED_ROWS.includes(row) ? name : ""}</span>
-          ))}
-        </div>
+      <div className="writing-heatmap-scroll custom-scrollbar">
         <div
-          role="group"
-          aria-label={summary}
-          className="writing-heatmap-grid"
-          onPointerOver={showTip}
-          onPointerLeave={() => setTip(null)}
+          ref={frameRef}
+          className="writing-heatmap"
+          style={{ "--writing-weeks": calendar.weeks.length } as object}
         >
-          {calendar.weeks
-            .flat()
-            .map((day) =>
-              day.future ? (
-                <span
-                  key={day.date.getTime()}
-                  className="writing-heatmap-cell"
-                  data-future=""
-                  aria-hidden="true"
-                />
-              ) : (
-                <span
-                  key={day.date.getTime()}
-                  role="img"
-                  aria-label={dayLabel(day)}
-                  data-label={dayLabel(day)}
-                  data-level={day.level}
-                  className="writing-heatmap-cell"
-                />
-              ),
-            )}
-        </div>
-        {tip ? (
-          <div
-            className="writing-heatmap-tip"
-            aria-hidden="true"
-            style={{ left: tip.x, top: tip.y }}
-          >
-            {tip.text}
+          <div className="writing-heatmap-months" aria-hidden="true">
+            {months.map((month) => (
+              <span
+                key={month.week}
+                style={{ gridColumnStart: month.week + 1 }}
+              >
+                {formatMonth(month.date)}
+              </span>
+            ))}
           </div>
-        ) : null}
+          <div className="writing-heatmap-weekdays" aria-hidden="true">
+            {weekdays.map((name, row) => (
+              <span key={row}>{LABELLED_ROWS.includes(row) ? name : ""}</span>
+            ))}
+          </div>
+          <div
+            role="group"
+            aria-label={summary}
+            className="writing-heatmap-grid"
+            onPointerOver={showTip}
+            onPointerLeave={() => setTip(null)}
+          >
+            {calendar.weeks
+              .flat()
+              .map((day) =>
+                day.future ? (
+                  <span
+                    key={day.date.getTime()}
+                    className="writing-heatmap-cell"
+                    data-future=""
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <span
+                    key={day.date.getTime()}
+                    role="img"
+                    aria-label={dayLabel(day)}
+                    data-label={dayLabel(day)}
+                    data-level={day.level}
+                    className="writing-heatmap-cell"
+                  />
+                ),
+              )}
+          </div>
+          {tip ? (
+            <div
+              className="writing-heatmap-tip"
+              aria-hidden="true"
+              style={{ left: tip.x, top: tip.y }}
+            >
+              {tip.text}
+            </div>
+          ) : null}
+        </div>
       </div>
       <div className="writing-heatmap-foot">
         <p>{m.dashboard_writing_basis()}</p>

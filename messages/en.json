@@ -469,7 +469,6 @@
   "admin_overview_popularity_expired": "Popularity data expired",
   "admin_overview_activity_anonymous": "Anonymous",
   "admin_overview_all_posts": "All posts",
-  "admin_overview_review_friend_links": "Review",
   "admin_overview_email_needs_setup": "Email is not configured",
   "admin_overview_default_site_identity": "Site still uses the default name",
   "admin_overview_comment_mute": "Mute this user",
@@ -1390,8 +1389,8 @@
   "friend_review_preview_hint_rejected": "This friend link was rejected and is not shown on the public friend links page.",
   "friend_review_previous": "Previous",
   "friend_review_next": "Next",
-  "dashboard_first_post": "Start with your first post",
   "dashboard_recent_edits": "Recently edited",
+  "dashboard_recent_empty": "No posts yet. Start with your first one.",
   "muted_manager_hint": "Manage muted users and restore their ability to comment.",
   "muted_manager_count": "{count} users",
   "muted_manager_search": "Search usernames",
@@ -1498,18 +1497,14 @@
   "comments_load_failed": "Comments could not be loaded.",
   "comments_replies_failed": "Replies could not be loaded.",
   "comments_retry": "Retry",
-  "admin_overview_email_needs_setup_desc": "You won't get emails about new comments or friend link requests",
-  "admin_overview_popularity_failed_desc": "See why on the maintenance page and sync again",
   "admin_overview_popularity_expired_desc": "Not synced for over 7 days; the homepage shows pinned and recent posts instead",
   "admin_overview_popularity_sync": "Sync now",
   "admin_overview_popularity_syncing": "Syncing",
   "admin_overview_popularity_maintenance_link": "Open maintenance",
   "admin_overview_popularity_sync_failed_desc": "Umami returned no data or the snapshot could not be saved. Try again later; the maintenance page has the details",
   "admin_overview_popularity_sync_unreachable_desc": "The server could not be reached. Check the network and try again",
-  "admin_overview_default_site_identity_desc": "Set your own site title and author",
   "admin_overview_update_available": "Version {version} is available",
-  "admin_overview_update_available_desc": "You're on v{current}. See what's new",
-  "dashboard_stats_label": "Blog at a glance",
+  "dashboard_stats_label": "Site status",
   "dashboard_stat_posts": "Posts",
   "dashboard_stat_drafts": [
     {
@@ -1555,95 +1550,32 @@
   "dashboard_popular_sync": "Sync now",
   "dashboard_popular_no_views": "No post was read in the last 30 days",
   "dashboard_unreplied_title": "Awaiting your reply",
-  "dashboard_unreplied_more": [
+  "dashboard_unreplied_all": [
     {
       "declarations": ["input count", "local formattedCountEn = count: number"],
       "match": {
-        "count=1": "{formattedCountEn} more awaiting reply",
-        "count=*": "{formattedCountEn} more awaiting reply"
+        "count=1": "View all {formattedCountEn}",
+        "count=*": "View all {formattedCountEn}"
       }
     }
   ],
-  "dashboard_unreplied_empty_title": "All caught up",
-  "dashboard_unreplied_empty_desc": "New visitor comments will show up here",
+  "dashboard_comments_title": "Latest comments",
+  "dashboard_comments_empty": "No comments are waiting for a reply. New visitor comments will show up here.",
+  "dashboard_tiles_label": "To do",
+  "dashboard_tile_drafts": "Drafts",
+  "dashboard_tile_notices": "Setup reminders",
+  "dashboard_tile_none": "Nothing waiting",
+  "dashboard_tile_comment_line": "{name}: {snippet}",
+  "dashboard_continue_writing": "Keep writing",
   "dashboard_comment_mark_handled": "Mark as handled",
   "dashboard_comment_source_moment": "Moment",
   "dashboard_comment_marked_handled": "Marked as handled",
   "dashboard_comment_handled_undo": "Undo",
   "dashboard_comment_handled_error": "Couldn't update the comment. Try again.",
-  "dashboard_unreplied_handle_all": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "Mark all as handled ({formattedCountEn})",
-        "count=*": "Mark all as handled ({formattedCountEn})"
-      }
-    }
-  ],
-  "dashboard_unreplied_handle_all_title": "Mark all as handled?",
-  "dashboard_unreplied_handle_all_desc": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "This comment will leave the list awaiting reply. The comment itself stays, and no one is notified.",
-        "count=*": "These {formattedCountEn} comments will leave the list awaiting reply. The comments themselves stay, and no one is notified."
-      }
-    }
-  ],
-  "dashboard_unreplied_handle_all_confirm": "Mark all as handled",
-  "dashboard_unreplied_handled_all": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "Marked {formattedCountEn} comment as handled",
-        "count=*": "Marked {formattedCountEn} comments as handled"
-      }
-    }
-  ],
-  "dashboard_unreplied_load_more": "Load more",
-  "dashboard_unreplied_load_error": "Couldn't load comments awaiting reply",
   "dashboard_pending_links_title": "Friend links to review",
-  "dashboard_pending_links_more": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "{formattedCountEn} more request",
-        "count=*": "{formattedCountEn} more requests"
-      }
-    }
-  ],
   "dashboard_greeting_morning": "Good morning, {name}",
   "dashboard_greeting_afternoon": "Good afternoon, {name}",
   "dashboard_greeting_evening": "Good evening, {name}",
-  "dashboard_summary_views": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "{formattedCountEn} visit in 30 days",
-        "count=*": "{formattedCountEn} visits in 30 days"
-      }
-    }
-  ],
-  "dashboard_summary_unreplied": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "{formattedCountEn} comment awaits your reply",
-        "count=*": "{formattedCountEn} comments await your reply"
-      }
-    }
-  ],
-  "dashboard_summary_pending_links": [
-    {
-      "declarations": ["input count", "local formattedCountEn = count: number"],
-      "match": {
-        "count=1": "{formattedCountEn} friend link to review",
-        "count=*": "{formattedCountEn} friend links to review"
-      }
-    }
-  ],
-  "dashboard_summary_clear": "All caught up — a good day to write",
-  "dashboard_hero_continue": "Continue “{title}”",
   "dashboard_writing_title": "Writing",
   "dashboard_writing_days": [
     {

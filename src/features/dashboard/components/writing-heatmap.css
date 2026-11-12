@@ -36,8 +36,22 @@
   --writing-level-3: var(--fuwari-primary);
   --writing-level-4: var(--fuwari-primary-active);
 }
+/*
+ * The calendar never grows wider than its column: a narrower box scrolls it
+ * sideways instead. The padding above is room for the tip over the top row;
+ * the one below keeps the hover outline of the last row from being cut.
+ */
+.writing-heatmap-scroll {
+  margin-top: -10px;
+  padding: 12px 0 4px;
+  overflow-x: auto;
+}
 .writing-heatmap {
   --writing-gap: calc(3 * var(--admin-unit));
+  /* A week is never narrower than 8px of cell and its gap. */
+  min-inline-size: calc(
+    var(--writing-weeks) * (8px + var(--writing-gap)) + 40px
+  );
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

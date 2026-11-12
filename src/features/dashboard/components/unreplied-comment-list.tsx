@@ -149,7 +149,7 @@ export function UnrepliedCommentList({
             });
           const row = (
             <>
-              <DashboardIdentity kind="user" image={comment.userImage} />
+              <DashboardIdentity image={comment.userImage} />
               <div className="dashboard-row-copy">
                 <div className="dashboard-comment-byline">
                   <strong>{userName}</strong>
