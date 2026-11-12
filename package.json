@@ -19,6 +19,7 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "heavy": "scripts/heavy.sh",
+    "shots": "bun .claude/skills/run-blog/shots/shots.ts",
     "lint:ui": "bun scripts/check-ui-primitives.ts",
     "worktree:setup": "bun scripts/agent-worktree.ts",
     "orpc:contract": "bun run i18n:compile && bun scripts/generate-orpc-contract.ts && oxfmt src/lib/orpc/contract.generated.json",

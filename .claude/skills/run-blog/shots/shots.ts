@@ -6,8 +6,10 @@
  *   bun .claude/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
  *   bun .claude/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
  *
- * `bun install --cwd .claude/skills/run-blog/shots` once before the first run.
+ * or `bun run shots ...`. The tool's own dependencies install themselves on the
+ * first run.
  */
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -21,18 +23,38 @@ import { homedir, tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
-import pixelmatch from "pixelmatch";
-import { chromium } from "playwright-core";
 import type { Browser, Page } from "playwright-core";
-import { PNG } from "pngjs";
+
+/** Installs the tool's own dependencies once, through the machine lock when the repo has it. */
+function ensureDependencies() {
+  const here = import.meta.dirname;
+  if (existsSync(path.join(here, "node_modules", "playwright-core"))) return;
+  console.error("shots: installing its dependencies (once)");
+  const lock = path.resolve(here, "../../../../scripts/heavy.sh");
+  const install = ["bun", "install", "--cwd", here];
+  const [command, ...args] = existsSync(lock) ? [lock, ...install] : install;
+  const result = spawnSync(command!, args, { stdio: "inherit" });
+  if (result.status !== 0) {
+    console.error(`shots: bun install --cwd ${here} failed`);
+    process.exit(2);
+  }
+}
+
+ensureDependencies();
+const { default: pixelmatch } = await import("pixelmatch");
+const { chromium } = await import("playwright-core");
+const { PNG } = await import("pngjs");
+type PNG = InstanceType<typeof PNG>;
 
 const USAGE = `usage:
   shots.ts shoot --base <url> --out <dir> [--pages /,/posts] [--widths 1440,820,390]
                  [--schemes light,dark] [--views full|top|end|<px>,...]
                  [--theme <id>] [--theme-options <json>] [--session <token>]
                  [--locale zh|en] [--reduced-motion] [--mask <css>] [--concurrency 2]
+                 [--timeout 45] [--scroller <css>]
+                 [--click <css>]... [--press <key>]... [--hover <css>] [--name <suffix>]
   shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
-  shots.ts sheet <dir> --out <file.png> [--match <substring>] [--columns 4] [--cell-width 480]`;
+  shots.ts sheet <dir> --out <file.png> [--match <substring>] [--columns 2] [--cell-width 960] [--per-sheet 6]`;
 
 function fail(message: string): never {
   console.error(message);
@@ -102,10 +124,19 @@ interface ShootOptions {
   reducedMotion: boolean;
   masks: Array<string>;
   concurrency: number;
+  /** Navigation limit in ms. */
+  timeout: number;
+  /** CSS of the element that scrolls the page, when detection is not wanted. */
+  scroller?: string;
+  clicks: Array<string>;
+  presses: Array<string>;
+  hover?: string;
+  /** Appended to the file names. */
+  name?: string;
 }
 
 interface Issue {
-  kind: "pageerror" | "console" | "http" | "load" | "unstable";
+  kind: "pageerror" | "console" | "http" | "load" | "unstable" | "capped";
   text: string;
 }
 
@@ -160,15 +191,75 @@ function observeLayoutShifts() {
   }).observe({ type: "layout-shift", buffered: true });
 }
 
+/** Marks the element that scrolls the page (see `markScroller`). */
+const SCROLLER_ATTR = "data-shots-scroller";
+const SCROLLER = `[${SCROLLER_ATTR}]`;
+/** The tallest a viewport grows to take in a scroll container. */
+const MAX_VIEWPORT_HEIGHT = 8000;
+
+class ShotsError extends Error {}
+
+/**
+ * Finds the element that scrolls the page and marks it with `SCROLLER_ATTR`.
+ * The document usually scrolls; in the Admin it does not, and a container
+ * inside it does: then the largest scroll container (a good part of the
+ * viewport, content taller than its box) is the one. `override` is a CSS
+ * selector that wins over detection. Run again after content arrives.
+ */
+async function markScroller(page: Page, override?: string) {
+  const found = await page.evaluate(
+    ([attr, selector]) => {
+      for (const old of document.querySelectorAll(`[${attr}]`)) {
+        old.removeAttribute(attr);
+      }
+      let target: Element | null = null;
+      if (selector) {
+        target = document.querySelector(selector);
+      } else if (
+        document.documentElement.scrollHeight <=
+        window.innerHeight + 1
+      ) {
+        let best = 0;
+        const candidates = [
+          document.body,
+          ...document.body.querySelectorAll("*"),
+        ];
+        for (const element of candidates) {
+          if (!(element instanceof HTMLElement)) continue;
+          if (element.scrollHeight - element.clientHeight <= 1) continue;
+          const overflow = getComputedStyle(element).overflowY;
+          if (overflow !== "auto" && overflow !== "scroll") continue;
+          const area = element.clientWidth * element.clientHeight;
+          if (area < 0.25 * window.innerWidth * window.innerHeight) continue;
+          if (area > best) {
+            best = area;
+            target = element;
+          }
+        }
+      }
+      target?.setAttribute(attr, "");
+      return target !== null;
+    },
+    [SCROLLER_ATTR, override] as const,
+  );
+  if (override && !found) {
+    throw new ShotsError(`--scroller matched nothing: ${override}`);
+  }
+  return found;
+}
+
 /** Waits until the page height has not changed for `quietMs` (late hydration, data, images). */
 async function waitForStableHeight(page: Page, quietMs = 800, maxMs = 15000) {
   await page.evaluate(
-    async ([quiet, max]) => {
+    async ([quiet, max, scroller]) => {
       const started = Date.now();
       let last = -1;
       let since = Date.now();
       while (Date.now() - started < max) {
-        const height = document.documentElement.scrollHeight;
+        const height = Math.max(
+          document.documentElement.scrollHeight,
+          document.querySelector(scroller)?.scrollHeight ?? 0,
+        );
         if (height !== last) {
           last = height;
           since = Date.now();
@@ -176,46 +267,65 @@ async function waitForStableHeight(page: Page, quietMs = 800, maxMs = 15000) {
         await new Promise((r) => setTimeout(r, 100));
       }
     },
-    [quietMs, maxMs] as const,
+    [quietMs, maxMs, SCROLLER] as const,
   );
 }
 
+/** Skeletons (`animate-pulse`) are what a page shows while data is on its way. */
+async function waitForSkeletons(page: Page) {
+  await page
+    .waitForFunction(
+      () => !document.querySelector(".animate-pulse"),
+      undefined,
+      {
+        timeout: 10000,
+      },
+    )
+    .catch(() => {});
+}
+
 /** Scrolls through the page and back so lazy images load, then waits for them. */
-async function loadEverything(page: Page) {
+async function loadEverything(page: Page, scrollerCss?: string) {
   await waitForStableHeight(page);
+  // The Admin shows a skeleton first, and its container scrolls only once the
+  // data is there: look for the scroller after that.
+  await waitForSkeletons(page);
   // Parts of the page appear only once scrolled into view, and a list may load
   // its next page when its end is reached (/posts): scroll through, pause at
   // the end until the height stops changing, and go on while the page grew.
+  // The scrolled element is the page's scroll container, else the document.
   let from = 0;
   let height = 0;
   for (let pass = 0; pass < 10; pass++) {
-    const grown = await page.evaluate(async (start) => {
-      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-      const step = Math.max(300, Math.round(window.innerHeight * 0.8));
-      for (
-        let y = start;
-        y < document.documentElement.scrollHeight;
-        y += step
-      ) {
-        window.scrollTo({ top: y, behavior: "instant" });
-        await sleep(120);
-      }
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: "instant",
-      });
-      for (const img of document.images) img.loading = "eager";
-      return document.documentElement.scrollHeight;
-    }, from);
+    await markScroller(page, scrollerCss);
+    const grown = await page.evaluate(
+      async ([start, scroller]) => {
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+        const el =
+          document.querySelector(scroller) ?? document.scrollingElement!;
+        const step = Math.max(300, Math.round(el.clientHeight * 0.8));
+        for (let y = start; y < el.scrollHeight; y += step) {
+          el.scrollTo({ top: y, behavior: "instant" });
+          await sleep(120);
+        }
+        el.scrollTo({ top: el.scrollHeight, behavior: "instant" });
+        for (const img of document.images) img.loading = "eager";
+        return el.scrollHeight;
+      },
+      [from, SCROLLER] as const,
+    );
     await waitForStableHeight(page);
     const now = await page.evaluate(
-      () => document.documentElement.scrollHeight,
+      (scroller) =>
+        (document.querySelector(scroller) ?? document.documentElement)
+          .scrollHeight,
+      SCROLLER,
     );
     if (pass > 0 && now === height) break;
     from = Math.max(0, grown - 300);
     height = now;
   }
-  const unloaded = await page.evaluate(async () => {
+  const unloaded = await page.evaluate(async (scroller) => {
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const pending = [...document.images].filter((img) => !img.complete);
     await Promise.race([
@@ -235,21 +345,13 @@ async function loadEverything(page: Page) {
     );
     await document.fonts.ready;
     window.scrollTo({ top: 0, behavior: "instant" });
+    document.querySelector(scroller)?.scrollTo({ top: 0, behavior: "instant" });
     return [...document.images]
       .filter((img) => !img.complete)
       .map((img) => img.src);
-  });
+  }, SCROLLER);
   await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
-  // Skeletons (`animate-pulse`) are what a page shows while data is on its way.
-  await page
-    .waitForFunction(
-      () => !document.querySelector(".animate-pulse"),
-      undefined,
-      {
-        timeout: 10000,
-      },
-    )
-    .catch(() => {});
+  await waitForSkeletons(page);
   await waitForStableHeight(page);
   return unloaded;
 }
@@ -343,15 +445,75 @@ async function stableScreenshot(page: Page, fullPage: boolean) {
 
 async function scrollTo(page: Page, target: "top" | "end" | number) {
   // Always arrive from the top, so scroll-aware headers are in the same state.
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await page.evaluate((scroller) => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.querySelector(scroller)?.scrollTo({ top: 0, behavior: "instant" });
+  }, SCROLLER);
   await page.waitForTimeout(100);
-  await page.evaluate((to) => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const top = to === "end" ? max : to === "top" ? 0 : Math.min(to, max);
-    window.scrollTo({ top, behavior: "instant" });
-  }, target);
+  await page.evaluate(
+    ([to, scroller]) => {
+      const el = document.querySelector(scroller) ?? document.scrollingElement!;
+      const max = el.scrollHeight - el.clientHeight;
+      const top = to === "end" ? max : to === "top" ? 0 : Math.min(to, max);
+      el.scrollTo({ top, behavior: "instant" });
+    },
+    [target, SCROLLER] as const,
+  );
   await page.waitForTimeout(250);
   await settleMotion(page, false);
+}
+
+/**
+ * Grows the viewport by what the page's scroll container hides, so one
+ * capture holds all of it. Returns false when the 8000 px cap cut it short.
+ */
+async function growViewportToContent(page: Page) {
+  for (let pass = 0; pass < 3; pass++) {
+    const hidden = await page.evaluate((scroller) => {
+      const el = document.querySelector(scroller);
+      return el ? el.scrollHeight - el.clientHeight : 0;
+    }, SCROLLER);
+    if (hidden <= 1) break;
+    const size = page.viewportSize()!;
+    const height = Math.min(MAX_VIEWPORT_HEIGHT, size.height + hidden);
+    if (height === size.height) return false;
+    await page.setViewportSize({ width: size.width, height });
+    await page.waitForTimeout(300);
+    await waitForStableHeight(page, 500, 5000);
+  }
+  const left = await page.evaluate((scroller) => {
+    const el = document.querySelector(scroller);
+    return el ? el.scrollHeight - el.clientHeight : 0;
+  }, SCROLLER);
+  return left <= 1;
+}
+
+/** Clicks, key presses and a hover, in that order: the state a shot shows. */
+async function applyStates(page: Page, options: ShootOptions) {
+  const reach = async (selector: string, flag: string) => {
+    const target = page.locator(selector).first();
+    try {
+      await target.waitFor({ state: "attached", timeout: 5000 });
+    } catch {
+      throw new ShotsError(`${flag} matched nothing: ${selector}`);
+    }
+    return target;
+  };
+  for (const selector of options.clicks) {
+    await (await reach(selector, "--click")).click({ timeout: 10000 });
+    await page.waitForTimeout(200);
+    await settleMotion(page, false);
+  }
+  for (const key of options.presses) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(200);
+    await settleMotion(page, false);
+  }
+  if (options.hover) {
+    await (await reach(options.hover, "--hover")).hover({ timeout: 10000 });
+    await page.waitForTimeout(200);
+    await settleMotion(page, false);
+  }
 }
 
 async function shootUnit(
@@ -412,7 +574,7 @@ async function shootUnit(
     try {
       const response = await page.goto(addressOf(options, pagePath), {
         waitUntil: "load",
-        timeout: 45000,
+        timeout: options.timeout,
       });
       if (response && response.status() >= 400) {
         result.issues.push({
@@ -435,7 +597,7 @@ async function shootUnit(
       () => (window as unknown as { __cls: { cls: number } }).__cls?.cls ?? 0,
     );
 
-    for (const src of await loadEverything(page)) {
+    for (const src of await loadEverything(page, options.scroller)) {
       result.issues.push({ kind: "load", text: `image never loaded: ${src}` });
     }
     await makeStill(page, options.masks);
@@ -445,10 +607,12 @@ async function shootUnit(
         Math.max(doc.scrollWidth, document.body.scrollWidth) - doc.clientWidth
       );
     });
+    await applyStates(page, options);
 
     const prefix = `${slugOf(pagePath)}-${width}-${scheme}`;
+    const suffix = options.name ? `-${slugOf(options.name)}` : "";
     for (const view of options.views) {
-      const file = path.join(options.out, `${prefix}-${view}.png`);
+      const file = path.join(options.out, `${prefix}-${view}${suffix}.png`);
       await scrollTo(
         page,
         view === "full"
@@ -459,7 +623,19 @@ async function shootUnit(
               ? "end"
               : Number(view),
       );
+      // A page that scrolls inside an element is shot on a taller viewport.
+      const grown = view === "full";
+      if (grown && !(await growViewportToContent(page))) {
+        result.issues.push({
+          kind: "capped",
+          text: `${path.basename(file)} is cut at ${MAX_VIEWPORT_HEIGHT}px`,
+        });
+      }
       const png = await stableScreenshot(page, view === "full");
+      if (grown) {
+        await page.setViewportSize(viewport(width));
+        await page.waitForTimeout(200);
+      }
       writeFileSync(file, png.image);
       if (!png.stable) {
         result.issues.push({
@@ -479,6 +655,24 @@ async function shootUnit(
   return result;
 }
 
+/** One request before the run: a server that does not answer ends it in 15 s with one line. */
+async function requireAnswer(base: URL) {
+  try {
+    await fetch(base, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (error) {
+    const reason =
+      (error as Error).name === "TimeoutError"
+        ? "no answer within 15 s"
+        : ((error as Error).cause as Error | undefined)?.message ||
+          (error as Error).message;
+    console.error(`shots: ${base.origin} is not answering (${reason})`);
+    process.exit(1);
+  }
+}
+
 async function shoot(args: Array<string>) {
   const { values } = parseArgs({
     args,
@@ -496,6 +690,12 @@ async function shoot(args: Array<string>) {
       "reduced-motion": { type: "boolean", default: false },
       mask: { type: "string" },
       concurrency: { type: "string", default: "2" },
+      timeout: { type: "string", default: "45" },
+      scroller: { type: "string" },
+      click: { type: "string", multiple: true },
+      press: { type: "string", multiple: true },
+      hover: { type: "string" },
+      name: { type: "string" },
     },
   });
   if (!values.base || !values.out)
@@ -521,6 +721,8 @@ async function shoot(args: Array<string>) {
   const widths = csv(values.widths!).map(Number);
   if (widths.some((w) => !Number.isInteger(w) || w < 200))
     fail("--widths are pixel numbers");
+  const timeout = Number(values.timeout);
+  if (!(timeout > 0)) fail("--timeout is a number of seconds");
 
   const options: ShootOptions = {
     base: new URL(values.base),
@@ -536,7 +738,14 @@ async function shoot(args: Array<string>) {
     reducedMotion: values["reduced-motion"] ?? false,
     masks: [...DEFAULT_MASKS, ...(values.mask ? [values.mask] : [])],
     concurrency: Math.max(1, Number(values.concurrency) || 2),
+    timeout: timeout * 1000,
+    scroller: values.scroller,
+    clicks: values.click ?? [],
+    presses: values.press ?? [],
+    hover: values.hover,
+    name: values.name,
   };
+  await requireAnswer(options.base);
   mkdirSync(options.out, { recursive: true });
 
   const jobs: Array<[string, number, Scheme]> = [];
@@ -771,8 +980,9 @@ async function sheet(args: Array<string>) {
     options: {
       out: { type: "string" },
       match: { type: "string" },
-      columns: { type: "string", default: "4" },
-      "cell-width": { type: "string", default: "480" },
+      columns: { type: "string", default: "2" },
+      "cell-width": { type: "string", default: "960" },
+      "per-sheet": { type: "string", default: "6" },
     },
   });
   const [dir] = positionals;
@@ -785,11 +995,12 @@ async function sheet(args: Array<string>) {
       `no images in ${dir}${values.match ? ` match "${values.match}"` : ""}`,
     );
 
+  const perSheet = Math.max(1, Number(values["per-sheet"]) || 6);
   const columns = Math.max(
     1,
-    Math.min(Number(values.columns) || 4, names.length),
+    Math.min(Number(values.columns) || 2, names.length, perSheet),
   );
-  const wanted = Math.max(60, Number(values["cell-width"]) || 480);
+  const wanted = Math.max(60, Number(values["cell-width"]) || 960);
   const cellWidth = Math.min(
     wanted,
     Math.floor((SHEET_MAX_WIDTH - GAP * (columns + 1)) / columns),
@@ -798,7 +1009,7 @@ async function sheet(args: Array<string>) {
   const maxImage = SHEET_MAX_HEIGHT - LABEL - 2 * GAP;
 
   // Rows of `columns` images; a row is as tall as its tallest image. A new
-  // sheet starts when the next row would pass the height limit.
+  // sheet starts when the next row would pass the image or the height limit.
   const sheets: Array<{ cells: Array<Cell>; height: number }> = [];
   let current: { cells: Array<Cell>; height: number } = {
     cells: [],
@@ -821,7 +1032,11 @@ async function sheet(args: Array<string>) {
       };
     });
     const rowHeight = LABEL + Math.max(...row.map((c) => c.height)) + GAP;
-    if (current.cells.length && current.height + rowHeight > SHEET_MAX_HEIGHT) {
+    if (
+      current.cells.length &&
+      (current.cells.length + row.length > perSheet ||
+        current.height + rowHeight > SHEET_MAX_HEIGHT)
+    ) {
       sheets.push(current);
       current = { cells: [], height: GAP };
     }
@@ -869,7 +1084,7 @@ ${one.cells
         clip: { x: 0, y: 0, width: sheetWidth, height: one.height },
       });
       console.log(
-        `${target} (${sheetWidth}x${one.height}, ${one.cells.length} images)`,
+        `wrote ${target} (${sheetWidth}x${one.height}, ${one.cells.length} images)`,
       );
     }
   } finally {
