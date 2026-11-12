@@ -4,7 +4,11 @@ import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
 import { ListCardColumns, SortHeader } from "@/components/ui/list-card";
 import { openPublicPost } from "@/features/posts/utils/open-public-post";
-import { formatDate, formatTimeAgo } from "@/lib/utils";
+import {
+  postStateOf,
+  postStateLabel,
+} from "@/features/posts/components/post-state";
+import { formatCount, formatDate, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { AdminPostListItem, PostPopularity, SortField } from "../types";
 
@@ -128,17 +132,11 @@ export function PostRow({
   const title = post.title.trim() || m.common_untitled();
   const untitled = !post.title.trim();
   const published = post.status === "published";
-  const state = !published
-    ? "draft"
-    : post.hasUnpublishedChanges
-      ? "changed"
-      : "published";
-  const stateLabel =
-    state === "draft"
-      ? m.admin_posts_status_draft()
-      : state === "changed"
-        ? m.admin_posts_status_changed()
-        : m.admin_posts_status_published();
+  const state = postStateOf({
+    published,
+    hasUnpublishedChanges: post.hasUnpublishedChanges,
+  });
+  const stateLabel = postStateLabel(state);
   const date = sortBy === "publishedAt" ? post.publishedAt : post.updatedAt;
   const { publicSlug } = post;
   const shownTags = post.tags.slice(0, TAGS_SHOWN);
@@ -247,7 +245,7 @@ export function PostRow({
             : undefined
         }
       >
-        {post.viewCount === undefined ? "—" : post.viewCount.toLocaleString()}
+        {post.viewCount === undefined ? "—" : formatCount(post.viewCount)}
       </span>
       <span
         className="post-num post-count"
@@ -255,7 +253,7 @@ export function PostRow({
         data-zero={post.commentCount ? undefined : ""}
         data-sorted={sortBy === "commentCount" ? "" : undefined}
       >
-        {post.commentCount.toLocaleString()}
+        {formatCount(post.commentCount)}
       </span>
       <span className="post-time" role="cell">
         {time}

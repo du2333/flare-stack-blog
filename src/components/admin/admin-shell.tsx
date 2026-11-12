@@ -13,9 +13,11 @@ import {
   Moon,
   PenLine,
   Sun,
+  X,
 } from "lucide-react";
 import {
   type ReactNode,
+  type Ref,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -68,6 +70,7 @@ export function AdminShell({
   const create = useCreatePost();
   const createPost = useCallback(() => create.mutate(), [create]);
   const closeNav = useCallback(() => setNavOpen(false), []);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   // The drawer is the phone layout; it closes on its way to another page
   // and when the screen grows past it.
@@ -100,8 +103,11 @@ export function AdminShell({
         aria-label={m.admin_layout_title()}
         className="admin-side"
         backdropClassName="admin-side-scrim"
+        initialFocus={() => closeRef.current}
       >
         <Sidebar
+          closeRef={closeRef}
+          onClose={closeNav}
           pathname={pathname}
           onSearch={() => setPaletteOpen(true)}
           onCreatePost={createPost}
@@ -170,11 +176,16 @@ function pendingLabel(item: AdminNavItem, count: number) {
 }
 
 function Sidebar({
+  closeRef,
+  onClose,
   pathname,
   onSearch,
   onCreatePost,
   creating,
 }: {
+  /** The drawer's close button, which takes focus when the drawer opens. */
+  closeRef: Ref<HTMLButtonElement>;
+  onClose: () => void;
   pathname: string;
   onSearch: () => void;
   onCreatePost: () => void;
@@ -209,26 +220,38 @@ function Sidebar({
 
   return (
     <>
-      <a
-        href="/"
-        target="_blank"
-        rel="noopener"
-        className="admin-brand"
-        title={m.admin_sidebar_open_site()}
-        aria-label={m.admin_sidebar_site_link({ site: siteConfig.title })}
-      >
-        <span className="admin-brand-mark">
-          {siteConfig.avatar ? (
-            <img src={siteConfig.avatar} alt="" />
-          ) : (
-            siteConfig.title.trim().slice(0, 1)
-          )}
-        </span>
-        <span className="admin-brand-copy">
-          <span className="admin-brand-name">{siteConfig.title}</span>
-        </span>
-        <ArrowUpRight size={15} className="admin-brand-ext" aria-hidden />
-      </a>
+      <div className="admin-side-head">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener"
+          className="admin-brand"
+          title={m.admin_sidebar_open_site()}
+          aria-label={m.admin_sidebar_site_link({ site: siteConfig.title })}
+        >
+          <span className="admin-brand-mark">
+            {siteConfig.avatar ? (
+              <img src={siteConfig.avatar} alt="" />
+            ) : (
+              siteConfig.title.trim().slice(0, 1)
+            )}
+          </span>
+          <span className="admin-brand-copy">
+            <span className="admin-brand-name">{siteConfig.title}</span>
+          </span>
+          <ArrowUpRight size={15} className="admin-brand-ext" aria-hidden />
+        </a>
+        {/* Only the drawer has it; laid out in place the sidebar does not close. */}
+        <IconButton
+          ref={closeRef}
+          size="md"
+          className="admin-side-close"
+          onClick={onClose}
+          label={m.admin_shell_close_navigation()}
+        >
+          <X size={18} />
+        </IconButton>
+      </div>
 
       <div className="admin-quick">
         <CommandPaletteTrigger

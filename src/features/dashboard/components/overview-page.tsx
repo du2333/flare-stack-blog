@@ -18,6 +18,10 @@ import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
 import { settingsNotices } from "@/features/dashboard/settings-notices";
 import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { buildWritingCalendar } from "@/features/dashboard/writing-calendar";
+import {
+  postStateLabel,
+  postStateOf,
+} from "@/features/posts/components/post-state";
 import { formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -28,7 +32,8 @@ import {
   formatWindow,
 } from "./format";
 import { greeting } from "./greeting";
-import { Count, OverviewCard, riseOrder, TimeIcon } from "./overview-card";
+import { riseOrder } from "@/components/admin/rise";
+import { Count, OverviewCard, TimeIcon } from "./overview-card";
 import { OverviewHero } from "./overview-hero";
 import { OverviewComments, OverviewFriendLinks } from "./overview-inbox";
 import { TrendChart } from "./trend-chart";
@@ -52,7 +57,7 @@ export function OverviewPage() {
   return (
     <div className="overview-scroll">
       <div className="overview">
-        <header className="overview-head overview-rise" style={riseOrder(0)}>
+        <header className="overview-head admin-rise" style={riseOrder(0)}>
           <div>
             <p className="overview-date">
               <TimeIcon hour={hour} />
@@ -149,7 +154,7 @@ function Pulse({ data }: { data: DashboardOverview }) {
 
   return (
     <section
-      className="overview-card overview-pulse overview-rise"
+      className="overview-card overview-pulse admin-rise"
       style={riseOrder(2)}
     >
       <div className="overview-pulse-side">
@@ -262,7 +267,7 @@ function Popular({
       i={3}
     >
       {posts.length === 0 ? (
-        <p className="overview-empty">{m.admin_overview_popular_empty()}</p>
+        <PopularEmpty state={popularity.state} />
       ) : (
         <ol className="overview-rank">
           {posts.map((post, index) => (
@@ -283,6 +288,34 @@ function Popular({
         </ol>
       )}
     </OverviewCard>
+  );
+}
+
+/** Why there are no popular Posts: no Umami, no snapshot yet, an expired one, no views. */
+function PopularEmpty({
+  state,
+}: {
+  state: DashboardOverview["popularity"]["state"];
+}) {
+  const [title, description] =
+    state === "unconfigured"
+      ? [
+          m.dashboard_popular_unconfigured_title(),
+          m.dashboard_popular_unconfigured_desc(),
+        ]
+      : state === "missing"
+        ? [m.dashboard_popular_missing_title(), null]
+        : state === "expired"
+          ? [
+              m.admin_overview_popularity_expired(),
+              m.admin_overview_popularity_expired_desc(),
+            ]
+          : [m.dashboard_popular_no_views(), null];
+  return (
+    <p className="overview-empty">
+      <b className="overview-empty-title">{title}</b>
+      {description ? <span>{description}</span> : null}
+    </p>
   );
 }
 
@@ -460,12 +493,10 @@ function Recent({ posts }: { posts: DashboardOverview["recentPosts"] }) {
       ) : (
         <ul className="overview-recent">
           {posts.slice(0, 5).map((post) => {
-            const state =
-              post.status === "draft"
-                ? "draft"
-                : post.hasUnpublishedChanges
-                  ? "changed"
-                  : "published";
+            const state = postStateOf({
+              published: post.status === "published",
+              hasUnpublishedChanges: post.hasUnpublishedChanges,
+            });
             return (
               <li key={post.id}>
                 <Link
@@ -476,15 +507,11 @@ function Recent({ posts }: { posts: DashboardOverview["recentPosts"] }) {
                   <span className="overview-recent-title">
                     {post.title.trim() || m.common_untitled()}
                   </span>
-                  {state === "draft" ? (
+                  {state === "published" ? null : (
                     <span className="overview-recent-tag">
-                      {m.admin_posts_status_draft()}
+                      {postStateLabel(state)}
                     </span>
-                  ) : state === "changed" ? (
-                    <span className="overview-recent-tag">
-                      {m.admin_posts_status_changed()}
-                    </span>
-                  ) : null}
+                  )}
                   {post.pinnedAt ? (
                     <Pin
                       size={13}

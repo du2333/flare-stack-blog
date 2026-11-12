@@ -46,9 +46,11 @@ const LEAVE_MS = 380;
 /**
  * Rows that leave the list: a row slides out, then its change is sent. If
  * the change fails, the row comes back (the caller says why in a toast).
- * `gone` keeps a row hidden until the list's next load has dropped it.
+ * `gone` keeps a row hidden until the list (`ids`, the rows the data holds)
+ * has dropped it; once dropped it is forgotten, so a row that comes back to
+ * the data later, such as after an undo, shows again.
  */
-export function useLeavingRows() {
+export function useLeavingRows(ids: ReadonlyArray<number>) {
   const [leaving, setLeaving] = useState<ReadonlySet<number>>(new Set());
   const [gone, setGone] = useState<ReadonlySet<number>>(new Set());
   const without = (id: number) => (current: ReadonlySet<number>) => {
@@ -56,6 +58,18 @@ export function useLeavingRows() {
     next.delete(id);
     return next;
   };
+  const present = ids.join(",");
+  useEffect(() => {
+    const held = new Set(ids);
+    const prune = (current: ReadonlySet<number>) =>
+      [...current].every((id) => held.has(id))
+        ? current
+        : new Set([...current].filter((id) => held.has(id)));
+    setGone(prune);
+    setLeaving(prune);
+    // `present` stands for `ids`, which is a new array each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [present]);
   const leave = (id: number, commit: () => Promise<unknown>) => {
     setLeaving((current) => new Set(current).add(id));
     window.setTimeout(() => {
@@ -126,7 +140,9 @@ export function OverviewComments({
 }) {
   const queryClient = useQueryClient();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const { leaving, gone, leave } = useLeavingRows();
+  const { leaving, gone, leave } = useLeavingRows(
+    comments.map((comment) => comment.id),
+  );
   const { markHandledAsync } = useHandledComments();
   const [replyingId, setReplyingId] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
@@ -389,7 +405,9 @@ export function OverviewFriendLinks({
 }) {
   const queryClient = useQueryClient();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const { leaving, gone, leave } = useLeavingRows();
+  const { leaving, gone, leave } = useLeavingRows(
+    pending.items.map((item) => item.id),
+  );
   const { approveAsync, rejectAsync } = useAdminFriendLinks();
   const shown = pending.items.filter((item) => !gone.has(item.id));
   const left =
@@ -408,9 +426,10 @@ export function OverviewFriendLinks({
       try {
         await send();
       } catch (error) {
-        // A missing link has its own toast; anything else gets this one.
-        if (!isDefinedError(error))
-          toast.error(m.dashboard_comment_handled_error());
+        // A link reviewed elsewhere has its own toast; anything else this one.
+        if (!isDefinedError(error)) toast.error(m.admin_overview_link_failed());
+        // Reload, so a link already reviewed leaves instead of coming back.
+        void queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });
         throw error;
       }
       await queryClient.invalidateQueries({ queryKey: orpc.dashboard.key() });

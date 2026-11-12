@@ -7,12 +7,14 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { DisclosureChevron, DisclosurePanel } from "@/components/ui/disclosure";
+import { TabsVariant } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   type AdminPageAction,
   useAdminChrome,
   useAdminPrimaryAction,
 } from "./admin-chrome";
+import { riseOrder } from "./rise";
 import "@/components/ui/tabs.css";
 import "./content-workspace.css";
 import "./admin-page.css";
@@ -28,8 +30,11 @@ import "./admin-page.css";
  * top while the body scrolls, with a hairline under them. Below 1024px the
  * top bar carries the title and the primary action instead.
  *
+ * The head, the bar and the body rise in one after another; tabs in the head
+ * take their segmented form.
+ *
  * The body takes one of three forms:
- * - `list`: full width, for a list or a dashboard;
+ * - `list`: one card, full width, for a list;
  * - `form`: settings rows (AdminFormRow), name and description on the left
  *   and the control on the right from 1024px, stacked below;
  * - `split`: master and detail side by side, each scrolling on its own.
@@ -67,6 +72,20 @@ interface AdminPageProps extends Omit<
   bodyRef?: Ref<HTMLDivElement>;
   /** Names the body region, for a page whose body is the scroller. */
   bodyLabel?: string;
+  /**
+   * A list or split body is a card padded by the frame's inset. A list
+   * whose pieces pad themselves (ListCardColumns, ListCardRows,
+   * ListCardFoot) turns it off.
+   */
+  inset?: boolean;
+  /** A thin line runs along the top of a list or split body while true. */
+  loading?: boolean;
+  /**
+   * Below 768px the whole page scrolls, the head with it, and the body grows
+   * with its content, for a long list read on a phone. The page element is
+   * then the scroller.
+   */
+  stackOnPhone?: boolean;
   children: ReactNode;
 }
 
@@ -83,6 +102,9 @@ export function AdminPage({
   scroll = body !== "split",
   bodyRef,
   bodyLabel,
+  inset = true,
+  loading = false,
+  stackOnPhone = false,
   className,
   children,
   ...rest
@@ -97,22 +119,35 @@ export function AdminPage({
       {...rest}
       className={cn("admin-page admin-workspace admin-frame", className)}
       data-body={body}
+      data-stack={stackOnPhone ? "" : undefined}
     >
-      <div className="admin-page-head">
-        <AdminPageHeader
-          title={title}
-          count={count}
-          description={description}
-          actions={actions}
-          hasToolbar={row !== null}
-        />
-        {row}
-      </div>
+      <TabsVariant value="segmented">
+        <div className="admin-page-head">
+          <AdminPageHeader
+            title={title}
+            count={count}
+            description={description}
+            actions={actions}
+            hasToolbar={row !== null}
+          />
+          {row ? (
+            <div className="admin-page-bar admin-rise" style={riseOrder(1)}>
+              {row}
+            </div>
+          ) : null}
+        </div>
+      </TabsVariant>
       <div
         ref={bodyRef}
-        className={cn("admin-page-body", scroll && "custom-scrollbar")}
+        className={cn(
+          "admin-page-body admin-rise",
+          scroll && "custom-scrollbar",
+        )}
+        style={riseOrder(2)}
         data-form={body}
         data-scroll={scroll ? "" : undefined}
+        data-inset={inset ? undefined : "none"}
+        data-loading={loading ? "" : undefined}
         role={bodyLabel ? "region" : undefined}
         aria-label={bodyLabel}
         tabIndex={bodyLabel && scroll ? 0 : undefined}
@@ -140,7 +175,8 @@ function AdminPageHeader({
   const { primaryAction } = useAdminChrome();
   return (
     <header
-      className="admin-page-header"
+      className="admin-page-header admin-rise"
+      style={riseOrder(0)}
       data-toolbar={hasToolbar ? "" : undefined}
       data-compact={
         // Below 1024px the top bar has the title and the primary action;
@@ -165,7 +201,7 @@ function AdminPageHeader({
           {primaryAction ? (
             <Button
               ref={primaryAction.ref}
-              variant="primary"
+              variant="ink"
               className="admin-page-primary"
               icon={primaryAction.icon}
               loading={primaryAction.loading}

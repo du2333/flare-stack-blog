@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AdminPage } from "@/components/admin/admin-page";
-import { AdminPagination } from "@/components/admin/admin-pagination";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
+import { PaginationBar } from "@/components/ui/pagination";
 import { Tabs } from "@/components/ui/tabs";
 import type {
   FriendLinkStatusCounts,
@@ -144,13 +144,21 @@ export function FriendLinkManager({
         }}
         onDelete={setDeleting}
         pagination={
-          <AdminPagination
-            currentPage={page}
+          <PaginationBar
+            page={page}
             totalPages={totalPages}
-            totalItems={total}
-            itemsPerPage={ADMIN_ITEMS_PER_PAGE}
-            currentPageItemCount={items.length}
             onPageChange={onPageChange}
+            summary={m.admin_pagination_info({
+              startItem: Math.min((page - 1) * ADMIN_ITEMS_PER_PAGE + 1, total),
+              endItem: Math.min(
+                (page - 1) * ADMIN_ITEMS_PER_PAGE + items.length,
+                total,
+              ),
+              totalItems: total,
+            })}
+            label={m.admin_pagination_label()}
+            previousLabel={m.admin_pagination_previous()}
+            nextLabel={m.admin_pagination_next()}
           />
         }
       />

@@ -1,5 +1,7 @@
 import { Link, type LinkProps } from "@tanstack/react-router";
 import {
+  createContext,
+  use,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -88,6 +90,34 @@ function useScrollCue<T extends HTMLElement>(enabled: boolean, value: string) {
   return ref;
 }
 
+export type TabsVariantName = "underline" | "segmented";
+
+const VariantContext = createContext<TabsVariantName>("underline");
+
+/**
+ * The form the tabs inside take unless they name one: the Admin page frame
+ * gives its head the segmented form.
+ */
+export function TabsVariant({
+  value,
+  children,
+}: {
+  value: TabsVariantName;
+  children: ReactNode;
+}) {
+  return <VariantContext value={value}>{children}</VariantContext>;
+}
+
+/** A pill's key: the tabs, and the counts that change their widths. */
+function pillKey(items: ReadonlyArray<{ value: string; count?: ReactNode }>) {
+  return items
+    .map(
+      ({ value, count }) =>
+        `${value}:${typeof count === "number" || typeof count === "string" ? count : ""}`,
+    )
+    .join(",");
+}
+
 /**
  * For the segmented form: places the pill under the selected tab and, once
  * it has been placed, lets it slide (`data-pill="moving"`) to the next one.
@@ -105,7 +135,9 @@ function useSlidingPill(
     const mark = pill.current;
     if (!enabled || !track || !mark) return;
     const place = () => {
-      const chosen = track.querySelector<HTMLElement>('[aria-selected="true"]');
+      const chosen = track.querySelector<HTMLElement>(
+        '[aria-selected="true"], [aria-current="page"]',
+      );
       if (!chosen) return;
       mark.style.width = `${chosen.offsetWidth}px`;
       mark.style.transform = `translateX(${chosen.offsetLeft}px)`;
@@ -136,7 +168,7 @@ export function Tabs<T extends string>({
   value,
   onValueChange,
   scrollCue = false,
-  variant = "underline",
+  variant: own,
   className,
   children,
   ...props
@@ -146,22 +178,14 @@ export function Tabs<T extends string>({
   onValueChange: (value: T) => void;
   /** Fade the ends of a row that overflows, to show there is more to scroll to. */
   scrollCue?: boolean;
-  variant?: "underline" | "segmented";
+  /** The form; by default the one `TabsVariant` gives, else underlined. */
+  variant?: TabsVariantName;
   "aria-label": string;
 }) {
+  const inherited = use(VariantContext);
+  const segmented = (own ?? inherited) === "segmented";
   const ref = useScrollCue<HTMLDivElement>(scrollCue, value);
-  const segmented = variant === "segmented";
-  const pill = useSlidingPill(
-    segmented,
-    ref,
-    value,
-    items
-      .map(
-        ({ value: key, count }) =>
-          `${key}:${typeof count === "number" || typeof count === "string" ? count : ""}`,
-      )
-      .join(","),
-  );
+  const pill = useSlidingPill(segmented, ref, value, pillKey(items));
   return (
     <div
       {...props}
@@ -203,6 +227,7 @@ export function TabNav<T extends string>({
   items,
   value,
   scrollCue = false,
+  variant: own,
   className,
   ...props
 }: Omit<ComponentProps<"nav">, "children"> & {
@@ -210,16 +235,24 @@ export function TabNav<T extends string>({
   value: T;
   /** Fade the ends of a row that overflows, to show there is more to scroll to. */
   scrollCue?: boolean;
+  variant?: TabsVariantName;
   "aria-label": string;
 }) {
+  const inherited = use(VariantContext);
+  const segmented = (own ?? inherited) === "segmented";
   const ref = useScrollCue<HTMLElement>(scrollCue, value);
+  const pill = useSlidingPill(segmented, ref, value, pillKey(items));
   return (
     <nav
       {...props}
       ref={ref}
       data-scroll-cue={scrollCue || undefined}
+      data-variant={segmented ? "segmented" : undefined}
       className={cn("fuwari-tabs", className)}
     >
+      {segmented ? (
+        <span ref={pill} className="fuwari-tabs-pill" aria-hidden />
+      ) : null}
       {items.map((item) => (
         <Link
           key={item.value}

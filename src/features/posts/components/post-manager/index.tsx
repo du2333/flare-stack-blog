@@ -1,15 +1,12 @@
 import { FileText, Plus, SearchX, TriangleAlert } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CanvasPage, riseOrder } from "@/components/admin/canvas-page";
+import { useEffect, useRef, useState } from "react";
+import { AdminPage, AdminPageToolbar } from "@/components/admin/admin-page";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  ListCard,
-  ListCardFoot,
-  ListCardRows,
-} from "@/components/ui/list-card";
+import { ListCardFoot, ListCardRows } from "@/components/ui/list-card";
 import { Pagination } from "@/components/ui/pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { m } from "@/paraglide/messages";
 import { PostListColumns, PostRow } from "./components/post-row";
 import { PostsStatusTabs, PostsTools } from "./components/posts-toolbar";
@@ -77,31 +74,25 @@ export function PostManager({
   const searchRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // The field answers at once; the address follows 300 ms after the last key.
-  // A change of the address (Back included) supersedes what is pending.
+  // The field answers at once; the address follows 300 ms after the last
+  // key. A change of the address (Back included) puts its term back in the
+  // field, and a term the field already had is not sent again.
   const [searchInput, setSearchInput] = useState(search);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const submit = useRef(onSearchChange);
-  submit.current = onSearchChange;
-  const clearTimer = useCallback(() => {
-    if (timer.current !== null) clearTimeout(timer.current);
-    timer.current = null;
-  }, []);
+  const typed = useDebounce(searchInput, 300);
+  const sent = useRef(search);
   useEffect(() => {
-    clearTimer();
+    sent.current = search;
     setSearchInput(search);
-  }, [search, clearTimer]);
-  useEffect(() => clearTimer, [clearTimer]);
-  const typeSearch = (value: string) => {
-    setSearchInput(value);
-    clearTimer();
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      submit.current(value);
-    }, 300);
-  };
+  }, [search]);
+  useEffect(() => {
+    if (typed === sent.current) return;
+    sent.current = typed;
+    onSearchChange(typed);
+    // Only a settled change of the field is sent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typed]);
   const resetFilters = () => {
-    clearTimer();
+    sent.current = "";
     setSearchInput("");
     onResetFilters();
   };
@@ -156,152 +147,152 @@ export function PostManager({
     triggerRef.current?.isConnected ? triggerRef.current : searchRef.current;
 
   return (
-    <CanvasPage
+    <AdminPage
+      className="post-manager"
       title={m.admin_posts_title()}
       count={total}
       primaryAction={{
         label: create.isPending
           ? m.admin_posts_creating()
           : m.admin_posts_create(),
-        icon: Plus,
+        icon: <Plus size={17} />,
         onClick: createPost,
         loading: create.isPending,
       }}
-      tabs={
-        <PostsStatusTabs
-          status={status}
-          statusCounts={statusCounts}
-          onStatusChange={onStatusChange}
+      toolbar={
+        <AdminPageToolbar
+          tabs={
+            <PostsStatusTabs
+              status={status}
+              statusCounts={statusCounts}
+              onStatusChange={onStatusChange}
+            />
+          }
+          tools={
+            <PostsTools
+              searchTerm={searchInput}
+              onSearchChange={setSearchInput}
+              searchRef={searchRef}
+              category={category}
+              onCategoryChange={onCategoryChange}
+              tag={tag}
+              onTagChange={onTagChange}
+              sortBy={shownSort}
+              onSortByChange={onSortByChange}
+              popularity={popularity}
+            />
+          }
         />
       }
-      tools={
-        <PostsTools
-          searchTerm={searchInput}
-          onSearchChange={typeSearch}
-          searchRef={searchRef}
-          category={category}
-          onCategoryChange={onCategoryChange}
-          tag={tag}
-          onTagChange={onTagChange}
-          sortBy={shownSort}
-          onSortByChange={onSortByChange}
-          popularity={popularity}
-        />
-      }
+      body="list"
+      scroll={false}
+      inset={false}
+      loading={isFetching && !isPending}
+      stackOnPhone
+      bodyLabel={m.admin_posts_title()}
     >
-      <ListCard
-        className="admin-rise"
-        style={riseOrder(2)}
-        loading={isFetching && !isPending}
-        aria-label={m.admin_posts_title()}
-      >
-        <PostListColumns
-          sortBy={shownSort}
-          viewsSortable={viewsSortable}
-          onSortByChange={onSortByChange}
-        />
+      <PostListColumns
+        sortBy={shownSort}
+        viewsSortable={viewsSortable}
+        onSortByChange={onSortByChange}
+      />
 
-        {error ? (
+      {error ? (
+        <EmptyState
+          variant="tile"
+          icon={TriangleAlert}
+          title={m.admin_posts_load_failed()}
+          action={
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              {m.error_retry()}
+            </Button>
+          }
+        />
+      ) : isPending ? (
+        <ListCardRows aria-busy="true">
+          <PostRowsSkeleton />
+        </ListCardRows>
+      ) : posts.length === 0 ? (
+        filtered ? (
           <EmptyState
             variant="tile"
-            icon={TriangleAlert}
-            title={m.admin_posts_load_failed()}
+            icon={SearchX}
+            title={m.admin_posts_no_match()}
+            description={m.admin_posts_no_match_desc()}
+            action={
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                {m.admin_posts_clear_filters()}
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            variant="tile"
+            icon={FileText}
+            title={m.admin_posts_empty_title()}
+            description={m.admin_posts_empty_desc()}
             action={
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => void refetch()}
+                disabled={create.isPending}
+                onClick={createPost}
               >
-                {m.error_retry()}
+                {m.admin_posts_create()}
               </Button>
             }
           />
-        ) : isPending ? (
-          <ListCardRows aria-busy="true">
-            <PostRowsSkeleton />
-          </ListCardRows>
-        ) : posts.length === 0 ? (
-          filtered ? (
-            <EmptyState
-              variant="tile"
-              icon={SearchX}
-              title={m.admin_posts_no_match()}
-              description={m.admin_posts_no_match_desc()}
-              action={
-                <Button variant="outline" size="sm" onClick={resetFilters}>
-                  {m.admin_posts_clear_filters()}
-                </Button>
-              }
+        )
+      ) : (
+        <ListCardRows
+          ref={scrollRef}
+          role="rowgroup"
+          aria-busy={isPlaceholderData}
+          data-scroll-restoration-id="admin-post-list"
+        >
+          {posts.map((post, index) => (
+            <PostRow
+              key={post.id}
+              index={index}
+              post={post}
+              sortBy={shownSort}
+              popularity={popularity}
+              pinPending={pin.isPending && pin.variables.id === post.id}
+              onTogglePin={() => pin.mutate(post)}
+              onDelete={(trigger) => {
+                triggerRef.current = trigger;
+                setToDelete(post);
+              }}
+              onUnpublish={(trigger) => {
+                triggerRef.current = trigger;
+                setToUnpublish(post);
+              }}
             />
-          ) : (
-            <EmptyState
-              variant="tile"
-              icon={FileText}
-              title={m.admin_posts_empty_title()}
-              description={m.admin_posts_empty_desc()}
-              action={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={create.isPending}
-                  onClick={createPost}
-                >
-                  {m.admin_posts_create()}
-                </Button>
-              }
-            />
-          )
-        ) : (
-          <ListCardRows
-            ref={scrollRef}
-            role="rowgroup"
-            aria-busy={isPlaceholderData}
-            data-scroll-restoration-id="admin-post-list"
-          >
-            {posts.map((post, index) => (
-              <PostRow
-                key={post.id}
-                index={index}
-                post={post}
-                sortBy={shownSort}
-                popularity={popularity}
-                pinPending={pin.isPending && pin.variables.id === post.id}
-                onTogglePin={() => pin.mutate(post)}
-                onDelete={(trigger) => {
-                  triggerRef.current = trigger;
-                  setToDelete(post);
-                }}
-                onUnpublish={(trigger) => {
-                  triggerRef.current = trigger;
-                  setToUnpublish(post);
-                }}
-              />
-            ))}
-          </ListCardRows>
-        )}
+          ))}
+        </ListCardRows>
+      )}
 
-        {!isPending && !error && posts.length > 0 ? (
-          <ListCardFoot>
-            <span>
-              {totalPages > 1
-                ? m.admin_posts_range({
-                    first,
-                    last: first + posts.length - 1,
-                    total: totalCount,
-                  })
-                : m.admin_posts_count({ count: totalCount })}
-            </span>
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={onPageChange}
-              label={m.admin_pagination_label()}
-              previousLabel={m.home_previous_page()}
-              nextLabel={m.home_next_page()}
-            />
-          </ListCardFoot>
-        ) : null}
-      </ListCard>
+      {!isPending && !error && posts.length > 0 ? (
+        <ListCardFoot>
+          <span>
+            {totalPages > 1
+              ? m.admin_posts_range({
+                  first,
+                  last: first + posts.length - 1,
+                  total: totalCount,
+                })
+              : m.admin_posts_count({ count: totalCount })}
+          </span>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            label={m.admin_pagination_label()}
+            previousLabel={m.admin_pagination_previous()}
+            nextLabel={m.admin_pagination_next()}
+          />
+        </ListCardFoot>
+      ) : null}
 
       <ConfirmationModal
         isOpen={!!toDelete}
@@ -331,6 +322,6 @@ export function PostManager({
         }}
         returnFocus={returnFocus}
       />
-    </CanvasPage>
+    </AdminPage>
   );
 }

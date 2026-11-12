@@ -105,7 +105,7 @@
     max-width: 100%;
     padding: 3px;
     border-bottom: 0;
-    border-radius: 12px;
+    border-radius: var(--admin-radius-row);
     background: var(--admin-hover);
   }
   .fuwari-tabs-pill {
@@ -138,17 +138,27 @@
     border-bottom: 0;
     border-radius: 9px;
     color: var(--admin-fg-2);
-    font-size: 13px;
+    font-size: var(--admin-text-small);
     font-weight: 500;
     transition: color 0.2s;
   }
   .fuwari-tabs[data-variant="segmented"]
-    > .fuwari-tab:is(:hover:not(:disabled), [aria-selected="true"]) {
+    > .fuwari-tab:is(
+      :hover:not(:disabled),
+      [aria-selected="true"],
+      [aria-current="page"]
+    ) {
     color: var(--admin-fg);
   }
   .fuwari-tabs[data-variant="segmented"] .fuwari-tab-count {
     font-size: 12px;
     color: var(--admin-fg-3);
+  }
+  /* The unsaved-changes dot sits in the tab's corner, inside the pill. */
+  .fuwari-tabs[data-variant="segmented"] .fuwari-tab-mark {
+    top: 5px;
+    right: 4px;
+    background: var(--admin-accent);
   }
   @media (prefers-reduced-motion: no-preference) {
     .fuwari-tabs[data-scroll-cue] {

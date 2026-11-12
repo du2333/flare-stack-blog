@@ -12,7 +12,7 @@
     padding: 0 6px;
     border-radius: 8px;
     color: var(--admin-fg-2);
-    font-size: 13px;
+    font-size: var(--admin-text-small);
     font-weight: 500;
     transition:
       background 0.15s,
@@ -31,5 +31,18 @@
   }
   .fuwari-pagination span {
     padding: 0 4px;
+  }
+}
+
+@layer components {
+  .fuwari-pagination-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding-top: 16px;
+    color: var(--admin-fg-3);
+    font-size: var(--admin-text-meta);
   }
 }

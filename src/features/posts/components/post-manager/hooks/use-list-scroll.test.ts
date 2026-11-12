@@ -78,3 +78,26 @@ it("resets a newly selected page instead of reviving its older cached offset", (
     left: 0,
   });
 });
+
+it("on a phone keeps the position of the page, which is what scrolls there", () => {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: query === "(max-width: 767px)",
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+  const page = document.createElement("section");
+  page.className = "admin-page";
+  document.body.appendChild(page);
+  page.appendChild(element);
+  savePostListPosition(JSON.stringify(location), { top: 640, left: 0 });
+  const ref = { current: element };
+  const { unmount } = renderHook(() => useListScroll(ref, location, true));
+  expect(page.scrollTop).toBe(640);
+  expect(element.scrollTop).toBe(0);
+
+  page.scrollTop = 900;
+  fireEvent.scroll(page);
+  unmount();
+  expect(readPostListPosition(JSON.stringify(location)).top).toBe(900);
+  page.remove();
+});

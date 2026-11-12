@@ -228,7 +228,7 @@
     padding: 0 8px;
     gap: 5px;
     border-radius: 8px;
-    font-size: 12.5px;
+    font-size: var(--admin-text-meta);
   }
   .fuwari-button:is(
       .fuwari-button-ink,
@@ -241,7 +241,7 @@
     padding: 0 10px;
     gap: 5px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: var(--admin-text-small);
   }
   .fuwari-button:is(
       .fuwari-button-ink,
@@ -253,7 +253,7 @@
     height: 36px;
     padding: 0 14px;
     gap: 7px;
-    border-radius: 10px;
+    border-radius: var(--admin-radius-control);
     font-size: 13.5px;
   }
   .fuwari-button:is(

@@ -3,6 +3,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 export const isSSR = typeof window === "undefined";
 
@@ -43,6 +44,13 @@ export function formatTimeAgo(date: Date | null | string) {
   if (diffInHours < 24) return m.time_ago_hours({ count: diffInHours });
   const diffInDays = Math.floor(diffInHours / 24);
   return m.time_ago_days({ count: diffInDays });
+}
+
+/** A whole number with the locale's thousands separators. */
+export function formatCount(value: number) {
+  return new Intl.NumberFormat(getLocale() === "zh" ? "zh-CN" : "en-US").format(
+    value,
+  );
 }
 
 export function formatBytes(bytes: number, decimals = 2) {

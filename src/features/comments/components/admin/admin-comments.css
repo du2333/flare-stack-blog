@@ -29,7 +29,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 12px var(--admin-row-x);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   transition: background-color 150ms;
 }
 .admin-comment-row:hover,
@@ -41,7 +41,7 @@
   width: 32px;
   height: 32px;
   flex-basis: 32px;
-  font-size: 13px;
+  font-size: var(--admin-text-small);
 }
 .admin-comment-main {
   flex: 1;

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Plus } from "lucide-react";
 import { useMemo } from "react";
+import { riseOrder } from "@/components/admin/rise";
 import { Button, buttonClass } from "@/components/ui/button";
 import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
 import { useCreatePost } from "@/features/posts/components/post-manager/hooks/use-create-post";
@@ -9,7 +10,6 @@ import { m } from "@/paraglide/messages";
 import { formatCount, formatWeekdayNarrow } from "./format";
 
 const HOUR_MS = 3_600_000;
-const order = (i: number) => ({ "--i": i }) as object;
 
 /**
  * The next thing to write, on the dark card: the latest draft to continue,
@@ -23,8 +23,8 @@ export function OverviewHero({ data }: { data: DashboardOverview }) {
 
   return (
     <section
-      className="overview-hero overview-rise"
-      style={order(1)}
+      className="overview-hero admin-rise"
+      style={riseOrder(1)}
       onPointerMove={(event) => {
         const box = event.currentTarget.getBoundingClientRect();
         event.currentTarget.style.setProperty(

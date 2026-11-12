@@ -1,9 +1,7 @@
 import { Moon, Sun, Sunrise, Sunset } from "lucide-react";
 import { type ReactNode, type Ref, useEffect, useState } from "react";
+import { riseOrder } from "@/components/admin/rise";
 import { formatCount } from "./format";
-
-/** The style that places a card in the page's rise-in order. */
-export const riseOrder = (i: number) => ({ "--i": i }) as object;
 
 function useCountUp(target: number, duration = 900) {
   const [value, setValue] = useState(0);
@@ -51,7 +49,7 @@ export function OverviewCard({
   children: ReactNode;
 }) {
   return (
-    <section className="overview-card overview-rise" style={riseOrder(i)}>
+    <section className="overview-card admin-rise" style={riseOrder(i)}>
       <header className="overview-card-head">
         <h2
           ref={titleRef}

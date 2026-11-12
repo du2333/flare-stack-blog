@@ -11,7 +11,7 @@
   background: var(--admin-canvas);
   color: var(--admin-fg);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
 }
@@ -31,13 +31,26 @@
   min-height: 0;
 }
 
+/* The site's name, and in the drawer the close button beside it. */
+.admin-side-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-side-head > .admin-brand {
+  flex: 1;
+  min-width: 0;
+}
+.admin-side-close.fuwari-icon-button {
+  display: none;
+}
 .admin-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   height: 44px;
   padding: 0 8px;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   transition: background 0.15s;
 }
 .admin-brand:hover {
@@ -53,7 +66,7 @@
   border-radius: 9px;
   background: var(--admin-ink);
   color: var(--admin-on-ink);
-  font-size: 13px;
+  font-size: var(--admin-text-small);
   font-weight: 650;
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
 }
@@ -73,7 +86,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 600;
   letter-spacing: -0.005em;
 }
@@ -98,7 +111,7 @@
 .admin-compose.fuwari-icon-button {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--admin-radius-control);
 }
 
 .admin-nav {
@@ -116,7 +129,7 @@
   left: 2px;
   right: 2px;
   height: var(--admin-sidebar-row);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-control);
   background: var(--admin-surface);
   box-shadow:
     0 0 0 1px var(--admin-line),
@@ -152,7 +165,7 @@
   gap: 10px;
   height: var(--admin-sidebar-row);
   padding: 0 10px;
-  border-radius: 10px;
+  border-radius: var(--admin-radius-control);
   color: var(--admin-fg-2);
   font-size: var(--admin-sidebar-text);
   font-weight: 450;
@@ -214,7 +227,7 @@
   gap: 10px;
   height: 42px;
   padding: 0 8px;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   color: var(--admin-fg);
   font-size: 13.5px;
   font-weight: 500;
@@ -299,11 +312,21 @@
   .admin-side.fuwari-sheet[data-state="open"] {
     transform: none;
   }
+  .admin-side-close.fuwari-icon-button {
+    display: inline-flex;
+  }
   .admin-side-scrim.fuwari-sheet-backdrop {
     background: rgb(10 10 14 / 0.36);
     backdrop-filter: none;
     animation-duration: 0.25s;
   }
+}
+
+/* A page's head, bar and cards rise in one after another; --i is the place
+   (riseOrder, rise.ts). */
+.admin-rise {
+  animation: admin-rise 0.55s var(--admin-ease) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
 }
 
 @media (prefers-reduced-motion: reduce) {

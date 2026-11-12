@@ -1,9 +1,12 @@
-import { riseOrder } from "@/components/admin/canvas-page";
-import "@/components/admin/canvas-page.css";
-import { ListCard, ListCardRows } from "@/components/ui/list-card";
+import { Plus } from "lucide-react";
+import { AdminPage, AdminPageToolbar } from "@/components/admin/admin-page";
+import DropdownMenu from "@/components/ui/dropdown-menu";
+import { ListCardRows } from "@/components/ui/list-card";
+import { SearchField } from "@/components/ui/search-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { PostListColumns } from "./components/post-row";
+import { PostsStatusTabs, sortLabel } from "./components/posts-toolbar";
 import "./post-manager.css";
 
 /** Rows of placeholders in the rows' grid and at their height. */
@@ -30,42 +33,83 @@ export function PostRowsSkeleton() {
   ));
 }
 
+const noop = () => {};
+
 /**
- * The Posts list while its first page loads: the head, the bar and the card
- * of the real page at their sizes, the controls as placeholders.
+ * The Posts list while its first page loads: the page's own head and bar,
+ * their controls still and without counts, so each takes its real size in
+ * any language, then the card with placeholder rows.
  */
 export function PostManagerPageSkeleton() {
   return (
-    <div className="admin-canvas-page" aria-busy="true">
-      <header className="admin-canvas-head admin-rise" style={riseOrder(0)}>
-        <h1 className="admin-canvas-title">{m.admin_posts_title()}</h1>
-        <Skeleton shimmer className="post-skel-primary" />
-      </header>
-      <div
-        className="admin-canvas-bar admin-rise"
-        style={riseOrder(1)}
-        aria-hidden
-      >
-        <span className="post-skel-tabs">
-          <Skeleton shimmer />
-        </span>
-        <div className="admin-canvas-tools">
-          <Skeleton shimmer className="post-skel-search" />
-          <Skeleton shimmer className="post-skel-chip" />
-          <Skeleton shimmer className="post-skel-chip" />
-          <Skeleton shimmer className="post-skel-chip is-wide" />
-        </div>
-      </div>
-      <ListCard className="admin-rise" style={riseOrder(2)} inert>
+    <AdminPage
+      className="post-manager"
+      aria-busy="true"
+      title={m.admin_posts_title()}
+      primaryAction={{
+        label: m.admin_posts_create(),
+        icon: <Plus size={17} />,
+        onClick: noop,
+        disabled: true,
+      }}
+      toolbar={
+        <AdminPageToolbar
+          tabs={<PostsStatusTabs status="ALL" onStatusChange={noop} />}
+          tools={
+            <div inert className="contents">
+              <SearchField
+                variant="raised"
+                shortcut="/"
+                value=""
+                onValueChange={noop}
+                placeholder={m.admin_posts_search_placeholder()}
+                aria-label={m.admin_posts_search_placeholder()}
+                clearLabel={m.admin_posts_clear_search()}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_filter_category()}
+                neutral=""
+                value=""
+                onChange={noop}
+                options={[{ value: "", label: "" }]}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_filter_tag()}
+                neutral=""
+                value=""
+                onChange={noop}
+                options={[{ value: "", label: "" }]}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_sort_label()}
+                value="updatedAt"
+                onChange={noop}
+                options={[
+                  { value: "updatedAt", label: sortLabel("updatedAt") },
+                ]}
+              />
+            </div>
+          }
+        />
+      }
+      body="list"
+      scroll={false}
+      inset={false}
+      stackOnPhone
+    >
+      <div inert className="contents">
         <PostListColumns
           sortBy="updatedAt"
           viewsSortable
-          onSortByChange={() => {}}
+          onSortByChange={noop}
         />
-        <ListCardRows aria-busy="true">
-          <PostRowsSkeleton />
-        </ListCardRows>
-      </ListCard>
-    </div>
+      </div>
+      <ListCardRows aria-busy="true">
+        <PostRowsSkeleton />
+      </ListCardRows>
+    </AdminPage>
   );
 }

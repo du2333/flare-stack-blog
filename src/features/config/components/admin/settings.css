@@ -248,7 +248,7 @@
 .notify-preview-card {
   margin-top: 14px;
   border: 1px solid var(--admin-rule);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   padding: 20px;
   display: grid;
   gap: 14px;
