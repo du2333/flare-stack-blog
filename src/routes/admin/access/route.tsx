@@ -25,6 +25,7 @@ function AccessLayout() {
     <SettingsShell
       title={m.admin_access_title()}
       section={page}
+      body="list"
       regionLabel={ACCESS_LABELS[page]()}
       tabs={<AccessNav current={page} />}
     >

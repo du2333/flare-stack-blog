@@ -30,6 +30,7 @@ export function SettingsSectionFrame({
     isDirty,
     sectionDirty,
     dirtySections,
+    changedCount,
     onSubmit,
     baseline,
     conflict,
@@ -64,6 +65,7 @@ export function SettingsSectionFrame({
               personalize ? m.personalize_title() : m.settings_header_title()
             }
             section={nav}
+            body={nav === "maintenance" ? "list" : "form"}
             regionLabel={title}
             tabs={
               nav === "personalize" ? undefined : <SettingsNav current={nav} />
@@ -74,6 +76,7 @@ export function SettingsSectionFrame({
                     disabled: !sectionDirty || isLoading,
                     busy: isSubmitting,
                     dirty: sectionDirty,
+                    changedCount,
                     conflict,
                     onDiscard: () => void discardSection(),
                     // Only Site Config is shared by two pages.

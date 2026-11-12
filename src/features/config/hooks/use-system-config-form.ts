@@ -9,9 +9,11 @@ import {
   type SecretChange,
 } from "../config.admin.schema";
 import type { ConfigFormValues } from "../components/admin/config-editing";
+import { countChangedSettings } from "../components/admin/save-bar";
 import type { SettingsPageId } from "../components/admin/settings-pages";
 import {
   ownsDirtySiteField,
+  ownsSiteField,
   PERSONALIZE_PAGE,
   siteForSave,
 } from "../utils/site-field-pages";
@@ -298,6 +300,24 @@ export function useSystemConfigForm(
         dirtyFields.clearWebhookSecret
       ),
     },
+    /** How many settings of this page changed; 「个性化」 does not count. */
+    changedCount:
+      nav === PERSONALIZE_PAGE
+        ? undefined
+        : section === "site"
+          ? countChangedSettings(
+              Object.fromEntries(
+                Object.entries(dirtyFields.site ?? {}).filter(([field]) =>
+                  ownsSiteField(sitePage, field),
+                ),
+              ),
+            )
+          : countChangedSettings({
+              email: dirtyFields.email,
+              notification: dirtyFields.notification,
+              clearEmailPassword: dirtyFields.clearEmailPassword,
+              clearWebhookSecret: dirtyFields.clearWebhookSecret,
+            }),
     onSubmit,
     baseline,
     conflict: conflicts[section],

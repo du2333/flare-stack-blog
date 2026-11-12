@@ -23,6 +23,7 @@ export function SettingsShell({
   description,
   tabs,
   tools,
+  body = "form",
   save,
   children,
 }: {
@@ -35,10 +36,14 @@ export function SettingsShell({
   description?: ReactNode;
   tabs?: ReactNode;
   tools?: ReactNode;
+  /** `form` for settings, `list` for a list of rows (keys, muted users). */
+  body?: "form" | "list";
   save?: {
     disabled: boolean;
     busy: boolean;
     dirty?: boolean;
+    /** How many settings changed; the bar says so when it is known. */
+    changedCount?: number;
     conflict?: boolean;
     onDiscard?: () => void;
     /** Takes in what was saved elsewhere and keeps the typed input. */
@@ -76,7 +81,7 @@ export function SettingsShell({
       description={description}
       tabs={tabs}
       tools={tools}
-      body="form"
+      body={body}
       scroll={false}
     >
       <div
@@ -88,19 +93,21 @@ export function SettingsShell({
         {children}
         {save && saveBarVisible && (
           <footer className="settings-savebar">
-            {save.dirty && (
-              <Callout
-                role="status"
-                tone={save.conflict ? "danger" : "warning"}
-                icon={CircleAlert}
-              >
-                {save.conflict
-                  ? save.onReload
-                    ? m.settings_config_conflict_site()
-                    : m.settings_config_conflict()
-                  : m.settings_config_unsaved()}
+            {save.dirty && save.conflict ? (
+              <Callout role="status" tone="danger" icon={CircleAlert}>
+                {save.onReload
+                  ? m.settings_config_conflict_site()
+                  : m.settings_config_conflict()}
               </Callout>
-            )}
+            ) : save.dirty ? (
+              <p className="settings-savebar-status" role="status">
+                {save.changedCount == null
+                  ? m.settings_config_unsaved()
+                  : m.settings_config_changed_count({
+                      count: save.changedCount,
+                    })}
+              </p>
+            ) : null}
             <div>
               {save.conflict && save.onReload && (
                 <Button disabled={save.busy} onClick={save.onReload}>

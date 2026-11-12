@@ -143,6 +143,73 @@
 }
 
 /*
+ * A titled group of settings (AdminFormSection): the title, an optional line,
+ * its rows; a hairline between groups. The last row of a group has no rule of
+ * its own, the group's does that.
+ */
+.admin-form-section {
+  max-width: 960px;
+  padding: 24px 0;
+}
+.admin-form-section:first-child {
+  padding-top: 0;
+}
+.admin-form-section + .admin-form-section {
+  border-top: 1px solid var(--admin-rule);
+}
+.admin-form-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--admin-leading-section);
+}
+.admin-form-section-title {
+  min-width: 0;
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
+  font-weight: 600;
+}
+.admin-form-section-summary {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-form-section-trigger {
+  width: 100%;
+  border-radius: 6px;
+  text-align: left;
+}
+.admin-form-section-trigger > .fuwari-disclosure-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--fuwari-fg-50);
+}
+.admin-form-section-trigger:focus-visible {
+  outline: 2px solid var(--fuwari-primary);
+  outline-offset: 4px;
+}
+.admin-form-section-description {
+  margin-top: 2px;
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+.admin-form-section-body {
+  margin-top: 8px;
+}
+.admin-form-section-body > .admin-form-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.admin-form-section-body > .admin-form-row:first-child {
+  padding-top: 12px;
+}
+
+/*
  * A row of a list body: at most --admin-row-max tall, a hairline under it, a
  * light fill under the pointer. Make the whole row the link or button; put
  * its actions in an ActionMenu at the end.

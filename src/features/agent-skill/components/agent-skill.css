@@ -1,37 +1,88 @@
+/*
+ * 「接入」 · Agent Skill: three numbered steps as a vertical stepper, in a
+ * column of at most 760px, and the connected agents as a list below them.
+ */
+.agent-skill {
+  max-width: 760px;
+  min-width: 0;
+}
 .agent-skill-steps {
   display: grid;
-  gap: 28px;
   margin: 0 0 32px;
   padding: 0;
   list-style: none;
 }
 .agent-skill-step {
+  position: relative;
   display: grid;
-  gap: 12px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 16px;
   min-width: 0;
+}
+/* The line from this step's number to the next one's. */
+.agent-skill-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: 6px;
+  left: 13.5px;
+  width: 1px;
+  background: var(--admin-rule);
+}
+.agent-skill-step-number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--fuwari-input-border);
+  border-radius: 50%;
+  background: var(--fuwari-card-bg);
+  color: var(--fuwari-fg-75);
+  font-size: var(--admin-text-meta);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.agent-skill-step-main {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 28px;
+}
+.agent-skill-step:last-child .agent-skill-step-main {
+  padding-bottom: 0;
+}
+.agent-skill-step-main > h2 {
+  font-size: var(--admin-text-section);
+  line-height: 28px;
+  font-weight: 600;
 }
 .agent-skill-hint {
   color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.7;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
 }
 .agent-skill-hint a {
-  color: var(--fuwari-fg-50);
+  color: var(--fuwari-fg);
 }
+/* A command to copy: a block with its copy button inside. */
 .agent-skill-copyline {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   max-width: 100%;
-}
-.agent-skill-copyline code {
-  min-width: 0;
-  padding: 8px 12px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--admin-rule);
   border-radius: 8px;
   background: var(--fuwari-btn-regular-bg);
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.6;
+}
+.agent-skill-copyline code {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  background: none;
+  font-size: var(--admin-text-meta);
+  line-height: 20px;
   overflow-wrap: anywhere;
 }
 .agent-skill-examples {
@@ -46,7 +97,7 @@
   align-items: center;
   gap: 8px;
   color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
+  font-size: var(--admin-text-body);
 }
 .agent-skill-actions {
   display: flex;
@@ -54,48 +105,23 @@
   align-items: center;
   gap: 8px;
 }
+.agent-skill-expiry {
+  opacity: 0.7;
+}
+
+/* The connected agents. */
 .agent-skill-agents {
   display: grid;
   gap: 12px;
   padding-top: 24px;
   border-top: 1px solid var(--admin-rule);
 }
-.agent-skill-table {
-  overflow-x: auto;
+.agent-skill-agents .key-head {
+  padding: 0 12px;
 }
-.agent-skill-table table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: calc(14 * var(--admin-unit));
-}
-.agent-skill-table th {
-  text-align: left;
-  font-weight: 500;
-  color: var(--fuwari-fg-50);
-}
-.agent-skill-table th,
-.agent-skill-table td {
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--admin-rule);
-}
-.agent-skill-table td:first-child {
-  overflow-wrap: anywhere;
-  max-width: 280px;
-}
-.agent-skill-table td:not(:first-child) {
-  white-space: nowrap;
-  color: var(--fuwari-fg-50);
-  font-size: calc(12 * var(--admin-unit));
-}
-.agent-skill-table td:last-child {
-  text-align: right;
-}
-@media (max-width: 600px) {
-  .agent-skill-table th:nth-child(2),
-  .agent-skill-table td:nth-child(2) {
-    display: none;
+@media (min-width: 761px) {
+  .key-grid.agent-skill-grid,
+  .admin-list-row.key-grid.agent-skill-grid {
+    grid-template-columns: minmax(0, 1fr) 148px 148px 36px;
   }
-}
-.agent-skill-expiry {
-  opacity: 0.7;
 }

@@ -1,57 +1,38 @@
+/*
+ * 「设置」 · 站点: groups of settings (AdminFormSection), one AdminFormRow per
+ * setting; the links, the navigation and the icons stack their parts in the
+ * row's control column, which stops at --admin-form-control-max.
+ */
 .site-studio {
   display: flex;
   flex-direction: column;
 }
-.site-section-copy h2,
-.site-section-copy > label,
-.site-section-copy > strong {
-  font-size: calc(16 * var(--admin-unit));
-  line-height: 1.5;
-  font-weight: 600;
-  color: var(--fuwari-fg);
-}
-.site-section-copy p,
-.site-section-hint {
-  display: block;
-  margin-top: 5px;
+.site-char-count {
+  margin-top: 6px;
   color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
-  font-weight: 400;
-  line-height: 1.6;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-.site-nav-section {
-  padding: calc(24 * var(--admin-unit)) 0;
-  border-top: 1px solid var(--admin-rule);
+.site-add-link {
+  margin-top: 8px;
 }
+.site-sort-hint {
+  display: block;
+  margin-top: 4px;
+}
+
+/* The navigation: a handle, the name, the address and remove. */
 .site-nav-fields {
   display: grid;
   gap: 10px;
-  max-width: calc(760 * var(--admin-unit));
-  margin-top: 18px;
 }
 .site-nav-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.3fr) 36px;
+  grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
   align-items: center;
-  gap: 10px;
-}
-.site-nav-section > .site-add-link {
-  margin-top: 10px;
-}
-.site-icons {
-  padding: calc(22 * var(--admin-unit)) 0 6px;
-  border-top: 1px solid var(--admin-rule);
-}
-.site-icon-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 20px;
-}
-.site-sort-hint {
-  margin-top: 8px;
-  color: var(--fuwari-fg-50);
-  font-size: 12px;
+  gap: 8px;
 }
 .site-nav-item {
   position: relative;
@@ -88,24 +69,10 @@
   cursor: default;
 }
 
-/* The title, the author and the description: one labelled row each. */
-.site-fields {
-  display: grid;
-  gap: calc(22 * var(--admin-unit));
-  max-width: calc(760 * var(--admin-unit));
-  padding-bottom: calc(24 * var(--admin-unit));
-}
-.site-char-count {
-  float: right;
-  margin-left: 12px;
-  font-variant-numeric: tabular-nums;
-}
 /* The social links, as rows of platform, address and remove. */
 .site-social-rows {
   display: grid;
-  gap: 12px;
-  max-width: calc(760 * var(--admin-unit));
-  margin-top: 18px;
+  gap: 10px;
 }
 .site-social-item {
   display: grid;
@@ -113,40 +80,39 @@
 }
 .site-social-row {
   display: grid;
-  grid-template-columns: calc(150 * var(--admin-unit)) minmax(0, 1fr) 36px;
+  grid-template-columns: 140px minmax(0, 1fr) 36px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .site-social-custom {
-  grid-template-columns: calc(150 * var(--admin-unit)) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   justify-content: start;
 }
+
+/* The six icons across the group, three to a row on a phone. */
+.site-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 12px;
+}
+
 /* Where the presentation settings went: a hint at the foot of the page. */
 .site-moved-hint {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
-  padding-top: calc(20 * var(--admin-unit));
+  max-width: 960px;
+  padding-top: 20px;
   border-top: 1px solid var(--admin-rule);
   color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
-  line-height: 1.6;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
-@media (max-width: 750px) {
+@media (max-width: 1023px) {
   .site-icon-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .site-nav-row {
-    grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
-    gap: 8px;
-  }
-  .site-social-row {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
-    gap: 8px;
-  }
-  .site-social-custom {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 @media (max-width: 450px) {
@@ -157,5 +123,16 @@
   .site-social-row:not(.site-social-custom) > :nth-child(2) {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+  .site-nav-row {
+    grid-template-columns: 24px minmax(0, 1fr) 36px;
+  }
+  .site-nav-row > :nth-child(3) {
+    grid-column: 2 / 3;
+    grid-row: 2;
+  }
+  .site-nav-row > :nth-child(4) {
+    grid-column: 3;
+    grid-row: 1 / 3;
   }
 }
