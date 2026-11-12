@@ -23,6 +23,11 @@
     background: var(--fuwari-success-bg);
     color: var(--fuwari-success-fg);
   }
+  /* The Admin (admin-variables.css) only: a tighter radius and a hairline. */
+  :root:has(.admin-layout) .fuwari-callout {
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: 8px;
+  }
   .fuwari-callout-icon {
     flex-shrink: 0;
     margin-top: calc((1.6em - 18px) / 2);

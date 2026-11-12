@@ -160,6 +160,23 @@
     text-underline-offset: 3px;
   }
 
+  /* The Admin (admin-variables.css) only: a regular button has a hairline,
+     so a grey fill is not its only edge, and a plain or icon button that
+     tints on hover or is pressed reads ink on grey, not accent on tint.
+     Public pages keep the rules above. */
+  :root:has(.admin-layout) .fuwari-button-regular {
+    box-shadow: inset 0 0 0 1px var(--admin-hairline);
+  }
+  :root:has(.admin-layout)
+    :is(.fuwari-button-plain, .fuwari-icon-button):not(
+      .fuwari-button-tone-danger
+    ):not(:disabled):hover,
+  :root:has(.admin-layout)
+    .fuwari-icon-button:is([aria-pressed="true"], [aria-expanded="true"]),
+  :root:has(.admin-layout) .fuwari-icon-button-active {
+    color: var(--fuwari-fg);
+  }
+
   :is(.fuwari-button, .fuwari-icon-button):disabled,
   :is(.fuwari-button, .fuwari-icon-button)[aria-disabled="true"] {
     opacity: 0.5;

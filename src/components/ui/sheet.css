@@ -38,6 +38,17 @@
   .fuwari-sheet[data-side="bottom"][data-state="closing"] {
     animation-name: fuwari-sheet-rise-out;
   }
+  /* The Admin (admin-variables.css) only: a hairline on the edge that faces
+     the page. */
+  :root:has(.admin-layout) .fuwari-sheet[data-side="left"] {
+    border-right: 1px solid var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-sheet[data-side="right"] {
+    border-left: 1px solid var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-sheet[data-side="bottom"] {
+    border-top: 1px solid var(--admin-hairline);
+  }
   .fuwari-sheet[data-state="closed"] {
     visibility: hidden;
   }
