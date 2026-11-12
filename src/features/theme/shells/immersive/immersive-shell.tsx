@@ -23,7 +23,8 @@ const CARD_STEP_MS = 50;
 /**
  * 「沉浸」: the banner fills the first screen with the navigation lying on it,
  * tall on the home page, where it introduces the author, and a low band
- * elsewhere. The content rises over its lower edge in one centred column,
+ * elsewhere, lower still on a focused page, whose one panel (a sign-in form,
+ * a page that was not found) is then whole in the first screen. The content rises over its lower edge in one centred column,
  * and the sidebar cards stand in that column in their wide forms: from
  * 1024px the ways into the Posts lead the home page's list as one strip and
  * every other card follows the content; below, all of them follow it
@@ -87,6 +88,7 @@ function ImmersiveShell({
         data-theme-shell="immersive"
         data-column={readingColumn ? "reading" : undefined}
         data-home={isHomePage}
+        data-focused={pageKind === "focused" || undefined}
         data-instant={traversing}
       >
         <Navbar
