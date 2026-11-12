@@ -78,7 +78,7 @@
 }
 .site-nav-handle:hover {
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--fuwari-fg);
 }
 .site-nav-handle:active {
   cursor: grabbing;

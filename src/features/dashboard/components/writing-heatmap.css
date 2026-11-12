@@ -117,7 +117,7 @@
   transform: translate(-50%, calc(-100% - 8px));
   padding: 5px 9px;
   border-radius: 8px;
-  background: var(--fuwari-deep-text, oklch(0.25 0.02 var(--fuwari-hue)));
+  background: var(--fuwari-deep-text);
   color: white;
   font-size: 12px;
   line-height: 1.4;
@@ -126,8 +126,8 @@
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
 }
 .dark .writing-heatmap-tip {
-  background: oklch(0.92 0.01 var(--fuwari-hue));
-  color: oklch(0.2 0.02 var(--fuwari-hue));
+  background: var(--fuwari-deep-text);
+  color: var(--fuwari-page-bg);
 }
 .writing-heatmap-foot {
   display: flex;

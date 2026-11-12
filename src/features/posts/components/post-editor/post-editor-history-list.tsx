@@ -57,7 +57,7 @@ export function PostEditorHistoryList({
               className={cn(
                 "post-history-version",
                 selected
-                  ? "is-selected bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)"
+                  ? "is-selected bg-(--fuwari-btn-regular-bg) text-(--fuwari-fg)"
                   : "hover:bg-(--fuwari-btn-regular-bg)/60",
               )}
             >
