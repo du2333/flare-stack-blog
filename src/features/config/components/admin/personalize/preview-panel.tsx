@@ -23,6 +23,8 @@ export function PreviewPanel({
   actions?: ReactNode;
 }) {
   const [device, setDevice] = useState<PreviewDevice>(initialDevice);
+  // The stage says how tall the desktop's viewport came out.
+  const [viewport, setViewport] = useState(PREVIEW_VIEWPORT[initialDevice]);
   // Where the stage reads the path of the page the Admin is looking at.
   const readPath = useRef<() => string | null>(() => null);
   const address = usePreviewAddress(values, () => readPath.current());
@@ -48,7 +50,7 @@ export function PreviewPanel({
           className="personalize-preview-size"
           aria-label={m.personalize_preview_size()}
         >
-          {PREVIEW_VIEWPORT[device].width} × {PREVIEW_VIEWPORT[device].height}
+          {viewport.width} × {viewport.height}
         </span>
         <SegmentedControl
           size="sm"
@@ -86,6 +88,7 @@ export function PreviewPanel({
         address={address}
         device={device}
         readPath={readPath}
+        onViewport={setViewport}
         live={{
           bannerFocus: values.bannerFocus,
           primaryHue: values.primaryHue,

@@ -3,24 +3,18 @@
   color: var(--fuwari-fg);
 }
 /*
- * The settings, access and muted-user pages take the Admin's own control and
- * button sizes (admin-variables.css); 「个性化」 keeps its larger ones.
+ * The settings, access, muted-user and 「个性化」 pages take the Admin's own
+ * control and button sizes (admin-variables.css).
  */
-.settings-workspace:not([data-section="personalize"]) {
+.settings-workspace {
   --fuwari-field-height: 36px;
   --fuwari-field-font-size: var(--admin-text-body);
   --fuwari-label-font-size: var(--admin-text-body);
   --fuwari-button-height: 36px;
   --fuwari-button-font-size: var(--admin-text-body);
   --fuwari-button-padding-x: 14px;
-}
-.settings-workspace[data-section="personalize"] {
-  --fuwari-field-height: calc(42 * var(--admin-unit));
-  --fuwari-field-font-size: calc(14 * var(--admin-unit));
-  --fuwari-label-font-size: calc(13 * var(--admin-unit));
-  --fuwari-button-height: calc(40 * var(--admin-unit));
-  --fuwari-button-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-padding-x: calc(18 * var(--admin-unit));
+  --fuwari-segment-height: 30px;
+  --fuwari-segment-font-size: var(--admin-text-small);
 }
 .settings-muted {
   color: var(--fuwari-fg-50);
@@ -272,10 +266,30 @@
   flex: 1;
   min-width: 0;
 }
-/* The saved credential's state, in a box like the fields around it. */
+/* A saved credential: that it is set, as a field that cannot be typed in,
+   with what can be done to it beside the field. */
 .settings-secret-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: 1;
   min-width: 0;
+  height: var(--fuwari-field-height);
+  padding-inline: 12px;
+  border-radius: var(--admin-radius-control);
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-body);
+}
+.settings-secret-summary > svg {
+  flex-shrink: 0;
+  color: var(--admin-fg-3);
+}
+.settings-secret-summary > i {
+  color: var(--admin-fg-3);
+  font-style: normal;
+  letter-spacing: 0.12em;
 }
 
 /*
@@ -289,6 +303,7 @@
   max-width: var(--admin-form-max);
 }
 .settings-maintenance-item {
+  position: relative;
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
   grid-template-rows: 1fr auto;
@@ -317,11 +332,17 @@
 .settings-maintenance-copy {
   min-width: 0;
 }
+/* What marks the tile, in its corner, level with the title. */
+.settings-maintenance-flag {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+}
+.settings-maintenance-item:has(.settings-maintenance-flag)
+  .settings-maintenance-copy {
+  padding-right: 84px;
+}
 .settings-maintenance-title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
   margin-bottom: 2px;
   font-size: var(--admin-text-section);
   line-height: var(--admin-leading-section);
@@ -329,7 +350,7 @@
   color: var(--admin-fg);
 }
 .settings-maintenance-desc,
-.settings-maintenance-item [data-tone] {
+.settings-maintenance-copy > [data-tone] {
   font-size: var(--admin-text-small);
   line-height: var(--admin-leading-small);
 }
@@ -337,7 +358,7 @@
   color: var(--admin-fg-3);
   font-variant-numeric: tabular-nums;
 }
-.settings-maintenance-item [data-tone] {
+.settings-maintenance-copy > [data-tone] {
   margin-top: 6px;
 }
 .settings-maintenance-action {

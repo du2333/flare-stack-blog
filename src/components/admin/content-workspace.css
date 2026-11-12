@@ -1,9 +1,11 @@
 /*
- * Every Admin workspace scales with one unit and draws one hairline rule:
- * --admin-hairline (admin-variables.css).
+ * Every Admin workspace draws one hairline rule: --admin-hairline
+ * (admin-variables.css). --admin-unit is one pixel at every width: the sizes
+ * written with it used to grow with the window (up to 1.5 times on a wide
+ * screen), which set them apart from everything sized by the type variables.
  */
 .admin-workspace {
-  --admin-unit: clamp(1px, 0.07vw, 1.5px);
+  --admin-unit: 1px;
   --fuwari-tabs-gap: calc(28 * var(--admin-unit));
   --fuwari-tabs-rule: var(--admin-hairline);
   --fuwari-tab-height: calc(46 * var(--admin-unit));

@@ -98,16 +98,24 @@ export function PreviewStage({
   device,
   live,
   readPath,
+  onViewport,
 }: {
   address: string;
   device: PreviewDevice;
   live: PreviewLiveValues;
   /** Set to a function that reads the path of the page in view, for the next address. */
   readPath: MutableRefObject<() => string | null>;
+  /** Told the viewport the page is rendered in, which a tall space makes taller. */
+  onViewport?: (size: { width: number; height: number }) => void;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const space = useStageSpace(stageRef);
   const { scale, frame: size, canvas } = previewFrameLayout(device, space);
+  const reportViewport = useRef(onViewport);
+  reportViewport.current = onViewport;
+  useEffect(() => {
+    reportViewport.current?.({ width: size.width, height: size.height });
+  }, [size.width, size.height]);
 
   const nextKey = useRef(2);
   const [frames, setFrames] = useState<Array<Frame>>(() => [

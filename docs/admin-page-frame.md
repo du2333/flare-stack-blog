@@ -32,7 +32,7 @@ Every Admin page except the post editor and its history and the overview renders
 
 | Form | Use it for | Example |
 | --- | --- | --- |
-| `list` | a list, one card, full width | Posts (`PostManager`): `scroll={false} inset={false} stackOnPhone`, `ListCardColumns`, `ListCardRows` (the scroller) and `ListCardFoot` with `Pagination`; the media library: the wall and its detail panel in one card |
+| `list` | a list, one card, full width | Posts (`PostManager`): `scroll={false} inset={false} stackOnPhone`, `ListCardColumns`, `ListCardRows` (the scroller) and `ListCardFoot` with `Pagination`; the media library: the wall in one card, the chosen image in a dialog over it |
 | `form` | settings, one per row | Settings (`SettingsShell`): the `.settings-body` scroller with the save bar pinned at its foot |
 | `split` | master and detail | Comments (`AdminCommentInbox`) and Friend Links (`FriendLinkReview`): `AdminSplit` with `inset={false}`, the queue and the detail pane scroll on their own; 分类与标签: two panes |
 

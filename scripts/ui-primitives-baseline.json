@@ -12,7 +12,6 @@
   "src/features/config/components/admin/overlay-upload.tsx": 1,
   "src/features/config/components/admin/personalize/personalize-studio.tsx": 1,
   "src/features/config/components/admin/settings-disclosure.tsx": 1,
-  "src/features/config/components/admin/site-studio.tsx": 1,
   "src/features/media/components/media-library/components/image-source-picker.tsx": 3,
   "src/features/media/components/media-library/components/media-collection.tsx": 2,
   "src/features/media/components/media-library/components/media-detail.tsx": 1,

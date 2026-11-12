@@ -1,7 +1,7 @@
 /*
  * The media library: the images as a wall of photographs, each in its own
- * shape, rows of one height; the chosen one opens in a panel beside the wall
- * (a dialog below 1200px). A clean list is the other view.
+ * shape, rows of one height; the chosen one opens in a dialog over the wall.
+ * A clean list is the other view.
  */
 .media-workspace,
 .media-inspector {
@@ -12,8 +12,6 @@
   --media-row: calc(172 * var(--admin-unit));
   --media-gap: 6px;
   --media-inset: 14px;
-  --media-panel: calc(344 * var(--admin-unit));
-  --media-layout-duration: 320ms;
   color: var(--admin-fg-2);
 }
 /* The view switch is two icons. */
@@ -23,8 +21,8 @@
 
 /* ── The wall and the panel ── */
 .media-workspace-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 0;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
 }
@@ -40,8 +38,8 @@
   padding: var(--media-inset) calc(var(--media-inset) - var(--admin-scrollbar))
     var(--media-inset) var(--media-inset);
 }
-/* A narrower wall, as beside the open panel, takes lower rows, so a row still
-   holds three or four images. */
+/* A narrower wall takes lower rows, so a row still holds three or four
+   images. */
 .media-browser {
   container: media-wall / inline-size;
 }
@@ -62,25 +60,6 @@
   min-width: 0;
   min-height: 100%;
 }
-.media-panel-slot {
-  min-width: 0;
-  min-height: 0;
-  overflow: clip;
-}
-@media (min-width: 1200px) {
-  .media-workspace-body.has-preview {
-    grid-template-columns: minmax(0, 1fr) var(--media-panel);
-  }
-  .media-workspace-body.has-preview > .media-panel-slot {
-    border-left: 1px solid var(--admin-line);
-  }
-}
-@media (max-width: 1199px) {
-  .media-panel-slot {
-    display: contents;
-  }
-}
-
 /* ── A tile ── */
 .media-gallery {
   position: relative;
@@ -387,28 +366,69 @@
   color: var(--admin-accent-text);
 }
 
-/* ── The panel ── */
-.media-inspector {
-  min-width: 0;
-  color: var(--admin-fg-2);
+/*
+ * ── The detail: a dialog over the wall, the image on a dark stage and what
+ * is known of it beside it; it takes nothing from the wall. ──
+ */
+.fuwari-modal.media-lightbox {
+  width: min(1080px, calc(100% - 48px));
+  height: min(700px, calc(100dvh - 48px));
+  max-height: none;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--admin-surface);
 }
-aside.media-inspector {
-  width: var(--media-panel);
+.media-lightbox > .fuwari-modal-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
   height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 0 18px 22px;
-  animation: media-detail-in var(--media-layout-duration) var(--admin-ease) both;
 }
-aside.media-inspector[data-state="closing"] {
-  animation: none;
+.media-lightbox-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 20px;
+  /* The stage is dark in either scheme, so any image reads on it. */
+  background: #101013;
+}
+.media-lightbox-stage > img {
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.media-lightbox-step {
+  position: absolute;
+  top: 50%;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  transform: translateY(-50%);
+  backdrop-filter: blur(6px);
+}
+.media-lightbox-step:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
+}
+.media-lightbox-step:disabled {
   opacity: 0;
 }
-@keyframes media-detail-in {
-  from {
-    opacity: 0;
-    transform: translateX(14px);
-  }
+.media-lightbox-step[data-side="previous"] {
+  left: 12px;
+}
+.media-lightbox-step[data-side="next"] {
+  right: 12px;
+}
+.media-inspector {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 20px 22px;
+  color: var(--admin-fg-2);
 }
 .media-inspector-header {
   position: sticky;
@@ -418,22 +438,8 @@ aside.media-inspector[data-state="closing"] {
   padding-block: 12px 10px;
   background: var(--admin-surface);
 }
-.media-inspector-preview {
-  display: grid;
-  place-items: center;
-  min-height: calc(150 * var(--admin-unit));
-  overflow: hidden;
-  border-radius: 12px;
-  background: var(--admin-sunken);
-  box-shadow: inset 0 0 0 1px var(--admin-line);
-}
-.media-inspector-preview img {
-  max-width: 100%;
-  max-height: calc(300 * var(--admin-unit));
-  object-fit: contain;
-}
 .media-inspector-name {
-  margin-top: 16px;
+  margin-top: 4px;
   font-size: var(--admin-text-section);
   font-weight: 600;
   line-height: var(--admin-leading-section);
@@ -520,13 +526,25 @@ aside.media-inspector[data-state="closing"] {
   flex-shrink: 0;
   color: var(--admin-fg-3);
 }
-/* Below 1200px the panel is a dialog (FuwariModal brings its own motion). */
-.fuwari-modal.media-inspector-dialog {
-  width: min(calc(520 * var(--admin-unit)), calc(100% - 24px));
-  max-height: calc(100dvh - 24px);
-  padding: 4px 20px 22px;
-  border-radius: 18px;
-  background: var(--admin-surface);
+/* A narrow screen stacks them: the image, then what is known of it. */
+@media (max-width: 760px) {
+  .fuwari-modal.media-lightbox {
+    width: calc(100% - 24px);
+    height: auto;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+  .media-lightbox > .fuwari-modal-content {
+    display: block;
+    height: auto;
+  }
+  .media-lightbox-stage {
+    height: min(52dvh, 360px);
+    padding: 12px;
+  }
+  .media-inspector {
+    overflow: visible;
+  }
 }
 :is(.media-workspace, .media-inspector)
   :is(
@@ -586,7 +604,6 @@ aside.media-inspector[data-state="closing"] {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  aside.media-inspector,
   .media-upload-progress,
   .media-drop-overlay {
     animation: none;
