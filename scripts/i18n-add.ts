@@ -9,6 +9,7 @@
  * stays as it is. An existing key or a missing anchor stops the run before
  * anything is written.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -153,6 +154,12 @@ function main() {
   console.log(
     `added ${adds.map((add) => add.key).join(", ")} to ${files.join(", ")}`,
   );
+  // Code and tests read messages through the compiled runtime, so a new key
+  // is not usable until it is compiled.
+  const compiled = spawnSync("bun", ["run", "i18n:compile"], {
+    stdio: "inherit",
+  });
+  if (compiled.status !== 0) process.exit(compiled.status ?? 1);
 }
 
 if (
