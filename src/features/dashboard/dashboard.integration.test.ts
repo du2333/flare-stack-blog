@@ -19,13 +19,16 @@ import {
 } from "@/features/dashboard/service/dashboard.service";
 import * as FriendLinkRepo from "@/features/friend-links/data/friend-links.data";
 import * as MutedUserService from "@/features/muted-users/service/muted-users.service";
+import * as PostPopularityRepo from "@/features/post-popularity/data/post-popularity.data";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import * as kvStore from "@/features/cache/kv-store";
+import { serializeKey } from "@/features/cache/serialize";
 import { VERSION_CACHE_KEYS } from "@/features/version/version.schema";
-import type {
-  PostPopularitySnapshot,
-  PostPopularitySyncStatus,
+import {
+  POST_POPULARITY_KEYS,
+  type PostPopularitySnapshot,
+  type PostPopularitySyncStatus,
 } from "@/features/post-popularity/post-popularity.schema";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import { CommentsTable, PostRevisionsTable, PostsTable } from "@/lib/db/schema";
@@ -47,6 +50,8 @@ function popularityStatus(
     ...overrides,
   };
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function mockPopularity(
   status: PostPopularitySyncStatus,
@@ -642,6 +647,11 @@ describe("Dashboard overview", () => {
       windowStart: 1_000,
       windowEnd: 2_000,
       syncedAt: Date.now(),
+      daily: [
+        { day: 1_000, views: 40 },
+        { day: 1_000 + DAY_MS, views: 0 },
+        { day: 1_000 + 2 * DAY_MS, views: 7 },
+      ],
     });
 
     const overview = await getDashboardOverview(adminContext);
@@ -650,6 +660,11 @@ describe("Dashboard overview", () => {
       windowStart: 1_000,
       windowEnd: 2_000,
       totalViews: 7_562,
+      daily: [
+        { day: 1_000, views: 40 },
+        { day: 1_000 + DAY_MS, views: 0 },
+        { day: 1_000 + 2 * DAY_MS, views: 7 },
+      ],
     });
     expect(
       overview.popularity.topPosts.map((post) => [post.title, post.views]),
@@ -670,12 +685,37 @@ describe("Dashboard overview", () => {
       windowStart: 1,
       windowEnd: 2,
       syncedAt: 0,
+      daily: [{ day: 0, views: 3 }],
     });
 
     const overview = await getDashboardOverview(adminContext);
     expect(overview.popularity.state).toBe("expired");
     expect(overview.popularity.totalViews).toBe(10);
+    expect(overview.popularity.daily).toEqual([{ day: 0, views: 3 }]);
     expect(overview.popularityAlert).toBe("expired");
+  });
+
+  it("reads a snapshot stored before the daily series existed as having none", async () => {
+    const postId = await publishPost("legacy");
+    await adminContext.env.KV.put(
+      serializeKey(POST_POPULARITY_KEYS.snapshot),
+      JSON.stringify({
+        entries: [{ postId, score: 11 }],
+        windowStart: 1_000,
+        windowEnd: 2_000,
+        syncedAt: Date.now(),
+      }),
+    );
+
+    mockPopularity(
+      popularityStatus(),
+      await PostPopularityRepo.readSnapshot(adminContext.env),
+    );
+
+    const overview = await getDashboardOverview(adminContext);
+    expect(overview.popularity.state).toBe("ready");
+    expect(overview.popularity.totalViews).toBe(11);
+    expect(overview.popularity.daily).toEqual([]);
   });
 
   it("reports no traffic without Umami or a snapshot", async () => {
@@ -687,6 +727,7 @@ describe("Dashboard overview", () => {
       windowEnd: null,
       totalViews: 0,
       topPosts: [],
+      daily: [],
     });
 
     mockPopularity(popularityStatus(), null);

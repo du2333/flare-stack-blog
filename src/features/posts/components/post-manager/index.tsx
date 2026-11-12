@@ -1,19 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { Plus, Search } from "lucide-react";
+import { FileText, Plus, SearchX, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { AdminPage } from "@/components/admin/admin-page";
-import { AdminPagination } from "@/components/admin/admin-pagination";
-import { orpc, orpcClient } from "@/lib/orpc";
-import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
-import { EmptyState } from "@/components/ui/empty-state";
-import { m } from "@/paraglide/messages";
-import { PostListHeader, PostRow, PostsToolbar } from "./components";
+import { CanvasPage, riseOrder } from "@/components/admin/canvas-page";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { Spinner } from "@/components/ui/spinner";
-import { useListScroll } from "./hooks/use-list-scroll";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  ListCard,
+  ListCardFoot,
+  ListCardRows,
+} from "@/components/ui/list-card";
+import { Pagination } from "@/components/ui/pagination";
+import { m } from "@/paraglide/messages";
+import { PostListColumns, PostRow } from "./components/post-row";
+import { PostsStatusTabs, PostsTools } from "./components/posts-toolbar";
 import {
   useAppliedPostSort,
   useDeletePost,
@@ -21,14 +20,16 @@ import {
   useTogglePostPin,
   useUnpublishPost,
 } from "./hooks";
-import { PostManagerSkeleton } from "./post-manager-skeleton";
+import { useCreatePost } from "./hooks/use-create-post";
+import { useListScroll } from "./hooks/use-list-scroll";
+import { PostRowsSkeleton } from "./post-manager-skeleton";
 import type {
   AdminPostListItem,
   CategoryFilter,
   SortField,
   StatusFilter,
 } from "./types";
-import { PHONE_LAYOUT_QUERY, POSTS_PER_PAGE } from "./types";
+import { POSTS_PER_PAGE } from "./types";
 import "./post-manager.css";
 
 interface PostManagerProps {
@@ -45,17 +46,14 @@ interface PostManagerProps {
   onSearchChange: (search: string) => void;
   onCategoryChange: (category?: CategoryFilter, replace?: boolean) => void;
   onTagChange: (tag?: number, replace?: boolean) => void;
-  /**
-   * Filters by one category or tag, dropping the other taxonomy filter; with
-   * neither, clears both and leaves the search and the status alone.
-   */
-  onTaxonomyFilter: (filter: {
-    category?: CategoryFilter;
-    tag?: number;
-  }) => void;
   onResetFilters: () => void;
 }
 
+/**
+ * 「文章」: the status as a segmented track, the search ("/" focuses it) and
+ * a chip each for the Category, the Tag and the sort; then the Posts in one
+ * card, twenty to a page. Every filter lives in the address.
+ */
 export function PostManager({
   page,
   status,
@@ -69,46 +67,45 @@ export function PostManager({
   onSearchChange,
   onCategoryChange,
   onTagChange,
-  onTaxonomyFilter,
   onResetFilters,
 }: PostManagerProps) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [postToDelete, setPostToDelete] = useState<AdminPostListItem | null>(
+  const [toDelete, setToDelete] = useState<AdminPostListItem | null>(null);
+  const [toUnpublish, setToUnpublish] = useState<AdminPostListItem | null>(
     null,
   );
-  const [postToUnpublish, setPostToUnpublish] =
-    useState<AdminPostListItem | null>(null);
-  const phone = useMediaQuery(PHONE_LAYOUT_QUERY);
-  const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchCallbackRef = useRef(onSearchChange);
-  searchCallbackRef.current = onSearchChange;
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // The field answers at once; the address follows 300 ms after the last key.
+  // A change of the address (Back included) supersedes what is pending.
   const [searchInput, setSearchInput] = useState(search);
-  const clearPendingSearch = useCallback(() => {
-    if (searchTimerRef.current !== null) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = null;
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const submit = useRef(onSearchChange);
+  submit.current = onSearchChange;
+  const clearTimer = useCallback(() => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = null;
   }, []);
-  // URL changes (including browser Back) supersede any pending text submission.
   useEffect(() => {
-    clearPendingSearch();
+    clearTimer();
     setSearchInput(search);
-  }, [search, clearPendingSearch]);
-  useEffect(() => clearPendingSearch, [clearPendingSearch]);
-  const handleSearchChange = (value: string) => {
+  }, [search, clearTimer]);
+  useEffect(() => clearTimer, [clearTimer]);
+  const typeSearch = (value: string) => {
     setSearchInput(value);
-    clearPendingSearch();
-    searchTimerRef.current = setTimeout(() => {
-      searchTimerRef.current = null;
-      searchCallbackRef.current(value);
+    clearTimer();
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      submit.current(value);
     }, 300);
   };
   const resetFilters = () => {
-    clearPendingSearch();
+    clearTimer();
     setSearchInput("");
     onResetFilters();
   };
+
   const {
     posts,
     totalCount,
@@ -124,18 +121,12 @@ export function PostManager({
   // What the server applied, which differs from the address's sort while
   // views cannot be sorted by.
   const shownSort = useAppliedPostSort(sortBy, popularity, onSortByChange);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const viewsSortable = popularity === undefined || popularity === "ready";
   useListScroll(
     scrollRef,
     { page, status, sortBy, search, category, tag },
     !isPending && !isPlaceholderData && !error,
   );
-  const motionKey = useRef("");
-  if (!isPlaceholderData)
-    motionKey.current = `${page}:${status}:${sortBy}:${search}:${category}:${tag}:${isPending}:${posts.map((post) => post.id).join(",")}`;
-  useContentMotion(contentRef, motionKey.current);
-
   useEffect(() => {
     if (
       !isPending &&
@@ -146,235 +137,200 @@ export function PostManager({
       onPageChange(Math.max(1, totalPages));
   }, [page, totalPages, isPending, isPlaceholderData, error, onPageChange]);
 
-  const createMutation = useMutation({
-    mutationFn: () => orpcClient.posts.admin.create(),
-    onSuccess: (post) => {
-      void queryClient.invalidateQueries({
-        queryKey: orpc.posts.admin.list.key(),
-      });
-      void navigate({
-        to: "/admin/posts/edit/$id",
-        params: { id: String(post.id) },
-      });
-    },
-    onError: () => toast.error(m.admin_posts_create_failed()),
-  });
-  const createPost = createMutation.mutate;
-  const isCreating = createMutation.isPending;
-  const createLabel = isCreating
-    ? m.admin_posts_creating()
-    : m.admin_posts_create();
-  const deleteMutation = useDeletePost({
-    onSuccess: () => setPostToDelete(null),
-  });
-  const hasTaxonomyFilter = category !== undefined || tag !== undefined;
-  const unpublishMutation = useUnpublishPost({
-    onSuccess: () => setPostToUnpublish(null),
-  });
-  const pinMutation = useTogglePostPin();
-  const hasSearch = Boolean(searchInput.trim());
-  // Views are sorted by only once the popularity snapshot can be read.
-  const viewsSortable = popularity === undefined || popularity === "ready";
-  const hasContentFilter =
-    status !== "ALL" || Boolean(search.trim()) || hasTaxonomyFilter;
-  const isEmptyLibrary = !hasContentFilter && totalCount === 0;
+  const create = useCreatePost();
+  const createPost = () => create.mutate();
+  const remove = useDeletePost({ onSuccess: () => setToDelete(null) });
+  const unpublish = useUnpublishPost({ onSuccess: () => setToUnpublish(null) });
+  const pin = useTogglePostPin();
 
-  // Pinned under the scrolling rows, or at the end of them on a phone.
-  const footer =
-    !isPending && !error ? (
-      <footer className="post-list-footer">
-        {totalPages <= 1 ? (
-          <p>
-            {hasContentFilter
-              ? m.admin_posts_results({ count: totalCount })
-              : m.admin_posts_total({ count: totalCount })}
-          </p>
-        ) : (
-          <AdminPagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={totalCount}
-            itemsPerPage={POSTS_PER_PAGE}
-            currentPageItemCount={posts.length}
-            onPageChange={onPageChange}
-          />
-        )}
-        {/*
-          The full reset is for a search term, alone or with a Category or Tag.
-          A status tab is no filter, and Category or Tag chips alone carry
-          their own clear button.
-        */}
-        {hasSearch && (
-          <Button variant="text" size="sm" onClick={resetFilters}>
-            {m.admin_posts_clear_filters()}
-          </Button>
-        )}
-      </footer>
-    ) : null;
+  const filtered =
+    status !== "ALL" ||
+    Boolean(search.trim()) ||
+    category !== undefined ||
+    tag !== undefined;
+  const total = statusCounts
+    ? statusCounts.draft + statusCounts.published
+    : undefined;
+  const first = (page - 1) * POSTS_PER_PAGE + 1;
+  const returnFocus = () =>
+    triggerRef.current?.isConnected ? triggerRef.current : searchRef.current;
 
   return (
-    <AdminPage
-      className="post-manager"
+    <CanvasPage
       title={m.admin_posts_title()}
-      count={
-        <>
-          {statusCounts ? statusCounts.draft + statusCounts.published : "—"}
-          {isFetching && <Spinner size={14} className="ml-2 inline" />}
-        </>
-      }
+      count={total}
       primaryAction={{
-        label: createLabel,
-        icon: <Plus size={17} />,
-        onClick: () => createPost(),
-        loading: isCreating,
+        label: create.isPending
+          ? m.admin_posts_creating()
+          : m.admin_posts_create(),
+        icon: Plus,
+        onClick: createPost,
+        loading: create.isPending,
       }}
-      toolbar={
-        <PostsToolbar
-          searchTerm={searchInput}
-          onSearchChange={handleSearchChange}
-          searchRef={searchRef}
+      tabs={
+        <PostsStatusTabs
           status={status}
           statusCounts={statusCounts}
           onStatusChange={onStatusChange}
+        />
+      }
+      tools={
+        <PostsTools
+          searchTerm={searchInput}
+          onSearchChange={typeSearch}
+          searchRef={searchRef}
           category={category}
           onCategoryChange={onCategoryChange}
           tag={tag}
           onTagChange={onTagChange}
           sortBy={shownSort}
           onSortByChange={onSortByChange}
-          onClearTaxonomy={() => onTaxonomyFilter({})}
           popularity={popularity}
         />
       }
-      body="list"
-      scroll={false}
     >
-      <div
-        ref={scrollRef}
-        className="post-list-scroll custom-scrollbar"
-        data-scroll-restoration-id="admin-post-list"
-        role="region"
+      <ListCard
+        className="admin-rise"
+        style={riseOrder(2)}
+        loading={isFetching && !isPending}
         aria-label={m.admin_posts_title()}
-        tabIndex={0}
       >
+        <PostListColumns
+          sortBy={shownSort}
+          viewsSortable={viewsSortable}
+          onSortByChange={onSortByChange}
+        />
+
         {error ? (
           <EmptyState
-            className="post-list-empty"
-            description={m.error_desc()}
+            variant="tile"
+            icon={TriangleAlert}
+            title={m.admin_posts_load_failed()}
             action={
-              <Button variant="text" onClick={() => void refetch()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void refetch()}
+              >
                 {m.error_retry()}
               </Button>
             }
           />
+        ) : isPending ? (
+          <ListCardRows aria-busy="true">
+            <PostRowsSkeleton />
+          </ListCardRows>
+        ) : posts.length === 0 ? (
+          filtered ? (
+            <EmptyState
+              variant="tile"
+              icon={SearchX}
+              title={m.admin_posts_no_match()}
+              description={m.admin_posts_no_match_desc()}
+              action={
+                <Button variant="outline" size="sm" onClick={resetFilters}>
+                  {m.admin_posts_clear_filters()}
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              variant="tile"
+              icon={FileText}
+              title={m.admin_posts_empty_title()}
+              description={m.admin_posts_empty_desc()}
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={create.isPending}
+                  onClick={createPost}
+                >
+                  {m.admin_posts_create()}
+                </Button>
+              }
+            />
+          )
         ) : (
-          <>
-            <div className="post-list-table-wrap" aria-busy={isFetching}>
-              <div
-                className="post-list"
-                role="table"
-                aria-label={m.admin_posts_title()}
-              >
-                <PostListHeader
-                  sortBy={shownSort}
-                  viewsSortable={viewsSortable}
-                  onSortByChange={onSortByChange}
-                />
-                <div ref={contentRef} role="rowgroup">
-                  {isPending ? (
-                    <PostManagerSkeleton />
-                  ) : (
-                    posts.map((post) => (
-                      <PostRow
-                        key={post.id}
-                        post={post}
-                        sortBy={shownSort}
-                        popularity={popularity}
-                        onDelete={(target, trigger) => {
-                          deleteTriggerRef.current = trigger;
-                          setPostToDelete(target);
-                        }}
-                        onTogglePin={(target) => pinMutation.mutate(target)}
-                        pinPending={
-                          pinMutation.isPending &&
-                          pinMutation.variables.id === post.id
-                        }
-                        onUnpublish={(target, trigger) => {
-                          deleteTriggerRef.current = trigger;
-                          setPostToUnpublish(target);
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-            {!isPending && posts.length === 0 && (
-              <EmptyState
-                className="post-list-empty"
-                icon={Search}
-                description={
-                  isEmptyLibrary
-                    ? m.admin_posts_empty_library()
-                    : m.admin_posts_no_match()
-                }
-                action={
-                  <Button
-                    variant="text"
-                    disabled={isCreating}
-                    onClick={() =>
-                      isEmptyLibrary ? createPost() : resetFilters()
-                    }
-                  >
-                    {isEmptyLibrary
-                      ? createLabel
-                      : m.admin_posts_clear_filters()}
-                  </Button>
-                }
+          <ListCardRows
+            ref={scrollRef}
+            role="rowgroup"
+            aria-busy={isPlaceholderData}
+            data-scroll-restoration-id="admin-post-list"
+          >
+            {posts.map((post, index) => (
+              <PostRow
+                key={post.id}
+                index={index}
+                post={post}
+                sortBy={shownSort}
+                popularity={popularity}
+                pinPending={pin.isPending && pin.variables.id === post.id}
+                onTogglePin={() => pin.mutate(post)}
+                onDelete={(trigger) => {
+                  triggerRef.current = trigger;
+                  setToDelete(post);
+                }}
+                onUnpublish={(trigger) => {
+                  triggerRef.current = trigger;
+                  setToUnpublish(post);
+                }}
               />
-            )}
-            {phone && footer}
-          </>
+            ))}
+          </ListCardRows>
         )}
-      </div>
-      {!phone && footer}
+
+        {!isPending && !error && posts.length > 0 ? (
+          <ListCardFoot>
+            <span>
+              {totalPages > 1
+                ? m.admin_posts_range({
+                    first,
+                    last: first + posts.length - 1,
+                    total: totalCount,
+                  })
+                : m.admin_posts_count({ count: totalCount })}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              label={m.admin_pagination_label()}
+              previousLabel={m.home_previous_page()}
+              nextLabel={m.home_next_page()}
+            />
+          </ListCardFoot>
+        ) : null}
+      </ListCard>
 
       <ConfirmationModal
-        isOpen={!!postToDelete}
+        isOpen={!!toDelete}
         title={m.admin_posts_delete_confirm_title()}
         message={m.admin_posts_delete_confirm_desc({
-          title: postToDelete?.title.trim() || m.common_untitled(),
+          title: toDelete?.title.trim() || m.common_untitled(),
         })}
         confirmLabel={m.admin_posts_delete_confirm_btn()}
         isDanger
-        isLoading={deleteMutation.isPending}
-        onClose={() => setPostToDelete(null)}
+        isLoading={remove.isPending}
+        onClose={() => setToDelete(null)}
         onConfirm={() => {
-          if (postToDelete) deleteMutation.mutate(postToDelete);
+          if (toDelete) remove.mutate(toDelete);
         }}
-        returnFocus={() =>
-          deleteTriggerRef.current?.isConnected
-            ? deleteTriggerRef.current
-            : searchRef.current
-        }
+        returnFocus={returnFocus}
       />
       <ConfirmationModal
-        isOpen={!!postToUnpublish}
+        isOpen={!!toUnpublish}
         title={m.editor_unpublish_confirm_title()}
         message={m.editor_unpublish_confirm_desc()}
         confirmLabel={m.editor_header_unpublish()}
         isDanger
-        isLoading={unpublishMutation.isPending}
-        onClose={() => setPostToUnpublish(null)}
+        isLoading={unpublish.isPending}
+        onClose={() => setToUnpublish(null)}
         onConfirm={() => {
-          if (postToUnpublish) unpublishMutation.mutate(postToUnpublish.id);
+          if (toUnpublish) unpublish.mutate(toUnpublish.id);
         }}
-        returnFocus={() =>
-          deleteTriggerRef.current?.isConnected
-            ? deleteTriggerRef.current
-            : searchRef.current
-        }
+        returnFocus={returnFocus}
       />
-    </AdminPage>
+    </CanvasPage>
   );
 }

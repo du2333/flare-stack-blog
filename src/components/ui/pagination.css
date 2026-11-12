@@ -1,0 +1,35 @@
+@layer components {
+  .fuwari-pagination {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .fuwari-pagination button {
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    border-radius: 8px;
+    color: var(--admin-fg-2);
+    font-size: 13px;
+    font-weight: 500;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
+  .fuwari-pagination button:hover:not(:disabled) {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  .fuwari-pagination button[aria-current="page"] {
+    background: var(--admin-ink);
+    color: var(--admin-on-ink);
+  }
+  .fuwari-pagination button:disabled {
+    opacity: 0.35;
+  }
+  .fuwari-pagination span {
+    padding: 0 4px;
+  }
+}

@@ -93,6 +93,63 @@
     font-size: 0.9em;
     font-variant-numeric: tabular-nums;
   }
+  /*
+   * Segmented (the Admin's, admin-variables.css): one grey track; a white
+   * pill sits under the chosen tab and slides to the next one. The script
+   * places it (data-pill), so before that it is not drawn.
+   */
+  .fuwari-tabs[data-variant="segmented"] {
+    position: relative;
+    display: inline-flex;
+    gap: 0;
+    max-width: 100%;
+    padding: 3px;
+    border-bottom: 0;
+    border-radius: 12px;
+    background: var(--admin-hover);
+  }
+  .fuwari-tabs-pill {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-line),
+      var(--admin-shadow-card);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .fuwari-tabs[data-pill] > .fuwari-tabs-pill {
+    opacity: 1;
+  }
+  .fuwari-tabs[data-pill="moving"] > .fuwari-tabs-pill {
+    transition:
+      transform 0.38s var(--admin-ease),
+      width 0.38s var(--admin-ease);
+  }
+  .fuwari-tabs[data-variant="segmented"] > .fuwari-tab {
+    flex: none;
+    gap: 6px;
+    min-height: 0;
+    height: 30px;
+    padding: 0 12px;
+    border-bottom: 0;
+    border-radius: 9px;
+    color: var(--admin-fg-2);
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .fuwari-tabs[data-variant="segmented"]
+    > .fuwari-tab:is(:hover:not(:disabled), [aria-selected="true"]) {
+    color: var(--admin-fg);
+  }
+  .fuwari-tabs[data-variant="segmented"] .fuwari-tab-count {
+    font-size: 12px;
+    color: var(--admin-fg-3);
+  }
   @media (prefers-reduced-motion: no-preference) {
     .fuwari-tabs[data-scroll-cue] {
       scroll-behavior: smooth;

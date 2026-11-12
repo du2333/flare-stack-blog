@@ -56,5 +56,9 @@ export function useHandledComments() {
     onSettled: () => refreshUnrepliedComments(queryClient),
   });
 
-  return { markHandled: markMutation.mutate };
+  return {
+    markHandled: markMutation.mutate,
+    /** Settles once the server answers; rejects when it failed (toasted). */
+    markHandledAsync: markMutation.mutateAsync,
+  };
 }

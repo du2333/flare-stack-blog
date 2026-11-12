@@ -1,5 +1,12 @@
 import { Link, type LinkProps } from "@tanstack/react-router";
-import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type ComponentProps,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { cn } from "@/lib/utils";
 import { moveSelection } from "./roving-selection";
 import { centeredScrollLeft, scrollEdges } from "./tab-scroll";
@@ -82,14 +89,54 @@ function useScrollCue<T extends HTMLElement>(enabled: boolean, value: string) {
 }
 
 /**
- * Underlined tabs that switch a panel or filter a list. Arrow keys, Home and
- * End move between them; `children` follow the tabs, such as a spinner.
+ * For the segmented form: places the pill under the selected tab and, once
+ * it has been placed, lets it slide (`data-pill="moving"`) to the next one.
+ * It follows the tabs when they resize, such as when a count arrives.
+ */
+function useSlidingPill(
+  enabled: boolean,
+  row: RefObject<HTMLElement | null>,
+  value: string,
+  labels: string,
+) {
+  const pill = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const track = row.current;
+    const mark = pill.current;
+    if (!enabled || !track || !mark) return;
+    const place = () => {
+      const chosen = track.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!chosen) return;
+      mark.style.width = `${chosen.offsetWidth}px`;
+      mark.style.transform = `translateX(${chosen.offsetLeft}px)`;
+      if (!track.dataset.pill) {
+        track.dataset.pill = "placed";
+        requestAnimationFrame(() => {
+          track.dataset.pill = "moving";
+        });
+      }
+    };
+    place();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(place);
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, [enabled, row, value, labels]);
+  return pill;
+}
+
+/**
+ * Tabs that switch a panel or filter a list: underlined, or `segmented`, a
+ * grey track (the Admin's) whose white pill slides to the chosen tab. Arrow
+ * keys, Home and End move between them; `children` follow the tabs, such as
+ * a spinner.
  */
 export function Tabs<T extends string>({
   items,
   value,
   onValueChange,
   scrollCue = false,
+  variant = "underline",
   className,
   children,
   ...props
@@ -99,18 +146,35 @@ export function Tabs<T extends string>({
   onValueChange: (value: T) => void;
   /** Fade the ends of a row that overflows, to show there is more to scroll to. */
   scrollCue?: boolean;
+  variant?: "underline" | "segmented";
   "aria-label": string;
 }) {
   const ref = useScrollCue<HTMLDivElement>(scrollCue, value);
+  const segmented = variant === "segmented";
+  const pill = useSlidingPill(
+    segmented,
+    ref,
+    value,
+    items
+      .map(
+        ({ value: key, count }) =>
+          `${key}:${typeof count === "number" || typeof count === "string" ? count : ""}`,
+      )
+      .join(","),
+  );
   return (
     <div
       {...props}
       ref={ref}
       role="tablist"
       data-scroll-cue={scrollCue || undefined}
+      data-variant={segmented ? "segmented" : undefined}
       className={cn("fuwari-tabs", className)}
       onKeyDown={(event) => moveSelection(event, items, value, onValueChange)}
     >
+      {segmented ? (
+        <span ref={pill} className="fuwari-tabs-pill" aria-hidden />
+      ) : null}
       {items.map((item) => {
         const selected = item.value === value;
         return (

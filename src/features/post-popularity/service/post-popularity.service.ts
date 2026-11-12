@@ -12,6 +12,7 @@ import {
   isPostPopularityUnchanged,
   POST_POPULARITY_MAX_AGE_MS,
   withViewCounts,
+  type PostPopularityDailyViews,
   type PostPopularityMetric,
   type PostPopularityWindow,
   type PublishedPostPopularityRef,
@@ -41,6 +42,10 @@ type Dependencies = {
     config: UmamiApiConfig,
     window: PostPopularityWindow,
   ) => Promise<PostPopularityMetric[]>;
+  getDailyViews: (
+    config: UmamiApiConfig,
+    window: PostPopularityWindow,
+  ) => Promise<PostPopularityDailyViews[]>;
   listPublishedPosts: (db: DB) => Promise<PublishedPostPopularityRef[]>;
   readSnapshot: (env: Env) => Promise<PostPopularitySnapshot | null>;
   writeSnapshot: (env: Env, snapshot: PostPopularitySnapshot) => Promise<void>;
@@ -141,15 +146,26 @@ export function createPostPopularityService(dependencies: Dependencies) {
 
     try {
       const config = dependencies.resolveConfig(context.env);
-      const [metrics, posts] = await Promise.all([
+      const [metrics, posts, daily] = await Promise.all([
         dependencies.getPathMetrics(config, window),
         dependencies.listPublishedPosts(context.db),
+        // The per-day series is extra: failing to get it must not fail the sync.
+        dependencies.getDailyViews(config, window).catch((error: unknown) => {
+          console.error(
+            JSON.stringify({
+              message: "post popularity daily views failed",
+              error: errorMessage(error),
+            }),
+          );
+          return [];
+        }),
       ]);
       const snapshot = buildPostPopularitySnapshot({
         metrics,
         posts,
         window,
         syncedAt: attemptedAt,
+        daily,
       });
       await dependencies.writeSnapshot(context.env, snapshot);
       snapshotWritten = true;
@@ -253,6 +269,7 @@ export const postPopularityService = createPostPopularityService({
   resolveConfig: (env) => resolveUmamiApiConfig(serverEnv(env)),
   getPathMetrics: (config, window) =>
     umamiClient.getPathMetrics(config, window),
+  getDailyViews: (config, window) => umamiClient.getDailyViews(config, window),
   listPublishedPosts: PostPopularityRepo.listPublishedPosts,
   readSnapshot: PostPopularityRepo.readSnapshot,
   writeSnapshot: PostPopularityRepo.writeSnapshot,

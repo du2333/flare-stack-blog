@@ -47,6 +47,7 @@ async function getPopularity(context: DbContext) {
         windowEnd: null,
         totalViews: 0,
         topPosts: [],
+        daily: [],
       },
     };
   }
@@ -64,6 +65,7 @@ async function getPopularity(context: DbContext) {
       windowEnd: snapshot.windowEnd,
       totalViews: totalViews(snapshot.entries),
       topPosts: rankTopPosts(candidates, publicPosts),
+      daily: snapshot.daily,
     },
   };
 }

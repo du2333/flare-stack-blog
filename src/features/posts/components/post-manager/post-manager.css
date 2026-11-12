@@ -1,414 +1,263 @@
-/* Content-list layout; colors remain shared with the Fuwari workbench. */
-.post-manager {
-  --list-rule: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
-  --fuwari-field-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-height: calc(40 * var(--admin-unit));
-  --fuwari-button-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-padding-x: calc(18 * var(--admin-unit));
-}
-/* Search, 「筛选」 and the sort: in the toolbar row, or a row of their own. */
-.post-list-tools {
-  /* One height for the search, 「筛选」 and the sort, the same as Media's. */
-  --admin-control-height: calc(40 * var(--admin-unit));
-  --fuwari-field-height: var(--admin-control-height);
-  --fuwari-button-height: var(--admin-control-height);
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: calc(10 * var(--admin-unit));
-  min-width: 0;
-}
-.post-list-search {
-  flex: 0 1 calc(280 * var(--admin-unit));
-  min-width: calc(150 * var(--admin-unit));
-}
-.post-list-filter-count {
-  color: var(--fuwari-primary);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-/* The chosen Category and Tag, each one removable. */
-.post-list-chips {
-  --fuwari-badge-height: calc(30 * var(--admin-unit));
-  --fuwari-badge-padding-x: calc(12 * var(--admin-unit));
-  --fuwari-badge-font-size: calc(13 * var(--admin-unit));
-  display: flex;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: calc(8 * var(--admin-unit));
-  padding-block: calc(12 * var(--admin-unit));
-}
 /*
- * The one-row toolbar lays itself out by its own width, which the sidebar
- * narrows, not by the screen's. Too narrow for the tabs and the tools side by
- * side, the tools take a row of their own under the tabs. The rule is the
- * head's, under everything.
+ * The Posts list (index.tsx, components/post-row.tsx): two-line rows in a
+ * list card on the canvas. The columns are one grid for the names, the rows
+ * and the placeholders.
  */
-.post-list-toolbar-shell {
-  container-type: inline-size;
-  flex-shrink: 0;
+
+.post-cols,
+.post-row,
+.post-skel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 124px 64px 64px 96px 68px;
+  column-gap: 12px;
+  align-items: center;
 }
-@container (max-width: 859px) {
-  .post-list-toolbar-shell .admin-frame-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .post-list-toolbar-shell .post-list-tools {
-    padding-block: calc(10 * var(--admin-unit));
-  }
-  .post-list-toolbar-shell .post-list-search {
-    flex: 1;
-  }
+.post-num {
+  text-align: right;
+  justify-self: end;
 }
-@media (max-width: 1023px) {
-  .post-list-tools {
-    padding-block: calc(10 * var(--admin-unit));
-  }
-  .post-list-search {
-    flex: 1;
-  }
+.post-cols .post-num .fuwari-sort-header {
+  margin-right: -7px;
 }
 
-/*
- * The Post list (post-row.tsx). From 1024px a row is one line of cells in a
- * grid the header row shares: Title, Status, Category and Tags (from 1280px),
- * 浏览, 评论, time, menu. Below 1024px a Post is two lines: the title and its
- * status, then the details.
- */
-.post-list {
-  --post-row-height: 52px;
-  --post-head-height: 36px;
-  --post-cols: minmax(0, 1fr) 140px 64px 64px 88px 32px;
-  --fuwari-badge-height: calc(24 * var(--admin-unit));
-  --fuwari-badge-padding-x: calc(10 * var(--admin-unit));
-  --fuwari-badge-font-size: calc(12 * var(--admin-unit));
-  --fuwari-button-height-sm: 28px;
-  min-width: 0;
-}
-@media (min-width: 1280px) {
-  .post-list {
-    --post-cols: minmax(0, 1fr) 140px minmax(0, 220px) 64px 64px 88px 32px;
-  }
-}
-.post-list-header,
-.post-manager .post-row {
-  display: grid;
-  grid-template-columns: var(--post-cols);
-  align-items: center;
-  column-gap: 12px;
-}
-.post-list-header {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  height: var(--post-head-height);
-  padding: 0 12px;
-  background: var(--fuwari-card-bg);
-  border-bottom: 1px solid var(--admin-hairline);
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
-}
-.post-list-header > * {
-  min-width: 0;
-  white-space: nowrap;
-}
-.post-list-col-number,
-.post-list-col-time {
-  display: flex;
-  justify-content: flex-end;
-}
-/* A sortable column name: a button that reads as the header text. */
-.post-list-sort {
-  min-height: 28px;
-  margin-inline: -6px;
-  padding: 0 6px;
-  gap: 4px;
-  color: inherit;
-  font-size: var(--admin-text-meta);
-  font-weight: 400;
-}
-.post-list-sort[data-active] {
-  color: var(--fuwari-fg);
-  font-weight: 600;
-}
-.post-manager .post-row {
+.post-row {
   position: relative;
-  height: var(--post-row-height);
-  min-height: 0;
-  max-height: none;
+  min-height: 58px;
+  padding: 8px 4px 8px 12px;
+  border-radius: 12px;
+  transition: background 0.15s;
 }
-/* The title is the link; its stretched box is the row. */
-.post-row-title {
+.post-row:hover,
+.post-row:focus-within {
+  background: var(--admin-hover);
+}
+.post-main {
+  min-width: 0;
+}
+.post-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+/* The title is the row's link, stretched over all of it. */
+.post-title a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 550;
+  letter-spacing: -0.003em;
+}
+.post-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+.post-title a:focus-visible {
+  outline: 0;
+}
+.post-title a:focus-visible::after {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: -2px;
+}
+.post-title a[data-untitled] {
+  color: var(--admin-fg-3);
+  font-weight: 450;
+}
+.post-pin {
+  flex: none;
+  color: var(--admin-accent);
+}
+.post-sub {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
-}
-.post-list-pin {
-  flex-shrink: 0;
-  color: var(--fuwari-primary);
-}
-.post-row-link {
-  min-width: 0;
+  margin-top: 1px;
   overflow: hidden;
-  color: var(--fuwari-fg);
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--admin-fg-3);
+}
+.post-sub b {
+  flex: none;
+  color: var(--admin-fg-2);
   font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.post-row-link::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+.post-sub span {
+  flex: none;
 }
-.post-manager .post-row .post-row-link:focus-visible {
-  outline: none;
+.post-sub i {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--admin-line-strong);
 }
-.post-row:has(.post-row-link:focus-visible) {
-  background: var(--fuwari-btn-plain-bg-hover);
-  outline: 2px solid var(--fuwari-primary);
-  outline-offset: -2px;
-}
-.post-row-status {
-  display: flex;
-  min-width: 0;
-}
-/* Details: cells of the row's grid from 1024px, one line under the title below. */
-.post-row-meta {
-  display: contents;
-}
-.post-row-taxonomy {
+.post-sub-only {
   display: none;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
-  text-overflow: ellipsis;
+}
+
+.post-state {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--admin-fg-3);
   white-space: nowrap;
 }
-.post-row-taxonomy > span + span {
-  margin-left: 8px;
+.post-state i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--admin-line-strong);
 }
-.post-row-more,
-.post-row-none {
-  color: var(--fuwari-fg-30);
+.post-state[data-state="draft"] {
+  padding: 0 9px 0 8px;
+  border-radius: 999px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-text);
 }
-@media (min-width: 1280px) {
-  .post-row-taxonomy {
-    display: block;
-  }
+.post-state[data-state="draft"] i {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px currentColor;
 }
-.post-row-number,
-.post-row-time {
-  color: var(--fuwari-fg-50);
-  font-size: var(--admin-text-meta);
-  line-height: var(--admin-leading-meta);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+.post-state[data-state="changed"] {
+  color: var(--admin-accent-text);
+}
+.post-state[data-state="changed"] i {
+  background: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-accent-soft);
+}
+
+.post-count {
+  font-size: 13px;
+  color: var(--admin-fg-2);
+}
+.post-count[data-zero] {
+  color: var(--admin-fg-3);
+}
+.post-count[data-sorted] {
+  color: var(--admin-fg);
+  font-weight: 600;
+}
+.post-time {
+  font-size: 12.5px;
+  color: var(--admin-fg-3);
   white-space: nowrap;
 }
-.post-row-number {
-  color: var(--fuwari-fg-75);
-}
-.post-row-actions {
+
+.post-acts {
   position: relative;
   z-index: 1;
+  justify-self: end;
   display: flex;
-  justify-content: flex-end;
+  gap: 1px;
 }
-.post-list-col-taxonomy {
-  display: none;
+/* A row's actions: a little larger and fainter than the quiet icon button. */
+.post-act.fuwari-icon-button {
+  width: 30px;
+  height: 30px;
+  color: var(--admin-fg-3);
 }
-@media (min-width: 1280px) {
-  .post-list-col-taxonomy {
-    display: block;
+.post-act.fuwari-icon-button:not(:disabled):hover,
+.post-act.fuwari-icon-button[aria-expanded="true"] {
+  background: var(--admin-press);
+}
+@media (hover: hover) {
+  .post-act.fuwari-icon-button {
+    opacity: 0;
+  }
+  .post-row:hover .post-act.fuwari-icon-button,
+  .post-row:focus-within .post-act.fuwari-icon-button,
+  .post-act.fuwari-icon-button[aria-expanded="true"] {
+    opacity: 1;
   }
 }
 
-@media (max-width: 1023px) {
-  .post-list-header {
+.post-skel {
+  height: 58px;
+  padding: 0 4px 0 12px;
+}
+.post-skel > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.post-skel .fuwari-skeleton-shimmer {
+  height: 12px;
+}
+
+/* The page's placeholders while the first page loads, at the controls' sizes. */
+.post-skel-primary {
+  margin-left: auto;
+  width: 106px;
+  height: 36px;
+  border-radius: 10px;
+}
+.post-skel-tabs {
+  display: inline-flex;
+  width: 296px;
+  max-width: 100%;
+  height: 36px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--admin-hover);
+}
+.post-skel-tabs > .fuwari-skeleton-shimmer {
+  width: 64px;
+  border-radius: 9px;
+}
+.post-skel-search {
+  width: 220px;
+  height: 36px;
+  border-radius: 10px;
+}
+.post-skel-chip {
+  width: 68px;
+  height: 36px;
+  border-radius: 10px;
+}
+.post-skel-chip.is-wide {
+  width: 126px;
+}
+@media (max-width: 767px) {
+  .admin-canvas-tools > .post-skel-search {
+    flex: 1 1 100%;
+    width: auto;
+  }
+}
+
+/* Narrower than a table: the numbers leave, state and time join the second line. */
+@container (max-width: 760px) {
+  .post-cols {
     display: none;
   }
-  /* Two lines with room around them: 12px above and below, 4px between. */
-  .post-manager .post-row {
-    grid-template-columns: minmax(0, 1fr) auto 32px;
-    grid-template-rows: 20px 18px;
-    align-content: center;
-    row-gap: 4px;
-    column-gap: 8px;
-    height: 66px;
-    padding-block: 12px;
+  .post-row,
+  .post-skel {
+    grid-template-columns: minmax(0, 1fr) 40px;
   }
-  .post-row-title {
-    grid-area: 1 / 1;
-    line-height: 20px;
+  .post-row > .post-state,
+  .post-row > .post-num,
+  .post-row > .post-time,
+  .post-skel > div:not(:first-child) {
+    display: none;
   }
-  /* Status and menu share line one with the title. */
-  .post-row-status {
-    grid-area: 1 / 2;
-    align-items: center;
-    justify-content: flex-end;
+  .post-sub-only {
+    display: contents;
   }
-  .post-row-actions {
-    grid-area: 1 / 3;
-    align-self: center;
+  .post-acts .post-act:not(.post-more) {
+    display: none;
   }
-  .post-row-meta {
-    display: flex;
-    grid-area: 2 / 1 / 3 / 3;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
+  .post-act.fuwari-icon-button {
+    opacity: 1;
   }
-  .post-row-taxonomy {
-    display: block;
-    flex: 1;
-  }
-  .post-row-number,
-  .post-row-time {
-    flex-shrink: 0;
-  }
-  .post-row-number::before {
-    content: attr(data-label) " ";
-    color: var(--fuwari-fg-50);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .post-row {
-    transition: none;
-  }
-}
-
-.post-manager
-  :is(
-    button:not(
-      .fuwari-field-button,
-      .fuwari-button,
-      .fuwari-icon-button,
-      .fuwari-tab,
-      .fuwari-segment
-    ),
-    a,
-    select
-  ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
-  outline-offset: 3px;
-}
-.post-list-footer {
-  display: flex;
-  align-items: center;
-  gap: calc(20 * var(--admin-unit));
-  min-height: calc(55 * var(--admin-unit));
-  padding-top: calc(8 * var(--admin-unit));
-  font-size: calc(13 * var(--admin-unit));
-  color: var(--fuwari-fg-50);
-}
-@media (max-width: 620px) {
-  .post-list-footer {
-    font-size: calc(12 * var(--admin-unit));
-    gap: calc(12 * var(--admin-unit));
-  }
-}
-.post-list-footer {
-  flex-wrap: wrap;
-}
-.post-list-footer > div {
-  flex: 1;
-  width: 100%;
-  padding-top: 0;
-}
-
-.post-manager svg[width="12"] {
-  width: calc(12 * var(--admin-unit));
-  height: calc(12 * var(--admin-unit));
-}
-
-.post-manager svg[width="14"] {
-  width: calc(14 * var(--admin-unit));
-  height: calc(14 * var(--admin-unit));
-}
-
-.post-manager svg[width="16"] {
-  width: calc(16 * var(--admin-unit));
-  height: calc(16 * var(--admin-unit));
-}
-
-.post-manager svg[width="17"] {
-  width: calc(17 * var(--admin-unit));
-  height: calc(17 * var(--admin-unit));
-}
-
-.post-manager svg[width="18"] {
-  width: calc(18 * var(--admin-unit));
-  height: calc(18 * var(--admin-unit));
-}
-
-.post-manager svg[width="19"] {
-  width: calc(19 * var(--admin-unit));
-  height: calc(19 * var(--admin-unit));
-}
-
-.post-manager svg[width="20"] {
-  width: calc(20 * var(--admin-unit));
-  height: calc(20 * var(--admin-unit));
-}
-
-.post-manager svg[width="24"] {
-  width: calc(24 * var(--admin-unit));
-  height: calc(24 * var(--admin-unit));
-}
-
-.post-manager svg[width="30"] {
-  width: calc(30 * var(--admin-unit));
-  height: calc(30 * var(--admin-unit));
-}
-
-.post-list-empty {
-  animation: fuwari-content-in var(--fuwari-motion-content)
-    var(--fuwari-motion-ease) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .post-list-empty {
-    animation: none;
-  }
-}
-
-/* Header, controls and pagination stay outside the independently scrolling rows. */
-.post-list-footer {
-  flex-shrink: 0;
-}
-.post-list-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  overflow-anchor: none;
-  padding: 0 4px 4px;
-  margin-inline: -4px;
-  margin-right: calc(-4px - var(--admin-scrollbar));
-}
-.post-list-footer {
-  border-top: 1px solid var(--list-rule);
-  padding-top: calc(12 * var(--admin-unit));
-}
-/* On a phone the footer follows the rows, and the last one already draws the rule. */
-.post-list-table-wrap + .post-list-footer {
-  border-top: 0;
-}
-@media (max-width: 620px) {
-  .post-list-footer > div {
-    gap: 8px;
-  }
-  .post-list-footer {
-    padding-top: 10px;
-  }
-}
-.post-list-footer > div > div:last-child {
-  max-width: 100%;
-  flex-wrap: wrap;
-  justify-content: center;
 }

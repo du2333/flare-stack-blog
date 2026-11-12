@@ -17,6 +17,8 @@ export type PostPopularityMetric = {
   pageviews: number;
 };
 
+export type PostPopularityDailyViews = PostPopularitySnapshot["daily"][number];
+
 export type PublishedPostPopularityRef = {
   postId: number;
   publicSlug: string;
@@ -60,11 +62,13 @@ export function buildPostPopularitySnapshot({
   posts,
   window,
   syncedAt,
+  daily = [],
 }: {
   metrics: PostPopularityMetric[];
   posts: PublishedPostPopularityRef[];
   window: PostPopularityWindow;
   syncedAt: number;
+  daily?: PostPopularityDailyViews[];
 }): PostPopularitySnapshot {
   const postBySlug = new Map(posts.map((post) => [post.publicSlug, post]));
   const scoreByPostId = new Map<number, number>();
@@ -99,6 +103,7 @@ export function buildPostPopularitySnapshot({
     windowStart: window.startAt,
     windowEnd: window.endAt,
     syncedAt,
+    daily,
   });
 }
 

@@ -1,0 +1,18 @@
+/* A key cap. The Admin's (admin-variables.css): the editor uses the class
+   on its own <kbd> elements too, so the name stays .admin-kbd. */
+@layer components {
+  .admin-kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 6px;
+    background: var(--admin-hover);
+    color: var(--admin-fg-3);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+  }
+}

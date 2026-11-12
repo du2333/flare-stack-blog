@@ -52,14 +52,16 @@
   :root:has(.admin-layout)
     :is(.fuwari-input, .fuwari-field-shell):not(
       [data-bare],
-      [aria-invalid="true"]
+      [aria-invalid="true"],
+      [data-variant]
     ) {
     border-color: var(--admin-hairline);
   }
   :root:has(.admin-layout)
     :is(.fuwari-input:focus, .fuwari-field-shell:focus-within):not(
       [data-bare],
-      [aria-invalid="true"]
+      [aria-invalid="true"],
+      [data-variant]
     ) {
     background: var(--theme-surface);
     border-color: var(--theme-accent);
@@ -303,6 +305,69 @@
       );
     }
   }
+  /*
+   * The raised search field (the Admin's list toolbar, admin-variables.css):
+   * a white field on a hairline and a light shadow, which widens while in
+   * use and rings in the accent. It keeps its size on phones too.
+   */
+  .fuwari-field-shell[data-variant="raised"] {
+    gap: 8px;
+    width: 220px;
+    height: 36px;
+    min-height: 0;
+    padding: 0 8px 0 11px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-line),
+      var(--admin-shadow-card);
+    color: var(--admin-fg-3);
+    font-size: inherit;
+    transition:
+      width 0.35s var(--admin-ease),
+      box-shadow 0.2s;
+  }
+  .fuwari-field-shell[data-variant="raised"]:hover {
+    background: var(--admin-surface);
+  }
+  .fuwari-field-shell[data-variant="raised"]:focus-within {
+    width: 280px;
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-accent),
+      0 0 0 4px var(--admin-accent-soft);
+  }
+  .fuwari-field-shell[data-variant="raised"] > input {
+    color: var(--admin-fg);
+    font-size: 13.5px;
+  }
+  .fuwari-field-shell[data-variant="raised"] > input:focus-visible {
+    outline: 0;
+  }
+  .fuwari-field-shell[data-variant="raised"] > input::placeholder {
+    color: var(--admin-fg-3);
+  }
+  .fuwari-field-shell[data-variant="raised"]:focus-within > .admin-kbd {
+    display: none;
+  }
+  .fuwari-field-shell[data-variant="raised"] > .fuwari-field-button {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    color: var(--admin-fg-3);
+  }
+  .fuwari-field-shell[data-variant="raised"]
+    > .fuwari-field-button:not(:disabled):hover {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  @media (max-width: 639px) {
+    .fuwari-field-shell[data-variant="raised"] {
+      font-size: inherit;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .fuwari-input,
     .fuwari-field-shell,

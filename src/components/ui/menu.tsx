@@ -62,6 +62,8 @@ interface MenuProps {
   triggerClassName: string;
   /** A tooltip for a trigger that shows no text. */
   triggerTitle?: string;
+  /** `data-*` attributes for the trigger, for a look that follows a state. */
+  triggerData?: Record<`data-${string}`, string | undefined>;
   disabled?: boolean;
   placement?: Placement;
   /** As wide as the trigger (11rem at least), and kept inside the viewport, instead of 11 to 18rem. */
@@ -81,6 +83,7 @@ export function Menu({
   trigger,
   triggerClassName,
   triggerTitle,
+  triggerData,
   disabled = false,
   placement = "bottom-end",
   matchTriggerWidth = false,
@@ -144,6 +147,7 @@ export function Menu({
   return (
     <>
       <button
+        {...triggerData}
         ref={setTriggerEl}
         type="button"
         className={triggerClassName}

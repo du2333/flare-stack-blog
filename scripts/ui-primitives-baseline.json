@@ -1,6 +1,5 @@
 {
   "src/components/admin/admin-page.tsx": 1,
-  "src/components/admin/side-bar.tsx": 1,
   "src/components/common/colour-scheme-toggle.tsx": 1,
   "src/components/layout/back-to-top.tsx": 1,
   "src/components/layout/expandable-sidebar-card.tsx": 1,

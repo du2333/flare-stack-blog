@@ -1,22 +1,26 @@
 /*
- * The Admin workbench's own values (ADR 0021, amended 2026-11-11): warm
- * neutral paper and ink, with an ink accent that has no hue, in both Colour
- * Schemes. Success, warning and danger are the only colours with a hue.
+ * The Admin workbench's own values (ADR 0021, amended 2026-11-12): a neutral
+ * grey canvas with white cards, hairlines and very light shadows; ink for
+ * the primary action and the flame accent (#f26522, dark #ff8a4c) only where
+ * something asks for attention. Success, warning and danger keep their
+ * fixed hues from the base layer.
  *
- * The Admin still shares the stylesheet and the controls with public pages,
- * so it reads the same --fuwari-* names; here it gives every colour that the
- * base layer derives from --fuwari-hue (styles.css) a fixed value of its own
- * instead. Nothing below mentions the hue, so the hue that Site Config and
- * the personalize page move never reaches the workbench, and a Theme sets
- * --theme-* only, which theme-variables.css pins back for the Admin.
- * admin-variables.test checks that no variable resolves from the hue here.
+ * The --admin-* names are the design variables; pages and the shell read
+ * them. The Admin still shares the stylesheet and the controls with public
+ * pages, so it also gives every --fuwari-* colour that the base layer
+ * derives from --fuwari-hue (styles.css) a fixed value of its own, mostly
+ * from the --admin-* names. Nothing below mentions the hue, so the hue that
+ * Site Config and the personalize page move never reaches the workbench, and
+ * a Theme sets --theme-* only, which theme-variables.css pins back for the
+ * Admin. admin-variables.test checks that no variable resolves from the hue.
  *
- * Success, warning and danger keep their fixed hues from the base layer.
- * Contrast (WCAG), light / dark: text on the card 11.6 / 13.0, secondary text
- * 4.7 / 6.3, primary button text on the accent 14.4 / 13.8, the accent as a
- * link on the card 14.4 / 13.8 and on the page 13.1 / 14.8, and as a focus
- * ring the same against the card and the page (3:1 needed).
- * admin-variables.test computes these from the values below.
+ * Contrast (WCAG), light / dark: text on a card 18.0 / 15.3, secondary text
+ * (--admin-fg-2) 5.8 / 6.9, the accent's text on a card 5.0 / 8.8, ink on
+ * the canvas 16.2 / 16.6, text on an ink button 18.0 / 16.0, the focus ring
+ * (the accent) on a card 3.2 / 7.7. Short of WCAG: the faint text
+ * (--admin-fg-3) 3.0 / 3.7, and in light the accent on the canvas (2.8 as
+ * a ring, 4.5 as text). admin-variables.test computes these and lists the
+ * shortfalls.
  *
  * The type scale and the density the page frame, the sidebar and the lists
  * share are here too (--admin-text-*, --admin-sidebar-*, --admin-row-*).
@@ -26,52 +30,96 @@
  */
 @layer base {
   :root:has(.admin-layout) {
-    --fuwari-primary: #2b2722;
-    --fuwari-primary-hover: #1a1815;
-    --fuwari-primary-active: #0f0e0c;
-    /* Text and icons on the accent: a primary button, a checked switch. */
-    --admin-on-accent: #fdfbf7;
-    --fuwari-page-bg: #f4f0e8;
-    --fuwari-card-bg: #fdfbf7;
-    --fuwari-btn-content: #4a4033;
-    --fuwari-btn-regular-bg: #eee9de;
-    --fuwari-btn-regular-bg-hover: #e6e0d2;
-    --fuwari-btn-regular-bg-active: #dcd5c4;
-    --fuwari-btn-plain-bg-hover: #ece7dc;
-    --fuwari-btn-plain-bg-active: #f3efe6;
-    --fuwari-deep-text: #2b2218;
-    --fuwari-selection-bg: #e0dacd;
-    --fuwari-toc-btn-hover: #ece7dc;
-    --fuwari-toc-btn-active: #e6e0d2;
-    --fuwari-toc-badge-bg: #e3dccd;
-    --fuwari-input-border: rgb(70 50 20 / 0.16);
-    --fuwari-divider: rgb(70 50 20 / 0.12);
-    --fuwari-fg: rgb(38 30 22 / 0.92);
-    --fuwari-fg-75: rgb(38 30 22 / 0.78);
-    --fuwari-fg-50: rgb(38 30 22 / 0.64);
-    --fuwari-fg-30: rgb(38 30 22 / 0.35);
-    --fuwari-fg-faint: rgb(38 30 22 / 0.5);
-    --fuwari-meta-text: rgb(38 30 22 / 0.55);
-    --fuwari-row-text: #4a4033;
+    /* The design variables. */
+    --admin-canvas: #f3f3f1;
+    --admin-surface: #ffffff;
+    --admin-sunken: #f7f7f5;
+    --admin-line: rgb(18 18 23 / 0.08);
+    --admin-line-strong: rgb(18 18 23 / 0.14);
+    --admin-fg: #16161a;
+    --admin-fg-2: rgb(22 22 26 / 0.66);
+    --admin-fg-3: rgb(22 22 26 / 0.46);
+    --admin-hover: rgb(18 18 23 / 0.045);
+    --admin-press: rgb(18 18 23 / 0.08);
+    --admin-ink: #16161a;
+    --admin-on-ink: #ffffff;
+    --admin-accent: #f26522;
+    --admin-accent-text: #c2470d;
+    --admin-accent-soft: color-mix(
+      in srgb,
+      var(--admin-accent) 11%,
+      transparent
+    );
+    --admin-shadow-card:
+      0 1px 2px rgb(18 18 23 / 0.04), 0 1px 1px rgb(18 18 23 / 0.02);
+    --admin-shadow-raised:
+      0 1px 2px rgb(18 18 23 / 0.05), 0 8px 24px -8px rgb(18 18 23 / 0.12);
+    --admin-shadow-pop:
+      0 0 0 1px var(--admin-line), 0 28px 70px -14px rgb(18 18 23 / 0.32),
+      0 8px 20px -8px rgb(18 18 23 / 0.16);
+    --admin-radius-card: 16px;
+    --admin-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --admin-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* The edge of a button, a badge, a callout, a card: a hairline, so no
-       control rests on its fill alone. Only the Admin has it. */
-    --admin-hairline: rgb(70 50 20 / 0.13);
-    /* The same line under its older name, which dashboard.css, the Settings
-       and Personalize stylesheets, agent-skill.css, api-key-settings.css,
-       media-library.css and notify-studio.tsx still read. Use --admin-hairline. */
+    /* Geist for numbers and Latin letters, the system's Chinese face for the
+       rest. The font is loaded by the Admin route only. */
+    --font-sans:
+      "Geist Variable", "PingFang SC", "HarmonyOS Sans SC",
+      "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC",
+      "Noto Sans SC", system-ui, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji";
+
+    /* The shared controls and the pages not redesigned yet read these. */
+    --fuwari-primary: var(--admin-ink);
+    --fuwari-primary-hover: #2a2a30;
+    --fuwari-primary-active: #000000;
+    /* Text and icons on the primary fill: a primary button, a checked switch. */
+    --admin-on-accent: var(--admin-on-ink);
+    --fuwari-page-bg: var(--admin-canvas);
+    --fuwari-card-bg: var(--admin-surface);
+    --fuwari-btn-content: #3a3a42;
+    --fuwari-btn-regular-bg: #f0f0ee;
+    --fuwari-btn-regular-bg-hover: #e8e8e5;
+    --fuwari-btn-regular-bg-active: #dfdfdb;
+    --fuwari-btn-plain-bg-hover: #f0f0ee;
+    --fuwari-btn-plain-bg-active: #e8e8e5;
+    --fuwari-deep-text: var(--admin-fg);
+    --fuwari-selection-bg: color-mix(
+      in srgb,
+      var(--admin-accent) 22%,
+      transparent
+    );
+    --fuwari-toc-btn-hover: #f0f0ee;
+    --fuwari-toc-btn-active: #e8e8e5;
+    --fuwari-toc-badge-bg: #ebebe8;
+    --fuwari-input-border: var(--admin-line-strong);
+    --fuwari-divider: var(--admin-line);
+    --fuwari-fg: var(--admin-fg);
+    --fuwari-fg-75: rgb(22 22 26 / 0.78);
+    --fuwari-fg-50: var(--admin-fg-2);
+    --fuwari-fg-30: rgb(22 22 26 / 0.34);
+    --fuwari-fg-faint: var(--admin-fg-3);
+    --fuwari-meta-text: var(--admin-fg-3);
+    --fuwari-row-text: #3a3a42;
+
+    /* The edge of a button, a badge, a callout, a field: the one line.
+       --admin-line under the name the shared controls read. */
+    --admin-hairline: var(--admin-line);
+    /* The same line under its older name, which the Settings and Personalize
+       stylesheets, agent-skill.css, api-key-settings.css, media-library.css
+       and notify-studio.tsx still read. Use --admin-line. */
     --admin-rule: var(--admin-hairline);
 
-    /* Radii a little tighter than the base layer: the Tailwind scale, the
-       large card, the form fields and the buttons (theme-variables.css). */
-    --fuwari-radius-large: 0.625rem;
+    /* Radii: the Tailwind scale, the large card, the form fields and the
+       buttons (theme-variables.css). */
+    --fuwari-radius-large: 0.875rem;
     --radius-large: 0.75rem;
     --radius-lg: 0.375rem;
     --radius-xl: 0.5rem;
     --radius-2xl: 0.625rem;
     --radius-3xl: 0.75rem;
-    --fuwari-field-radius: 8px;
-    --fuwari-button-radius: 8px;
+    --fuwari-field-radius: 10px;
+    --fuwari-button-radius: 10px;
 
     /* Type (size / line height): the page title, a section's title, body
        text, and meta text such as dates and hints. Weights: 600 for titles. */
@@ -85,47 +133,73 @@
     --admin-leading-meta: 18px;
 
     /* Density: a list row is never taller than --admin-row-max; the sidebar
-       is --admin-sidebar-width wide with --admin-sidebar-row rows; a form
-       control is at most --admin-form-control-max wide. A list row pads its
-       own sides by --admin-row-x, so its rule and fill end at the edges of
-       the list it is in. */
+       is --admin-sidebar-width wide with --admin-sidebar-row rows of
+       --admin-sidebar-text; a form control is at most
+       --admin-form-control-max wide. A list row pads its own sides by
+       --admin-row-x, so its rule and fill end at the edges of the list it
+       is in. */
     --admin-row-max: 56px;
     --admin-row-x: 12px;
-    --admin-sidebar-width: 232px;
-    --admin-sidebar-row: 36px;
-    --admin-sidebar-text: 14px;
+    --admin-sidebar-width: 248px;
+    --admin-sidebar-row: 34px;
+    --admin-sidebar-text: 13.5px;
     --admin-form-control-max: 480px;
     /* A form body's rows and groups are at most this wide. */
     --admin-form-max: 960px;
   }
 
   :root.dark:has(.admin-layout) {
-    --fuwari-primary: #ece6da;
-    --fuwari-primary-hover: #f6f2ea;
-    --fuwari-primary-active: #fdfbf7;
-    --admin-on-accent: #1f1b17;
-    --fuwari-page-bg: #171411;
-    --fuwari-card-bg: #1f1b17;
-    --fuwari-btn-content: #d9cfc0;
-    --fuwari-btn-regular-bg: #2b2620;
-    --fuwari-btn-regular-bg-hover: #342e27;
-    --fuwari-btn-regular-bg-active: #3d362e;
-    --fuwari-btn-plain-bg-hover: #28231e;
-    --fuwari-btn-plain-bg-active: #231f1a;
-    --fuwari-deep-text: #efe6d8;
-    --fuwari-selection-bg: #4a4338;
-    --fuwari-toc-btn-hover: #26211c;
-    --fuwari-toc-btn-active: #2b2620;
-    --fuwari-toc-badge-bg: #2b2620;
-    --fuwari-input-border: rgb(245 238 228 / 0.14);
-    --fuwari-divider: rgb(245 238 228 / 0.12);
-    --fuwari-fg: rgb(245 238 228 / 0.9);
-    --fuwari-fg-75: rgb(245 238 228 / 0.75);
-    --fuwari-fg-50: rgb(245 238 228 / 0.6);
-    --fuwari-fg-30: rgb(245 238 228 / 0.3);
-    --fuwari-fg-faint: rgb(245 238 228 / 0.5);
-    --fuwari-meta-text: rgb(245 238 228 / 0.45);
-    --fuwari-row-text: #d9cfc0;
-    --admin-hairline: rgb(245 238 228 / 0.11);
+    --admin-canvas: #0d0d0f;
+    --admin-surface: #17171a;
+    --admin-sunken: #121214;
+    --admin-line: rgb(255 255 255 / 0.08);
+    --admin-line-strong: rgb(255 255 255 / 0.14);
+    --admin-fg: #ededf0;
+    --admin-fg-2: rgb(237 237 240 / 0.64);
+    --admin-fg-3: rgb(237 237 240 / 0.42);
+    --admin-hover: rgb(255 255 255 / 0.055);
+    --admin-press: rgb(255 255 255 / 0.09);
+    --admin-ink: #ededf0;
+    --admin-on-ink: #121214;
+    --admin-accent: #ff8a4c;
+    --admin-accent-text: #ff9d6b;
+    --admin-accent-soft: color-mix(
+      in srgb,
+      var(--admin-accent) 15%,
+      transparent
+    );
+    --admin-shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --admin-shadow-raised:
+      0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -8px rgb(0 0 0 / 0.5);
+    --admin-shadow-pop:
+      0 0 0 1px var(--admin-line-strong), 0 28px 70px -14px rgb(0 0 0 / 0.7);
+
+    --fuwari-primary-hover: #ffffff;
+    --fuwari-primary-active: #d8d8de;
+    --fuwari-btn-content: #d6d6dc;
+    --fuwari-btn-regular-bg: #232327;
+    --fuwari-btn-regular-bg-hover: #2b2b30;
+    --fuwari-btn-regular-bg-active: #33333a;
+    --fuwari-btn-plain-bg-hover: #222226;
+    --fuwari-btn-plain-bg-active: #2a2a2f;
+    --fuwari-toc-btn-hover: #222226;
+    --fuwari-toc-btn-active: #2a2a2f;
+    --fuwari-toc-badge-bg: #26262b;
+    --fuwari-fg-75: rgb(237 237 240 / 0.78);
+    --fuwari-fg-30: rgb(237 237 240 / 0.3);
+    --fuwari-row-text: #d6d6dc;
+  }
+}
+
+/* What a dialog or a popup of the Admin opens with: the palette, a card. */
+@keyframes admin-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes admin-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.975);
   }
 }

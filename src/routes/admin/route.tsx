@@ -8,14 +8,14 @@ import {
 } from "@tanstack/react-router";
 import { isAdminWorkspace } from "@/components/admin/content-workspace";
 import "@/components/admin/content-workspace.css";
+import "@fontsource-variable/geist/wght.css";
 import { Menu } from "lucide-react";
 import { useRef } from "react";
 import {
   AdminChromeProvider,
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
-import { StudioShell } from "@/components/admin/studio/studio-shell";
-import { readSidebarPreference } from "@/components/admin/sidebar-state";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/" });
     }
 
-    return { session, sidebarPreference: await readSidebarPreference() };
+    return { session };
   },
   component: AdminLayout,
   loader: () => ({
@@ -94,14 +94,9 @@ function AdminLayout() {
 
   return (
     <AdminChromeProvider>
-      <StudioShell
-        sheet={
-          !["/admin", "/admin/posts"].includes(pathname.replace(/\/+$/, ""))
-        }
-        topBar={(open) => <MobileTopBar onOpenSidebar={open} />}
-      >
+      <AdminShell topBar={(open) => <MobileTopBar onOpenSidebar={open} />}>
         <AdminMain />
-      </StudioShell>
+      </AdminShell>
       <Toaster />
     </AdminChromeProvider>
   );

@@ -5,11 +5,22 @@ const PostPopularityEntrySchema = z.object({
   score: z.number().int().positive(),
 });
 
+const PostPopularityDailyViewsSchema = z.object({
+  /** UTC midnight of the day, in milliseconds. */
+  day: z.number().int().nonnegative(),
+  views: z.number().int().nonnegative(),
+});
+
 export const PostPopularitySnapshotSchema = z.object({
   entries: z.array(PostPopularityEntrySchema),
   windowStart: z.number().int().nonnegative(),
   windowEnd: z.number().int().nonnegative(),
   syncedAt: z.number().int().nonnegative(),
+  /**
+   * Site-wide views per UTC day of the window, oldest first; empty when Umami
+   * could not say, and in snapshots written before this field existed.
+   */
+  daily: z.array(PostPopularityDailyViewsSchema).default([]),
 });
 
 export const PostPopularityStatusRecordSchema = z.object({

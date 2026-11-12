@@ -7,12 +7,12 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { createElement } from "react";
+import { createElement, type ComponentProps } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
-import { WIDE_TOOLBAR_QUERY, type PostPopularity } from "../types";
-import { PostsToolbar } from "./posts-toolbar";
+import type { PostPopularity } from "../types";
+import { PostsStatusTabs, PostsTools } from "./posts-toolbar";
 
 vi.mock("@/hooks/use-motion", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
@@ -36,27 +36,18 @@ vi.mock("@/lib/orpc", async () => {
 
 afterEach(cleanup);
 
-/** jsdom has no layout: say whether the viewport is at least 1024px wide. */
-function setViewport(wide: boolean) {
-  window.matchMedia = ((query: string) => ({
-    matches: query === WIDE_TOOLBAR_QUERY && wide,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia;
-}
-
-function renderToolbar(
-  filters: { category?: number | "none"; tag?: number },
+function renderTools(
+  filters: { category?: number | "none"; tag?: number } = {},
   {
-    wide = true,
     popularity,
-  }: { wide?: boolean; popularity?: PostPopularity } = {},
+    sortBy = "updatedAt",
+  }: Partial<
+    Pick<ComponentProps<typeof PostsTools>, "popularity" | "sortBy">
+  > = {},
 ) {
-  setViewport(wide);
   const onCategoryChange = vi.fn();
   const onTagChange = vi.fn();
   const onSortByChange = vi.fn();
-  const onClearTaxonomy = vi.fn();
   render(
     createElement(
       QueryClientProvider,
@@ -65,86 +56,53 @@ function renderToolbar(
           defaultOptions: { queries: { retry: false } },
         }),
       },
-      createElement(PostsToolbar, {
+      createElement(PostsTools, {
         searchTerm: "",
         onSearchChange: vi.fn(),
-        searchRef: null,
-        status: "ALL",
-        onStatusChange: vi.fn(),
-        sortBy: "updatedAt",
+        sortBy,
         onSortByChange,
         onCategoryChange,
         onTagChange,
-        onClearTaxonomy,
         popularity,
         ...filters,
       }),
     ),
   );
-  return {
-    onCategoryChange,
-    onTagChange,
-    onSortByChange,
-    onClearTaxonomy,
-  };
+  return { onCategoryChange, onTagChange, onSortByChange };
 }
 
-const filterButton = () =>
-  screen.getByRole("button", {
-    name: new RegExp(`^${m.admin_posts_filter_button()}`),
-  });
+const chip = (name: string) => screen.getByRole("button", { name });
 
 async function pick(menu: string, option: string) {
-  fireEvent.click(screen.getByRole("button", { name: menu }));
+  fireEvent.click(chip(menu));
   fireEvent.click(await findInPopover("menuitemradio", { name: option }));
 }
 
-async function openFilters() {
-  fireEvent.click(filterButton());
-  await findInPopover("dialog", { name: m.admin_posts_filter_button() });
-}
-
 it("offers the unpublished changes filter with its count between published and draft", () => {
-  setViewport(true);
   const onStatusChange = vi.fn();
   render(
-    createElement(
-      QueryClientProvider,
-      { client: new QueryClient() },
-      createElement(PostsToolbar, {
-        searchTerm: "",
-        onSearchChange: vi.fn(),
-        searchRef: null,
-        status: "ALL",
-        statusCounts: { draft: 3, published: 5, unpublishedChanges: 2 },
-        onStatusChange,
-        sortBy: "updatedAt",
-        onSortByChange: vi.fn(),
-        onCategoryChange: vi.fn(),
-        onTagChange: vi.fn(),
-      }),
-    ),
+    createElement(PostsStatusTabs, {
+      status: "ALL",
+      statusCounts: { published: 5, draft: 2, unpublishedChanges: 1 },
+      onStatusChange,
+    }),
   );
-
-  const tabs = screen.getAllByRole("tab");
-  expect(tabs.map((tab) => tab.getAttribute("data-value"))).toEqual([
-    "ALL",
-    "PUBLISHED",
-    "CHANGED",
-    "DRAFT",
+  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+    `${m.admin_posts_filter_all()} 7`,
+    `${m.admin_posts_filter_published()} 5`,
+    `${m.admin_posts_filter_changed()} 1`,
+    `${m.admin_posts_filter_draft()} 2`,
   ]);
-  const changed = tabs[2]!;
-  expect(changed.textContent).toBe(`${m.admin_posts_filter_changed()} 2`);
-  expect(tabs[1]!.textContent).toBe(`${m.admin_posts_filter_published()} 5`);
-  fireEvent.click(changed);
+  fireEvent.click(
+    screen.getByRole("tab", {
+      name: new RegExp(m.admin_posts_filter_changed()),
+    }),
+  );
   expect(onStatusChange).toHaveBeenCalledWith("CHANGED");
 });
 
-it("filters by a category, by uncategorized posts and by a tag from the filter panel", async () => {
-  const { onCategoryChange, onTagChange } = renderToolbar({});
-  await openFilters();
-  await screen.findByText(m.admin_posts_filter_category_all());
-
+it("filters by a category, by uncategorized posts and by a tag from their chips", async () => {
+  const { onCategoryChange, onTagChange } = renderTools();
   await pick(m.admin_posts_filter_category(), "Notes");
   expect(onCategoryChange).toHaveBeenLastCalledWith(2);
   await pick(m.admin_posts_filter_category(), m.post_uncategorized());
@@ -153,85 +111,25 @@ it("filters by a category, by uncategorized posts and by a tag from the filter p
   expect(onTagChange).toHaveBeenLastCalledWith(5);
 });
 
-it("keeps the search and the sort in the toolbar row and the choosers in the panel", async () => {
-  const { onSortByChange } = renderToolbar({});
-  const search = screen.getByRole("searchbox");
-  const sort = screen.getByRole("button", { name: m.admin_posts_sort_label() });
-  const row = search.closest(".admin-frame-toolbar");
-  expect(row?.contains(filterButton())).toBe(true);
-  expect(row?.contains(sort)).toBe(true);
-  expect(row?.querySelector('[role="tablist"]')).not.toBeNull();
-  // The shell is what the container query measures, so the row's own width
-  // decides whether the tools drop to a second row.
-  expect(
-    row?.parentElement?.classList.contains("post-list-toolbar-shell"),
-  ).toBe(true);
-  expect(
-    screen.queryByRole("button", { name: m.admin_posts_filter_category() }),
-  ).toBeNull();
-
-  fireEvent.click(sort);
-  fireEvent.click(
-    await findInPopover("menuitemradio", {
-      name: m.admin_posts_sort_recent_pub(),
-    }),
+it("shows a chip's name alone until it filters, then its value, tinted", async () => {
+  renderTools({ category: 2 });
+  const category = chip(m.admin_posts_filter_category());
+  await waitFor(() =>
+    expect(category.textContent).toBe(
+      `${m.admin_posts_filter_category()}Notes`,
+    ),
   );
-  expect(onSortByChange).toHaveBeenCalledWith("publishedAt");
-
-  await openFilters();
-  expect(
-    screen.queryByRole("radiogroup", { name: m.admin_posts_sort_label() }),
-  ).toBeNull();
+  expect(category.hasAttribute("data-active")).toBe(true);
+  const tag = chip(m.admin_posts_filter_tag());
+  expect(tag.textContent).toBe(m.admin_posts_filter_tag());
+  expect(tag.hasAttribute("data-active")).toBe(false);
 });
 
-it("shows the chosen filters as removable chips and counts them on the button", async () => {
-  const { onCategoryChange, onTagChange, onClearTaxonomy } = renderToolbar({
+it("clears a chosen filter through the all option of its chip", async () => {
+  const { onCategoryChange, onTagChange } = renderTools({
     category: 2,
     tag: 5,
   });
-  await screen.findByText(
-    m.admin_posts_filter_chip_category({ name: "Notes" }),
-  );
-  await screen.findByText(m.admin_posts_filter_chip_tag({ name: "Rust" }));
-  expect(filterButton().textContent).toBe(`${m.admin_posts_filter_button()}2`);
-
-  fireEvent.click(
-    screen.getByRole("button", {
-      name: m.admin_posts_filter_remove({ name: "Notes" }),
-    }),
-  );
-  expect(onCategoryChange).toHaveBeenLastCalledWith(undefined);
-  fireEvent.click(
-    screen.getByRole("button", {
-      name: m.admin_posts_filter_remove({ name: "Rust" }),
-    }),
-  );
-  expect(onTagChange).toHaveBeenLastCalledWith(undefined);
-  fireEvent.click(
-    screen.getByRole("button", { name: m.admin_posts_clear_filters() }),
-  );
-  expect(onClearTaxonomy).toHaveBeenCalledOnce();
-});
-
-it("names the uncategorized filter and shows no chips without a filter", async () => {
-  renderToolbar({});
-  expect(screen.queryByText(/：|: /)).toBeNull();
-  expect(filterButton().textContent).toBe(m.admin_posts_filter_button());
-  cleanup();
-
-  renderToolbar({ category: "none" });
-  await screen.findByText(
-    m.admin_posts_filter_chip_category({ name: m.post_uncategorized() }),
-  );
-});
-
-it("clears a chosen filter through the all options of the panel", async () => {
-  const { onCategoryChange, onTagChange } = renderToolbar({
-    category: 2,
-    tag: 5,
-  });
-  await openFilters();
-
   await pick(
     m.admin_posts_filter_category(),
     m.admin_posts_filter_category_all(),
@@ -242,12 +140,12 @@ it("clears a chosen filter through the all options of the panel", async () => {
 });
 
 it("drops a filter whose category or tag no longer exists without a history entry", async () => {
-  const stale = renderToolbar({ category: 99 });
+  const stale = renderTools({ category: 99 });
   await waitFor(() =>
     expect(stale.onCategoryChange).toHaveBeenCalledWith(undefined, true),
   );
   cleanup();
-  const staleTag = renderToolbar({ tag: 99 });
+  const staleTag = renderTools({ tag: 99 });
   await waitFor(() =>
     expect(staleTag.onTagChange).toHaveBeenCalledWith(undefined, true),
   );
@@ -256,10 +154,8 @@ it("drops a filter whose category or tag no longer exists without a history entr
 
 it("offers the sorts by comments, and by views only while views can be read", async () => {
   const sorts = async (popularity: PostPopularity) => {
-    renderToolbar({}, { popularity });
-    fireEvent.click(
-      screen.getByRole("button", { name: m.admin_posts_sort_label() }),
-    );
+    renderTools({}, { popularity });
+    fireEvent.click(chip(m.admin_posts_sort_label()));
     await findInPopover("menuitemradio", {
       name: m.admin_posts_sort_recent_upd(),
     });
@@ -283,33 +179,23 @@ it("offers the sorts by comments, and by views only while views can be read", as
     expect(await sorts(popularity)).toEqual(withoutViews);
 });
 
-it("names the recent sort instead of the views when the address asks for views that cannot be read", () => {
-  renderToolbar({}, { popularity: "missing" });
-  const trigger = screen.getByRole("button", {
-    name: m.admin_posts_sort_label(),
-  });
-  expect(trigger.textContent).toBe(m.admin_posts_sort_recent_upd());
+it("names the recent sort instead of the views when the views cannot be read", () => {
+  renderTools({}, { popularity: "missing", sortBy: "viewCount" });
+  expect(chip(m.admin_posts_sort_label()).textContent).toBe(
+    `${m.admin_posts_sort_label()}${m.admin_posts_sort_recent_upd()}`,
+  );
 });
 
-it("below 1024px puts the search on its own row and moves the sort into a bottom sheet", async () => {
-  const { onSortByChange } = renderToolbar({}, { wide: false });
-  const tabs = screen.getAllByRole("tab")[0]!.closest(".admin-frame-toolbar");
-  expect(tabs?.contains(screen.getByRole("searchbox"))).toBe(false);
-  expect(tabs?.contains(filterButton())).toBe(false);
-  expect(
-    screen.queryByRole("button", { name: m.admin_posts_sort_label() }),
-  ).toBeNull();
-
-  fireEvent.click(filterButton());
-  const sheet = await screen.findByRole("dialog", {
-    name: m.admin_posts_filter_button(),
-  });
-  expect(sheet.getAttribute("data-side")).toBe("bottom");
-  await pick(m.admin_posts_sort_label(), m.admin_posts_sort_recent_pub());
-  expect(onSortByChange).toHaveBeenCalledWith("publishedAt");
-
-  fireEvent.click(screen.getByRole("button", { name: m.common_close() }));
-  expect(
-    screen.queryByRole("dialog", { name: m.admin_posts_filter_button() }),
-  ).toBeNull();
+it('puts the caret in the search on "/", unless one is typing elsewhere', () => {
+  renderTools();
+  const search = screen.getByRole("searchbox");
+  fireEvent.keyDown(document.body, { key: "/" });
+  expect(document.activeElement).toBe(search);
+  search.blur();
+  const other = document.createElement("input");
+  document.body.appendChild(other);
+  other.focus();
+  fireEvent.keyDown(other, { key: "/" });
+  expect(document.activeElement).toBe(other);
+  other.remove();
 });
