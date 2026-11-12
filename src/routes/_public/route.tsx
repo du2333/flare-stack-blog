@@ -24,6 +24,7 @@ import { activeTheme } from "@/features/theme/theme-preview";
 import { useThemePreviewMessages } from "@/features/theme/utils/theme-preview-live";
 import {
   carryThemePreview,
+  isThemePreviewEmbedded,
   searchHasThemePreview,
   withoutThemePreview,
 } from "@/features/theme/utils/theme-preview-params";
@@ -90,6 +91,11 @@ function PublicLayout() {
   useThemePreviewMessages(Boolean(themePreview));
   const hasPreviewParams = useLocation({
     select: (location) => searchHasThemePreview(location.search),
+  });
+  // Inside an Admin page's preview panel the bar is redundant, and its link
+  // would take the frame out of the preview.
+  const embedded = useLocation({
+    select: (location) => isThemePreviewEmbedded(location.search),
   });
   const exitPreview = useCallback(
     () =>
@@ -166,7 +172,7 @@ function PublicLayout() {
       >
         <Outlet />
       </PublicShell>
-      {themePreview ? (
+      {themePreview && !embedded ? (
         <ThemePreviewBar themeName={theme.name()} onExit={exitPreview} />
       ) : null}
       <NameGate user={session?.user} logout={logout} />
