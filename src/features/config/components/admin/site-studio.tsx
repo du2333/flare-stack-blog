@@ -425,21 +425,17 @@ function IconTile({
   const { watch } = useFormContext<SystemConfig>();
   const src = previewSrc(watch(name));
   return (
-    <div className="space-y-1.5">
-      <div className="relative group aspect-square rounded-xl overflow-hidden bg-(--fuwari-card-bg) border border-(--fuwari-input-border)">
-        {src ? (
-          <img src={src} alt="" className="w-full h-full object-contain p-2" />
-        ) : null}
-        <OverlayUpload
-          name={name}
-          assetPath={path}
-          accept={accept || ICON_ACCEPT}
-          className="absolute inset-x-1 bottom-1 justify-center"
-        />
-      </div>
-      <p className="text-[11px] fuwari-text-50 truncate" title={label()}>
-        {label()}
-      </p>
+    <div className="site-icon">
+      <span className="site-icon-preview">
+        {src ? <img src={src} alt="" /> : null}
+      </span>
+      <p className="site-icon-name">{label()}</p>
+      <OverlayUpload
+        name={name}
+        assetPath={path}
+        accept={accept || ICON_ACCEPT}
+        variant="outline"
+      />
     </div>
   );
 }
