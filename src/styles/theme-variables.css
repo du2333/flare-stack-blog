@@ -29,7 +29,7 @@
  *   --theme-widget-title-color, --theme-widget-row-color, --theme-widget-row-bleed   sidebar blocks
  *   --theme-chip-radius      tags and counts
  *   --theme-kicker-size, --theme-kicker-tracking    the pinned and popular label
- *   --theme-button-radius    buttons (small ones 2px less)
+ *   --theme-button-radius    buttons (small ones 2px less); the Admin sets --fuwari-button-radius
  *   --theme-pager-radius     page numbers
  *   --theme-standalone-border, --theme-standalone-radius  sign-in, status, profile and friend-link form panels
  *   --theme-rule-style       dashed separators
@@ -87,7 +87,7 @@
     --theme-chip-radius: 0.5rem;
     --theme-kicker-size: 0.875rem;
     --theme-kicker-tracking: normal;
-    --theme-button-radius: 12px;
+    --theme-button-radius: var(--fuwari-button-radius, 12px);
     --theme-pager-radius: 0.5rem;
     --theme-standalone-border: none;
     --theme-standalone-radius: var(--fuwari-radius-large);
@@ -131,7 +131,7 @@
     --theme-chip-radius: 0.5rem !important;
     --theme-kicker-size: 0.875rem !important;
     --theme-kicker-tracking: normal !important;
-    --theme-button-radius: 12px !important;
+    --theme-button-radius: var(--fuwari-button-radius, 12px) !important;
     --theme-pager-radius: 0.5rem !important;
     --theme-standalone-border: none !important;
     --theme-standalone-radius: var(--fuwari-radius-large) !important;

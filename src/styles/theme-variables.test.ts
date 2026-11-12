@@ -2,6 +2,8 @@
 // !important on custom properties, so the Admin isolation is checked on the
 // stylesheet itself, against the cascade rule it relies on: an !important
 // declaration beats every normal one, whatever its layer, selector or order.
+// What the Admin's own --fuwari-* values are, and that none derives from the
+// site hue, is admin-variables.test.ts.
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -74,6 +76,12 @@ describe("Theme variables", () => {
     );
     for (const { name, value } of undeclared) {
       expect(value, name).toBe("initial");
+    }
+  });
+
+  it("never name the site hue themselves, so a pinned one follows the Admin's values", () => {
+    for (const { name, value } of [...defaults, ...pin]) {
+      expect(value, name).not.toContain("--fuwari-hue");
     }
   });
 
