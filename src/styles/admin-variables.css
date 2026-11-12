@@ -1,7 +1,7 @@
 /*
  * The Admin workbench's own values (ADR 0021, amended 2026-11-12): a neutral
  * grey canvas with white cards, hairlines and very light shadows; ink for
- * the primary action and the flame accent (#f26522, dark #ff8a4c) only where
+ * the primary action and the flame accent (#ea580c, dark #ff8a4c) only where
  * something asks for attention. Success, warning and danger keep their
  * fixed hues from the base layer.
  *
@@ -14,13 +14,12 @@
  * a Theme sets --theme-* only, which theme-variables.css pins back for the
  * Admin. admin-variables.test checks that no variable resolves from the hue.
  *
- * Contrast (WCAG), light / dark: text on a card 18.0 / 15.3, secondary text
- * (--admin-fg-2) 5.8 / 6.9, the accent's text on a card 5.0 / 8.8, ink on
- * the canvas 16.2 / 16.6, text on an ink button 18.0 / 16.0, the focus ring
- * (the accent) on a card 3.2 / 7.7. Short of WCAG: the faint text
- * (--admin-fg-3) 3.0 / 3.7, and in light the accent on the canvas (2.8 as
- * a ring, 4.5 as text). admin-variables.test computes these and lists the
- * shortfalls.
+ * Contrast (WCAG), light / dark, on a card and on the canvas alike (the
+ * lower of the two): text 18.0 / 15.3, secondary text
+ * (--admin-fg-2) 7.3 / 8.0, faint text (--admin-fg-3) 4.6 / 4.7, the accent's
+ * text 4.9 / 8.8, ink on the canvas 16.2 / 16.6, text on an ink button
+ * 18.0 / 16.0, the focus ring (the accent) 3.2 / 7.7. admin-variables.test
+ * computes these from the values below.
  *
  * The type scale and the density the page frame, the sidebar and the lists
  * share are here too (--admin-text-*, --admin-sidebar-*, --admin-row-*).
@@ -37,14 +36,14 @@
     --admin-line: rgb(18 18 23 / 0.08);
     --admin-line-strong: rgb(18 18 23 / 0.14);
     --admin-fg: #16161a;
-    --admin-fg-2: rgb(22 22 26 / 0.66);
-    --admin-fg-3: rgb(22 22 26 / 0.46);
+    --admin-fg-2: rgb(22 22 26 / 0.74);
+    --admin-fg-3: rgb(22 22 26 / 0.6);
     --admin-hover: rgb(18 18 23 / 0.045);
     --admin-press: rgb(18 18 23 / 0.08);
     --admin-ink: #16161a;
     --admin-on-ink: #ffffff;
-    --admin-accent: #f26522;
-    --admin-accent-text: #c2470d;
+    --admin-accent: #ea580c;
+    --admin-accent-text: #b8430c;
     --admin-accent-soft: color-mix(
       in srgb,
       var(--admin-accent) 11%,
@@ -118,19 +117,30 @@
     --radius-xl: 0.5rem;
     --radius-2xl: 0.625rem;
     --radius-3xl: 0.75rem;
-    --fuwari-field-radius: 10px;
-    --fuwari-button-radius: 10px;
+    --fuwari-field-radius: var(--admin-radius-control);
+    --fuwari-button-radius: var(--admin-radius-control);
 
-    /* Type (size / line height): the page title, a section's title, body
-       text, and meta text such as dates and hints. Weights: 600 for titles. */
-    --admin-text-title: 20px;
-    --admin-leading-title: 28px;
+    /* Type (size / line height): the page title, a section's or a card's
+       title, body text, small text (descriptions, controls, hints) and meta
+       text such as dates and counts. Weights: 600 to 620 for titles. */
+    --admin-text-title: 24px;
+    --admin-leading-title: 32px;
     --admin-text-section: 15px;
-    --admin-leading-section: 22px;
+    --admin-leading-section: 24px;
     --admin-text-body: 14px;
     --admin-leading-body: 22px;
+    --admin-text-small: 13px;
+    --admin-leading-small: 20px;
     --admin-text-meta: 12.5px;
     --admin-leading-meta: 18px;
+
+    /* Radii: a control (button, field, chip, pill), a row of a list, a card. */
+    --admin-radius-control: 10px;
+    --admin-radius-row: 12px;
+    /* The widest a page's content gets, the overview's included, and its
+       side inset on the canvas (16px on a phone, below). */
+    --admin-page-max: 1400px;
+    --admin-page-x: 32px;
 
     /* Density: a list row is never taller than --admin-row-max; the sidebar
        is --admin-sidebar-width wide with --admin-sidebar-row rows of
@@ -138,7 +148,7 @@
        --admin-form-control-max wide. A list row pads its own sides by
        --admin-row-x, so its rule and fill end at the edges of the list it
        is in. */
-    --admin-row-max: 56px;
+    --admin-row-max: 58px;
     --admin-row-x: 12px;
     --admin-sidebar-width: 248px;
     --admin-sidebar-row: 34px;
@@ -148,6 +158,12 @@
     --admin-form-max: 960px;
   }
 
+  @media (max-width: 767px) {
+    :root:has(.admin-layout) {
+      --admin-page-x: 16px;
+    }
+  }
+
   :root.dark:has(.admin-layout) {
     --admin-canvas: #0d0d0f;
     --admin-surface: #17171a;
@@ -155,8 +171,8 @@
     --admin-line: rgb(255 255 255 / 0.08);
     --admin-line-strong: rgb(255 255 255 / 0.14);
     --admin-fg: #ededf0;
-    --admin-fg-2: rgb(237 237 240 / 0.64);
-    --admin-fg-3: rgb(237 237 240 / 0.42);
+    --admin-fg-2: rgb(237 237 240 / 0.7);
+    --admin-fg-3: rgb(237 237 240 / 0.5);
     --admin-hover: rgb(255 255 255 / 0.055);
     --admin-press: rgb(255 255 255 / 0.09);
     --admin-ink: #ededf0;
@@ -201,5 +217,12 @@
   from {
     opacity: 0;
     transform: translateY(-8px) scale(0.975);
+  }
+}
+/* What a page's head, bar and cards rise in with (.admin-rise). */
+@keyframes admin-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }

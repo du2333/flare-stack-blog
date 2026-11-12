@@ -230,7 +230,7 @@ describe("The Admin's variables", () => {
     it("is ink for the primary action and flame for the accent", () => {
       expect(values.light.get("--fuwari-primary")).toBe("var(--admin-ink)");
       expect(values.light.get("--admin-on-accent")).toBe("var(--admin-on-ink)");
-      expect(resolve("light", "--admin-accent")).toBe("#f26522");
+      expect(resolve("light", "--admin-accent")).toBe("#ea580c");
       expect(resolve("dark", "--admin-accent")).toBe("#ff8a4c");
     });
 
@@ -238,15 +238,18 @@ describe("The Admin's variables", () => {
     for (const scheme of ["light", "dark"] as const) {
       it(`${scheme}: text, secondary text and the accent's text read at 4.5:1`, () => {
         for (const surface of SURFACES) {
-          for (const text of ["--admin-fg", "--admin-fg-2", "--admin-ink"])
+          for (const text of [
+            "--admin-fg",
+            "--admin-fg-2",
+            "--admin-fg-3",
+            "--admin-ink",
+            "--admin-accent-text",
+          ])
             expect(
               contrast(scheme, text, surface),
               `${text} on ${surface}`,
             ).toBeGreaterThan(4.5);
         }
-        expect(
-          contrast(scheme, "--admin-accent-text", "--admin-surface"),
-        ).toBeGreaterThan(4.5);
       });
 
       it(`${scheme}: text on the ink button reads at 4.5:1, hovered and pressed too`, () => {
@@ -261,35 +264,14 @@ describe("The Admin's variables", () => {
           ).toBeGreaterThan(4.5);
       });
 
-      it(`${scheme}: the focus ring (the accent) stands out from a card at 3:1`, () => {
-        expect(
-          contrast(scheme, "--admin-accent", "--admin-surface"),
-        ).toBeGreaterThan(3);
+      it(`${scheme}: the focus ring (the accent) stands out from a card and the canvas at 3:1`, () => {
+        for (const surface of SURFACES)
+          expect(
+            contrast(scheme, "--admin-accent", surface),
+            surface,
+          ).toBeGreaterThan(3);
       });
     }
-
-    // Shortfalls of the approved design (#304), kept visible here instead of
-    // changed in passing: the faint text (dates, counts, hints) is below
-    // 4.5:1 in both schemes, and in light the accent misses 3:1 as a focus
-    // ring on the canvas and 4.5:1 as text on the canvas. Each entry fails
-    // the check named; when a colour changes so that it passes, drop it.
-    const SHORTFALLS: Array<
-      [scheme: "light" | "dark", fg: string, bg: string, needed: number]
-    > = [
-      ["light", "--admin-fg-3", "--admin-surface", 4.5],
-      ["light", "--admin-fg-3", "--admin-canvas", 4.5],
-      ["dark", "--admin-fg-3", "--admin-surface", 4.5],
-      ["dark", "--admin-fg-3", "--admin-canvas", 4.5],
-      ["light", "--admin-accent", "--admin-canvas", 3],
-      ["light", "--admin-accent-text", "--admin-canvas", 4.5],
-    ];
-    it("lists the pairs of the design that fall short", () => {
-      for (const [scheme, fg, bg, needed] of SHORTFALLS)
-        expect(
-          contrast(scheme, fg, bg),
-          `${scheme} ${fg} on ${bg}`,
-        ).toBeLessThan(needed);
-    });
   });
 
   it("are declared where the pin and the Admin's blocks meet, on one selector", () => {
