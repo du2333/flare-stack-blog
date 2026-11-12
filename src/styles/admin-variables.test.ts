@@ -115,8 +115,21 @@ describe("The Admin's variables", () => {
   }
 
   it("the Admin's dark values replace every one the dark base layer sets", () => {
+    // A light value that only reads --admin-* names follows the dark ones.
+    const followsScheme = (name: string, seen = new Set<string>()): boolean => {
+      if (adminDark.has(name)) return true;
+      if (seen.has(name)) return false;
+      seen.add(name);
+      const refs = [
+        ...(adminLight.get(name) ?? "").matchAll(/var\(\s*(--[a-z0-9-]+)/g),
+      ].map((match) => match[1]);
+      return (
+        refs.length > 0 &&
+        refs.every((ref) => ref.startsWith("--admin-") && followsScheme(ref, seen))
+      );
+    };
     const missing = [...adminLight.keys()].filter(
-      (name) => darkBase.has(name) && !adminDark.has(name),
+      (name) => darkBase.has(name) && !followsScheme(name),
     );
     expect(missing).toEqual([]);
   });
@@ -162,53 +175,119 @@ describe("The Admin's variables", () => {
     for (const value of override.values()) expect(value).not.toContain("var(");
   });
 
-  describe("The ink accent (spec #298) has the contrast WCAG asks for", () => {
-    const hex = (value: string | undefined) => {
-      expect(value, "a #rrggbb value").toMatch(/^#[0-9a-f]{6}$/i);
-      return [1, 3, 5].map((i) => parseInt(value!.slice(i, i + 2), 16) / 255);
-    };
-    const luminance = (value: string | undefined) => {
-      const [r, g, b] = hex(value).map((c) =>
-        c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
-      );
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    };
-    const contrast = (a: string | undefined, b: string | undefined) => {
-      const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-      return (light + 0.05) / (dark + 0.05);
-    };
+  describe("The colours (spec #304) and the contrast WCAG asks for", () => {
     const values = {
       light: adminLight,
       dark: new Map([...adminLight, ...adminDark]),
     };
+    /** A name's value with its var() chain followed, in one scheme. */
+    const resolve = (scheme: "light" | "dark", name: string): string => {
+      const value = values[scheme].get(name);
+      expect(value, name).toBeDefined();
+      const ref = /^var\(\s*(--[a-z0-9-]+)\s*\)$/.exec(value!);
+      return ref ? resolve(scheme, ref[1]) : value!;
+    };
+    type Rgb = [number, number, number];
+    const rgb = (value: string): { color: Rgb; alpha: number } => {
+      const hex = /^#([0-9a-f]{6})$/i.exec(value);
+      if (hex)
+        return {
+          color: [0, 2, 4].map((i) =>
+            parseInt(hex[1].slice(i, i + 2), 16),
+          ) as Rgb,
+          alpha: 1,
+        };
+      const fn = /^rgb\((\d+) (\d+) (\d+)(?: \/ ([\d.]+))?\)$/.exec(value);
+      expect(fn, `${value} is #rrggbb or rgb()`).not.toBeNull();
+      return {
+        color: [Number(fn![1]), Number(fn![2]), Number(fn![3])],
+        alpha: fn![4] === undefined ? 1 : Number(fn![4]),
+      };
+    };
+    const luminance = ([r, g, b]: Rgb) => {
+      const [lr, lg, lb] = [r, g, b].map((c) => {
+        const s = c / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+    };
+    /** `fg` over the opaque `bg`, both names of the scheme. */
+    const contrast = (scheme: "light" | "dark", fg: string, bg: string) => {
+      const back = rgb(resolve(scheme, bg));
+      expect(back.alpha, `${bg} is opaque`).toBe(1);
+      const front = rgb(resolve(scheme, fg));
+      const mixed = front.color.map(
+        (c, i) => c * front.alpha + back.color[i] * (1 - front.alpha),
+      ) as Rgb;
+      const [light, dark] = [luminance(mixed), luminance(back.color)].sort(
+        (x, y) => y - x,
+      );
+      return (light + 0.05) / (dark + 0.05);
+    };
 
-    it("is ink: light #2b2722 under #fdfbf7, dark #ece6da under #1f1b17", () => {
-      expect(values.light.get("--fuwari-primary")).toBe("#2b2722");
-      expect(values.light.get("--admin-on-accent")).toBe("#fdfbf7");
-      expect(values.dark.get("--fuwari-primary")).toBe("#ece6da");
-      expect(values.dark.get("--admin-on-accent")).toBe("#1f1b17");
+    it("is ink for the primary action and flame for the accent", () => {
+      expect(values.light.get("--fuwari-primary")).toBe("var(--admin-ink)");
+      expect(values.light.get("--admin-on-accent")).toBe("var(--admin-on-ink)");
+      expect(resolve("light", "--admin-accent")).toBe("#f26522");
+      expect(resolve("dark", "--admin-accent")).toBe("#ff8a4c");
     });
 
+    const SURFACES = ["--admin-surface", "--admin-canvas"];
     for (const scheme of ["light", "dark"] as const) {
-      it(`${scheme}: button text, links and the focus ring`, () => {
-        const v = values[scheme];
-        const accent = v.get("--fuwari-primary");
-        for (const fill of [
-          accent,
-          v.get("--fuwari-primary-hover"),
-          v.get("--fuwari-primary-active"),
-        ])
-          expect(contrast(v.get("--admin-on-accent"), fill)).toBeGreaterThan(
-            4.5,
-          );
-        for (const surface of ["--fuwari-card-bg", "--fuwari-page-bg"]) {
-          // A link is the accent on a surface; so is a focus ring (3:1).
-          expect(contrast(accent, v.get(surface)), surface).toBeGreaterThan(
-            4.5,
-          );
+      it(`${scheme}: text, secondary text and the accent's text read at 4.5:1`, () => {
+        for (const surface of SURFACES) {
+          for (const text of ["--admin-fg", "--admin-fg-2", "--admin-ink"])
+            expect(
+              contrast(scheme, text, surface),
+              `${text} on ${surface}`,
+            ).toBeGreaterThan(4.5);
         }
+        expect(
+          contrast(scheme, "--admin-accent-text", "--admin-surface"),
+        ).toBeGreaterThan(4.5);
+      });
+
+      it(`${scheme}: text on the ink button reads at 4.5:1, hovered and pressed too`, () => {
+        for (const fill of [
+          "--admin-ink",
+          "--fuwari-primary-hover",
+          "--fuwari-primary-active",
+        ])
+          expect(
+            contrast(scheme, "--admin-on-ink", fill),
+            fill,
+          ).toBeGreaterThan(4.5);
+      });
+
+      it(`${scheme}: the focus ring (the accent) stands out from a card at 3:1`, () => {
+        expect(
+          contrast(scheme, "--admin-accent", "--admin-surface"),
+        ).toBeGreaterThan(3);
       });
     }
+
+    // Shortfalls of the approved design (#304), kept visible here instead of
+    // changed in passing: the faint text (dates, counts, hints) is below
+    // 4.5:1 in both schemes, and in light the accent misses 3:1 as a focus
+    // ring on the canvas and 4.5:1 as text on the canvas. Each entry fails
+    // the check named; when a colour changes so that it passes, drop it.
+    const SHORTFALLS: Array<
+      [scheme: "light" | "dark", fg: string, bg: string, needed: number]
+    > = [
+      ["light", "--admin-fg-3", "--admin-surface", 4.5],
+      ["light", "--admin-fg-3", "--admin-canvas", 4.5],
+      ["dark", "--admin-fg-3", "--admin-surface", 4.5],
+      ["dark", "--admin-fg-3", "--admin-canvas", 4.5],
+      ["light", "--admin-accent", "--admin-canvas", 3],
+      ["light", "--admin-accent-text", "--admin-canvas", 4.5],
+    ];
+    it("lists the pairs of the design that fall short", () => {
+      for (const [scheme, fg, bg, needed] of SHORTFALLS)
+        expect(
+          contrast(scheme, fg, bg),
+          `${scheme} ${fg} on ${bg}`,
+        ).toBeLessThan(needed);
+    });
   });
 
   it("are declared where the pin and the Admin's blocks meet, on one selector", () => {
