@@ -77,7 +77,7 @@
     height: 22px;
     border-radius: 50%;
     background: var(--theme-solid-bg);
-    color: var(--theme-solid-fg, white);
+    color: var(--theme-solid-fg, var(--admin-on-accent, white));
     box-shadow: 0 0 0 2px var(--theme-surface);
   }
   .fuwari-choice-card-action {

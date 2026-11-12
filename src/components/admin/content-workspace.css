@@ -25,15 +25,14 @@
 }
 
 /*
- * The frame Posts, Media, Friend Links and Settings share: title row, one
- * toolbar row, the content, a footer. Everything sits inside one inset, so
- * titles, tabs and primary actions line up page to page. A region that runs
- * edge to edge (a split pane, a scroller, a bar) takes .admin-frame-bleed and
- * pads itself with --admin-frame-x; a page that ends in such a bar sets
- * --admin-frame-bottom to 0.
+ * The inset of the page frame (AdminPage, admin-page.tsx): everything sits
+ * inside one inset, so titles, tabs and primary actions line up page to
+ * page. A region that runs edge to edge (a split pane, a scroller, a bar)
+ * takes .admin-frame-bleed and pads itself with --admin-frame-x; a page that
+ * ends in such a bar sets --admin-frame-bottom to 0.
  */
 .admin-frame {
-  --admin-frame-top: calc(28 * var(--admin-unit));
+  --admin-frame-top: 20px;
   /*
    * A classic scrollbar (a mouse) takes its width from a scroller's content
    * box, 10px as styles.css sets it; touch scrollbars overlay and take none.
@@ -92,12 +91,6 @@
     display: none;
   }
 }
-.admin-frame > .fuwari-page-header {
-  margin-bottom: calc(20 * var(--admin-unit));
-}
-.admin-frame > :is(.fuwari-tabs, .admin-frame-toolbar) {
-  flex-shrink: 0;
-}
 .admin-frame-bleed {
   margin-inline: calc(-1 * var(--admin-frame-x));
 }
@@ -115,16 +108,7 @@
   align-self: stretch;
   min-width: 0;
 }
-/* Below lg the top bar carries the title and the primary action. */
 @media (max-width: 1023px) {
-  .admin-frame {
-    --admin-frame-top: calc(10 * var(--admin-unit));
-  }
-  .admin-frame > .fuwari-page-header {
-    display: none;
-  }
-}
-@media (max-width: 767px) {
   .admin-frame {
     --admin-frame-top: 8px;
   }
@@ -145,14 +129,8 @@
     min-height: 100%;
     overflow: visible;
   }
-  .admin-list-region
-    :is(
-      .post-manager,
-      .media-workspace,
-      .friend-workspace,
-      .muted-workspace,
-      .settings-workspace
-    ) {
+  .admin-list-region :is(.admin-page, .admin-page-body),
+  .admin-list-region .admin-page-body[data-scroll] {
     display: block;
     height: auto;
     min-height: 100%;

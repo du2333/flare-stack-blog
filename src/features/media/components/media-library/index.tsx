@@ -1,8 +1,7 @@
 import { Search, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
-import { PageHeader } from "@/components/ui/page-heading";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
 import { cn, formatBytes } from "@/lib/utils";
 import {
@@ -31,7 +30,6 @@ export function MediaLibrary() {
   const collectionRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const selectedTrigger = useRef<HTMLButtonElement | null>(null);
-  const { setPrimaryAction } = useAdminChrome();
   const [preview, setPreview] = useState<MediaAsset | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<
     { kind: "one"; asset: MediaAsset } | { kind: "unused" } | null
@@ -91,15 +89,6 @@ export function MediaLibrary() {
     setPreview(null);
   }, [unusedOnly, search, sort]);
 
-  useEffect(() => {
-    setPrimaryAction({
-      label: m.media_upload(),
-      onClick: () => fileRef.current?.click(),
-      disabled: isUploading,
-    });
-    return () => setPrimaryAction(null);
-  }, [isUploading, setPrimaryAction]);
-
   const openFilePicker = () => fileRef.current?.click();
   const closePreview = () => {
     captureAnchor(preview?.key);
@@ -133,12 +122,51 @@ export function MediaLibrary() {
       else if (error instanceof MediaInUseError) setDeleteTarget(null);
     }
   };
+  const toolbar = (
+    <MediaToolbar
+      unusedOnly={unusedOnly}
+      onUnusedOnlyChange={(value) => {
+        setPreview(null);
+        setUnusedOnly(value);
+      }}
+      unusedCount={stats?.unusedCount}
+      totalCount={stats?.totalCount}
+      search={search}
+      onSearchChange={setSearch}
+      sort={sort}
+      onSortChange={setSort}
+      view={view}
+      onViewChange={(next) => {
+        captureAnchor(preview?.key);
+        void setView(next);
+      }}
+    />
+  );
   const searchTerm = search.trim();
   const isEmpty = !isPending && !isError && mediaItems.length === 0;
 
   return (
-    <div
-      className="media-workspace admin-workspace admin-frame fuwari-card-base"
+    <AdminPage
+      className="media-workspace"
+      title={m.media_title()}
+      count={
+        stats
+          ? m.media_stats({
+              count: stats.totalCount,
+              size: formatBytes(stats.totalBytes),
+            })
+          : "—"
+      }
+      primaryAction={{
+        label: m.media_upload(),
+        icon: <Upload size={17} />,
+        ref: uploadRef,
+        disabled: isUploading,
+        onClick: () => fileRef.current?.click(),
+      }}
+      toolbar={toolbar}
+      body="list"
+      scroll={false}
       onDragEnter={(event) => {
         if (!event.dataTransfer.types.includes("Files")) return;
         event.preventDefault();
@@ -161,46 +189,6 @@ export function MediaLibrary() {
           handleFiles(event.dataTransfer.files);
       }}
     >
-      <PageHeader
-        title={m.media_title()}
-        description={
-          stats
-            ? m.media_stats({
-                count: stats.totalCount,
-                size: formatBytes(stats.totalBytes),
-              })
-            : "—"
-        }
-        actions={
-          <Button
-            ref={uploadRef}
-            variant="primary"
-            icon={<Upload size={17} />}
-            disabled={isUploading}
-            onClick={openFilePicker}
-          >
-            {m.media_upload()}
-          </Button>
-        }
-      />
-      <MediaToolbar
-        unusedOnly={unusedOnly}
-        onUnusedOnlyChange={(value) => {
-          setPreview(null);
-          setUnusedOnly(value);
-        }}
-        unusedCount={stats?.unusedCount}
-        totalCount={stats?.totalCount}
-        search={search}
-        onSearchChange={setSearch}
-        sort={sort}
-        onSortChange={setSort}
-        view={view}
-        onViewChange={(next) => {
-          captureAnchor(preview?.key);
-          void setView(next);
-        }}
-      />
       {progress ? (
         <p role="status" className="media-upload-progress">
           {m.media_uploading({
@@ -358,6 +346,6 @@ export function MediaLibrary() {
           uploadRef.current
         }
       />
-    </div>
+    </AdminPage>
   );
 }

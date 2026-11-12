@@ -28,7 +28,12 @@ import {
 } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 import { Route as SettingsRoute } from "@/routes/admin/settings/route";
-import { settingsSectionFromPath } from "./settings-pages";
+import {
+  accessSectionFromPath,
+  LEGACY_SETTINGS_TAB_TO,
+  MOVED_SETTINGS_PAGE_TO,
+  settingsSectionFromPath,
+} from "./settings-pages";
 
 vi.mock("@/features/config/queries", () => ({
   systemConfigQuery: { queryKey: ["settings-navigation"] },
@@ -154,7 +159,7 @@ it.each(["site", "notifications"])(
   },
 );
 
-it("shows the muted users list as a settings tab without a save bar", async () => {
+it("keeps only site, notifications and maintenance as settings tabs", async () => {
   const root = createRootRoute({
     component: () =>
       createElement(AdminChromeProvider, null, createElement(Outlet)),
@@ -164,31 +169,48 @@ it("shows the muted users list as a settings tab without a save bar", async () =
     path: "/admin/settings",
     component: SettingsRoute.options.component as RouteComponent,
   });
-  const mutedUsers = createRoute({
+  const maintenance = createRoute({
     getParentRoute: () => settings,
-    path: "muted-users",
-    component: () => createElement("h2", null, "Muted list"),
+    path: "maintenance",
+    component: () => createElement("h2", null, "Maintenance"),
   });
   const router = createRouter({
-    routeTree: root.addChildren([settings.addChildren([mutedUsers])]),
+    routeTree: root.addChildren([settings.addChildren([maintenance])]),
     history: createMemoryHistory({
-      initialEntries: ["/admin/settings/muted-users"],
+      initialEntries: ["/admin/settings/maintenance"],
     }),
     context: { queryClient: new QueryClient() },
   });
   render(createElement(RouterProvider, { router }));
-  await screen.findByRole("heading", { name: "Muted list" });
+  await screen.findByRole("heading", { name: "Maintenance" });
+  const tabs = screen.getByRole("navigation", {
+    name: m.settings_header_title(),
+  });
+  expect(
+    [...tabs.querySelectorAll("a")].map((link) => link.getAttribute("href")),
+  ).toEqual([
+    "/admin/settings/site",
+    "/admin/settings/notifications",
+    "/admin/settings/maintenance",
+  ]);
   expect(
     screen
-      .getByRole("link", { name: m.muted_users_title() })
+      .getByRole("link", { name: m.settings_nav_maintenance() })
       .getAttribute("aria-current"),
   ).toBe("page");
   expect(document.querySelector(".settings-savebar")).toBeNull();
 });
 
-it("maps the muted users path to its settings tab", () => {
-  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBe(
-    "muted-users",
+it("sends the pages that left 「设置」 to their new addresses", () => {
+  expect(MOVED_SETTINGS_PAGE_TO).toEqual({
+    "api-keys": "/admin/access/api-keys",
+    "agent-skill": "/admin/access/agent-skill",
+    "muted-users": "/admin/muted-users",
+  });
+  expect(LEGACY_SETTINGS_TAB_TO["api-keys"]).toBe("/admin/access/api-keys");
+  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBeNull();
+  expect(accessSectionFromPath("/admin/access/agent-skill/")).toBe(
+    "agent-skill",
   );
 });
 

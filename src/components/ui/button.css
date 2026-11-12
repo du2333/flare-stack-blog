@@ -51,12 +51,13 @@
     font-weight: 700;
   }
 
+  /* --admin-on-accent is set only in the Admin (admin-variables.css). */
   .fuwari-button-primary {
     background-color: var(--theme-solid-bg);
-    color: var(--theme-solid-fg, white);
+    color: var(--theme-solid-fg, var(--admin-on-accent, white));
   }
   .dark .fuwari-button-primary {
-    color: var(--theme-solid-fg, rgb(0 0 0 / 0.75));
+    color: var(--theme-solid-fg, var(--admin-on-accent, rgb(0 0 0 / 0.75)));
   }
   .fuwari-button-primary:not(:disabled):hover {
     background-color: var(--theme-solid-bg-hover);
@@ -156,6 +157,12 @@
     color: var(--fuwari-danger-fg);
   }
   .fuwari-button-text:not(:disabled):hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* The Admin's accent is ink, the colour of its text, so a link-style
+     button is told apart by its underline, always. */
+  :root:has(.admin-layout) .fuwari-button-text:not(.fuwari-button-tone-danger) {
     text-decoration: underline;
     text-underline-offset: 3px;
   }

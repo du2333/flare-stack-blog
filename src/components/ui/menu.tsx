@@ -236,6 +236,18 @@ export function MenuItem({
   );
 }
 
+/** The name of the group of items that follows; not an item itself. */
+export function MenuLabel({ children }: { children: ReactNode }) {
+  return (
+    <div
+      role="presentation"
+      className="px-3 pt-1.5 pb-1 text-xs font-medium fuwari-text-50"
+    >
+      {children}
+    </div>
+  );
+}
+
 /** A rule between groups of menu items. */
 export function MenuSeparator() {
   return (

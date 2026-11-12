@@ -251,6 +251,13 @@
   :root:has(.admin-layout) .fuwari-switch {
     border-radius: 8px;
   }
+  /* On the Admin's ink track, the thumb takes the paper colour of the text
+     on the accent, so it stays visible on the light track in dark mode. */
+  :root:has(.admin-layout)
+    .fuwari-switch[aria-checked="true"]
+    .fuwari-switch-thumb {
+    background: var(--admin-on-accent);
+  }
   .fuwari-switch-track {
     position: relative;
     width: 44px;

@@ -14,27 +14,10 @@
   --dashboard-section-space: calc(30 * var(--admin-unit));
   --dashboard-gutter: calc(44 * var(--admin-unit));
   --dashboard-hover: color-mix(in oklab, var(--fuwari-fg) 3.5%, transparent);
+  /* The page frame (AdminPage) gives the inset; its body scrolls. */
   container: dashboard / inline-size;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
-  padding: calc(26 * var(--admin-unit)) var(--dashboard-pad)
-    calc(40 * var(--admin-unit));
   color: var(--fuwari-fg);
-}
-
-/* The dashboard scrolls as one page inside the Admin content region. */
-.admin-list-region:has(.dashboard-workspace) {
-  display: block;
-  overflow-y: auto;
-}
-.admin-list-region:has(.dashboard-workspace) > div,
-.admin-list-region:has(.dashboard-workspace) .fuwari-page-fade,
-.admin-list-region:has(.dashboard-workspace) .fuwari-page-fade > div {
-  display: block;
-  height: auto;
-  min-height: 100%;
-  overflow: visible;
 }
 
 /* Hero: a plain card surface with a hairline, the site's banner fading in

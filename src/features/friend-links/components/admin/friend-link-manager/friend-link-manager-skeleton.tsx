@@ -1,5 +1,6 @@
+import { AdminPage } from "@/components/admin/admin-page";
 import {
-  FrameHeaderSkeleton,
+  FrameActionSkeleton,
   FrameTabsSkeleton,
 } from "@/components/admin/frame-skeleton";
 import { Skeleton, SkeletonListRows } from "@/components/ui/skeleton";
@@ -17,15 +18,15 @@ export function FriendLinkManagerSkeleton() {
 
 export function FriendLinkManagerPageSkeleton() {
   return (
-    <div
-      className="friend-workspace admin-workspace admin-frame fuwari-card-base"
+    <AdminPage
+      className="friend-workspace"
       aria-hidden="true"
+      title={m.friend_links_admin_title()}
+      description={m.friend_review_hint()}
+      actions={<FrameActionSkeleton />}
+      tabs={<FrameTabsSkeleton count={3} />}
+      body="split"
     >
-      <FrameHeaderSkeleton
-        title={m.friend_links_admin_title()}
-        description={m.friend_review_hint()}
-      />
-      <FrameTabsSkeleton count={3} />
       <div className="friend-body admin-frame-bleed">
         <div className="friend-queue">
           <Skeleton className="friend-search h-(--fuwari-field-height) rounded-xl" />
@@ -39,6 +40,6 @@ export function FriendLinkManagerPageSkeleton() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminPage>
   );
 }

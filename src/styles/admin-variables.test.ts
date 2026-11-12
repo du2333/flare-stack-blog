@@ -162,6 +162,55 @@ describe("The Admin's variables", () => {
     for (const value of override.values()) expect(value).not.toContain("var(");
   });
 
+  describe("The ink accent (spec #298) has the contrast WCAG asks for", () => {
+    const hex = (value: string | undefined) => {
+      expect(value, "a #rrggbb value").toMatch(/^#[0-9a-f]{6}$/i);
+      return [1, 3, 5].map((i) => parseInt(value!.slice(i, i + 2), 16) / 255);
+    };
+    const luminance = (value: string | undefined) => {
+      const [r, g, b] = hex(value).map((c) =>
+        c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
+      );
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const contrast = (a: string | undefined, b: string | undefined) => {
+      const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (light + 0.05) / (dark + 0.05);
+    };
+    const values = {
+      light: adminLight,
+      dark: new Map([...adminLight, ...adminDark]),
+    };
+
+    it("is ink: light #2b2722 under #fdfbf7, dark #ece6da under #1f1b17", () => {
+      expect(values.light.get("--fuwari-primary")).toBe("#2b2722");
+      expect(values.light.get("--admin-on-accent")).toBe("#fdfbf7");
+      expect(values.dark.get("--fuwari-primary")).toBe("#ece6da");
+      expect(values.dark.get("--admin-on-accent")).toBe("#1f1b17");
+    });
+
+    for (const scheme of ["light", "dark"] as const) {
+      it(`${scheme}: button text, links and the focus ring`, () => {
+        const v = values[scheme];
+        const accent = v.get("--fuwari-primary");
+        for (const fill of [
+          accent,
+          v.get("--fuwari-primary-hover"),
+          v.get("--fuwari-primary-active"),
+        ])
+          expect(contrast(v.get("--admin-on-accent"), fill)).toBeGreaterThan(
+            4.5,
+          );
+        for (const surface of ["--fuwari-card-bg", "--fuwari-page-bg"]) {
+          // A link is the accent on a surface; so is a focus ring (3:1).
+          expect(contrast(accent, v.get(surface)), surface).toBeGreaterThan(
+            4.5,
+          );
+        }
+      });
+    }
+  });
+
   it("are declared where the pin and the Admin's blocks meet, on one selector", () => {
     // The pin reads --fuwari-* on the element it is declared on, so the
     // Admin's values must be declared on that same element.

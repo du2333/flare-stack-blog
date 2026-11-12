@@ -2,6 +2,9 @@ import { useConfigEditing } from "./config-editing";
 import { useLocation } from "@tanstack/react-router";
 import { TabNav } from "@/components/ui/tabs";
 import {
+  ACCESS_PAGE_IDS,
+  ACCESS_PAGE_TO,
+  type AccessPageId,
   SETTINGS_PAGE_IDS,
   SETTINGS_PAGE_TO,
   type SettingsPageId,
@@ -11,9 +14,6 @@ import { m } from "@/paraglide/messages";
 const LABELS: Record<SettingsPageId, () => string> = {
   site: () => m.settings_nav_site(),
   notify: () => m.settings_nav_notify(),
-  "api-keys": () => m.settings_nav_api_keys(),
-  "agent-skill": () => m.settings_nav_agent_skill(),
-  "muted-users": () => m.muted_users_title(),
   maintenance: () => m.settings_nav_maintenance(),
 };
 
@@ -43,6 +43,27 @@ export function SettingsNav({ current }: { current: SettingsPageId }) {
           mark: dirty ? m.settings_config_unsaved() : undefined,
         };
       })}
+    />
+  );
+}
+
+export const ACCESS_LABELS: Record<AccessPageId, () => string> = {
+  "api-keys": () => m.settings_nav_api_keys(),
+  "agent-skill": () => m.settings_nav_agent_skill(),
+};
+
+/** The tabs of 「接入」. */
+export function AccessNav({ current }: { current: AccessPageId }) {
+  return (
+    <TabNav
+      scrollCue
+      aria-label={m.admin_access_title()}
+      value={current}
+      items={ACCESS_PAGE_IDS.map((id) => ({
+        value: id,
+        to: ACCESS_PAGE_TO[id],
+        label: ACCESS_LABELS[id](),
+      }))}
     />
   );
 }

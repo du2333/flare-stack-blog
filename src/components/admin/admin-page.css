@@ -1,0 +1,173 @@
+/*
+ * The Admin page frame (admin-page.tsx, docs/admin-page-frame.md). The frame
+ * is also .admin-frame and .admin-workspace (content-workspace.css), which
+ * give it the side inset --admin-frame-x, the bleed helper and the scrollbar
+ * gutter. Sizes come from admin-variables.css.
+ */
+.admin-page {
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--fuwari-fg);
+}
+/* A body that scrolls runs to the bottom edge and pads itself. */
+.admin-page:has(> .admin-page-body[data-scroll]) {
+  --admin-frame-bottom: 0px;
+}
+
+/* Rows one and two stay on top, with a hairline under them. */
+.admin-page-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex-shrink: 0;
+  background: var(--fuwari-card-bg);
+}
+.admin-page-header {
+  --fuwari-button-height: 36px;
+  --fuwari-button-font-size: var(--admin-text-body);
+  --fuwari-button-padding-x: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  min-height: 36px;
+}
+.admin-page-header:not([data-toolbar]) {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--admin-rule);
+}
+.admin-page-header[data-toolbar] {
+  margin-bottom: 8px;
+}
+.admin-page-heading {
+  min-width: 0;
+}
+.admin-page-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.admin-page-header h1 {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--admin-text-title);
+  line-height: var(--admin-leading-title);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-page-count {
+  flex-shrink: 0;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--fuwari-fg-50);
+  font-variant-numeric: tabular-nums;
+}
+.admin-page-description {
+  margin-top: 2px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--fuwari-fg-50);
+}
+.admin-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.admin-page-toolbar > .fuwari-tabs {
+  align-self: stretch;
+}
+.admin-page-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The body: a column that fills the rest of the frame. */
+.admin-page-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.admin-page-body[data-scroll] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  margin-inline: calc(-1 * var(--admin-frame-x));
+  padding: 20px var(--admin-scroll-end) 32px var(--admin-frame-x);
+}
+.admin-page-body[data-scroll] > * {
+  flex-shrink: 0;
+}
+
+/* The form body: one setting per row. */
+.admin-form-row {
+  display: grid;
+  gap: 8px;
+  max-width: 960px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--admin-rule);
+}
+.admin-form-row:first-child {
+  padding-top: 0;
+}
+.admin-form-row-label {
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-weight: 500;
+}
+.admin-form-row-description {
+  margin-top: 2px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--fuwari-fg-50);
+}
+.admin-form-row-control {
+  min-width: 0;
+  max-width: var(--admin-form-control-max);
+}
+@media (min-width: 1024px) {
+  .admin-form-row {
+    grid-template-columns: minmax(0, 1fr) minmax(
+        0,
+        var(--admin-form-control-max)
+      );
+    gap: 32px;
+    align-items: start;
+  }
+}
+
+/*
+ * A row of a list body: at most --admin-row-max tall, a hairline under it, a
+ * light fill under the pointer. Make the whole row the link or button; put
+ * its actions in an ActionMenu at the end.
+ */
+.admin-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  max-height: var(--admin-row-max);
+  padding: 0 12px;
+  border-bottom: 1px solid var(--admin-rule);
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  transition: background-color 150ms;
+}
+.admin-list-row:hover {
+  background: var(--fuwari-btn-plain-bg-hover);
+}
+
+/* Below 1024px the top bar has the title and the primary action. */
+@media (max-width: 1023px) {
+  .admin-page-header :is(h1, .admin-page-count),
+  .admin-page-primary,
+  .admin-page-header[data-compact] {
+    display: none;
+  }
+}

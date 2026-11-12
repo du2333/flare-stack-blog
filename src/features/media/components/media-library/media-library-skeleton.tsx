@@ -1,5 +1,6 @@
+import { AdminPage } from "@/components/admin/admin-page";
 import {
-  FrameHeaderSkeleton,
+  FrameActionSkeleton,
   FrameTabsSkeleton,
 } from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,14 +27,22 @@ export function MediaCollectionSkeleton({
 
 export function MediaLibraryPageSkeleton() {
   return (
-    <div className="media-workspace admin-workspace admin-frame fuwari-card-base">
-      <FrameHeaderSkeleton title={m.media_title()} />
-      <div className="media-toolbar-shell">
-        <div className="media-workspace-toolbar admin-frame-toolbar">
-          <FrameTabsSkeleton count={2} className="media-workspace-tabs" />
+    <AdminPage
+      className="media-workspace"
+      title={m.media_title()}
+      count="—"
+      actions={<FrameActionSkeleton />}
+      toolbar={
+        <div className="media-toolbar-shell">
+          <div className="media-workspace-toolbar admin-frame-toolbar">
+            <FrameTabsSkeleton count={2} className="media-workspace-tabs" />
+          </div>
         </div>
-      </div>
+      }
+      body="list"
+      scroll={false}
+    >
       <MediaCollectionSkeleton />
-    </div>
+    </AdminPage>
   );
 }

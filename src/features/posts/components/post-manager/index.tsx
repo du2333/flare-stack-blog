@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
+import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
@@ -18,7 +18,6 @@ import {
 } from "./components";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { PageHeader } from "@/components/ui/page-heading";
 import { Spinner } from "@/components/ui/spinner";
 import { useListScroll } from "./hooks/use-list-scroll";
 import {
@@ -79,7 +78,6 @@ export function PostManager({
 }: PostManagerProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setPrimaryAction } = useAdminChrome();
   const [postToDelete, setPostToDelete] = useState<AdminPostListItem | null>(
     null,
   );
@@ -167,14 +165,6 @@ export function PostManager({
   const createLabel = isCreating
     ? m.admin_posts_creating()
     : m.admin_posts_create();
-  useEffect(() => {
-    setPrimaryAction({
-      label: createLabel,
-      onClick: () => createPost(),
-      disabled: isCreating,
-    });
-    return () => setPrimaryAction(null);
-  }, [createLabel, createPost, isCreating, setPrimaryAction]);
   const deleteMutation = useDeletePost({
     onSuccess: () => setPostToDelete(null),
   });
@@ -222,46 +212,42 @@ export function PostManager({
     ) : null;
 
   return (
-    <section className="post-manager admin-workspace admin-frame fuwari-card-base">
-      <PageHeader
-        title={m.admin_posts_title()}
-        description={
-          <>
-            {statusCounts
-              ? m.admin_posts_total({
-                  count: statusCounts.draft + statusCounts.published,
-                })
-              : "—"}
-            {isFetching && <Spinner size={14} className="ml-2 inline" />}
-          </>
-        }
-        actions={
-          <Button
-            variant="primary"
-            onClick={() => createPost()}
-            loading={isCreating}
-            icon={<Plus size={19} />}
-          >
-            {createLabel}
-          </Button>
-        }
-      />
-      <PostsToolbar
-        searchTerm={searchInput}
-        onSearchChange={handleSearchChange}
-        searchRef={searchRef}
-        status={status}
-        statusCounts={statusCounts}
-        onStatusChange={onStatusChange}
-        category={category}
-        onCategoryChange={onCategoryChange}
-        tag={tag}
-        onTagChange={onTagChange}
-        sortBy={sortBy}
-        onSortByChange={onSortByChange}
-        onClearTaxonomy={() => onTaxonomyFilter({})}
-        onManageTaxonomy={() => setTaxonomyOpen(true)}
-      />
+    <AdminPage
+      className="post-manager"
+      title={m.admin_posts_title()}
+      count={
+        <>
+          {statusCounts ? statusCounts.draft + statusCounts.published : "—"}
+          {isFetching && <Spinner size={14} className="ml-2 inline" />}
+        </>
+      }
+      primaryAction={{
+        label: createLabel,
+        icon: <Plus size={17} />,
+        onClick: () => createPost(),
+        loading: isCreating,
+      }}
+      toolbar={
+        <PostsToolbar
+          searchTerm={searchInput}
+          onSearchChange={handleSearchChange}
+          searchRef={searchRef}
+          status={status}
+          statusCounts={statusCounts}
+          onStatusChange={onStatusChange}
+          category={category}
+          onCategoryChange={onCategoryChange}
+          tag={tag}
+          onTagChange={onTagChange}
+          sortBy={sortBy}
+          onSortByChange={onSortByChange}
+          onClearTaxonomy={() => onTaxonomyFilter({})}
+          onManageTaxonomy={() => setTaxonomyOpen(true)}
+        />
+      }
+      body="list"
+      scroll={false}
+    >
       <div
         ref={scrollRef}
         className="post-list-scroll custom-scrollbar"
@@ -404,6 +390,6 @@ export function PostManager({
             : searchRef.current
         }
       />
-    </section>
+    </AdminPage>
   );
 }

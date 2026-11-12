@@ -278,7 +278,7 @@ export function PostEditor({
       />
 
       <section
-        className="post-editor-workspace fuwari-card-base"
+        className="post-editor-workspace overflow-hidden"
         data-info-open={infoOpen || undefined}
       >
         <PostEditorHeader

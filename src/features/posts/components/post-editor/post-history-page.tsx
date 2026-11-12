@@ -107,7 +107,7 @@ export function PostHistoryPage({
   );
 
   return (
-    <div className="post-editor-workspace fuwari-card-base">
+    <div className="post-editor-workspace overflow-hidden">
       <ConfirmationModal
         isOpen={history.confirm === "restore"}
         onClose={history.cancelConfirm}
@@ -233,7 +233,7 @@ export function PostHistoryEmpty({ postId }: { postId: number }) {
   }, [setMobileTitle, setPrimaryAction]);
 
   return (
-    <div className="post-editor-workspace fuwari-card-base">
+    <div className="post-editor-workspace overflow-hidden">
       <header className="post-editor-header">
         <Link
           to="/admin/posts/edit/$id"

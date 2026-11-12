@@ -1,6 +1,7 @@
 /*
  * The Admin workbench's own values (ADR 0021, amended 2026-11-11): warm
- * neutral paper and ink with a fixed teal accent, in both Colour Schemes.
+ * neutral paper and ink, with an ink accent that has no hue, in both Colour
+ * Schemes. Success, warning and danger are the only colours with a hue.
  *
  * The Admin still shares the stylesheet and the controls with public pages,
  * so it reads the same --fuwari-* names; here it gives every colour that the
@@ -12,18 +13,24 @@
  *
  * Success, warning and danger keep their fixed hues from the base layer.
  * Contrast (WCAG), light / dark: text on the card 11.6 / 13.0, secondary text
- * 4.7 / 6.3, primary button text on the accent 5.5 / 7.2, accent as a link on
- * the card 5.3 / 9.2; the accent also clears 3:1 as a focus ring on the page
- * and the card.
+ * 4.7 / 6.3, primary button text on the accent 14.4 / 13.8, the accent as a
+ * link on the card 14.4 / 13.8 and on the page 13.1 / 14.8, and as a focus
+ * ring the same against the card and the page (3:1 needed).
+ * admin-variables.test computes these from the values below.
+ *
+ * The type scale and the density the page frame, the sidebar and the lists
+ * share are here too (--admin-text-*, --admin-sidebar-*, --admin-row-*).
  *
  * The selector is more specific than :root and .dark of the base layer, and
  * the dark one more than the light one, so source order does not matter.
  */
 @layer base {
   :root:has(.admin-layout) {
-    --fuwari-primary: #0f766e;
-    --fuwari-primary-hover: #115e59;
-    --fuwari-primary-active: #134e4a;
+    --fuwari-primary: #2b2722;
+    --fuwari-primary-hover: #1a1815;
+    --fuwari-primary-active: #0f0e0c;
+    /* Text and icons on the accent: a primary button, a checked switch. */
+    --admin-on-accent: #fdfbf7;
     --fuwari-page-bg: #f4f0e8;
     --fuwari-card-bg: #fdfbf7;
     --fuwari-btn-content: #4a4033;
@@ -33,7 +40,7 @@
     --fuwari-btn-plain-bg-hover: #ece7dc;
     --fuwari-btn-plain-bg-active: #f3efe6;
     --fuwari-deep-text: #2b2218;
-    --fuwari-selection-bg: #c9e3dd;
+    --fuwari-selection-bg: #e0dacd;
     --fuwari-toc-btn-hover: #ece7dc;
     --fuwari-toc-btn-active: #e6e0d2;
     --fuwari-toc-badge-bg: #e3dccd;
@@ -61,12 +68,33 @@
     --radius-3xl: 0.75rem;
     --fuwari-field-radius: 8px;
     --fuwari-button-radius: 8px;
+
+    /* Type (size / line height): the page title, a section's title, body
+       text, and meta text such as dates and hints. Weights: 600 for titles. */
+    --admin-text-title: 20px;
+    --admin-leading-title: 28px;
+    --admin-text-section: 15px;
+    --admin-leading-section: 22px;
+    --admin-text-body: 14px;
+    --admin-leading-body: 22px;
+    --admin-text-meta: 12.5px;
+    --admin-leading-meta: 18px;
+
+    /* Density: a list row is never taller than --admin-row-max; the sidebar
+       is --admin-sidebar-width wide with --admin-sidebar-row rows; a form
+       control is at most --admin-form-control-max wide. */
+    --admin-row-max: 56px;
+    --admin-sidebar-width: 232px;
+    --admin-sidebar-row: 36px;
+    --admin-sidebar-text: 14px;
+    --admin-form-control-max: 480px;
   }
 
   :root.dark:has(.admin-layout) {
-    --fuwari-primary: #2dd4bf;
-    --fuwari-primary-hover: #5eead4;
-    --fuwari-primary-active: #99f6e4;
+    --fuwari-primary: #ece6da;
+    --fuwari-primary-hover: #f6f2ea;
+    --fuwari-primary-active: #fdfbf7;
+    --admin-on-accent: #1f1b17;
     --fuwari-page-bg: #171411;
     --fuwari-card-bg: #1f1b17;
     --fuwari-btn-content: #d9cfc0;
@@ -76,7 +104,7 @@
     --fuwari-btn-plain-bg-hover: #28231e;
     --fuwari-btn-plain-bg-active: #231f1a;
     --fuwari-deep-text: #efe6d8;
-    --fuwari-selection-bg: #1e5a52;
+    --fuwari-selection-bg: #4a4338;
     --fuwari-toc-btn-hover: #26211c;
     --fuwari-toc-btn-active: #2b2620;
     --fuwari-toc-badge-bg: #2b2620;

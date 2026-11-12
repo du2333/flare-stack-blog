@@ -2,11 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
+import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { PageHeader } from "@/components/ui/page-heading";
 import { Tabs } from "@/components/ui/tabs";
 import type {
   FriendLinkStatusCounts,
@@ -48,7 +46,6 @@ export function FriendLinkManager({
   onSearchChange,
 }: FriendLinkManagerProps) {
   const navigate = useNavigate();
-  const { setPrimaryAction } = useAdminChrome();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FriendLinkWithUser | null>(null);
   const [rejecting, setRejecting] = useState<FriendLinkWithUser | null>(null);
@@ -92,17 +89,6 @@ export function FriendLinkManager({
   };
 
   useEffect(() => {
-    setPrimaryAction({
-      label: m.friend_links_admin_add(),
-      onClick: () => {
-        setEditing(null);
-        setFormOpen(true);
-      },
-    });
-    return () => setPrimaryAction(null);
-  }, [setPrimaryAction]);
-
-  useEffect(() => {
     if (data && page > totalPages) onPageChange(totalPages);
   }, [data, page, totalPages, onPageChange]);
 
@@ -113,34 +99,33 @@ export function FriendLinkManager({
   }[status];
 
   return (
-    <div className="friend-workspace admin-workspace admin-frame fuwari-card-base">
-      <PageHeader
-        title={m.friend_links_admin_title()}
-        description={m.friend_review_hint()}
-        actions={
-          <Button
-            variant="primary"
-            icon={<Plus size={17} />}
-            onClick={openCreate}
-          >
-            {m.friend_links_admin_add()}
-          </Button>
-        }
-      />
-      <Tabs
-        aria-label={m.friend_links_admin_title()}
-        value={status}
-        onValueChange={onStatusChange}
-        items={STATUSES.map((item) => ({
-          value: item,
-          label: {
-            pending: m.friend_links_tab_pending(),
-            approved: m.friend_links_tab_approved(),
-            rejected: m.friend_links_tab_rejected(),
-          }[item],
-          count: counts[item],
-        }))}
-      />
+    <AdminPage
+      className="friend-workspace"
+      title={m.friend_links_admin_title()}
+      description={m.friend_review_hint()}
+      primaryAction={{
+        label: m.friend_links_admin_add(),
+        icon: <Plus size={17} />,
+        onClick: openCreate,
+      }}
+      tabs={
+        <Tabs
+          aria-label={m.friend_links_admin_title()}
+          value={status}
+          onValueChange={onStatusChange}
+          items={STATUSES.map((item) => ({
+            value: item,
+            label: {
+              pending: m.friend_links_tab_pending(),
+              approved: m.friend_links_tab_approved(),
+              rejected: m.friend_links_tab_rejected(),
+            }[item],
+            count: counts[item],
+          }))}
+        />
+      }
+      body="split"
+    >
       <FriendLinkReview
         key={status}
         items={items}
@@ -236,6 +221,6 @@ export function FriendLinkManager({
         isDanger
         isLoading={isAdminDeleting}
       />
-    </div>
+    </AdminPage>
   );
 }
