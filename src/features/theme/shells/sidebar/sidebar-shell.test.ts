@@ -991,6 +991,48 @@ describe("the stylesheet", () => {
     });
   });
 
+  // The bar of a Theme preview floats centred over the foot of the window,
+  // where the foot of the rail is until the window is some 1100px wide.
+  it("says where its content column stands in the window from 1024px, so nothing centred over the foot of the window lies on the rail", () => {
+    const fromLg = rootProperties(
+      mediaBlocks(shellCss, "(width >= 64rem)").join("\n"),
+    );
+    const below = rootProperties(
+      mediaBlocks(shellCss, "(width >= 64rem)").reduce(
+        (css, block) => css.replace(block, ""),
+        shellCss,
+      ),
+    );
+    const frame = declarations(
+      blockAfter(
+        mediaBlocks(shellCss, "(width >= 64rem)").find((block) =>
+          block.includes(".sidebar-frame {"),
+        )!,
+        ".sidebar-frame {",
+      ),
+    );
+
+    // The frame's edge and padding, the rail, and the gap after it.
+    expect(fromLg["--shell-content-inset-left"]).toBe(
+      "calc(max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) + 1.75rem)",
+    );
+    expect(fromLg["--shell-content-inset-right"]).toBe(
+      "calc(max(0px, 50% - var(--sidebar-frame) / 2) + 1rem)",
+    );
+    expect(frame).toContain("gap: 1.75rem");
+    expect(
+      declarations(
+        blockAfter(
+          mediaBlocks(shellCss, "(width >= 48rem)").join("\n"),
+          ".sidebar-frame {",
+        ),
+      ),
+    ).toContain("padding-inline: 1rem");
+    // Below 1024px there is no rail: the whole window.
+    expect(below["--shell-content-inset-left"]).toBeUndefined();
+    expect(below["--shell-content-inset-right"]).toBeUndefined();
+  });
+
   it("uses no !important", () => {
     expect(all).not.toContain("!important");
   });

@@ -75,6 +75,12 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *     to top and of each of the page's actions; left out, 3.75rem. A shell
  *     that rests them where there is less room says how large they are
  *     (「侧栏」 does, in the foot of its rail).
+ *   - `--shell-content-inset-left`, `--shell-content-inset-right`:
+ *     optional. How far from either edge of the window the content starts,
+ *     where the shell keeps a part of the window's width for a frame of
+ *     its own (the rail of 「侧栏」). What floats centred over the foot of
+ *     the window, such as the bar of a Theme preview, is centred in the
+ *     rest and never lies on that frame. Left out, the whole window.
  *   - `--shell-toc-side`: `block` where the table of contents of a Post
  *     stands beside the article or in the shell's slot, `none` where it
  *     does not (the default).

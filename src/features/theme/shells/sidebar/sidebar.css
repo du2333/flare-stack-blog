@@ -98,6 +98,21 @@
     --shell-toc-compact: none;
   }
 }
+/* Where the rail stands, the content is the column right of it: after the
+   rail and the room that follows it, and 1rem inside the frame. What floats
+   centred over the foot of the window, such as the bar of a Theme preview,
+   is centred over that column, clear of the foot of the rail. */
+@media (width >= 64rem) {
+  :root[data-theme="sidebar"] {
+    --shell-content-inset-left: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) +
+        1.75rem
+    );
+    --shell-content-inset-right: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem
+    );
+  }
+}
 /* From 1024px to where the window has room right of the frame, the column
    reaches the edge of the window and back to top would lie on it. There it
    rests in the foot of the rail instead, in a box of the shell's (below),
