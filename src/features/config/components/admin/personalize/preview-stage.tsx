@@ -11,11 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import { Spinner } from "@/components/ui/spinner";
 import { m } from "@/paraglide/messages";
-import {
-  PREVIEW_FRAME_SIZE,
-  previewScale,
-  type PreviewDevice,
-} from "./preview-geometry";
+import { previewFrameLayout, type PreviewDevice } from "./preview-geometry";
 import {
   usePreviewLiveLink,
   type PreviewLiveValues,
@@ -31,39 +27,24 @@ interface Frame {
   ready: boolean;
 }
 
-/** The room the page has beside the preview, when it fits a phone frame. */
-const HEIGHT_MARGIN = 260;
-const MIN_FIT_HEIGHT = 320;
-
-function useStageSpace(
-  ref: RefObject<HTMLElement | null>,
-  fit: "width" | "box",
-) {
-  const [space, setSpace] = useState({ width: 0, maxHeight: 0 });
+function useStageSpace(ref: RefObject<HTMLElement | null>) {
+  const [space, setSpace] = useState({ width: 0, height: 0 });
   const measure = useCallback(() => {
     const box = ref.current?.getBoundingClientRect();
     if (!box) return;
-    const maxHeight =
-      fit === "box"
-        ? box.height
-        : Math.max(MIN_FIT_HEIGHT, window.innerHeight - HEIGHT_MARGIN);
     setSpace((previous) =>
-      previous.width === box.width && previous.maxHeight === maxHeight
+      previous.width === box.width && previous.height === box.height
         ? previous
-        : { width: box.width, maxHeight },
+        : { width: box.width, height: box.height },
     );
-  }, [ref, fit]);
+  }, [ref]);
   useLayoutEffect(() => {
     measure();
     const element = ref.current;
     if (!element) return;
     const observer = new ResizeObserver(measure);
     observer.observe(element);
-    window.addEventListener("resize", measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", measure);
-    };
+    return () => observer.disconnect();
   }, [ref, measure]);
   return space;
 }
@@ -71,19 +52,18 @@ function useStageSpace(
 function PreviewFrame({
   frame,
   shown,
-  device,
+  size,
   live,
   onLoad,
 }: {
   frame: Frame;
   shown: boolean;
-  device: PreviewDevice;
+  size: { width: number; height: number };
   live: PreviewLiveValues;
   onLoad: (key: number) => void;
 }) {
   const ref = useRef<HTMLIFrameElement>(null);
   usePreviewLiveLink(() => ref.current?.contentWindow, live);
-  const size = PREVIEW_FRAME_SIZE[device];
   return (
     <iframe
       ref={ref}
@@ -101,27 +81,23 @@ function PreviewFrame({
 }
 
 /**
- * The public page at `address` in an iframe, at the device's width and scaled
- * to fit. A new address loads in a second frame behind the first, which stays
+ * The public page at `address` in an iframe, at the device's width, scaled to
+ * the width of the space and as tall as the space (`previewFrameLayout`). A new address loads in a second frame behind the first, which stays
  * in view until the new one has loaded, so the preview never flashes white.
  * The banner focus and the hue in `live` follow without a load.
  */
 export function PreviewStage({
   address,
   device,
-  fit,
   live,
 }: {
   address: string;
   device: PreviewDevice;
-  /** `width`: as tall as the scaled page. `box`: inside the space it is given. */
-  fit: "width" | "box";
   live: PreviewLiveValues;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const space = useStageSpace(stageRef, fit);
-  const scale = previewScale(device, space);
-  const size = PREVIEW_FRAME_SIZE[device];
+  const space = useStageSpace(stageRef);
+  const { scale, frame: size, canvas } = previewFrameLayout(device, space);
 
   const nextKey = useRef(2);
   const [frames, setFrames] = useState<Array<Frame>>(() => [
@@ -175,14 +151,13 @@ export function PreviewStage({
     <div
       ref={stageRef}
       className="personalize-stage"
-      data-fit={fit}
       data-loading={loading || undefined}
     >
       <div
         className="personalize-canvas"
         style={{
-          width: size.width * scale,
-          height: size.height * scale,
+          width: canvas.width,
+          height: canvas.height,
           visibility: scale > 0 ? undefined : "hidden",
         }}
       >
@@ -199,7 +174,7 @@ export function PreviewStage({
               key={frame.key}
               frame={frame}
               shown={frame.key === lastShown?.key}
-              device={device}
+              size={size}
               live={live}
               onLoad={loaded}
             />

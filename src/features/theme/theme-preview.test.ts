@@ -11,7 +11,10 @@ import {
 import { THEMES } from "./themes";
 import {
   carryThemePreview,
+  embeddedThemePreviewHref,
   hasSessionCookie,
+  hasThemePreviewParams,
+  isThemePreviewEmbedded,
   themePreviewHref,
   withoutThemePreview,
 } from "./utils/theme-preview-params";
@@ -204,7 +207,37 @@ describe("preview parameters on navigation", () => {
       themePreview: undefined,
       themePreviewOptions: undefined,
       themePreviewDraft: undefined,
+      themePreviewEmbed: undefined,
     });
+  });
+
+  it("carries the embedded mark with the preview, and drops it on leaving", () => {
+    const embedded = { ...previewing, themePreviewEmbed: 1 };
+    expect(carryThemePreview(embedded, { page: 2 })).toStrictEqual({
+      page: 2,
+      ...embedded,
+    });
+    expect(withoutThemePreview(embedded).themePreviewEmbed).toBeUndefined();
+  });
+
+  it("marks an address as embedded, and reads the mark back from the search", () => {
+    const href = embeddedThemePreviewHref(
+      themePreviewHref("classic", { a: 1 }),
+    );
+    expect(href).toBe(
+      "/?themePreview=classic&themePreviewOptions=%7B%22a%22%3A1%7D&themePreviewEmbed=1",
+    );
+    expect(embeddedThemePreviewHref("/post/a-post?themePreview=classic")).toBe(
+      "/post/a-post?themePreview=classic&themePreviewEmbed=1",
+    );
+    expect(isThemePreviewEmbedded({ themePreview: "classic" })).toBe(false);
+    // The router reads a value of 1 as a number.
+    expect(isThemePreviewEmbedded({ themePreviewEmbed: 1 })).toBe(true);
+    expect(
+      hasThemePreviewParams(
+        new URL("https://blog.example/?themePreviewEmbed=1"),
+      ),
+    ).toBe(true);
   });
 
   it("carries the draft with the Theme", () => {

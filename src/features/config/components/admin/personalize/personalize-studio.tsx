@@ -1,7 +1,7 @@
 import "../site-studio.css";
 import "./personalize.css";
 import { Eye, Home, UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { blogConfig } from "@/blog.config";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import type { PreviewValues } from "./preview-address";
 import { PreviewPanel } from "./preview-panel";
+import { useAsideRoom } from "./use-aside-room";
 
 const IMAGE_ACCEPT = ".png,.webp,.jpg,.jpeg";
 
@@ -47,7 +48,7 @@ const BRAND_MARK_SIZE = 28;
 const BANNER_FOCUS_HINT_ID = "site-banner-focus-hint";
 
 /** From this width the preview sits beside the form; below it is a button. */
-const WIDE_PREVIEW_QUERY = "(min-width: 1200px)";
+const WIDE_PREVIEW_QUERY = "(min-width: 1280px)";
 
 function useBannerFocus() {
   const { control, setValue } = useFormContext<SystemConfig>();
@@ -111,12 +112,19 @@ export function PersonalizeStudio() {
         <BrandMarkRow />
         <TaglineRow />
       </div>
-      {wide ? (
-        <aside className="personalize-aside">
-          <PreviewPanel values={values} fit="width" initialDevice="desktop" />
-        </aside>
-      ) : null}
+      {wide ? <PreviewAside values={values} /> : null}
     </div>
+  );
+}
+
+/** Beside the form, in view while it scrolls, as tall as the page has room for. */
+function PreviewAside({ values }: { values: PreviewValues }) {
+  const ref = useRef<HTMLElement>(null);
+  useAsideRoom(ref);
+  return (
+    <aside ref={ref} className="personalize-aside">
+      <PreviewPanel values={values} initialDevice="desktop" />
+    </aside>
   );
 }
 
@@ -144,7 +152,6 @@ function PreviewLauncher({ values }: { values: PreviewValues }) {
         {open ? (
           <PreviewPanel
             values={values}
-            fit="box"
             initialDevice="phone"
             actions={
               <IconButton

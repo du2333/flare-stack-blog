@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import type { FocalPoint } from "@/components/ui/focal-point";
 import type { BrandMark } from "@/features/config/site-config.schema";
 import type { SiteConfigDraft } from "@/features/theme/site-config-draft";
-import { themePreviewHref } from "@/features/theme/utils/theme-preview-params";
+import {
+  embeddedThemePreviewHref,
+  themePreviewHref,
+} from "@/features/theme/utils/theme-preview-params";
 
 /** What the preview shows: the form's presentation fields, unsaved as they are. */
 export interface PreviewValues {
@@ -43,10 +46,9 @@ export function previewAddress(
   values: PreviewValues,
   target: PreviewTarget,
 ): string {
-  const home = themePreviewHref(
-    values.themeId,
-    values.themeOptions,
-    draftOf(values),
+  // Marked as embedded, so the page leaves out the bar that names the preview.
+  const home = embeddedThemePreviewHref(
+    themePreviewHref(values.themeId, values.themeOptions, draftOf(values)),
   );
   if (target.kind === "home") return home;
   return `${target.path}${home.slice(home.indexOf("?"))}`;

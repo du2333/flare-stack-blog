@@ -171,16 +171,18 @@
 }
 .personalize[data-wide] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(380px, 38%, 560px);
+  grid-template-columns: minmax(0, 1fr) clamp(440px, 42%, 680px);
   gap: calc(40 * var(--admin-unit));
   align-items: start;
 }
 .personalize-form {
   min-width: 0;
 }
+/* use-aside-room.ts sets its height from the room the scroller has. */
 .personalize-aside {
   position: sticky;
   top: 0;
+  height: 70dvh;
   min-width: 0;
 }
 .personalize-launcher {
@@ -213,18 +215,15 @@
 .personalize-close {
   margin-left: auto;
 }
+/* The stage takes what the bar leaves; the page in it runs its full height. */
 .personalize-stage {
   position: relative;
+  flex: 1;
   min-width: 0;
+  min-height: 0;
   border-radius: 14px;
   background: var(--fuwari-btn-regular-bg);
   overflow: hidden;
-}
-.personalize-stage[data-fit="box"] {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  place-items: center;
 }
 .personalize-canvas {
   position: relative;
@@ -236,10 +235,6 @@
   top: 0;
   left: 0;
   transform-origin: top left;
-}
-.personalize-stage[data-fit="width"] .personalize-canvas {
-  /* A phone frame narrower than the panel sits in the middle of it. */
-  box-shadow: 0 0 0 1px var(--admin-rule);
 }
 /* Every frame stacks at the same place; the one in view is the newest loaded. */
 .personalize-frame {
@@ -298,6 +293,8 @@
   background: var(--fuwari-card-bg);
 }
 .personalize-sheet .personalize-preview {
+  flex: 1;
+  height: auto;
   padding-bottom: env(safe-area-inset-bottom);
 }
 

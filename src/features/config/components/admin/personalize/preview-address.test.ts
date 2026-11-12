@@ -55,6 +55,19 @@ describe("previewAddress", () => {
     });
   });
 
+  it("is marked as embedded, on a Post's path too, so the page shows no preview bar", () => {
+    for (const target of [
+      home,
+      { kind: "post", path: "/post/a-post" },
+    ] as const) {
+      const url = new URL(
+        previewAddress(values, target),
+        "https://blog.example",
+      );
+      expect(url.searchParams.get("themePreviewEmbed")).toBe("1");
+    }
+  });
+
   it("puts the same parameters on the path of a Post", () => {
     const post = previewAddress(values, { kind: "post", path: "/post/a-post" });
     const url = new URL(post, "https://blog.example");

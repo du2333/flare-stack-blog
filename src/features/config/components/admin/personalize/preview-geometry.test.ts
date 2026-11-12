@@ -1,28 +1,31 @@
 import { expect, it } from "vitest";
-import { PREVIEW_FRAME_SIZE, previewScale } from "./preview-geometry";
+import { previewFrameLayout } from "./preview-geometry";
 
-it("scales a desktop frame down to the width it is given", () => {
-  expect(previewScale("desktop", { width: 640, maxHeight: 2000 })).toBe(0.5);
+it("scales a desktop frame to the width of the space and makes it as tall as the space", () => {
+  const layout = previewFrameLayout("desktop", { width: 640, height: 800 });
+  expect(layout.scale).toBe(0.5);
+  expect(layout.frame).toEqual({ width: 1280, height: 1600 });
+  expect(layout.canvas).toEqual({ width: 640, height: 800 });
 });
 
-it("never scales a desktop frame past the height it is given", () => {
-  expect(previewScale("desktop", { width: 1280, maxHeight: 400 })).toBe(0.5);
+it("keeps a phone frame at its natural size where it fits, full height and in the middle", () => {
+  const layout = previewFrameLayout("phone", { width: 600, height: 900 });
+  expect(layout.scale).toBe(1);
+  expect(layout.frame).toEqual({ width: 390, height: 900 });
+  expect(layout.canvas).toEqual({ width: 390, height: 900 });
 });
 
-it("keeps a phone frame at its natural size where it fits", () => {
-  expect(previewScale("phone", { width: 800, maxHeight: 2000 })).toBe(1);
-});
+it("scales a phone frame down only for a space narrower or shorter than a phone", () => {
+  const narrow = previewFrameLayout("phone", { width: 195, height: 2000 });
+  expect(narrow.scale).toBe(0.5);
+  expect(narrow.canvas.width).toBe(195);
+  expect(narrow.frame.height).toBe(4000);
 
-it("shrinks a phone frame to the width or the height of the space", () => {
-  const { width, height } = PREVIEW_FRAME_SIZE.phone;
-  expect(previewScale("phone", { width: width / 2, maxHeight: 5000 })).toBe(
-    0.5,
-  );
-  expect(previewScale("phone", { width: 5000, maxHeight: height / 4 })).toBe(
-    0.25,
-  );
+  const short = previewFrameLayout("phone", { width: 800, height: 422 });
+  expect(short.scale).toBe(0.5);
+  expect(short.frame.height).toBe(844);
 });
 
 it("has no scale before the space is measured", () => {
-  expect(previewScale("desktop", { width: 0, maxHeight: 0 })).toBe(0);
+  expect(previewFrameLayout("desktop", { width: 0, height: 0 }).scale).toBe(0);
 });

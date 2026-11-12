@@ -11,11 +11,17 @@ import type { SiteConfigDraft } from "../site-config-draft";
 export const THEME_PREVIEW_PARAM = "themePreview";
 export const THEME_PREVIEW_OPTIONS_PARAM = "themePreviewOptions";
 export const THEME_PREVIEW_DRAFT_PARAM = "themePreviewDraft";
+/**
+ * Set by the Admin page that embeds a preview in an iframe. The server sees
+ * it, so the preview renders without its own bar from the first paint.
+ */
+export const THEME_PREVIEW_EMBED_PARAM = "themePreviewEmbed";
 
 const PREVIEW_PARAMS = [
   THEME_PREVIEW_PARAM,
   THEME_PREVIEW_OPTIONS_PARAM,
   THEME_PREVIEW_DRAFT_PARAM,
+  THEME_PREVIEW_EMBED_PARAM,
 ];
 
 /** Whether the address asks for a preview, whatever the values say. */
@@ -59,6 +65,20 @@ export function themePreviewHref(
   return `/?${search}`;
 }
 
+/** The address of a preview, marked as embedded in an Admin page. */
+export function embeddedThemePreviewHref(href: string): string {
+  const url = new URL(href, "http://preview.local");
+  url.searchParams.set(THEME_PREVIEW_EMBED_PARAM, "1");
+  return `${url.pathname}${url.search}`;
+}
+
+/** Whether the preview is embedded in an Admin page, by its search. */
+export function isThemePreviewEmbedded(
+  search: Readonly<Record<string, unknown>>,
+): boolean {
+  return search[THEME_PREVIEW_EMBED_PARAM] !== undefined;
+}
+
 /**
  * The search of a client-side navigation while previewing: the preview
  * parameters stay unless the navigation names them, which leaving the preview
@@ -85,6 +105,7 @@ export function withoutThemePreview(
     [THEME_PREVIEW_PARAM]: undefined,
     [THEME_PREVIEW_OPTIONS_PARAM]: undefined,
     [THEME_PREVIEW_DRAFT_PARAM]: undefined,
+    [THEME_PREVIEW_EMBED_PARAM]: undefined,
   };
 }
 
