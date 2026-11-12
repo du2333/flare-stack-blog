@@ -1,12 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ApiKeySettingsSection } from "@/features/api-keys/components/api-key-settings-section";
-import { m } from "@/paraglide/messages";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { MOVED_SETTINGS_PAGE_TO } from "@/features/config/components/admin/settings-pages";
 
+/** Moved to 「接入」 (spec #298). */
 export const Route = createFileRoute("/admin/settings/api-keys")({
-  ssr: false,
-  loader: () => ({ title: m.settings_nav_api_keys() }),
-  head: ({ loaderData }) => ({
-    meta: [{ title: loaderData?.title }],
-  }),
-  component: ApiKeySettingsSection,
+  beforeLoad: () => {
+    throw redirect({ to: MOVED_SETTINGS_PAGE_TO["api-keys"], replace: true });
+  },
 });

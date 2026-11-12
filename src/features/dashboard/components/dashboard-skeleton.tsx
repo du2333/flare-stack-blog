@@ -1,4 +1,7 @@
+import { AdminPage } from "@/components/admin/admin-page";
+import { FrameActionSkeleton } from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { m } from "@/paraglide/messages";
 import "@/components/ui/page-heading.css";
 import "./dashboard.css";
 import "./ranked-bar-list.css";
@@ -13,9 +16,12 @@ function SectionTitle({ width }: { width: string }) {
 /** The dashboard's layout in placeholders: hero, figures, then sections. */
 export function DashboardSkeleton() {
   return (
-    <div
-      className="dashboard-workspace admin-workspace fuwari-card-base"
+    <AdminPage
+      className="dashboard-workspace"
       aria-hidden="true"
+      title={m.admin_overview_title()}
+      actions={<FrameActionSkeleton />}
+      body="list"
     >
       <div className="dashboard-hero">
         <div className="dashboard-hero-content w-full gap-3">
@@ -79,6 +85,6 @@ export function DashboardSkeleton() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminPage>
   );
 }

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { AdminChromeProvider } from "@/components/admin/admin-chrome";
 import { m } from "@/paraglide/messages";
 import { ApiKeySettingsSection } from "./api-key-settings-section";
 
@@ -75,7 +76,11 @@ function mountPage() {
     createElement(
       QueryClientProvider,
       { client },
-      createElement(ApiKeySettingsSection),
+      createElement(
+        AdminChromeProvider,
+        null,
+        createElement(ApiKeySettingsSection),
+      ),
     ),
   );
 }
@@ -99,7 +104,7 @@ it("points to the Agent Skill tab instead of carrying the install hint", async (
   const link = screen.getByRole("link", {
     name: m.settings_api_keys_agent_pointer_link(),
   });
-  expect(link.getAttribute("href")).toBe("/admin/settings/agent-skill");
+  expect(link.getAttribute("href")).toBe("/admin/access/agent-skill");
   // Only the words are linked; the brackets and "tab" stay outside.
   expect(link.textContent).toBe("Agent Skill");
   expect(document.body.textContent).not.toContain("npx skills add");

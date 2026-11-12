@@ -2,6 +2,7 @@ import { ClientOnly, Link } from "@tanstack/react-router";
 import { Bot, Copy, KeyRound, Plus } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useAdminPrimaryAction } from "@/components/admin/admin-chrome";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
@@ -20,7 +21,7 @@ import "./api-key-settings.css";
 function AgentSkillPointer() {
   const link = (
     <Link
-      to="/admin/settings/agent-skill"
+      to="/admin/access/agent-skill"
       className="font-medium underline underline-offset-2"
     >
       {m.settings_api_keys_agent_pointer_link()}
@@ -66,6 +67,17 @@ export function ApiKeySettingsSection() {
     setOpen(false);
     setRevealedKey(null);
   };
+  // The frame's header (and the phone top bar) shows it.
+  useAdminPrimaryAction({
+    label: m.settings_api_keys_create(),
+    icon: <Plus size={16} />,
+    ref: createRef,
+    onClick: () => {
+      setName("");
+      setRevealedKey(null);
+      setOpen(true);
+    },
+  });
   const create = async () => {
     if (!name.trim() || isCreating) return;
     try {
@@ -78,23 +90,7 @@ export function ApiKeySettingsSection() {
   };
   return (
     <div className="settings-keys settings-column">
-      <SettingsLead
-        description={m.settings_design_keys_hint()}
-        actions={
-          <Button
-            ref={createRef}
-            variant="primary"
-            onClick={() => {
-              setName("");
-              setRevealedKey(null);
-              setOpen(true);
-            }}
-            icon={<Plus size={16} />}
-          >
-            {m.settings_api_keys_create()}
-          </Button>
-        }
-      />
+      <SettingsLead description={m.settings_design_keys_hint()} />
       <AgentSkillPointer />
       <div className="settings-key-list" aria-busy={isLoading}>
         {isError ? (

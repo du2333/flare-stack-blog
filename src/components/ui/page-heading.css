@@ -1,20 +1,16 @@
 /*
- * Page and section headings. Admin headings scale with the workspace's
- * --admin-unit; a page places them through its own class.
+ * Section headings inside an Admin page, and public page headings. The
+ * Admin's page title is the page frame's (components/admin/admin-page.css);
+ * a section title takes the Admin's type scale (admin-variables.css) in
+ * every size, so sections read alike page to page.
  */
 @layer components {
-  .fuwari-page-header,
   .fuwari-section-heading {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 20px;
     flex-shrink: 0;
-  }
-  .fuwari-page-header {
-    align-items: flex-start;
-  }
-  .fuwari-section-heading {
-    align-items: center;
   }
   .fuwari-section-heading[data-align="baseline"] {
     align-items: first baseline;
@@ -22,30 +18,23 @@
   .fuwari-heading-text {
     min-width: 0;
   }
-  .fuwari-page-header h1 {
-    font-size: calc(28 * var(--admin-unit, 1px));
-    font-weight: 650;
-    line-height: 1.4;
-    color: inherit;
-  }
   .fuwari-section-heading :is(h2, h3) {
-    font-size: calc(22 * var(--admin-unit, 1px));
-    font-weight: 650;
-    line-height: 1.4;
+    font-size: var(--admin-text-section, 22px);
+    font-weight: 600;
+    line-height: var(--admin-leading-section, 1.4);
     color: inherit;
     overflow-wrap: anywhere;
   }
   .fuwari-section-heading[data-size="md"] :is(h2, h3) {
-    font-size: calc(17 * var(--admin-unit, 1px));
+    font-size: var(--admin-text-section, 17px);
   }
   .fuwari-section-heading[data-size="sm"] :is(h2, h3) {
-    font-size: calc(16 * var(--admin-unit, 1px));
-    font-weight: 600;
+    font-size: var(--admin-text-section, 16px);
   }
   .fuwari-heading-text > p {
-    margin-top: 8px;
-    font-size: calc(13 * var(--admin-unit, 1px));
-    line-height: 1.6;
+    margin-top: 4px;
+    font-size: var(--admin-text-meta, 13px);
+    line-height: var(--admin-leading-meta, 1.6);
     color: var(--fuwari-fg-50);
   }
   .fuwari-heading-actions {
@@ -53,11 +42,6 @@
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
-  }
-  @media (max-width: 767px) {
-    .fuwari-page-header h1 {
-      font-size: 23px;
-    }
   }
 
   .fuwari-public-heading {

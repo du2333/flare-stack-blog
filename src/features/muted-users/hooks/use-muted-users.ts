@@ -39,8 +39,7 @@ export function useMutedUsers(
           ? {
               action: {
                 label: m.admin_overview_view_muted_users(),
-                onClick: () =>
-                  void navigate({ to: "/admin/settings/muted-users" }),
+                onClick: () => void navigate({ to: "/admin/muted-users" }),
               },
             }
           : undefined,

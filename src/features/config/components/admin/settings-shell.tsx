@@ -1,26 +1,40 @@
 import { CircleAlert } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
+import { AdminPage } from "@/components/admin/admin-page";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-heading";
-import { useContentMotion } from "@/hooks/use-motion";
-import { SettingsNav } from "./settings-nav";
-import { isSaveBarVisible } from "./save-bar";
-import type { SettingsPageId } from "./settings-pages";
-import type { PERSONALIZE_PAGE } from "@/features/config/utils/site-field-pages";
 import { Callout } from "@/components/ui/callout";
+import { useContentMotion } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
+import { isSaveBarVisible } from "./save-bar";
 import "./settings.css";
+
 const FORM_ID = "system-config-form";
+
+/**
+ * The page frame for 「设置」, 「接入」, 「个性化」 and 「禁言名单」: a form
+ * body that scrolls in .settings-body, with the save bar pinned to its foot
+ * while a section has unsaved changes.
+ */
 export function SettingsShell({
   title,
-  nav,
+  section,
+  regionLabel,
+  count,
+  description,
+  tabs,
+  tools,
   save,
   children,
 }: {
   title: string;
-  /** A settings page, or 「个性化」, which has the shell but no settings tabs. */
-  nav?: SettingsPageId | typeof PERSONALIZE_PAGE;
+  /** Marks the frame for the section's own styles, and resets the scroll. */
+  section: string;
+  /** Names the scrolling region: the current tab, or the page. */
+  regionLabel: string;
+  count?: ReactNode;
+  description?: ReactNode;
+  tabs?: ReactNode;
+  tools?: ReactNode;
   save?: {
     disabled: boolean;
     busy: boolean;
@@ -32,22 +46,16 @@ export function SettingsShell({
   };
   children: ReactNode;
 }) {
-  const { setPrimaryAction } = useAdminChrome();
-  useEffect(() => {
-    setPrimaryAction(null);
-    return () => setPrimaryAction(null);
-  }, [setPrimaryAction]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  useContentMotion(scrollRef, nav ?? "directory");
+  useContentMotion(scrollRef, section);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [nav]);
-  const personalize = nav === "personalize";
+  }, [section]);
   const saveLabel = save?.busy
     ? m.settings_saving()
-    : personalize
+    : section === "personalize"
       ? m.personalize_save()
-      : nav === "site"
+      : section === "site"
         ? m.settings_config_save_site()
         : m.settings_config_save_notifications();
   const saveBarVisible = save ? isSaveBarVisible(save) : false;
@@ -60,19 +68,22 @@ export function SettingsShell({
       active.scrollIntoView({ block: "nearest" });
   }, [saveBarVisible]);
   return (
-    <div
-      className="settings-workspace admin-workspace admin-frame fuwari-card-base"
-      data-section={nav}
+    <AdminPage
+      className="settings-workspace"
+      data-section={section}
+      title={title}
+      count={count}
+      description={description}
+      tabs={tabs}
+      tools={tools}
+      body="form"
+      scroll={false}
     >
-      <PageHeader
-        title={personalize ? m.personalize_title() : m.settings_header_title()}
-      />
-      {nav && !personalize && <SettingsNav current={nav} />}
       <div
         className="settings-body admin-frame-bleed"
         ref={scrollRef}
         role="region"
-        aria-label={title}
+        aria-label={regionLabel}
       >
         {children}
         {save && saveBarVisible && (
@@ -113,7 +124,7 @@ export function SettingsShell({
           </footer>
         )}
       </div>
-    </div>
+    </AdminPage>
   );
 }
 export { FORM_ID as SETTINGS_FORM_ID };

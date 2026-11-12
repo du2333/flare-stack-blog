@@ -22,7 +22,10 @@ import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { sessionQuery } from "@/features/auth/queries";
-import { settingsSectionFromPath } from "@/features/config/components/admin/settings-pages";
+import {
+  accessSectionFromPath,
+  settingsSectionFromPath,
+} from "@/features/config/components/admin/settings-pages";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -86,7 +89,7 @@ function AdminLayout() {
     <AdminChromeProvider>
       <div
         className={cn(
-          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-2 p-2 md:gap-4 md:p-4 relative font-sans",
+          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex relative font-sans",
           editorWorkspace && "admin-editor-layout",
         )}
       >
@@ -97,7 +100,8 @@ function AdminLayout() {
           onToggleCollapse={sidebar.toggle}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 min-h-0">
+        {/* One surface for the content; the sidebar's edge is the hairline between. */}
+        <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-(--fuwari-card-bg)">
           <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
           <AdminMain />
         </main>
@@ -138,6 +142,7 @@ function AdminMain() {
           includeSearch={false}
           pathKey={(path) => {
             if (settingsSectionFromPath(path)) return "/admin/settings/*";
+            if (accessSectionFromPath(path)) return "/admin/access/*";
             const edit = path.match(/\/admin\/posts\/edit\/([^/]+)/);
             if (edit) return `/admin/posts/edit/${edit[1]}`;
             return path;
@@ -159,8 +164,8 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const { primaryAction, mobileTitle } = useAdminChrome();
 
   return (
-    <header className="lg:hidden shrink-0 mb-2 md:mb-4">
-      <div className="fuwari-card-base flex items-center gap-3 px-3 h-16">
+    <header className="lg:hidden shrink-0">
+      <div className="flex items-center gap-2 h-14 pl-1 pr-3 border-b border-(--admin-hairline)">
         <IconButton
           size="lg"
           onClick={onOpenSidebar}
@@ -168,7 +173,7 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         >
           <Menu size={20} strokeWidth={1.5} />
         </IconButton>
-        <h1 className="flex-1 min-w-0 truncate text-base font-medium fuwari-text-90">
+        <h1 className="flex-1 min-w-0 truncate text-(length:--admin-text-section) leading-(--admin-leading-section) font-semibold fuwari-text-90">
           <ClientOnly fallback={m.admin_layout_title()}>
             {mobileTitle ?? pageTitle}
           </ClientOnly>
@@ -176,6 +181,8 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         {primaryAction ? (
           <Button
             variant="primary"
+            icon={primaryAction.icon}
+            loading={primaryAction.loading}
             onClick={primaryAction.onClick}
             disabled={primaryAction.disabled}
           >

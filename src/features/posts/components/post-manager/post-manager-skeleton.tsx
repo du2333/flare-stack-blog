@@ -1,5 +1,6 @@
+import { AdminPage } from "@/components/admin/admin-page";
 import {
-  FrameHeaderSkeleton,
+  FrameActionSkeleton,
   FrameTabsSkeleton,
 } from "@/components/admin/frame-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,12 +75,16 @@ function PostsToolbarSkeleton() {
 
 export function PostManagerPageSkeleton() {
   return (
-    <div
-      className="post-manager admin-workspace admin-frame fuwari-card-base"
+    <AdminPage
+      className="post-manager"
       aria-busy="true"
+      title={m.admin_posts_title()}
+      count="—"
+      actions={<FrameActionSkeleton />}
+      toolbar={<PostsToolbarSkeleton />}
+      body="list"
+      scroll={false}
     >
-      <FrameHeaderSkeleton title={m.admin_posts_title()} />
-      <PostsToolbarSkeleton />
       <table className="post-list-table">
         <PostListColgroup />
         <thead aria-hidden="true">
@@ -97,6 +102,6 @@ export function PostManagerPageSkeleton() {
           <PostManagerSkeleton />
         </tbody>
       </table>
-    </div>
+    </AdminPage>
   );
 }

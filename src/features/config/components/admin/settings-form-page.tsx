@@ -10,6 +10,7 @@ import {
   SettingsShell,
 } from "@/features/config/components/admin/settings-shell";
 import { SettingsInnerSkeleton } from "@/features/config/components/admin/settings-skeleton";
+import { SettingsNav } from "@/features/config/components/admin/settings-nav";
 import { useSystemConfigForm } from "@/features/config/hooks/use-system-config-form";
 import type { PERSONALIZE_PAGE } from "@/features/config/utils/site-field-pages";
 
@@ -59,8 +60,14 @@ export function SettingsSectionFrame({
           children
         ) : (
           <SettingsShell
-            title={title}
-            nav={nav}
+            title={
+              personalize ? m.personalize_title() : m.settings_header_title()
+            }
+            section={nav}
+            regionLabel={title}
+            tabs={
+              nav === "personalize" ? undefined : <SettingsNav current={nav} />
+            }
             save={
               needsSave
                 ? {

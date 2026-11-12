@@ -4,8 +4,8 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
+import { Plus } from "lucide-react";
+import { AdminPage } from "@/components/admin/admin-page";
 import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
@@ -27,7 +27,6 @@ export function DashboardPage() {
   });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setPrimaryAction } = useAdminChrome();
 
   const createMutation = useMutation({
     mutationFn: () => orpcClient.posts.admin.create(),
@@ -50,17 +49,18 @@ export function DashboardPage() {
     ? m.admin_posts_creating()
     : m.admin_posts_create();
 
-  useEffect(() => {
-    setPrimaryAction({
-      label: createLabel,
-      onClick: () => createPost(),
-      disabled: isCreating,
-    });
-    return () => setPrimaryAction(null);
-  }, [createLabel, createPost, isCreating, setPrimaryAction]);
-
   return (
-    <div className="dashboard-workspace admin-workspace fuwari-card-base">
+    <AdminPage
+      className="dashboard-workspace"
+      title={m.admin_overview_title()}
+      primaryAction={{
+        label: createLabel,
+        icon: <Plus size={17} />,
+        onClick: () => createPost(),
+        loading: isCreating,
+      }}
+      body="list"
+    >
       <DashboardHero
         popularity={data.popularity}
         unrepliedTotal={data.unrepliedComments.total}
@@ -108,6 +108,6 @@ export function DashboardPage() {
           />
         </div>
       </div>
-    </div>
+    </AdminPage>
   );
 }

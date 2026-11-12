@@ -30,7 +30,9 @@ export function refreshUnrepliedComments(queryClient: QueryClient) {
 export function useHandledComments() {
   const queryClient = useQueryClient();
   const overviewKey = orpc.dashboard.overview.queryKey();
-  const pagesKey = orpc.dashboard.unrepliedComments.key();
+  // The sheet's pages only: the sidebar reads the same procedure as a plain
+  // query for its count, which this does not reshape.
+  const pagesKey = orpc.dashboard.unrepliedComments.key({ type: "infinite" });
 
   const unmarkMutation = useMutation({
     mutationFn: (id: number) => orpcClient.comments.admin.unmarkHandled({ id }),

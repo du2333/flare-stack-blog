@@ -4,29 +4,6 @@ import type { HTMLAttributes, ReactNode, Ref } from "react";
 import { cn } from "@/lib/utils";
 import "./page-heading.css";
 
-/** An Admin page's title, what the page is for, and its actions. */
-export function PageHeader({
-  title,
-  description,
-  actions,
-  className,
-}: {
-  title: ReactNode;
-  description?: ReactNode;
-  actions?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <header className={cn("fuwari-page-header", className)}>
-      <div className="fuwari-heading-text">
-        <h1>{title}</h1>
-        {description === undefined ? null : <p>{description}</p>}
-      </div>
-      {actions ? <div className="fuwari-heading-actions">{actions}</div> : null}
-    </header>
-  );
-}
-
 /** A section's title inside an Admin page, with an optional line and actions. */
 export function SectionHeading({
   title,

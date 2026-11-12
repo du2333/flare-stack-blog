@@ -1,33 +1,14 @@
-import type { ReactNode } from "react";
-import { PageHeader } from "@/components/ui/page-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import "@/components/ui/tabs.css";
 
 /**
- * A workspace's title row while it loads: the real title and description, a
- * placeholder for the primary action, so nothing moves when the page arrives.
+ * The primary action's place in a loading page's header (AdminPage
+ * `actions`), so nothing moves when the page arrives. The top bar has the
+ * action below 1024px, so it is hidden there.
  */
-export function FrameHeaderSkeleton({
-  title,
-  description = "—",
-  action = true,
-}: {
-  title: ReactNode;
-  description?: ReactNode;
-  action?: boolean;
-}) {
-  return (
-    <PageHeader
-      title={title}
-      description={description}
-      actions={
-        action ? (
-          <Skeleton className="h-(--fuwari-button-height) w-24 rounded-xl" />
-        ) : undefined
-      }
-    />
-  );
+export function FrameActionSkeleton() {
+  return <Skeleton className="h-9 w-24 rounded-lg max-lg:hidden" />;
 }
 
 /** Tabs as tall as the real ones, with placeholder labels. */

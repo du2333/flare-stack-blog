@@ -319,10 +319,6 @@ button.post-editor-summary:hover {
   outline-offset: 2px;
 }
 @media (max-width: 1023px) {
-  .admin-editor-layout {
-    padding: 0.5rem;
-    gap: 0.5rem;
-  }
   .admin-editor-layout > main > header {
     margin-bottom: 0;
   }
