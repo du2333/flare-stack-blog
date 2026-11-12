@@ -18,7 +18,7 @@ Every Admin page except the post editor and its history renders inside `AdminPag
 ```
 
 - **Row one**: `title`, `count`, `description`, `actions`, `primaryAction`. There is at most one primary action. Below 1024px the top bar shows the title and the primary action instead, and row one keeps only the description and the secondary actions.
-- **Row two** (optional): `tabs` and `tools`, under one hairline. A page that builds row two itself passes it as `toolbar` and uses `AdminPageToolbar` (or the `.admin-frame-toolbar` row) inside it; see `PostsToolbar`.
+- **Row two** (optional): `tabs` and `tools`, under one hairline. Below 1024px the frame puts the tools on their own line under the tabs, full width, and the tabs scroll sideways when they do not fit; a page never wraps row two itself. A page that builds row two itself passes it as `toolbar` and uses `AdminPageToolbar` (or the `.admin-frame-toolbar` row) inside it; see `PostsToolbar`.
 - **Primary action from deeper down**: a component inside the body can call `useAdminPrimaryAction(action)` (`admin-chrome.tsx`) instead; the header and the top bar show it while that component is mounted. The API Key tab of 「接入」 does this under the shared header.
 - **Head**: rows one and two stay on top while the body scrolls, with a hairline under them.
 - **Loading**: render the same `AdminPage` with the real title, `count="—"`, `actions={<FrameActionSkeleton />}` where the primary action will be, and skeleton rows as tall as the real ones (`PostManagerPageSkeleton`).
@@ -37,7 +37,7 @@ In a `form` body, put each setting in an `AdminFormRow` (`label`, `description`,
 
 Group settings under `AdminFormSection` (`title`, an optional `description`, `status` beside the title, `collapsible` with `summary` for a group that opens in place): the group's title is the section size, a hairline separates groups, and the last row of a group draws none. A setting with a control that needs a name, a description and an error wired up is a `SettingRow` (`src/features/config/components/admin/setting-row.tsx`, `SwitchRow` for an on/off setting, `SettingPart` for one labelled part of a multi-part setting). A multi-part setting (links, an account's fields) is one row whose control column stacks its parts.
 
-In a `list` body, a row is at most 56px tall, has a hairline under it and a light fill under the pointer, the whole row is the link or button, and its actions go into an `ActionMenu` at the end. `.admin-list-row` gives those values. An empty list is one sentence and one action (`EmptyState`), as `AdminPlaceholderPage` shows.
+In a `list` body, a row is at most 56px tall, has a hairline under it and a light fill under the pointer, the whole row is the link or button, and its actions go into an `ActionMenu` at the end. `.admin-list-row` gives those values. A row's hairline and fill end exactly at the edges of the list or section it is in, at every width: the row pads its own content by `--admin-row-x` (12px), and a list of rows never takes a negative margin to line its text up with a heading, because that pushes the rules past the section and past the page's inset (`--admin-frame-x`). In the overview's right column and the Comments page alike, the text sits 12px inside the rule. An empty list is one sentence and one action (`EmptyState`), as `AdminPlaceholderPage` shows.
 
 ## Values
 

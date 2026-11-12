@@ -82,8 +82,11 @@
 
     /* Density: a list row is never taller than --admin-row-max; the sidebar
        is --admin-sidebar-width wide with --admin-sidebar-row rows; a form
-       control is at most --admin-form-control-max wide. */
+       control is at most --admin-form-control-max wide. A list row pads its
+       own sides by --admin-row-x, so its rule and fill end at the edges of
+       the list it is in. */
     --admin-row-max: 56px;
+    --admin-row-x: 12px;
     --admin-sidebar-width: 232px;
     --admin-sidebar-row: 36px;
     --admin-sidebar-text: 14px;

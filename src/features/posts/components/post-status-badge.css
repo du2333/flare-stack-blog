@@ -1,0 +1,8 @@
+/* A published Post in a list: secondary text, no chip (post-status-badge.tsx). */
+.post-status-quiet {
+  flex-shrink: 0;
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  white-space: nowrap;
+}

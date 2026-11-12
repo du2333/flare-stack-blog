@@ -21,9 +21,6 @@
   outline: none;
 }
 
-.admin-comment-list {
-  margin-inline: -12px;
-}
 .admin-comment {
   border-bottom: 1px solid var(--admin-rule);
 }
@@ -31,7 +28,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px;
+  padding: 12px var(--admin-row-x);
   transition: background-color 150ms;
 }
 .admin-comment-row:hover,
@@ -138,19 +135,21 @@ a.admin-comment-source:hover .admin-comment-source-title {
   margin-top: -2px;
 }
 .admin-comment-editor {
-  padding: 0 12px 14px 56px;
+  padding: 0 var(--admin-row-x) 14px 56px;
+}
+/* The reply field takes the Admin field's look (field.css): a hairline, and in
+   focus a card-coloured field with a 1px ink ring, so the focus is visible. */
+.admin-comment-editor .comment-composer-input {
+  border-color: var(--admin-hairline);
+}
+.admin-comment-editor .comment-composer-input:focus-within {
+  background: var(--theme-surface);
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 1px var(--theme-accent);
 }
 
 /* Below 768px: each Comment stacks, actions in the menu, the editor full width. */
 @media (max-width: 767px) {
-  .admin-comments-toolbar {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
-  .admin-comments-toolbar > .admin-page-tools {
-    width: 100%;
-    padding-bottom: 10px;
-  }
   .admin-comments-search {
     flex: 1;
     width: auto;
@@ -158,16 +157,13 @@ a.admin-comment-source:hover .admin-comment-source-title {
   .admin-comments-post {
     width: 44%;
   }
-  .admin-comment-list {
-    margin-inline: 0;
-  }
   /* Avatar, byline and menu on top; the body and its page under them. */
   .admin-comment-row {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 6px 10px;
-    padding: 14px 0;
+    padding: 14px var(--admin-row-x);
   }
   .admin-comment-main {
     display: contents;
@@ -195,6 +191,6 @@ a.admin-comment-source:hover .admin-comment-source-title {
     line-clamp: 3;
   }
   .admin-comment-editor {
-    padding: 0 0 14px;
+    padding: 0 var(--admin-row-x) 14px;
   }
 }

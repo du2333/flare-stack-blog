@@ -218,9 +218,6 @@
 }
 
 /* Recent edits: list rows of the page frame. */
-.dashboard-recent-list {
-  margin-inline: -12px;
-}
 .dashboard-recent-post {
   --fuwari-badge-height: 20px;
   --fuwari-badge-padding-x: 8px;
@@ -251,9 +248,6 @@
 
 /* Comments: rows between hairlines, a little taller than a plain list row
    because they carry the body. */
-.dashboard-comments .dashboard-list {
-  margin-inline: -12px;
-}
 .dashboard-list > li {
   border-bottom: 1px solid var(--admin-rule);
 }
@@ -283,7 +277,7 @@
   display: flex;
   align-items: flex-start;
   gap: 2px;
-  padding-inline: 12px 8px;
+  padding-inline: var(--admin-row-x) 8px;
   transition: background-color 150ms;
 }
 .dashboard-comment-row:hover {

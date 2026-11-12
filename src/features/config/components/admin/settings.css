@@ -252,16 +252,12 @@
   gap: 24px;
   align-items: center;
   min-height: var(--admin-row-max);
-  padding: 10px 0;
+  padding: 10px var(--admin-row-x);
   border-bottom: 1px solid var(--admin-rule);
   transition: background-color 150ms;
 }
 .settings-maintenance-item:hover {
   background: var(--fuwari-btn-plain-bg-hover);
-  /* The fill reaches past the text's edge, as in the other lists. */
-  box-shadow:
-    -12px 0 0 var(--fuwari-btn-plain-bg-hover),
-    12px 0 0 var(--fuwari-btn-plain-bg-hover);
 }
 .settings-maintenance-item:last-child {
   border-bottom: 0;
