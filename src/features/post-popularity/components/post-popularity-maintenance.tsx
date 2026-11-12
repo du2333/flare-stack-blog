@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Flame } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MaintenanceItem } from "@/features/config/components/maintenance-item";
@@ -30,6 +31,7 @@ export function PostPopularityMaintenance() {
 
   return (
     <MaintenanceItem
+      icon={Flame}
       title={m.settings_maintenance_popularity_title()}
       lines={[
         <>
@@ -43,6 +45,8 @@ export function PostPopularityMaintenance() {
       ]}
       action={
         <Button
+          variant="outline"
+          size="sm"
           onClick={() => syncMutation.mutate()}
           loading={syncMutation.isPending}
         >

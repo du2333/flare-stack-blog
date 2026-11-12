@@ -15,6 +15,76 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+/* The title and the description as a search engine lists them. */
+.site-search-preview {
+  padding: 14px 16px 16px;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+}
+.site-search-preview-site {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.site-search-preview-site > span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--admin-surface);
+  box-shadow: 0 0 0 1px var(--admin-line);
+}
+.site-search-preview-site img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.site-search-preview-site > p {
+  display: grid;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+.site-search-preview-site :is(b, i) {
+  overflow: hidden;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-search-preview-site b {
+  font-weight: 500;
+  color: var(--admin-fg);
+}
+.site-search-preview-site i {
+  color: var(--admin-fg-3);
+}
+.site-search-preview-title {
+  margin-top: 8px;
+  overflow: hidden;
+  /* A result's headline, larger than the body; no role has this size. */
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--admin-fg);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-search-preview-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
 .site-add-link {
   margin-top: 8px;
 }
