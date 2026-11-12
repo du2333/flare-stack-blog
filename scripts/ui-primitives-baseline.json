@@ -13,7 +13,6 @@
   "src/features/config/components/admin/personalize/personalize-studio.tsx": 1,
   "src/features/config/components/admin/settings-disclosure.tsx": 1,
   "src/features/config/components/admin/site-studio.tsx": 1,
-  "src/features/friend-links/components/admin/friend-link-manager/friend-link-review.tsx": 2,
   "src/features/media/components/media-library/components/image-source-picker.tsx": 3,
   "src/features/media/components/media-library/components/media-collection.tsx": 2,
   "src/features/media/components/media-library/components/media-detail.tsx": 1,

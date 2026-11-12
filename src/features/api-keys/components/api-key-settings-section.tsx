@@ -1,5 +1,5 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
-import { Copy, Plus, Trash2 } from "lucide-react";
+import { CircleAlert, Copy, KeyRound, Plus, Trash2 } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAdminPrimaryAction } from "@/components/admin/admin-chrome";
@@ -91,13 +91,16 @@ export function ApiKeySettingsSection() {
   };
   return (
     <div className="settings-keys">
-      <KeysNote />
+      {keys.length > 0 ? <KeysNote /> : null}
       <div className="key-list" aria-busy={isLoading}>
         {isError ? (
           <EmptyState
+            variant="tile"
+            role="alert"
+            icon={CircleAlert}
             description={m.settings_design_load_failed()}
             action={
-              <Button onClick={() => void reload()}>
+              <Button variant="outline" size="sm" onClick={() => void reload()}>
                 {m.settings_design_retry()}
               </Button>
             }
@@ -113,10 +116,12 @@ export function ApiKeySettingsSection() {
           </div>
         ) : keys.length === 0 ? (
           <EmptyState
-            size="compact"
-            description={m.settings_api_keys_empty()}
+            variant="tile"
+            icon={KeyRound}
+            title={m.settings_api_keys_empty()}
+            description={m.settings_design_keys_hint()}
             action={
-              <Button onClick={openCreate}>
+              <Button variant="outline" size="sm" onClick={openCreate}>
                 {m.settings_api_keys_create()}
               </Button>
             }
@@ -227,15 +232,15 @@ export function ApiKeySettingsSection() {
                 <p className="text-sm fuwari-text-50">
                   {m.settings_api_keys_created_hint()}
                 </p>
-                <code className="block break-all rounded-xl bg-(--fuwari-btn-regular-bg) p-4 text-sm">
+                <code className="block break-all rounded-xl bg-(--admin-sunken) p-4 text-sm shadow-[inset_0_0_0_1px_var(--admin-line)]">
                   {revealedKey}
                 </code>
                 <div className="flex justify-end gap-2">
-                  <Button onClick={close}>
+                  <Button variant="outline" onClick={close}>
                     {m.settings_api_keys_dismiss()}
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="ink"
                     icon={<Copy size={16} />}
                     onClick={async () => {
                       try {
@@ -269,12 +274,16 @@ export function ApiKeySettingsSection() {
                   />
                 </FormField>
                 <div className="flex justify-end gap-2">
-                  <Button onClick={close} disabled={isCreating}>
+                  <Button
+                    variant="outline"
+                    onClick={close}
+                    disabled={isCreating}
+                  >
                     {m.common_cancel()}
                   </Button>
                   <Button
                     type="submit"
-                    variant="primary"
+                    variant="ink"
                     disabled={!name.trim()}
                     loading={isCreating}
                   >

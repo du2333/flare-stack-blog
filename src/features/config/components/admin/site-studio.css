@@ -89,12 +89,40 @@
   justify-content: start;
 }
 
-/* The six icons across the group, three to a row on a phone. */
+/* The six icons, two to a row: what each is, the file in use, and 更换. */
 .site-icon-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 28px;
+  padding-top: 10px;
+}
+.site-icon {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+}
+.site-icon-preview {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+}
+.site-icon-preview img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.site-icon-name {
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg);
+  overflow-wrap: anywhere;
 }
 
 /* Where the presentation settings went: a hint at the foot of the page. */
@@ -110,9 +138,9 @@
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
 }
-@media (max-width: 1023px) {
+@media (max-width: 700px) {
   .site-icon-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 450px) {

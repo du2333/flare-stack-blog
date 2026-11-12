@@ -1,5 +1,6 @@
 import { ImageOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
+import { Badge } from "@/components/ui/badge";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
 import { formatBytes, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -25,6 +26,18 @@ function MediaThumbnail({ asset }: { asset: MediaAsset }) {
       )}
     </span>
   );
+}
+
+/**
+ * How wide a tile is for its height: the image's own shape, kept between a
+ * tall portrait and a wide banner so no tile is a sliver or takes a row.
+ */
+export function tileRatio(asset: {
+  width: number | null;
+  height: number | null;
+}) {
+  if (!asset.width || !asset.height) return 1.4;
+  return Math.min(2.4, Math.max(0.62, asset.width / asset.height));
 }
 
 /** A file name cut in the middle: the ellipsis falls before its last characters and extension. */
@@ -121,18 +134,25 @@ export function MediaCollection({
           key={asset.key}
           type="button"
           className="media-gallery-item"
+          style={{ "--media-ratio": tileRatio(asset) } as CSSProperties}
           data-media-key={asset.key}
           aria-pressed={asset.key === selectedKey}
+          aria-label={asset.fileName}
           onClick={(event) => onSelect(asset, event.currentTarget)}
         >
           <MediaThumbnail asset={asset} />
-          <span className="media-gallery-name">
+          {mediaUsageOf(asset) === "none" ? (
+            <Badge tone="warning" size="sm" className="media-gallery-flag">
+              {m.media_unreferenced()}
+            </Badge>
+          ) : null}
+          <span className="media-gallery-caption" aria-hidden="true">
             <MediaName name={asset.fileName} />
-          </span>
-          <span className="media-gallery-meta">
-            {usage(asset)}
-            <span>·</span>
-            {formatBytes(asset.sizeInBytes)}
+            <span className="media-gallery-meta">
+              {usage(asset)}
+              <span>·</span>
+              {formatBytes(asset.sizeInBytes)}
+            </span>
           </span>
         </button>
       ))}

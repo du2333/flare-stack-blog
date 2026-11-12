@@ -240,6 +240,43 @@ export function AdminPageToolbar({
 }
 
 /**
+ * Master and detail in a `split` body: the list on the left, what is chosen
+ * on the right, each scrolling on its own. Below 768px only one shows:
+ * the list, or the detail once `detailOpen` is set (the detail's own back
+ * button clears it). Pass `inset={false}` to the page.
+ */
+export function AdminSplit({
+  list,
+  detail,
+  detailOpen,
+  listLabel,
+  detailLabel,
+  className,
+}: {
+  list: ReactNode;
+  detail: ReactNode;
+  /** On a phone: show the detail instead of the list. */
+  detailOpen: boolean;
+  listLabel: string;
+  detailLabel: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("admin-split", className)}
+      data-detail={detailOpen ? "" : undefined}
+    >
+      <aside className="admin-split-list" aria-label={listLabel}>
+        {list}
+      </aside>
+      <section className="admin-split-detail" aria-label={detailLabel}>
+        {detail}
+      </section>
+    </div>
+  );
+}
+
+/**
  * One setting in a `form` body: its name and description on the left, the
  * control on the right (at most 480px) from 1024px; stacked below.
  */

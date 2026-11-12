@@ -4,11 +4,20 @@
  * menu; a phone keeps the name and the menu and puts the dates under the name.
  */
 .settings-keys {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   min-width: 0;
 }
+.key-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 .key-note {
-  margin-bottom: 12px;
-  color: var(--fuwari-fg-50);
+  margin-bottom: 8px;
+  padding: 6px var(--admin-row-x) 0;
+  color: var(--admin-fg-3);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
 }
@@ -71,7 +80,7 @@
   justify-content: flex-end;
 }
 .key-count {
-  padding-top: 12px;
+  padding: 12px var(--admin-row-x) 4px;
   color: var(--fuwari-fg-50);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);

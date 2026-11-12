@@ -26,14 +26,6 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...rest }: { children: ReactNode }) =>
     createElement("a", rest, children),
 }));
-vi.mock("@/components/common/turnstile", () => ({
-  Turnstile: () => null,
-  useTurnstile: () => ({
-    isPending: false,
-    reset: vi.fn(),
-    turnstileProps: {},
-  }),
-}));
 vi.mock("@/features/dashboard/hooks/use-handled-comments", () => ({
   refreshUnrepliedComments: vi.fn(async () => {}),
   useHandledComments: () => ({ markHandledAsync: calls.markHandled }),

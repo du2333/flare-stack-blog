@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
-import { Search, ShieldCheck, UserRound } from "lucide-react";
+import { CircleAlert, Search, ShieldCheck, UserRound } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { SearchField } from "@/components/ui/search-field";
-import { Select } from "@/components/ui/select";
+import DropdownMenu from "@/components/ui/dropdown-menu";
 import { SettingsShell } from "@/features/config/components/admin/settings-shell";
 import { useContentMotion } from "@/hooks/use-motion";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
@@ -56,7 +56,8 @@ export function MutedUsersSettingsSection() {
     <>
       <SearchField
         ref={searchRef}
-        className="muted-search"
+        variant="raised"
+        shortcut="/"
         value={search}
         onValueChange={setSearch}
         placeholder={m.muted_manager_search()}
@@ -64,18 +65,17 @@ export function MutedUsersSettingsSection() {
         maxLength={200}
         clearLabel={m.muted_manager_clear()}
       />
-      <div className="muted-sort">
-        <span>{m.muted_manager_sort()}</span>
-        <Select
-          value={sort}
-          onChange={setSort}
-          options={[
-            { value: "recent", label: m.muted_manager_recent() },
-            { value: "oldest", label: m.muted_manager_oldest() },
-            { value: "name", label: m.muted_manager_name() },
-          ]}
-        />
-      </div>
+      <DropdownMenu
+        variant="chip"
+        ariaLabel={m.muted_manager_sort()}
+        value={sort}
+        onChange={setSort}
+        options={[
+          { value: "recent", label: m.muted_manager_recent() },
+          { value: "oldest", label: m.muted_manager_oldest() },
+          { value: "name", label: m.muted_manager_name() },
+        ]}
+      />
     </>
   );
   return (
@@ -93,10 +93,16 @@ export function MutedUsersSettingsSection() {
         <div ref={contentRef} aria-busy={isPending}>
           {isError ? (
             <EmptyState
+              variant="tile"
               role="alert"
+              icon={CircleAlert}
               description={m.muted_users_toast_error()}
               action={
-                <Button onClick={() => void refetch()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void refetch()}
+                >
                   {m.muted_manager_retry()}
                 </Button>
               }
@@ -105,6 +111,7 @@ export function MutedUsersSettingsSection() {
             <MutedUsersListSkeleton />
           ) : items.length === 0 ? (
             <EmptyState
+              variant="tile"
               icon={data?.length ? Search : ShieldCheck}
               title={
                 data?.length
@@ -118,7 +125,7 @@ export function MutedUsersSettingsSection() {
               }
               action={
                 search && (
-                  <Button onClick={clearSearch}>
+                  <Button variant="outline" size="sm" onClick={clearSearch}>
                     {m.muted_manager_clear()}
                   </Button>
                 )
@@ -142,6 +149,7 @@ export function MutedUsersSettingsSection() {
                     </ClientOnly>
                   </p>
                   <Button
+                    variant="outline"
                     size="sm"
                     disabled={isUnmuting}
                     onClick={() => setPending(user)}
@@ -157,12 +165,12 @@ export function MutedUsersSettingsSection() {
           )}
         </div>
         <footer className="muted-footer" role="status">
-          {!isPending &&
-            !isError &&
-            m.muted_manager_results({
-              shown: items.length,
-              total: data?.length ?? 0,
-            })}
+          {!isPending && !isError && search.trim() && items.length > 0
+            ? m.muted_manager_results({
+                shown: items.length,
+                total: data?.length ?? 0,
+              })
+            : null}
         </footer>
         <ConfirmationModal
           isOpen={pending !== null}

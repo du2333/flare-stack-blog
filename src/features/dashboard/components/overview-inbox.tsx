@@ -9,15 +9,8 @@ import {
   Reply,
   X,
 } from "lucide-react";
-import {
-  type ReactNode,
-  type RefObject,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Turnstile, useTurnstile } from "@/components/common/turnstile";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Textarea } from "@/components/ui/input";
@@ -127,7 +120,8 @@ function Face({
 /* ── Unreplied Comments ── */
 
 /**
- * The latest Comments awaiting an Admin: reply in place (through Turnstile)
+ * The latest Comments awaiting an Admin: reply in place (the API does not
+ * challenge an Admin)
  * or mark one handled, with an undo in the toast. A Comment leaves the list
  * once it is answered either way; the Comments page has the rest.
  */
@@ -150,11 +144,6 @@ export function OverviewComments({
   const { createComment, isCreating } = useComments(
     replying ? commentTargetOf(replying) : undefined,
   );
-  const {
-    isPending: challengePending,
-    reset: resetChallenge,
-    turnstileProps,
-  } = useTurnstile("comment");
 
   const shown = comments.filter((comment) => !gone.has(comment.id));
   const left =
@@ -165,7 +154,7 @@ export function OverviewComments({
     row: HTMLElement | null,
   ) => {
     const content = (drafts[comment.id] ?? "").trim();
-    if (!content || isCreating || challengePending) return;
+    if (!content || isCreating) return;
     try {
       await createComment(
         createCommentInput(commentTargetOf(comment), {
@@ -177,8 +166,6 @@ export function OverviewComments({
     } catch {
       // The draft stays; the hook has said what went wrong.
       return;
-    } finally {
-      resetChallenge();
     }
     setDrafts(({ [comment.id]: _sent, ...rest }) => rest);
     setReplyingId(null);
@@ -232,12 +219,6 @@ export function OverviewComments({
                 setDrafts((previous) => ({ ...previous, [comment.id]: value }))
               }
               sending={isCreating && replyingId === comment.id}
-              challengePending={challengePending}
-              challenge={
-                replyingId === comment.id ? (
-                  <Turnstile {...turnstileProps} size="compact" />
-                ) : null
-              }
               onReply={() =>
                 setReplyingId(replyingId === comment.id ? null : comment.id)
               }
@@ -258,8 +239,6 @@ function CommentRow({
   draft,
   onDraftChange,
   sending,
-  challengePending,
-  challenge,
   onReply,
   onSend,
   onHandled,
@@ -270,8 +249,6 @@ function CommentRow({
   draft: string;
   onDraftChange: (value: string) => void;
   sending: boolean;
-  challengePending: boolean;
-  challenge: ReactNode;
   onReply: () => void;
   onSend: (row: HTMLElement | null) => void;
   onHandled: (row: HTMLElement | null) => void;
@@ -291,7 +268,7 @@ function CommentRow({
       replyButton.current?.focus({ preventScroll: true });
     wasReplying.current = replying;
   }, [replying]);
-  const canSend = Boolean(draft.trim()) && !challengePending;
+  const canSend = Boolean(draft.trim());
 
   return (
     <li
@@ -365,7 +342,6 @@ function CommentRow({
               />
               <div className="overview-reply-foot">
                 <span>{m.admin_overview_reply_hint()}</span>
-                {challenge}
                 <Button variant="quiet" size="xs" onClick={onReply}>
                   {m.comments_editor_cancel()}
                 </Button>
