@@ -459,7 +459,9 @@
   "admin_overview_activity_anonymous": "匿名用户",
   "admin_overview_all_posts": "全部文章",
   "admin_overview_email_needs_setup": "邮件未配置",
+  "admin_overview_email_needs_setup_desc": "新评论和友链申请不会通过邮件提醒",
   "admin_overview_default_site_identity": "站点还是默认信息",
+  "admin_overview_default_site_identity_desc": "请改为自己的站点名称和作者",
   "admin_overview_comment_mute": "禁言该用户",
   "admin_overview_reply_sent": "回复已发送",
   "admin_overview_view_muted_users": "查看禁言名单",
@@ -1501,6 +1503,7 @@
   "admin_overview_popularity_sync_failed_desc": "Umami 没有返回数据或写入失败，请稍后重试，详细原因见维护页",
   "admin_overview_popularity_sync_unreachable_desc": "没有连上服务器，请检查网络后重试",
   "admin_overview_update_available": "有新版本 {version}",
+  "admin_overview_update_available_desc": "当前是 v{current}，查看更新内容",
   "dashboard_stats_label": "站点状况",
   "dashboard_stat_posts": "文章",
   "dashboard_stat_drafts": [

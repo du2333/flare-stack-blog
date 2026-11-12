@@ -107,7 +107,7 @@ it("names a commenter without a snippet or a name", () => {
   expect(tile?.latest).toBe(m.admin_overview_activity_anonymous());
 });
 
-it("adds a settings tile with the notice count and the first notice, linked to where it is fixed", () => {
+it("adds a settings tile with the notice count, the first notice and every notice behind it", () => {
   const data = {
     ...NEW_SITE,
     adminEmailNeedsSetup: true,
@@ -119,8 +119,37 @@ it("adds a settings tile with the notice count and the first notice, linked to w
     key: "notices",
     count: 2,
     latest: m.admin_overview_email_needs_setup(),
-    target: { kind: "settings", to: "/admin/settings/notifications" },
   });
+  expect(
+    tile?.key === "notices" &&
+      tile.notices.map((notice) => [
+        notice.title,
+        notice.description,
+        notice.target,
+      ]),
+  ).toEqual([
+    [
+      m.admin_overview_email_needs_setup(),
+      m.admin_overview_email_needs_setup_desc(),
+      { kind: "settings", to: "/admin/settings/notifications" },
+    ],
+    [
+      m.admin_overview_default_site_identity(),
+      m.admin_overview_default_site_identity_desc(),
+      { kind: "settings", to: "/admin/settings/site" },
+    ],
+  ]);
+});
+
+it("explains the new version with the running one", () => {
+  const [notice] = settingsNotices({
+    ...NEW_SITE,
+    update: { latestVersion: "9.9.9", releaseUrl: "https://example.com/r" },
+  });
+  expect(notice?.description).toBe(
+    m.admin_overview_update_available_desc({ current: __APP_VERSION__ }),
+  );
+  expect(notice?.description).toContain(__APP_VERSION__);
 });
 
 it("orders the notices: a failed sync first, an update last", () => {

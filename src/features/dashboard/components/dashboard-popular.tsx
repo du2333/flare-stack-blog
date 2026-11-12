@@ -14,12 +14,12 @@ import { RankedBarList, RankedBarRow } from "./ranked-bar-list";
 /** The most-read public Posts of the popularity snapshot's 30 days. */
 export function DashboardPopular({
   popularity,
-  expired = false,
+  alert = null,
   className,
 }: {
   popularity: DashboardOverview["popularity"];
-  /** The snapshot is stale: say so here, with the sync at hand. */
-  expired?: boolean;
+  /** Failed sync or stale snapshot: say so here, with the sync at hand. */
+  alert?: DashboardOverview["popularityAlert"];
   className?: string;
 }) {
   const { state, topPosts, windowStart, windowEnd } = popularity;
@@ -36,7 +36,7 @@ export function DashboardPopular({
         title={m.dashboard_popular_title()}
         description={window}
       />
-      {expired ? <PopularityExpiredNotice /> : null}
+      {alert ? <PopularityExpiredNotice alert={alert} /> : null}
       {state === "unconfigured" ? (
         <EmptyState
           size="compact"

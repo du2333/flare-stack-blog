@@ -13,11 +13,20 @@ import {
 import "@/components/ui/callout.css";
 
 /**
- * The expired snapshot, synced from the notice itself. A failed sync swaps in
- * its reason and a way to the maintenance page, where the details are.
+ * The popularity alert of the popular list, synced from the notice itself:
+ * the expired snapshot, or the failure the last sync recorded (it wins when
+ * both hold). A sync that fails here swaps in its own reason; either way the
+ * notice has a way to the maintenance page, where the details are.
  */
-export function PopularityExpiredNotice() {
-  const [failure, setFailure] = useState<PopularitySyncFailure | null>(null);
+export function PopularityExpiredNotice({
+  alert,
+}: {
+  alert: "failed" | "expired";
+}) {
+  const [syncFailure, setFailure] = useState<PopularitySyncFailure | null>(
+    null,
+  );
+  const failure = syncFailure ?? (alert === "failed" ? "SYNC_FAILED" : null);
   const sync = usePostPopularitySync({
     onSuccess: () => setFailure(null),
     onError: (error) => setFailure(popularitySyncFailure(error)),

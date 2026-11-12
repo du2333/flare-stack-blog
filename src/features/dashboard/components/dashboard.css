@@ -42,6 +42,17 @@
   border-radius: var(--radius-xl);
   transition: background-color 150ms;
 }
+/* The settings tile is a menu button when there are several notices. */
+button.glance-tile {
+  width: 100%;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.glance-tile[aria-expanded="true"] {
+  background: var(--dashboard-hover);
+}
 .glance-tile:hover {
   background: var(--dashboard-hover);
 }
@@ -350,15 +361,53 @@
   padding: 0 0 12px 44px;
 }
 
-/* Under this width the sidebar leaves too little for two columns to read:
-   the columns go, and what needs a reply comes first. */
+/* Under this width the sidebar leaves too little for two columns to read. */
 @container dashboard (max-width: 1099px) {
   .glance-grid {
     --dashboard-gutter: 28px;
     grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
   }
 }
+/*
+ * One column, what needs a reply first, when the page is narrow (a container
+ * query) or the window is (the sidebar is a drawer below 1024px, so the page
+ * is wide there but two columns would still be cramped). CSS cannot join a
+ * media and a container condition with "or", so the rules are written twice;
+ * change both.
+ */
 @container dashboard (max-width: 779px) {
+  .glance-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .glance-col {
+    display: contents;
+  }
+  .glance-grid .dashboard-section {
+    margin-top: var(--dashboard-section-space);
+    padding-top: var(--dashboard-section-space);
+    border-top: 1px solid var(--admin-rule);
+  }
+  .glance-grid .glance-slot-comments {
+    order: 1;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .glance-slot-status {
+    order: 2;
+  }
+  .glance-slot-popular {
+    order: 3;
+  }
+  .glance-slot-activity {
+    order: 4;
+  }
+  .glance-slot-recent {
+    order: 5;
+  }
+}
+@media (max-width: 1023px) {
   .glance-grid {
     display: flex;
     flex-direction: column;

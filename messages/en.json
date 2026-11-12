@@ -468,7 +468,9 @@
   "admin_overview_activity_anonymous": "Anonymous",
   "admin_overview_all_posts": "All posts",
   "admin_overview_email_needs_setup": "Email is not configured",
+  "admin_overview_email_needs_setup_desc": "You won't get emails about new comments or friend link requests",
   "admin_overview_default_site_identity": "Site still uses the default name",
+  "admin_overview_default_site_identity_desc": "Set your own site title and author",
   "admin_overview_comment_mute": "Mute this user",
   "admin_overview_reply_sent": "Reply sent",
   "admin_overview_view_muted_users": "View muted users",
@@ -1510,6 +1512,7 @@
   "admin_overview_popularity_sync_failed_desc": "Umami returned no data or the snapshot could not be saved. Try again later; the maintenance page has the details",
   "admin_overview_popularity_sync_unreachable_desc": "The server could not be reached. Check the network and try again",
   "admin_overview_update_available": "Version {version} is available",
+  "admin_overview_update_available_desc": "You're on v{current}. See what's new",
   "dashboard_stats_label": "Site status",
   "dashboard_stat_posts": "Posts",
   "dashboard_stat_drafts": [
