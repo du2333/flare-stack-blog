@@ -1,15 +1,21 @@
 import type { SiteConfig } from "@/features/config/site-config.schema";
+import type { SiteConfigDraft } from "./site-config-draft";
 import type { ThemeOptionValues } from "./theme-shell";
 import { resolveThemeOptions, selectTheme, THEMES, type Theme } from "./themes";
 import {
+  THEME_PREVIEW_DRAFT_PARAM,
   THEME_PREVIEW_OPTIONS_PARAM,
   THEME_PREVIEW_PARAM,
 } from "./utils/theme-preview-params";
 
-/** A Theme the Admin is looking at before saving it, with its options. */
+/**
+ * A Theme the Admin is looking at before saving it, with its options and the
+ * unsaved presentation fields of Site Config that replace the saved ones.
+ */
 export interface ThemePreview {
   id: string;
   options: ThemeOptionValues;
+  draft: SiteConfigDraft;
 }
 
 function parseOptions(value: unknown): Record<string, unknown> {
@@ -33,7 +39,7 @@ function parseOptions(value: unknown): Record<string, unknown> {
 export function readThemePreview(
   search: Readonly<Record<string, unknown>>,
   themes: ReadonlyArray<Theme> = THEMES,
-): ThemePreview | null {
+): Omit<ThemePreview, "draft"> | null {
   const id = search[THEME_PREVIEW_PARAM];
   const theme = themes.find((candidate) => candidate.id === id);
   if (!theme) return null;
@@ -44,6 +50,16 @@ export function readThemePreview(
       parseOptions(search[THEME_PREVIEW_OPTIONS_PARAM]),
     ),
   };
+}
+
+/**
+ * The draft of presentation fields the search carries. Its schemas load only
+ * for an Admin's preview that has one, so they stay out of a visitor's page.
+ */
+async function readDraft(value: unknown): Promise<SiteConfigDraft> {
+  if (value === undefined) return {};
+  const { readSiteConfigDraft } = await import("./site-config-draft");
+  return readSiteConfigDraft(value);
 }
 
 /**
@@ -58,7 +74,24 @@ export async function resolveThemePreview(
 ): Promise<ThemePreview | null> {
   const preview = readThemePreview(search, themes);
   if (!preview) return null;
-  return (await viewerIsAdmin()) ? preview : null;
+  if (!(await viewerIsAdmin())) return null;
+  return {
+    ...preview,
+    draft: await readDraft(search[THEME_PREVIEW_DRAFT_PARAM]),
+  };
+}
+
+/**
+ * The Site Config the public pages render: the saved one with the preview's
+ * draft over it. Without a draft it is the saved object itself.
+ */
+export function previewSiteConfig(
+  siteConfig: SiteConfig,
+  preview: ThemePreview | null | undefined,
+): SiteConfig {
+  const draft = preview?.draft;
+  if (!draft || Object.keys(draft).length === 0) return siteConfig;
+  return { ...siteConfig, ...draft };
 }
 
 /** The Theme the public pages show: the previewed one, else the saved one. */

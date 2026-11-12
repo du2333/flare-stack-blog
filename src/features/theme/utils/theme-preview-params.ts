@@ -1,14 +1,22 @@
+import type { SiteConfigDraft } from "../site-config-draft";
+
 /**
  * A Theme preview is asked for on a public address: `themePreview` names the
- * Theme, `themePreviewOptions` carries its options as JSON. Only an Admin's
- * request renders it, and none is ever cached (`workersCacheRoute`). Kept
- * apart from the registry so the default fetch handler can read the names
- * without loading the shells.
+ * Theme, `themePreviewOptions` carries its options as JSON, and
+ * `themePreviewDraft` may carry unsaved presentation fields of Site Config as
+ * JSON (`SiteConfigDraft`). Only an Admin's request renders it, and none is
+ * ever cached (`workersCacheRoute`). Kept apart from the registry so the
+ * default fetch handler can read the names without loading the shells.
  */
 export const THEME_PREVIEW_PARAM = "themePreview";
 export const THEME_PREVIEW_OPTIONS_PARAM = "themePreviewOptions";
+export const THEME_PREVIEW_DRAFT_PARAM = "themePreviewDraft";
 
-const PREVIEW_PARAMS = [THEME_PREVIEW_PARAM, THEME_PREVIEW_OPTIONS_PARAM];
+const PREVIEW_PARAMS = [
+  THEME_PREVIEW_PARAM,
+  THEME_PREVIEW_OPTIONS_PARAM,
+  THEME_PREVIEW_DRAFT_PARAM,
+];
 
 /** Whether the address asks for a preview, whatever the values say. */
 export function hasThemePreviewParams(url: URL): boolean {
@@ -32,15 +40,22 @@ export function hasSessionCookie(headers: Headers): boolean {
   return SESSION_COOKIE.test(headers.get("Cookie") ?? "");
 }
 
-/** The home page showing a Theme with these options. */
+/**
+ * The home page showing a Theme with these options and, when given, a draft
+ * of the presentation fields in place of the saved ones.
+ */
 export function themePreviewHref(
   themeId: string,
   options: Readonly<Record<string, unknown>>,
+  draft?: Readonly<SiteConfigDraft>,
 ): string {
   const search = new URLSearchParams({
     [THEME_PREVIEW_PARAM]: themeId,
     [THEME_PREVIEW_OPTIONS_PARAM]: JSON.stringify(options),
   });
+  if (draft && Object.keys(draft).length > 0) {
+    search.set(THEME_PREVIEW_DRAFT_PARAM, JSON.stringify(draft));
+  }
   return `/?${search}`;
 }
 
@@ -55,11 +70,11 @@ export function carryThemePreview(
 ): Record<string, unknown> {
   if (from[THEME_PREVIEW_PARAM] === undefined) return next;
   if (PREVIEW_PARAMS.some((name) => name in next)) return next;
-  return {
-    ...next,
-    [THEME_PREVIEW_PARAM]: from[THEME_PREVIEW_PARAM],
-    [THEME_PREVIEW_OPTIONS_PARAM]: from[THEME_PREVIEW_OPTIONS_PARAM],
-  };
+  const carried = { ...next };
+  for (const name of PREVIEW_PARAMS) {
+    if (from[name] !== undefined) carried[name] = from[name];
+  }
+  return carried;
 }
 
 export function withoutThemePreview(
@@ -69,6 +84,7 @@ export function withoutThemePreview(
     ...search,
     [THEME_PREVIEW_PARAM]: undefined,
     [THEME_PREVIEW_OPTIONS_PARAM]: undefined,
+    [THEME_PREVIEW_DRAFT_PARAM]: undefined,
   };
 }
 

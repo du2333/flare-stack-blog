@@ -12,7 +12,10 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { ColourSchemeProvider } from "@/components/common/colour-scheme-provider";
 import { getFuwariThemeStyle } from "@/components/layout/document-style";
 import { siteConfigQuery } from "@/features/config/queries";
-import { resolveThemePreview } from "@/features/theme/theme-preview";
+import {
+  previewSiteConfig,
+  resolveThemePreview,
+} from "@/features/theme/theme-preview";
 import { documentThemeId } from "@/features/theme/utils/document-theme";
 import { previewViewerIsAdmin } from "@/features/theme/utils/preview-viewer";
 import { getLocale } from "@/paraglide/runtime";
@@ -38,14 +41,18 @@ const AppDevtools = lazy(
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: async ({ context, location }) => {
-    const siteConfig =
+    const savedSiteConfig =
       await context.queryClient.ensureQueryData(siteConfigQuery);
     // Kept in the route context, never in the Site Config query, so nothing
-    // else rendered from the same data shows it.
+    // else rendered from the same data shows it: the preview, and the Site
+    // Config with the preview's draft over the saved fields.
     const themePreview = await resolveThemePreview(location.search, () =>
       previewViewerIsAdmin(context.queryClient),
     );
-    return { siteConfig, themePreview };
+    return {
+      siteConfig: previewSiteConfig(savedSiteConfig, themePreview),
+      themePreview,
+    };
   },
   loader: async ({ context }) => {
     return {

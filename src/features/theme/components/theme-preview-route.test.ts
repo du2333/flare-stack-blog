@@ -105,6 +105,25 @@ describe("navigation while previewing", () => {
     );
   });
 
+  it("keeps a draft of Site Config with it", async () => {
+    const draft = { tagline: "Draft line", primaryHue: 120 };
+    const router = await routerAt(
+      themePreviewHref(fixtureTheme.id, { marker: "off" }, draft),
+    );
+    expect(router.buildLocation({ to: "/posts" }).search).toEqual({
+      themePreview: "fixture",
+      themePreviewOptions: { marker: "off" },
+      themePreviewDraft: draft,
+    });
+    expect(
+      router.buildLocation({
+        to: ".",
+        search: (previous: Record<string, unknown>) =>
+          withoutThemePreview(previous),
+      }).href,
+    ).toBe("/");
+  });
+
   it("leaves it behind for the Admin and on leaving the preview", async () => {
     const router = await routerAt(href);
     expect(router.buildLocation({ to: "/admin" }).href).toBe("/admin");
