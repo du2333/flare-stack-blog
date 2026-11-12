@@ -82,7 +82,6 @@ function NoticesTile({
       label={tile.label}
       trigger={body}
       triggerClassName="glance-tile"
-      placement="bottom-start"
     >
       {notices.map((notice) => (
         <MenuItem key={notice.key} onSelect={() => open(notice)}>
