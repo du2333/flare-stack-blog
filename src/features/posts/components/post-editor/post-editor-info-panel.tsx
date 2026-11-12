@@ -8,8 +8,8 @@ import { Sheet } from "@/components/ui/sheet";
 import { m } from "@/paraglide/messages";
 
 // A non-modal inspector: media pickers and select menus may portal outside it.
-// Below lg its heading and footer are hidden: the Admin top bar carries the
-// title and the Done button (see post-editor.css).
+// From 1024px it is docked beside the document, which moves over for it;
+// below that it covers the document (see post-editor.css).
 export function PostEditorInfoPanel({
   open,
   onClose,
@@ -30,13 +30,7 @@ export function PostEditorInfoPanel({
       backdrop
       backdropClassName="post-editor-info-backdrop"
       as="aside"
-      initialFocus={() => {
-        const close = closeRef.current;
-        // Below lg the top bar closes the panel, so the panel itself takes focus.
-        return close && close.getClientRects().length > 0
-          ? close
-          : (close?.closest<HTMLElement>(".post-editor-info-panel") ?? null);
-      }}
+      initialFocus={() => closeRef.current}
       className="post-editor-info-panel"
       aria-labelledby={titleId}
     >

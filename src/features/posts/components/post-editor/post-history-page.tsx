@@ -6,8 +6,7 @@ import {
   LockKeyhole,
   Trash2,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -28,7 +27,6 @@ export function PostHistoryPage({
   revisionId: number;
 }) {
   const navigate = useNavigate();
-  const { setPrimaryAction, setMobileTitle } = useAdminChrome();
   // Below 1024px one of the two panes shows at a time.
   const [pane, setPane] = useState<"content" | "list">("content");
 
@@ -64,28 +62,10 @@ export function PostHistoryPage({
     ? formatMonthDayTime(history.selectedRevision.createdAt)
     : "";
 
-  const restoreRef = useRef(history.requestRestore);
-  restoreRef.current = history.requestRestore;
   const canRestore =
     history.selectedRevision != null &&
     !history.isRestoring &&
     !history.isDeleting;
-
-  useEffect(() => {
-    setMobileTitle(m.editor_history_list_title());
-    setPrimaryAction({
-      label: m.editor_history_restore_this(),
-      onClick: () => restoreRef.current(),
-      disabled: !canRestore,
-    });
-  }, [canRestore, setMobileTitle, setPrimaryAction]);
-
-  useEffect(() => {
-    return () => {
-      setMobileTitle(null);
-      setPrimaryAction(null);
-    };
-  }, [setMobileTitle, setPrimaryAction]);
 
   // After an Edit Conflict, the next restore replaces the newer save, and the
   // confirmation says so.
@@ -158,7 +138,6 @@ export function PostHistoryPage({
             onClick={history.requestRestore}
             disabled={!canRestore}
             loading={history.isRestoring}
-            className="hidden lg:inline-flex"
           >
             {m.editor_history_restore_this()}
           </Button>
@@ -222,23 +201,13 @@ export function PostHistoryPage({
 
 /** Shown when the Post has no Post Revision, so there is nothing to open. */
 export function PostHistoryEmpty({ postId }: { postId: number }) {
-  const { setPrimaryAction, setMobileTitle } = useAdminChrome();
-
-  useEffect(() => {
-    setMobileTitle(m.editor_history_list_title());
-    setPrimaryAction(null);
-    return () => {
-      setMobileTitle(null);
-    };
-  }, [setMobileTitle, setPrimaryAction]);
-
   return (
     <div className="post-editor-workspace overflow-hidden">
       <header className="post-editor-header">
         <Link
           to="/admin/posts/edit/$id"
           params={{ id: String(postId) }}
-          className="post-editor-back inline-flex"
+          className="post-editor-back"
         >
           <ArrowLeft size={17} />
           {m.editor_history_back()}

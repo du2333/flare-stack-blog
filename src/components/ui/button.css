@@ -172,7 +172,16 @@
      tints on hover or is pressed reads ink on grey, not accent on tint.
      Public pages keep the rules above. */
   :root:has(.admin-layout) .fuwari-button-regular {
-    box-shadow: inset 0 0 0 1px var(--admin-hairline);
+    background: var(--admin-surface);
+    box-shadow:
+      inset 0 0 0 1px var(--admin-line-strong),
+      var(--admin-shadow-card);
+  }
+  :root:has(.admin-layout) .fuwari-button-regular:not(:disabled):hover {
+    background: var(--admin-sunken);
+  }
+  :root:has(.admin-layout) .fuwari-button-regular:not(:disabled):active {
+    background: var(--admin-press);
   }
   :root:has(.admin-layout)
     :is(.fuwari-button-plain, .fuwari-icon-button):not(

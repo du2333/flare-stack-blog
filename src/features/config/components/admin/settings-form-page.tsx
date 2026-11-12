@@ -65,7 +65,6 @@ export function SettingsSectionFrame({
               personalize ? m.personalize_title() : m.settings_header_title()
             }
             section={nav}
-            body={nav === "maintenance" ? "list" : "form"}
             regionLabel={title}
             tabs={
               nav === "personalize" ? undefined : <SettingsNav current={nav} />
