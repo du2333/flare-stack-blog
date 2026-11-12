@@ -41,6 +41,6 @@ Before a ticket branch is merged, run the `code-review` skill on `<integration b
 ## Acceptance
 
 1. Merge each reviewed ticket branch into the integration branch with `--no-ff`. On a conflict in `contract.generated.json`, run `bun run check` to regenerate it; in description strings keep both sides' facts.
-2. After the last merge, one at a time through `bun run heavy --`: `bun run check`, `bun run test:node --maxWorkers=2`, `bun scripts/check-theme-styles.ts` when public styles or Themes could be affected, `bun run build`, the full `bun run test --maxWorkers=2`.
+2. After the last merge, one at a time through `bun run heavy --`: `bun run check`, `bun run test:node`, `bun scripts/check-theme-styles.ts` when public styles or Themes could be affected, `bun run build`, the full `bun run test`. The `--maxWorkers=2` cap is for sharing the machine: while a subagent or a dev server of yours is running, keep it; when the lead runs these alone, use `--maxWorkers=6` (the full workerd suite takes about 16 minutes at 2, and nearly all of it is per-file setup that scales with workers).
 3. On the integration branch, once: the full screenshot matrix of the changed area, and the comparison that pages outside it are unchanged. Compare two branches from two worktrees on two ports (`run-blog` says why).
 4. The user sees UI changes on the local dev server before anything reaches `dev`. Stop preview servers once the user has decided.
