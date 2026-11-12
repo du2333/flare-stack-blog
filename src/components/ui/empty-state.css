@@ -42,4 +42,32 @@
     gap: 12px;
     margin-top: 4px;
   }
+  /* The tile variant: the Admin's list card (admin-variables.css). */
+  .fuwari-empty[data-variant="tile"] {
+    flex: 1;
+    min-height: 0;
+    gap: 10px;
+    padding: 48px 20px;
+    color: var(--admin-fg-3);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+  .fuwari-empty-tile {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--admin-hover);
+    color: var(--admin-fg-2);
+  }
+  .fuwari-empty[data-variant="tile"] .fuwari-empty-title {
+    color: var(--admin-fg);
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: inherit;
+  }
+  .fuwari-empty[data-variant="tile"] .fuwari-empty-actions {
+    margin-top: 0;
+  }
 }
