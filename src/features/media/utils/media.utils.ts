@@ -223,3 +223,20 @@ export function parseImageTransform(
     ...(format ? { format } : {}),
   };
 }
+
+/**
+ * The format a public image request is answered in, by the rules the image
+ * route applies: "avif" or "webp" from the Accept header, "source" for a
+ * transform that keeps the stored format, or null when the original is
+ * served. The edge cache keys on this, so it must not drift from the route.
+ */
+export function imageServedFormat(
+  key: string,
+  searchParams: URLSearchParams,
+  accept: string,
+) {
+  if (isGifKey(key)) return null;
+  const transform = parseImageTransform(searchParams, accept);
+  if (!transform) return null;
+  return transform.format ?? "source";
+}

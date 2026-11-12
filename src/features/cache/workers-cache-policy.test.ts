@@ -6,6 +6,7 @@ import {
   purgeOptionsFor,
   workersCacheKey,
   workersCachePolicy,
+  workersEdgeCacheKey,
 } from "./workers-cache-policy";
 
 describe("workersCacheKey", () => {
@@ -69,6 +70,95 @@ describe("workersCacheKey", () => {
     expect(
       workersCacheKey("https://blog.example/images/loop.gif?original=true"),
     ).toBe("/images/loop.gif?original=true");
+  });
+
+  it("keys a transformed image by the format the route will serve", () => {
+    const url = "https://blog.example/images/cover.png?width=800&quality=80";
+    expect(workersCacheKey(url, "image/avif,image/webp,*/*")).toBe(
+      "/images/cover.png?quality=80&width=800&format=avif",
+    );
+    expect(workersCacheKey(url, "image/webp,*/*")).toBe(
+      "/images/cover.png?quality=80&width=800&format=webp",
+    );
+    expect(workersCacheKey(url, "text/html")).toBe(
+      "/images/cover.png?quality=80&width=800&format=original",
+    );
+    expect(workersCacheKey(url)).toBe(
+      "/images/cover.png?quality=80&width=800&format=original",
+    );
+  });
+
+  it("shares one image entry across Accept spellings of the same format", () => {
+    const url = "https://blog.example/images/cover.png?width=800";
+    expect(workersCacheKey(url, "image/avif,image/webp,*/*")).toBe(
+      workersCacheKey(url, "image/webp;q=0.5, image/avif"),
+    );
+    expect(workersCacheKey(url, "image/webp")).toBe(
+      workersCacheKey(url, "text/html, image/webp;q=0.9, */*;q=0.8"),
+    );
+  });
+
+  it("adds no format to an image the route serves as the original", () => {
+    const accept = "image/avif,image/webp";
+    // Not an allowed width, an extra parameter, original=true, a GIF.
+    expect(
+      workersCacheKey(
+        "https://blog.example/images/cover.png?width=123",
+        accept,
+      ),
+    ).toBe("/images/cover.png?width=123");
+    expect(
+      workersCacheKey(
+        "https://blog.example/images/cover.png?width=800&fit=cover",
+        accept,
+      ),
+    ).toBe("/images/cover.png?width=800&fit=cover");
+    expect(
+      workersCacheKey(
+        "https://blog.example/images/cover.png?width=800&original=true",
+        accept,
+      ),
+    ).toBe("/images/cover.png?original=true&width=800");
+    expect(
+      workersCacheKey("https://blog.example/images/loop.gif?width=800", accept),
+    ).toBe("/images/loop.gif?width=800");
+    expect(
+      workersCacheKey("https://blog.example/images/cover.png", accept),
+    ).toBe("/images/cover.png");
+  });
+
+  it("ignores Accept for everything but images", () => {
+    expect(workersCacheKey("https://blog.example/posts", "image/avif")).toBe(
+      "/posts",
+    );
+  });
+});
+
+describe("workersEdgeCacheKey", () => {
+  it("prefixes pages with the build so a deploy starts fresh", () => {
+    expect(
+      workersEdgeCacheKey("https://blog.example/post/hello?x=1", "", "b1"),
+    ).toBe("/_build/b1/post/hello");
+    expect(workersEdgeCacheKey("https://blog.example/?page=2", "", "b1")).toBe(
+      "/_build/b1/?page=2",
+    );
+    expect(workersEdgeCacheKey("https://blog.example/stats.js", "", "b1")).toBe(
+      "/_build/b1/stats.js",
+    );
+  });
+
+  it("keeps image keys the same across builds", () => {
+    const url = "https://blog.example/images/cover.png?width=800";
+    const accept = "image/avif,image/webp";
+    expect(workersEdgeCacheKey(url, accept, "b1")).toBe(
+      "/images/cover.png?width=800&format=avif",
+    );
+    expect(workersEdgeCacheKey(url, accept, "b2")).toBe(
+      workersEdgeCacheKey(url, accept, "b1"),
+    );
+    expect(
+      workersEdgeCacheKey("https://blog.example/images/cover.png", "", "b2"),
+    ).toBe("/images/cover.png");
   });
 });
 
@@ -152,6 +242,8 @@ describe("workersCachePolicy", () => {
     });
   });
 
+  // The tag comes from the path alone, so the width and format in the cache
+  // key cannot leave a variant behind.
   it("purges every cached copy of a replaced Media key", () => {
     const target = mediaPurgeTarget("cover.webp") as { tags: string[] };
     const policy = workersCachePolicy("/images/cover.webp");
