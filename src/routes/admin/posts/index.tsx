@@ -1,14 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { PostManager } from "@/features/posts/components/post-manager";
+import { StudioPosts } from "@/features/posts/components/post-manager/studio/studio-posts";
 import { adminPostsListParams } from "@/features/posts/components/post-manager/hooks";
 import { PostManagerPageSkeleton } from "@/features/posts/components/post-manager/post-manager-skeleton";
 import { adminPostsQuery } from "@/features/posts/queries";
-import type {
-  CategoryFilter,
-  SortField,
-  StatusFilter,
-} from "@/features/posts/components/post-manager/types";
 import {
   SORT_FIELDS,
   STATUS_FILTERS,
@@ -83,7 +78,7 @@ function PostManagerPage() {
   };
 
   return (
-    <PostManager
+    <StudioPosts
       page={page}
       status={status}
       sortBy={sortBy}
@@ -91,21 +86,16 @@ function PostManagerPage() {
       category={category}
       tag={tag}
       onPageChange={(newPage) => updateSearch({ page: newPage })}
-      onStatusChange={(newStatus: StatusFilter) =>
-        updateSearch({ status: newStatus })
-      }
-      onSortByChange={(nextSortBy: SortField, replace?: boolean) =>
+      onStatusChange={(newStatus) => updateSearch({ status: newStatus })}
+      onSortByChange={(nextSortBy, replace) =>
         updateSearch({ sortBy: nextSortBy }, replace)
       }
       onSearchChange={(newSearch) => updateSearch({ search: newSearch })}
-      onCategoryChange={(nextCategory?: CategoryFilter, replace?: boolean) =>
+      onCategoryChange={(nextCategory, replace) =>
         updateSearch({ category: nextCategory }, replace)
       }
-      onTagChange={(nextTag?: number, replace?: boolean) =>
+      onTagChange={(nextTag, replace) =>
         updateSearch({ tag: nextTag }, replace)
-      }
-      onTaxonomyFilter={(filter) =>
-        updateSearch({ category: undefined, tag: undefined, ...filter })
       }
       onResetFilters={handleResetFilters}
     />

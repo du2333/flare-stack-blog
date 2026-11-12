@@ -9,14 +9,13 @@ import {
 import { isAdminWorkspace } from "@/components/admin/content-workspace";
 import "@/components/admin/content-workspace.css";
 import { Menu } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import {
   AdminChromeProvider,
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
-import { SideBar } from "@/components/admin/side-bar";
+import { StudioShell } from "@/components/admin/studio/studio-shell";
 import { readSidebarPreference } from "@/components/admin/sidebar-state";
-import { useSidebarCollapse } from "@/components/admin/use-sidebar-collapse";
 import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
@@ -77,36 +76,32 @@ function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
 }
 
 function AdminLayout() {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const editorWorkspace = isPostEditorPath(pathname);
-  const { sidebarPreference } = Route.useRouteContext();
-  const sidebar = useSidebarCollapse(sidebarPreference, editorWorkspace);
   useVersionCheck();
+
+  // The editor is a workspace of its own: no sidebar and no top bar, and it
+  // brings its own header at every width.
+  if (editorWorkspace)
+    return (
+      <AdminChromeProvider>
+        <div className="admin-layout admin-editor-layout flex h-dvh flex-col overflow-hidden bg-(--admin-surface) font-sans text-foreground">
+          <AdminMain />
+        </div>
+        <Toaster />
+      </AdminChromeProvider>
+    );
 
   return (
     <AdminChromeProvider>
-      <div
-        className={cn(
-          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex relative font-sans",
-          editorWorkspace && "admin-editor-layout",
-        )}
+      <StudioShell
+        sheet={
+          !["/admin", "/admin/posts"].includes(pathname.replace(/\/+$/, ""))
+        }
+        topBar={(open) => <MobileTopBar onOpenSidebar={open} />}
       >
-        <SideBar
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          closeMobileSidebar={closeMobileSidebar}
-          collapsed={sidebar.collapsed}
-          onToggleCollapse={sidebar.toggle}
-        />
-
-        {/* One surface for the content; the sidebar's edge is the hairline between. */}
-        <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-(--fuwari-card-bg)">
-          <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
-          <AdminMain />
-        </main>
-      </div>
-      {/* Outside the flex row: as a flex item it would add one more gap on the right. */}
+        <AdminMain />
+      </StudioShell>
       <Toaster />
     </AdminChromeProvider>
   );
