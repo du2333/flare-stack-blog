@@ -327,7 +327,7 @@ it("creates a category from 新建 and shows it", async () => {
   );
 });
 
-it("creates a tag from the tags list, and says a name is taken", async () => {
+it("creates a tag from the tags list, and toasts the server's refusal of a name it was not told of", async () => {
   requests.createTag.mockRejectedValue(
     new ORPCError("TAG_NAME_ALREADY_EXISTS", { defined: true }),
   );
@@ -341,7 +341,7 @@ it("creates a tag from the tags list, and says a name is taken", async () => {
     name: m.admin_taxonomy_create_tag(),
   });
   fireEvent.change(within(dialog).getByRole("textbox"), {
-    target: { value: "react" },
+    target: { value: "fresh" },
   });
   await act(async () =>
     fireEvent.click(
@@ -349,13 +349,73 @@ it("creates a tag from the tags list, and says a name is taken", async () => {
     ),
   );
 
-  expect(requests.createTag).toHaveBeenCalledWith({ name: "react" });
+  expect(requests.createTag).toHaveBeenCalledWith({ name: "fresh" });
   await waitFor(() =>
     expect(toast.error).toHaveBeenCalledWith(m.tag_manager_name_exists()),
   );
   expect(
     screen.getByRole("dialog", { name: m.admin_taxonomy_create_tag() }),
   ).toBeDefined();
+});
+
+it("refuses an existing name at the field before sending it, ignoring case, and clears the error on typing", async () => {
+  renderPage();
+  await within(tags()).findByText("react");
+
+  fireEvent.click(
+    within(tags()).getByRole("button", { name: m.category_manager_create() }),
+  );
+  const dialog = await screen.findByRole("dialog", {
+    name: m.admin_taxonomy_create_tag(),
+  });
+  const field = within(dialog).getByRole("textbox");
+  fireEvent.change(field, { target: { value: " REACT " } });
+  await act(async () =>
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: m.category_manager_save() }),
+    ),
+  );
+
+  expect(requests.createTag).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole("alert").textContent).toBe(
+    m.tag_manager_name_exists(),
+  );
+  expect(field.getAttribute("aria-invalid")).toBe("true");
+  expect(toast.error).not.toHaveBeenCalled();
+
+  fireEvent.change(field, { target: { value: "reactive" } });
+  expect(within(dialog).queryByRole("alert")).toBeNull();
+});
+
+it("refuses a rename to another item's name at the field, but lets an item change its own case", async () => {
+  requests.updateCategory.mockResolvedValue({});
+  renderPage();
+  await within(categories()).findByText("Rust");
+
+  await openRowMenu(categories(), "Rust", m.admin_taxonomy_rename());
+  const dialog = await screen.findByRole("dialog", {
+    name: m.admin_taxonomy_rename_category(),
+  });
+  const field = within(dialog).getByRole("textbox");
+  const save = () =>
+    act(async () =>
+      fireEvent.click(
+        within(dialog).getByRole("button", { name: m.category_manager_save() }),
+      ),
+    );
+  fireEvent.change(field, { target: { value: "notes" } });
+  await save();
+  expect(requests.updateCategory).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole("alert").textContent).toBe(
+    m.category_manager_name_exists(),
+  );
+
+  fireEvent.change(field, { target: { value: "RUST" } });
+  await save();
+  expect(requests.updateCategory).toHaveBeenCalledWith({
+    id: 1,
+    data: { name: "RUST" },
+  });
 });
 
 it("renames a row through its menu, with the trimmed name", async () => {

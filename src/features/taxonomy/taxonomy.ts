@@ -21,6 +21,27 @@ export function filterTaxonomy(items: Array<TaxonomyItem>, query: string) {
   return items.filter((item) => item.name.toLowerCase().includes(needle));
 }
 
+/**
+ * Whether another item already has this name, ignoring case, as the server
+ * decides. `exceptId` is the item being renamed, which may keep its own name.
+ */
+export function nameTaken(
+  items: Array<TaxonomyItem>,
+  name: string,
+  exceptId?: number,
+) {
+  const lower = name.trim().toLowerCase();
+  return items.some(
+    (item) => item.id !== exceptId && item.name.toLowerCase() === lower,
+  );
+}
+
+export function nameTakenMessage(kind: TaxonomyKind) {
+  return kind === "category"
+    ? m.category_manager_name_exists()
+    : m.tag_manager_name_exists();
+}
+
 /** The tags no post uses. */
 export function unusedTags(items: Array<TaxonomyItem>) {
   return items.filter((item) => !item.postCount);

@@ -13,6 +13,8 @@ import {
   deleteMessage,
   filterTaxonomy,
   NAME_MAX_LENGTH,
+  nameTaken,
+  nameTakenMessage,
   unusedTags,
   type TaxonomyItem,
   type TaxonomyKind,
@@ -76,6 +78,9 @@ export function TaxonomyColumn({
   const [purgeOpen, setPurgeOpen] = useState(false);
   const [createName, setCreateName] = useState("");
   const [renameName, setRenameName] = useState("");
+  // The server's refusal of a duplicate is a toast; this is the pre-check.
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [renameError, setRenameError] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const deleteTrigger = useRef<HTMLElement | null>(null);
   const createTrigger = useRef<HTMLButtonElement>(null);
@@ -91,10 +96,16 @@ export function TaxonomyColumn({
 
   // A dialog opens with the name it works on.
   useEffect(() => {
-    if (createOpen) setCreateName("");
+    if (createOpen) {
+      setCreateName("");
+      setCreateError(null);
+    }
   }, [createOpen]);
   useEffect(() => {
-    if (renaming) setRenameName(renaming.name);
+    if (renaming) {
+      setRenameName(renaming.name);
+      setRenameError(null);
+    }
   }, [renaming]);
 
   const all = items ?? [];
@@ -263,14 +274,20 @@ export function TaxonomyColumn({
         title={text.createTitle()}
         name={createName}
         maxLength={NAME_MAX_LENGTH}
-        onNameChange={setCreateName}
+        error={createError}
+        onNameChange={(next) => {
+          setCreateName(next);
+          setCreateError(null);
+        }}
         busy={create.isPending}
         onClose={() => {
           if (!create.isPending) onCreateOpenChange(false);
         }}
         onSave={() => {
-          if (!create.isPending && createName.trim())
-            create.mutate(createName.trim());
+          const next = createName.trim();
+          if (create.isPending || !next) return;
+          if (nameTaken(all, next)) setCreateError(nameTakenMessage(kind));
+          else create.mutate(next);
         }}
         fallbackFocus={() => createTrigger.current ?? searchRef.current}
       />
@@ -279,7 +296,11 @@ export function TaxonomyColumn({
         title={text.renameTitle()}
         name={renameName}
         maxLength={NAME_MAX_LENGTH}
-        onNameChange={setRenameName}
+        error={renameError}
+        onNameChange={(next) => {
+          setRenameName(next);
+          setRenameError(null);
+        }}
         busy={rename.isPending}
         onClose={() => {
           if (!rename.isPending) setRenaming(null);
@@ -288,6 +309,8 @@ export function TaxonomyColumn({
           const next = renameName.trim();
           if (!renaming || rename.isPending || !next) return;
           if (next === renaming.name) setRenaming(null);
+          else if (nameTaken(all, next, renaming.id))
+            setRenameError(nameTakenMessage(kind));
           else rename.mutate({ id: renaming.id, name: next });
         }}
         fallbackFocus={() => searchRef.current}

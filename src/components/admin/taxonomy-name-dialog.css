@@ -23,3 +23,6 @@
   gap: 10px;
   margin-top: 24px;
 }
+.taxonomy-name-dialog form [role="alert"] {
+  margin-top: 8px;
+}
