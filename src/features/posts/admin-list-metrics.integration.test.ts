@@ -125,6 +125,20 @@ describe("Admin post list metrics", () => {
       expect(counts.get(draft)).toBe(0);
     });
 
+    it("is read only when asked for, so other readers of the Posts pay nothing for it", async () => {
+      const id = await createPost("counted", true);
+      await comment(id, "one");
+
+      const plain = await PostService.getPosts(adminContext, {});
+      expect(plain.map((row) => "commentCount" in row)).not.toContain(true);
+      const asked = await PostService.getPosts(
+        adminContext,
+        {},
+        { includeCommentCount: true },
+      );
+      expect(asked.find((row) => row.id === id)?.commentCount).toBe(1);
+    });
+
     it("sorts by it in both directions, ties by id in that direction", async () => {
       const none = await createPost("none", true);
       const one = await createPost("one", true);
