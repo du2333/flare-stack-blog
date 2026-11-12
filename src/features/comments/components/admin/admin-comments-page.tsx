@@ -165,10 +165,13 @@ export function AdminCommentsPage({
           }
         />
       </>
-    ) : unrepliedCount ? (
+    ) : unrepliedCount !== 0 ? (
+      // Present while the count loads, so the row under the tabs does not
+      // appear (and push the list down) once it is known.
       <Button
         ref={markAllTrigger}
         icon={<CheckCheck size={16} />}
+        disabled={unrepliedCount === undefined}
         onClick={() => setConfirmAll(true)}
       >
         {m.admin_comments_handle_all()}
