@@ -11,6 +11,7 @@ import {
   MEDIA_NAME_MAX_LENGTH,
   mediaUsageOf,
   parseImageTransform,
+  IMAGE_TRANSFORM_WIDTHS,
   PUBLIC_IMAGE_WIDTH,
 } from "./media.utils";
 
@@ -47,6 +48,7 @@ describe("image URLs", () => {
   });
 
   it.each([
+    ["width=160&quality=80", 160],
     ["width=400&quality=80", 400],
     ["quality=80&width=800", 800],
     ["width=1600&quality=80&v=177", 1600],
@@ -69,6 +71,12 @@ describe("image URLs", () => {
     "width=800&original=true",
   ])("serves the original for %s", (query) => {
     expect(parseImageTransform(new URLSearchParams(query), "")).toBeNull();
+  });
+
+  it("transforms every named public image width", () => {
+    for (const width of Object.values(PUBLIC_IMAGE_WIDTH)) {
+      expect(IMAGE_TRANSFORM_WIDTHS).toContain(width);
+    }
   });
 
   it("negotiates webp when avif is not accepted", () => {

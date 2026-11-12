@@ -143,6 +143,8 @@ export function isGifKey(key: string, contentType?: string | null) {
 }
 
 export const PUBLIC_IMAGE_WIDTH = {
+  // Small square thumbnails such as the latest Moments list.
+  thumbnail: 160,
   banner: 1600,
   cover: 800,
   body: 800,
@@ -205,7 +207,7 @@ export function getPublicImageSrc(src: string, width: number) {
 // Cloudflare bills each image and parameter set once a month, so only the
 // widths the site requests are transformed. Anything else gets the original,
 // which keeps arbitrary parameters from using up the transformation quota.
-export const IMAGE_TRANSFORM_WIDTHS = [400, 800, 1600, 2560] as const;
+export const IMAGE_TRANSFORM_WIDTHS = [160, 400, 800, 1600, 2560] as const;
 const IMAGE_TRANSFORM_QUALITY = 80;
 const IMAGE_TRANSFORM_PARAMS = new Set(["width", "quality", "v"]);
 
