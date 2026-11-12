@@ -3,11 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/admin-page";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
-import { cn, formatBytes } from "@/lib/utils";
+import { formatBytes } from "@/lib/utils";
 import {
   MOTION,
   useContentMotion,
-  useMediaQuery,
   useMotionPresence,
 } from "@/hooks/use-motion";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,7 +18,6 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Spinner } from "@/components/ui/spinner";
 import { useMediaLibrary, useMediaUpload } from "./hooks";
 import { useMediaScroll } from "./hooks/use-media-scroll";
-import { MEDIA_LAYOUT_DURATION } from "./hooks/use-media-grid-motion";
 import { MediaCollectionSkeleton } from "./media-library-skeleton";
 import { MediaInUseError } from "./media-usage";
 import type { MediaAsset } from "./types";
@@ -66,11 +64,7 @@ export function MediaLibrary() {
     ? (mediaItems.find((item) => item.key === preview.key) ?? preview)
     : null;
 
-  const compact = useMediaQuery("(max-width: 1199px)");
-  const detailPresent = useMotionPresence(
-    !!active,
-    compact ? MOTION.modal : MEDIA_LAYOUT_DURATION,
-  );
+  const detailPresent = useMotionPresence(!!active, MOTION.modal);
   const retained = useRef<MediaAsset | null>(null);
   if (active) retained.current = active;
   const detailAsset = active ?? retained.current;
@@ -82,7 +76,7 @@ export function MediaLibrary() {
 
   const captureAnchor = useMediaScroll(
     collectionRef,
-    `${view}:${!!active}`,
+    view,
     `${unusedOnly}:${search.trim()}:${sort}`,
   );
 
@@ -90,6 +84,13 @@ export function MediaLibrary() {
     setPreview(null);
   }, [unusedOnly, search, sort]);
 
+  const activeIndex = active
+    ? mediaItems.findIndex((item) => item.key === active.key)
+    : -1;
+  const step = (delta: -1 | 1) => {
+    const next = mediaItems[activeIndex + delta];
+    if (next) setPreview(next);
+  };
   const openFilePicker = () => fileRef.current?.click();
   const closePreview = () => {
     captureAnchor(preview?.key);
@@ -191,7 +192,7 @@ export function MediaLibrary() {
           handleFiles(event.dataTransfer.files);
       }}
     >
-      <div className={cn("media-workspace-body", active && "has-preview")}>
+      <div className="media-workspace-body">
         <div
           className="media-browser custom-scrollbar"
           data-scroll-restoration-id="admin-media-list"
@@ -312,26 +313,27 @@ export function MediaLibrary() {
             )}
           </div>
         </div>
-        <div className="media-panel-slot">
-          {detailPresent && detailAsset ? (
-            <MediaDetail
-              open={!!active}
-              asset={detailAsset}
-              onClose={closePreview}
-              onReplace={async (key, file) => {
-                const next = await replaceFile({ key, image: file });
-                if (next)
-                  setPreview((previous) =>
-                    previous?.key === key ? { ...previous, ...next } : previous,
-                  );
-              }}
-              onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
-              isReplacing={isReplacing}
-              preventClose={deleteTarget !== null}
-            />
-          ) : null}
-        </div>
       </div>
+      {detailPresent && detailAsset ? (
+        <MediaDetail
+          open={!!active}
+          asset={detailAsset}
+          onClose={closePreview}
+          onStep={step}
+          hasPrevious={activeIndex > 0}
+          hasNext={activeIndex >= 0 && activeIndex < mediaItems.length - 1}
+          onReplace={async (key, file) => {
+            const next = await replaceFile({ key, image: file });
+            if (next)
+              setPreview((previous) =>
+                previous?.key === key ? { ...previous, ...next } : previous,
+              );
+          }}
+          onDelete={(asset) => setDeleteTarget({ kind: "one", asset })}
+          isReplacing={isReplacing}
+          preventClose={deleteTarget !== null}
+        />
+      ) : null}
       {progress ? (
         <p role="status" className="media-upload-progress">
           <Spinner size={14} />

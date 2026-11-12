@@ -220,7 +220,7 @@
 .personalize[data-wide] {
   display: grid;
   /* A customizer: the controls in a column of their own width, the preview in the rest. */
-  grid-template-columns: 23.5rem minmax(0, 1fr);
+  grid-template-columns: 21.5rem minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -245,9 +245,9 @@
 
 /*
  * The preview is a browser window: the bar with its lights, the address, the
- * viewport's size and the device switch, then the page. With the desktop the
- * window is as tall as the page scaled to its width; with the phone it takes
- * the room there is and the phone stands in it.
+ * viewport's size and the device switch, then the page. The window takes the
+ * room there is: the desktop's page fills it (preview-geometry.ts), the phone
+ * stands in it.
  */
 .personalize-preview {
   display: flex;
@@ -260,7 +260,7 @@
   background: var(--admin-surface);
   box-shadow: var(--admin-shadow-raised);
 }
-.personalize-preview[data-device="phone"] {
+.personalize-preview {
   height: 100%;
 }
 .personalize-preview-bar {
@@ -328,10 +328,6 @@
   min-height: 0;
   background: var(--admin-sunken);
   overflow: hidden;
-}
-.personalize-preview[data-device="desktop"] > .personalize-stage {
-  flex: 0 1 auto;
-  aspect-ratio: 1440 / 900;
 }
 .personalize-fit {
   position: absolute;

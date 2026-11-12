@@ -1411,6 +1411,8 @@
   "media_view_grid": "Grid",
   "media_view_list": "List",
   "media_preview_title": "File preview",
+  "media_preview_previous": "Previous image",
+  "media_preview_next": "Next image",
   "media_col_image": "Image",
   "media_col_dimensions": "Dimensions",
   "media_col_usage": "Usage",

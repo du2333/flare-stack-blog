@@ -117,28 +117,6 @@
   outline: 2px solid color-mix(in srgb, var(--fuwari-primary) 45%, transparent);
   outline-offset: 3px;
 }
-.site-nav-handle {
-  display: grid;
-  place-items: center;
-  align-self: stretch;
-  color: var(--fuwari-fg-50);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  border-radius: 8px;
-}
-.site-nav-handle:hover {
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-fg);
-}
-.site-nav-handle:active {
-  cursor: grabbing;
-}
-.site-nav-handle:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
 /* The social links, as rows of platform, address and remove. */
 .site-social-rows {
   display: grid;
@@ -148,15 +126,32 @@
   display: grid;
   gap: 8px;
 }
+/* A handle, the platform's mark, the platform, the address and remove. */
 .site-social-row {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr) 36px;
+  grid-template-columns: 24px 32px 124px minmax(0, 1fr) 36px;
   align-items: center;
   gap: 8px;
 }
+.site-social-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--admin-hover);
+  color: var(--admin-fg-2);
+}
+.site-social-icon img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+/* A custom link's name and icon, under its platform and address. */
 .site-social-custom {
   grid-template-columns: minmax(0, 1fr) auto;
   justify-content: start;
+  padding-left: 72px;
 }
 
 /* The six icons, two to a row: what each is, the file in use, and 更换. */
@@ -216,11 +211,14 @@
 @media (max-width: 450px) {
   /* Platform and address stack, the remove button beside the platform. */
   .site-social-row:not(.site-social-custom) {
-    grid-template-columns: minmax(0, 1fr) 36px;
+    grid-template-columns: 24px 32px minmax(0, 1fr) 36px;
   }
-  .site-social-row:not(.site-social-custom) > :nth-child(2) {
-    grid-column: 1 / -1;
+  .site-social-row:not(.site-social-custom) > :nth-child(4) {
+    grid-column: 2 / -1;
     grid-row: 2;
+  }
+  .site-social-custom {
+    padding-left: 0;
   }
   .site-nav-row {
     grid-template-columns: 24px minmax(0, 1fr) 36px;

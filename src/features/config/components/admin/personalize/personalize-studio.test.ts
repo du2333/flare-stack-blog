@@ -220,11 +220,11 @@ describe("on a wide screen", () => {
     const [frame] = frames();
     loaded(frame);
     expect([frame.style.width, frame.style.height]).toEqual([
-      "1440px",
-      "900px",
+      "1280px",
+      "800px",
     ]);
     // The size of the viewport is stated near the switch.
-    expect(screen.getByText("1440 × 900")).toBeTruthy();
+    expect(screen.getByText("1280 × 800")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("radio", { name: m.personalize_preview_device_phone() }),
     );

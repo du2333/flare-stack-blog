@@ -22,7 +22,7 @@ export function MaintenanceItem({
   lines: ReadonlyArray<ReactNode>;
   action: ReactNode;
   danger?: boolean;
-  /** A word beside the title, such as 「危险操作」. */
+  /** A word in the tile's corner, such as 「危险操作」. */
   flag?: string;
   /** The result of the last run. */
   children?: ReactNode;
@@ -36,14 +36,7 @@ export function MaintenanceItem({
         <Icon size={18} />
       </span>
       <div className="settings-maintenance-copy">
-        <p className="settings-maintenance-title">
-          {title}
-          {flag ? (
-            <Badge size="sm" tone={danger ? "danger" : "neutral"}>
-              {flag}
-            </Badge>
-          ) : null}
-        </p>
+        <p className="settings-maintenance-title">{title}</p>
         {lines.map((line, index) => (
           <p key={index} className="settings-maintenance-desc">
             {line}
@@ -51,6 +44,15 @@ export function MaintenanceItem({
         ))}
         {children}
       </div>
+      {flag ? (
+        <Badge
+          size="sm"
+          tone={danger ? "danger" : "neutral"}
+          className="settings-maintenance-flag"
+        >
+          {flag}
+        </Badge>
+      ) : null}
       <div className="settings-maintenance-action">{action}</div>
     </div>
   );

@@ -88,7 +88,7 @@ function AdminLayout() {
         <div className="admin-layout admin-editor-layout flex h-dvh flex-col overflow-hidden bg-(--admin-surface) font-sans text-foreground">
           <AdminMain />
         </div>
-        <Toaster />
+        <Toaster variant="admin" />
       </AdminChromeProvider>
     );
 
@@ -97,7 +97,7 @@ function AdminLayout() {
       <AdminShell topBar={(open) => <MobileTopBar onOpenSidebar={open} />}>
         <AdminMain />
       </AdminShell>
-      <Toaster />
+      <Toaster variant="admin" />
     </AdminChromeProvider>
   );
 }

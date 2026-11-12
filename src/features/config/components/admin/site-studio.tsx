@@ -1,15 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  ExternalLink,
-  GripVertical,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button, buttonClass } from "@/components/ui/button";
+import { DragHandle } from "@/components/ui/drag-handle";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -245,20 +239,16 @@ function NavLinksEditor() {
               }
             >
               <div className="site-nav-row">
-                <button
-                  type="button"
-                  className="site-nav-handle"
+                <DragHandle
                   {...sorting.handleProps(field.id)}
-                  aria-label={m.settings_nav_drag_label({
+                  label={m.settings_nav_drag_label({
                     name:
                       watch(`site.navLinks.${index}.label`) ||
                       String(index + 1),
                   })}
                   title={m.settings_nav_drag_hint()}
                   disabled={fields.length < 2}
-                >
-                  <GripVertical size={18} />
-                </button>
+                />
                 <Input
                   {...register(`site.navLinks.${index}.label`)}
                   placeholder={m.settings_site_nav_label_ph()}
@@ -325,10 +315,14 @@ function NavLinksEditor() {
 function SocialLinksEditor() {
   const { control, register, watch, setValue, formState } =
     useFormContext<SystemConfig>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control,
     name: "site.social",
   });
+  const sorting = useNavSort(
+    fields.map((field) => field.id),
+    move,
+  );
   const social = useWatch({ control, name: "site.social" }) ?? [];
   const taken = (key: string, except: number) =>
     key !== "custom" &&
@@ -341,7 +335,12 @@ function SocialLinksEditor() {
   return (
     <AdminFormRow
       label={m.settings_social_title()}
-      description={m.settings_social_hint()}
+      description={
+        <>
+          {m.settings_social_hint()}
+          <span className="site-sort-hint">{m.settings_nav_drag_hint()}</span>
+        </>
+      }
     >
       <div className="site-social-rows">
         {fields.map((field, index) => {
@@ -354,9 +353,51 @@ function SocialLinksEditor() {
                 : m.settings_social_url_ph();
           const rowError =
             error?.[index]?.url?.message ?? error?.[index]?.label?.message;
+          const platformLabel =
+            !platform || platform === "custom"
+              ? watch(`site.social.${index}.label`) ||
+                m.settings_social_custom()
+              : SOCIAL_PLATFORMS[platform].label;
+          const PlatformIcon =
+            platform && platform !== "custom"
+              ? SOCIAL_PLATFORMS[platform].icon
+              : null;
+          const customIcon = previewSrc(watch(`site.social.${index}.icon`));
           return (
-            <div key={field.id} className="site-social-item">
+            <div
+              key={field.id}
+              ref={(node) => {
+                if (node) sorting.rows.current.set(field.id, node);
+                else sorting.rows.current.delete(field.id);
+              }}
+              className="site-social-item site-nav-item"
+              data-dragging={sorting.drag?.id === field.id}
+              data-drop-target={
+                sorting.drag?.target === field.id &&
+                sorting.drag?.id !== field.id
+              }
+              style={
+                sorting.drag?.id === field.id
+                  ? { transform: `translateY(${sorting.drag.offset}px)` }
+                  : undefined
+              }
+            >
               <div className="site-social-row">
+                <DragHandle
+                  {...sorting.handleProps(field.id)}
+                  label={m.settings_nav_drag_label({ name: platformLabel })}
+                  title={m.settings_nav_drag_hint()}
+                  disabled={fields.length < 2}
+                />
+                <span className="site-social-icon" aria-hidden="true">
+                  {PlatformIcon ? (
+                    <PlatformIcon size={16} />
+                  ) : customIcon ? (
+                    <img src={customIcon} alt="" />
+                  ) : (
+                    <Link2 size={16} />
+                  )}
+                </span>
                 <Select
                   value={platform ?? ""}
                   aria-label={m.settings_social_platform_label()}
