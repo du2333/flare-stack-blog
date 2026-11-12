@@ -388,8 +388,54 @@
   "admin_sidebar_logout_failed_desc": "Please try again.",
   "admin_overview_title": "Overview",
   "admin_comments_title": "Comments",
-  "admin_comments_placeholder": "The comments page comes in a later version; comments awaiting reply are handled on the overview for now.",
-  "admin_comments_placeholder_action": "Go to overview",
+  "admin_comments_views": "Comment views",
+  "admin_comments_view_unreplied": "Awaiting reply",
+  "admin_comments_view_all": "All",
+  "admin_comments_search": "Search author or text",
+  "admin_comments_search_clear": "Clear search",
+  "admin_comments_filter_post": "Filter by post",
+  "admin_comments_filter_all_posts": "All posts and moments",
+  "admin_comments_state_replied": "Replied",
+  "admin_comments_state_handled": "Handled",
+  "admin_comments_state_muted": "Muted",
+  "admin_comments_source_moment": "Moment",
+  "admin_comments_source_open": "Open this comment on “{title}” in a new tab",
+  "admin_comments_source_private": "Post not public",
+  "admin_comments_mark_handled": "Mark as handled",
+  "admin_comments_unmark_handled": "Undo handled",
+  "admin_comments_marked_handled": "Marked as handled",
+  "admin_comments_unmarked_handled": "Undone",
+  "admin_comments_undo": "Undo",
+  "admin_comments_mute": "Mute author",
+  "admin_comments_unmute": "Unmute author",
+  "admin_comments_action_error": "Something went wrong. Try again.",
+  "admin_comments_reply_sent": "Reply sent",
+  "admin_comments_handle_all": "Mark all as handled",
+  "admin_comments_handle_all_title": "Mark all as handled?",
+  "admin_comments_handle_all_desc": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "This comment will leave the list awaiting reply. The comment itself stays, and no one is notified.",
+        "count=*": "These {formattedCountEn} comments will leave the list awaiting reply. The comments themselves stay, and no one is notified."
+      }
+    }
+  ],
+  "admin_comments_handled_all": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "Marked {formattedCountEn} comment as handled",
+        "count=*": "Marked {formattedCountEn} comments as handled"
+      }
+    }
+  ],
+  "admin_comments_empty": "No comments yet.",
+  "admin_comments_empty_unreplied": "No comments await a reply.",
+  "admin_comments_no_results": "No comments match.",
+  "admin_comments_show_all": "View all comments",
+  "admin_comments_clear_filters": "Clear filters",
+  "admin_comments_load_error": "Comments failed to load.",
   "admin_taxonomy_title": "Categories & Tags",
   "admin_taxonomy_placeholder": "The categories and tags page comes in a later version; manage them from the filter panel on the posts page for now.",
   "admin_taxonomy_placeholder_action": "Go to posts",

@@ -99,40 +99,47 @@ const AdminReply = alias(CommentsTable, "admin_reply");
 const AdminReplyAuthor = alias(UserTable, "admin_reply_author");
 
 /**
+ * The published Admin Comments that answer a Comment: those that reply to
+ * it, and for a root Comment those in its thread without a reply target
+ * (rows written before reply targets). Use it with `exists` or `notExists`.
+ */
+export function adminAnswers(db: DB) {
+  return db
+    .select({ id: AdminReply.id })
+    .from(AdminReply)
+    .innerJoin(AdminReplyAuthor, eq(AdminReply.userId, AdminReplyAuthor.id))
+    .where(
+      and(
+        // On the same Post or Moment; IS matches the null of the other.
+        sql`${AdminReply.postId} IS ${CommentsTable.postId}`,
+        sql`${AdminReply.momentId} IS ${CommentsTable.momentId}`,
+        eq(AdminReply.status, "published"),
+        eq(AdminReplyAuthor.role, "admin"),
+        or(
+          eq(AdminReply.replyToCommentId, CommentsTable.id),
+          and(
+            isNull(CommentsTable.rootId),
+            isNull(AdminReply.replyToCommentId),
+            eq(AdminReply.rootId, CommentsTable.id),
+          ),
+        ),
+      ),
+    );
+}
+
+/**
  * A published Comment by a visitor on a public Post or a Moment that no
  * Admin has handled (replied to or marked handled) and no published Admin
- * Comment answers: none replies to it, and for a root Comment none sits in
- * its thread without a reply target (rows written before reply targets).
+ * Comment answers (`adminAnswers`). A query using it left joins the
+ * Comment's Post, Moment and author (`user`).
  */
-function unrepliedVisitorComment(db: DB) {
+export function unrepliedVisitorComment(db: DB) {
   return and(
     eq(CommentsTable.status, "published"),
     isNull(CommentsTable.handledAt),
     onPublicPage,
     or(isNull(UserTable.role), ne(UserTable.role, "admin")),
-    notExists(
-      db
-        .select({ id: AdminReply.id })
-        .from(AdminReply)
-        .innerJoin(AdminReplyAuthor, eq(AdminReply.userId, AdminReplyAuthor.id))
-        .where(
-          and(
-            // On the same Post or Moment; IS matches the null of the other.
-            sql`${AdminReply.postId} IS ${CommentsTable.postId}`,
-            sql`${AdminReply.momentId} IS ${CommentsTable.momentId}`,
-            eq(AdminReply.status, "published"),
-            eq(AdminReplyAuthor.role, "admin"),
-            or(
-              eq(AdminReply.replyToCommentId, CommentsTable.id),
-              and(
-                isNull(CommentsTable.rootId),
-                isNull(AdminReply.replyToCommentId),
-                eq(AdminReply.rootId, CommentsTable.id),
-              ),
-            ),
-          ),
-        ),
-    ),
+    notExists(adminAnswers(db)),
   );
 }
 

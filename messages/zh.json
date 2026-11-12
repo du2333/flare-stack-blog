@@ -381,8 +381,52 @@
   "admin_sidebar_logout_failed_desc": "请重试。",
   "admin_overview_title": "概览",
   "admin_comments_title": "评论",
-  "admin_comments_placeholder": "评论页面将在后续版本中提供，待回复的评论目前在概览中处理。",
-  "admin_comments_placeholder_action": "前往概览",
+  "admin_comments_views": "评论视图",
+  "admin_comments_view_unreplied": "待回复",
+  "admin_comments_view_all": "全部",
+  "admin_comments_search": "搜索作者或内容",
+  "admin_comments_search_clear": "清除搜索",
+  "admin_comments_filter_post": "按文章筛选",
+  "admin_comments_filter_all_posts": "全部文章与动态",
+  "admin_comments_state_replied": "已回复",
+  "admin_comments_state_handled": "已处理",
+  "admin_comments_state_muted": "已禁言",
+  "admin_comments_source_moment": "动态",
+  "admin_comments_source_open": "在新标签页打开「{title}」中的这条评论",
+  "admin_comments_source_private": "文章未公开",
+  "admin_comments_mark_handled": "标为已处理",
+  "admin_comments_unmark_handled": "撤销已处理",
+  "admin_comments_marked_handled": "已标为已处理",
+  "admin_comments_unmarked_handled": "已撤销",
+  "admin_comments_undo": "撤销",
+  "admin_comments_mute": "禁言作者",
+  "admin_comments_unmute": "解除禁言",
+  "admin_comments_action_error": "操作失败，请重试",
+  "admin_comments_reply_sent": "回复已发送",
+  "admin_comments_handle_all": "全部标为已处理",
+  "admin_comments_handle_all_title": "全部标为已处理？",
+  "admin_comments_handle_all_desc": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "这 {formattedCountZh} 条评论会离开待回复列表。评论本身不受影响，也不会通知评论者。"
+      }
+    }
+  ],
+  "admin_comments_handled_all": [
+    {
+      "declarations": ["input count", "local formattedCountZh = count: number"],
+      "match": {
+        "count=*": "已将 {formattedCountZh} 条评论标为已处理"
+      }
+    }
+  ],
+  "admin_comments_empty": "还没有评论。",
+  "admin_comments_empty_unreplied": "没有待回复的评论。",
+  "admin_comments_no_results": "没有符合条件的评论。",
+  "admin_comments_show_all": "查看全部评论",
+  "admin_comments_clear_filters": "清除筛选",
+  "admin_comments_load_error": "评论加载失败。",
   "admin_taxonomy_title": "分类与标签",
   "admin_taxonomy_placeholder": "分类与标签页面将在后续版本中提供，目前在文章页的筛选面板中管理。",
   "admin_taxonomy_placeholder_action": "前往文章",

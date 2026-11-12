@@ -715,6 +715,32 @@
       }
     },
     "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/comments",
+            "summary": "List comments",
+            "description": "Published Comments on Posts and Moments, newest first, with the total that matches. view=unreplied lists the visitor Comments awaiting a reply, the dashboard's count; view=all lists every one. search matches the author's name or the body; postId keeps one Post's.",
+            "tags": ["Admin Comments"]
+          }
+        }
+      },
+      "commentedPosts": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/comments/posts",
+            "summary": "List posts with comments",
+            "description": "Every Post that has published Comments, with how many, the most recently commented first.",
+            "tags": ["Admin Comments"]
+          }
+        }
+      },
       "markHandled": {
         "~orpc": {
           "errorMap": {},
