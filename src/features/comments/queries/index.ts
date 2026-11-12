@@ -98,6 +98,27 @@ export function commentThreadQuery(target: CommentTarget, commentId: number) {
   });
 }
 
+/** How many replies the Admin's conversation view reads of one thread. */
+export const ADMIN_THREAD_REPLY_LIMIT = 100;
+
+/**
+ * A thread's replies in one read, oldest first, for the Admin's conversation
+ * view; a longer thread is cut at ADMIN_THREAD_REPLY_LIMIT.
+ */
+export function threadRepliesQuery(target: CommentTarget, rootId: number) {
+  const page = { rootId, offset: 0, limit: ADMIN_THREAD_REPLY_LIMIT };
+  if (target.type === "moment") {
+    return orpc.comments.moment.replies.queryOptions({
+      input: { momentId: target.id, ...page },
+      retry: retryUnlessRefused,
+    });
+  }
+  return orpc.comments.replies.queryOptions({
+    input: { postId: target.id, ...page },
+    retry: retryUnlessRefused,
+  });
+}
+
 /**
  * Every cached read of one target's Comments (roots, replies, threads), for
  * the mutations that change them.

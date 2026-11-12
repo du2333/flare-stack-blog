@@ -190,6 +190,71 @@
 }
 
 /*
+ * Master and detail (AdminSplit): the list keeps a column of its own, the
+ * detail takes the rest, each a column that scrolls by itself. Below 768px
+ * one of them fills the card and the other waits beside it.
+ */
+.admin-split {
+  display: grid;
+  grid-template-columns:
+    var(--admin-split-list, clamp(280px, 36%, 380px))
+    minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.admin-split-list,
+.admin-split-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.admin-split-list {
+  border-right: 1px solid var(--admin-line);
+}
+@media (max-width: 767px) {
+  .admin-split {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-split-list,
+  .admin-split-detail {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    transition:
+      transform 360ms var(--admin-ease),
+      opacity 260ms ease,
+      visibility 360ms;
+  }
+  .admin-split-detail,
+  .admin-split[data-detail] > .admin-split-list {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .admin-split-detail {
+    transform: translateX(28px);
+  }
+  .admin-split[data-detail] > .admin-split-list {
+    transform: translateX(-24px);
+  }
+  .admin-split[data-detail] > .admin-split-detail {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-split-list,
+  .admin-split-detail {
+    transition: none;
+  }
+}
+
+/*
  * A link in a page body is ink with an underline. The links that say so by
  * their colour (text-(--fuwari-primary), or .text-link) get the underline here
  * instead of each page adding it; a button, a tab, a menu item, a row that is

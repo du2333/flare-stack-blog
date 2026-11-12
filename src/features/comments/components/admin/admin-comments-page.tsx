@@ -1,12 +1,12 @@
 import { ORPCError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, CircleAlert, MessageSquare, SearchX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pendingCommentsCountQuery } from "@/components/admin/admin-counts";
 import { AdminPage, AdminPageToolbar } from "@/components/admin/admin-page";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { PaginationBar } from "@/components/ui/pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchField } from "@/components/ui/search-field";
 import { Select } from "@/components/ui/select";
@@ -24,7 +24,7 @@ import {
 } from "@/features/comments/queries/admin";
 import { orpc } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
-import { AdminCommentList } from "./admin-comment-list";
+import { AdminCommentInbox } from "./admin-comment-inbox";
 import "./admin-comments.css";
 
 /** Every Comment, at the smallest page, for the 全部 tab's count. */
@@ -50,7 +50,6 @@ export function AdminCommentsPage({
   onChange: (updates: Partial<AdminCommentsSearch>, replace?: boolean) => void;
 }) {
   const { view, page, search, post } = params;
-  const headingRef = useRef<HTMLDivElement>(null);
   const markAllTrigger = useRef<HTMLButtonElement>(null);
   const [confirmAll, setConfirmAll] = useState(false);
   const { markAllHandled, isMarkingAll } = useAdminCommentActions();
@@ -181,70 +180,84 @@ export function AdminCommentsPage({
     ) : null;
 
   const comments = query.data?.items ?? [];
+  const done =
+    view === "unreplied" ? (
+      <EmptyState
+        variant="tile"
+        icon={CheckCheck}
+        title={m.admin_comments_done_title()}
+        description={m.admin_comments_empty_unreplied()}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onChange({ view: "all" })}
+          >
+            {m.admin_comments_show_all()}
+          </Button>
+        }
+      />
+    ) : (
+      <EmptyState
+        variant="tile"
+        icon={MessageSquare}
+        description={m.admin_comments_empty()}
+      />
+    );
   let body;
   if (query.isPending || missingPost) {
     body = <AdminCommentsSkeleton />;
   } else if (query.isError) {
     body = (
       <EmptyState
+        variant="tile"
         role="alert"
+        icon={CircleAlert}
         description={m.admin_comments_load_error()}
         action={
-          <Button variant="text" onClick={() => void query.refetch()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void query.refetch()}
+          >
             {m.error_retry()}
           </Button>
         }
       />
     );
-  } else if (comments.length === 0) {
-    body = filtered ? (
+  } else if (comments.length === 0 && filtered) {
+    body = (
       <EmptyState
+        variant="tile"
+        icon={SearchX}
         description={m.admin_comments_no_results()}
         action={
-          <Button variant="text" onClick={clearFilters}>
+          <Button variant="outline" size="sm" onClick={clearFilters}>
             {m.admin_comments_clear_filters()}
           </Button>
         }
       />
-    ) : view === "unreplied" ? (
-      <EmptyState
-        description={m.admin_comments_empty_unreplied()}
-        action={
-          <Button variant="text" onClick={() => onChange({ view: "all" })}>
-            {m.admin_comments_show_all()}
-          </Button>
-        }
-      />
-    ) : (
-      <EmptyState description={m.admin_comments_empty()} />
     );
   } else {
     body = (
-      <>
-        <AdminCommentList
-          comments={comments}
-          fallbackFocus={() => headingRef.current}
-        />
-        <PaginationBar
-          page={page}
-          totalPages={totalPages}
-          onPageChange={(next) => onChange({ page: next })}
-          summary={m.admin_pagination_info({
-            startItem: Math.min(
-              (page - 1) * ADMIN_COMMENTS_PAGE_SIZE + 1,
-              total,
-            ),
-            endItem: Math.min(
-              (page - 1) * ADMIN_COMMENTS_PAGE_SIZE + comments.length,
-              total,
-            ),
-            totalItems: total,
-          })}
-          label={m.admin_pagination_label()}
-          previousLabel={m.admin_pagination_previous()}
-          nextLabel={m.admin_pagination_next()}
-        />
-      </>
+      <AdminCommentInbox
+        comments={comments}
+        view={view}
+        resetKey={`${view}:${page}:${search}:${post ?? ""}`}
+        done={done}
+        foot={
+          totalPages > 1 ? (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(next) => onChange({ page: next })}
+              label={m.admin_pagination_label()}
+              previousLabel={m.admin_pagination_previous()}
+              nextLabel={m.admin_pagination_next()}
+            />
+          ) : null
+        }
+      />
     );
   }
 
@@ -260,17 +273,11 @@ export function AdminCommentsPage({
           tools={tools}
         />
       }
-      body="list"
-      bodyLabel={m.admin_comments_title()}
+      body="split"
+      inset={false}
+      loading={query.isFetching && !query.isPending}
     >
-      <div
-        ref={headingRef}
-        tabIndex={-1}
-        className="admin-comments-body"
-        aria-busy={query.isFetching}
-      >
-        {body}
-      </div>
+      {body}
       <ConfirmationModal
         isOpen={confirmAll}
         title={m.admin_comments_handle_all_title()}
@@ -290,32 +297,47 @@ export function AdminCommentsPage({
             setConfirmAll(false);
           }
         }}
-        returnFocus={() =>
-          markAllTrigger.current?.isConnected
-            ? markAllTrigger.current
-            : headingRef.current
-        }
+        returnFocus={() => markAllTrigger.current}
       />
     </AdminPage>
   );
 }
 
-/** Rows as tall as the real ones while the first page loads. */
+/** The queue and a conversation at their sizes while the first page loads. */
 export function AdminCommentsSkeleton() {
   return (
-    <ul className="admin-comment-list" aria-hidden="true">
-      {Array.from({ length: 6 }, (_, index) => (
-        <li key={index} className="admin-comment">
-          <div className="admin-comment-row">
-            <Skeleton className="size-8 shrink-0 rounded-full" />
-            <div className="admin-comment-main">
-              <Skeleton className="h-4 w-40 rounded" />
-              <Skeleton className="mt-2 h-4 w-full max-w-xl rounded" />
-              <Skeleton className="mt-2 h-3 w-48 rounded" />
+    <div className="admin-split cmt-inbox" aria-hidden="true">
+      <div className="admin-split-list">
+        <div className="cmt-queue">
+          {Array.from({ length: 7 }, (_, index) => (
+            <div key={index} className="cmt-row">
+              <Skeleton shimmer className="size-8 shrink-0 rounded-full" />
+              <div className="cmt-row-main">
+                <Skeleton shimmer className="h-4 w-28 rounded" />
+                <Skeleton shimmer className="mt-2 h-4 w-full rounded" />
+                <Skeleton shimmer className="mt-2 h-3 w-40 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="admin-split-detail">
+        <div className="cmt-detail-head">
+          <Skeleton shimmer className="h-4 w-56 rounded" />
+        </div>
+        <div className="cmt-detail-scroll">
+          <div className="cmt-thread">
+            <div className="cmt-msg" data-current="">
+              <Skeleton shimmer className="size-8 shrink-0 rounded-full" />
+              <div className="cmt-msg-main">
+                <Skeleton shimmer className="h-4 w-36 rounded" />
+                <Skeleton shimmer className="mt-3 h-4 w-full rounded" />
+                <Skeleton shimmer className="mt-2 h-4 w-2/3 rounded" />
+              </div>
             </div>
           </div>
-        </li>
-      ))}
-    </ul>
+        </div>
+      </div>
+    </div>
   );
 }
