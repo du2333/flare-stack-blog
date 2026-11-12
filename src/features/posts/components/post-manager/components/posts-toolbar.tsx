@@ -15,7 +15,12 @@ import type { AdminPostStatusCounts } from "@/features/posts/schema/posts.schema
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
 import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
-import type { CategoryFilter, SortField, StatusFilter } from "../types";
+import type {
+  CategoryFilter,
+  PostPopularity,
+  SortField,
+  StatusFilter,
+} from "../types";
 import { SORT_FIELDS, STATUS_FILTERS, WIDE_TOOLBAR_QUERY } from "../types";
 import { PostsFilterPanel, sortLabel } from "./posts-filter-panel";
 
@@ -43,8 +48,8 @@ interface PostsToolbarProps {
   onSortByChange: (sortBy: SortField) => void;
   /** Clears the chosen Category and Tag only, not the search or the status. */
   onClearTaxonomy?: () => void;
-  /** Opens the categories and tags sheet. */
-  onManageTaxonomy?: () => void;
+  /** Whether the views can be sorted by; unknown while the list loads. */
+  popularity?: PostPopularity;
 }
 
 export function PostsToolbar({
@@ -61,7 +66,7 @@ export function PostsToolbar({
   sortBy,
   onSortByChange,
   onClearTaxonomy,
-  onManageTaxonomy,
+  popularity,
 }: PostsToolbarProps) {
   const wide = useMediaQuery(WIDE_TOOLBAR_QUERY);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -110,6 +115,15 @@ export function PostsToolbar({
       }
     : undefined;
 
+  // Views come from the popularity snapshot; without it there is no sorting by them.
+  const sortFields = SORT_FIELDS.filter(
+    (field) =>
+      field !== "viewCount" ||
+      popularity === undefined ||
+      popularity === "ready",
+  );
+  const shownSort = sortFields.includes(sortBy) ? sortBy : "updatedAt";
+
   const categoryName =
     category === undefined
       ? undefined
@@ -121,14 +135,6 @@ export function PostsToolbar({
   const activeCount =
     (category === undefined ? 0 : 1) + (tag === undefined ? 0 : 1);
 
-  const manageTaxonomy = onManageTaxonomy
-    ? () => {
-        // The taxonomy sheet returns focus to the button, which outlives the panel.
-        filterButton?.focus({ preventScroll: true });
-        setFilterOpen(false);
-        onManageTaxonomy();
-      }
-    : undefined;
   const panel = (
     <PostsFilterPanel
       categories={categories}
@@ -139,7 +145,7 @@ export function PostsToolbar({
       onTagChange={onTagChange}
       sortBy={wide ? undefined : sortBy}
       onSortByChange={wide ? undefined : onSortByChange}
-      onManageTaxonomy={manageTaxonomy}
+      sortFields={sortFields}
     />
   );
 
@@ -194,12 +200,12 @@ export function PostsToolbar({
               {search}
               {filter}
               <DropdownMenu
-                value={sortBy}
+                value={shownSort}
                 ariaLabel={m.admin_posts_sort_label()}
                 triggerClassName={SORT_TRIGGER}
                 placement="bottom-end"
                 onChange={(value) => onSortByChange(value as SortField)}
-                options={SORT_FIELDS.map((value) => ({
+                options={sortFields.map((value) => ({
                   value,
                   label: sortLabel(value),
                 }))}

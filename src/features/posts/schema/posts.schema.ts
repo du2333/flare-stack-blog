@@ -439,10 +439,17 @@ export const GetPostsInputSchema = z.strictObject({
   search: z.string().optional(),
   sortDir: z.enum(["ASC", "DESC"]).optional(),
   sortBy: z
-    .enum(["publishedAt", "updatedAt", "createdAt", "id"])
+    .enum([
+      "publishedAt",
+      "updatedAt",
+      "createdAt",
+      "id",
+      "commentCount",
+      "viewCount",
+    ])
     .optional()
     .describe(
-      "Sort key. Defaults to updatedAt. createdAt is when the post was first created and never changes. Ties are broken by id in the sortDir direction.",
+      "Sort key. Defaults to updatedAt. createdAt is when the post was first created and never changes. commentCount sorts by the published comments; viewCount by the views of the last 30 days, and falls back to updatedAt while popularity is not ready. Ties are broken by id in the sortDir direction.",
     ),
   includeContent: z
     .boolean()
@@ -473,6 +480,19 @@ const AdminPostListItemSchema = z.object({
   pinnedAt: coercedDateNullable,
   createdAt: coercedDate,
   updatedAt: coercedDate,
+  commentCount: z
+    .number()
+    .int()
+    .nonnegative()
+    .describe("Published comments on the post, replies included."),
+  viewCount: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .describe(
+      "Page views of the last 30 days. Absent when the post has no public page or the page's popularity is not ready; absent is unknown, not 0.",
+    ),
   contentJson: NullableJsonContentSchema.optional().describe(
     "Only returned when the request asks for includeContent=true outside the public taxonomy scope.",
   ),
@@ -506,6 +526,11 @@ export type AdminPostStatusCounts = z.infer<typeof AdminPostStatusCountsSchema>;
 export const AdminPostListPageSchema = z.object({
   items: z.array(AdminPostListItemSchema),
   total: z.number().int().nonnegative(),
+  popularity: z
+    .enum(["unconfigured", "missing", "expired", "ready"])
+    .describe(
+      "Whether viewCount can be read: only ready carries it. unconfigured is no Umami, missing no sync yet, expired a snapshot older than a week.",
+    ),
   statusCounts: AdminPostStatusCountsSchema.describe(
     "Counts matching search, publicOnly, taxonomy scope and the category and tag filters before status filtering or pagination.",
   ),

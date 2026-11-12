@@ -32,12 +32,6 @@
   color: var(--fuwari-fg-75);
   font-size: 13px;
 }
-.posts-filter-footer {
-  display: flex;
-  margin: 0 -16px -8px;
-  padding: 8px 16px 0;
-  border-top: 1px solid var(--posts-filter-rule);
-}
 .posts-filter-sheet-head {
   flex-shrink: 0;
   padding: 12px 16px 12px 20px;

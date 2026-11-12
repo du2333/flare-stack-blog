@@ -1,12 +1,17 @@
 import type { SQL } from "drizzle-orm";
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import type { PostStatus } from "@/lib/db/schema";
 import type { AdminTaxonomyFilter } from "@/features/posts/schema/posts.schema";
-import { PostTagsTable, PostsTable } from "@/lib/db/schema";
+import { CommentsTable, PostTagsTable, PostsTable } from "@/lib/db/schema";
 import { hasPublicTag } from "@/features/posts/data/public-assignments.data";
 import { containsText } from "@/lib/db/text-match";
 
-export type SortField = "publishedAt" | "updatedAt" | "createdAt" | "id";
+export type SortField =
+  | "publishedAt"
+  | "updatedAt"
+  | "createdAt"
+  | "id"
+  | "commentCount";
 export type SortDirection = "ASC" | "DESC";
 
 export function adminPostTextColumns(taxonomy?: AdminTaxonomyFilter) {
@@ -31,6 +36,12 @@ export function adminPostTextColumns(taxonomy?: AdminTaxonomyFilter) {
  */
 export function unpublishedChangesSql(): SQL<boolean> {
   return sql<boolean>`(${PostsTable.status} = 'published' AND ${PostsTable.draftFingerprint} IS NOT ${PostsTable.publishedFingerprint})`;
+}
+/** The published Comments of a Post, replies included; deleted ones do not count. */
+export function commentCountSql(): SQL<number> {
+  // The outer id is written out: a one-table query renders `${PostsTable.id}`
+  // unqualified, which the subquery would read as the Comment's own id.
+  return sql<number>`(SELECT count(*) FROM ${CommentsTable} WHERE ${CommentsTable.postId} = "posts"."id" AND ${CommentsTable.status} = 'published')`;
 }
 function uncategorized(): SQL {
   return sql`${PostsTable.categoryId} IS NULL`;
@@ -63,6 +74,8 @@ export type PostFilters = {
   tagId?: number;
   /** Only Published Posts with Unpublished Changes. */
   hasUnpublishedChanges?: boolean;
+  /** Only these Posts. */
+  ids?: Array<number>;
 };
 
 export function buildPostWhereClause(options: PostFilters) {
@@ -74,6 +87,7 @@ export function buildPostWhereClause(options: PostFilters) {
   if (options.uncategorized) whereClauses.push(uncategorized());
   if (options.tagId !== undefined) whereClauses.push(hasTag(options.tagId));
 
+  if (options.ids) whereClauses.push(inArray(PostsTable.id, options.ids));
   if (options.status) {
     whereClauses.push(eq(PostsTable.status, options.status));
   }
@@ -119,9 +133,11 @@ export function buildPostOrderByClause(
   const field = sortBy ?? "updatedAt";
   const orderFn = direction === "DESC" ? desc : asc;
   const primary = orderFn(
-    publicSnapshot && field === "publishedAt"
-      ? sql`json_extract(${PostsTable.publicSnapshotJson}, '$.publishedAt')`
-      : PostsTable[field],
+    field === "commentCount"
+      ? commentCountSql()
+      : publicSnapshot && field === "publishedAt"
+        ? sql`json_extract(${PostsTable.publicSnapshotJson}, '$.publishedAt')`
+        : PostsTable[field],
   );
   // The id is an immutable primary key, so it keeps offset pagination stable
   // when rows share the sorted value or are written while a client pages.

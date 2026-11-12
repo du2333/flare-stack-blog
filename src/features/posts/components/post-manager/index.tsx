@@ -6,16 +6,10 @@ import { toast } from "sonner";
 import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { orpc, orpcClient } from "@/lib/orpc";
-import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { m } from "@/paraglide/messages";
-import {
-  PostListColgroup,
-  PostRow,
-  PostsToolbar,
-  TaxonomySheet,
-} from "./components";
+import { PostListHeader, PostRow, PostsToolbar } from "./components";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Spinner } from "@/components/ui/spinner";
@@ -33,7 +27,7 @@ import type {
   SortField,
   StatusFilter,
 } from "./types";
-import { PHONE_LAYOUT_QUERY } from "./types";
+import { PHONE_LAYOUT_QUERY, POSTS_PER_PAGE } from "./types";
 import "./post-manager.css";
 
 interface PostManagerProps {
@@ -83,7 +77,6 @@ export function PostManager({
   );
   const [postToUnpublish, setPostToUnpublish] =
     useState<AdminPostListItem | null>(null);
-  const [taxonomyOpen, setTaxonomyOpen] = useState(false);
   const phone = useMediaQuery(PHONE_LAYOUT_QUERY);
   const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -119,13 +112,14 @@ export function PostManager({
     totalCount,
     totalPages,
     statusCounts,
+    popularity,
     isPending,
     isFetching,
     isPlaceholderData,
     error,
     refetch,
   } = usePosts({ page, status, sortBy, search, category, tag });
-  const contentRef = useRef<HTMLTableSectionElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   useListScroll(
     scrollRef,
@@ -174,6 +168,8 @@ export function PostManager({
   });
   const pinMutation = useTogglePostPin();
   const hasSearch = Boolean(searchInput.trim());
+  // Views are sorted by only once the popularity snapshot can be read.
+  const viewsSortable = popularity === undefined || popularity === "ready";
   const hasContentFilter =
     status !== "ALL" || Boolean(search.trim()) || hasTaxonomyFilter;
   const isEmptyLibrary = !hasContentFilter && totalCount === 0;
@@ -193,7 +189,7 @@ export function PostManager({
             currentPage={page}
             totalPages={totalPages}
             totalItems={totalCount}
-            itemsPerPage={ADMIN_ITEMS_PER_PAGE}
+            itemsPerPage={POSTS_PER_PAGE}
             currentPageItemCount={posts.length}
             onPageChange={onPageChange}
           />
@@ -242,7 +238,7 @@ export function PostManager({
           sortBy={sortBy}
           onSortByChange={onSortByChange}
           onClearTaxonomy={() => onTaxonomyFilter({})}
-          onManageTaxonomy={() => setTaxonomyOpen(true)}
+          popularity={popularity}
         />
       }
       body="list"
@@ -269,20 +265,17 @@ export function PostManager({
         ) : (
           <>
             <div className="post-list-table-wrap" aria-busy={isFetching}>
-              <table className="post-list-table">
-                <PostListColgroup />
-                <thead>
-                  <tr>
-                    <th scope="col">{m.admin_posts_col_title()}</th>
-                    <th scope="col">
-                      {sortBy === "updatedAt"
-                        ? m.admin_posts_sort_recent_upd()
-                        : m.admin_posts_sort_recent_pub()}
-                    </th>
-                    <th scope="col">{m.admin_posts_col_actions()}</th>
-                  </tr>
-                </thead>
-                <tbody ref={contentRef}>
+              <div
+                className="post-list"
+                role="table"
+                aria-label={m.admin_posts_title()}
+              >
+                <PostListHeader
+                  sortBy={sortBy}
+                  viewsSortable={viewsSortable}
+                  onSortByChange={onSortByChange}
+                />
+                <div ref={contentRef} role="rowgroup">
                   {isPending ? (
                     <PostManagerSkeleton />
                   ) : (
@@ -291,14 +284,11 @@ export function PostManager({
                         key={post.id}
                         post={post}
                         sortBy={sortBy}
+                        popularity={popularity}
                         onDelete={(target, trigger) => {
                           deleteTriggerRef.current = trigger;
                           setPostToDelete(target);
                         }}
-                        onFilterCategory={(id) =>
-                          onTaxonomyFilter({ category: id })
-                        }
-                        onFilterTag={(id) => onTaxonomyFilter({ tag: id })}
                         onTogglePin={(target) => pinMutation.mutate(target)}
                         pinPending={
                           pinMutation.isPending &&
@@ -311,8 +301,8 @@ export function PostManager({
                       />
                     ))
                   )}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
             {!isPending && posts.length === 0 && (
               <EmptyState
@@ -344,16 +334,6 @@ export function PostManager({
       </div>
       {!phone && footer}
 
-      <TaxonomySheet
-        open={taxonomyOpen}
-        onClose={() => setTaxonomyOpen(false)}
-        onPick={(kind, id) => {
-          setTaxonomyOpen(false);
-          onTaxonomyFilter(
-            kind === "category" ? { category: id } : { tag: id },
-          );
-        }}
-      />
       <ConfirmationModal
         isOpen={!!postToDelete}
         title={m.admin_posts_delete_confirm_title()}

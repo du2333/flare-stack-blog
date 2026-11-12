@@ -22,6 +22,7 @@ import {
   adminPostTextColumns,
   buildPostOrderByClause,
   buildPostWhereClause,
+  commentCountSql,
   unpublishedChangesSql,
 } from "@/features/posts/data/helper";
 import type { PublicAssignment } from "@/features/posts/data/public-assignments.data";
@@ -132,6 +133,7 @@ export async function getPosts(
     includeContent?: boolean;
   } = {},
 ) {
+  if (options.ids?.length === 0) return [];
   const {
     offset = 0,
     limit = DEFAULT_PAGE_SIZE,
@@ -166,6 +168,7 @@ export async function getPosts(
         : PostsTable.categoryId,
       createdAt: PostsTable.createdAt,
       updatedAt: PostsTable.updatedAt,
+      commentCount: commentCountSql().mapWith(Number),
       // contentJson is the editable draft body. In public-snapshot scope every
       // other column is read from publicSnapshotJson, so returning the draft
       // here would mix an unpublished body into a published row.
@@ -182,6 +185,15 @@ export async function getPosts(
     .orderBy(...orderByClause)
     .where(whereClause);
   return posts;
+}
+
+/** The ids of every Post the filters select, in no particular order. */
+export async function getPostIds(db: DB, filters: PostFilters = {}) {
+  const rows = await db
+    .select({ id: PostsTable.id })
+    .from(PostsTable)
+    .where(buildPostWhereClause(filters));
+  return rows.map((row) => row.id);
 }
 
 /**
