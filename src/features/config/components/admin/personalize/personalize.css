@@ -1,7 +1,47 @@
+/*
+ * 「个性化」: the presentation settings as one panel, a section each with a
+ * hairline between them, and beside it the public page in a window of its own.
+ */
+.personalize-form {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+}
+/* Each section names the setting above its control. */
+.site-theme-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px 20px 20px;
+}
+.site-theme-row + .site-theme-row {
+  border-top: 1px solid var(--admin-line);
+}
+.site-section-copy > :is(strong, label) {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--admin-fg);
+}
+.site-section-copy > p,
+.site-row-note {
+  margin-top: 2px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+}
+.site-row-note {
+  margin-top: -4px;
+}
 .site-banner {
   position: relative;
-  height: clamp(170px, 21vh, 290px);
-  border-radius: var(--admin-radius-card);
+  height: clamp(150px, 19vh, 220px);
+  border-radius: 12px;
   background: var(--admin-hover);
   box-shadow: inset 0 0 0 1px var(--admin-line);
   overflow: hidden;
@@ -12,58 +52,74 @@
   object-fit: cover;
   object-position: center;
 }
+/* Under the banner: where the focus is, back to the centre, and 更换. */
+.site-banner-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  --fuwari-button-height: 32px;
+  --fuwari-button-font-size: var(--admin-text-small);
+  --fuwari-button-padding-x: 12px;
+}
+.site-banner-focus {
+  display: inline-flex;
+  gap: 8px;
+  font-size: var(--admin-text-meta);
+  color: var(--admin-fg-3);
+}
+.site-banner-focus output {
+  color: var(--admin-fg);
+  font-variant-numeric: tabular-nums;
+}
 .site-banner-upload {
-  position: absolute;
-  top: calc(16 * var(--admin-unit));
-  right: calc(16 * var(--admin-unit));
+  margin-left: auto;
 }
 .site-avatar-edit {
-  position: relative;
-  flex-shrink: 0;
-  width: calc(120 * var(--admin-unit));
-  min-width: 92px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  --fuwari-button-height: 32px;
+  --fuwari-button-font-size: var(--admin-text-small);
+  --fuwari-button-padding-x: 12px;
 }
 .site-avatar {
   display: grid;
   place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
   overflow: hidden;
-  border: 4px solid var(--fuwari-card-bg);
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  border-radius: 50%;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+  color: var(--admin-fg-3);
 }
 .site-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.site-avatar-upload {
-  position: absolute;
-  bottom: calc(6 * var(--admin-unit));
-  left: 50%;
-  transform: translateX(-50%);
-}
-/* Each row names the setting above its control: the form shares its page with the preview. */
-.site-theme-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  padding: 18px 20px 20px;
-  border-radius: var(--admin-radius-card);
-  background: var(--admin-surface);
-  box-shadow:
-    0 0 0 1px var(--admin-line),
-    var(--admin-shadow-card);
-}
-.site-theme-row + .site-theme-row {
-  margin-top: 12px;
-}
 .site-hue-control {
   display: flex;
   align-items: center;
-  gap: calc(24 * var(--admin-unit));
+  gap: 14px;
+}
+/* Hues one click away. */
+.site-hue-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: -4px 0 0 -5px;
+}
+.site-hue-swatches span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+.site-hue-swatches .fuwari-icon-button-active {
+  box-shadow: inset 0 0 0 1.5px var(--admin-fg);
 }
 .site-hue-control input {
   flex: 1;
@@ -93,29 +149,16 @@
 .site-hue-control output {
   display: grid;
   place-items: center;
-  min-width: calc(72 * var(--admin-unit));
-  min-height: 38px;
-  border: 1px solid var(--fuwari-input-border);
-  background: var(--fuwari-input-bg);
+  min-width: 56px;
+  height: 30px;
   border-radius: 8px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-.site-focus-control {
-  display: flex;
-  align-items: center;
-  gap: calc(16 * var(--admin-unit));
-}
-.site-focus-control output {
-  color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
+  background: var(--admin-hover);
+  color: var(--admin-fg);
+  font-size: var(--admin-text-small);
   font-variant-numeric: tabular-nums;
 }
 /* Touch targets: at least 44px high where the pointer is a finger. */
 @media (pointer: coarse) {
-  .site-focus-control {
-    --fuwari-button-height-sm: 44px;
-  }
   .site-brand-choice,
   .site-theme-option-choice {
     --fuwari-segment-height: 44px;
@@ -148,9 +191,10 @@
   min-height: 44px;
   padding: 0 16px;
   border-radius: 12px;
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
-  font-size: 16px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+  color: var(--admin-fg);
+  font-size: 15px;
   font-weight: 700;
 }
 .site-brand-preview img {
@@ -180,9 +224,6 @@
   gap: 24px;
   align-items: start;
 }
-.personalize-form {
-  min-width: 0;
-}
 /* use-aside-room.ts sets its height from the room the scroller has. */
 .personalize-aside {
   position: sticky;
@@ -202,60 +243,118 @@
   width: 100%;
 }
 
-/* The preview: its switches, then the page at the device's width, scaled to fit. */
+/*
+ * The preview is a browser window: the bar with its lights, the address, the
+ * viewport's size and the device switch, then the page. With the desktop the
+ * window is as tall as the page scaled to its width; with the phone it takes
+ * the room there is and the phone stands in it.
+ */
 .personalize-preview {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-width: 0;
   min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-raised);
+}
+.personalize-preview[data-device="phone"] {
   height: 100%;
 }
 .personalize-preview-bar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 6px 8px 6px 14px;
+  border-bottom: 1px solid var(--admin-line);
+  background: var(--admin-sunken);
 }
-.personalize-close {
-  margin-left: auto;
+.personalize-lights {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
-/* The stage takes what the bar leaves; the page in it runs its full height. */
-.personalize-stage {
-  position: relative;
+.personalize-lights i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--admin-press);
+}
+.personalize-address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex: 1;
   min-width: 0;
+  max-width: 320px;
+  height: 28px;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: 0 0 0 1px var(--admin-line);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-meta);
+  white-space: nowrap;
+}
+.personalize-address svg {
+  flex-shrink: 0;
+  color: var(--admin-fg-3);
+}
+.personalize-preview-size {
+  flex-shrink: 0;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.personalize-preview-bar .fuwari-segmented {
+  --fuwari-segment-padding-x: 8px;
+  flex-shrink: 0;
+}
+.personalize-close {
+  flex-shrink: 0;
+}
+/* The room for the page; the desktop's is the shape of its viewport. */
+.personalize-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
-  border-radius: var(--admin-radius-card);
-  background: var(--admin-hover);
-  box-shadow: inset 0 0 0 1px var(--admin-line);
+  background: var(--admin-sunken);
   overflow: hidden;
 }
-/* The room for the device: the stage less a margin, where the frame is centred. */
+.personalize-preview[data-device="desktop"] > .personalize-stage {
+  flex: 0 1 auto;
+  aspect-ratio: 1440 / 900;
+}
 .personalize-fit {
   position: absolute;
-  inset: 16px;
+  inset: 0;
   display: grid;
   place-items: center;
 }
-/* The scaled viewport, a surface of its own on the quiet ground. */
+.personalize-preview[data-device="phone"] .personalize-fit {
+  inset: 20px;
+}
+/* The scaled viewport. The phone is a device of its own on the ground. */
 .personalize-canvas {
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
-  background: var(--fuwari-card-bg);
-  box-shadow:
-    0 0 0 1px var(--admin-rule),
-    0 6px 24px rgb(0 0 0 / 0.12);
+  background: var(--admin-surface);
 }
 .personalize-canvas[data-device="phone"] {
-  border-radius: 22px;
-}
-.personalize-preview-size {
-  color: var(--fuwari-fg-50);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  border-radius: 30px;
+  /* The phone's own body, the same dark in either scheme. */
+  box-shadow:
+    0 0 0 6px #1b1b20,
+    0 0 0 7px var(--admin-line-strong),
+    0 18px 40px -12px rgb(0 0 0 / 0.35);
 }
 .personalize-scaler {
   position: absolute;
@@ -288,10 +387,10 @@
   max-width: calc(100% - 20px);
   padding: 6px 14px;
   border-radius: 999px;
-  background: var(--fuwari-card-bg);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 0.16);
-  color: var(--fuwari-fg-75);
-  font-size: 13px;
+  background: var(--admin-ink);
+  box-shadow: var(--admin-shadow-raised);
+  color: var(--admin-on-ink);
+  font-size: var(--admin-text-small);
   transform: translateX(-50%);
 }
 .personalize-loading[data-first] {
@@ -316,24 +415,20 @@
   max-height: none;
   height: 100dvh;
   border-radius: 0;
-  padding: 12px 16px;
-  background: var(--fuwari-card-bg);
+  padding: 0;
+  background: var(--admin-surface);
+}
+.personalize-sheet .personalize-preview,
+.personalize-sheet .personalize-preview[data-device] {
+  border-radius: 0;
+  box-shadow: none;
+  max-height: none;
+}
+.personalize-sheet .personalize-address {
+  display: none;
 }
 .personalize-sheet .personalize-preview {
   flex: 1;
   height: auto;
   padding-bottom: env(safe-area-inset-bottom);
-}
-
-@media (max-width: 750px) {
-  .site-banner {
-    height: 180px;
-  }
-}
-@media (max-width: 450px) {
-  .site-banner-upload {
-    top: auto;
-    bottom: 14px;
-    right: 12px;
-  }
 }

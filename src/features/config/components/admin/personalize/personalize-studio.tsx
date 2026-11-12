@@ -45,6 +45,8 @@ const BRAND_MARK_LABELS: Record<BrandMark, () => string> = {
 };
 
 const BRAND_MARK_SIZE = 28;
+/** Hues one click away, around the wheel. */
+const HUE_SWATCHES = [20, 55, 95, 150, 200, 250, 290, 335];
 const BANNER_FOCUS_HINT_ID = "site-banner-focus-hint";
 
 /** From this width the preview sits beside the form; below it is a button. */
@@ -106,7 +108,6 @@ export function PersonalizeStudio() {
       <div className="personalize-form">
         <ThemePicker />
         <BannerRow />
-        <BannerFocusRow />
         <AvatarRow />
         <HueRow />
         <BrandMarkRow />
@@ -169,6 +170,10 @@ function PreviewLauncher({ values }: { values: PreviewValues }) {
   );
 }
 
+/**
+ * The banner and what of it stays in sight: click the image to set the focus,
+ * with where it is, a way back to the centre and 更换 under it.
+ */
 function BannerRow() {
   const { control } = useFormContext<SystemConfig>();
   const { focus, setFocus } = useBannerFocus();
@@ -199,10 +204,29 @@ function BannerRow() {
             describedBy={BANNER_FOCUS_HINT_ID}
           />
         )}
+      </div>
+      <div className="site-banner-tools">
+        {bannerSrc ? (
+          <>
+            <span className="site-banner-focus">
+              {m.settings_banner_focus()}
+              <output>{`${focus.x}%, ${focus.y}%`}</output>
+            </span>
+            <Button
+              variant="quiet"
+              size="xs"
+              disabled={isFocalPointCentred(focus)}
+              onClick={() => setFocus({ ...FOCAL_POINT_CENTRE })}
+            >
+              {m.settings_banner_focus_reset()}
+            </Button>
+          </>
+        ) : null}
         <OverlayUpload
           name="site.bannerImage"
           assetPath="site/banner.webp"
           accept={IMAGE_ACCEPT}
+          variant="outline"
           className="site-banner-upload"
           label={
             bannerSrc
@@ -211,29 +235,9 @@ function BannerRow() {
           }
         />
       </div>
-    </section>
-  );
-}
-
-function BannerFocusRow() {
-  const { focus, setFocus } = useBannerFocus();
-  return (
-    <section className="site-theme-row">
-      <div className="site-section-copy">
-        <strong>{m.settings_banner_focus()}</strong>
-        <p id={BANNER_FOCUS_HINT_ID}>{m.settings_banner_focus_hint()}</p>
-      </div>
-      <div className="site-focus-control">
-        <output>{`${focus.x}%, ${focus.y}%`}</output>
-        <Button
-          variant="regular"
-          size="sm"
-          disabled={isFocalPointCentred(focus)}
-          onClick={() => setFocus({ ...FOCAL_POINT_CENTRE })}
-        >
-          {m.settings_banner_focus_reset()}
-        </Button>
-      </div>
+      <p id={BANNER_FOCUS_HINT_ID} className="site-row-note">
+        {m.settings_banner_focus_hint()}
+      </p>
     </section>
   );
 }
@@ -253,14 +257,14 @@ function AvatarRow() {
           {avatarSrc ? (
             <img src={avatarSrc} alt="" />
           ) : (
-            <UserRound size={38} aria-hidden="true" />
+            <UserRound size={26} aria-hidden="true" />
           )}
         </div>
         <OverlayUpload
           name="site.avatar"
           assetPath="site/avatar.png"
           accept={IMAGE_ACCEPT}
-          className="site-avatar-upload"
+          variant="outline"
           label={
             avatarSrc
               ? m.settings_site_avatar_replace()
@@ -295,6 +299,19 @@ function HueRow() {
           }}
         />
         <output htmlFor="theme-hue-slider">{hue}°</output>
+      </div>
+      <div className="site-hue-swatches">
+        {HUE_SWATCHES.map((value) => (
+          <IconButton
+            key={value}
+            size="xs"
+            label={`${value}°`}
+            active={hue === value}
+            onClick={() => setHue(value)}
+          >
+            <span style={{ background: `oklch(0.7 0.14 ${value})` }} />
+          </IconButton>
+        ))}
       </div>
     </section>
   );
