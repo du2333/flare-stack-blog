@@ -37,33 +37,20 @@
   overflow: visible;
 }
 
-/* Hero: the site's banner fading in from the right over a primary tint. */
+/* Hero: a plain card surface with a hairline, the site's banner fading in
+   from the right. */
 .dashboard-hero {
   position: relative;
   isolation: isolate;
   display: flex;
   align-items: flex-end;
-  --dashboard-hero-base: color-mix(
-    in oklab,
-    var(--fuwari-primary) 9%,
-    var(--fuwari-card-bg)
-  );
+  --dashboard-hero-base: var(--fuwari-card-bg);
   min-height: calc(224 * var(--admin-unit));
   padding: calc(34 * var(--admin-unit)) calc(44 * var(--admin-unit));
   overflow: hidden;
-  border-radius: calc(18 * var(--admin-unit));
-  background:
-    radial-gradient(
-      90% 130% at 100% 0%,
-      color-mix(in oklab, var(--fuwari-primary) 34%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      70% 120% at 0% 100%,
-      color-mix(in oklab, var(--fuwari-primary) 14%, transparent),
-      transparent 70%
-    ),
-    var(--dashboard-hero-base);
+  border: 1px solid var(--admin-hairline);
+  border-radius: calc(10 * var(--admin-unit));
+  background: var(--dashboard-hero-base);
 }
 /* A wash behind the text, however narrow the hero gets. */
 .dashboard-hero[data-image]::before {

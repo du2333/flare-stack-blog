@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./styles/motion.css";
 @import "./styles/theme-variables.css";
+@import "./styles/admin-variables.css";
 @import "tw-animate-css";
 @import "@fontsource/roboto/400.css";
 @import "@fontsource/roboto/500.css";
@@ -58,7 +59,9 @@
     cursor: pointer;
   }
 
-  /* The base layer; the Admin reads it as is. Theme variables are in
+  /* The base layer for public pages: colours derive from --fuwari-hue. The
+     Admin reads the same names with fixed values of its own, in
+     styles/admin-variables.css. Theme variables are in
      styles/theme-variables.css. --fuwari-inline-code-bg/-color,
      --fuwari-codeblock-selection and --fuwari-toc-width are not declared:
      their consumers fall back to the derivation, so they follow an override
@@ -207,6 +210,19 @@
   }
   .fuwari-card-floating {
     background-color: var(--theme-raised);
+  }
+  /* The Admin (styles/admin-variables.css) only: every card has a hairline
+     edge. Public pages keep the cards above as they are. */
+  :root:has(.admin-layout)
+    :is(
+      .fuwari-card-base,
+      .fuwari-card-panel,
+      .fuwari-card-item,
+      .fuwari-card-widget,
+      .fuwari-card-standalone,
+      .fuwari-card-floating
+    ) {
+    border: 1px solid var(--admin-hairline);
   }
 
   .fuwari-heading {

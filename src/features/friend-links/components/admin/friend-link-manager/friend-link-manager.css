@@ -63,9 +63,6 @@
 .friend-queue-item[aria-current="true"] strong {
   color: var(--fuwari-btn-content);
 }
-.dark .friend-queue-item[aria-current="true"] strong {
-  color: var(--fuwari-primary-hover);
-}
 .friend-logo {
   display: grid;
   place-items: center;

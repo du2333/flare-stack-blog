@@ -30,7 +30,7 @@
   min-width: 0;
   padding: 0;
   text-align: left;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 .admin-sidebar-icon {
   display: flex;
@@ -51,12 +51,12 @@
 }
 .admin-sidebar-brand {
   height: 3rem;
-  color: var(--fuwari-primary);
+  color: var(--fuwari-fg);
   font-size: 0.875rem;
   font-weight: 700;
 }
 .admin-sidebar-brand:hover {
-  background: var(--fuwari-btn-regular-bg);
+  background: var(--fuwari-btn-plain-bg-hover);
 }
 .admin-sidebar-nav {
   flex: 1;
@@ -78,13 +78,16 @@
     background-color 200ms,
     color 200ms;
 }
-.admin-sidebar-item:hover,
+.admin-sidebar-item:hover {
+  background: var(--fuwari-btn-plain-bg-hover);
+  color: var(--fuwari-fg);
+}
+/* The current item: a quiet surface, ink text and a bar in the accent. */
 .admin-sidebar-item.is-active {
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-btn-content);
-}
-.admin-sidebar-item.is-active {
-  color: var(--fuwari-primary);
+  color: var(--fuwari-fg);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--fuwari-primary);
 }
 .admin-sidebar-toggle {
   display: none;
@@ -106,7 +109,7 @@
 }
 .admin-sidebar-toggle:hover {
   background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  color: var(--fuwari-fg);
 }
 .admin-sidebar-mobile-close {
   position: absolute;
@@ -119,7 +122,7 @@
 .admin-sidebar-footer {
   flex-shrink: 0;
   padding: 0.75rem;
-  border-top: 1px solid color-mix(in srgb, var(--fuwari-fg) 8%, transparent);
+  border-top: 1px solid var(--admin-hairline);
 }
 .admin-sidebar-user {
   height: 3.75rem;
@@ -154,8 +157,8 @@
     color 180ms;
 }
 .admin-sidebar-action:hover {
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-btn-content);
+  background: var(--fuwari-btn-plain-bg-hover);
+  color: var(--fuwari-fg);
 }
 .admin-sidebar-colour-scheme > div {
   justify-self: center;
@@ -186,7 +189,7 @@
     background: var(--fuwari-btn-plain-bg-hover);
   }
   .admin-sidebar.is-collapsed .admin-sidebar-item.is-active {
-    background: var(--fuwari-btn-regular-bg-hover);
+    background: var(--fuwari-btn-regular-bg);
   }
   .admin-sidebar-toggle {
     display: flex;

@@ -1,0 +1,94 @@
+/*
+ * The Admin workbench's own values (ADR 0021, amended 2026-11-11): warm
+ * neutral paper and ink with a fixed teal accent, in both Colour Schemes.
+ *
+ * The Admin still shares the stylesheet and the controls with public pages,
+ * so it reads the same --fuwari-* names; here it gives every colour that the
+ * base layer derives from --fuwari-hue (styles.css) a fixed value of its own
+ * instead. Nothing below mentions the hue, so the hue that Site Config and
+ * the personalize page move never reaches the workbench, and a Theme sets
+ * --theme-* only, which theme-variables.css pins back for the Admin.
+ * admin-variables.test checks that no variable resolves from the hue here.
+ *
+ * Success, warning and danger keep their fixed hues from the base layer.
+ * Contrast (WCAG), light / dark: text on the card 11.6 / 13.0, secondary text
+ * 4.7 / 6.3, primary button text on the accent 5.5 / 7.2, accent as a link on
+ * the card 5.3 / 9.2; the accent also clears 3:1 as a focus ring on the page
+ * and the card.
+ *
+ * The selector is more specific than :root and .dark of the base layer, and
+ * the dark one more than the light one, so source order does not matter.
+ */
+@layer base {
+  :root:has(.admin-layout) {
+    --fuwari-primary: #0f766e;
+    --fuwari-primary-hover: #115e59;
+    --fuwari-primary-active: #134e4a;
+    --fuwari-page-bg: #f4f0e8;
+    --fuwari-card-bg: #fdfbf7;
+    --fuwari-btn-content: #4a4033;
+    --fuwari-btn-regular-bg: #eee9de;
+    --fuwari-btn-regular-bg-hover: #e6e0d2;
+    --fuwari-btn-regular-bg-active: #dcd5c4;
+    --fuwari-btn-plain-bg-hover: #ece7dc;
+    --fuwari-btn-plain-bg-active: #f3efe6;
+    --fuwari-deep-text: #2b2218;
+    --fuwari-selection-bg: #c9e3dd;
+    --fuwari-toc-btn-hover: #ece7dc;
+    --fuwari-toc-btn-active: #e6e0d2;
+    --fuwari-toc-badge-bg: #e3dccd;
+    --fuwari-input-border: rgb(70 50 20 / 0.16);
+    --fuwari-divider: rgb(70 50 20 / 0.12);
+    --fuwari-fg: rgb(38 30 22 / 0.92);
+    --fuwari-fg-75: rgb(38 30 22 / 0.78);
+    --fuwari-fg-50: rgb(38 30 22 / 0.64);
+    --fuwari-fg-30: rgb(38 30 22 / 0.35);
+    --fuwari-fg-faint: rgb(38 30 22 / 0.5);
+    --fuwari-meta-text: rgb(38 30 22 / 0.55);
+    --fuwari-row-text: #4a4033;
+
+    /* The edge of a button, a badge, a callout, a card: a hairline, so no
+       control rests on its fill alone. Only the Admin has it. */
+    --admin-hairline: rgb(70 50 20 / 0.13);
+
+    /* Radii a little tighter than the base layer: the Tailwind scale, the
+       large card, the form fields and the buttons (theme-variables.css). */
+    --fuwari-radius-large: 0.625rem;
+    --radius-large: 0.75rem;
+    --radius-lg: 0.375rem;
+    --radius-xl: 0.5rem;
+    --radius-2xl: 0.625rem;
+    --radius-3xl: 0.75rem;
+    --fuwari-field-radius: 8px;
+    --fuwari-button-radius: 8px;
+  }
+
+  :root.dark:has(.admin-layout) {
+    --fuwari-primary: #2dd4bf;
+    --fuwari-primary-hover: #5eead4;
+    --fuwari-primary-active: #99f6e4;
+    --fuwari-page-bg: #171411;
+    --fuwari-card-bg: #1f1b17;
+    --fuwari-btn-content: #d9cfc0;
+    --fuwari-btn-regular-bg: #2b2620;
+    --fuwari-btn-regular-bg-hover: #342e27;
+    --fuwari-btn-regular-bg-active: #3d362e;
+    --fuwari-btn-plain-bg-hover: #28231e;
+    --fuwari-btn-plain-bg-active: #231f1a;
+    --fuwari-deep-text: #efe6d8;
+    --fuwari-selection-bg: #1e5a52;
+    --fuwari-toc-btn-hover: #26211c;
+    --fuwari-toc-btn-active: #2b2620;
+    --fuwari-toc-badge-bg: #2b2620;
+    --fuwari-input-border: rgb(245 238 228 / 0.14);
+    --fuwari-divider: rgb(245 238 228 / 0.12);
+    --fuwari-fg: rgb(245 238 228 / 0.9);
+    --fuwari-fg-75: rgb(245 238 228 / 0.75);
+    --fuwari-fg-50: rgb(245 238 228 / 0.6);
+    --fuwari-fg-30: rgb(245 238 228 / 0.3);
+    --fuwari-fg-faint: rgb(245 238 228 / 0.5);
+    --fuwari-meta-text: rgb(245 238 228 / 0.45);
+    --fuwari-row-text: #d9cfc0;
+    --admin-hairline: rgb(245 238 228 / 0.11);
+  }
+}

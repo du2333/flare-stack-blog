@@ -170,7 +170,7 @@ export function PostRow({
           items={actions}
           triggerClassName={iconButtonClass({
             className:
-              "max-[620px]:size-11 pointer-coarse:size-11 aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--fuwari-primary)",
+              "max-[620px]:size-11 pointer-coarse:size-11 aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--fuwari-fg)",
           })}
         />
       </td>

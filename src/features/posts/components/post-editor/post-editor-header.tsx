@@ -194,7 +194,7 @@ export function PostEditorHeader({
           onClick={onOpenInfo}
           aria-expanded={infoOpen}
           className={cn(
-            infoOpen && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)",
+            infoOpen && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-fg)",
           )}
         >
           {m.editor_info_title()}

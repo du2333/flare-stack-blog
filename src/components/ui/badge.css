@@ -74,4 +74,13 @@
     background: var(--fuwari-danger-bg);
     color: var(--fuwari-danger-fg);
   }
+  /* The Admin (admin-variables.css) only: a hairline, so a fill is not the
+     badge's only edge. */
+  :root:has(.admin-layout) .fuwari-badge:not([data-tone]) {
+    box-shadow: inset 0 0 0 1px var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-badge[data-tone] {
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, currentColor 22%, transparent);
+  }
 }

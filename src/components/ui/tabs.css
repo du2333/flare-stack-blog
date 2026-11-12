@@ -61,6 +61,16 @@
     color: var(--theme-accent);
     font-weight: 500;
   }
+  /* The Admin (admin-variables.css) only: ink text; the selected tab keeps
+     its accent underline. */
+  :root:has(.admin-layout)
+    .fuwari-tab:is(
+      :hover:not(:disabled),
+      [aria-selected="true"],
+      [aria-current="page"]
+    ) {
+    color: var(--fuwari-fg);
+  }
   .fuwari-tab:focus-visible {
     outline: 2px solid var(--theme-accent);
     outline-offset: -2px;

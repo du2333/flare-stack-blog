@@ -46,6 +46,25 @@
     box-shadow: 0 0 0 3px
       color-mix(in srgb, var(--theme-accent) 12%, transparent);
   }
+  /* The Admin (admin-variables.css) only: a hairline border, and in focus a
+     card-coloured field with a 1px accent ring instead of a tinted fill and
+     a glow. */
+  :root:has(.admin-layout)
+    :is(.fuwari-input, .fuwari-field-shell):not(
+      [data-bare],
+      [aria-invalid="true"]
+    ) {
+    border-color: var(--admin-hairline);
+  }
+  :root:has(.admin-layout)
+    :is(.fuwari-input:focus, .fuwari-field-shell:focus-within):not(
+      [data-bare],
+      [aria-invalid="true"]
+    ) {
+    background: var(--theme-surface);
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 1px var(--theme-accent);
+  }
   .fuwari-input[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--fuwari-danger-fg) 60%, transparent);
   }
@@ -140,6 +159,10 @@
     color: var(--theme-accent);
     background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
   }
+  :root:has(.admin-layout) .fuwari-field-button:hover:not(:disabled) {
+    color: var(--fuwari-fg);
+    background: var(--theme-tonal-bg);
+  }
   .fuwari-field-button:focus-visible {
     outline: 2px solid var(--theme-accent);
     outline-offset: -3px;
@@ -224,6 +247,9 @@
   .fuwari-switch:focus-visible {
     outline: 2px solid var(--theme-accent);
     outline-offset: 2px;
+  }
+  :root:has(.admin-layout) .fuwari-switch {
+    border-radius: 8px;
   }
   .fuwari-switch-track {
     position: relative;

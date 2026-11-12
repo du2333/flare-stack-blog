@@ -61,6 +61,28 @@
     color: var(--theme-accent);
     font-weight: 500;
   }
+  /* The Admin (admin-variables.css) only: ink text; the selected segment
+     keeps its grey chip and gains a hairline, the track a hairline instead
+     of a fill. */
+  :root:has(.admin-layout) .fuwari-segment:hover:not(:disabled),
+  :root:has(.admin-layout)
+    .fuwari-segmented
+    > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
+    color: var(--fuwari-fg);
+  }
+  :root:has(.admin-layout)
+    .fuwari-segmented
+    > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
+    box-shadow: inset 0 0 0 1px var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-segmented[data-track] {
+    border: 1px solid var(--admin-hairline);
+    border-radius: 10px;
+    background: transparent;
+  }
+  :root:has(.admin-layout) .fuwari-segment {
+    border-radius: 6px;
+  }
   .fuwari-segment:focus-visible {
     outline: 2px solid var(--theme-accent);
     outline-offset: 1px;

@@ -12,6 +12,11 @@
   color: var(--fuwari-fg-75);
   box-shadow: 0 20px 70px rgb(0 0 0 / 0.12);
 }
+/* The Admin (admin-variables.css) only: a hairline and a lighter shadow. */
+:root:has(.admin-layout) .fuwari-modal {
+  border: 1px solid var(--admin-hairline);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.14);
+}
 .fuwari-modal::backdrop {
   background: rgb(0 0 0 / 0.25);
   backdrop-filter: blur(4px);
