@@ -566,14 +566,6 @@
   "admin_posts_status_published": "Published",
   "admin_posts_status_published_changed": "Published · Unpublished changes",
   "admin_posts_status_draft": "Draft",
-  "admin_pagination_info": [
-    {
-      "declarations": ["input startItem", "input endItem", "input totalItems"],
-      "match": {
-        "startItem=*": "Showing {startItem} - {endItem} of {totalItems}"
-      }
-    }
-  ],
   "admin_pagination_label": "Pages",
   "admin_pagination_previous": "Previous page",
   "admin_pagination_next": "Next page",
@@ -1437,13 +1429,13 @@
   "media_unused_confirm": "Delete these {count} unreferenced images? This cannot be undone.",
   "media_reference_fail": "Could not load references",
   "media_image_unavailable": "Image preview unavailable",
-  "friend_review_hint": "Review submissions and choose the sites to feature.",
   "friend_review_queue": "Submissions",
   "friend_review_search": "Search sites or domains",
   "friend_review_no_results": "No matching sites",
   "friend_review_details": "Site details",
   "friend_review_visit": "Visit website",
   "friend_review_applicant": "Submitted by",
+  "friend_review_applied": "Applied",
   "friend_review_no_description": "No description provided",
   "friend_review_preview": "Public display preview",
   "friend_review_preview_hint": "Once approved, these details appear on your friend links page.",
