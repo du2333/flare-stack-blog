@@ -1,4 +1,4 @@
-import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 export const SITE_ASSET_MAX_FILE_SIZE_MB = 8;
 export const SITE_ASSET_MAX_FILE_SIZE =
@@ -29,28 +29,28 @@ function isAllowedAssetPath(path: string): boolean {
   return ALLOWED_ASSET_PREFIXES.some((prefix) => normalized.startsWith(prefix));
 }
 
-export function parseSiteAssetUploadInput(
-  formData: FormData,
-  messages: Messages,
-): { file: File; assetPath: string } {
+export function parseSiteAssetUploadInput(formData: FormData): {
+  file: File;
+  assetPath: string;
+} {
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    throw new Error(messages.settings_asset_validation_file_required());
+    throw new Error(m.settings_asset_validation_file_required());
   }
 
   const assetPath = formData.get("assetPath");
   if (typeof assetPath !== "string" || !assetPath.trim()) {
-    throw new Error(messages.settings_asset_validation_path_required());
+    throw new Error(m.settings_asset_validation_path_required());
   }
 
   const trimmedPath = assetPath.trim().replace(/^\/+/, "").replace(/\\/g, "/");
   if (!isAllowedAssetPath(trimmedPath)) {
-    throw new Error(messages.settings_asset_validation_path_invalid());
+    throw new Error(m.settings_asset_validation_path_invalid());
   }
 
   if (file.size > SITE_ASSET_MAX_FILE_SIZE) {
     throw new Error(
-      messages.settings_asset_validation_file_too_large({
+      m.settings_asset_validation_file_too_large({
         maxSizeMb: SITE_ASSET_MAX_FILE_SIZE_MB,
       }),
     );
@@ -70,7 +70,7 @@ export function parseSiteAssetUploadInput(
   ]);
 
   if (!allowedMimes.has(mime) && !allowedExts.has(ext ?? "")) {
-    throw new Error(messages.settings_asset_validation_file_invalid_type());
+    throw new Error(m.settings_asset_validation_file_invalid_type());
   }
 
   return { file, assetPath: trimmedPath };

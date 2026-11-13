@@ -187,7 +187,7 @@ export function useSystemConfigForm(
     const site = siteForSave(baseline.config.site, submitted.site, sitePage);
     const parsedSite =
       section === "site"
-        ? createSiteConfigInputFormSchema(m).safeParse(site)
+        ? createSiteConfigInputFormSchema().safeParse(site)
         : null;
     if (parsedSite && !parsedSite.success) {
       const issue = parsedSite.error.issues[0];

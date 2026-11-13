@@ -7,7 +7,7 @@ import { getAuthClient } from "@/lib/auth/auth-client";
 import { getProfileAuthErrorMessage } from "@/lib/auth/auth-errors";
 import { m } from "@/paraglide/messages";
 
-const nameFormSchema = z.object({ name: createPublicNameSchema(m) });
+const nameFormSchema = z.object({ name: createPublicNameSchema() });
 
 type NameFormSchema = z.infer<typeof nameFormSchema>;
 
@@ -32,7 +32,7 @@ export function usePublicNameForm(options: UsePublicNameFormOptions = {}) {
       const { error } = await getAuthClient().updateUser({ name: data.name });
       if (error) {
         setSubmitError(
-          getProfileAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+          getProfileAuthErrorMessage(error) ?? m.auth_error_default_desc(),
         );
         return;
       }

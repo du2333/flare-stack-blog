@@ -73,7 +73,7 @@ const uploadAsset = adminProcedure
     const formData = new FormData();
     formData.set("file", input.file);
     formData.set("assetPath", input.assetPath);
-    const parsed = parseSiteAssetUploadInput(formData, m);
+    const parsed = parseSiteAssetUploadInput(formData);
     return ConfigService.uploadSiteAsset(context, parsed);
   });
 

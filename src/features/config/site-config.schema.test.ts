@@ -3,7 +3,7 @@ import { m } from "@/paraglide/messages";
 import { createSiteConfigInputFormSchema } from "./site-config.schema";
 
 function parseLinks(navLinks: Array<Record<string, unknown>>) {
-  return createSiteConfigInputFormSchema(m).safeParse({ navLinks });
+  return createSiteConfigInputFormSchema().safeParse({ navLinks });
 }
 
 function issuePaths(navLinks: Array<Record<string, unknown>>) {

@@ -13,7 +13,7 @@ export function useLogout({ onSuccess }: { onSuccess?: () => void } = {}) {
     if (error) {
       toast.error(m.auth_logout_failed(), {
         description:
-          getLogoutAuthErrorMessage(error, m) ?? m.auth_logout_failed_desc(),
+          getLogoutAuthErrorMessage(error) ?? m.auth_logout_failed_desc(),
       });
       return;
     }
