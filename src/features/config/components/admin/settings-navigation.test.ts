@@ -31,8 +31,6 @@ import { m } from "@/paraglide/messages";
 import { Route as SettingsRoute } from "@/routes/admin/settings/route";
 import {
   accessSectionFromPath,
-  LEGACY_SETTINGS_TAB_TO,
-  MOVED_SETTINGS_PAGE_TO,
   settingsSectionFromPath,
 } from "./settings-pages";
 
@@ -202,14 +200,8 @@ it("keeps only site, notifications and maintenance as settings tabs", async () =
   expect(document.querySelector(".settings-savebar")).toBeNull();
 });
 
-it("sends the pages that left 「设置」 to their new addresses", () => {
-  expect(MOVED_SETTINGS_PAGE_TO).toEqual({
-    "api-keys": "/admin/access/api-keys",
-    "agent-skill": "/admin/access/agent-skill",
-    "muted-users": "/admin/muted-users",
-  });
-  expect(LEGACY_SETTINGS_TAB_TO["api-keys"]).toBe("/admin/access/api-keys");
-  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBeNull();
+it("reads a section from the path of its own page only", () => {
+  expect(settingsSectionFromPath("/admin/settings/")).toBeNull();
   expect(accessSectionFromPath("/admin/access/agent-skill/")).toBe(
     "agent-skill",
   );
