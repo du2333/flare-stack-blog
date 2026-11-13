@@ -4,6 +4,7 @@ import {
   use,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -90,6 +91,12 @@ interface MenuProps {
    * open until it is dismissed. Touch and pen only click.
    */
   openOnHover?: boolean;
+  /**
+   * Closes the open menu whenever this value changes, for an owner that
+   * moves the trigger away from where the menu stands. Focus that was in the
+   * menu goes back to the trigger; focus anywhere else stays where it is.
+   */
+  dismissOn?: unknown;
   children: ReactNode;
 }
 
@@ -113,6 +120,7 @@ export function Menu({
   placement = "bottom-end",
   matchTriggerWidth = false,
   openOnHover = false,
+  dismissOn,
   children,
 }: MenuProps) {
   const id = useId();
@@ -136,6 +144,19 @@ export function Menu({
     setOpen(false);
     triggerEl?.focus({ preventScroll: true });
   };
+
+  // Before the change is painted, so the menu is never seen where the
+  // trigger no longer is.
+  const dismissedOn = useRef(dismissOn);
+  useLayoutEffect(() => {
+    if (Object.is(dismissedOn.current, dismissOn)) return;
+    dismissedOn.current = dismissOn;
+    if (!open) return;
+    if (document.getElementById(id)?.contains(document.activeElement)) close();
+    else setOpen(false);
+    // Only a change of the signal closes the menu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dismissOn]);
 
   // Rest on the trigger to open; leave the trigger and the menu to close.
   const hover = (enter: boolean) => (event: PointerEvent<HTMLElement>) => {
