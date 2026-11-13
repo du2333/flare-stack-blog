@@ -91,6 +91,8 @@ export const onScreen = {
   /** The page the address names is rendered in `main`. */
   arrive: async (): Promise<void> => {},
   visit: async (_pageKind: PageKind): Promise<void> => {},
+  /** The host gives the shell another navigation, as a draft Site Config does. */
+  setNavOptions: (_navOptions: Array<NavOption>): void => {},
 };
 
 /** A page: what a route renders in `main`. A Post's has its table of contents. */
@@ -136,6 +138,8 @@ export async function renderShell({
   function Host() {
     const [named, setNamed] = useState(pageKind);
     const [rendered, setRendered] = useState({ kind: pageKind, serial: 0 });
+    const [nav, setNav] = useState(navOptions);
+    onScreen.setNavOptions = (next) => act(() => setNav(next));
     onScreen.goTo = (kind) => act(() => setNamed(kind));
     const replace = (kind: PageKind) =>
       setRendered(({ serial }) => ({ kind, serial: serial + 1 }));
@@ -155,7 +159,7 @@ export async function renderShell({
       // The host says so in the commit that replaces the page.
       pageOnScreen: rendered.kind,
       options: resolveThemeOptions(theme, stored),
-      navOptions,
+      navOptions: nav,
       sidebarCards: cards ?? cardsFor(named),
       user,
       isSessionLoading,

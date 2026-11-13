@@ -31,9 +31,13 @@ import { m } from "@/paraglide/messages";
 import { Brand } from "./brand";
 import {
   currentRowIndex,
-  defaultOpenGroups,
   entryIcon,
+  groupKeys,
   GROUP_ICON,
+  initialRailGroups,
+  openGroupIds,
+  reconcileRailGroups,
+  toggleRailGroup,
 } from "./nav-entry";
 
 export interface RailProps {
@@ -203,36 +207,30 @@ function GroupRows({
  * The pill stands where the row is among the rows on show (`currentRowIndex`):
  * the rows are all as high, so that place is the same on the first paint as
  * later, and a group that opens or closes moves the pill together with the
- * rows under it. A group starts open when it holds the current link; from
- * then on it stays as the reader leaves it while they move between pages.
+ * rows under it. A group is open when it holds the current link; when the
+ * current link comes to lie in a group from outside, that group opens; apart
+ * from that it stays as the reader leaves it (`RailGroups`).
  */
 function Navigation({ navOptions }: { navOptions: Array<NavOption> }) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const current = currentNavLink(navOptions, pathname);
-  const [open, setOpen] = useState(() =>
-    defaultOpenGroups(navOptions, pathname),
+  const [saved, setSaved] = useState(() =>
+    initialRailGroups(navOptions, pathname),
   );
-  // The page a group was last opened or closed on: until the page changes,
-  // the pill moves with the rows (rail.css).
-  const [foldedOn, setFoldedOn] = useState<string | null>(null);
+  // The state follows the page and the navigation as they come.
+  const groups = reconcileRailGroups(saved, navOptions, pathname);
+  if (groups !== saved) setSaved(groups);
+  const open = openGroupIds(navOptions, groups);
+  const keys = groupKeys(navOptions);
   const row = currentRowIndex(navOptions, open, pathname);
   const lastRow = useRef(Math.max(row, 0));
   if (row >= 0) lastRow.current = row;
-
-  const toggle = (id: string) => {
-    setFoldedOn(pathname);
-    setOpen((groups) => {
-      const next = new Set(groups);
-      if (!next.delete(id)) next.add(id);
-      return next;
-    });
-  };
 
   return (
     <nav
       className="sidebar-nav"
       aria-label={m.nav_main_label()}
-      data-fold={foldedOn === pathname}
+      data-fold={groups.moved === "fold"}
       style={{ "--sidebar-current": lastRow.current } as CSSProperties}
     >
       <span
@@ -247,7 +245,9 @@ function Navigation({ navOptions }: { navOptions: Array<NavOption> }) {
             group={option}
             current={current}
             open={open.has(option.id)}
-            onToggle={() => toggle(option.id)}
+            onToggle={() =>
+              setSaved((state) => toggleRailGroup(state, keys.get(option.id)!))
+            }
           />
         ) : (
           <LinkRow

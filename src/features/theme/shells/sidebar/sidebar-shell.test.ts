@@ -10,6 +10,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import type { NavGroupOption } from "@/components/layout/layout-props";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
@@ -251,12 +252,31 @@ describe("the rail", () => {
         trigger().getAttribute("aria-controls")!,
       )!;
       expect(mainNavigation().contains(panel)).toBe(true);
-      expect(trigger().nextElementSibling!.getAttribute("aria-hidden")).toBe(
-        "true",
-      );
       expect(
         [...panel.querySelectorAll("a")].map((link) => link.textContent),
       ).toEqual(["Nav one", "Nav two"]);
+    });
+
+    it("keeps a closed group's links out of reach, in a panel that is inert and hidden from assistive technology, and neither once it opens", async () => {
+      await withGroup("/");
+      const panel = () =>
+        document.getElementById(trigger().getAttribute("aria-controls")!)!;
+
+      expect(panel().hasAttribute("inert")).toBe(true);
+      expect(panel().getAttribute("aria-hidden")).toBe("true");
+      expect(
+        within(panel()).queryAllByRole("link"),
+        "links in a hidden panel are not in the accessibility tree",
+      ).toEqual([]);
+
+      fireEvent.click(trigger());
+      expect(panel().hasAttribute("inert")).toBe(false);
+      expect(panel().getAttribute("aria-hidden")).toBe("false");
+      expect(within(panel()).getAllByRole("link")).toHaveLength(2);
+
+      fireEvent.click(trigger());
+      expect(panel().hasAttribute("inert")).toBe(true);
+      expect(panel().getAttribute("aria-hidden")).toBe("true");
     });
 
     it("starts closed, and shows its links as the reader opens it and closes it again", async () => {
@@ -333,14 +353,111 @@ describe("the rail", () => {
       act(() => router.history.push("/posts"));
       await waitFor(() => expect(row()).toBe("1"));
       expect(trigger().getAttribute("aria-expanded")).toBe("true");
-      expect(mainNavigation().dataset.fold).toBe("false");
+      act(() => router.history.push("/about"));
+      await waitFor(() => expect(row()).toBe("6"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("opens when the current link comes to lie in it from another page, closed or not", async () => {
+      const router = await withGroup("/posts");
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
 
       act(() => router.history.push("/two"));
       await waitFor(() => expect(row()).toBe("5"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("stays closed once the reader has closed it, until the current link next comes into it from outside", async () => {
+      const router = await withGroup("/two");
       fireEvent.click(trigger());
-      act(() => router.history.push("/moments"));
-      await waitFor(() => expect(row()).toBe("2"));
       expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+      // From one link of the group to another.
+      act(() => router.history.push("/one"));
+      await waitFor(() => expect(row()).toBe("3"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+      // Out of the group, and into it again.
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      act(() => router.history.push("/two"));
+      await waitFor(() =>
+        expect(trigger().getAttribute("aria-expanded")).toBe("true"),
+      );
+      expect(row()).toBe("5");
+    });
+
+    it("glides over the time of a page change, not of a fold, when the page the group was folded on comes back", async () => {
+      const router = await withGroup("/");
+      expect(mainNavigation().dataset.fold).toBe("false");
+      fireEvent.click(trigger());
+      expect(mainNavigation().dataset.fold).toBe("true");
+
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(mainNavigation().dataset.fold).toBe("false");
+      act(() => router.history.push("/"));
+      await waitFor(() => expect(row()).toBe("0"));
+      expect(mainNavigation().dataset.fold).toBe("false");
+    });
+
+    it("keeps the state of each group by its name when the navigation is reordered or loses a group", async () => {
+      const second = {
+        id: "custom-3",
+        label: "Nav second",
+        children: [
+          {
+            id: "custom-3-0",
+            label: "Nav three",
+            href: "/three",
+            external: false,
+          },
+        ],
+      };
+      await withGroup("/");
+      onScreen.setNavOptions([...NAV_WITH_GROUP.slice(0, 4), second]);
+      const open = (name: string) =>
+        within(mainNavigation())
+          .getByRole("button", { name })
+          .getAttribute("aria-expanded");
+      fireEvent.click(
+        within(mainNavigation()).getByRole("button", { name: "Nav second" }),
+      );
+      expect(open("Nav second")).toBe("true");
+      expect(open("Nav group")).toBe("false");
+
+      // The groups swap places: their ids are positions, their names are not.
+      onScreen.setNavOptions([
+        {
+          ...second,
+          id: "custom-2",
+          children: [{ ...second.children[0]!, id: "custom-2-0" }],
+        },
+        { ...(NAV_WITH_GROUP[3] as NavGroupOption), id: "custom-3" },
+      ]);
+      expect(open("Nav second")).toBe("true");
+      expect(open("Nav group")).toBe("false");
+
+      // The open group goes; a new one of its name starts closed.
+      onScreen.setNavOptions([
+        { ...(NAV_WITH_GROUP[3] as NavGroupOption), id: "custom-2" },
+      ]);
+      expect(open("Nav group")).toBe("false");
+      onScreen.setNavOptions([second]);
+      expect(open("Nav second")).toBe("false");
+    });
+
+    it("opens a group that newly holds the current link when the navigation changes", async () => {
+      await renderShell({ pageKind: "inner", path: "/two" });
+      expect(
+        within(mainNavigation()).queryByRole("button", { name: "Nav group" }),
+      ).toBeNull();
+
+      onScreen.setNavOptions(NAV_WITH_GROUP);
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(row()).toBe("5");
     });
 
     it("leaves the group unmarked on a page of another entry", async () => {
