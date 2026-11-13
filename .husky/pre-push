@@ -1,19 +1,16 @@
 # Pushing to dev or main deploys the live blog (Workers Builds), and CI only
-# runs on pull requests, so gate those pushes on a build and the node tests.
-deploys=0
-while read -r local_ref local_sha remote_ref remote_sha; do
-  case "$remote_ref" in
-    refs/heads/dev | refs/heads/main)
-      case "$local_sha" in
-        *[!0]*) deploys=1 ;;
-      esac
-      ;;
-  esac
-done
+# runs on pull requests, so gate those pushes on a typecheck, a build, the
+# bundle budget and the node tests. scripts/pre-push-gate.ts decides what kind
+# of push this is (see there); it reads the lines git writes to stdin.
+plan=$(bun scripts/pre-push-gate.ts "$@") || exit 1
+
+case "$plan" in
+  foreign) exit 0 ;;
+esac
 
 bun typecheck
 
-if [ "$deploys" = 1 ]; then
-  echo "pre-push: pushing to dev/main deploys the blog, running build and node tests first"
-  bun run build && bun run test:node || exit 1
+if [ "$plan" = deploy ]; then
+  echo "pre-push: pushing to dev/main deploys the blog, running build, bundle budget and node tests first"
+  bun run build && bun scripts/bundle-report.ts --check && bun run test:node || exit 1
 fi
