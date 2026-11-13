@@ -482,7 +482,10 @@
   transform: none;
 }
 
-/* The panel around the shared menu rows (mobile-menu.css). */
+/* The panel around the shared menu rows (mobile-menu.css). It is frost, but
+   thicker than a small float: its rows are long lists of quiet text, and
+   it opens over the banner, whose brightest parts would show through the
+   float's fill. */
 .immersive-panel {
   position: absolute;
   top: calc(100% + 10px);
@@ -495,7 +498,11 @@
   overscroll-behavior: contain;
   padding: 8px;
   border-radius: 20px;
-  background: var(--theme-float-bg);
+  background: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 60%,
+    var(--theme-float-bg)
+  );
   -webkit-backdrop-filter: var(--theme-float-backdrop);
   backdrop-filter: var(--theme-float-backdrop);
   box-shadow:
