@@ -42,6 +42,26 @@
       }
     },
     {
+      "files": ["src/routes/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "sonner",
+                "message": "Import `toast` from \"@/lib/toast\": it keeps sonner out of the first load and shows a toast asked for before sonner has loaded."
+              },
+              {
+                "name": "zod",
+                "message": "A route file is in the first load of every page, and classic zod weighs about 90 KB there. Build the search schema with \"zod/mini\", or import it from a plain module (`*-search.ts`) that does."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": [
         "**/*.test.ts",
         "**/*.test.tsx",

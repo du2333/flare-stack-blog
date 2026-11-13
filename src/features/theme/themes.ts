@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { z } from "zod";
+import { z } from "zod/mini";
 import { FIXTURE_THEMES } from "virtual:fixture-themes";
 import { m } from "@/paraglide/messages";
 import { classicShell } from "./shells/classic/classic-shell";
@@ -44,11 +44,12 @@ export interface Theme {
   /** Which built-in form of each shared content component it picks. */
   recipe: ThemeRecipe;
   /**
-   * Its own options in Site Config (`theme.options[<id>]`), flat. Give every
-   * field a `.catch(<default>)`, so a missing or stale value reads as its
-   * default.
+   * Its own options in Site Config (`theme.options[<id>]`), flat, in
+   * `zod/mini` like every schema the browser loads on a public page. Give
+   * every field a `z.catch(<schema>, <default>)`, so a missing or stale value
+   * reads as its default.
    */
-  options: z.ZodType<ThemeOptionValues>;
+  options: z.ZodMiniType<ThemeOptionValues>;
   /** How the Admin edits this Theme's options; only choice lists for now. */
   optionFields?: ReadonlyArray<{
     key: string;
@@ -95,7 +96,7 @@ const namecardTheme: Theme = {
     archive: "index",
     footer: "signature",
   },
-  options: z.object({ frame: z.enum(FRAMES).catch(DEFAULT_FRAME) }),
+  options: z.object({ frame: z.catch(z.enum(FRAMES), DEFAULT_FRAME) }),
   optionFields: [
     {
       key: "frame",
@@ -126,7 +127,7 @@ const immersiveTheme: Theme = {
     footer: "band",
   },
   options: z.object({
-    cards: z.enum(CARD_PLACEMENTS).catch(DEFAULT_CARD_PLACEMENT),
+    cards: z.catch(z.enum(CARD_PLACEMENTS), DEFAULT_CARD_PLACEMENT),
   }),
   optionFields: [
     {
@@ -166,8 +167,8 @@ const sidebarTheme: Theme = {
     footer: "colophon",
   },
   options: z.object({
-    banner: z.enum(INNER_BANNERS).catch(DEFAULT_INNER_BANNER),
-    toc: z.enum(TOC_PLACES).catch(DEFAULT_TOC_PLACE),
+    banner: z.catch(z.enum(INNER_BANNERS), DEFAULT_INNER_BANNER),
+    toc: z.catch(z.enum(TOC_PLACES), DEFAULT_TOC_PLACE),
   }),
   optionFields: [
     {

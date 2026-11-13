@@ -37,7 +37,7 @@ import type {
 import {
   normalizePostCategoryName,
   normalizePostTagName,
-} from "@/features/posts/schema/posts.schema";
+} from "@/features/posts/utils/post-public-search";
 import { toIsoOrNull } from "@/features/posts/public-snapshot";
 import type { PublicPostCover } from "@/lib/db/schema";
 

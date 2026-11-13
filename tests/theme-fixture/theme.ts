@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 import { DEFAULT_THEME_RECIPE } from "@/features/theme/theme-recipe";
 import type { Theme } from "@/features/theme/themes";
 import { fixtureShell } from "./fixture-shell";
@@ -17,7 +17,7 @@ export const fixtureTheme: Theme = {
   stylesheet,
   // Not the default look, so a test can tell which recipe reached the content.
   recipe: { ...DEFAULT_THEME_RECIPE, postCard: "row", meta: "inline" },
-  options: z.object({ marker: z.enum(["on", "off"]).catch("on") }),
+  options: z.object({ marker: z.catch(z.enum(["on", "off"]), "on") }),
   optionFields: [
     {
       key: "marker",

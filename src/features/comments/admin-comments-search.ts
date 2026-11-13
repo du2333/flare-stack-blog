@@ -1,10 +1,27 @@
+import { z } from "zod/mini";
+import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
+
 /**
  * The Admin's Comments page: what awaits a reply, or every Comment. Kept here,
- * apart from the zod schemas, so the route's `validateSearch` can use it
+ * apart from the API's zod schemas, so the route's `validateSearch` can use it
  * without bringing them into the first load of every page.
  */
 export const ADMIN_COMMENT_VIEWS = ["unreplied", "all"] as const;
 export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
+
+/** The Admin's Comments address. */
+export const adminCommentsSearchSchema = z.object({
+  view: z.catch(
+    z._default(z.enum(ADMIN_COMMENT_VIEWS), "unreplied"),
+    "unreplied",
+  ),
+  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
+  search: z.catch(
+    z._default(z.string().check(z.maxLength(SEARCH_TEXT_MAX_LENGTH)), ""),
+    "",
+  ),
+  post: z.catch(z.optional(z.int().check(z.positive())), undefined),
+});
 
 interface AdminCommentsAddress {
   view: AdminCommentView;

@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { HOME_POSTS_PER_PAGE } from "@/features/posts/schema/posts.schema";
+import { HOME_POSTS_PER_PAGE } from "@/features/posts/posts.constants";
 import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 
 /**

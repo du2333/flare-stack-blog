@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { z } from "zod";
+import { siteSearchSchema } from "@/features/search/site-search";
 import { SearchPage } from "@/features/search/components/search-page";
 import {
   searchDocsQueryOptions,
@@ -10,12 +10,8 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { m } from "@/paraglide/messages";
 
-const searchSchema = z.object({
-  q: z.string().optional(),
-});
-
 export const Route = createFileRoute("/_public/search")({
-  validateSearch: (search) => searchSchema.parse(search),
+  validateSearch: (search) => siteSearchSchema.parse(search),
   component: SearchRoute,
   loader: () => {
     return {

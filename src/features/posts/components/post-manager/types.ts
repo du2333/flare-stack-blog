@@ -1,3 +1,4 @@
+import type { POST_SORT_KEYS } from "@/features/posts/posts.constants";
 import type { Post } from "@/lib/db/schema";
 
 /** Post fields used by admin list rows. */
@@ -33,7 +34,7 @@ export const SORT_FIELDS = [
   "updatedAt",
   "viewCount",
   "commentCount",
-] as const;
+] as const satisfies ReadonlyArray<(typeof POST_SORT_KEYS)[number]>;
 export type SortField = (typeof SORT_FIELDS)[number];
 
 /**

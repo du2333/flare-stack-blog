@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ADMIN_COMMENT_VIEWS } from "@/features/comments/admin-comments-search";
+import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
 import type { CommentsTable } from "@/lib/db/schema";
 import { COMMENT_STATUSES } from "@/lib/enum-values";
 import { PageOffsetSchema, pageLimitSchema } from "@/lib/orpc/pagination";
@@ -196,7 +197,7 @@ export const AdminCommentsInputSchema = z.strictObject({
   search: z
     .string()
     .trim()
-    .max(200)
+    .max(SEARCH_TEXT_MAX_LENGTH)
     .optional()
     .describe("Matches the author's name or the body, ignoring case."),
   postId: z

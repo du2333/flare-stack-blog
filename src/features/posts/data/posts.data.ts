@@ -36,7 +36,7 @@ import {
 } from "@/features/posts/data/public-assignments.data";
 import { mapSnapshotToPublicPost } from "@/features/posts/public-snapshot";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
-import { HOME_POSTS_PER_PAGE } from "@/features/posts/schema/posts.schema";
+import { HOME_POSTS_PER_PAGE } from "@/features/posts/posts.constants";
 import { isPostBodyEmpty } from "@/features/posts/utils/is-post-body-empty";
 import type { PostStatus, PublicPostSnapshot } from "@/lib/db/schema";
 import { startsWithText } from "@/lib/db/text-match";

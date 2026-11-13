@@ -1,20 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { z } from "zod";
 import { StatusPage } from "@/components/common/status-page";
 import { buttonClass } from "@/components/ui/button";
+import { unsubscribeSearchSchema } from "@/features/email/unsubscribe-search";
 import { unsubscribeQuery } from "@/features/email/queries";
 import { CACHE_CONTROL } from "@/lib/constants";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/enum-values";
 import { m } from "@/paraglide/messages";
-
-const unsubscribeSearchSchema = z
-  .object({
-    userId: z.string(),
-    type: z.enum(EMAIL_UNSUBSCRIBE_TYPES),
-    token: z.string(),
-  })
-  .partial();
 
 export const Route = createFileRoute("/_public/unsubscribe")({
   ssr: false,

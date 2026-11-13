@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_PAGE_NUMBER } from "@/lib/constants";
 import type { MomentVideo } from "@/lib/db/schema";
 import { atLeastOneField } from "@/lib/orpc/changes";
 import { coercedDate } from "@/lib/orpc/dates";
@@ -126,7 +127,7 @@ export const MomentListInputSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(1_000_000)
+    .max(MAX_PAGE_NUMBER)
     .default(1)
     .describe(
       "The page, from 1. A page past the last answers the last page, as page says.",

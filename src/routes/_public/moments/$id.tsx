@@ -9,22 +9,18 @@ import {
   momentDescription,
   momentTitle,
 } from "@/features/moments/utils/moment-share";
-import { isCanonicalId } from "@/lib/orpc/path-ids";
+import { commentSearchSchema } from "@/lib/public-search";
+import { isCanonicalId } from "@/lib/orpc/path-id-format";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
-import { z } from "zod";
 
 /** The id an address names, or null for one that names none (`/moments/07`, `/moments/x`). */
 function momentIdOf(param: string) {
   return isCanonicalId(param) ? Number(param) : null;
 }
 
-const searchSchema = z.object({
-  comment: z.coerce.number().optional(),
-});
-
 export const Route = createFileRoute("/_public/moments/$id")({
-  validateSearch: searchSchema,
+  validateSearch: commentSearchSchema,
   component: RouteComponent,
   notFoundComponent: NotFound,
   loader: async ({ context, params }) => {
