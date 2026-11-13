@@ -4,19 +4,6 @@ import {
   readSources,
 } from "./check-messages-static-access.ts";
 
-/**
- * Files that still pass the whole messages object around (friend-links.schema.ts
- * takes it as a parameter, these three hand it over). This list goes once the
- * friend-links schema and its callers read `m.<name>` themselves; a file
- * listed here that no longer needs it fails the test, so its entry is removed
- * then.
- */
-const ALLOWLIST = new Set([
-  "src/features/friend-links/friend-links.schema.test.ts",
-  "src/features/friend-links/hooks/use-friend-link-submit-form.ts",
-  "src/features/friend-links/components/admin/friend-link-manager/friend-link-form-dialog.tsx",
-]);
-
 const IMPORT = `import { m } from "@/paraglide/messages";\n`;
 
 function uses(text: string) {
@@ -69,19 +56,10 @@ describe("findNamespaceUses", () => {
 });
 
 describe("src", () => {
-  it("reads messages as m.<name> only, outside the allowlist", () => {
-    const found = findNamespaceUses(readSources());
-    const files = new Set(found.map((line) => line.split(":")[0]));
-
-    const unexpected = found.filter(
-      (line) => !ALLOWLIST.has(line.split(":")[0]),
-    );
+  it("reads messages as m.<name> only", () => {
     expect(
-      unexpected,
+      findNamespaceUses(readSources()),
       "the messages object must not be passed around; call m.<name>() where the text is needed",
     ).toEqual([]);
-
-    const stale = [...ALLOWLIST].filter((file) => !files.has(file));
-    expect(stale, "converted already: remove from ALLOWLIST").toEqual([]);
   });
 });
