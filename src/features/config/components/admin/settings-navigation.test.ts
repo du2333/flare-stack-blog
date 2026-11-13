@@ -201,7 +201,7 @@ it("keeps only site, notifications and maintenance as settings tabs", async () =
 });
 
 it("reads a section from the path of its own page only", () => {
-  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBeNull();
+  expect(settingsSectionFromPath("/admin/settings/")).toBeNull();
   expect(accessSectionFromPath("/admin/access/agent-skill/")).toBe(
     "agent-skill",
   );
