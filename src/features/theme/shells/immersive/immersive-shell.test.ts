@@ -1101,6 +1101,7 @@ describe("the navbar", () => {
         act(() => {
           for (const animation of animations) animation.finish();
         });
+        expect(navbar().dataset.gliding).toBeUndefined();
         vi.spyOn(
           HTMLElement.prototype,
           "getBoundingClientRect",
