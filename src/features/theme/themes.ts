@@ -22,10 +22,6 @@ import {
 import { sidebarShell } from "./shells/sidebar/sidebar-shell";
 import sidebarStylesheet from "./shells/sidebar/sidebar.css?url";
 import { BUILT_IN_THEME_IDS, type ThemeId } from "./theme-ids";
-import { ClassicThumbnail } from "./thumbnails/classic-thumbnail";
-import { ImmersiveThumbnail } from "./thumbnails/immersive-thumbnail";
-import { NamecardThumbnail } from "./thumbnails/namecard-thumbnail";
-import { SidebarThumbnail } from "./thumbnails/sidebar-thumbnail";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import type { ThemeOptionValues, ThemeShell } from "./theme-shell";
 
@@ -63,7 +59,9 @@ export interface Theme {
   /**
    * A schematic of its shell for choosing it in the Admin, drawn with the
    * base design variables so it follows the hue and the Admin's Colour
-   * Scheme. Without one the picker shows a neutral placeholder.
+   * Scheme. Without one the picker shows a neutral placeholder. The built-in
+   * Themes' are not set here: this registry loads on every public page, and
+   * `thumbnails/theme-thumbnail.ts` holds them for the Admin alone.
    */
   thumbnail?: ComponentType;
 }
@@ -75,7 +73,6 @@ const classicTheme: Theme = {
   stylesheet: classicStylesheet,
   recipe: DEFAULT_THEME_RECIPE,
   options: z.object({}),
-  thumbnail: ClassicThumbnail,
 };
 
 const FRAME_LABELS = {
@@ -107,7 +104,6 @@ const namecardTheme: Theme = {
       choices: FRAMES.map((value) => ({ value, label: FRAME_LABELS[value] })),
     },
   ],
-  thumbnail: NamecardThumbnail,
 };
 
 const CARD_PLACEMENT_LABELS = {
@@ -143,7 +139,6 @@ const immersiveTheme: Theme = {
       })),
     },
   ],
-  thumbnail: ImmersiveThumbnail,
 };
 
 const INNER_BANNER_LABELS = {
@@ -194,7 +189,6 @@ const sidebarTheme: Theme = {
       })),
     },
   ],
-  thumbnail: SidebarThumbnail,
 };
 
 const BUILT_IN_THEMES = {
