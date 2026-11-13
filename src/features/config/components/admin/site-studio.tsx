@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
@@ -329,6 +329,8 @@ function NavLinkRow({
     children.move,
   );
   const addChild = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(refocus.current), []);
   const errors = formState.errors.site?.navLinks?.[index];
   const label = watch(`site.navLinks.${index}.label`) ?? "";
   const isGroup = children.fields.length > 0;
@@ -379,9 +381,11 @@ function NavLinkRow({
         role={isGroup ? "group" : undefined}
         aria-label={
           isGroup
-            ? m.settings_site_nav_children_label({
-                name: label || String(index + 1),
-              })
+            ? label
+              ? m.settings_site_nav_children_label({ name: label })
+              : m.settings_site_nav_children_label_unnamed({
+                  position: index + 1,
+                })
             : undefined
         }
       >
@@ -396,7 +400,10 @@ function NavLinkRow({
             onRemove={() => {
               children.remove(childIndex);
               // The row under the pointer is gone; the add action stays.
-              requestAnimationFrame(() => addChild.current?.focus());
+              cancelAnimationFrame(refocus.current);
+              refocus.current = requestAnimationFrame(() =>
+                addChild.current?.focus(),
+              );
             }}
           />
         ))}
@@ -459,9 +466,13 @@ function NavChildRow({
       <div className="site-nav-row">
         <DragHandle
           {...sorting.handleProps(id)}
-          label={m.settings_nav_drag_label({
-            name: label || String(childIndex + 1),
-          })}
+          label={
+            label
+              ? m.settings_site_nav_child_drag_label({ name: label })
+              : m.settings_site_nav_child_drag_label_unnamed({
+                  position: childIndex + 1,
+                })
+          }
           title={m.settings_nav_drag_hint()}
           disabled={!sortable}
         />
