@@ -7,21 +7,13 @@ import {
   selectedRect,
   TableMap,
 } from "@tiptap/pm/tables";
+import type { ColumnAlign } from "@/features/posts/editor/extensions/table/cell-align";
 
-export type ColumnAlign = "left" | "center" | "right";
-
-const COLUMN_ALIGNS: ReadonlySet<unknown> = new Set([
-  "left",
-  "center",
-  "right",
-]);
-
-/** A table cell's stored alignment, or undefined for the default. */
-export function cellAlign(attrs: { align?: unknown }): ColumnAlign | undefined {
-  return COLUMN_ALIGNS.has(attrs.align)
-    ? (attrs.align as ColumnAlign)
-    : undefined;
-}
+// The public page reads alignment from `cell-align.ts`, without ProseMirror.
+export {
+  type ColumnAlign,
+  cellAlign,
+} from "@/features/posts/editor/extensions/table/cell-align";
 
 /** Positions of every cell in the selection's columns, in all rows. */
 function columnCells(state: EditorState) {
