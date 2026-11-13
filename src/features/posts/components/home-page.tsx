@@ -69,6 +69,7 @@ export function HomePage({
           >
             <PostCard
               post={post}
+              index={i}
               pinned={Boolean(post.pinnedAt)}
               popular={!post.pinnedAt && popularSlugs.has(post.slug)}
             />

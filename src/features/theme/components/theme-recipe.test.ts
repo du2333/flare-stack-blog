@@ -260,6 +260,37 @@ describe("Theme Recipe", () => {
       expect(linksTo(withoutCover, "/post/a-post")).toHaveLength(1);
     });
 
+    it.each(["card", "row"] as const)(
+      "%s: the home list loads the first covers eagerly and the rest lazily",
+      (postCard) => {
+        const posts = Array.from({ length: 5 }, (_, i) =>
+          post({
+            slug: `post-${i}`,
+            cover: COVER,
+          } as Partial<PostItem>),
+        );
+        const host = render(
+          createElement(HomePage, { posts, page: 1, totalPages: 1 }),
+          { postCard },
+        );
+        // React hoists preload links; the covers are the images in the list.
+        const covers = [...host.querySelectorAll("a[href^='/post/'] img")];
+        expect(covers).toHaveLength(5);
+        expect(covers.map((cover) => cover.getAttribute("loading"))).toEqual([
+          null,
+          null,
+          null,
+          "lazy",
+          "lazy",
+        ]);
+        // A card outside a list has no position and keeps its cover eager.
+        const alone = render(createElement(PostCard, { post: posts[0] }), {
+          postCard,
+        });
+        expect(alone.querySelector("img")!.hasAttribute("loading")).toBe(false);
+      },
+    );
+
     it("tile: the cover leads, then title, summary and one meta line with the stats, without Tags", () => {
       const host = render(
         createElement(PostCard, {

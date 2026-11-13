@@ -10,6 +10,7 @@ import {
   THEMES,
   type Theme,
 } from "@/features/theme/themes";
+import { themeThumbnail } from "@/features/theme/thumbnails/theme-thumbnail";
 import { m } from "@/paraglide/messages";
 
 type OptionField = NonNullable<Theme["optionFields"]>[number];
@@ -43,7 +44,7 @@ export function ThemePicker({
             setValue("site.theme.id", next as ThemeId, { shouldDirty: true })
           }
           items={themes.map((theme) => {
-            const Thumbnail = theme.thumbnail;
+            const Thumbnail = themeThumbnail(theme);
             return {
               value: theme.id,
               label: theme.name(),

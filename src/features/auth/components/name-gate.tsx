@@ -1,10 +1,19 @@
 import { ClientOnly, useRouterState } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { AuthHeading } from "./auth-elements";
-import { PublicNameForm } from "./public-name-form";
 import "./auth-pages.css";
+
+// The form brings react-hook-form, and almost no visitor ever sees the gate,
+// so the form loads when the gate opens.
+const PublicNameForm = lazy(() =>
+  import("./public-name-form").then((module) => ({
+    default: module.PublicNameForm,
+  })),
+);
 
 interface NameGateProps {
   user: { name: string } | undefined;
@@ -31,7 +40,11 @@ export function NameGate({ user, logout }: NameGateProps) {
             title={m.name_gate_title()}
             description={m.name_gate_desc()}
           />
-          <PublicNameForm />
+          {open ? (
+            <Suspense fallback={<Skeleton className="h-40" />}>
+              <PublicNameForm />
+            </Suspense>
+          ) : null}
           <Button variant="text" onClick={() => void logout()}>
             {m.profile_logout_fuwari()}
           </Button>
