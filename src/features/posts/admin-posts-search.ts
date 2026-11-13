@@ -3,10 +3,11 @@ import {
   SORT_FIELDS,
   STATUS_FILTERS,
 } from "@/features/posts/components/post-manager/types";
+import { adminPageParam } from "@/lib/admin-search";
 
 /** The Admin's Posts list address. */
 export const adminPostsSearchSchema = z.object({
-  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
+  page: adminPageParam,
   status: z.catch(z._default(z.enum(STATUS_FILTERS), "ALL"), "ALL"),
   sortBy: z.catch(z._default(z.enum(SORT_FIELDS), "updatedAt"), "updatedAt"),
   search: z.catch(z._default(z.string(), ""), ""),

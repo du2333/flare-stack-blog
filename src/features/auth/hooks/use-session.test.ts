@@ -292,9 +292,35 @@ it("looks again on focus at most every five seconds", async () => {
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   await waitFor(() => expect(result.current.isFetching).toBe(false));
   document.dispatchEvent(new Event("visibilitychange"));
-  window.dispatchEvent(new Event("online"));
   await new Promise((resolve) => setTimeout(resolve, 50));
   expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it("looks again when the network returns, even just after a focus check", async () => {
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  fetchMock.mockResolvedValue(respond(200, SIGNED_IN));
+  const { result } = renderSession();
+  await waitFor(() => expect(result.current.data).toBeTruthy());
+
+  vi.useFakeTimers({ toFake: ["Date"] });
+  try {
+    document.dispatchEvent(new Event("visibilitychange"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.isFetching).toBe(false));
+
+    // The focus check's five seconds do not hold a reconnect back.
+    vi.advanceTimersByTime(3_000);
+    window.dispatchEvent(new Event("online"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(result.current.isFetching).toBe(false));
+
+    // A second focus inside the window is still skipped.
+    document.dispatchEvent(new Event("visibilitychange"));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 it("stays signed out when a lookup sent before the sign-out answers after it", async () => {
