@@ -128,6 +128,16 @@ function resolveSharedFields(site: SystemConfig["site"]) {
   };
 }
 
+/**
+ * The vector tab icon: the uploaded SVG, else the default one only while the
+ * raster icon is the default too. Browsers prefer an SVG icon, so a default
+ * SVG beside an uploaded raster icon would hide the upload.
+ */
+function resolveFaviconSvg(icons: NonNullable<SystemConfig["site"]>["icons"]) {
+  if (icons?.faviconSvg) return icons.faviconSvg;
+  return icons?.favicon96 ? "" : blogConfig.icons.faviconSvg;
+}
+
 export function resolveSiteConfig(
   config: SystemConfig | null | undefined,
 ): SiteConfig {
@@ -140,10 +150,7 @@ export function resolveSiteConfig(
     social: migrateSocial(config?.site?.social),
     navLinks: normalizeNavLinks(config?.site?.navLinks),
     icons: {
-      faviconSvg:
-        config?.site?.icons?.faviconSvg || blogConfig.icons.faviconSvg,
-      faviconIco:
-        config?.site?.icons?.faviconIco || blogConfig.icons.faviconIco,
+      faviconSvg: resolveFaviconSvg(config?.site?.icons),
       favicon96: config?.site?.icons?.favicon96 || blogConfig.icons.favicon96,
       appleTouchIcon:
         config?.site?.icons?.appleTouchIcon || blogConfig.icons.appleTouchIcon,

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "@/features/config/config.schema";
+import {
+  DEFAULT_CONFIG,
+  SystemConfigSchema,
+} from "@/features/config/config.schema";
 import {
   resolveSiteConfig,
   resolveSystemConfig,
@@ -230,5 +233,47 @@ describe("resolveSiteConfig personalization shared by all Themes", () => {
       primaryHue: 30,
       theme: { id: "classic", options: {} },
     });
+  });
+});
+
+describe("resolveSiteConfig icons", () => {
+  const uploaded = {
+    faviconSvg: "/images/asset/favicon/favicon.svg?original=true&v=1",
+    faviconIco: "/images/asset/favicon/favicon.ico?original=true&v=1",
+    favicon96: "/images/asset/favicon/favicon-96x96.png?original=true&v=1",
+    appleTouchIcon:
+      "/images/asset/favicon/apple-touch-icon.png?original=true&v=1",
+    webApp192:
+      "/images/asset/favicon/web-app-manifest-192x192.png?original=true&v=1",
+    webApp512:
+      "/images/asset/favicon/web-app-manifest-512x512.png?original=true&v=1",
+  };
+
+  it("reads a saved config that still carries the ICO icon and keeps the others", () => {
+    const parsed = SystemConfigSchema.safeParse({ site: { icons: uploaded } });
+    expect(parsed.success).toBe(true);
+
+    const { faviconIco: _unused, ...rest } = uploaded;
+    expect(resolveSiteConfig(parsed.data).icons).toEqual(rest);
+  });
+
+  it("uses the default icons when none is uploaded", () => {
+    expect(resolveSiteConfig({}).icons).toEqual({
+      faviconSvg: "/favicon.svg",
+      favicon96: "/favicon-96x96.png",
+      appleTouchIcon: "/apple-touch-icon.png",
+      webApp192: "/web-app-manifest-192x192.png",
+      webApp512: "/web-app-manifest-512x512.png",
+    });
+  });
+
+  it("drops the default SVG beside an uploaded raster icon, and keeps an uploaded one", () => {
+    const { faviconSvg, faviconIco: _unused, ...raster } = uploaded;
+    expect(
+      resolveSiteConfig({ site: { icons: raster } }).icons.faviconSvg,
+    ).toBe("");
+    expect(
+      resolveSiteConfig({ site: { icons: { faviconSvg } } }).icons,
+    ).toMatchObject({ faviconSvg, favicon96: "/favicon-96x96.png" });
   });
 });
