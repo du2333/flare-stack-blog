@@ -24,26 +24,92 @@ describe("parsePushLines", () => {
   });
 });
 
-describe("planPush", () => {
-  it("skips every check for a remote other than origin, even for dev", () => {
-    const plan = planPush("demo", lines(["refs/heads/dev", "refs/heads/dev"]));
-    expect(plan.kind).toBe("foreign");
-    expect(plan.kind === "foreign" && plan.message).toContain('"demo"');
+const ORIGIN = "https://github.com/owner/repo.git";
+const toDev = () => lines(["a", "refs/heads/dev"]);
+
+describe("planPush: where the push goes", () => {
+  it("treats the remote origin by name (its own URL) as the production repository", () => {
+    expect(planPush(ORIGIN, ORIGIN, toDev()).kind).toBe("deploy");
   });
 
-  it("treats a push by URL (the name is the URL) as foreign", () => {
+  it("treats origin's repository by raw https URL as the production repository", () => {
     expect(
-      planPush("https://example.com/fork.git", lines(["a", "refs/heads/dev"]))
+      planPush("https://github.com/owner/repo", ORIGIN, toDev()).kind,
+    ).toBe("deploy");
+    expect(
+      planPush("HTTPS://GitHub.com/Owner/Repo.git/", ORIGIN, toDev()).kind,
+    ).toBe("deploy");
+    expect(
+      planPush("https://user:token@github.com/owner/repo.git", ORIGIN, toDev())
         .kind,
+    ).toBe("deploy");
+  });
+
+  it("treats origin's repository by an ssh spelling as the production repository when origin is https", () => {
+    for (const ssh of [
+      "git@github.com:owner/repo.git",
+      "git@github.com:owner/repo",
+      "ssh://git@github.com/owner/repo",
+      "ssh://git@github.com:22/owner/repo.git",
+    ]) {
+      expect(planPush(ssh, ORIGIN, toDev()).kind).toBe("deploy");
+    }
+  });
+
+  it("skips the checks for a different repository on the same host", () => {
+    const plan = planPush("https://github.com/owner/fork.git", ORIGIN, toDev());
+    expect(plan.kind).toBe("foreign");
+    expect(plan.kind === "foreign" && plan.message).toContain(
+      "github.com/owner/fork",
+    );
+    expect(
+      planPush("git@github.com:someone/repo.git", ORIGIN, toDev()).kind,
     ).toBe("foreign");
   });
 
-  it("deploys for a push of a commit to origin dev or main", () => {
-    expect(planPush("origin", lines(["a", "refs/heads/dev"]))).toEqual({
+  it("skips the checks for a different host", () => {
+    expect(
+      planPush("https://gitlab.com/owner/repo.git", ORIGIN, toDev()).kind,
+    ).toBe("foreign");
+  });
+
+  it("never prints credentials of the pushed URL", () => {
+    const plan = planPush(
+      "https://user:secret@example.com/x/y.git",
+      ORIGIN,
+      toDev(),
+    );
+    expect(plan.kind === "foreign" && plan.message).not.toContain("secret");
+  });
+
+  it("is never foreign when the repository has no origin", () => {
+    expect(
+      planPush("https://example.com/any.git", undefined, toDev()).kind,
+    ).toBe("deploy");
+  });
+
+  it("is not foreign when the hook was given no URL", () => {
+    expect(planPush(undefined, ORIGIN, toDev()).kind).toBe("deploy");
+  });
+
+  it("compares local paths and file URLs", () => {
+    expect(planPush("/srv/o.git/", "/srv/o.git", toDev()).kind).toBe("deploy");
+    expect(planPush("file:///srv/o.git", "/srv/o.git", toDev()).kind).toBe(
+      "deploy",
+    );
+    expect(planPush("/srv/demo.git", "/srv/o.git", toDev()).kind).toBe(
+      "foreign",
+    );
+  });
+});
+
+describe("planPush: what the push carries", () => {
+  it("deploys for a push of a commit to dev or main", () => {
+    expect(planPush(ORIGIN, ORIGIN, toDev())).toEqual({
       kind: "deploy",
       shas: [SHA],
     });
-    expect(planPush("origin", lines(["a", "refs/heads/main"])).kind).toBe(
+    expect(planPush(ORIGIN, ORIGIN, lines(["a", "refs/heads/main"])).kind).toBe(
       "deploy",
     );
   });
@@ -52,7 +118,8 @@ describe("planPush", () => {
     const other = "b".repeat(40);
     expect(
       planPush(
-        "origin",
+        ORIGIN,
+        ORIGIN,
         lines(
           ["a", "refs/heads/dev"],
           ["b", "refs/heads/feature"],
@@ -63,12 +130,15 @@ describe("planPush", () => {
   });
 
   it("does not deploy for other branches, tags or a deletion", () => {
-    expect(planPush("origin", lines(["a", "refs/heads/feature"])).kind).toBe(
+    expect(
+      planPush(ORIGIN, ORIGIN, lines(["a", "refs/heads/feature"])).kind,
+    ).toBe("local");
+    expect(planPush(ORIGIN, ORIGIN, lines(["a", "refs/tags/v1"])).kind).toBe(
       "local",
     );
-    expect(planPush("origin", lines(["a", "refs/tags/v1"])).kind).toBe("local");
     expect(
-      planPush("origin", lines(["(delete)", "refs/heads/dev", ZERO])).kind,
+      planPush(ORIGIN, ORIGIN, lines(["(delete)", "refs/heads/dev", ZERO]))
+        .kind,
     ).toBe("local");
   });
 });

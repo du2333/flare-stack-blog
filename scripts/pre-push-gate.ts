@@ -3,10 +3,12 @@
  * git writes to its stdin. It prints one word on stdout for the hook to switch
  * on and its reasons on stderr:
  *
- *   foreign  a remote other than origin: nothing of this repository deploys
- *   local    origin, but no push to dev or main: typecheck only
- *   deploy   origin, a push to dev or main of a commit this working tree has
- *            checked out and clean: typecheck, build, budget, node tests
+ *   foreign  the push goes to a repository other than origin's (compared by
+ *            URL, not by remote name): nothing of its production deploys
+ *   local    to origin's repository, but not to dev or main: typecheck only
+ *   deploy   to origin's repository (or there is no origin to compare with),
+ *            dev or main, of a commit this working tree has checked out and
+ *            clean: typecheck, build, budget, node tests
  *
  * It exits 1 when a deploying push cannot be checked from this working tree,
  * because the build would not be the commit that is pushed.
@@ -47,11 +49,64 @@ function isDeletion(localSha: string) {
   return /^0+$/.test(localSha);
 }
 
-export function planPush(remoteName: string, lines: Array<PushLine>): PushPlan {
-  if (remoteName !== "origin") {
+/**
+ * A repository's address in one spelling: lower-cased `host/path` without the
+ * scheme, credentials, port, trailing slash or `.git`. Understands https, ssh,
+ * git, file and scp-like (`git@host:owner/repo`) forms and plain paths. The
+ * path is lower-cased too: for hosts where case matters that can only make two
+ * repositories look the same, which keeps the checks on.
+ */
+export function normalizeRepoUrl(raw: string) {
+  const url = raw.trim();
+  let host = "";
+  let repoPath: string;
+  const withScheme = /^([a-z][a-z0-9+.-]*):\/\/(.*)$/i.exec(url);
+  const scpLike = /^(?:[^@/:]+@)?([^@:/]+):(.*)$/.exec(url);
+  if (withScheme) {
+    const rest = withScheme[2];
+    if (withScheme[1].toLowerCase() === "file") {
+      repoPath = rest;
+    } else {
+      const slash = rest.indexOf("/");
+      const authority = slash < 0 ? rest : rest.slice(0, slash);
+      repoPath = slash < 0 ? "" : rest.slice(slash);
+      host = authority
+        .slice(authority.lastIndexOf("@") + 1)
+        .replace(/:\d*$/, "");
+    }
+  } else if (scpLike) {
+    host = scpLike[1];
+    repoPath = `/${scpLike[2]}`;
+  } else {
+    repoPath = url;
+  }
+  const cleaned = repoPath
+    .replace(/\/+/g, "/")
+    .replace(/\/+$/, "")
+    .replace(/\.git$/i, "")
+    .replace(/\/+$/, "");
+  return `${host}${cleaned}`.toLowerCase();
+}
+
+/**
+ * `pushUrl` is the hook's second argument, where the push goes (git passes the
+ * URL itself when a push names no remote); `originUrl` is origin's push URL,
+ * undefined when the repository has no origin remote, and then no push is
+ * foreign.
+ */
+export function planPush(
+  pushUrl: string | undefined,
+  originUrl: string | undefined,
+  lines: Array<PushLine>,
+): PushPlan {
+  if (
+    pushUrl &&
+    originUrl &&
+    normalizeRepoUrl(pushUrl) !== normalizeRepoUrl(originUrl)
+  ) {
     return {
       kind: "foreign",
-      message: `pre-push: remote "${remoteName}" is not origin, nothing of this repository's production deploys from it, skipping the checks`,
+      message: `pre-push: ${normalizeRepoUrl(pushUrl)} is not origin's repository, nothing of this repository's production deploys from it, skipping the checks`,
     };
   }
   const shas = lines
@@ -94,8 +149,12 @@ function git(...args: Array<string>) {
 }
 
 function main() {
-  const [remoteName = ""] = process.argv.slice(2);
-  const plan = planPush(remoteName, parsePushLines(readFileSync(0, "utf8")));
+  // The hook's arguments are the remote's name and its URL.
+  const plan = planPush(
+    process.argv[3],
+    git("remote", "get-url", "--push", "origin"),
+    parsePushLines(readFileSync(0, "utf8")),
+  );
 
   if (plan.kind === "foreign") {
     console.error(plan.message);
