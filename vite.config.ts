@@ -21,6 +21,30 @@ const config = defineConfig({
       process.env.WORKERS_CI_BUILD_UUID || Date.now().toString(36),
     ),
   },
+  environments: {
+    client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              // Automatic splitting leaves a chunk for every small module that
+              // two entries share. Gathering the small ones that the first load
+              // reaches anyway (with their dependencies) cuts the file count
+              // and compresses better as one file.
+              groups: [
+                {
+                  name: "small",
+                  minShareCount: 2,
+                  maxModuleSize: 4 * 1024,
+                  tags: ["$initial"],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
   resolve: {
     tsconfigPaths: true,
     alias: {
