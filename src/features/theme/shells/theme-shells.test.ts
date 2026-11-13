@@ -105,8 +105,12 @@ async function expectEveryEntry(scope: HTMLElement) {
     if (option.children.every((child) => hasLink(scope, child))) continue;
     const trigger = within(scope).getByRole("button", { name: option.label });
     fireEvent.click(trigger);
-    // A group that opens in place (the rail of 「侧栏」) shows its links as
-    // links; any other opens a menu of them.
+    // A group has two forms in a navigation, told apart here by
+    // `aria-haspopup`. A menu (`NavGroupMenu`, in a bar) is a trigger with
+    // `aria-haspopup="menu"` whose links are menu items in a popover once it
+    // is open. A disclosure (the rail of 「侧栏」, a vertical list) has no
+    // `aria-haspopup`: its links are ordinary links in a panel that opens in
+    // place, and are out of reach while it is closed.
     if (!trigger.hasAttribute("aria-haspopup")) {
       expect(trigger.getAttribute("aria-expanded")).toBe("true");
       for (const child of option.children) {
@@ -472,7 +476,9 @@ describe.each(
 
     fireEvent.click(screen.getByRole("button", { name: m.common_open_menu() }));
     // The compact menu is the one that was not there before; where it stands
-    // among the two depends on the shell.
+    // among the two depends on the shell. Exactly two, so the lookup cannot
+    // pass by finding the bar again.
+    expect(named()).toHaveLength(2);
     const inMenu = named().find((nav) => nav !== inBar[0])!;
     for (const option of NAV_LINKS) {
       expect(hasLink(inMenu, option)).toBe(true);
