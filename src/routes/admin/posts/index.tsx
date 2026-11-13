@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { PostManager } from "@/features/posts/components/post-manager";
-import { adminPostsListParams } from "@/features/posts/components/post-manager/hooks";
+import { adminPostsListParams } from "@/features/posts/components/post-manager/list-params";
 import { PostManagerPageSkeleton } from "@/features/posts/components/post-manager/post-manager-skeleton";
 import { adminPostsQuery } from "@/features/posts/queries";
 import {

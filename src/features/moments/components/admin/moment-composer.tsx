@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import type { MomentDraft } from "./moment-draft";

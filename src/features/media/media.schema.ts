@@ -1,7 +1,10 @@
 import { z } from "zod";
 import type { MediaTable } from "@/lib/db/schema";
 import { POST_STATUSES } from "@/lib/enum-values";
-import { MEDIA_NAME_MAX_LENGTH } from "@/features/media/utils/media.utils";
+import {
+  MEDIA_NAME_MAX_LENGTH,
+  MEDIA_SORTS,
+} from "@/features/media/utils/media.utils";
 import { IdCursorSchema, pageLimitSchema } from "@/lib/orpc/pagination";
 import { coercedDate } from "@/lib/orpc/dates";
 import type { Equal, Expect } from "@/lib/type-equal";
@@ -149,8 +152,7 @@ export const UpdateMediaNameInputSchema = z.strictObject({
   ),
 });
 
-export const MEDIA_SORTS = ["newest", "oldest", "largest"] as const;
-export type MediaSort = (typeof MEDIA_SORTS)[number];
+export type { MediaSort } from "@/features/media/utils/media.utils";
 
 export const GetMediaListInputSchema = z.strictObject({
   cursor: IdCursorSchema.optional(),

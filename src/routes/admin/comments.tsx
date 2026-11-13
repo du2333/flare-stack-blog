@@ -1,8 +1,10 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 import { z } from "zod";
-import { withoutHiddenFilters } from "@/features/comments/admin-comments-search";
-import { ADMIN_COMMENT_VIEWS } from "@/features/comments/comments.schema";
+import {
+  ADMIN_COMMENT_VIEWS,
+  withoutHiddenFilters,
+} from "@/features/comments/admin-comments-search";
 import {
   AdminCommentsPage,
   type AdminCommentsSearch,

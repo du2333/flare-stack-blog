@@ -1,4 +1,10 @@
-import type { AdminCommentView } from "@/features/comments/comments.schema";
+/**
+ * The Admin's Comments page: what awaits a reply, or every Comment. Kept here,
+ * apart from the zod schemas, so the route's `validateSearch` can use it
+ * without bringing them into the first load of every page.
+ */
+export const ADMIN_COMMENT_VIEWS = ["unreplied", "all"] as const;
+export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
 
 interface AdminCommentsAddress {
   view: AdminCommentView;

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type { CommentTarget } from "@/features/comments/comment-target";
 import { commentViewKeys } from "@/features/comments/queries";
 import { handleORPCError } from "@/lib/orpc/error-handler";

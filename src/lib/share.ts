@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { m } from "@/paraglide/messages";
 
 export interface ShareData {

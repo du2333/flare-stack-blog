@@ -9,12 +9,18 @@
  * come from:
  *
  *   bun scripts/bundle-report.ts --sources home [path-filter]
+ *
+ * `--check` compares each page's preloaded scripts and stylesheets (brotli)
+ * with `bundle-budgets.json` and exits 1 for a page over budget. CI runs it
+ * after the build, which has no source maps, so the budgets are measured
+ * without them.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { brotliCompressSync } from "node:zlib";
 import { decode } from "@jridgewell/sourcemap-codec";
+import budgetFile from "./bundle-budgets.json";
 
 interface ManifestRoute {
   preloads?: Array<string>;
@@ -93,13 +99,65 @@ function total(files: Set<string>) {
 
 const kb = (bytes: number) => (bytes / 1024).toFixed(0).padStart(5);
 
+function measure(routes: Record<string, ManifestRoute>) {
+  return Object.fromEntries(
+    Object.entries(PAGES).map(([name, ids]) => {
+      const { js, css } = pageFiles(routes, ids);
+      return [name, { js: total(js), css: total(css) }];
+    }),
+  );
+}
+
+/** Brotli kilobytes a page may preload, per kind of file. */
+export type Budgets = Record<string, { js: number; css: number }>;
+
+/**
+ * The pages whose preloaded scripts or stylesheets (brotli) exceed their
+ * budget. A page without a budget is reported too: a new page must set one.
+ */
+export function overBudget(
+  measured: Record<string, { js: { br: number }; css: { br: number } }>,
+  budgets: Budgets,
+) {
+  const over: Array<{
+    page: string;
+    kind: "js" | "css";
+    kb: number;
+    budget: number | undefined;
+  }> = [];
+  for (const [page, sizes] of Object.entries(measured)) {
+    for (const kind of ["js", "css"] as const) {
+      const budget = budgets[page]?.[kind];
+      const used = sizes[kind].br / 1024;
+      if (budget === undefined || used > budget) {
+        over.push({ page, kind, kb: used, budget });
+      }
+    }
+  }
+  return over;
+}
+
+function check(routes: Record<string, ManifestRoute>) {
+  const over = overBudget(measure(routes), budgetFile);
+  if (over.length === 0) {
+    console.log("Every page is within its budget.");
+    return;
+  }
+  console.error("Pages over their preload budget (brotli):");
+  for (const { page, kind, kb: used, budget } of over) {
+    console.error(
+      `  ${page} ${kind.toUpperCase()}: ${used.toFixed(1)} KB, ${budget === undefined ? "no budget set" : `budget ${budget} KB`}`,
+    );
+  }
+  console.error(
+    "Find what a page newly loads with `BUNDLE_SOURCEMAP=1 bun run build && bun scripts/bundle-report.ts --sources <page>`. Budgets: scripts/bundle-budgets.json.",
+  );
+  process.exit(1);
+}
+
 function report(routes: Record<string, ManifestRoute>) {
-  const rows: Record<string, unknown> = {};
-  for (const [name, ids] of Object.entries(PAGES)) {
-    const { js, css } = pageFiles(routes, ids);
-    const scripts = total(js);
-    const styles = total(css);
-    rows[name] = { js: scripts, css: styles };
+  const rows = measure(routes);
+  for (const [name, { js: scripts, css: styles }] of Object.entries(rows)) {
     console.log(
       `${name.padEnd(13)} JS ${String(scripts.files).padStart(3)} files ${kb(scripts.raw)} KB, br ${kb(scripts.br)} KB   CSS ${String(styles.files).padStart(2)} files, br ${kb(styles.br)} KB`,
     );
@@ -190,12 +248,8 @@ if (import.meta.main) {
   const routes = await readManifest();
   const args = process.argv.slice(2);
   if (args[0] === "--sources") sources(routes, args[1] ?? "home", args[2]);
+  else if (args[0] === "--check") check(routes);
   else if (args[0] === "--json") {
-    const rows: Record<string, unknown> = {};
-    for (const [name, ids] of Object.entries(PAGES)) {
-      const { js, css } = pageFiles(routes, ids);
-      rows[name] = { js: total(js), css: total(css) };
-    }
-    console.log(JSON.stringify(rows, null, 2));
+    console.log(JSON.stringify(measure(routes), null, 2));
   } else report(routes);
 }
