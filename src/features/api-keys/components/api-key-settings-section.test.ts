@@ -163,7 +163,7 @@ it("has one create entry, the frame's primary action, and the empty state says t
   authKeys.list.mockResolvedValue({ data: { apiKeys: [] }, error: null });
   mountPage();
   expect(await screen.findByText(m.settings_api_keys_empty())).toBeTruthy();
-  expect(screen.getByText(m.settings_api_keys_empty_hint())).toBeTruthy();
+  expect(screen.getByText(m.settings_design_keys_hint())).toBeTruthy();
   // The probe stands in for the frame header; nothing else on the page creates.
   const creates = screen.getAllByRole("button", {
     name: m.settings_api_keys_create(),

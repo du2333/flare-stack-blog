@@ -89,10 +89,11 @@ export function ApiKeySettingsSection() {
       /* Mutation displays the failure. */
     }
   };
+  // The frame's form-body card (admin-form-section), sized to its rows.
   return (
-    <div className="settings-keys">
+    <div className="admin-form-section settings-keys">
       {keys.length > 0 ? <KeysNote /> : null}
-      <div className="key-list" aria-busy={isLoading}>
+      <div aria-busy={isLoading}>
         {isError ? (
           <EmptyState
             variant="tile"
@@ -119,10 +120,14 @@ export function ApiKeySettingsSection() {
             variant="tile"
             icon={KeyRound}
             title={m.settings_api_keys_empty()}
-            description={m.settings_api_keys_empty_hint()}
+            description={m.settings_design_keys_hint()}
           />
         ) : (
-          <div role="table" aria-label={m.settings_nav_api_keys()}>
+          <div
+            role="table"
+            className="key-table"
+            aria-label={m.settings_nav_api_keys()}
+          >
             <div role="row" className="key-head key-grid">
               <span role="columnheader">
                 {m.settings_api_keys_name_label()}
@@ -183,7 +188,7 @@ export function ApiKeySettingsSection() {
                     {paired ? (
                       <Link
                         to="/admin/access/agent-skill"
-                        className="key-manage"
+                        className="key-manage text-link"
                       >
                         {m.settings_api_keys_manage_paired()}
                       </Link>
