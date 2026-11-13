@@ -268,8 +268,6 @@ describe("the frame shape", () => {
   );
 });
 
-// card-placement.test.ts covers which card goes where; here, what the shell
-// makes of it.
 describe("a navigation with a group", () => {
   const NAV_WITH_GROUP: Array<NavOption> = [
     ...HOME_ONLY,
@@ -359,6 +357,8 @@ describe("a navigation with a group", () => {
   });
 });
 
+// card-placement.test.ts covers which card goes where; here, what the shell
+// makes of it.
 describe("the sidebar cards", () => {
   it("stand in one group beside the content on the home page, the ways into the Posts in the box that stays in view", async () => {
     await renderShell({ pageKind: "home" });

@@ -183,8 +183,11 @@ function NavLinks({
   const measure = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
+    // The link under the pointer or the keyboard; else the group whose menu
+    // is open, which the pointer may have left for the menu; else the page's.
     const target =
       (pointed.current?.isConnected ? pointed.current : null) ??
+      nav.querySelector<HTMLElement>('.namecard-link[aria-expanded="true"]') ??
       nav.querySelector<HTMLElement>(".namecard-link-active");
     if (!target) {
       setBar(null);
@@ -213,6 +216,20 @@ function NavLinks({
     if (!nav || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
     observer.observe(nav);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  // A group's menu opening or closing moves the underline onto the group or
+  // back (the menu belongs to the group's trigger, which says so).
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || typeof MutationObserver === "undefined") return;
+    const observer = new MutationObserver(measure);
+    observer.observe(nav, {
+      attributes: true,
+      attributeFilter: ["aria-expanded"],
+      subtree: true,
+    });
     return () => observer.disconnect();
   }, [measure]);
 
