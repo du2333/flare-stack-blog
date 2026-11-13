@@ -5,7 +5,7 @@ import { StatusPage } from "@/components/common/status-page";
 import { buttonClass } from "@/components/ui/button";
 import { unsubscribeQuery } from "@/features/email/queries";
 import { CACHE_CONTROL } from "@/lib/constants";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
+import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/enum-values";
 import { m } from "@/paraglide/messages";
 
 const unsubscribeSearchSchema = z

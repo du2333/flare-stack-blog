@@ -1,10 +1,6 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import {
-  POST_REVISION_REASONS,
-  POST_STATUSES,
-  PostRevisionsTable,
-} from "@/lib/db/schema";
+import type { PostRevisionsTable } from "@/lib/db/schema";
+import { POST_REVISION_REASONS, POST_STATUSES } from "@/lib/enum-values";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
 import { NullableJsonContentSchema } from "./json-content.schema";
 import {
@@ -13,6 +9,7 @@ import {
   StatedSaveTokenSchema,
 } from "./posts.schema";
 import { coercedDate } from "@/lib/orpc/dates";
+import type { Equal, Expect } from "@/lib/type-equal";
 
 export const PostRevisionSnapshotSchema = z.object({
   title: z.string(),
@@ -32,11 +29,26 @@ export const PostRevisionReasonSchema = z
     "Why the revision was taken. publish: taken when the post is published. restore_backup: the draft saved automatically before restoring a revision or discarding Unpublished Changes, so it can be restored. auto: legacy autosave revisions from older versions; new ones are no longer taken.",
   );
 
-export const PostRevisionSelectSchema = createSelectSchema(PostRevisionsTable, {
-  createdAt: coercedDate,
-  snapshotJson: PostRevisionSnapshotSchema,
+export const PostRevisionSelectSchema = z.object({
+  id: z.int(),
+  postId: z.int(),
   reason: PostRevisionReasonSchema,
+  snapshotJson: PostRevisionSnapshotSchema,
+  snapshotHash: z.string(),
+  restoredFromRevisionId: z.int().nullable(),
+  createdAt: coercedDate,
 });
+
+/**
+ * Fails to compile when a column of `post_revisions` is missing from the
+ * schema or reads differently.
+ */
+export type PostRevisionSelectMatchesTable = Expect<
+  Equal<
+    z.output<typeof PostRevisionSelectSchema>,
+    typeof PostRevisionsTable.$inferSelect
+  >
+>;
 
 export const PostRevisionSchema = PostRevisionSelectSchema.extend({
   snapshotJson: PostRevisionSnapshotSchema.extend({

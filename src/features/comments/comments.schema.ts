@@ -1,19 +1,41 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { COMMENT_STATUSES, CommentsTable } from "@/lib/db/schema";
+import type { CommentsTable } from "@/lib/db/schema";
+import { COMMENT_STATUSES } from "@/lib/enum-values";
 import { PageOffsetSchema, pageLimitSchema } from "@/lib/orpc/pagination";
 import { coercedDate } from "@/lib/orpc/dates";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
+import type { Equal, Expect } from "@/lib/type-equal";
 
 /** A Comment as public APIs return it; when an Admin handled it stays private. */
-export const CommentSelectSchema = createSelectSchema(CommentsTable, {
-  postId: (schema) =>
-    schema.describe("The Post the Comment is on; null for a Moment's Comment."),
-  momentId: (schema) =>
-    schema.describe("The Moment the Comment is on; null for a Post's Comment."),
+export const CommentSelectSchema = z.object({
+  id: z.int(),
+  content: z.string().nullable(),
+  rootId: z.int().nullable(),
+  replyToCommentId: z.int().nullable(),
+  status: z.enum(COMMENT_STATUSES),
+  postId: z
+    .int()
+    .describe("The Post the Comment is on; null for a Moment's Comment.")
+    .nullable(),
+  momentId: z
+    .int()
+    .describe("The Moment the Comment is on; null for a Post's Comment.")
+    .nullable(),
+  userId: z.string().nullable(),
   createdAt: coercedDate,
   updatedAt: coercedDate,
-}).omit({ handledAt: true });
+});
+
+/**
+ * Fails to compile when a column of `comments` is missing from the schema or
+ * reads differently. `handledAt` is left out: it is Admin-only.
+ */
+export type CommentSelectMatchesTable = Expect<
+  Equal<
+    z.output<typeof CommentSelectSchema>,
+    Omit<typeof CommentsTable.$inferSelect, "handledAt">
+  >
+>;
 
 /**
  * The Post or the Moment a public comment call is about, named in its path

@@ -1,10 +1,11 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { FriendLinksTable } from "@/lib/db/schema";
-import type { Messages } from "@/lib/i18n";
+import type { FriendLinksTable } from "@/lib/db/schema";
+import { FRIEND_LINK_STATUSES } from "@/lib/enum-values";
 import { PageOffsetSchema, pageLimitSchema } from "@/lib/orpc/pagination";
 import { coercedDate } from "@/lib/orpc/dates";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
+import type { Equal, Expect } from "@/lib/type-equal";
+import { m } from "@/paraglide/messages";
 
 const FriendLinkUserSchema = z.object({
   id: z.string(),
@@ -12,25 +13,31 @@ const FriendLinkUserSchema = z.object({
   image: z.string().nullable(),
 });
 
-// drizzle-zod walks every column when it builds a schema (about 3 ms), and this
-// module is imported by the public pages. z.lazy builds it on first parse, and
-// only once, so the cost moves to the callers that actually validate a row.
-const FriendLinkWithUserSchema = z.lazy(() =>
-  createSelectSchema(FriendLinksTable, {
-    createdAt: coercedDate,
-    updatedAt: coercedDate,
-  }).extend({
-    user: FriendLinkUserSchema.nullable(),
-  }),
-);
-
 /** A friend link row alone, as the admin write operations return it. */
-export const FriendLinkSchema = z.lazy(() =>
-  createSelectSchema(FriendLinksTable, {
-    createdAt: coercedDate,
-    updatedAt: coercedDate,
-  }),
-);
+export const FriendLinkSchema = z.object({
+  id: z.int(),
+  siteName: z.string(),
+  siteUrl: z.string(),
+  description: z.string().nullable(),
+  logoUrl: z.string().nullable(),
+  status: z.enum(FRIEND_LINK_STATUSES),
+  rejectionReason: z.string().nullable(),
+  userId: z.string().nullable(),
+  createdAt: coercedDate,
+  updatedAt: coercedDate,
+});
+
+/**
+ * Fails to compile when a column of `friend_links` is missing from the schema
+ * or reads differently.
+ */
+export type FriendLinkMatchesTable = Expect<
+  Equal<z.output<typeof FriendLinkSchema>, typeof FriendLinksTable.$inferSelect>
+>;
+
+const FriendLinkWithUserSchema = FriendLinkSchema.extend({
+  user: FriendLinkUserSchema.nullable(),
+});
 
 const friendLinkFields = {
   siteName: z.string().min(1).max(100),
@@ -39,7 +46,9 @@ const friendLinkFields = {
   logoUrl: z.union([z.literal(""), z.string().url()]).optional(),
 };
 
-const createFriendLinkFormFields = (m: Messages) => ({
+// The form schemas read their messages when a form creates them, so the errors
+// are in the locale of that moment.
+const createFriendLinkFormFields = () => ({
   siteName: z
     .string()
     .min(1, m.friend_link_validation_required())
@@ -71,18 +80,18 @@ export const SubmitFriendLinkInputSchema = z.object({
   ...friendLinkFields,
 });
 
-export const createSubmitFriendLinkSchema = (m: Messages) =>
+export const createSubmitFriendLinkSchema = () =>
   z.object({
     id: z.number().int().positive().optional(),
-    ...createFriendLinkFormFields(m),
+    ...createFriendLinkFormFields(),
   });
 
 // === Admin create input (manual add) ===
 
 export const CreateFriendLinkInputSchema = z.strictObject(friendLinkFields);
 
-export const createCreateFriendLinkSchema = (m: Messages) =>
-  z.object(createFriendLinkFormFields(m));
+export const createCreateFriendLinkSchema = () =>
+  z.object(createFriendLinkFormFields());
 
 // === Admin inputs ===
 export const GetAllFriendLinksInputSchema = z.strictObject({
