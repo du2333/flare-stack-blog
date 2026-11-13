@@ -36,7 +36,9 @@ export function PostPopularityMaintenance() {
       lines={[
         <>
           {statusLabel}
-          {status?.postCount != null ? ` · ${status.postCount}` : ""}
+          {status?.postCount != null
+            ? ` · ${m.settings_maintenance_popularity_count({ count: status.postCount })}`
+            : ""}
           {status?.lastSuccessAt
             ? ` · ${formatDate(status.lastSuccessAt, { includeTime: true })}`
             : ""}
