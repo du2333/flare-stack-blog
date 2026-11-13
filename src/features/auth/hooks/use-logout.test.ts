@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { sessionQuery } from "@/features/auth/queries";
 import { orpc } from "@/lib/orpc";
@@ -26,7 +26,7 @@ vi.mock("@/lib/orpc", async () => {
     }),
   };
 });
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 let queryClient: QueryClient;
 const authBoundKeys = [

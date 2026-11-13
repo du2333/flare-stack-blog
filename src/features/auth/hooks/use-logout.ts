@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { getAuthClient } from "@/lib/auth/auth-client";
 import { getLogoutAuthErrorMessage } from "@/lib/auth/auth-errors";

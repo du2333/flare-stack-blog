@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect } from "react";
 import type { NavOption } from "@/components/layout/layout-props";
 import { customNavOptions } from "@/components/layout/nav-options";
-import { Toaster } from "@/components/layout/toaster";
+import { LazyToaster } from "@/components/layout/lazy-toaster";
 import { NameGate } from "@/features/auth/components/name-gate";
 import { categoriesQueryOptions } from "@/features/categories/queries";
 import { useLogout } from "@/features/auth/hooks/use-logout";
@@ -172,7 +172,7 @@ function PublicLayout() {
         <ThemePreviewBar themeName={theme.name()} onExit={exitPreview} />
       ) : null}
       <NameGate user={session?.user} logout={logout} />
-      <Toaster />
+      <LazyToaster />
     </>
   );
 }
