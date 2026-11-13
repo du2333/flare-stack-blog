@@ -10,7 +10,10 @@ import {
 } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { AdminChromeProvider } from "@/components/admin/admin-chrome";
+import {
+  AdminChromeProvider,
+  useAdminChrome,
+} from "@/components/admin/admin-chrome";
 import { m } from "@/paraglide/messages";
 import { ApiKeySettingsSection } from "./api-key-settings-section";
 
@@ -80,6 +83,22 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+/** Renders the page frame's primary action the way the header does. */
+function PrimaryActionProbe() {
+  const { primaryAction } = useAdminChrome();
+  return primaryAction
+    ? createElement(
+        "button",
+        {
+          type: "button",
+          "data-probe": "primary-action",
+          onClick: primaryAction.onClick,
+        },
+        primaryAction.label,
+      )
+    : null;
+}
+
 function mountPage() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -91,6 +110,7 @@ function mountPage() {
       createElement(
         AdminChromeProvider,
         null,
+        createElement(PrimaryActionProbe),
         createElement(ApiKeySettingsSection),
       ),
     ),
@@ -139,13 +159,19 @@ it("lists each key with its prefix and when it was created and last used, and re
   );
 });
 
-it("says so in one sentence, with a create button, when there are no keys", async () => {
+it("has one create entry, the frame's primary action, and the empty state says to use it", async () => {
   authKeys.list.mockResolvedValue({ data: { apiKeys: [] }, error: null });
   mountPage();
   expect(await screen.findByText(m.settings_api_keys_empty())).toBeTruthy();
-  expect(
-    screen.getByRole("button", { name: m.settings_api_keys_create() }),
-  ).toBeTruthy();
+  expect(screen.getByText(m.settings_api_keys_empty_hint())).toBeTruthy();
+  // The probe stands in for the frame header; nothing else on the page creates.
+  const creates = screen.getAllByRole("button", {
+    name: m.settings_api_keys_create(),
+  });
+  expect(creates).toHaveLength(1);
+  expect(creates[0]!.getAttribute("data-probe")).toBe("primary-action");
+  fireEvent.click(creates[0]!);
+  expect(await screen.findByRole("dialog")).toBeTruthy();
 });
 
 it("points to the Agent Skill tab instead of carrying the install hint", async () => {

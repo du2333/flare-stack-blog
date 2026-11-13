@@ -119,12 +119,7 @@ export function ApiKeySettingsSection() {
             variant="tile"
             icon={KeyRound}
             title={m.settings_api_keys_empty()}
-            description={m.settings_design_keys_hint()}
-            action={
-              <Button variant="outline" size="sm" onClick={openCreate}>
-                {m.settings_api_keys_create()}
-              </Button>
-            }
+            description={m.settings_api_keys_empty_hint()}
           />
         ) : (
           <div role="table" aria-label={m.settings_nav_api_keys()}>
