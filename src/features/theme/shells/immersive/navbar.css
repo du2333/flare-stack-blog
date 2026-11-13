@@ -625,11 +625,6 @@
       box-shadow 240ms ease,
       color 240ms ease 90ms;
   }
-  /* A group's chevron turns while its menu is open; no transition of where
-     it stands, which the glide carries with its trigger. */
-  .immersive-group svg {
-    transition: rotate 200ms ease;
-  }
   .immersive-nav[data-ready="true"] .immersive-search {
     transition: color 240ms ease 90ms;
   }

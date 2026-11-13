@@ -61,12 +61,27 @@ export class Glider {
   private startFrame = 0;
   private animations: Array<Animation> = [];
 
+  /** Whether a change that glides has been made and its parts are not yet still. */
+  private gliding = false;
+
   constructor(
     private readonly root: () => HTMLElement | null,
     /** Matches the parts whose `::before` is their surface. */
     private readonly surfaces: string,
     private readonly timing: GlideTiming,
+    /**
+     * Told when the parts start to glide (as a change that glides is made)
+     * and when they are all still again: the animations have finished or
+     * were ended, or the change moved nothing.
+     */
+    private readonly onGliding?: (gliding: boolean) => void,
   ) {}
+
+  private setGliding(gliding: boolean) {
+    if (gliding === this.gliding) return;
+    this.gliding = gliding;
+    this.onGliding?.(gliding);
+  }
 
   /**
    * Makes a change of layout that the parts are to glide through. `apply`
@@ -94,7 +109,11 @@ export class Glider {
     const root = this.root();
     const from = this.from;
     this.from = null;
-    if (!from || !root || performance.now() - from.at > STALE_MS) return;
+    if (!from) return;
+    if (!root || performance.now() - from.at > STALE_MS) {
+      if (this.animations.length === 0) this.setGliding(false);
+      return;
+    }
     this.release();
 
     // How much larger each surface was drawn; measured before any is held,
@@ -147,6 +166,7 @@ export class Glider {
       ![...this.held.values()].some((hold) => hold.translate || hold.surface)
     ) {
       this.release();
+      this.setGliding(false);
       return;
     }
     // Two frames on, so one has been painted with the styles in place
@@ -166,6 +186,7 @@ export class Glider {
     for (const animation of this.animations) animation.cancel();
     this.animations = [];
     this.release();
+    this.setGliding(false);
     for (const apply of waiting) apply();
   }
 
@@ -173,6 +194,7 @@ export class Glider {
     this.waitingFrame = 0;
     const root = this.root();
     if (root) {
+      this.setGliding(true);
       const parts = [root, ...root.querySelectorAll(PARTS)];
       this.from = {
         at: performance.now(),
@@ -233,9 +255,11 @@ export class Glider {
     for (const animation of this.animations) {
       animation.addEventListener("finish", () => {
         this.animations = this.animations.filter((one) => one !== animation);
+        if (this.animations.length === 0) this.setGliding(false);
       });
     }
     this.release();
+    if (this.animations.length === 0) this.setGliding(false);
   }
 
   /**

@@ -15,6 +15,7 @@ interface Played {
   pseudo?: string;
   cancelled: boolean;
   playState: string;
+  finished: Array<() => void>;
 }
 let played: Array<Played>;
 let frames: Array<{ id: number; callback: FrameRequestCallback }>;
@@ -29,6 +30,15 @@ function frame() {
   const due = frames;
   frames = [];
   for (const { callback } of due) callback(0);
+}
+
+/** Plays every animation started so far to its end. */
+function finish() {
+  for (const animation of played) {
+    if (animation.playState !== "running") continue;
+    animation.playState = "finished";
+    for (const listener of animation.finished) listener();
+  }
 }
 
 /** A bar with a brand and, inside the brand, a mark. */
@@ -102,6 +112,7 @@ beforeEach(() => {
       pseudo: options.pseudoElement ?? undefined,
       cancelled: false,
       playState: "running",
+      finished: [],
     };
     played.push(animation);
     return {
@@ -113,7 +124,8 @@ beforeEach(() => {
         animation.cancelled = true;
         animation.playState = "idle";
       },
-      addEventListener: () => {},
+      addEventListener: (_type: string, listener: () => void) =>
+        animation.finished.push(listener),
     } as unknown as Animation;
   } as typeof HTMLElement.prototype.animate;
 });
@@ -287,5 +299,74 @@ describe("a change of layout that glides", () => {
     glider.carry();
 
     expect(root.style.translate).toBe("");
+  });
+});
+
+describe("what is told of the glide", () => {
+  it("is that the parts glide from the change until the last animation has finished", () => {
+    const { root } = bar();
+    const gliding = vi.fn();
+    const glider = new Glider(() => root, ".bar, .search", TIMING, gliding);
+
+    glider.change(() => {
+      place(root, 400, 0, 400);
+      surfaces.set(root, 400);
+    });
+    expect(gliding.mock.calls).toEqual([[true]]);
+    glider.carry();
+    frame();
+    frame();
+    // Animating now, and still gliding until they have played.
+    expect(played.length).toBeGreaterThan(0);
+    expect(gliding.mock.calls).toEqual([[true]]);
+
+    finish();
+    expect(gliding.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("is over at once for a change that moved nothing", () => {
+    const { root } = bar();
+    const gliding = vi.fn();
+    const glider = new Glider(() => root, ".bar, .search", TIMING, gliding);
+
+    glider.change(() => {});
+    glider.carry();
+
+    expect(gliding.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("goes on through a change made while the parts still glide", () => {
+    const { root } = bar();
+    const gliding = vi.fn();
+    const glider = new Glider(() => root, ".bar, .search", TIMING, gliding);
+    glider.change(() => place(root, 400));
+    glider.carry();
+    frame();
+    frame();
+
+    glider.change(() => place(root, 100));
+    frame();
+    glider.carry();
+    frame();
+    frame();
+    expect(gliding.mock.calls).toEqual([[true]]);
+
+    finish();
+    expect(gliding.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("is over when the glide is ended, and nothing is started after", () => {
+    const { root } = bar();
+    const gliding = vi.fn();
+    const glider = new Glider(() => root, ".bar, .search", TIMING, gliding);
+    glider.change(() => place(root, 400));
+    glider.carry();
+
+    glider.end();
+    frame();
+    frame();
+
+    expect(gliding.mock.calls).toEqual([[true], [false]]);
+    expect(played).toEqual([]);
   });
 });
