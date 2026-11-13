@@ -1452,8 +1452,8 @@ describe("a Post's page", () => {
       width,
     );
   const GAP_PX = 16;
-  /** Back to top: 3.75rem wide, and 1rem from the edge of the window at least. */
-  const BACK_TO_TOP_PX = 60;
+  /** Back to top: 3rem wide, and 1rem from the edge of the window at least. */
+  const BACK_TO_TOP_PX = 48;
   /** The stylesheet from the footer region on, with its block from 1024px. */
   const footerFromLg = css.slice(css.indexOf("} .immersive-floating {"));
 

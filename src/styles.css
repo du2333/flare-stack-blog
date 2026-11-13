@@ -742,7 +742,9 @@
     }
   }
 
-  /* A ring along the element's border, filled to --progress (0 to 1). */
+  /* A ring along the element's border, filled to --progress (0 to 1) over
+     a faint track that goes all the way round: without the track a short
+     arc reads as a piece of a broken edge. */
   .fuwari-progress-ring {
     @apply relative;
     &::before {
@@ -752,7 +754,7 @@
       padding: 2px;
       background: conic-gradient(
         var(--theme-accent) calc(var(--progress, 0) * 360deg),
-        transparent 0
+        color-mix(in srgb, var(--theme-accent) 16%, transparent) 0
       );
       mask:
         linear-gradient(#000 0 0) content-box,
