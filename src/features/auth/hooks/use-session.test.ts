@@ -4,9 +4,11 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
+  readSession,
   refreshSession,
   resetAuthBoundQueries,
   sessionQuery,
+  watchSession,
 } from "@/features/auth/queries";
 import { useSession } from "./use-session";
 
@@ -79,6 +81,8 @@ beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
   queryClient = new QueryClient();
+  // As the router does for the browser's query client.
+  watchSession(queryClient);
 });
 afterEach(() => {
   cleanup();
@@ -236,4 +240,120 @@ it("asks again, once, when another tab changes the session", async () => {
   });
   await waitFor(() => expect(result.current.data).toBeNull());
   expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+function announceFromAnotherTab() {
+  window.dispatchEvent(
+    new StorageEvent("storage", {
+      key: "better-auth.message",
+      newValue: JSON.stringify({ event: "session", data: {} }),
+    }),
+  );
+}
+
+it("looks again when a reader mounts after another tab signed out unseen", async () => {
+  // Tab A loads the session, then shows a page without any reader (an Admin
+  // page) while tab B signs out.
+  fetchMock.mockResolvedValueOnce(respond(200, SIGNED_IN));
+  const first = renderSession();
+  await waitFor(() => expect(first.result.current.data).toBeTruthy());
+  first.unmount();
+
+  fetchMock.mockResolvedValueOnce(respond(200, null));
+  announceFromAnotherTab();
+  expect(fetchMock).toHaveBeenCalledOnce();
+
+  // Back on a public page, the header reads it again.
+  const header = renderSession();
+  await waitFor(() => expect(header.result.current.data).toBeNull());
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it("looks again after another tab signed out, when the answer came from the server render", async () => {
+  // An Admin page rendered on the server hands its guard's answer over; the
+  // browser has not looked the session up itself.
+  // (The fixture's dates stay strings here; nothing reads them.)
+  queryClient.setQueryData(sessionQuery.queryKey, SIGNED_IN as never);
+  fetchMock.mockResolvedValueOnce(respond(200, null));
+  announceFromAnotherTab();
+
+  const header = renderSession();
+  await waitFor(() => expect(header.result.current.data).toBeNull());
+  expect(fetchMock).toHaveBeenCalledOnce();
+});
+
+it("looks again on focus at most every five seconds", async () => {
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  fetchMock.mockResolvedValue(respond(200, SIGNED_IN));
+  const { result } = renderSession();
+  await waitFor(() => expect(result.current.data).toBeTruthy());
+
+  document.dispatchEvent(new Event("visibilitychange"));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(result.current.isFetching).toBe(false));
+  document.dispatchEvent(new Event("visibilitychange"));
+  window.dispatchEvent(new Event("online"));
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it("stays signed out when a lookup sent before the sign-out answers after it", async () => {
+  fetchMock.mockResolvedValueOnce(respond(200, SIGNED_IN));
+  const { result } = renderSession();
+  await waitFor(() => expect(result.current.data).toBeTruthy());
+
+  let answer!: (response: Response) => void;
+  fetchMock.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+  void refreshSession(queryClient);
+  await waitFor(() => expect(result.current.isFetching).toBe(true));
+
+  resetAuthBoundQueries(queryClient, "signed-out");
+  answer(respond(200, SIGNED_IN));
+  await waitFor(() => expect(result.current.isFetching).toBe(false));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(result.current.data).toBeNull();
+  expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeNull();
+});
+
+it("gives a route guard the session, once until it goes out of date", async () => {
+  fetchMock.mockResolvedValueOnce(respond(200, SIGNED_IN));
+  expect((await readSession(queryClient))?.user.role).toBe("admin");
+  await readSession(queryClient);
+  expect(fetchMock).toHaveBeenCalledOnce();
+
+  fetchMock.mockResolvedValueOnce(respond(200, null));
+  announceFromAnotherTab();
+  expect(await readSession(queryClient)).toBeNull();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it("gives a route guard signed out when the lookup fails", async () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  fetchMock.mockResolvedValueOnce(respond(500, { message: "down" }));
+  expect(await readSession(queryClient)).toBeNull();
+  fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+  expect(await readSession(queryClient)).toBeNull();
+  fetchMock.mockResolvedValueOnce(
+    new Response("<html>", {
+      status: 200,
+      headers: { "content-type": "text/html" },
+    }),
+  );
+  expect(await readSession(queryClient)).toBeNull();
+});
+
+it("keeps the header's last answer when a guard's lookup fails", async () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  fetchMock.mockResolvedValueOnce(respond(200, SIGNED_IN));
+  const { result } = renderSession();
+  await waitFor(() => expect(result.current.data).toBeTruthy());
+
+  fetchMock.mockResolvedValueOnce(respond(503, null));
+  void queryClient.invalidateQueries({
+    queryKey: sessionQuery.queryKey,
+    refetchType: "none",
+  });
+  expect(await readSession(queryClient)).toBeNull();
+  await waitFor(() => expect(result.current.isError).toBe(true));
+  expect(result.current.data?.user.id).toBe("u1");
 });

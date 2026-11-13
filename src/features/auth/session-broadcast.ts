@@ -4,6 +4,9 @@
 // Better Auth client listens there, hears it too.
 const SESSION_MESSAGE_KEY = "better-auth.message";
 
+// Better Auth's client looks again on focus at most this often.
+const FOCUS_CHECK_INTERVAL_MS = 5_000;
+
 type SessionTrigger = "signed-in" | "signed-out" | "updateUser";
 
 /** Tells the site's other tabs that the session changed in this one. */
@@ -23,11 +26,32 @@ export function announceSessionChange(trigger: SessionTrigger) {
   }
 }
 
-/** Calls `listener` whenever another tab announces a session change. */
-export function onSessionChangeElsewhere(listener: () => void) {
+/**
+ * Calls `listener` whenever the session may have changed outside this tab's
+ * own actions: another tab announced a change, the tab became visible again
+ * (at most every five seconds), or the network came back. These are the
+ * moments Better Auth's client looked again.
+ */
+export function onSessionMayHaveChanged(listener: () => void) {
+  let lastFocusCheck = 0;
+  const throttled = () => {
+    const now = Date.now();
+    if (now - lastFocusCheck < FOCUS_CHECK_INTERVAL_MS) return;
+    lastFocusCheck = now;
+    listener();
+  };
   const onStorage = (event: StorageEvent) => {
     if (event.key === SESSION_MESSAGE_KEY && event.newValue) listener();
   };
+  const onVisibility = () => {
+    if (document.visibilityState === "visible") throttled();
+  };
   window.addEventListener("storage", onStorage);
-  return () => window.removeEventListener("storage", onStorage);
+  document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("online", throttled);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    document.removeEventListener("visibilitychange", onVisibility);
+    window.removeEventListener("online", throttled);
+  };
 }

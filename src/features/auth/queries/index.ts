@@ -1,6 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { queryOptions } from "@tanstack/react-query";
-import { announceSessionChange } from "@/features/auth/session-broadcast";
+import {
+  announceSessionChange,
+  onSessionMayHaveChanged,
+} from "@/features/auth/session-broadcast";
 import type { Session } from "@/lib/auth/auth.server";
 import { orpc } from "@/lib/orpc";
 
@@ -41,6 +44,26 @@ export async function fetchSession() {
   return session?.session && session.user ? session : null;
 }
 
+// Query clients whose session is already kept current by `watchSession`.
+const watched = new WeakSet<QueryClient>();
+
+/**
+ * For the browser's query client, from the app's start: whatever may have
+ * changed the session outside this tab's own actions (another tab, the tab
+ * regaining focus, the network coming back) marks the session query out of
+ * date. Readers on screen look again at once; one that mounts later, such as
+ * the public header after an Admin page that reads no session, looks again
+ * when it mounts. The answer may come from the server render, so this cannot
+ * wait for the first lookup in the browser.
+ */
+export function watchSession(queryClient: QueryClient) {
+  if (watched.has(queryClient)) return;
+  watched.add(queryClient);
+  onSessionMayHaveChanged(() => {
+    void queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session });
+  });
+}
+
 /** The one record of who is signed in, for route guards and components. */
 export const sessionQuery = queryOptions({
   queryKey: AUTH_KEYS.session,
@@ -54,12 +77,30 @@ export const sessionQuery = queryOptions({
     }
     return fetchSession();
   },
+  // The answer goes out of date through events (`watchSession` and the
+  // actions below), not with age, so the many readers of one page share one
+  // lookup and a reader that mounts after an event looks again.
+  staleTime: Number.POSITIVE_INFINITY,
 });
+
+/**
+ * The session for a route guard, looked up again when it is out of date. A
+ * failed lookup counts as signed out, as it did with Better Auth's client:
+ * the sign-in page still shows its form and the Admin sends to it, instead
+ * of an error page. The query keeps its last answer for the header.
+ */
+export async function readSession(queryClient: QueryClient) {
+  try {
+    return await queryClient.fetchQuery(sessionQuery);
+  } catch {
+    return null;
+  }
+}
 
 export const emailConfiguredQuery = orpc.email.configured.queryOptions();
 
 /**
- * After Better Auth's client signed someone in or out: the session query
+ * After signing someone in or out: the session query
  * takes the new answer, other tabs hear of it, and what depended on the old
  * viewer loads again. Signing out needs no lookup; signing in drops the old
  * answer, so a route guard waits for the new one instead of reading it.
@@ -69,6 +110,9 @@ export function resetAuthBoundQueries(
   change: "signed-in" | "signed-out",
 ) {
   if (change === "signed-out") {
+    // A lookup still on its way may have left before the sign-out; its
+    // signed-in answer must not land after this one.
+    void queryClient.cancelQueries({ queryKey: AUTH_KEYS.session });
     queryClient.setQueryData(AUTH_KEYS.session, null);
   } else {
     void queryClient.resetQueries({ queryKey: AUTH_KEYS.session });

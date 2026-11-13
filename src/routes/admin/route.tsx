@@ -20,7 +20,7 @@ import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import { sessionQuery } from "@/features/auth/queries";
+import { readSession } from "@/features/auth/queries";
 import {
   accessSectionFromPath,
   settingsSectionFromPath,
@@ -32,7 +32,7 @@ import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
-    const session = await context.queryClient.ensureQueryData(sessionQuery);
+    const session = await readSession(context.queryClient);
 
     if (!session) {
       throw redirect({ to: "/login" });

@@ -1,12 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AuthLayout } from "@/components/layout/auth-layout";
-import { emailConfiguredQuery, sessionQuery } from "@/features/auth/queries";
+import { emailConfiguredQuery, readSession } from "@/features/auth/queries";
 import { useNavigateBack } from "@/hooks/use-navigate-back";
 import { CACHE_CONTROL } from "@/lib/constants";
 
 export const Route = createFileRoute("/_public/_auth")({
   beforeLoad: async ({ context }) => {
-    const session = await context.queryClient.fetchQuery(sessionQuery);
+    const session = await readSession(context.queryClient);
     const isEmailConfigured =
       await context.queryClient.fetchQuery(emailConfiguredQuery);
 
