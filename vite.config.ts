@@ -40,7 +40,19 @@ const config = defineConfig({
     themeFixturePlugin(),
     tailwindcss(),
     devtools(),
-    tanstackStart(),
+    tanstackStart({
+      router: {
+        codeSplittingOptions: {
+          // The default leaves out pendingComponent, which keeps every route's
+          // skeleton (and its Admin stylesheet) in the first load of each page.
+          defaultBehavior: [
+            ["component", "pendingComponent"],
+            ["errorComponent"],
+            ["notFoundComponent"],
+          ],
+        },
+      },
+    }),
     viteReact(),
   ],
 });
