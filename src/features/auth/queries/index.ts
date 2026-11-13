@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import {
   announceSessionChange,
   onSessionMayHaveChanged,
+  type SessionTrigger,
 } from "@/features/auth/session-broadcast";
 import type { Session } from "@/lib/auth/auth.server";
 import { orpc } from "@/lib/orpc";
@@ -100,14 +101,14 @@ export async function readSession(queryClient: QueryClient) {
 export const emailConfiguredQuery = orpc.email.configured.queryOptions();
 
 /**
- * After signing someone in or out: the session query
- * takes the new answer, other tabs hear of it, and what depended on the old
- * viewer loads again. Signing out needs no lookup; signing in drops the old
- * answer, so a route guard waits for the new one instead of reading it.
+ * After signing someone in or out: the session query takes the new answer,
+ * other tabs hear of it, and what depended on the old viewer loads again.
+ * Signing out needs no lookup; signing in drops the old answer, so a route
+ * guard waits for the new one instead of reading it.
  */
 export function resetAuthBoundQueries(
   queryClient: QueryClient,
-  change: "signed-in" | "signed-out",
+  change: Exclude<SessionTrigger, "updateUser">,
 ) {
   if (change === "signed-out") {
     // A lookup still on its way may have left before the sign-out; its

@@ -7,7 +7,7 @@ const SESSION_MESSAGE_KEY = "better-auth.message";
 // Better Auth's client looks again on focus at most this often.
 const FOCUS_CHECK_INTERVAL_MS = 5_000;
 
-type SessionTrigger = "signed-in" | "signed-out" | "updateUser";
+export type SessionTrigger = "signed-in" | "signed-out" | "updateUser";
 
 /** Tells the site's other tabs that the session changed in this one. */
 export function announceSessionChange(trigger: SessionTrigger) {
