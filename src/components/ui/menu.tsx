@@ -77,6 +77,8 @@ interface MenuProps {
   triggerTitle?: string;
   /** `data-*` attributes for the trigger, for a look that follows a state. */
   triggerData?: Record<`data-${string}`, string | undefined>;
+  /** The trigger stands for the current page (`aria-current="true"`). */
+  triggerCurrent?: boolean;
   disabled?: boolean;
   placement?: Placement;
   /** As wide as the trigger (11rem at least), and kept inside the viewport, instead of 11 to 18rem. */
@@ -94,9 +96,11 @@ interface MenuProps {
 /**
  * A trigger and the menu it opens beside itself. ArrowDown or ArrowUp on the
  * trigger opens it on the first or last item (a click opens it on the checked
- * radio item or the current link, else the first); arrows, Home, End and typeahead move focus
- * between items; Escape closes it back onto the trigger, and Tab closes it
- * and moves on from the trigger.
+ * radio item or the current link, else the first); arrows, Home, End and
+ * typeahead move focus between items; Escape closes it back onto the
+ * trigger, and Tab closes it and moves on from the trigger. Focus leaving
+ * for anything but the trigger and the menu closes it, also while it is
+ * open without focus inside (`openOnHover`).
  */
 export function Menu({
   label,
@@ -104,6 +108,7 @@ export function Menu({
   triggerClassName,
   triggerTitle,
   triggerData,
+  triggerCurrent = false,
   disabled = false,
   placement = "bottom-end",
   matchTriggerWidth = false,
@@ -213,6 +218,7 @@ export function Menu({
         className={triggerClassName}
         aria-label={label}
         title={triggerTitle}
+        aria-current={triggerCurrent ? "true" : undefined}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={isOpen ? id : undefined}
@@ -233,6 +239,13 @@ export function Menu({
         }}
         onPointerEnter={hover(true)}
         onPointerLeave={hover(false)}
+        // Focus leaves the trigger of a menu that holds none, as after a
+        // hover: Tab moves on from the trigger and takes the menu with it.
+        onBlur={(event) => {
+          const next = event.relatedTarget;
+          if (open && next && !document.getElementById(id)?.contains(next))
+            setOpen(false);
+        }}
       >
         {trigger}
       </button>
