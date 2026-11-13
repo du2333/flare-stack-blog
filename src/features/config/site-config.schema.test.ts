@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { m } from "@/paraglide/messages";
 import { createSiteConfigInputFormSchema } from "./site-config.schema";
 
 function parseLinks(navLinks: Array<Record<string, unknown>>) {

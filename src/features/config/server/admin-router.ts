@@ -10,7 +10,6 @@ import {
   CONFIG_ERRORS,
 } from "@/features/config/config.admin.schema";
 import * as ConfigService from "@/features/config/service/config.service";
-import { m } from "@/paraglide/messages";
 import { adminProcedure } from "@/lib/orpc/procedure";
 
 const getSystem = adminProcedure

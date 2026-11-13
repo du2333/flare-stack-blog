@@ -4,7 +4,6 @@ import {
   SITE_ASSET_MAX_FILE_SIZE_MB,
   parseSiteAssetUploadInput,
 } from "./config.asset.schema";
-import { m } from "@/paraglide/messages";
 
 function uploadForm(size: number, assetPath = "site/avatar.png") {
   const formData = new FormData();
