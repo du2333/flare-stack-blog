@@ -5,6 +5,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type MutableRefObject,
   type RefObject,
 } from "react";
@@ -202,11 +203,16 @@ export function PreviewStage({
         >
           <div
             className="personalize-scaler"
-            style={{
-              width: size.width,
-              height: size.height,
-              transform: `scale(${scale})`,
-            }}
+            style={
+              {
+                width: size.width,
+                height: size.height,
+                transform: `scale(${scale})`,
+                // For the phone's corners, which the stylesheet cuts on this
+                // layer in its own, unscaled lengths.
+                "--personalize-scale": scale,
+              } as CSSProperties
+            }
           >
             {frames.map((frame) => (
               <PreviewFrame
