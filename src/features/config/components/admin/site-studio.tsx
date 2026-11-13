@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
+import { ArrowRight, ExternalLink, Link2, Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -254,10 +254,10 @@ function NavLinksEditor() {
 
       {fields.length < NAV_LINKS_MAX ? (
         <Button
-          variant="text"
+          variant="outline"
           size="sm"
           onClick={() => append({ label: "", href: "" })}
-          icon={<Plus size={14} />}
+          icon={<Plus size={15} />}
           className="site-add-link"
         >
           {m.settings_site_nav_add()}
@@ -376,11 +376,11 @@ function NavLinkRow({
         <div className="site-nav-add-child">
           <Button
             ref={addChild}
-            variant="quiet"
-            size="xs"
+            variant="outline"
+            size="sm"
             disabled={full}
             aria-describedby={full ? `${id}-child-limit` : undefined}
-            icon={<Plus size={14} />}
+            icon={<Plus size={15} />}
             onClick={() => {
               if (!isGroup) {
                 // A group leads nowhere: its address goes when it becomes one.
@@ -583,7 +583,7 @@ function SocialLinksEditor() {
                   onClick={() => remove(index)}
                   label={m.settings_social_remove()}
                 >
-                  <X size={16} />
+                  <Trash2 size={16} />
                 </IconButton>
               </div>
               {platform === "custom" ? (
@@ -615,13 +615,13 @@ function SocialLinksEditor() {
       </div>
       {unused.length > 0 ? (
         <Button
-          variant="text"
+          variant="outline"
           size="sm"
           onClick={() => {
             const next = unused[0];
             if (next) append({ platform: next, url: "" });
           }}
-          icon={<Plus size={14} />}
+          icon={<Plus size={15} />}
           className="site-add-link"
         >
           {m.settings_social_add()}
