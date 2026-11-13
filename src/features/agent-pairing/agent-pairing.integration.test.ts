@@ -103,11 +103,17 @@ describe("generating a Pairing Code", () => {
 
     const before = Date.now();
     const { code, expiresAt } = await generate(cookie);
+    const after = Date.now();
 
     expect(code).toMatch(/^[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$/);
-    const lifetime = new Date(expiresAt).getTime() - before;
-    expect(lifetime).toBeGreaterThan(9 * 60 * 1000);
-    expect(lifetime).toBeLessThanOrEqual(10 * 60 * 1000);
+    // The server stamps the code somewhere between the two clock readings and
+    // stores the expiry in whole seconds (rounded down), so it falls between
+    // the earliest and the latest such instant plus ten minutes.
+    const tenMinutes = 10 * 60 * 1000;
+    const wholeSecond = (ms: number) => Math.floor(ms / 1000) * 1000;
+    const expires = new Date(expiresAt).getTime();
+    expect(expires).toBeGreaterThanOrEqual(wholeSecond(before + tenMinutes));
+    expect(expires).toBeLessThanOrEqual(after + tenMinutes);
     expect(await status(cookie)).toEqual({ state: "waiting", expiresAt });
   });
 
