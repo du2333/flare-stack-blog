@@ -25,8 +25,9 @@ function AccessLayout() {
     <SettingsShell
       title={m.admin_access_title()}
       section={page}
-      // The keys are a list on one card; the Agent Skill guide is cards of its own.
-      body={page === "agent-skill" ? "form" : "list"}
+      // Both tabs sit in the form body, at the form width, so the edges stay
+      // put between them; the key list is a card of its own that fits its rows.
+      body="form"
       regionLabel={ACCESS_LABELS[page]()}
       tabs={<AccessNav current={page} />}
     >

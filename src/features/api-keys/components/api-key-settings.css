@@ -6,13 +6,14 @@
 .settings-keys {
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
-}
-.key-list {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  max-width: var(--admin-form-max);
+  padding: 8px 20px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
 .key-note {
   margin-bottom: 8px;
@@ -91,16 +92,30 @@
 .key-manage:hover {
   color: var(--fuwari-fg);
 }
+/* On a phone the link has no room beside the name: the row takes a third line. */
+@media (max-width: 480px) {
+  .admin-list-row.key-grid:has(> .key-actions > .key-manage) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    max-height: none;
+    padding-block: 10px;
+  }
+  .key-actions:has(> .key-manage) {
+    justify-content: flex-start;
+  }
+}
 .key-count {
   padding: 12px var(--admin-row-x) 4px;
   color: var(--fuwari-fg-50);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
 }
-@media (max-width: 760px) {
+/* Under 1160px (the content is then narrower than the four detail columns
+   need) a row keeps its name and its action, dates under the name. */
+@media (max-width: 1160px) {
   .key-grid,
   .admin-list-row.key-grid {
-    grid-template-columns: minmax(0, 1fr) 36px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
   .key-head {
