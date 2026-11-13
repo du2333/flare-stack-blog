@@ -12,6 +12,8 @@ import { routedFirstSegmentsPlugin } from "./scripts/vite-routed-segments.ts";
 import { themeFixturePlugin } from "./scripts/vite-theme-fixture.ts";
 
 const config = defineConfig({
+  // For `bun scripts/bundle-report.ts --sources`; never set in a deploy.
+  build: { sourcemap: process.env.BUNDLE_SOURCEMAP === "1" },
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
     // Unique per build, so cached pages never outlive the assets they name.
