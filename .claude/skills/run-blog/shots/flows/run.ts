@@ -27,7 +27,7 @@ import {
 } from "./local-db.ts";
 
 export const FLOWS_USAGE = `  shots.ts flows --base <url> [--session <token> | --api-key-file <toml>]
-                 [--only <names>] [--compare <other-base>] [--tolerance 50] [--list]`;
+                 [--only <names>] [--compare <other-base>] [--tolerance 50] [--deadline 15] [--list]`;
 
 interface Deps {
   launch: () => Promise<Browser>;
@@ -54,6 +54,9 @@ interface Outcome {
 }
 
 const DEFAULT_TIMEOUT_MS = 120_000;
+const CLOSE_TIMEOUT_MS = 10_000;
+/** The whole run of one site ends after this; the flows not yet run fail. */
+const DEFAULT_DEADLINE_MINUTES = 15;
 /** Timings closer than this are equal whatever the tolerance says. */
 const TIMING_FLOOR_MS = 400;
 
@@ -243,9 +246,11 @@ async function runFlow(
     );
   } finally {
     clearTimeout(timer);
-    await Promise.all(contexts.map((context) => context.close())).catch(
-      () => {},
-    );
+    // A browser that no longer answers must not hold the run.
+    await Promise.race([
+      Promise.all(contexts.map((context) => context.close())).catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, CLOSE_TIMEOUT_MS)),
+    ]);
   }
   for (const item of noise) {
     outcome.problems.push(
@@ -279,15 +284,30 @@ function printOutcome(outcome: Outcome, width: number) {
   for (const problem of outcome.problems) console.log(`      - ${problem}`);
 }
 
+/** The site answers, and takes the run's credentials; ends the run with one line when not. Returns the signed-in user's id. */
+async function preflight(site: Site, deps: Deps) {
+  await deps.requireAnswer(site.base);
+  const user = await sessionUser(site);
+  if ((site.session || site.apiKey) && user === undefined) {
+    // Every signed-in flow would wait out its timeout: say so at once.
+    console.error(
+      `shots flows: ${site.base.origin} does not accept ${site.session ? "the --session cookie" : "the API key"} (get-session answers no user). A cookie is signed with the secret of the site's .dev.vars and names a row of its database: a site with its own database or secret needs its own cookie.`,
+    );
+    process.exit(1);
+  }
+  return user;
+}
+
 async function runAll(
   flows: Array<Flow>,
   site: Site,
   deps: Deps,
   print: boolean,
+  deadlineMs: number,
 ): Promise<Array<Outcome>> {
-  await deps.requireAnswer(site.base);
+  const user = await preflight(site, deps);
   const db =
-    isLocal(site.base) && (await isThrowawayAdmin(site))
+    isLocal(site.base) && user === THROWAWAY_ADMIN_ID
       ? openLocalDb()
       : undefined;
   const guard = db && site.session ? guardSession(db, site.session) : undefined;
@@ -295,8 +315,21 @@ async function runAll(
   const outcomes: Array<Outcome> = [];
   const width = Math.max(...flows.map((flow) => flow.name.length));
   try {
+    const started = Date.now();
     for (const flow of flows) {
-      const outcome = await runFlow(flow, site, browser, db);
+      console.error(`flows: ${site.base.origin} ${flow.name}`);
+      const outcome =
+        Date.now() - started > deadlineMs
+          ? ({
+              name: flow.name,
+              status: "fail",
+              observed: new Map(),
+              problems: [
+                `not run: the ${Math.round(deadlineMs / 60000)} minute limit of the run was reached`,
+              ],
+              ms: 0,
+            } satisfies Outcome)
+          : await runFlow(flow, site, browser, db);
       // A flow that signed out ended the session the next one needs.
       guard?.restore();
       outcomes.push(outcome);
@@ -309,22 +342,23 @@ async function runAll(
   return outcomes;
 }
 
-/** True when `--session` is the throwaway Admin of `dev-admin-session.ts`. */
-async function isThrowawayAdmin(site: Site) {
+/** The id of the user the site's session answers for the run's credentials, or undefined. */
+async function sessionUser(site: Site) {
   const headers: Record<string, string> = {};
   if (site.session) {
     headers.cookie = `better-auth.session_token=${site.session}`;
   } else if (site.apiKey) {
     headers["x-api-key"] = site.apiKey;
-  } else return false;
+  } else return undefined;
   try {
     const response = await fetch(new URL("/api/auth/get-session", site.base), {
       headers,
+      signal: AbortSignal.timeout(20_000),
     });
     const body = (await response.json()) as { user?: { id?: string } } | null;
-    return body?.user?.id === THROWAWAY_ADMIN_ID;
+    return body?.user?.id;
   } catch {
-    return false;
+    return undefined;
   }
 }
 
@@ -365,6 +399,7 @@ export async function flows(args: Array<string>, deps: Deps) {
       only: { type: "string" },
       compare: { type: "string" },
       tolerance: { type: "string", default: "50" },
+      deadline: { type: "string", default: String(DEFAULT_DEADLINE_MINUTES) },
       list: { type: "boolean", default: false },
     },
   });
@@ -385,6 +420,8 @@ export async function flows(args: Array<string>, deps: Deps) {
       `--api-key-file is for ${keyed.url.origin}; the key is sent to that origin only, not to ${base.origin}`,
     );
   }
+  const deadlineMs = Number(values.deadline) * 60_000;
+  if (!(deadlineMs > 0)) deps.fail("--deadline is a number of minutes");
   const tolerance = Number(values.tolerance);
   if (!(tolerance >= 0)) deps.fail("--tolerance is a percentage");
 
@@ -407,7 +444,10 @@ export async function flows(args: Array<string>, deps: Deps) {
     ? { base: new URL(values.compare), session: values.session }
     : undefined;
 
-  const outcomes = await runAll(selected, site, deps, !other);
+  // Both sites are checked before the first flow runs, so a cookie that the
+  // other site does not know costs seconds, not a run.
+  if (other) await preflight(other, deps);
+  const outcomes = await runAll(selected, site, deps, !other, deadlineMs);
   const total = (list: Array<Outcome>) => ({
     passed: list.filter((o) => o.status === "pass").length,
     failed: list.filter((o) => o.status === "fail").length,
@@ -422,7 +462,7 @@ export async function flows(args: Array<string>, deps: Deps) {
     return failed ? 1 : 0;
   }
 
-  const compared = await runAll(selected, other, deps, false);
+  const compared = await runAll(selected, other, deps, false, deadlineMs);
   const width = Math.max(...selected.map((flow) => flow.name.length));
   let different = 0;
   let failed = 0;
