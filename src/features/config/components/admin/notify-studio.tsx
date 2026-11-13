@@ -174,7 +174,10 @@ function EmailChannel() {
         </Badge>
       }
     >
-      <SwitchRow label={m.settings_email_scope_admin_label()}>
+      <SwitchRow
+        label={m.settings_email_scope_admin_label()}
+        description={m.settings_email_scope_admin_desc()}
+      >
         {(field) => (
           <Switch
             {...field}
@@ -187,7 +190,10 @@ function EmailChannel() {
           />
         )}
       </SwitchRow>
-      <SwitchRow label={m.settings_email_scope_user_label()}>
+      <SwitchRow
+        label={m.settings_email_scope_user_label()}
+        description={m.settings_email_scope_user_desc()}
+      >
         {(field) => (
           <Switch
             {...field}
