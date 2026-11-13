@@ -6,6 +6,11 @@
 .site-studio {
   display: flex;
   flex-direction: column;
+  /* A navigation row's first column (the drag handle) and its column gap:
+     the child rows are indented by the two together, so their handle starts
+     where the parent's name field does. */
+  --site-nav-handle: 24px;
+  --site-nav-gap: 8px;
 }
 .site-char-count {
   margin-top: 6px;
@@ -100,9 +105,11 @@
 }
 .site-nav-row {
   display: grid;
-  grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
+  grid-template-columns:
+    var(--site-nav-handle) minmax(0, 0.8fr) minmax(0, 1.2fr)
+    36px;
   align-items: center;
-  gap: 8px;
+  gap: var(--site-nav-gap);
 }
 .site-nav-item {
   position: relative;
@@ -116,6 +123,43 @@
 .site-nav-item[data-drop-target="true"] {
   outline: 2px solid color-mix(in srgb, var(--fuwari-primary) 45%, transparent);
   outline-offset: 3px;
+}
+/* A group says it does not navigate where an address would be. */
+.site-nav-group-note {
+  min-width: 0;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+/*
+ * Under a link: the add action, in line with the name field (the handle's
+ * column and the gap). With child links it becomes their list, hung from a
+ * hairline under the middle of the parent's handle; the children sort inside
+ * it only. The literals: 10px between rows is the gap of the other row
+ * stacks of this file, 8px above the list is the gap inside a row, 1px is
+ * the hairline.
+ */
+.site-nav-children {
+  display: grid;
+  gap: 10px;
+  margin-left: calc(var(--site-nav-handle) + var(--site-nav-gap));
+}
+.site-nav-children[data-group="true"] {
+  margin-top: 8px;
+  margin-left: calc(var(--site-nav-handle) / 2);
+  padding-left: calc(var(--site-nav-handle) / 2 + var(--site-nav-gap) - 1px);
+  border-left: 1px solid var(--admin-line);
+}
+.site-nav-add-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.site-nav-limit {
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
 /* The social links, as rows of platform, address and remove. */
 .site-social-rows {
@@ -221,7 +265,7 @@
     padding-left: 0;
   }
   .site-nav-row {
-    grid-template-columns: 24px minmax(0, 1fr) 36px;
+    grid-template-columns: var(--site-nav-handle) minmax(0, 1fr) 36px;
   }
   .site-nav-row > :nth-child(3) {
     grid-column: 2 / 3;
