@@ -10,9 +10,11 @@ import { m } from "@/paraglide/messages";
 import { useLogout } from "./use-logout";
 
 const { signOut } = vi.hoisted(() => ({ signOut: vi.fn() }));
-vi.mock("@/lib/auth/auth-client", () => ({
-  getAuthClient: () => ({ signOut }),
-}));
+vi.mock("@/lib/auth/sign-out", () => ({ signOut }));
+// Signing out needs no chunk of Better Auth's client.
+vi.mock("@/lib/auth/auth-client", () => {
+  throw new Error("useLogout loaded the auth client");
+});
 vi.mock("@/lib/orpc", async () => {
   const { createTanstackQueryUtils } = await import("@orpc/tanstack-query");
   const unusedProcedure = async () => {
@@ -75,7 +77,7 @@ it.each([false, true])(
     );
 
     const pending = result.current.logout();
-    await vi.waitFor(() => expect(signOut).toHaveBeenCalledOnce());
+    expect(signOut).toHaveBeenCalledOnce();
     expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeDefined();
     expect(toast.success).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
