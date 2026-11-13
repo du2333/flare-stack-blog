@@ -34,7 +34,10 @@ export function ArchivePost({ post }: ArchivePostProps) {
         >
           {post.cover ? (
             <img
-              src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.thumb)}
+              src={getPublicImageSrc(
+                post.cover.url,
+                PUBLIC_IMAGE_WIDTH.rowCover,
+              )}
               alt=""
               loading="lazy"
             />
