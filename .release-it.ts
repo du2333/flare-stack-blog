@@ -22,7 +22,7 @@ export default {
       "bun run i18n:prune-unused --check",
     ],
     "before:github:release":
-      "mkdir -p tmp && git archive --format=zip -o tmp/flare-stack-blog-skills-v${version}.zip HEAD:.agents/skills",
+      "mkdir -p tmp && git archive --format=zip -o tmp/flare-stack-blog-skills-v${version}.zip HEAD:.agents/skills flare-stack-blog",
     "after:release":
       "echo Successfully released ${name} v${version} to ${repo.repository}.",
   },

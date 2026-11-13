@@ -107,7 +107,7 @@ function findChromium(): { executable: string; args: Array<string> } {
     };
   }
   return fail(
-    "no Chromium found. Set CHROME_PATH, or run `cd .claude/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
+    "no Chromium found. Set CHROME_PATH, or run `cd .agents/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
   );
 }
 

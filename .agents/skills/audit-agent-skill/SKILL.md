@@ -2,6 +2,8 @@
 name: audit-agent-skill
 description: Black-box audit of the flare-stack-blog Agent Skill and HTTP API on a local instance, by a subagent that reads no source code.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Audit the Agent Skill

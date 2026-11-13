@@ -2,10 +2,10 @@
  * Screenshots the blog, compares two sets of screenshots and tiles a set into
  * sheets. Run from the repo root:
  *
- *   bun .claude/skills/run-blog/shots/shots.ts shoot   --base <url> --out <dir> [...]
- *   bun .claude/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
- *   bun .claude/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
- *   bun .claude/skills/run-blog/shots/shots.ts flows   --base <url> [--session <token>] [--only a,b] [--compare <url>]
+ *   bun .agents/skills/run-blog/shots/shots.ts shoot   --base <url> --out <dir> [...]
+ *   bun .agents/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
+ *   bun .agents/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
+ *   bun .agents/skills/run-blog/shots/shots.ts flows   --base <url> [--session <token>] [--only a,b] [--compare <url>]
  *
  * or `bun run shots ...`. The tool's own dependencies install themselves on the
  * first run.
@@ -93,7 +93,7 @@ function findChrome() {
     : undefined;
   if (!newest) {
     fail(
-      "Chromium headless shell not found: run `cd .claude/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
+      "Chromium headless shell not found: run `cd .agents/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
     );
   }
   return newest;
