@@ -8,7 +8,18 @@
     "typescript/no-explicit-any": "error",
     "eslint/no-unused-vars": "off",
     "eslint/no-unused-expressions": "off",
-    "unicorn/no-new-array": "off"
+    "unicorn/no-new-array": "off",
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "sonner",
+            "message": "Import `toast` from \"@/lib/toast\": it keeps sonner out of the first load and shows a toast asked for before sonner has loaded."
+          }
+        ]
+      }
+    ]
   },
   "ignorePatterns": [
     "src/paraglide",
@@ -24,6 +35,12 @@
     "typeAware": true
   },
   "overrides": [
+    {
+      "files": ["src/components/layout/toaster.tsx", "src/lib/toast.ts"],
+      "rules": {
+        "eslint/no-restricted-imports": "off"
+      }
+    },
     {
       "files": [
         "**/*.test.ts",

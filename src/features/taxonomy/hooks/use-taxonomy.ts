@@ -6,7 +6,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { categoriesAdminQueryOptions } from "@/features/categories/queries";
 import { tagsWithCountAdminQueryOptions } from "@/features/tags/queries";
 import { orpc, orpcClient } from "@/lib/orpc";

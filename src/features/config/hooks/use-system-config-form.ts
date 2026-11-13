@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createSiteConfigInputFormSchema } from "../site-config.schema";
 import { DEFAULT_CONFIG } from "../config.schema";
 import {

@@ -6,7 +6,7 @@ import { MessageCircle, Search, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useFormContext, useFormState, useWatch } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type { SystemConfig } from "@/features/config/config.schema";
 import type { AdminTestEmailConnectionInput } from "@/features/email/email.schema";
 import { useEmailConnection } from "@/features/email/hooks/use-email-connection";

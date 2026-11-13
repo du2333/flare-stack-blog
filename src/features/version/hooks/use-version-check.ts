@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   ignoreUpdateNotice,
   recordUpdateNoticeShown,
@@ -23,7 +23,7 @@ export function useVersionCheck() {
     const now = Date.now();
     if (!shouldShowUpdateNotice(localStorage, data.latestVersion, now)) return;
 
-    toast(m.version_toast_available(), {
+    toast.message(m.version_toast_available(), {
       description: m.version_toast_available_desc({
         version: data.latestVersion,
       }),
