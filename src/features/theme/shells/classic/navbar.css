@@ -79,7 +79,8 @@
     color 180ms;
 }
 .public-nav-active,
-.public-nav-link:hover {
+.public-nav-link:hover,
+.public-nav-link[aria-expanded="true"] {
   background: var(--fuwari-btn-regular-bg);
   color: var(--theme-accent);
 }
