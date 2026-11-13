@@ -1,7 +1,22 @@
 {
-  "home": { "js": 253, "css": 11 },
-  "post": { "js": 285, "css": 13 },
-  "posts": { "js": 254, "css": 11 },
-  "moments": { "js": 291, "css": 14 },
-  "friend-links": { "js": 253, "css": 11 }
+  "home": {
+    "js": 251,
+    "css": 19
+  },
+  "post": {
+    "js": 282,
+    "css": 22
+  },
+  "posts": {
+    "js": 252,
+    "css": 19
+  },
+  "moments": {
+    "js": 284,
+    "css": 21
+  },
+  "friend-links": {
+    "js": 251,
+    "css": 20
+  }
 }
