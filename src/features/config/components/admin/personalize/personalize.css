@@ -358,13 +358,41 @@
   left: 0;
   transform-origin: top left;
 }
-/* The phone's corners once more, cut on the scaled layer itself and as a
-   clip path. The canvas's rounded overflow is not enough: a page whose bar
-   is frosted (a backdrop-filter, as in 「名片」 and 「侧栏」) is drawn by the
-   browser's compositor past a rounded overflow, and its square corners show
-   outside the phone. The radius is the canvas's, in this layer's lengths. */
+/* The phone's corners. The page is cut to them on the scaled layer itself,
+   in that layer's own lengths, and then they are painted over as well: what
+   lies between the screen's corner and the corner of its box is drawn again
+   on top, the body, its edge and the ground beyond. A browser's compositor
+   can draw a framed page past a rounded clip of either kind where the page
+   has a frosted bar (a backdrop-filter, as in 「名片」 and 「侧栏」) or content
+   scrolling under one; nothing gets past paint that lies over it. The canvas
+   does not clip here, so the patches are not cut away with the page. */
+.personalize-canvas[data-device="phone"] {
+  overflow: visible;
+}
 .personalize-canvas[data-device="phone"] .personalize-scaler {
+  overflow: hidden;
+  border-radius: calc(30px / var(--personalize-scale, 1));
   clip-path: inset(0 round calc(30px / var(--personalize-scale, 1)));
+}
+.personalize-canvas[data-device="phone"]::after {
+  --corner:
+    transparent 29.5px, #1b1b20 30.5px, #1b1b20 35.5px,
+    var(--admin-line-strong) 36px, var(--admin-line-strong) 36.5px,
+    var(--admin-sunken) 37.5px;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 30px 30px, var(--corner)) top left / 30px 30px
+      no-repeat,
+    radial-gradient(circle at 0 30px, var(--corner)) top right / 30px 30px
+      no-repeat,
+    radial-gradient(circle at 30px 0, var(--corner)) bottom left / 30px 30px
+      no-repeat,
+    radial-gradient(circle at 0 0, var(--corner)) bottom right / 30px 30px
+      no-repeat;
+  pointer-events: none;
 }
 /* Every frame stacks at the same place; the one in view is the newest loaded. */
 .personalize-frame {
