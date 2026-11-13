@@ -33,6 +33,7 @@ import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import type { PreviewValues } from "./preview-address";
 import { PreviewPanel } from "./preview-panel";
+import { SiteIconRow, useSiteIconPreview } from "./site-icon-row";
 import { useAsideRoom } from "./use-aside-room";
 
 const IMAGE_ACCEPT = ".png,.webp,.jpg,.jpeg";
@@ -111,6 +112,7 @@ export function PersonalizeStudio() {
         <AvatarRow />
         <HueRow />
         <BrandMarkRow />
+        <SiteIconRow />
         <TaglineRow />
       </div>
       {wide ? <PreviewAside values={values} /> : null}
@@ -323,14 +325,11 @@ function BrandMarkRow() {
   const avatarSrc = previewSrc(useWatch({ control, name: "site.avatar" }));
   const brandMark =
     useWatch({ control, name: "site.brandMark" }) ?? blogConfig.brandMark;
-  const faviconSvg = useWatch({ control, name: "site.icons.faviconSvg" });
-  const favicon96 = useWatch({ control, name: "site.icons.favicon96" });
+  // The icons the public pages show, the defaults included, as the icon row beside it.
+  const icons = useSiteIconPreview();
   const image = resolveBrandMarkImage(brandMark, {
     avatar: avatarSrc ?? "",
-    icons: {
-      faviconSvg: previewSrc(faviconSvg) ?? "",
-      favicon96: previewSrc(favicon96) ?? "",
-    },
+    icons: { faviconSvg: icons.svg ?? "", favicon96: icons.raster },
   });
 
   return (

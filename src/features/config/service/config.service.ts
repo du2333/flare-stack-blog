@@ -258,10 +258,7 @@ export async function uploadSiteIcon(
   context: { env: Env },
   input: { file: File },
 ): Promise<
-  Result<
-    SiteIconUpload,
-    SiteIconRejection | { reason: "SITE_ICON_UNREADABLE" }
-  >
+  Result<SiteIconUpload, SiteIconRejection | { reason: "SITE_ICON_UNREADABLE" }>
 > {
   const { env } = context;
   const { file } = input;

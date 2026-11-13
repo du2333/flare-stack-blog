@@ -139,7 +139,10 @@ describe("uploading the site icon", () => {
 
     for (const [size, reason] of [
       [{ format: "image/png", width: 400, height: 400 }, "SITE_ICON_TOO_SMALL"],
-      [{ format: "image/png", width: 800, height: 600 }, "SITE_ICON_NOT_SQUARE"],
+      [
+        { format: "image/png", width: 800, height: 600 },
+        "SITE_ICON_NOT_SQUARE",
+      ],
       [{ format: "image/svg+xml" }, "SITE_ICON_UNSUPPORTED_TYPE"],
     ] as const) {
       const { images, transforms } = fakeImages(size as typeof square);
@@ -176,27 +179,40 @@ function contextOf(role: "admin" | "user" | null, images: ImagesBinding) {
 }
 
 describe("the site icon procedure", () => {
-  const file = () => new File(["icon bytes"], "icon.png", { type: "image/png" });
+  const file = () =>
+    new File(["icon bytes"], "icon.png", { type: "image/png" });
 
   it("is for the Admin only", async () => {
     const { images, transforms } = fakeImages(square);
 
     await expect(
-      call(adminRouter.uploadIcon, { file: file() }, {
-        context: contextOf(null, images),
-      }),
+      call(
+        adminRouter.uploadIcon,
+        { file: file() },
+        {
+          context: contextOf(null, images),
+        },
+      ),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     await expect(
-      call(adminRouter.uploadIcon, { file: file() }, {
-        context: contextOf("user", images),
-      }),
+      call(
+        adminRouter.uploadIcon,
+        { file: file() },
+        {
+          context: contextOf("user", images),
+        },
+      ),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(transforms).toEqual([]);
 
     await expect(
-      call(adminRouter.uploadIcon, { file: file() }, {
-        context: contextOf("admin", images),
-      }),
+      call(
+        adminRouter.uploadIcon,
+        { file: file() },
+        {
+          context: contextOf("admin", images),
+        },
+      ),
     ).resolves.toMatchObject({ resized: true });
   });
 
@@ -208,9 +224,13 @@ describe("the site icon procedure", () => {
     });
 
     await expect(
-      call(adminRouter.uploadIcon, { file: file() }, {
-        context: contextOf("admin", images),
-      }),
+      call(
+        adminRouter.uploadIcon,
+        { file: file() },
+        {
+          context: contextOf("admin", images),
+        },
+      ),
     ).rejects.toMatchObject({
       code: "SITE_ICON_INVALID",
       data: { detail: "NOT_SQUARE", width: 800, height: 600 },

@@ -175,10 +175,11 @@ it("asks for a name and an icon on a custom platform only", () => {
   expect(screen.queryByLabelText(m.settings_social_label_label())).toBeNull();
 });
 
-it("keeps the navigation links and the site icons", () => {
+it("keeps the navigation links; the site icon is on the personalize page", () => {
   renderSite();
   expect(screen.getByText(m.settings_site_nav_title())).toBeTruthy();
-  expect(screen.getByText(m.settings_icons())).toBeTruthy();
+  expect(screen.queryByText(m.personalize_site_icon())).toBeNull();
+  expect(document.querySelector('input[type="file"]')).toBeNull();
 });
 
 it("has no in-place editing and no presentation controls, which are on the personalize page", () => {

@@ -213,6 +213,57 @@
   white-space: nowrap;
 }
 
+/* 网站图标: a row per upload, its preview, what it takes and the button. */
+.site-icon-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  --fuwari-button-height: 32px;
+  --fuwari-button-font-size: var(--admin-text-small);
+  --fuwari-button-padding-x: 12px;
+}
+.site-icon-item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.site-icon-preview {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+}
+.site-icon-preview img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.site-icon-text {
+  display: grid;
+  min-width: 0;
+}
+.site-icon-text span {
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg);
+}
+.site-icon-text small {
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+}
+.site-icon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
 /* The page: the form, and the preview beside it where there is room. */
 .personalize {
   display: block;
