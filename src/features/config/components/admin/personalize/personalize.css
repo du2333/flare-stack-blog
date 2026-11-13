@@ -284,6 +284,13 @@
   gap: 24px;
   align-items: start;
 }
+/*
+ * The controls' column is 21.5rem, a hair under what two of the cards' 150px
+ * need, so the Theme cards would stack in one. Two columns, as on a phone.
+ */
+.personalize[data-wide] .site-theme-row .fuwari-choice-cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 /* use-aside-room.ts sets its height from the room the scroller has. */
 .personalize-aside {
   position: sticky;
