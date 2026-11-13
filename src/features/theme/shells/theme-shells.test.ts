@@ -90,8 +90,8 @@ function hasLink(scope: HTMLElement, { label, href }: NavLinkOption) {
 
 /**
  * Each entry of the navigation is reachable in `scope`: a link as a link; a
- * group as its links in its place, or as a button that opens them and is no
- * link itself.
+ * group as its links in its place, or as a button that opens them (in a menu,
+ * or in place) and is no link itself.
  */
 async function expectEveryEntry(scope: HTMLElement) {
   for (const option of NAV_OPTIONS) {
@@ -105,6 +105,16 @@ async function expectEveryEntry(scope: HTMLElement) {
     if (option.children.every((child) => hasLink(scope, child))) continue;
     const trigger = within(scope).getByRole("button", { name: option.label });
     fireEvent.click(trigger);
+    // A group that opens in place (the rail of 「侧栏」) shows its links as
+    // links; any other opens a menu of them.
+    if (!trigger.hasAttribute("aria-haspopup")) {
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      for (const child of option.children) {
+        expect(hasLink(scope, child)).toBe(true);
+      }
+      fireEvent.click(trigger);
+      continue;
+    }
     const menu = await findInPopover("menu", { name: option.label });
     for (const child of option.children) {
       const item = within(menu).getByRole("menuitem", { name: child.label });
@@ -461,7 +471,9 @@ describe.each(
     await expectEveryEntry(inBar[0]);
 
     fireEvent.click(screen.getByRole("button", { name: m.common_open_menu() }));
-    const [, inMenu] = named();
+    // The compact menu is the one that was not there before; where it stands
+    // among the two depends on the shell.
+    const inMenu = named().find((nav) => nav !== inBar[0])!;
     for (const option of NAV_LINKS) {
       expect(hasLink(inMenu, option)).toBe(true);
     }

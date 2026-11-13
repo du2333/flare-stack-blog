@@ -25,6 +25,7 @@ import {
   mainNavigation,
   mediaBlocks,
   NAV_OPTIONS,
+  NAV_WITH_GROUP,
   onScreen,
   rail,
   railBody,
@@ -222,6 +223,161 @@ describe("the rail", () => {
       await waitFor(() => expect(current()).toEqual([]));
       expect(row()).toBe("1");
       expect(pill().dataset.shown).toBe("false");
+    });
+  });
+
+  describe("a group", () => {
+    const withGroup = (path: string) =>
+      renderShell({ pageKind: "inner", path, navOptions: NAV_WITH_GROUP });
+    const trigger = () =>
+      within(mainNavigation()).getByRole("button", { name: "Nav group" });
+    const links = () =>
+      within(mainNavigation())
+        .getAllByRole("link")
+        .map((link) => link.textContent);
+    const row = () =>
+      mainNavigation().style.getPropertyValue("--sidebar-current");
+    const pill = () =>
+      mainNavigation().querySelector<HTMLElement>(".sidebar-nav-pill")!;
+
+    it("is one row that opens in place, no link, with its links under it", async () => {
+      await withGroup("/");
+
+      expect(screen.getAllByText("Nav group")).toHaveLength(1);
+      expect(
+        within(mainNavigation()).queryByRole("link", { name: "Nav group" }),
+      ).toBeNull();
+      const panel = document.getElementById(
+        trigger().getAttribute("aria-controls")!,
+      )!;
+      expect(mainNavigation().contains(panel)).toBe(true);
+      expect(trigger().nextElementSibling!.getAttribute("aria-hidden")).toBe(
+        "true",
+      );
+      expect(
+        [...panel.querySelectorAll("a")].map((link) => link.textContent),
+      ).toEqual(["Nav one", "Nav two"]);
+    });
+
+    it("starts closed, and shows its links as the reader opens it and closes it again", async () => {
+      await withGroup("/");
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(links()).toEqual([
+        "Nav home",
+        "Nav posts",
+        "Nav moments",
+        "Nav about",
+      ]);
+
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(links()).toEqual([
+        "Nav home",
+        "Nav posts",
+        "Nav moments",
+        "Nav one",
+        "Nav two",
+        "Nav about",
+      ]);
+
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(links()).toHaveLength(4);
+    });
+
+    it("starts open on a page of one of its links, with the pill on that link's row", async () => {
+      await withGroup("/two");
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(trigger().getAttribute("aria-current")).toBe("true");
+      expect(trigger().classList.contains("sidebar-nav-current")).toBe(false);
+      expect(
+        [...mainNavigation().querySelectorAll(".sidebar-nav-current")].map(
+          (link) => link.textContent,
+        ),
+      ).toEqual(["Nav two"]);
+      // Home, Posts, Moments, the group, One, then Two.
+      expect(row()).toBe("5");
+      expect(pill().dataset.shown).toBe("true");
+    });
+
+    it("has the pill on the group's row while it is closed and holds the current link", async () => {
+      await withGroup("/two");
+      fireEvent.click(trigger());
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(trigger().getAttribute("aria-current")).toBe("true");
+      expect(trigger().classList.contains("sidebar-nav-current")).toBe(true);
+      expect(row()).toBe("3");
+      expect(mainNavigation().dataset.fold).toBe("true");
+
+      fireEvent.click(trigger());
+      expect(row()).toBe("5");
+    });
+
+    it("moves the pill down the rows an open group adds above the current entry", async () => {
+      await withGroup("/about");
+      expect(row()).toBe("4");
+
+      fireEvent.click(trigger());
+      expect(row()).toBe("6");
+      fireEvent.click(trigger());
+      expect(row()).toBe("4");
+    });
+
+    it("stays as the reader left it while they move between pages", async () => {
+      const router = await withGroup("/");
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(mainNavigation().dataset.fold).toBe("false");
+
+      act(() => router.history.push("/two"));
+      await waitFor(() => expect(row()).toBe("5"));
+      fireEvent.click(trigger());
+      act(() => router.history.push("/moments"));
+      await waitFor(() => expect(row()).toBe("2"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("leaves the group unmarked on a page of another entry", async () => {
+      await withGroup("/posts");
+
+      expect(trigger().getAttribute("aria-current")).toBeNull();
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(row()).toBe("1");
+    });
+
+    it("keeps the rows in one pitch whatever the groups hold: the gap is a margin, so a folded group leaves none", () => {
+      const css = readCss("rail.css");
+
+      expect(
+        declarations(blockAfter(css, ".sidebar-nav-row + .sidebar-nav-row")),
+      ).toEqual(["margin-top: var(--sidebar-nav-gap)"]);
+      expect(flat(css)).toContain(".sidebar-nav-panel .sidebar-nav-row");
+      expect(declarations(blockAfter(css, ".sidebar-nav {"))).not.toContain(
+        "gap: var(--sidebar-nav-gap)",
+      );
+    });
+
+    it("moves the pill with the rows over their time and curve, and only for a reader who has not asked for less motion", () => {
+      const css = readCss("rail.css");
+      const motion = mediaBlocks(
+        css,
+        "(prefers-reduced-motion: no-preference)",
+      );
+      const outside = motion.reduce(
+        (rest, block) => rest.replace(block, ""),
+        css,
+      );
+
+      expect(outside).not.toMatch(/sidebar-nav-pill[^{]*\{[^}]*transition/);
+      expect(flat(motion.join(" "))).toContain(
+        '.sidebar-nav[data-fold="true"] .sidebar-nav-pill { transition: transform 320ms var(--fuwari-motion-ease)',
+      );
     });
   });
 
