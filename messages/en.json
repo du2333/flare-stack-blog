@@ -1084,7 +1084,7 @@
   "personalize_site_icon_raster_hint": "PNG or JPEG, at least {min}×{min}",
   "personalize_site_icon_svg": "Vector icon",
   "personalize_site_icon_svg_hint": "SVG, optional",
-  "personalize_site_icon_svg_remove": "Remove",
+  "personalize_site_icon_remove": "Remove",
   "personalize_site_icon_not_resized": "The smaller sizes could not be made; every size uses the original for now",
   "personalize_site_icon_not_square": "The icon must be square; this image is {width}×{height}. The saved icons are unchanged.",
   "personalize_site_icon_too_small": "The icon must be at least {min}×{min}; this image is {width}×{height}. The saved icons are unchanged.",

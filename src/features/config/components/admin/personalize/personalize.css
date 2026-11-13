@@ -213,9 +213,16 @@
   white-space: nowrap;
 }
 
-/* 网站图标: a row per upload, its preview, what it takes and the button. */
+/*
+ * 站点图标: a row per upload, its preview, what it takes and its buttons.
+ * The sizes are the ones this panel already uses: the preview is as tall as
+ * the brand mark's preview (44px, a touch target) and shows the icon at the
+ * size the brand mark does (28px); the buttons are the 32px ones under the
+ * banner and beside the avatar.
+ */
 .site-icon-list {
   display: grid;
+  /* Rows closer than the panel's 12px section gap: they read as one list. */
   gap: 10px;
   min-width: 0;
   --fuwari-button-height: 32px;
@@ -226,6 +233,7 @@
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
+  /* The section's own gap (.site-theme-row). */
   gap: 12px;
 }
 .site-icon-preview {
@@ -234,7 +242,7 @@
   width: 44px;
   height: 44px;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   background: var(--admin-sunken);
   box-shadow: inset 0 0 0 1px var(--admin-line);
 }
@@ -261,6 +269,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  /* 移除 and 更换 side by side, as one pair. */
   gap: 4px;
 }
 

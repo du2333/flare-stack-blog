@@ -16,14 +16,29 @@ import {
   type SystemConfig,
 } from "@/features/config/config.schema";
 import { orpcClient } from "@/lib/orpc";
+import { toast } from "@/lib/toast";
 import { m } from "@/paraglide/messages";
 import { SiteIconRow } from "./site-icon-row";
 
-vi.mock("@/lib/orpc", () => ({
-  orpcClient: {
-    config: { admin: { uploadAsset: vi.fn(), uploadIcon: vi.fn() } },
-  },
-}));
+vi.mock("@/lib/orpc", () => {
+  const uploadIcon = vi.fn();
+  return {
+    orpcClient: { config: { admin: { uploadAsset: vi.fn(), uploadIcon } } },
+    // The query utilities call the client with the mutation's input.
+    orpc: {
+      config: {
+        admin: {
+          uploadIcon: {
+            mutationOptions: (options: object) => ({
+              mutationFn: (input: { file: File }) => uploadIcon(input),
+              ...options,
+            }),
+          },
+        },
+      },
+    },
+  };
+});
 vi.mock("@/lib/toast", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
@@ -94,10 +109,8 @@ it("offers one raster upload and an optional SVG, and shows the defaults with ne
   );
   expect(previews).toEqual(["/favicon-96x96.png", "/favicon.svg"]);
   expect(
-    screen.queryByRole("button", {
-      name: m.personalize_site_icon_svg_remove(),
-    }),
-  ).toBeNull();
+    screen.queryAllByRole("button", { name: m.personalize_site_icon_remove() }),
+  ).toEqual([]);
 });
 
 it("puts the four addresses of one upload into the form", async () => {
@@ -146,14 +159,61 @@ it("shows why an image is refused and keeps the icons as they were", async () =>
   );
 });
 
+/** The 移除 of the raster row or of the SVG row. */
+function removeButton(row: "raster" | "svg") {
+  const button = screen
+    .getAllByRole("button", { name: m.personalize_site_icon_remove() })
+    .find(
+      (element) =>
+        element.getAttribute("aria-describedby") === `site-icon-${row}-name`,
+    );
+  if (!button) throw new Error(`no 移除 for ${row}`);
+  return button;
+}
+
+const svg = "/images/asset/favicon/favicon.svg?original=true&v=1";
+
 it("removes an uploaded SVG, leaving the raster icon for tabs", () => {
-  const svg = "/images/asset/favicon/favicon.svg?original=true&v=1";
   const icons = renderRow({ ...saved, faviconSvg: svg });
 
-  fireEvent.click(
-    screen.getByRole("button", { name: m.personalize_site_icon_svg_remove() }),
-  );
+  fireEvent.click(removeButton("svg"));
 
   expect(icons()?.faviconSvg).toBe("");
   expect(document.querySelectorAll(".site-icon-preview img").length).toBe(1);
+});
+
+it("removes the uploaded raster icon, so the default icons apply again", () => {
+  const icons = renderRow({ ...saved, faviconSvg: svg });
+
+  fireEvent.click(removeButton("raster"));
+
+  expect(icons()).toEqual({
+    faviconSvg: svg,
+    favicon96: "",
+    appleTouchIcon: "",
+    webApp192: "",
+    webApp512: "",
+  });
+  expect(
+    document.querySelector(".site-icon-preview img")?.getAttribute("src"),
+  ).toBe("/favicon-96x96.png");
+  // Only the SVG is left to remove.
+  expect(
+    screen.getAllByRole("button", { name: m.personalize_site_icon_remove() }),
+  ).toHaveLength(1);
+});
+
+it("reports a failed store as a failed upload and keeps the icons", async () => {
+  vi.mocked(orpcClient.config.admin.uploadIcon).mockRejectedValue(
+    new ORPCError("SITE_ICON_STORE_FAILED", { defined: true, status: 500 }),
+  );
+  const icons = renderRow();
+
+  await chooseRaster();
+
+  expect(icons()).toEqual(saved);
+  expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+    m.settings_asset_upload_fail(),
+    expect.anything(),
+  );
 });
