@@ -1,19 +1,25 @@
 import { Link, useLocation, useRouteContext } from "@tanstack/react-router";
 import { ChevronsUpDown, Search, UserIcon } from "lucide-react";
-import { useRef, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type {
+  NavGroupOption,
   NavLinkOption,
   NavOption,
   UserInfo,
 } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { flattenNavOptions } from "@/components/layout/nav-options";
+import {
+  currentNavLink,
+  isNavGroup,
+  isNavOptionCurrent,
+} from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { SocialLinks } from "@/components/layout/social-links";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { Button, buttonClass } from "@/components/ui/button";
+import { DisclosureChevron, DisclosurePanel } from "@/components/ui/disclosure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TocSlot } from "@/features/theme/components/toc-slot";
 import {
@@ -23,7 +29,16 @@ import {
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { Brand } from "./brand";
-import { currentEntryIndex, entryIcon } from "./nav-entry";
+import {
+  currentRowIndex,
+  entryIcon,
+  groupKeys,
+  GROUP_ICON,
+  initialRailGroups,
+  openGroupIds,
+  reconcileRailGroups,
+  toggleRailGroup,
+} from "./nav-entry";
 
 export interface RailProps {
   navOptions: Array<NavOption>;
@@ -103,45 +118,145 @@ function SearchEntry() {
   );
 }
 
+/** A link of the navigation as a row, led by its icon unless it is a group's. */
+function LinkRow({
+  option,
+  current,
+  child = false,
+}: {
+  option: NavLinkOption;
+  current: boolean;
+  child?: boolean;
+}) {
+  const Icon = entryIcon(option);
+  return (
+    <div className="sidebar-nav-row" data-child={child || undefined}>
+      <PublicNavLink
+        option={option}
+        className={cn("sidebar-nav-link", current && "sidebar-nav-current")}
+      />
+      {child ? null : (
+        <span className="sidebar-nav-icon" aria-hidden="true">
+          <Icon size={18} strokeWidth={1.75} />
+        </span>
+      )}
+    </div>
+  );
+}
+
 /**
- * Every navigation entry as a row led by an icon. One pill marks the entry
- * the page belongs to and glides to the next one; where the page belongs to
- * none, it fades out where it last stood.
+ * A group as a row that opens in place: its links stand under it, set in,
+ * while it is open. It leads nowhere itself. While it holds the current
+ * link it is marked so; the pill stands on its row only while it is closed,
+ * and on the link's own row while it is open.
  */
-function Navigation({ navOptions }: { navOptions: Array<NavLinkOption> }) {
+function GroupRows({
+  group,
+  current,
+  open,
+  onToggle,
+}: {
+  group: NavGroupOption;
+  current: NavLinkOption | null;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const holds = isNavOptionCurrent(group, current);
+  const panelId = `sidebar-nav-panel-${group.id}`;
+  return (
+    <div className="sidebar-nav-group">
+      <div className="sidebar-nav-row">
+        <Button
+          variant="plain"
+          className={cn(
+            "sidebar-nav-link sidebar-nav-trigger",
+            holds && !open && "sidebar-nav-current",
+          )}
+          aria-expanded={open}
+          aria-controls={panelId}
+          aria-current={holds ? "true" : undefined}
+          data-holds-current={holds || undefined}
+          onClick={onToggle}
+        >
+          <span className="truncate">{group.label}</span>
+          <DisclosureChevron size={16} />
+        </Button>
+        <span className="sidebar-nav-icon" aria-hidden="true">
+          <GROUP_ICON size={18} strokeWidth={1.75} />
+        </span>
+      </div>
+      <DisclosurePanel id={panelId} open={open} className="sidebar-nav-panel">
+        {group.children.map((child) => (
+          <LinkRow
+            key={child.id}
+            option={child}
+            current={child.id === current?.id}
+            child
+          />
+        ))}
+      </DisclosurePanel>
+    </div>
+  );
+}
+
+/**
+ * Every navigation entry as a row. One pill marks the row the page belongs
+ * to and glides to the next one; where the page belongs to none, it fades
+ * out where it last stood.
+ *
+ * The pill stands where the row is among the rows on show (`currentRowIndex`):
+ * the rows are all as high, so that place is the same on the first paint as
+ * later, and a group that opens or closes moves the pill together with the
+ * rows under it. A group is open when it holds the current link; when the
+ * current link comes to lie in a group from outside, that group opens; apart
+ * from that it stays as the reader leaves it (`RailGroups`).
+ */
+function Navigation({ navOptions }: { navOptions: Array<NavOption> }) {
   const pathname = useLocation({ select: (location) => location.pathname });
-  const current = currentEntryIndex(navOptions, pathname);
-  const lastCurrent = useRef(Math.max(current, 0));
-  if (current >= 0) lastCurrent.current = current;
+  const current = currentNavLink(navOptions, pathname);
+  const [saved, setSaved] = useState(() =>
+    initialRailGroups(navOptions, pathname),
+  );
+  // The state follows the page and the navigation as they come.
+  const groups = reconcileRailGroups(saved, navOptions, pathname);
+  if (groups !== saved) setSaved(groups);
+  const open = openGroupIds(navOptions, groups);
+  const keys = groupKeys(navOptions);
+  const row = currentRowIndex(navOptions, open, pathname);
+  const lastRow = useRef(Math.max(row, 0));
+  if (row >= 0) lastRow.current = row;
 
   return (
     <nav
       className="sidebar-nav"
       aria-label={m.nav_main_label()}
-      style={{ "--sidebar-current": lastCurrent.current } as CSSProperties}
+      data-fold={groups.moved === "fold"}
+      style={{ "--sidebar-current": lastRow.current } as CSSProperties}
     >
       <span
         className="sidebar-nav-pill"
-        data-shown={current >= 0}
+        data-shown={row >= 0}
         aria-hidden="true"
       />
-      {navOptions.map((option, index) => {
-        const Icon = entryIcon(option);
-        return (
-          <div key={option.id} className="sidebar-nav-row">
-            <PublicNavLink
-              option={option}
-              className={cn(
-                "sidebar-nav-link",
-                index === current && "sidebar-nav-current",
-              )}
-            />
-            <span className="sidebar-nav-icon" aria-hidden="true">
-              <Icon size={18} strokeWidth={1.75} />
-            </span>
-          </div>
-        );
-      })}
+      {navOptions.map((option) =>
+        isNavGroup(option) ? (
+          <GroupRows
+            key={option.id}
+            group={option}
+            current={current}
+            open={open.has(option.id)}
+            onToggle={() =>
+              setSaved((state) => toggleRailGroup(state, keys.get(option.id)!))
+            }
+          />
+        ) : (
+          <LinkRow
+            key={option.id}
+            option={option}
+            current={option.id === current?.id}
+          />
+        ),
+      )}
     </nav>
   );
 }
@@ -234,7 +349,7 @@ export function Rail({
         <Brand />
         <Identity />
         <SearchEntry />
-        <Navigation navOptions={flattenNavOptions(props.navOptions)} />
+        <Navigation navOptions={props.navOptions} />
         {tocSlot ? <Contents /> : null}
       </div>
       <div className="sidebar-rail-foot">

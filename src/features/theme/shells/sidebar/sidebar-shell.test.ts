@@ -10,6 +10,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import type { NavGroupOption } from "@/components/layout/layout-props";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
 import { sidebarCardsFor } from "../../components/sidebar-cards";
@@ -25,6 +26,7 @@ import {
   mainNavigation,
   mediaBlocks,
   NAV_OPTIONS,
+  NAV_WITH_GROUP,
   onScreen,
   rail,
   railBody,
@@ -222,6 +224,277 @@ describe("the rail", () => {
       await waitFor(() => expect(current()).toEqual([]));
       expect(row()).toBe("1");
       expect(pill().dataset.shown).toBe("false");
+    });
+  });
+
+  describe("a group", () => {
+    const withGroup = (path: string) =>
+      renderShell({ pageKind: "inner", path, navOptions: NAV_WITH_GROUP });
+    const trigger = () =>
+      within(mainNavigation()).getByRole("button", { name: "Nav group" });
+    const links = () =>
+      within(mainNavigation())
+        .getAllByRole("link")
+        .map((link) => link.textContent);
+    const row = () =>
+      mainNavigation().style.getPropertyValue("--sidebar-current");
+    const pill = () =>
+      mainNavigation().querySelector<HTMLElement>(".sidebar-nav-pill")!;
+
+    it("is one row that opens in place, no link, with its links under it", async () => {
+      await withGroup("/");
+
+      expect(screen.getAllByText("Nav group")).toHaveLength(1);
+      expect(
+        within(mainNavigation()).queryByRole("link", { name: "Nav group" }),
+      ).toBeNull();
+      const panel = document.getElementById(
+        trigger().getAttribute("aria-controls")!,
+      )!;
+      expect(mainNavigation().contains(panel)).toBe(true);
+      expect(
+        [...panel.querySelectorAll("a")].map((link) => link.textContent),
+      ).toEqual(["Nav one", "Nav two"]);
+    });
+
+    it("keeps a closed group's links out of reach, in a panel that is inert and hidden from assistive technology, and neither once it opens", async () => {
+      await withGroup("/");
+      const panel = () =>
+        document.getElementById(trigger().getAttribute("aria-controls")!)!;
+
+      expect(panel().hasAttribute("inert")).toBe(true);
+      expect(panel().getAttribute("aria-hidden")).toBe("true");
+      expect(
+        within(panel()).queryAllByRole("link"),
+        "links in a hidden panel are not in the accessibility tree",
+      ).toEqual([]);
+
+      fireEvent.click(trigger());
+      expect(panel().hasAttribute("inert")).toBe(false);
+      expect(panel().getAttribute("aria-hidden")).toBe("false");
+      expect(within(panel()).getAllByRole("link")).toHaveLength(2);
+
+      fireEvent.click(trigger());
+      expect(panel().hasAttribute("inert")).toBe(true);
+      expect(panel().getAttribute("aria-hidden")).toBe("true");
+    });
+
+    it("starts closed, and shows its links as the reader opens it and closes it again", async () => {
+      await withGroup("/");
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(links()).toEqual([
+        "Nav home",
+        "Nav posts",
+        "Nav moments",
+        "Nav about",
+      ]);
+
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(links()).toEqual([
+        "Nav home",
+        "Nav posts",
+        "Nav moments",
+        "Nav one",
+        "Nav two",
+        "Nav about",
+      ]);
+
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(links()).toHaveLength(4);
+    });
+
+    it("starts open on a page of one of its links, with the pill on that link's row", async () => {
+      await withGroup("/two");
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(trigger().getAttribute("aria-current")).toBe("true");
+      expect(trigger().classList.contains("sidebar-nav-current")).toBe(false);
+      expect(
+        [...mainNavigation().querySelectorAll(".sidebar-nav-current")].map(
+          (link) => link.textContent,
+        ),
+      ).toEqual(["Nav two"]);
+      // Home, Posts, Moments, the group, One, then Two.
+      expect(row()).toBe("5");
+      expect(pill().dataset.shown).toBe("true");
+    });
+
+    it("has the pill on the group's row while it is closed and holds the current link", async () => {
+      await withGroup("/two");
+      fireEvent.click(trigger());
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(trigger().getAttribute("aria-current")).toBe("true");
+      expect(trigger().classList.contains("sidebar-nav-current")).toBe(true);
+      expect(row()).toBe("3");
+      expect(mainNavigation().dataset.fold).toBe("true");
+
+      fireEvent.click(trigger());
+      expect(row()).toBe("5");
+    });
+
+    it("moves the pill down the rows an open group adds above the current entry", async () => {
+      await withGroup("/about");
+      expect(row()).toBe("4");
+
+      fireEvent.click(trigger());
+      expect(row()).toBe("6");
+      fireEvent.click(trigger());
+      expect(row()).toBe("4");
+    });
+
+    it("stays as the reader left it while they move between pages", async () => {
+      const router = await withGroup("/");
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      act(() => router.history.push("/about"));
+      await waitFor(() => expect(row()).toBe("6"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("opens when the current link comes to lie in it from another page, closed or not", async () => {
+      const router = await withGroup("/posts");
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+      act(() => router.history.push("/two"));
+      await waitFor(() => expect(row()).toBe("5"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("stays closed once the reader has closed it, until the current link next comes into it from outside", async () => {
+      const router = await withGroup("/two");
+      fireEvent.click(trigger());
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+      // From one link of the group to another.
+      act(() => router.history.push("/one"));
+      await waitFor(() => expect(row()).toBe("3"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+
+      // Out of the group, and into it again.
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      act(() => router.history.push("/two"));
+      await waitFor(() =>
+        expect(trigger().getAttribute("aria-expanded")).toBe("true"),
+      );
+      expect(row()).toBe("5");
+    });
+
+    it("glides over the time of a page change, not of a fold, when the page the group was folded on comes back", async () => {
+      const router = await withGroup("/");
+      expect(mainNavigation().dataset.fold).toBe("false");
+      fireEvent.click(trigger());
+      expect(mainNavigation().dataset.fold).toBe("true");
+
+      act(() => router.history.push("/posts"));
+      await waitFor(() => expect(row()).toBe("1"));
+      expect(mainNavigation().dataset.fold).toBe("false");
+      act(() => router.history.push("/"));
+      await waitFor(() => expect(row()).toBe("0"));
+      expect(mainNavigation().dataset.fold).toBe("false");
+    });
+
+    it("keeps the state of each group by its name when the navigation is reordered or loses a group", async () => {
+      const second = {
+        id: "custom-3",
+        label: "Nav second",
+        children: [
+          {
+            id: "custom-3-0",
+            label: "Nav three",
+            href: "/three",
+            external: false,
+          },
+        ],
+      };
+      await withGroup("/");
+      onScreen.setNavOptions([...NAV_WITH_GROUP.slice(0, 4), second]);
+      const open = (name: string) =>
+        within(mainNavigation())
+          .getByRole("button", { name })
+          .getAttribute("aria-expanded");
+      fireEvent.click(
+        within(mainNavigation()).getByRole("button", { name: "Nav second" }),
+      );
+      expect(open("Nav second")).toBe("true");
+      expect(open("Nav group")).toBe("false");
+
+      // The groups swap places: their ids are positions, their names are not.
+      onScreen.setNavOptions([
+        {
+          ...second,
+          id: "custom-2",
+          children: [{ ...second.children[0]!, id: "custom-2-0" }],
+        },
+        { ...(NAV_WITH_GROUP[3] as NavGroupOption), id: "custom-3" },
+      ]);
+      expect(open("Nav second")).toBe("true");
+      expect(open("Nav group")).toBe("false");
+
+      // The open group goes; a new one of its name starts closed.
+      onScreen.setNavOptions([
+        { ...(NAV_WITH_GROUP[3] as NavGroupOption), id: "custom-2" },
+      ]);
+      expect(open("Nav group")).toBe("false");
+      onScreen.setNavOptions([second]);
+      expect(open("Nav second")).toBe("false");
+    });
+
+    it("opens a group that newly holds the current link when the navigation changes", async () => {
+      await renderShell({ pageKind: "inner", path: "/two" });
+      expect(
+        within(mainNavigation()).queryByRole("button", { name: "Nav group" }),
+      ).toBeNull();
+
+      onScreen.setNavOptions(NAV_WITH_GROUP);
+
+      expect(trigger().getAttribute("aria-expanded")).toBe("true");
+      expect(row()).toBe("5");
+    });
+
+    it("leaves the group unmarked on a page of another entry", async () => {
+      await withGroup("/posts");
+
+      expect(trigger().getAttribute("aria-current")).toBeNull();
+      expect(trigger().getAttribute("aria-expanded")).toBe("false");
+      expect(row()).toBe("1");
+    });
+
+    it("keeps the rows in one pitch whatever the groups hold: the gap is a margin, so a folded group leaves none", () => {
+      const css = readCss("rail.css");
+
+      expect(
+        declarations(blockAfter(css, ".sidebar-nav-row + .sidebar-nav-row")),
+      ).toEqual(["margin-top: var(--sidebar-nav-gap)"]);
+      expect(flat(css)).toContain(".sidebar-nav-panel .sidebar-nav-row");
+      expect(declarations(blockAfter(css, ".sidebar-nav {"))).not.toContain(
+        "gap: var(--sidebar-nav-gap)",
+      );
+    });
+
+    it("moves the pill with the rows over their time and curve, and only for a reader who has not asked for less motion", () => {
+      const css = readCss("rail.css");
+      const motion = mediaBlocks(
+        css,
+        "(prefers-reduced-motion: no-preference)",
+      );
+      const outside = motion.reduce(
+        (rest, block) => rest.replace(block, ""),
+        css,
+      );
+
+      expect(outside).not.toMatch(/sidebar-nav-pill[^{]*\{[^}]*transition/);
+      expect(flat(motion.join(" "))).toContain(
+        '.sidebar-nav[data-fold="true"] .sidebar-nav-pill { transition: transform 320ms var(--fuwari-motion-ease)',
+      );
     });
   });
 

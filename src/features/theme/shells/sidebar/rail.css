@@ -206,11 +206,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--sidebar-nav-gap);
   margin: 0.75rem 0.25rem 0;
 }
-/* One pill for the current entry, which stands on the row the navigation
-   names (--sidebar-current) and glides from entry to entry. */
+/* One pill for the current row, which stands where that row is among the
+   rows on show (--sidebar-current counts them from the top; rail.tsx) and
+   glides from row to row. */
 .sidebar-nav-pill {
   position: absolute;
   top: 0;
@@ -246,6 +246,16 @@
   position: relative;
   height: var(--sidebar-nav-h);
 }
+/* Rows are as high as each other and a gap apart. The gap is the top margin
+   of a row (or group) after another, so a group that is closed, with its
+   links folded to nothing, leaves none behind. */
+.sidebar-nav-row + .sidebar-nav-row,
+.sidebar-nav-row + .sidebar-nav-group,
+.sidebar-nav-group + .sidebar-nav-row,
+.sidebar-nav-group + .sidebar-nav-group,
+.sidebar-nav-panel .sidebar-nav-row {
+  margin-top: var(--sidebar-nav-gap);
+}
 .sidebar-nav-link {
   display: flex;
   align-items: center;
@@ -279,6 +289,48 @@
 }
 .sidebar-nav-link:hover + .sidebar-nav-icon {
   color: var(--fuwari-fg-75);
+}
+
+/* A group: its row is a button with a chevron at the end, and the links
+   stand under it, set in past the icons, along a guide line. */
+.sidebar-nav-trigger {
+  justify-content: flex-start;
+  gap: 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.sidebar-nav-trigger > .fuwari-disclosure-chevron {
+  margin-left: auto;
+  opacity: 0.6;
+}
+.sidebar-nav-trigger[data-holds-current]:not(.sidebar-nav-current) {
+  color: var(--fuwari-fg);
+}
+.sidebar-nav-trigger[data-holds-current]:not(.sidebar-nav-current)
+  + .sidebar-nav-icon {
+  color: var(--theme-accent);
+}
+.sidebar-nav-panel > div {
+  position: relative;
+}
+.sidebar-nav-panel > div::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--sidebar-nav-gap) + 0.5rem);
+  bottom: 0.5rem;
+  left: 1.4375rem;
+  width: 1px;
+  background-color: var(--sidebar-hairline);
+}
+.sidebar-nav-row[data-child] .sidebar-nav-link {
+  padding-left: 3.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+/* A folded group's links draw their focus ring inside the row, which the
+   panel would otherwise clip. */
+.sidebar-shell .sidebar-rail .sidebar-nav-panel a:focus-visible {
+  outline-offset: -2px;
 }
 .sidebar-nav-current + .sidebar-nav-icon,
 .sidebar-nav-current:hover + .sidebar-nav-icon {
@@ -499,6 +551,14 @@
   .sidebar-nav-pill {
     transition:
       transform 520ms var(--sidebar-ease),
+      opacity 240ms,
+      background-color 300ms;
+  }
+  /* While a group opens or closes, the pill moves with the rows, over the
+     time and the curve they take (ui/disclosure.css). */
+  .sidebar-nav[data-fold="true"] .sidebar-nav-pill {
+    transition:
+      transform 320ms var(--fuwari-motion-ease),
       opacity 240ms,
       background-color 300ms;
   }

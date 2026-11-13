@@ -11,7 +11,8 @@ import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { flattenNavOptions } from "@/components/layout/nav-options";
+import { NavGroupMenu } from "@/components/layout/nav-group-menu";
+import { isNavGroup } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
@@ -182,8 +183,11 @@ function NavLinks({
   const measure = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
+    // The link under the pointer or the keyboard; else the group whose menu
+    // is open, which the pointer may have left for the menu; else the page's.
     const target =
       (pointed.current?.isConnected ? pointed.current : null) ??
+      nav.querySelector<HTMLElement>('.namecard-link[aria-expanded="true"]') ??
       nav.querySelector<HTMLElement>(".namecard-link-active");
     if (!target) {
       setBar(null);
@@ -215,6 +219,20 @@ function NavLinks({
     return () => observer.disconnect();
   }, [measure]);
 
+  // A group's menu opening or closing moves the underline onto the group or
+  // back (the menu belongs to the group's trigger, which says so).
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || typeof MutationObserver === "undefined") return;
+    const observer = new MutationObserver(measure);
+    observer.observe(nav, {
+      attributes: true,
+      attributeFilter: ["aria-expanded"],
+      subtree: true,
+    });
+    return () => observer.disconnect();
+  }, [measure]);
+
   const point = (target: EventTarget | null) => {
     pointed.current =
       target instanceof Element
@@ -238,14 +256,24 @@ function NavLinks({
       }}
       onBlur={() => point(null)}
     >
-      {flattenNavOptions(navOptions).map((option) => (
-        <PublicNavLink
-          key={option.id}
-          option={option}
-          className="namecard-link"
-          activeClassName="namecard-link-active"
-        />
-      ))}
+      {navOptions.map((option) =>
+        isNavGroup(option) ? (
+          <NavGroupMenu
+            key={option.id}
+            group={option}
+            navOptions={navOptions}
+            className="namecard-link"
+            activeClassName="namecard-link-active"
+          />
+        ) : (
+          <PublicNavLink
+            key={option.id}
+            option={option}
+            className="namecard-link"
+            activeClassName="namecard-link-active"
+          />
+        ),
+      )}
       <span
         className="namecard-link-bar"
         aria-hidden="true"

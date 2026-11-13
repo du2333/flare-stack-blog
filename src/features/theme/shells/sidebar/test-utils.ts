@@ -39,6 +39,20 @@ export const NAV_OPTIONS: Array<NavOption> = [
   },
 ];
 
+/** The same, with a group of two links between the Moments and the custom link. */
+export const NAV_WITH_GROUP: Array<NavOption> = [
+  ...NAV_OPTIONS.slice(0, 3),
+  {
+    id: "custom-2",
+    label: "Nav group",
+    children: [
+      { id: "custom-2-0", label: "Nav one", href: "/one", external: false },
+      { id: "custom-2-1", label: "Nav two", href: "/two", external: false },
+    ],
+  },
+  ...NAV_OPTIONS.slice(3, 4),
+];
+
 export const SITE: SystemConfig["site"] = {
   title: "Engine Notes",
   author: "Ada",
@@ -77,6 +91,8 @@ export const onScreen = {
   /** The page the address names is rendered in `main`. */
   arrive: async (): Promise<void> => {},
   visit: async (_pageKind: PageKind): Promise<void> => {},
+  /** The host gives the shell another navigation, as a draft Site Config does. */
+  setNavOptions: (_navOptions: Array<NavOption>): void => {},
 };
 
 /** A page: what a route renders in `main`. A Post's has its table of contents. */
@@ -102,6 +118,7 @@ export async function renderShell({
   user,
   isSessionLoading = false,
   path = "/",
+  navOptions = NAV_OPTIONS,
   cards,
   stored,
   headers = HEADINGS,
@@ -111,6 +128,7 @@ export async function renderShell({
   user?: UserInfo;
   isSessionLoading?: boolean;
   path?: string;
+  navOptions?: Array<NavOption>;
   cards?: Array<SidebarCard>;
   /** 「侧栏」's options as Site Config holds them. */
   stored?: Record<string, unknown>;
@@ -120,6 +138,8 @@ export async function renderShell({
   function Host() {
     const [named, setNamed] = useState(pageKind);
     const [rendered, setRendered] = useState({ kind: pageKind, serial: 0 });
+    const [nav, setNav] = useState(navOptions);
+    onScreen.setNavOptions = (next) => act(() => setNav(next));
     onScreen.goTo = (kind) => act(() => setNamed(kind));
     const replace = (kind: PageKind) =>
       setRendered(({ serial }) => ({ kind, serial: serial + 1 }));
@@ -139,7 +159,7 @@ export async function renderShell({
       // The host says so in the commit that replaces the page.
       pageOnScreen: rendered.kind,
       options: resolveThemeOptions(theme, stored),
-      navOptions: NAV_OPTIONS,
+      navOptions: nav,
       sidebarCards: cards ?? cardsFor(named),
       user,
       isSessionLoading,

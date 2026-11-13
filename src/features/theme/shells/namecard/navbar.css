@@ -119,7 +119,14 @@
   font-weight: 600;
   transition: color 200ms;
 }
+/* A group's trigger is a button; it reads as its neighbours do (a button has
+   no pointer of its own), and while its menu is open it is inked like a link
+   under the pointer. */
+button.namecard-link {
+  cursor: pointer;
+}
 .namecard-link:hover,
+.namecard-link[aria-expanded="true"],
 .namecard-link-active {
   color: var(--namecard-ink);
 }
