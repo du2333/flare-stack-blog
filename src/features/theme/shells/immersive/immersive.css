@@ -26,6 +26,14 @@
     transparent
   );
   --immersive-frost-edge: rgb(255 255 255 / 0.55);
+  /* Thicker frost for the navbar's menu panel: long lists of quiet text
+     that open over the banner, whose brightest parts would show through
+     the frost of a small float. */
+  --immersive-panel-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 88.8%,
+    transparent
+  );
   --immersive-frost-shadow:
     0 14px 40px -14px oklch(var(--immersive-ink) / 0.32),
     0 2px 8px oklch(var(--immersive-ink) / 0.07),
@@ -60,6 +68,11 @@
     transparent
   );
   --immersive-frost-edge: rgb(255 255 255 / 0.09);
+  --immersive-panel-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 87%,
+    transparent
+  );
   --immersive-frost-shadow:
     0 16px 44px -14px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.25),
     inset 0 1px 0 rgb(255 255 255 / 0.07);
@@ -74,6 +87,7 @@
 @media (prefers-reduced-transparency: reduce) {
   :root[data-theme="immersive"] {
     --immersive-frost-bg: var(--fuwari-card-bg);
+    --immersive-panel-bg: var(--fuwari-card-bg);
     --immersive-ambient-strength: 0;
   }
 }
