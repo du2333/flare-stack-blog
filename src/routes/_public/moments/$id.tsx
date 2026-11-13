@@ -10,7 +10,7 @@ import {
   momentTitle,
 } from "@/features/moments/utils/moment-share";
 import { commentSearchSchema } from "@/lib/public-search";
-import { isCanonicalId } from "@/lib/orpc/path-ids";
+import { isCanonicalId } from "@/lib/orpc/path-id-format";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
 

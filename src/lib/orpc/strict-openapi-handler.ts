@@ -17,7 +17,7 @@ import type { AnyProcedure, Context, Router } from "@orpc/server";
 import { FetchHandler } from "@orpc/server/fetch";
 import { StandardHandler, type StandardParams } from "@orpc/server/standard";
 import type { StandardLazyRequest } from "@orpc/standard-server";
-import { isCanonicalId } from "./path-ids";
+import { isCanonicalId } from "./path-id-format";
 
 type Issue = { path: Array<string>; message: string };
 

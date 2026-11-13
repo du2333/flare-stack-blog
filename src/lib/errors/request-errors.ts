@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 
 const REQUEST_ERROR_PREFIX = "__REQ_ERR__:";
 
@@ -11,11 +11,11 @@ const RequestErrorPayloadSchema = z.discriminatedUnion("code", [
   }),
   z.object({
     code: z.literal("RATE_LIMITED"),
-    retryAfterMs: z.number().int().nonnegative(),
+    retryAfterMs: z.int().check(z.nonnegative()),
   }),
   z.object({
     code: z.literal("TURNSTILE_FAILED"),
-    detail: z.enum(["MISSING_TOKEN", "VERIFY_FAILED"]).optional(),
+    detail: z.optional(z.enum(["MISSING_TOKEN", "VERIFY_FAILED"])),
   }),
 ]);
 

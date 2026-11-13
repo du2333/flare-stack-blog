@@ -2,12 +2,13 @@ import { ScriptOnce } from "@tanstack/react-router";
 import { createClientOnlyFn, createIsomorphicFn } from "@tanstack/react-start";
 import type { ReactNode } from "react";
 import { createContext, use, useEffect, useState } from "react";
-import { z } from "zod";
+import { z } from "zod/mini";
 
-const ColourSchemePreferenceSchema = z
-  .enum(["light", "dark", "system"])
-  .catch("system");
-const _ColourSchemeSchema = z.enum(["light", "dark"]).catch("light");
+const ColourSchemePreferenceSchema = z.catch(
+  z.enum(["light", "dark", "system"]),
+  "system",
+);
+const _ColourSchemeSchema = z.catch(z.enum(["light", "dark"]), "light");
 
 export type ColourSchemePreference = z.infer<
   typeof ColourSchemePreferenceSchema
