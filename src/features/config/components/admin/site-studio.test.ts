@@ -15,7 +15,10 @@ import {
   DEFAULT_CONFIG,
   type SystemConfig,
 } from "@/features/config/config.schema";
-import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
+import {
+  createSiteConfigInputFormSchema,
+  SITE_DESCRIPTION_MAX,
+} from "@/features/config/site-config.schema";
 import { NAV_LINK_CHILDREN_MAX } from "@/features/config/utils/nav-links";
 import { m } from "@/paraglide/messages";
 import { SiteStudio } from "./site-studio";
@@ -219,6 +222,9 @@ it("points to the personalize page with a quiet hint after the form", () => {
 const child = (label: string, href: string) => ({ label, href });
 const navSite = (navLinks: Array<Record<string, unknown>>) =>
   ({ navLinks }) as unknown as Partial<NonNullable<SystemConfig["site"]>>;
+/** The social links have an address field of the same name; scope to the navigation. */
+const navFields = () =>
+  within(document.querySelector<HTMLElement>(".site-nav-fields")!);
 const addChildButtons = () =>
   screen.getAllByRole("button", { name: m.settings_site_nav_child_add() });
 
@@ -229,7 +235,9 @@ it("offers every plain link a quiet add action and keeps its address field", () 
       { label: "Docs", href: "/docs" },
     ]),
   );
-  expect(screen.getAllByLabelText(m.settings_site_nav_url())).toHaveLength(2);
+  expect(navFields().getAllByLabelText(m.settings_site_nav_url())).toHaveLength(
+    2,
+  );
   expect(addChildButtons()).toHaveLength(2);
   expect(screen.queryByText(m.settings_site_nav_group_note())).toBeNull();
 });
@@ -238,7 +246,7 @@ it("turns a link into a group on the first child: the address goes, a note and a
   const form = renderSite(navSite([{ label: "More", href: "/more" }]));
   fireEvent.click(addChildButtons()[0]);
 
-  expect(screen.queryByLabelText(m.settings_site_nav_url())).toBeNull();
+  expect(navFields().queryByLabelText(m.settings_site_nav_url())).toBeNull();
   expect(screen.getByText(m.settings_site_nav_group_note())).toBeTruthy();
   expect(screen.getByLabelText(m.settings_site_nav_child_name())).toBeTruthy();
   expect(screen.getByLabelText(m.settings_site_nav_child_url())).toBeTruthy();
@@ -252,14 +260,14 @@ it("turns a group back into a plain link with an empty address when its last chi
       { label: "More", children: [child("A", "/a"), child("B", "/b")] },
     ]),
   );
-  expect(screen.queryByLabelText(m.settings_site_nav_url())).toBeNull();
+  expect(navFields().queryByLabelText(m.settings_site_nav_url())).toBeNull();
   const remove = () =>
     screen.getAllByRole("button", { name: m.settings_site_nav_child_remove() });
   fireEvent.click(remove()[0]);
   expect(screen.getByText(m.settings_site_nav_group_note())).toBeTruthy();
   fireEvent.click(remove()[0]);
 
-  const href = screen.getByLabelText(m.settings_site_nav_url());
+  const href = navFields().getByLabelText(m.settings_site_nav_url());
   expect((href as HTMLInputElement).value).toBe("");
   expect(screen.queryByText(m.settings_site_nav_group_note())).toBeNull();
 });
@@ -294,7 +302,9 @@ it("sorts children by keyboard inside their group, never across groups", () => {
     ]),
   );
   const handle = (name: string) =>
-    screen.getByRole("button", { name: m.settings_nav_drag_label({ name }) });
+    screen.getByRole("button", {
+      name: m.settings_site_nav_child_drag_label({ name }),
+    });
   const labels = () =>
     form()
       .getValues("site.navLinks")!
@@ -354,4 +364,198 @@ it("shows a validation error on the child row it belongs to", () => {
   const rows = document.querySelectorAll(".site-nav-children .site-nav-item");
   expect(rows[1].contains(message)).toBe(true);
   expect(rows[0].contains(message)).toBe(false);
+});
+
+/** What the form holds, and what the page shows, as [name, [child names]]. */
+function formOutline(form: () => UseFormReturn<SystemConfig>) {
+  return form()
+    .getValues("site.navLinks")!
+    .map((link) => [link.label, (link.children ?? []).map((c) => c.label)]);
+}
+function pageOutline() {
+  return [
+    ...document.querySelectorAll<HTMLElement>(
+      ".site-nav-fields > .site-nav-item",
+    ),
+  ].map((row) => [
+    row.querySelector<HTMLInputElement>(
+      `.site-nav-row input[aria-label="${m.settings_site_nav_name()}"]`,
+    )!.value,
+    [
+      ...row.querySelectorAll<HTMLInputElement>(
+        `.site-nav-children input[aria-label="${m.settings_site_nav_child_name()}"]`,
+      ),
+    ].map((input) => input.value),
+  ]);
+}
+const removeLink = (position: number) =>
+  fireEvent.click(
+    screen.getAllByRole("button", { name: m.settings_site_nav_remove() })[
+      position
+    ],
+  );
+
+it("keeps each group's children with it when two groups swap places", () => {
+  const form = renderSite(
+    navSite([
+      { label: "One", children: [child("A", "/a"), child("B", "/b")] },
+      { label: "Two", children: [child("C", "/c"), child("D", "/d")] },
+    ]),
+  );
+  fireEvent.keyDown(
+    screen.getByRole("button", {
+      name: m.settings_nav_drag_label({ name: "One" }),
+    }),
+    { key: "ArrowDown" },
+  );
+  const expected = [
+    ["Two", ["C", "D"]],
+    ["One", ["A", "B"]],
+  ];
+  expect(formOutline(form)).toEqual(expected);
+  expect(pageOutline()).toEqual(expected);
+
+  // The rows still write to their own links after the move.
+  fireEvent.change(
+    screen.getAllByLabelText(m.settings_site_nav_child_name())[0],
+    { target: { value: "C2" } },
+  );
+  expect(form().getValues("site.navLinks.0.children.0.label")).toBe("C2");
+  expect(form().getValues("site.navLinks.1.children.0.label")).toBe("A");
+});
+
+it("keeps a group's children when the link above it is removed", () => {
+  const form = renderSite(
+    navSite([
+      { label: "Plain", href: "/plain" },
+      { label: "More", children: [child("A", "/a"), child("B", "/b")] },
+    ]),
+  );
+  removeLink(0);
+  const expected = [["More", ["A", "B"]]];
+  expect(formOutline(form)).toEqual(expected);
+  expect(pageOutline()).toEqual(expected);
+  expect(screen.getByText(m.settings_site_nav_group_note())).toBeTruthy();
+});
+
+it("keeps the children of the links after a group that is removed", () => {
+  const form = renderSite(
+    navSite([
+      { label: "One", children: [child("A", "/a"), child("B", "/b")] },
+      { label: "Two", children: [child("C", "/c"), child("D", "/d")] },
+      { label: "Three", children: [child("E", "/e")] },
+    ]),
+  );
+  removeLink(0);
+  let expected = [
+    ["Two", ["C", "D"]],
+    ["Three", ["E"]],
+  ];
+  expect(formOutline(form)).toEqual(expected);
+  expect(pageOutline()).toEqual(expected);
+
+  removeLink(0);
+  expected = [["Three", ["E"]]];
+  expect(formOutline(form)).toEqual(expected);
+  expect(pageOutline()).toEqual(expected);
+  fireEvent.change(screen.getByLabelText(m.settings_site_nav_child_name()), {
+    target: { value: "E2" },
+  });
+  expect(form().getValues("site.navLinks.0.children.0.label")).toBe("E2");
+});
+
+it("submits a group without an address and a plain link without children", () => {
+  const form = renderSite(
+    navSite([
+      { label: "Plain", href: "/plain" },
+      { label: "More", href: "/more" },
+      { label: "Emptied", children: [child("X", "/x")] },
+    ]),
+  );
+  const field = (row: number, name: string) =>
+    document.querySelector<HTMLInputElement>(
+      `.site-nav-fields > .site-nav-item:nth-child(${row}) input[aria-label="${name}"]`,
+    )!;
+  // A plain link becomes a group.
+  fireEvent.click(addChildButtons()[1]);
+  fireEvent.change(field(2, m.settings_site_nav_child_name()), {
+    target: { value: "A" },
+  });
+  fireEvent.change(field(2, m.settings_site_nav_child_url()), {
+    target: { value: "/a" },
+  });
+  // A group loses its last child and takes an address again.
+  fireEvent.click(
+    screen.getAllByRole("button", {
+      name: m.settings_site_nav_child_remove(),
+    })[1],
+  );
+  fireEvent.change(field(3, m.settings_site_nav_url()), {
+    target: { value: "/emptied" },
+  });
+
+  // The form's own values keep leftovers (an empty `children` on a plain
+  // link); what is submitted is what the form schema makes of them.
+  const result = createSiteConfigInputFormSchema(m).safeParse(
+    form().getValues("site"),
+  );
+  expect(result.success).toBe(true);
+  const links = result.success ? result.data.navLinks! : [];
+  expect(links).toEqual([
+    { label: "Plain", href: "/plain" },
+    { label: "More", children: [{ label: "A", href: "/a" }] },
+    { label: "Emptied", href: "/emptied" },
+  ]);
+  expect("href" in links[1]).toBe(false);
+  expect("children" in links[0]).toBe(false);
+  expect("children" in links[2]).toBe(false);
+});
+
+it("moves focus into the new row's name field after every add, the sixth included", () => {
+  renderSite(navSite([{ label: "More", href: "/more" }]));
+  const names = () =>
+    screen.getAllByLabelText(m.settings_site_nav_child_name());
+  for (let added = 1; added <= NAV_LINK_CHILDREN_MAX; added++) {
+    fireEvent.click(addChildButtons()[0]);
+    expect(names()).toHaveLength(added);
+    expect(document.activeElement).toBe(names()[added - 1]);
+  }
+  expect((addChildButtons()[0] as HTMLButtonElement).disabled).toBe(true);
+  expect(document.activeElement).toBe(names()[NAV_LINK_CHILDREN_MAX - 1]);
+});
+
+it("gives a child's handle a name of its own, and reads an unnamed row as a sentence", () => {
+  renderSite(
+    navSite([
+      { label: "Docs", children: [child("Docs", "/docs"), child("", "/x")] },
+    ]),
+  );
+  const parent = screen.getByRole("button", {
+    name: m.settings_nav_drag_label({ name: "Docs" }),
+  });
+  const sub = screen.getByRole("button", {
+    name: m.settings_site_nav_child_drag_label({ name: "Docs" }),
+  });
+  expect(parent).not.toBe(sub);
+  expect(
+    screen.getByRole("button", {
+      name: m.settings_site_nav_child_drag_label_unnamed({ position: 2 }),
+    }),
+  ).toBeTruthy();
+  expect(
+    screen.getByRole("group", {
+      name: m.settings_site_nav_children_label({ name: "Docs" }),
+    }),
+  ).toBeTruthy();
+  fireEvent.change(
+    navFields().getAllByLabelText(m.settings_site_nav_name())[0],
+    {
+      target: { value: "" },
+    },
+  );
+  expect(
+    screen.getByRole("group", {
+      name: m.settings_site_nav_children_label_unnamed({ position: 1 }),
+    }),
+  ).toBeTruthy();
 });
