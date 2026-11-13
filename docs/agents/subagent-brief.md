@@ -1,6 +1,8 @@
 # Subagent briefs
 
-A brief is the only context a ticket's subagent gets. Build it from the preamble below plus the ticket-specific part: the issue number, file pointers, decisions already made, and the files other running tickets own.
+A brief is the only context a ticket's subagent gets. Build it from the preamble below plus the ticket-specific part: the issue number, file pointers, decisions already made, and the files other running tickets own. When several tickets share their background, write the preamble and that background once to a file in the scratchpad and start each brief with "read `<file>` first"; the brief then holds only the ticket.
+
+An experiment that may be thrown away needs no issues: each brief carries its own acceptance list. When the experiment is to land, the lead writes its requirements to one spec file, and that file is what the reviewer gets.
 
 ## Cutting tickets
 
@@ -27,16 +29,16 @@ Copy into every brief and fill the `<…>`:
 - **Read**: `gh issue view <ticket>` (the acceptance list you are measured against) and `gh issue view <spec>`; `AGENTS.md`; `<docs and files for this ticket>`; the `run-blog` skill for the local app and screenshots.
 - **Yours / not yours**: `<files this ticket owns>`; do not touch `<files other tickets own>`. If a shared piece lacks something, report it instead of changing it.
 - **Evidence**: only this ticket's acceptance items, through `bun run shots`: the pages it changes at 1440, 820 and 390, light and dark, plus the states it adds. Sheets go to `<scratchpad>/t<number>/`. Look at them and fix what is wrong, at most two rounds.
-- **Checks**: once near the end, `bun run heavy -- bun run check` and `bun run heavy -- bun run test:node --maxWorkers=2`, plus only the workerd test files the change touches (`bun run heavy -- bun run test --maxWorkers=2 <files>`). Targeted files while iterating. No `bun run build`; the lead builds once after merging.
+- **Checks**: once near the end, `bun run heavy -- bun run check` and `bun run heavy -- bun run test:node --maxWorkers=2`, plus only the workerd test files the change touches (`bun run heavy -- bun run test --maxWorkers=2 <files>`). Targeted files while iterating. No `bun run build`; the lead builds once after merging. The exception is a ticket whose acceptance is a measured size: it builds once at the end (`BUNDLE_SOURCEMAP=1 bun run heavy -- bun run build`) and reports `bun scripts/bundle-report.ts`.
 - **Local app**: your own port only; stop the server and run `bun scripts/dev-admin-session.ts cleanup --yes` before finishing.
 - **Commits**: small conventional commits in English, no AI attribution or Co-Authored-By trailer; no push, no merge, no PR. A regenerated `src/lib/orpc/contract.generated.json` belongs in the commit.
-- **Report** (concise): branch and head; each acceptance item as met or not met with one line of evidence; the sheet paths; what you changed outside your files or beyond the brief, and why.
+- **Report** (under 400 words): branch and head; each acceptance item as met or not met with one line of evidence; the sheet paths; what you changed outside your files or beyond the brief, and why.
 
 Conventions are not repeated in the brief: the reviewer holds the diff against `CODING_STANDARDS.md`, and `bun run check` holds the mechanical ones.
 
 ## Review
 
-Before a ticket branch is merged, run the `code-review` skill on `<integration branch>..<ticket branch>` with `sonnet` reviewers, giving it the ticket's issue as the spec. Send findings back to the ticket's agent (SendMessage keeps its context) and merge when they are settled. A report's "met" is a claim; the review and the lead's look at the screenshots are the check.
+Before a ticket branch is merged, run the `code-review` skill on `<integration branch>..<ticket branch>` with `sonnet` reviewers, giving it the ticket's issue as the spec. Send findings back to the ticket's agent (SendMessage keeps its context) and merge when they are settled. A report's "met" is a claim; the review and the lead's look at the screenshots are the check. An experiment branch is reviewed ticket by ticket too: on the one where the review was left for the end, two regressions reached the integration branch first.
 
 ## Acceptance
 

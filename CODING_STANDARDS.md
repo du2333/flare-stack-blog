@@ -27,6 +27,7 @@ Read at review, against a diff. `bun run check` already holds what a machine can
 
 ## Scope
 
+- A change that introduces the one way to do something (a facade, a single entry point) or makes a shared piece load on demand moves every caller in the same diff and adds the lint that rejects the old way. A caller left on the old path is a defect of that diff, not a follow-up: it fails silently where the old path no longer works.
 - A diff stays inside what its ticket asked for. A removed behaviour, a renamed user-facing term or a file outside the ticket's ownership is named in the report, and the reviewer checks it against the ticket.
 - Comments say why, at the density of the surrounding file.
 - Commits are small conventional commits in English with no AI attribution.
