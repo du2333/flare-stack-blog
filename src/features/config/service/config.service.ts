@@ -14,7 +14,14 @@ import {
 } from "@/features/config/config.resolve";
 import type { SiteConfig } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
+import {
+  planSiteIcon,
+  type SiteIconField,
+  type SiteIconInfo,
+  type SiteIconRejection,
+} from "@/features/config/utils/site-icon";
 import * as Storage from "@/features/media/data/media.storage";
+import { err, ok, type Result } from "@/lib/errors";
 import {
   isWebhookEmpty,
   missingWebhookField,
@@ -232,4 +239,88 @@ export async function uploadSiteAsset(
     : `${url}?v=${timestamp}`;
 
   return { url: finalUrl };
+}
+
+export type SiteIconUpload = {
+  icons: Record<SiteIconField, string>;
+  /** False when the sizes could not be made and each holds the original. */
+  resized: boolean;
+};
+
+/**
+ * Stores one square PNG or JPEG as the site's raster icons: the Images binding
+ * makes a PNG of each size at upload, and requests read them from R2 as they
+ * are. When making them fails (the transform quota, error 9422, or any other
+ * transform error) the original is stored at every path instead, so the upload
+ * still lands, and `resized` says so.
+ */
+export async function uploadSiteIcon(
+  context: { env: Env },
+  input: { file: File },
+): Promise<
+  Result<
+    SiteIconUpload,
+    SiteIconRejection | { reason: "SITE_ICON_UNREADABLE" }
+  >
+> {
+  const { env } = context;
+  const { file } = input;
+
+  // `info()` is not billed. Each binding call consumes its stream, so every
+  // call reads the file afresh.
+  let info: SiteIconInfo;
+  try {
+    info = await env.IMAGES.info(file.stream());
+  } catch (error) {
+    logIconError("site icon info error", error);
+    return err({ reason: "SITE_ICON_UNREADABLE" });
+  }
+  const plan = planSiteIcon(info);
+  if (plan.error) return plan;
+
+  let files: Array<File>;
+  let resized = true;
+  try {
+    files = await Promise.all(
+      plan.data.map(async (target) => {
+        const result = await env.IMAGES.input(file.stream())
+          .transform({ width: target.size, height: target.size, fit: "cover" })
+          .output({ format: "image/png" });
+        const bytes = await result.response().arrayBuffer();
+        return new File([bytes], `${target.field}.png`, {
+          type: "image/png",
+        });
+      }),
+    );
+  } catch (error) {
+    logIconError("site icon transform error", error);
+    files = plan.data.map(() => file);
+    resized = false;
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const stored = await Promise.all(
+    plan.data.map(async (target, index) => {
+      const { url } = await Storage.putSiteAsset(
+        env,
+        files[index] ?? file,
+        target.path,
+      );
+      return [target.field, `${url}?original=true&v=${timestamp}`] as const;
+    }),
+  );
+
+  return ok({
+    icons: Object.fromEntries(stored) as Record<SiteIconField, string>,
+    resized,
+  });
+}
+
+function logIconError(message: string, error: unknown) {
+  console.error(
+    JSON.stringify({
+      message,
+      error: error instanceof Error ? error.message : String(error),
+    }),
+  );
 }
