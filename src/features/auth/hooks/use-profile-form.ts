@@ -6,16 +6,15 @@ import { z } from "zod";
 import { createPublicNameSchema } from "@/features/auth/utils/public-name";
 import { getAuthClient } from "@/lib/auth/auth-client";
 import { getProfileAuthErrorMessage } from "@/lib/auth/auth-errors";
-import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 
-const createProfileSchema = (messages: Messages) =>
+const createProfileSchema = () =>
   z.object({
-    name: createPublicNameSchema(messages),
+    name: createPublicNameSchema(),
     image: z
       .union([
         z.literal(""),
-        z.string().url(messages.profile_validation_avatar_invalid()).trim(),
+        z.string().url(m.profile_validation_avatar_invalid()).trim(),
       ])
       .optional(),
   });
@@ -34,7 +33,7 @@ export function useProfileForm(options: UseProfileFormOptions) {
     message: string;
   } | null>(null);
   const form = useForm<ProfileSchema>({
-    resolver: standardSchemaResolver(createProfileSchema(m)),
+    resolver: standardSchemaResolver(createProfileSchema()),
     defaultValues: { name: user?.name || "", image: user?.image || "" },
   });
   const {
@@ -63,7 +62,7 @@ export function useProfileForm(options: UseProfileFormOptions) {
         setFeedback({
           error: true,
           message:
-            getProfileAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+            getProfileAuthErrorMessage(error) ?? m.auth_error_default_desc(),
         });
         return;
       }

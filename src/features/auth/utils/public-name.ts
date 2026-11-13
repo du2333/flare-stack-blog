@@ -1,9 +1,9 @@
 import { z } from "zod";
-import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 /** The public name a User shows beside their Comments. */
-export const createPublicNameSchema = (messages: Messages) =>
+export const createPublicNameSchema = () =>
   z
     .string()
-    .min(2, messages.profile_validation_name_min())
-    .max(20, messages.profile_validation_name_max());
+    .min(2, m.profile_validation_name_min())
+    .max(20, m.profile_validation_name_max());

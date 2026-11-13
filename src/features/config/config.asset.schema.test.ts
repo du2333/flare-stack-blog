@@ -4,7 +4,6 @@ import {
   SITE_ASSET_MAX_FILE_SIZE_MB,
   parseSiteAssetUploadInput,
 } from "./config.asset.schema";
-import { m } from "@/paraglide/messages";
 
 function uploadForm(size: number, assetPath = "site/avatar.png") {
   const formData = new FormData();
@@ -20,7 +19,6 @@ describe("parseSiteAssetUploadInput", () => {
   it("accepts a file at the size limit", () => {
     const parsed = parseSiteAssetUploadInput(
       uploadForm(SITE_ASSET_MAX_FILE_SIZE),
-      m,
     );
     expect(parsed.assetPath).toBe("site/avatar.png");
   });
@@ -28,20 +26,19 @@ describe("parseSiteAssetUploadInput", () => {
   it("still accepts the path used before images were shared by all Themes", () => {
     const parsed = parseSiteAssetUploadInput(
       uploadForm(1, "themes/fuwari/avatar.png"),
-      m,
     );
     expect(parsed.assetPath).toBe("themes/fuwari/avatar.png");
   });
 
   it("refuses a path outside the site asset folders", () => {
     expect(() =>
-      parseSiteAssetUploadInput(uploadForm(1, "posts/avatar.png"), m),
+      parseSiteAssetUploadInput(uploadForm(1, "posts/avatar.png")),
     ).toThrow();
   });
 
   it("names the enforced limit when a file is too large", () => {
     expect(() =>
-      parseSiteAssetUploadInput(uploadForm(SITE_ASSET_MAX_FILE_SIZE + 1), m),
+      parseSiteAssetUploadInput(uploadForm(SITE_ASSET_MAX_FILE_SIZE + 1)),
     ).toThrow(`${SITE_ASSET_MAX_FILE_SIZE_MB}MB`);
   });
 });

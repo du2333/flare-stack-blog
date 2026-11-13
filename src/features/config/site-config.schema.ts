@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DEFAULT_THEME_ID, THEME_IDS } from "@/features/theme/theme-ids";
-import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 import {
   canonicalizeNavHref,
   isNavHref,
@@ -114,20 +114,19 @@ const NavLinkRowFormSchema = z.object({ label: z.string(), href: z.string() });
 function navLinkRowIssues(
   link: { label: string; href?: string },
   path: Array<string | number>,
-  messages: Messages,
   ctx: z.RefinementCtx,
   { href = true }: { href?: boolean } = {},
 ) {
   if (!link.label) {
     ctx.addIssue({
       code: "custom",
-      message: messages.settings_site_validation_nav_label_required(),
+      message: m.settings_site_validation_nav_label_required(),
       path: [...path, "label"],
     });
   } else if (link.label.length > NAV_LINK_LABEL_MAX) {
     ctx.addIssue({
       code: "custom",
-      message: messages.settings_site_validation_too_long({
+      message: m.settings_site_validation_too_long({
         max: NAV_LINK_LABEL_MAX,
       }),
       path: [...path, "label"],
@@ -137,19 +136,19 @@ function navLinkRowIssues(
   if (!link.href) {
     ctx.addIssue({
       code: "custom",
-      message: messages.settings_site_validation_nav_href_required(),
+      message: m.settings_site_validation_nav_href_required(),
       path: [...path, "href"],
     });
   } else if (!isNavHref(link.href)) {
     ctx.addIssue({
       code: "custom",
-      message: messages.settings_site_validation_invalid_nav_href(),
+      message: m.settings_site_validation_invalid_nav_href(),
       path: [...path, "href"],
     });
   }
 }
 
-function createNavLinksFormSchema(messages: Messages) {
+function createNavLinksFormSchema() {
   return z
     .array(
       NavLinkRowFormSchema.extend({
@@ -180,28 +179,23 @@ function createNavLinksFormSchema(messages: Messages) {
     .superRefine((links, ctx) => {
       links.forEach((link, index) => {
         if (link.children) {
-          navLinkRowIssues(link, [index], messages, ctx, { href: false });
+          navLinkRowIssues(link, [index], ctx, { href: false });
           link.children.forEach((child, childIndex) =>
-            navLinkRowIssues(
-              child,
-              [index, "children", childIndex],
-              messages,
-              ctx,
-            ),
+            navLinkRowIssues(child, [index, "children", childIndex], ctx),
           );
           return;
         }
         if (!link.label && !link.href) return;
-        navLinkRowIssues(link, [index], messages, ctx);
+        navLinkRowIssues(link, [index], ctx);
       });
     });
 }
 
-function createSiteTextFormSchema(max: number, messages: Messages) {
+function createSiteTextFormSchema(max: number) {
   return z
     .string()
     .trim()
-    .max(max, messages.settings_site_validation_too_long({ max }));
+    .max(max, m.settings_site_validation_too_long({ max }));
 }
 
 function createAssetRefSchema() {
@@ -210,9 +204,9 @@ function createAssetRefSchema() {
   });
 }
 
-function createAssetRefFormSchema(messages: Messages) {
+function createAssetRefFormSchema() {
   return z.string().refine((value) => value === "" || value.startsWith("/"), {
-    message: messages.settings_site_validation_invalid_asset_ref(),
+    message: m.settings_site_validation_invalid_asset_ref(),
   });
 }
 
@@ -238,7 +232,7 @@ function createBackgroundImageRefSchema() {
     );
 }
 
-function createBackgroundImageRefFormSchema(messages: Messages) {
+function createBackgroundImageRefFormSchema() {
   return z
     .string()
     .trim()
@@ -246,8 +240,7 @@ function createBackgroundImageRefFormSchema(messages: Messages) {
       (value) =>
         value === "" || value.startsWith("/") || isExternalImageUrl(value),
       {
-        message:
-          messages.settings_site_validation_invalid_background_image_ref(),
+        message: m.settings_site_validation_invalid_background_image_ref(),
       },
     );
 }
@@ -258,9 +251,9 @@ function createAssetPathSchema() {
   });
 }
 
-function createAssetPathFormSchema(messages: Messages) {
+function createAssetPathFormSchema() {
   return z.string().refine((value) => value.startsWith("/"), {
-    message: messages.settings_site_validation_invalid_asset_path(),
+    message: m.settings_site_validation_invalid_asset_path(),
   });
 }
 
@@ -268,8 +261,8 @@ function createOptionalAssetPathSchema() {
   return z.union([createAssetPathSchema(), z.literal("")]);
 }
 
-function createOptionalAssetPathFormSchema(messages: Messages) {
-  return z.union([createAssetPathFormSchema(messages), z.literal("")]);
+function createOptionalAssetPathFormSchema() {
+  return z.union([createAssetPathFormSchema(), z.literal("")]);
 }
 
 function createHueSchema() {
@@ -282,9 +275,9 @@ function createHueSchema() {
     });
 }
 
-function createHueFormSchema(messages: Messages) {
+function createHueFormSchema() {
   return z.number().int().min(PRIMARY_HUE_MIN).max(PRIMARY_HUE_MAX, {
-    message: messages.settings_site_validation_hue_range(),
+    message: m.settings_site_validation_hue_range(),
   });
 }
 
@@ -381,32 +374,29 @@ export const FullSiteConfigSchema = z.object({
   }),
 });
 
-export function createSiteConfigInputFormSchema(messages: Messages) {
+export function createSiteConfigInputFormSchema() {
   return z.object({
-    title: createSiteTextFormSchema(120, messages).optional(),
-    author: createSiteTextFormSchema(80, messages).optional(),
-    description: createSiteTextFormSchema(
-      SITE_DESCRIPTION_MAX,
-      messages,
-    ).optional(),
+    title: createSiteTextFormSchema(120).optional(),
+    author: createSiteTextFormSchema(80).optional(),
+    description: createSiteTextFormSchema(SITE_DESCRIPTION_MAX).optional(),
     social: z.array(SocialLinkSchema).optional(),
-    navLinks: createNavLinksFormSchema(messages).optional(),
+    navLinks: createNavLinksFormSchema().optional(),
     icons: z
       .object({
-        faviconSvg: createOptionalAssetPathFormSchema(messages).optional(),
-        faviconIco: createOptionalAssetPathFormSchema(messages).optional(),
-        favicon96: createOptionalAssetPathFormSchema(messages).optional(),
-        appleTouchIcon: createOptionalAssetPathFormSchema(messages).optional(),
-        webApp192: createOptionalAssetPathFormSchema(messages).optional(),
-        webApp512: createOptionalAssetPathFormSchema(messages).optional(),
+        faviconSvg: createOptionalAssetPathFormSchema().optional(),
+        faviconIco: createOptionalAssetPathFormSchema().optional(),
+        favicon96: createOptionalAssetPathFormSchema().optional(),
+        appleTouchIcon: createOptionalAssetPathFormSchema().optional(),
+        webApp192: createOptionalAssetPathFormSchema().optional(),
+        webApp512: createOptionalAssetPathFormSchema().optional(),
       })
       .optional(),
-    bannerImage: createBackgroundImageRefFormSchema(messages).optional(),
+    bannerImage: createBackgroundImageRefFormSchema().optional(),
     bannerFocus: BannerFocusSchema.optional(),
-    avatar: createAssetRefFormSchema(messages).optional(),
-    primaryHue: createHueFormSchema(messages).optional(),
+    avatar: createAssetRefFormSchema().optional(),
+    primaryHue: createHueFormSchema().optional(),
     brandMark: BrandMarkSchema.optional(),
-    tagline: createSiteTextFormSchema(TAGLINE_MAX, messages).optional(),
+    tagline: createSiteTextFormSchema(TAGLINE_MAX).optional(),
     // The form edits the shared fields, so the legacy copy is not submitted.
     theme: z
       .object({

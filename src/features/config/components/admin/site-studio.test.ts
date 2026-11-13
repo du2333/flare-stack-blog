@@ -496,7 +496,7 @@ it("submits a group without an address and a plain link without children", () =>
 
   // The form's own values keep leftovers (an empty `children` on a plain
   // link); what is submitted is what the form schema makes of them.
-  const result = createSiteConfigInputFormSchema(m).safeParse(
+  const result = createSiteConfigInputFormSchema().safeParse(
     form().getValues("site"),
   );
   expect(result.success).toBe(true);
