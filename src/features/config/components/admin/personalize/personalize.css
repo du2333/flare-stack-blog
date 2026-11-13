@@ -358,6 +358,14 @@
   left: 0;
   transform-origin: top left;
 }
+/* The phone's corners once more, cut on the scaled layer itself and as a
+   clip path. The canvas's rounded overflow is not enough: a page whose bar
+   is frosted (a backdrop-filter, as in 「名片」 and 「侧栏」) is drawn by the
+   browser's compositor past a rounded overflow, and its square corners show
+   outside the phone. The radius is the canvas's, in this layer's lengths. */
+.personalize-canvas[data-device="phone"] .personalize-scaler {
+  clip-path: inset(0 round calc(30px / var(--personalize-scale, 1)));
+}
 /* Every frame stacks at the same place; the one in view is the newest loaded. */
 .personalize-frame {
   position: absolute;
