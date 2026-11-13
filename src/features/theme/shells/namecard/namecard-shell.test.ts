@@ -8,9 +8,18 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { createElement, useState } from "react";
+import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { NavOption } from "@/components/layout/layout-props";
 import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -42,22 +51,30 @@ function cardsFor(pageKind: PageKind): Array<SidebarCard> {
 
 const reducedMotion = { matches: false };
 
+const HOME_ONLY: Array<NavOption> = [
+  { id: "home", label: "Nav home", href: "/", external: false },
+];
+
 async function renderShell({
   pageKind,
   site,
   stored,
   cards = cardsFor(pageKind),
+  navOptions = HOME_ONLY,
+  path = "/",
 }: {
   pageKind: PageKind;
   site?: SystemConfig["site"];
   stored?: Record<string, unknown>;
   cards?: Array<SidebarCard>;
+  navOptions?: Array<NavOption>;
+  path?: string;
 }) {
   const props: ThemeShellProps = {
     pageKind,
     pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
-    navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
+    navOptions,
     sidebarCards: cards,
     isSessionLoading: false,
     logout: async () => {},
@@ -72,7 +89,7 @@ async function renderShell({
   });
   const router = createRouter({
     routeTree: root,
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    history: createMemoryHistory({ initialEntries: [path] }),
   });
   await act(async () => {
     render(createElement(RouterProvider, { router }));
@@ -253,6 +270,95 @@ describe("the frame shape", () => {
 
 // card-placement.test.ts covers which card goes where; here, what the shell
 // makes of it.
+describe("a navigation with a group", () => {
+  const NAV_WITH_GROUP: Array<NavOption> = [
+    ...HOME_ONLY,
+    { id: "posts", label: "Nav posts", href: "/posts", external: false },
+    {
+      id: "custom-0",
+      label: "Nav group",
+      children: [
+        { id: "custom-0-0", label: "Nav one", href: "/one", external: false },
+        {
+          id: "custom-0-1",
+          label: "Nav two",
+          href: "https://example.org/",
+          external: true,
+        },
+      ],
+    },
+  ];
+  const bar = () =>
+    screen.getAllByRole("navigation", { name: m.nav_main_label() })[0]!;
+
+  it("stands the group among the links as one trigger that is no link, once", async () => {
+    await renderShell({ pageKind: "inner", navOptions: NAV_WITH_GROUP });
+
+    const entries = [...bar().querySelectorAll(".namecard-link")];
+    expect(entries.map((entry) => entry.textContent)).toEqual([
+      "Nav home",
+      "Nav posts",
+      "Nav group",
+    ]);
+    const trigger = within(bar()).getByRole("button", { name: "Nav group" });
+    expect(trigger.classList.contains("namecard-link")).toBe(true);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("link", { name: "Nav group" })).toBeNull();
+    expect(screen.getAllByText("Nav group")).toHaveLength(1);
+  });
+
+  it("opens the links of the group from its trigger", async () => {
+    await renderShell({ pageKind: "inner", navOptions: NAV_WITH_GROUP });
+    const trigger = within(bar()).getByRole("button", { name: "Nav group" });
+    fireEvent.click(trigger);
+
+    const menu = await findInPopover("menu", { name: "Nav group" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((item) => item.getAttribute("href")),
+    ).toEqual(["/one", "https://example.org/"]);
+  });
+
+  it("marks the group as current while one of its links is the page, and no other entry", async () => {
+    await renderShell({
+      pageKind: "inner",
+      navOptions: NAV_WITH_GROUP,
+      path: "/one",
+    });
+
+    const trigger = within(bar()).getByRole("button", { name: "Nav group" });
+    expect(trigger.getAttribute("aria-current")).toBe("true");
+    expect(trigger.classList.contains("namecard-link-active")).toBe(true);
+    expect(bar().querySelectorAll(".namecard-link-active")).toHaveLength(1);
+  });
+
+  it("leaves the group unmarked on a page of another entry", async () => {
+    await renderShell({
+      pageKind: "inner",
+      navOptions: NAV_WITH_GROUP,
+      path: "/posts",
+    });
+
+    const trigger = within(bar()).getByRole("button", { name: "Nav group" });
+    expect(trigger.getAttribute("aria-current")).toBeNull();
+    expect(
+      within(bar()).getByRole("link", { name: "Nav posts" }).className,
+    ).toContain("namecard-link-active");
+  });
+
+  it("inks the trigger of an open group like a current link, and writes no panel colour", () => {
+    const css = readFileSync(join(import.meta.dirname, "navbar.css"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\s+/g, " ");
+    expect(css).toMatch(
+      /\.namecard-link:hover, \.namecard-link\[aria-expanded="true"\], \.namecard-link-active \{ color: var\(--namecard-ink\); \}/,
+    );
+    expect(css).not.toMatch(/--theme-float|fuwari-float/);
+  });
+});
+
 describe("the sidebar cards", () => {
   it("stand in one group beside the content on the home page, the ways into the Posts in the box that stays in view", async () => {
     await renderShell({ pageKind: "home" });

@@ -11,7 +11,8 @@ import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { flattenNavOptions } from "@/components/layout/nav-options";
+import { NavGroupMenu } from "@/components/layout/nav-group-menu";
+import { isNavGroup } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
@@ -238,14 +239,24 @@ function NavLinks({
       }}
       onBlur={() => point(null)}
     >
-      {flattenNavOptions(navOptions).map((option) => (
-        <PublicNavLink
-          key={option.id}
-          option={option}
-          className="namecard-link"
-          activeClassName="namecard-link-active"
-        />
-      ))}
+      {navOptions.map((option) =>
+        isNavGroup(option) ? (
+          <NavGroupMenu
+            key={option.id}
+            group={option}
+            navOptions={navOptions}
+            className="namecard-link"
+            activeClassName="namecard-link-active"
+          />
+        ) : (
+          <PublicNavLink
+            key={option.id}
+            option={option}
+            className="namecard-link"
+            activeClassName="namecard-link-active"
+          />
+        ),
+      )}
       <span
         className="namecard-link-bar"
         aria-hidden="true"
