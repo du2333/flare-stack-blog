@@ -59,7 +59,35 @@ bun run shots compare $SCRATCH/before $SCRATCH/after --out $SCRATCH/diff
 bun run shots sheet $SCRATCH/diff --out $SCRATCH/diff-sheet.png
 ```
 
-## 4. Drive the browser by hand
+## 4. Behaviour: `bun run shots flows`
+
+`shoot` answers "does it look the same"; `flows` answers "does it behave the same". Run it after a change to auth, the session, toasts, navigation, loading states or the Admin shell, and before reporting such a change done: a change once left four toasts unshown and blanked the Admin on a slow connection, and every suite and screenshot passed.
+
+```bash
+bun run heavy -- bun run shots flows --base http://localhost:<port> --session <cookie>
+```
+
+It runs eleven named flows (`--list` names them, `--only a,b` runs some), each in browsers of its own, and prints one line per flow: pass, FAIL or skip, and what the flow observed. Exit 1 when one fails. A flow also fails on a `pageerror`, a console error or a React hydration warning; a failed load from another origin and a third-party iframe's permissions-policy message are ignored (`isIgnoredNoise`). A full run takes about five minutes on the dev server.
+
+- The flows write. They blank and restore the throwaway Admin's name in the local database, post and delete a comment, create and delete a tag, save the profile and put it back. Flows that need the local database (`name-gate`, `two-tabs`, the logout step of `account-and-logout`) print a skip line on any other site. A logout deletes the session row, so the runner puts it back after each flow and the cookie stays valid.
+- `--compare <other-base>` runs the same flows on a second site and prints only the differences in what they observed; timings (keys ending `Ms`) within `--tolerance` percent (50, and never less than 400 ms) are equal. This is how a change shows "behaves as before": serve the baseline branch from its own worktree on its own port (section 1), then `flows --base <new> --compare <baseline> --session <cookie>`, with a cookie that is valid on both. Exit 1 on a difference. Both sites are checked first (it answers, the cookie is accepted) and the run ends in seconds with one line when not. It is two full runs one after the other. A flow that passes `--flow-timeout` (seconds; default 120, 240 for the slow-network flow) is reported failed and the run goes on; `--deadline` (minutes, 15) ends a site's run. Two servers of one worktree share a database, so the flows of both write to the same rows: that is fine one after the other, never at once.
+- A remote site can be driven signed in: `--api-key-file <toml>` takes a file with `url = "…"` and `api_key = "…"` (the format of `~/.config/flare-stack-blog/config.toml`) and sends the key as `x-api-key` to that origin only; `--base` may be left out. Flows that sign in or out (`sign-in`, `two-tabs`) are skipped, since a key is a session by header; `name-gate` still needs the local database.
+- A new flow is one file in `.claude/skills/run-blog/shots/flows/` and one line in `list.ts`.
+
+## 5. The production build
+
+The dev server serves every module on its own, so what the build does to chunks cannot be seen there. After a change to `vite.config.ts`, code splitting, preloads, or what a page imports at first load, check the build:
+
+```bash
+bun run heavy -- bun run build        # stop the dev server first: a build leaves it silent
+CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT=true bunx vite preview --port <port> --strictPort > <scratch>/preview.log 2>&1 &
+```
+
+The preview serves the build from `.cloudflare/output`, so it needs the build first and does not reload: build again after each change. It reads the same `.dev.vars` and the same local D1 file as the dev server, so the throwaway Admin of section 2 signs in on it (the seeded cookie answers `get-session`) and the sample Posts show. Run only one of the two on a port, and start two servers of one worktree one after the other: two starting together crashed one on a locked database.
+
+Check the build rather than the dev server after a change to `vite.config.ts`, code splitting, preloads, or what the first load imports: dev serves every module unbundled, so a chunk that the build merges or splits (and a server-only import leaking into the client bundle) shows only here. `shots` and `flows` take the preview's `--base` like any other. `flows` was verified on the dev server only; a flow that fails on the preview and passes on dev points at the build.
+
+## 6. Drive the browser by hand
 
 Typing and publishing still need a script: `playwright-core` from a scratch directory (`bun add playwright-core` there), launched with the same headless shell (`~/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell`), `--no-sandbox`, `locale: "zh-CN"`, the session cookie added to the context.
 
@@ -70,7 +98,7 @@ Typing and publishing still need a script: `playwright-core` from a scratch dire
 
 Look at every screenshot, and record `pageerror` events.
 
-## 5. Cleanup
+## 7. Cleanup
 
 ```bash
 lsof -ti:<port> -sTCP:LISTEN | xargs -r kill
