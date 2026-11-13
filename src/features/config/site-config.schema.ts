@@ -48,10 +48,16 @@ const NavHrefSchema = z.string().trim().refine(isNavHref, {
   message: NAV_HREF_MESSAGE,
 });
 
-/** A link inside a group. Strict, so a child that nests links is rejected. */
-const NavLinkChildSchema = z.strictObject({
+/**
+ * A link inside a group. One that nests links of its own is rejected; any
+ * other key it carries is stripped, as elsewhere in Site Config.
+ */
+const NavLinkChildSchema = z.object({
   label: NavLabelSchema,
   href: NavHrefSchema,
+  children: z
+    .never({ error: "A link inside a group cannot have children" })
+    .optional(),
 });
 
 /**
@@ -102,9 +108,7 @@ const NavLinkSchema = z.union([
   z.object({ label: NavLabelSchema, href: NavHrefSchema }),
 ]);
 
-function createNavLinkRowFormSchema() {
-  return z.object({ label: z.string(), href: z.string() });
-}
+const NavLinkRowFormSchema = z.object({ label: z.string(), href: z.string() });
 
 /** The issues of one row of the links form, at `path`. */
 function navLinkRowIssues(
@@ -148,10 +152,10 @@ function navLinkRowIssues(
 function createNavLinksFormSchema(messages: Messages) {
   return z
     .array(
-      createNavLinkRowFormSchema().extend({
+      NavLinkRowFormSchema.extend({
         href: z.string().optional(),
         children: z
-          .array(createNavLinkRowFormSchema())
+          .array(NavLinkRowFormSchema)
           .max(NAV_LINK_CHILDREN_MAX)
           .optional(),
       }),

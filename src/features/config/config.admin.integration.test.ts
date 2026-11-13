@@ -482,6 +482,15 @@ describe("navigation groups", () => {
         Array.from({ length: 6 }, (_, i) => ({ label: `L${i}`, href: "/a" })),
       ),
     ).toBe(false);
+    // Any other key a child carries is stripped, as on a link.
+    const parsed = UpdateConfigSectionSchema.parse({
+      section: "site",
+      expectedRevision: 0,
+      site: { navLinks: [{ label: "G", children: [{ ...child(1), x: 1 }] }] },
+    });
+    expect(parsed.section === "site" && parsed.site.navLinks).toEqual([
+      { label: "G", children: [child(1)] },
+    ]);
     // A child follows the rules of a link.
     expect(site([{ label: "G", children: [{ label: "", href: "/a" }] }])).toBe(
       false,
