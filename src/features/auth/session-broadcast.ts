@@ -29,12 +29,12 @@ export function announceSessionChange(trigger: SessionTrigger) {
 /**
  * Calls `listener` whenever the session may have changed outside this tab's
  * own actions: another tab announced a change, the tab became visible again
- * (at most every five seconds), or the network came back. These are the
- * moments Better Auth's client looked again.
+ * (at most every five seconds), or the network came back (always). These are
+ * the moments Better Auth's client looked again.
  */
 export function onSessionMayHaveChanged(listener: () => void) {
   let lastFocusCheck = 0;
-  const throttled = () => {
+  const onFocus = () => {
     const now = Date.now();
     if (now - lastFocusCheck < FOCUS_CHECK_INTERVAL_MS) return;
     lastFocusCheck = now;
@@ -44,14 +44,14 @@ export function onSessionMayHaveChanged(listener: () => void) {
     if (event.key === SESSION_MESSAGE_KEY && event.newValue) listener();
   };
   const onVisibility = () => {
-    if (document.visibilityState === "visible") throttled();
+    if (document.visibilityState === "visible") onFocus();
   };
   window.addEventListener("storage", onStorage);
   document.addEventListener("visibilitychange", onVisibility);
-  window.addEventListener("online", throttled);
+  window.addEventListener("online", listener);
   return () => {
     window.removeEventListener("storage", onStorage);
     document.removeEventListener("visibilitychange", onVisibility);
-    window.removeEventListener("online", throttled);
+    window.removeEventListener("online", listener);
   };
 }
