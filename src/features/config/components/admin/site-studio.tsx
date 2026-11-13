@@ -11,7 +11,10 @@ import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
-import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
+import {
+  SITE_DESCRIPTION_MAX,
+  TAGLINE_MAX,
+} from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
   isExternalNavHref,
@@ -52,7 +55,7 @@ export function SiteStudio() {
   );
 }
 
-/** The title, the author and the description: a row each, with where it shows. */
+/** The title, the author, the description and the tagline: a row each, with where it shows. */
 function TextFields() {
   const { register, control, formState } = useFormContext<SystemConfig>();
   const errors = formState.errors.site;
@@ -105,6 +108,20 @@ function TextFields() {
               })}
             </p>
           </>
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.settings_tagline()}
+        description={m.settings_site_tagline_hint()}
+        error={errors?.tagline?.message}
+      >
+        {(field) => (
+          <Input
+            {...register("site.tagline")}
+            {...field}
+            maxLength={TAGLINE_MAX}
+            placeholder={m.settings_tagline_ph()}
+          />
         )}
       </SettingRow>
       <SearchPreview />

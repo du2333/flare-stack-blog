@@ -153,7 +153,6 @@ it("retains edits after a conflict and only discards the requested section on re
 const presentationSite = {
   bannerFocus: { x: 10, y: 80 },
   brandMark: "avatar" as const,
-  tagline: "Saved tagline",
   primaryHue: 200,
   theme: { id: "classic" as const, options: { classic: { kept: true } } },
 };
@@ -161,6 +160,7 @@ const identitySite = {
   title: "Saved title",
   author: "Saved author",
   description: "Saved description",
+  tagline: "Saved tagline",
 };
 
 function loadSavedSite() {
@@ -186,11 +186,11 @@ it("saves the site page's fields in the Site Config as loaded, leaving the prese
     result.current.methods.setValue("site.title", "New title", {
       shouldDirty: true,
     });
-    // Not a field of this page: a stray edit never reaches the save.
-    result.current.methods.setValue("site.primaryHue", 30, {
+    result.current.methods.setValue("site.tagline", "New tagline", {
       shouldDirty: true,
     });
-    result.current.methods.setValue("site.tagline", "Stray", {
+    // Not a field of this page: a stray edit never reaches the save.
+    result.current.methods.setValue("site.primaryHue", 30, {
       shouldDirty: true,
     });
   });
@@ -206,6 +206,7 @@ it("saves the site page's fields in the Site Config as loaded, leaving the prese
   expect(saved.site).toMatchObject({
     ...identitySite,
     title: "New title",
+    tagline: "New tagline",
     ...presentationSite,
     bannerImage: loaded.bannerImage,
     avatar: loaded.avatar,
@@ -231,6 +232,9 @@ it("saves the personalize page's fields in the Site Config as loaded, leaving th
     result.current.methods.setValue("site.title", "Stray", {
       shouldDirty: true,
     });
+    result.current.methods.setValue("site.tagline", "Stray", {
+      shouldDirty: true,
+    });
   });
   state.save.mockResolvedValue({
     ...state.snapshot!,
@@ -241,6 +245,7 @@ it("saves the personalize page's fields in the Site Config as loaded, leaving th
   });
   const saved = state.save.mock.calls[0][0];
   expect(saved).toMatchObject({ section: "site", expectedRevision: 2 });
+  // The tagline is the site page's: this save writes back the one it loaded.
   expect(saved.site).toMatchObject({
     ...identitySite,
     ...presentationSite,
@@ -318,6 +323,46 @@ it("leaves the icons to the personalize page: the site page neither saves nor co
   expect(state.save.mock.calls[0][0].site.icons).toEqual(loaded.icons);
 });
 
+it("lights the site page's save bar for a tagline-only change, and the personalize page's does not", async () => {
+  loadSavedSite();
+  const site = renderHook(() => useSystemConfigForm("site"));
+  const personalize = renderHook(() => useSystemConfigForm("personalize"));
+  await waitFor(() =>
+    expect(site.result.current.baseline.revisions.site).toBe(2),
+  );
+  await waitFor(() =>
+    expect(personalize.result.current.baseline.revisions.site).toBe(2),
+  );
+  act(() => {
+    site.result.current.methods.setValue("site.tagline", "New tagline", {
+      shouldDirty: true,
+    });
+    personalize.result.current.methods.setValue("site.tagline", "New tagline", {
+      shouldDirty: true,
+    });
+  });
+  expect(site.result.current.sectionDirty).toBe(true);
+  expect(site.result.current.changedCount).toBe(1);
+  expect(personalize.result.current.sectionDirty).toBe(false);
+});
+
+it("saves an emptied tagline from the site page", async () => {
+  loadSavedSite();
+  const { result } = renderHook(() => useSystemConfigForm("site"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() =>
+    result.current.methods.setValue("site.tagline", "", { shouldDirty: true }),
+  );
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 3, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[0][0].site.tagline).toBe("");
+});
+
 it("marks the page dirty only by the fields it owns", async () => {
   const personalize = renderHook(() => useSystemConfigForm("personalize"));
   const site = renderHook(() => useSystemConfigForm("site"));
@@ -359,7 +404,7 @@ it("on a conflict keeps what is typed, and reloading takes in the other page's s
   const { result } = renderHook(() => useSystemConfigForm("personalize"));
   await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
   act(() =>
-    result.current.methods.setValue("site.tagline", "Typed here", {
+    result.current.methods.setValue("site.primaryHue", 40, {
       shouldDirty: true,
     }),
   );
@@ -369,7 +414,7 @@ it("on a conflict keeps what is typed, and reloading takes in the other page's s
     await result.current.onSubmit();
   });
   expect(result.current.conflict).toBe(true);
-  expect(result.current.methods.getValues("site.tagline")).toBe("Typed here");
+  expect(result.current.methods.getValues("site.primaryHue")).toBe(40);
   expect(result.current.sectionDirty).toBe(true);
   expect(state.save.mock.calls[0][0].expectedRevision).toBe(2);
 
@@ -381,7 +426,7 @@ it("on a conflict keeps what is typed, and reloading takes in the other page's s
         site: {
           ...state.snapshot!.config.site,
           title: "Saved on the site page",
-          tagline: "Saved tagline, replaced",
+          primaryHue: 150,
         },
       },
       revisions: { site: 3, notifications: 3 },
@@ -396,7 +441,7 @@ it("on a conflict keeps what is typed, and reloading takes in the other page's s
   expect(result.current.methods.getValues("site.title")).toBe(
     "Saved on the site page",
   );
-  expect(result.current.methods.getValues("site.tagline")).toBe("Typed here");
+  expect(result.current.methods.getValues("site.primaryHue")).toBe(40);
   expect(result.current.sectionDirty).toBe(true);
 
   state.save.mockResolvedValue({
@@ -408,7 +453,7 @@ it("on a conflict keeps what is typed, and reloading takes in the other page's s
   });
   expect(state.save.mock.calls[1][0]).toMatchObject({
     expectedRevision: 3,
-    site: { title: "Saved on the site page", tagline: "Typed here" },
+    site: { title: "Saved on the site page", primaryHue: 40 },
   });
 });
 
@@ -416,7 +461,7 @@ it("discarding after a conflict is the Admin's choice and drops what is typed", 
   const { result } = renderHook(() => useSystemConfigForm("personalize"));
   await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
   act(() =>
-    result.current.methods.setValue("site.tagline", "Typed here", {
+    result.current.methods.setValue("site.primaryHue", 40, {
       shouldDirty: true,
     }),
   );
@@ -428,7 +473,7 @@ it("discarding after a conflict is the Admin's choice and drops what is typed", 
     ...state.snapshot!,
     config: {
       ...state.snapshot!.config,
-      site: { ...state.snapshot!.config.site, tagline: "Saved elsewhere" },
+      site: { ...state.snapshot!.config.site, primaryHue: 90 },
     },
     revisions: { site: 3, notifications: 3 },
   };
@@ -438,9 +483,7 @@ it("discarding after a conflict is the Admin's choice and drops what is typed", 
   await act(async () => {
     await result.current.discardSection();
   });
-  expect(result.current.methods.getValues("site.tagline")).toBe(
-    "Saved elsewhere",
-  );
+  expect(result.current.methods.getValues("site.primaryHue")).toBe(90);
   expect(result.current.sectionDirty).toBe(false);
   expect(result.current.conflict).toBe(false);
 });

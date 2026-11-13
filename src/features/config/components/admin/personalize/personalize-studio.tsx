@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/focal-point";
 import { FocalPointPicker } from "@/components/ui/focal-point-picker";
 import { IconButton } from "@/components/ui/icon-button";
-import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Sheet } from "@/components/ui/sheet";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
@@ -24,7 +23,6 @@ import {
   BRAND_MARKS,
   PRIMARY_HUE_MAX,
   PRIMARY_HUE_MIN,
-  TAGLINE_MAX,
   type BrandMark,
 } from "@/features/config/site-config.schema";
 import { resolveBrandMarkImage } from "@/features/config/utils/brand-mark";
@@ -113,7 +111,6 @@ export function PersonalizeStudio() {
         <HueRow />
         <BrandMarkRow />
         <SiteIconRow />
-        <TaglineRow />
       </div>
       {wide ? <PreviewAside values={values} /> : null}
     </div>
@@ -361,29 +358,6 @@ function BrandMarkRow() {
           )}
           <span>{title}</span>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function TaglineRow() {
-  const { register, formState } = useFormContext<SystemConfig>();
-  const error = formState.errors.site?.tagline?.message;
-  return (
-    <section className="site-theme-row">
-      <div className="site-section-copy">
-        <label htmlFor="site-tagline">{m.settings_tagline()}</label>
-        <p>{m.settings_tagline_hint()}</p>
-      </div>
-      <div className="site-tagline-control">
-        <Input
-          id="site-tagline"
-          {...register("site.tagline")}
-          maxLength={TAGLINE_MAX}
-          placeholder={m.settings_tagline_ph()}
-          aria-invalid={error ? true : undefined}
-        />
-        {error ? <p className="fuwari-form-field-error">{error}</p> : null}
       </div>
     </section>
   );
