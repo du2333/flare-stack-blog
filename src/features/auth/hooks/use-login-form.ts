@@ -85,7 +85,6 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
   const finish = () => {
     setSignedIn(true);
-    resetAuthBoundQueries(queryClient);
     setTimeout(() => {
       performRedirect(redirectTo, previousLocation);
       toast.success(m.login_toast_success());
@@ -153,6 +152,8 @@ export function useLoginForm(options: UseLoginFormOptions) {
         );
         return;
       }
+      // Signed in from here on, even before the name step finishes.
+      resetAuthBoundQueries(queryClient, "signed-in");
       if (!result.user.name.trim()) {
         setStep("name");
         return;

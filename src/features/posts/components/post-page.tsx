@@ -6,7 +6,7 @@ import { CommentSection } from "@/features/comments/components/comment-section";
 import { ContentRenderer } from "@/features/posts/components/content/content-renderer";
 import type { PostWithToc } from "@/features/posts/schema/posts.schema";
 import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { m } from "@/paraglide/messages";
 import { usePhotoSwipeGallery } from "./content/photo-swipe";
 import { useHeadingAnchors } from "./content/use-heading-anchors";

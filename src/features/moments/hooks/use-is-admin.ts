@@ -1,4 +1,4 @@
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 
 /**
  * Whether the signed-in viewer is an Admin. The session loads in the browser

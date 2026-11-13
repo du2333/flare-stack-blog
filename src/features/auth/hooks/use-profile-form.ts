@@ -1,8 +1,10 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { refreshSession } from "@/features/auth/queries";
 import { createPublicNameSchema } from "@/features/auth/utils/public-name";
 import { getAuthClient } from "@/lib/auth/auth-client";
 import { getProfileAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -27,6 +29,7 @@ interface UseProfileFormOptions {
 
 export function useProfileForm(options: UseProfileFormOptions) {
   const { user } = options;
+  const queryClient = useQueryClient();
 
   const [feedback, setFeedback] = useState<{
     error: boolean;
@@ -67,6 +70,7 @@ export function useProfileForm(options: UseProfileFormOptions) {
         return;
       }
       reset(data);
+      void refreshSession(queryClient);
       setFeedback({ error: false, message: m.profile_toast_profile_updated() });
       toast.success(m.profile_toast_profile_updated());
     } catch {

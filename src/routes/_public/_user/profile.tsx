@@ -5,7 +5,7 @@ import {
   useNotificationToggle,
   useProfileForm,
 } from "@/features/auth/hooks";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public/_user/profile")({

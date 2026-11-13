@@ -44,7 +44,7 @@ import {
 import { useComments } from "@/features/comments/hooks/use-comments";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
 import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { formatDate, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { AdminCommentThread } from "./admin-comment-thread";
