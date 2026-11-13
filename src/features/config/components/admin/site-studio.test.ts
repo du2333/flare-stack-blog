@@ -18,6 +18,7 @@ import {
 import {
   createSiteConfigInputFormSchema,
   SITE_DESCRIPTION_MAX,
+  TAGLINE_MAX,
 } from "@/features/config/site-config.schema";
 import { NAV_LINK_CHILDREN_MAX } from "@/features/config/utils/nav-links";
 import { m } from "@/paraglide/messages";
@@ -98,6 +99,38 @@ it("shows each identity field as a labelled input that is always there, with a h
 
   fireEvent.change(title, { target: { value: "Renamed" } });
   expect(form().getValues("site.title")).toBe("Renamed");
+});
+
+it("edits the tagline beside the other introductory text, after the description and before the search preview", () => {
+  const form = renderSite({ tagline: "Notes and things" });
+  const tagline = screen.getByLabelText(m.settings_tagline());
+  expect((tagline as HTMLInputElement).value).toBe("Notes and things");
+  expect(tagline.getAttribute("maxlength")).toBe(String(TAGLINE_MAX));
+  expect(
+    document.getElementById(
+      tagline.getAttribute("aria-describedby")!.split(" ")[0],
+    )!.textContent,
+  ).toContain(m.settings_site_tagline_hint());
+
+  const follows = (a: Element, b: Element) =>
+    Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(
+    follows(
+      screen.getByLabelText(m.settings_site_field_description()),
+      tagline,
+    ),
+  ).toBe(true);
+  expect(
+    follows(tagline, screen.getByText(m.settings_site_search_preview())),
+  ).toBe(true);
+
+  fireEvent.change(tagline, { target: { value: "" } });
+  expect(form().getValues("site.tagline")).toBe("");
+  act(() => {
+    form().setError("site.tagline", { message: "Too long" });
+  });
+  expect(tagline.getAttribute("aria-invalid")).toBe("true");
+  expect(screen.getByText("Too long")).toBeTruthy();
 });
 
 it("counts the description against its limit", () => {
@@ -189,7 +222,6 @@ it("has no in-place editing and no presentation controls, which are on the perso
     m.settings_theme(),
     m.settings_hue(),
     m.settings_brand_mark(),
-    m.settings_tagline(),
     m.settings_banner_focus(),
   ]) {
     expect(screen.queryByText(label)).toBeNull();
@@ -212,6 +244,8 @@ it("points to the personalize page with a quiet hint after the form", () => {
   expect(link.getAttribute("href")).toBe("/admin/personalize");
   const hint = link.closest("p")!;
   expect(hint.textContent).toContain(m.settings_site_moved_to_personalize());
+  // The tagline is edited on this page, so the hint no longer lists it.
+  expect(hint.textContent).not.toContain(m.settings_tagline());
   // At the foot of the page, not above the fields.
   const title = screen.getByLabelText(m.settings_site_field_title());
   expect(
