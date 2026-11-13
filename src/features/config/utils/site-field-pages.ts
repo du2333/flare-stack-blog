@@ -13,6 +13,8 @@ export const PERSONALIZE_SITE_FIELDS: ReadonlyArray<string> = [
   "avatar",
   "primaryHue",
   "brandMark",
+  // The site icon is uploaded beside the brand mark.
+  "icons",
   "tagline",
   "theme",
 ];
