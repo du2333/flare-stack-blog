@@ -66,7 +66,7 @@ it.each([false, true])(
       }),
     );
     const onSuccess = vi.fn(() => {
-      expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeUndefined();
+      expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeNull();
       expect(toast.success).toHaveBeenCalledOnce();
     });
     const { result } = renderHook(
@@ -75,7 +75,7 @@ it.each([false, true])(
     );
 
     const pending = result.current.logout();
-    expect(signOut).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(signOut).toHaveBeenCalledOnce());
     expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeDefined();
     expect(toast.success).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ it.each([false, true])(
       await pending;
     });
 
-    expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeUndefined();
+    expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeNull();
     for (const key of authBoundKeys) {
       expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
     }

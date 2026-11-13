@@ -76,7 +76,7 @@ vi.mock("@/lib/orpc", async () => {
     orpc: createTanstackQueryUtils(boundary.client),
   };
 });
-vi.mock("@/lib/auth/auth-client", async () => {
+vi.mock("@/features/auth/hooks/use-session", async () => {
   const { useSyncExternalStore } = await import("react");
   return {
     useSession: () => ({
