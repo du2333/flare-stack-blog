@@ -14,6 +14,8 @@ import {
 import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
+  isUploadedIcon,
+  resolveFaviconSvg,
   SITE_ICON_MIN_SIZE,
   SITE_ICON_SIZES,
   SITE_ICON_SVG_PATH,
@@ -23,21 +25,23 @@ import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
 /**
- * The icons the public pages show for the form as it stands: the uploaded
- * ones, else the defaults. The default SVG gives way to an uploaded raster
- * icon, as `resolveSiteConfig` has it.
+ * The icons the public pages show for the form as it stands, resolved as
+ * `resolveSiteConfig` does, and whether each is an upload.
  */
 export function useSiteIconPreview() {
   const { control } = useFormContext<SystemConfig>();
-  const raster = previewSrc(
-    useWatch({ control, name: "site.icons.favicon96" }),
-  );
-  const svg = previewSrc(useWatch({ control, name: "site.icons.faviconSvg" }));
+  const icons = {
+    favicon96: useWatch({ control, name: "site.icons.favicon96" }),
+    faviconSvg: useWatch({ control, name: "site.icons.faviconSvg" }),
+  };
+  const uploadedRaster = isUploadedIcon("favicon96", icons.favicon96);
   return {
-    raster: raster ?? blogConfig.icons.favicon96,
-    svg: svg ?? (raster ? null : blogConfig.icons.faviconSvg),
-    uploadedRaster: raster,
-    uploadedSvg: svg,
+    raster:
+      (uploadedRaster ? previewSrc(icons.favicon96) : null) ??
+      blogConfig.icons.favicon96,
+    svg: previewSrc(resolveFaviconSvg(icons)),
+    uploadedRaster,
+    uploadedSvg: isUploadedIcon("faviconSvg", icons.faviconSvg),
   };
 }
 

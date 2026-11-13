@@ -1,5 +1,10 @@
 import { expect, it } from "vitest";
-import { planSiteIcon, SITE_ICON_MIN_SIZE } from "./site-icon";
+import {
+  isUploadedIcon,
+  planSiteIcon,
+  resolveFaviconSvg,
+  SITE_ICON_MIN_SIZE,
+} from "./site-icon";
 
 it("makes the four raster sizes, each at its fixed path, from a large enough square", () => {
   for (const width of [SITE_ICON_MIN_SIZE, 1024]) {
@@ -59,4 +64,34 @@ it("refuses anything but a PNG or a JPEG by its bytes", () => {
     expect(
       planSiteIcon({ format, width: 1024, height: 1024 }).error?.reason,
     ).toBe("SITE_ICON_UNSUPPORTED_TYPE");
+});
+
+it("declares the default SVG only while the raster icon is the default too", () => {
+  const svg = "/images/asset/favicon/favicon.svg?original=true&v=1";
+  const raster = "/images/asset/favicon/favicon-96x96.png?original=true&v=1";
+  // Nothing uploaded, whether the config is empty or carries the default paths.
+  expect(resolveFaviconSvg(undefined)).toBe("/favicon.svg");
+  expect(
+    resolveFaviconSvg({
+      faviconSvg: "/favicon.svg",
+      favicon96: "/favicon-96x96.png",
+    }),
+  ).toBe("/favicon.svg");
+  // An uploaded raster icon, with the default SVG saved or none.
+  expect(
+    resolveFaviconSvg({ faviconSvg: "/favicon.svg", favicon96: raster }),
+  ).toBe("");
+  expect(resolveFaviconSvg({ faviconSvg: "", favicon96: raster })).toBe("");
+  // An uploaded SVG always.
+  expect(resolveFaviconSvg({ faviconSvg: svg, favicon96: raster })).toBe(svg);
+  expect(resolveFaviconSvg({ faviconSvg: svg })).toBe(svg);
+});
+
+it("counts a default path as nothing uploaded", () => {
+  expect(isUploadedIcon("favicon96", "/favicon-96x96.png")).toBe(false);
+  expect(isUploadedIcon("favicon96", " ")).toBe(false);
+  expect(isUploadedIcon("favicon96", undefined)).toBe(false);
+  expect(
+    isUploadedIcon("favicon96", "/images/asset/favicon/favicon-96x96.png?v=1"),
+  ).toBe(true);
 });

@@ -1,4 +1,5 @@
 import { err, ok, type Result } from "@/lib/errors/error";
+import { blogConfig } from "@/blog.config";
 
 /** The square raster icon is at least this wide; the largest size made from it is 512. */
 export const SITE_ICON_MIN_SIZE = 512;
@@ -73,4 +74,32 @@ export function planSiteIcon(
     });
   }
   return ok(SITE_ICON_SIZES);
+}
+
+type SavedIcons = { faviconSvg?: string; favicon96?: string } | undefined;
+
+/**
+ * Whether a saved icon address is an upload: the config often carries the
+ * default files' paths, which count as nothing uploaded.
+ */
+export function isUploadedIcon(
+  field: "faviconSvg" | "favicon96",
+  value: string | undefined,
+): value is string {
+  const trimmed = value?.trim();
+  return Boolean(trimmed) && trimmed !== blogConfig.icons[field];
+}
+
+/**
+ * The vector tab icon the pages declare: the uploaded SVG, else the default
+ * one only while the raster icon is the default too, else none. Browsers
+ * prefer an SVG icon, so a default SVG beside an uploaded raster icon would
+ * hide the upload.
+ */
+export function resolveFaviconSvg(icons: SavedIcons): string {
+  const svg = icons?.faviconSvg;
+  if (isUploadedIcon("faviconSvg", svg)) return svg;
+  return isUploadedIcon("favicon96", icons?.favicon96)
+    ? ""
+    : blogConfig.icons.faviconSvg;
 }

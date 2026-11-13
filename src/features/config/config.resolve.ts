@@ -15,6 +15,7 @@ import {
   ThemeOptionValueSchema,
 } from "@/features/config/site-config.schema";
 import { normalizeNavLinks } from "@/features/config/utils/nav-links";
+import { resolveFaviconSvg } from "@/features/config/utils/site-icon";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
 
@@ -126,16 +127,6 @@ function resolveSharedFields(site: SystemConfig["site"]) {
     ),
     tagline: firstValid(TaglineSchema, [site?.tagline], blogConfig.tagline),
   };
-}
-
-/**
- * The vector tab icon: the uploaded SVG, else the default one only while the
- * raster icon is the default too. Browsers prefer an SVG icon, so a default
- * SVG beside an uploaded raster icon would hide the upload.
- */
-function resolveFaviconSvg(icons: NonNullable<SystemConfig["site"]>["icons"]) {
-  if (icons?.faviconSvg) return icons.faviconSvg;
-  return icons?.favicon96 ? "" : blogConfig.icons.faviconSvg;
 }
 
 export function resolveSiteConfig(
