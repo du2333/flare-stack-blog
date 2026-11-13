@@ -117,6 +117,40 @@
   outline: 2px solid color-mix(in srgb, var(--fuwari-primary) 45%, transparent);
   outline-offset: 3px;
 }
+/* A group says it does not navigate where an address would be. */
+.site-nav-group-note {
+  min-width: 0;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+/*
+ * Under a link: the add action, in line with the name field (the handle's
+ * column and the gap). With child links it becomes their list, hung from a
+ * hairline under the parent's handle; the children sort inside it only.
+ */
+.site-nav-children {
+  display: grid;
+  gap: 10px;
+  margin-left: 32px;
+}
+.site-nav-children[data-group="true"] {
+  margin-top: 8px;
+  margin-left: 12px;
+  padding-left: 20px;
+  border-left: 1px solid var(--admin-line);
+}
+.site-nav-add-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.site-nav-limit {
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
 /* The social links, as rows of platform, address and remove. */
 .site-social-rows {
   display: grid;

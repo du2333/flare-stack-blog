@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useRef } from "react";
 import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
@@ -14,6 +15,7 @@ import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
   isExternalNavHref,
+  NAV_LINK_CHILDREN_MAX,
   NAV_LINKS_MAX,
 } from "@/features/config/utils/nav-links";
 import {
@@ -190,14 +192,72 @@ function SearchPreview() {
   );
 }
 
+type NavSorting = ReturnType<typeof useNavSort>;
+type NavHrefName =
+  | `site.navLinks.${number}.href`
+  | `site.navLinks.${number}.children.${number}.href`;
+
+/** What a row of a sortable list hands its element: its ref, its drag state. */
+function sortableRow(sorting: NavSorting, id: string) {
+  return {
+    ref: (node: HTMLDivElement | null) => {
+      if (node) sorting.rows.current.set(id, node);
+      else sorting.rows.current.delete(id);
+    },
+    "data-dragging": sorting.drag?.id === id,
+    "data-drop-target": sorting.drag?.target === id && sorting.drag?.id !== id,
+    style:
+      sorting.drag?.id === id
+        ? { transform: `translateY(${sorting.drag.offset}px)` }
+        : undefined,
+  };
+}
+
+/** The address of a link or of a child link; it completes a bare host. */
+function NavHrefInput({
+  name,
+  label,
+  invalid,
+}: {
+  name: NavHrefName;
+  label: string;
+  invalid: boolean;
+}) {
+  const { register, setValue, watch } = useFormContext<SystemConfig>();
+  const canonicalHref = canonicalizeNavHref(watch(name) ?? "");
+  const external = isExternalNavHref(canonicalHref);
+  return (
+    <div className="relative min-w-0 flex-1">
+      <Input
+        {...register(name, {
+          onBlur: (event) => {
+            const next = canonicalizeNavHref(event.target.value);
+            if (next !== event.target.value) {
+              setValue(name, next, { shouldDirty: true, shouldValidate: true });
+            }
+          },
+        })}
+        aria-label={label}
+        aria-invalid={invalid || undefined}
+        placeholder={m.settings_site_nav_href_ph()}
+        className={cn(external && "pr-10")}
+      />
+      {external ? (
+        <ExternalLink
+          size={14}
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fuwari-text-30"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function NavLinksEditor() {
-  const { control, register, setValue, watch, formState } =
-    useFormContext<SystemConfig>();
+  const { control } = useFormContext<SystemConfig>();
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: "site.navLinks",
   });
-  const linkErrors = formState.errors.site?.navLinks;
   const sorting = useNavSort(
     fields.map((field) => field.id),
     move,
@@ -214,87 +274,16 @@ function NavLinksEditor() {
       }
     >
       <div className="site-nav-fields">
-        {fields.map((field, index) => {
-          const href = watch(`site.navLinks.${index}.href`) ?? "";
-          const canonicalHref = canonicalizeNavHref(href);
-          const labelError = linkErrors?.[index]?.label?.message;
-          const hrefError = linkErrors?.[index]?.href?.message;
-          return (
-            <div
-              key={field.id}
-              ref={(node) => {
-                if (node) sorting.rows.current.set(field.id, node);
-                else sorting.rows.current.delete(field.id);
-              }}
-              className="site-nav-item space-y-1"
-              data-dragging={sorting.drag?.id === field.id}
-              data-drop-target={
-                sorting.drag?.target === field.id &&
-                sorting.drag?.id !== field.id
-              }
-              style={
-                sorting.drag?.id === field.id
-                  ? { transform: `translateY(${sorting.drag.offset}px)` }
-                  : undefined
-              }
-            >
-              <div className="site-nav-row">
-                <DragHandle
-                  {...sorting.handleProps(field.id)}
-                  label={m.settings_nav_drag_label({
-                    name:
-                      watch(`site.navLinks.${index}.label`) ||
-                      String(index + 1),
-                  })}
-                  title={m.settings_nav_drag_hint()}
-                  disabled={fields.length < 2}
-                />
-                <Input
-                  {...register(`site.navLinks.${index}.label`)}
-                  placeholder={m.settings_site_nav_label_ph()}
-                  aria-label={m.settings_site_nav_name()}
-                />
-                <div className="relative min-w-0 flex-1">
-                  <Input
-                    {...register(`site.navLinks.${index}.href`, {
-                      onBlur: (event) => {
-                        const next = canonicalizeNavHref(event.target.value);
-                        if (next !== event.target.value) {
-                          setValue(`site.navLinks.${index}.href`, next, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }
-                      },
-                    })}
-                    aria-label={m.settings_site_nav_url()}
-                    placeholder={m.settings_site_nav_href_ph()}
-                    className={cn(isExternalNavHref(canonicalHref) && "pr-10")}
-                  />
-                  {isExternalNavHref(canonicalHref) ? (
-                    <ExternalLink
-                      size={14}
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fuwari-text-30"
-                    />
-                  ) : null}
-                </div>
-                <IconButton
-                  size="md"
-                  tone="danger"
-                  onClick={() => remove(index)}
-                  label={m.settings_site_nav_remove()}
-                >
-                  <Trash2 size={16} />
-                </IconButton>
-              </div>
-              {labelError || hrefError ? (
-                <p className="fuwari-form-field-error">
-                  {hrefError || labelError}
-                </p>
-              ) : null}
-            </div>
-          );
-        })}
+        {fields.map((field, index) => (
+          <NavLinkRow
+            key={field.id}
+            id={field.id}
+            index={index}
+            sortable={fields.length > 1}
+            sorting={sorting}
+            onRemove={() => remove(index)}
+          />
+        ))}
       </div>
 
       {fields.length < NAV_LINKS_MAX ? (
@@ -309,6 +298,195 @@ function NavLinksEditor() {
         </Button>
       ) : null}
     </AdminFormRow>
+  );
+}
+
+/**
+ * One custom link. With child links it is a group: its address gives way to a
+ * note, and its children are listed under it, sorted among themselves only.
+ */
+function NavLinkRow({
+  id,
+  index,
+  sortable,
+  sorting,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  sortable: boolean;
+  sorting: NavSorting;
+  onRemove: () => void;
+}) {
+  const { control, register, setValue, watch, clearErrors, formState } =
+    useFormContext<SystemConfig>();
+  const children = useFieldArray({
+    control,
+    name: `site.navLinks.${index}.children`,
+  });
+  const childSorting = useNavSort(
+    children.fields.map((field) => field.id),
+    children.move,
+  );
+  const addChild = useRef<HTMLButtonElement>(null);
+  const errors = formState.errors.site?.navLinks?.[index];
+  const label = watch(`site.navLinks.${index}.label`) ?? "";
+  const isGroup = children.fields.length > 0;
+  const full = children.fields.length >= NAV_LINK_CHILDREN_MAX;
+  const error = errors?.href?.message || errors?.label?.message;
+
+  return (
+    <div {...sortableRow(sorting, id)} className="site-nav-item space-y-1">
+      <div className="site-nav-row">
+        <DragHandle
+          {...sorting.handleProps(id)}
+          label={m.settings_nav_drag_label({
+            name: label || String(index + 1),
+          })}
+          title={m.settings_nav_drag_hint()}
+          disabled={!sortable}
+        />
+        <Input
+          {...register(`site.navLinks.${index}.label`)}
+          placeholder={m.settings_site_nav_label_ph()}
+          aria-label={m.settings_site_nav_name()}
+          aria-invalid={errors?.label ? true : undefined}
+        />
+        {isGroup ? (
+          <p className="site-nav-group-note">
+            {m.settings_site_nav_group_note()}
+          </p>
+        ) : (
+          <NavHrefInput
+            name={`site.navLinks.${index}.href`}
+            label={m.settings_site_nav_url()}
+            invalid={Boolean(errors?.href)}
+          />
+        )}
+        <IconButton
+          size="md"
+          tone="danger"
+          onClick={onRemove}
+          label={m.settings_site_nav_remove()}
+        >
+          <Trash2 size={16} />
+        </IconButton>
+      </div>
+      {error ? <p className="fuwari-form-field-error">{error}</p> : null}
+      <div
+        className="site-nav-children"
+        data-group={isGroup}
+        role={isGroup ? "group" : undefined}
+        aria-label={
+          isGroup
+            ? m.settings_site_nav_children_label({
+                name: label || String(index + 1),
+              })
+            : undefined
+        }
+      >
+        {children.fields.map((child, childIndex) => (
+          <NavChildRow
+            key={child.id}
+            id={child.id}
+            index={index}
+            childIndex={childIndex}
+            sortable={children.fields.length > 1}
+            sorting={childSorting}
+            onRemove={() => {
+              children.remove(childIndex);
+              // The row under the pointer is gone; the add action stays.
+              requestAnimationFrame(() => addChild.current?.focus());
+            }}
+          />
+        ))}
+        <div className="site-nav-add-child">
+          <Button
+            ref={addChild}
+            variant="quiet"
+            size="xs"
+            disabled={full}
+            aria-describedby={full ? `${id}-child-limit` : undefined}
+            icon={<Plus size={14} />}
+            onClick={() => {
+              if (!isGroup) {
+                // A group leads nowhere: its address goes when it becomes one.
+                setValue(`site.navLinks.${index}.href`, "", {
+                  shouldDirty: true,
+                });
+                clearErrors(`site.navLinks.${index}.href`);
+              }
+              children.append({ label: "", href: "" });
+            }}
+          >
+            {m.settings_site_nav_child_add()}
+          </Button>
+          {full ? (
+            <span id={`${id}-child-limit`} className="site-nav-limit">
+              {m.settings_site_nav_child_limit({ max: NAV_LINK_CHILDREN_MAX })}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** One child link of a group: a handle, the name, the address and remove. */
+function NavChildRow({
+  id,
+  index,
+  childIndex,
+  sortable,
+  sorting,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  childIndex: number;
+  sortable: boolean;
+  sorting: NavSorting;
+  onRemove: () => void;
+}) {
+  const { register, watch, formState } = useFormContext<SystemConfig>();
+  const errors =
+    formState.errors.site?.navLinks?.[index]?.children?.[childIndex];
+  const label =
+    watch(`site.navLinks.${index}.children.${childIndex}.label`) ?? "";
+  const error = errors?.href?.message || errors?.label?.message;
+  return (
+    <div {...sortableRow(sorting, id)} className="site-nav-item space-y-1">
+      <div className="site-nav-row">
+        <DragHandle
+          {...sorting.handleProps(id)}
+          label={m.settings_nav_drag_label({
+            name: label || String(childIndex + 1),
+          })}
+          title={m.settings_nav_drag_hint()}
+          disabled={!sortable}
+        />
+        <Input
+          {...register(`site.navLinks.${index}.children.${childIndex}.label`)}
+          placeholder={m.settings_site_nav_label_ph()}
+          aria-label={m.settings_site_nav_child_name()}
+          aria-invalid={errors?.label ? true : undefined}
+        />
+        <NavHrefInput
+          name={`site.navLinks.${index}.children.${childIndex}.href`}
+          label={m.settings_site_nav_child_url()}
+          invalid={Boolean(errors?.href)}
+        />
+        <IconButton
+          size="md"
+          tone="danger"
+          onClick={onRemove}
+          label={m.settings_site_nav_child_remove()}
+        >
+          <Trash2 size={16} />
+        </IconButton>
+      </div>
+      {error ? <p className="fuwari-form-field-error">{error}</p> : null}
+    </div>
   );
 }
 
