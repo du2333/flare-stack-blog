@@ -27,7 +27,7 @@
 .key-grid,
 .admin-list-row.key-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px 148px 148px 36px;
+  grid-template-columns: minmax(0, 1fr) 96px 148px 148px 140px;
   align-items: center;
   gap: 16px;
 }
@@ -78,6 +78,18 @@
 .key-actions {
   display: flex;
   justify-content: flex-end;
+}
+/* A paired agent's row links to where it is revoked, in place of the menu. */
+.key-manage {
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.key-manage:hover {
+  color: var(--fuwari-fg);
 }
 .key-count {
   padding: 12px var(--admin-row-x) 4px;

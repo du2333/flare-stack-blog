@@ -159,3 +159,29 @@ it("points to the Agent Skill tab instead of carrying the install hint", async (
   expect(link.textContent).toBe("Agent Skill");
   expect(document.body.textContent).not.toContain("npx skills add");
 });
+
+it("gives a paired row a link to Agent Skill in place of the delete action, and leaves hand-made rows alone", async () => {
+  mountPage();
+  const rows = await screen.findAllByRole("row");
+  const rowOf = (name: string) =>
+    rows.find((row) => within(row).queryByText(name))!;
+  const paired = rowOf("Claude Code · 2026-10-30");
+  const link = within(paired).getByRole("link", {
+    name: m.settings_api_keys_manage_paired(),
+  });
+  expect(link.getAttribute("href")).toBe("/admin/access/agent-skill");
+  expect(within(paired).queryByRole("button")).toBeNull();
+  for (const name of ["CI script", "Other metadata"]) {
+    const row = rowOf(name);
+    expect(
+      within(row).getByRole("button", {
+        name: m.settings_api_keys_row_actions({ name }),
+      }),
+    ).toBeTruthy();
+    expect(
+      within(row).queryByRole("link", {
+        name: m.settings_api_keys_manage_paired(),
+      }),
+    ).toBeNull();
+  }
+});

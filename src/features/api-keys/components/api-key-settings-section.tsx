@@ -147,6 +147,8 @@ export function ApiKeySettingsSection() {
             </div>
             {keys.map((key) => {
               const name = key.name || m.settings_api_keys_unnamed();
+              // A paired agent is revoked under 「已接入的 agent」, not here.
+              const paired = isPairedApiKey(key.metadata);
               const created = formatDate(key.createdAt, { includeTime: true });
               const lastUsed = key.lastRequest
                 ? formatDate(key.lastRequest, { includeTime: true })
@@ -160,7 +162,7 @@ export function ApiKeySettingsSection() {
                   <div role="cell" className="key-name">
                     <span className="key-name-line">
                       <strong title={name}>{name}</strong>
-                      {isPairedApiKey(key.metadata) && (
+                      {paired && (
                         <Badge tone="primary" size="sm">
                           {m.settings_api_keys_paired_badge()}
                         </Badge>
@@ -183,20 +185,29 @@ export function ApiKeySettingsSection() {
                     <ClientOnly fallback="—">{lastUsed}</ClientOnly>
                   </div>
                   <div role="cell" className="key-actions">
-                    <ActionMenu
-                      label={m.settings_api_keys_row_actions({ name })}
-                      placement="bottom-end"
-                      disabled={isDeleting}
-                      items={[
-                        {
-                          label: m.settings_api_keys_delete(),
-                          icon: Trash2,
-                          danger: true,
-                          onSelect: () =>
-                            setPendingDelete({ id: key.id, name }),
-                        },
-                      ]}
-                    />
+                    {paired ? (
+                      <Link
+                        to="/admin/access/agent-skill"
+                        className="key-manage"
+                      >
+                        {m.settings_api_keys_manage_paired()}
+                      </Link>
+                    ) : (
+                      <ActionMenu
+                        label={m.settings_api_keys_row_actions({ name })}
+                        placement="bottom-end"
+                        disabled={isDeleting}
+                        items={[
+                          {
+                            label: m.settings_api_keys_delete(),
+                            icon: Trash2,
+                            danger: true,
+                            onSelect: () =>
+                              setPendingDelete({ id: key.id, name }),
+                          },
+                        ]}
+                      />
+                    )}
                   </div>
                 </div>
               );
