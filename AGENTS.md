@@ -16,6 +16,10 @@ This repo uses the default five-state triage vocabulary as GitHub labels. See `d
 
 This repo uses a single-context domain doc layout. See `docs/agents/domain.md`.
 
+### Skills
+
+Skills live in `.agents/skills/<name>`. `flare-stack-blog` is the one published to users; the others are this repository's own and each has a link at `.claude/skills/<name>` (`ln -s ../../.agents/skills/<name>`), which a test holds.
+
 ## Review
 
 A diff is reviewed against `CODING_STANDARDS.md`; `bun run check` is what CI runs short of the build and the tests.

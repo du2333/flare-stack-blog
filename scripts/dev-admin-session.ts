@@ -7,8 +7,9 @@
  *   bun scripts/dev-admin-session.ts cleanup --yes --keep 12,13  # spares Posts 12 and 13
  *
  * Sign-up needs a Turnstile token, so `seed` writes the user and session rows
- * straight into the local D1 file and signs the cookie with BETTER_AUTH_SECRET
- * from `.dev.vars`, the way better-auth does. The local database is often a
+ * straight into the local D1 file the dev server uses (the one named after the
+ * configured D1 id; `seed` prints which on stderr) and signs the cookie with
+ * BETTER_AUTH_SECRET from `.dev.vars`, the way better-auth does. The local database is often a
  * copy of production data, and nothing records who created a Post: cleanup
  * can only offer the Posts created since `seed`, which may include someone
  * else's. It lists them first and deletes only with `--yes`, together with
@@ -24,6 +25,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import { chooseDatabase, configuredD1Id } from "./local-d1-file";
 
 const D1_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
 const STATE_FILE = ".wrangler/dev-admin-session.json";
@@ -51,28 +53,37 @@ function lastWrite(file: string) {
   );
 }
 
-function findDatabase() {
-  const candidates = readdirSync(D1_DIR)
-    .filter((name) => name.endsWith(".sqlite") && name !== "metadata.sqlite")
-    .map((name) => path.join(D1_DIR, name))
-    .filter((file) => {
-      const db = new Database(file, { readonly: true });
-      try {
-        return (
-          db.query("select 1 from sqlite_master where name = 'posts'").get() !==
-          null
-        );
-      } finally {
-        db.close();
-      }
-    })
-    .sort((a, b) => lastWrite(b) - lastWrite(a));
-  if (!candidates[0]) {
-    throw new Error(
-      `No local D1 database with a posts table in ${D1_DIR}; run the dev server once first.`,
+function hasPostsTable(file: string) {
+  const db = new Database(file, { readonly: true });
+  try {
+    return (
+      db.query("select 1 from sqlite_master where name = 'posts'").get() !==
+      null
     );
+  } finally {
+    db.close();
   }
-  return candidates[0];
+}
+
+/**
+ * The database file of the dev server (see `chooseDatabase`). The rule that
+ * chose goes to stderr; stdout stays the cookie.
+ */
+function findDatabase() {
+  const files = readdirSync(D1_DIR)
+    .filter((name) => name.endsWith(".sqlite") && name !== "metadata.sqlite")
+    .map((name) => {
+      const file = path.join(D1_DIR, name);
+      return {
+        name,
+        hasPosts: hasPostsTable(file),
+        lastWrite: lastWrite(file),
+      };
+    });
+  const chosen = chooseDatabase(files, configuredD1Id(process.env));
+  const file = path.join(D1_DIR, chosen.name);
+  console.error(`database: ${file} (${chosen.why})`);
+  return file;
 }
 
 function authSecret() {

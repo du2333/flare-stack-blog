@@ -2,9 +2,10 @@
  * Screenshots the blog, compares two sets of screenshots and tiles a set into
  * sheets. Run from the repo root:
  *
- *   bun .claude/skills/run-blog/shots/shots.ts shoot   --base <url> --out <dir> [...]
- *   bun .claude/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
- *   bun .claude/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
+ *   bun .agents/skills/run-blog/shots/shots.ts shoot   --base <url> --out <dir> [...]
+ *   bun .agents/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
+ *   bun .agents/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
+ *   bun .agents/skills/run-blog/shots/shots.ts flows   --base <url> [--session <token>] [--only a,b] [--compare <url>]
  *
  * or `bun run shots ...`. The tool's own dependencies install themselves on the
  * first run.
@@ -24,6 +25,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import type { Browser, Page } from "playwright-core";
+import { FLOWS_USAGE, flows } from "./flows/run.ts";
 
 /** Installs the tool's own dependencies once, through the machine lock when the repo has it. */
 function ensureDependencies() {
@@ -54,7 +56,8 @@ const USAGE = `usage:
                  [--timeout 45] [--scroller <css>]
                  [--click <css>]... [--press <key>]... [--hover <css>] [--name <suffix>]
   shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
-  shots.ts sheet <dir> --out <file.png> [--match <substring>] [--columns 2] [--cell-width 960] [--per-sheet 6]`;
+  shots.ts sheet <dir> --out <file.png> [--match <substring>] [--columns 2] [--cell-width 960] [--per-sheet 6]
+${FLOWS_USAGE}`;
 
 function fail(message: string): never {
   console.error(message);
@@ -90,7 +93,7 @@ function findChrome() {
     : undefined;
   if (!newest) {
     fail(
-      "Chromium headless shell not found: run `cd .claude/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
+      "Chromium headless shell not found: run `cd .agents/skills/run-blog/shots && bunx playwright-core install chromium-headless-shell`.",
     );
   }
   return newest;
@@ -1100,4 +1103,6 @@ const [command, ...rest] = process.argv.slice(2);
 if (command === "shoot") process.exit(await shoot(rest));
 else if (command === "compare") process.exit(compare(rest));
 else if (command === "sheet") process.exit(await sheet(rest));
-else fail(USAGE);
+else if (command === "flows") {
+  process.exit(await flows(rest, { launch, requireAnswer, fail, csv }));
+} else fail(USAGE);
