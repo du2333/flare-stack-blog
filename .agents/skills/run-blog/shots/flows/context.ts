@@ -23,7 +23,9 @@ export type Need =
   /** The `--session` cookie itself: an API key cannot sign in or out. */
   | "cookie"
   /** A local dev server and its database file, which the flow writes to. */
-  | "local-db";
+  | "local-db"
+  /** A form a deployed site guards with a human check. */
+  | "local-site";
 
 export interface Flow {
   /** What `--only` takes: lowercase words joined by hyphens. */
@@ -103,7 +105,7 @@ export interface Noise {
 /**
  * What a flow's pages may log without failing it, each with its reason:
  *  - a resource that fails to load from another origin (an external image
- *    that does not resolve, the analytics send): the browser logs it as a
+ *    that does not resolve): the browser logs it as a
  *    console error, and the site cannot do anything about it;
  *  - a third-party iframe's permissions-policy message (an embedded video
  *    asking for a feature the page did not grant).

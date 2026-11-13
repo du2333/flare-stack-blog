@@ -100,6 +100,9 @@ function skipReason(
   if (needs.includes("cookie") && !site.session) {
     return "needs --session (an API key cannot sign in or out)";
   }
+  if (needs.includes("local-site") && !db) {
+    return "submits a form a deployed site guards with a human check: needs a local dev server";
+  }
   if (needs.includes("local-db") && !db) {
     return "writes to the local database: needs a local dev server and its throwaway Admin";
   }
@@ -226,6 +229,13 @@ async function runFlow(
             }),
         );
       }
+      // The analytics send is answered here: a run records no page views on
+      // the site, and the analytics service behind it cannot fail a flow.
+      // Registered last, so it wins over the route above.
+      await context.route(
+        (url) => url.origin === origin && url.pathname === "/api/send",
+        (route) => route.fulfill({ status: 200, json: {} }),
+      );
       return attach(context, await context.newPage());
     },
   };

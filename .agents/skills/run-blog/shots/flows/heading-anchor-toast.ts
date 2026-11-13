@@ -9,10 +9,12 @@ export const headingAnchorToast: Flow = {
     const tab = await ctx.open();
     const { page } = tab;
     let found = "";
+    // The site's own Posts first; the sample data's long read only as a last
+    // resort, since another site answers 404 for it.
     for (const path of [
+      ...(await postPaths(ctx)).slice(0, 8),
       "/post/sample-long-read",
-      ...(await postPaths(ctx)),
-    ].slice(0, 8)) {
+    ]) {
       await page.goto(ctx.url(path), { waitUntil: "load" });
       await settle(page, 1500);
       if (await page.locator("a.anchor").count()) {

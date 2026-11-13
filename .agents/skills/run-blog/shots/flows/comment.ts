@@ -5,7 +5,7 @@ export const comment: Flow = {
   name: "comment",
   summary:
     "signed in, a comment can be posted on a Post and appears (the flow deletes it again)",
-  needs: ["session"],
+  needs: ["session", "local-site"],
   async run(ctx) {
     const tab = await ctx.open({ signedIn: true });
     const { page } = tab;
