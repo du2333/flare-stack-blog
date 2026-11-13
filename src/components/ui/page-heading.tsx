@@ -4,29 +4,6 @@ import type { HTMLAttributes, ReactNode, Ref } from "react";
 import { cn } from "@/lib/utils";
 import "./page-heading.css";
 
-/** An Admin page's title, what the page is for, and its actions. */
-export function PageHeader({
-  title,
-  description,
-  actions,
-  className,
-}: {
-  title: ReactNode;
-  description?: ReactNode;
-  actions?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <header className={cn("fuwari-page-header", className)}>
-      <div className="fuwari-heading-text">
-        <h1>{title}</h1>
-        {description === undefined ? null : <p>{description}</p>}
-      </div>
-      {actions ? <div className="fuwari-heading-actions">{actions}</div> : null}
-    </header>
-  );
-}
-
 /** A section's title inside an Admin page, with an optional line and actions. */
 export function SectionHeading({
   title,
@@ -34,6 +11,7 @@ export function SectionHeading({
   actions,
   level = 2,
   size = "lg",
+  align = "center",
   titleProps,
   className,
 }: {
@@ -42,6 +20,8 @@ export function SectionHeading({
   actions?: ReactNode;
   level?: 2 | 3;
   size?: "lg" | "md" | "sm";
+  /** "baseline" sets the actions on the title's first line, for a badge beside a heading that has a description. */
+  align?: "center" | "baseline";
   titleProps?: HTMLAttributes<HTMLHeadingElement> & {
     ref?: Ref<HTMLHeadingElement>;
   };
@@ -52,6 +32,7 @@ export function SectionHeading({
     <header
       className={cn("fuwari-section-heading", className)}
       data-size={size}
+      data-align={align}
     >
       <div className="fuwari-heading-text">
         <Title {...titleProps}>{title}</Title>
@@ -62,20 +43,26 @@ export function SectionHeading({
   );
 }
 
-/** A public page's title with the accent bar, a way back, and an intro. */
+/** A public page's title, a way back, and an intro. */
 export function PublicPageHeading({
   title,
   back,
   description,
+  accent = true,
   className,
 }: {
   title: ReactNode;
   back: { to: LinkProps["to"]; label: ReactNode };
   description?: ReactNode;
+  /** The short bar before the title. */
+  accent?: boolean;
   className?: string;
 }) {
   return (
-    <header className={cn("fuwari-public-heading", className)}>
+    <header
+      className={cn("fuwari-public-heading", className)}
+      data-accent={accent ? undefined : "off"}
+    >
       <h1>{title}</h1>
       <Link to={back.to}>
         <ArrowLeft size={16} />

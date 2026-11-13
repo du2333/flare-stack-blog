@@ -13,7 +13,7 @@ import { Button, buttonClass } from "@/components/ui/button";
 import DropdownMenu from "@/components/ui/dropdown-menu";
 import { FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
-import { PublicPageHeading } from "@/components/ui/page-heading";
+import { ThemedPageHeading } from "@/features/theme/components/themed-page-heading";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusIcon } from "@/components/ui/status-icon";
 import type { FriendLink } from "@/lib/db/schema";
@@ -46,8 +46,8 @@ export function SubmitFriendLinkPage({
     `${isLoading}:${current?.id}:${current?.status}:${editing}`,
   );
   return (
-    <section className="friend-application fuwari-card-base">
-      <PublicPageHeading
+    <section className="friend-application fuwari-card-base fuwari-card-standalone">
+      <ThemedPageHeading
         title={m.friend_link_submit_title()}
         back={{ to: "/friend-links", label: m.friend_link_back_to_list() }}
         description={m.friend_apply_intro()}

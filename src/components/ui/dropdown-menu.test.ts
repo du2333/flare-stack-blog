@@ -89,3 +89,20 @@ it("picks an option and returns focus to the trigger", async () => {
   expect(screen.queryByRole("menu")).toBeNull();
   expect(document.activeElement).toBe(trigger());
 });
+
+it("lifts the width cap when the menu is as wide as its trigger", async () => {
+  render(
+    createElement(DropdownMenu, {
+      value: "oldest",
+      options: OPTIONS,
+      onChange: vi.fn(),
+      ariaLabel: "Sort",
+      matchTriggerWidth: true,
+    }),
+  );
+  fireEvent.click(trigger());
+
+  const menu = await findInPopover("menu");
+
+  expect(menu.classList.contains("max-w-72")).toBe(false);
+});

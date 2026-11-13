@@ -62,6 +62,12 @@ const DashboardTopPostSchema = z.object({
   views: count,
 });
 
+const DashboardDailyViewsSchema = z.object({
+  /** UTC midnight of the day, in milliseconds. */
+  day: count,
+  views: count,
+});
+
 const DashboardPopularitySchema = z.object({
   state: z.enum(["unconfigured", "missing", "expired", "ready"]),
   /** The snapshot's UTC window, in milliseconds. */
@@ -69,6 +75,11 @@ const DashboardPopularitySchema = z.object({
   windowEnd: count.nullable(),
   totalViews: count,
   topPosts: z.array(DashboardTopPostSchema),
+  /**
+   * Site-wide views per UTC day of the snapshot's window, oldest first; empty
+   * when unknown (no snapshot, or Umami gave no daily series).
+   */
+  daily: z.array(DashboardDailyViewsSchema),
 });
 
 const DashboardWritingHourSchema = z.object({
@@ -97,7 +108,7 @@ export const DashboardOverviewSchema = z.object({
    */
   writingActivity: z.array(DashboardWritingHourSchema),
   latestDraft: DashboardRecentPostSchema.nullable(),
-  /** Most recently edited Posts, without `latestDraft`. */
+  /** Most recently edited Posts, drafts included (so `latestDraft` may be one). */
   recentPosts: z.array(DashboardRecentPostSchema),
   pendingFriendLinks: z.object({
     items: z.array(DashboardPendingFriendLinkSchema),

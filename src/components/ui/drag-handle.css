@@ -1,0 +1,24 @@
+/* The grip a row is dragged by (DragHandle). */
+@layer components {
+  .fuwari-drag-handle {
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    color: var(--fuwari-fg-50);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    border-radius: 8px;
+  }
+  .fuwari-drag-handle:hover {
+    background: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-fg);
+  }
+  .fuwari-drag-handle:active {
+    cursor: grabbing;
+  }
+  .fuwari-drag-handle:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}

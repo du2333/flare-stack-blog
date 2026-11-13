@@ -1,324 +1,115 @@
+/*
+ * 「设置」 · 站点: groups of settings (AdminFormSection), one AdminFormRow per
+ * setting; the links, the navigation and the icons stack their parts in the
+ * row's control column, which stops at --admin-form-control-max.
+ */
 .site-studio {
   display: flex;
   flex-direction: column;
+  /* A navigation row's first column (the drag handle) and its column gap:
+     the child rows are indented by the two together, so their handle starts
+     where the parent's name field does. */
+  --site-nav-handle: 24px;
+  --site-nav-gap: 8px;
 }
-.site-banner {
-  position: relative;
-  height: clamp(170px, 21vh, 290px);
-  border-radius: 14px;
-  background: var(--fuwari-btn-regular-bg);
-  overflow: hidden;
-}
-.site-banner-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-.site-title-edit {
-  position: absolute;
-  top: calc(18 * var(--admin-unit));
-  left: calc(22 * var(--admin-unit));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: calc(100% - 190px);
-  color: white;
-  filter: drop-shadow(0 1px 3px rgb(0 0 0/0.45));
-}
-.site-title-edit input {
-  min-width: 0;
-  max-width: 100%;
-  background: transparent;
-  border: 0;
-  padding: 4px 0;
-  color: inherit;
-  font-size: calc(22 * var(--admin-unit));
-  line-height: 1.4;
-  font-weight: 650;
-  outline: none;
-}
-.site-title-edit input::placeholder {
-  color: inherit;
-  opacity: 0.8;
-}
-.site-title-edit svg {
-  flex-shrink: 0;
-}
-.site-banner:has(> img) .site-title-edit:focus-within {
-  background: rgb(0 0 0/0.18);
-  border-radius: 6px;
-}
-.site-banner:not(:has(> img)) .site-title-edit {
-  color: var(--fuwari-primary);
-  filter: none;
-}
-.site-banner-upload {
-  position: absolute;
-  top: calc(16 * var(--admin-unit));
-  right: calc(16 * var(--admin-unit));
-}
-.site-profile {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: calc(30 * var(--admin-unit));
-  padding: 0 calc(20 * var(--admin-unit)) calc(24 * var(--admin-unit));
-}
-.site-avatar-edit {
-  position: relative;
-  flex-shrink: 0;
-  margin-top: calc(-35 * var(--admin-unit));
-  width: calc(120 * var(--admin-unit));
-}
-.site-avatar {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 4px solid var(--fuwari-card-bg);
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
-}
-.site-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.site-avatar-upload {
-  position: absolute;
-  bottom: calc(6 * var(--admin-unit));
-  left: 50%;
-  transform: translateX(-50%);
-}
-.site-profile-copy {
-  flex: 1;
-  min-width: 0;
-  max-width: 800px;
-  padding-top: calc(15 * var(--admin-unit));
-}
-.site-author-edit,
-.site-description-edit {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border-radius: 6px;
-}
-.site-author-edit {
-  max-width: calc(320 * var(--admin-unit));
-}
-.site-author-edit input,
-.site-description-edit textarea {
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: var(--fuwari-fg-90);
-  width: 100%;
-  min-width: 0;
-  padding: 4px 0;
-}
-.site-author-edit input {
-  font-size: calc(21 * var(--admin-unit));
-  font-weight: 650;
-}
-.site-description-edit {
-  margin-top: 5px;
-  max-width: 680px;
-  align-items: flex-start;
-}
-.site-description-edit textarea {
+.site-char-count {
+  margin-top: 6px;
   color: var(--fuwari-fg-50);
-  font-size: calc(14 * var(--admin-unit));
-  line-height: 1.7;
-  min-height: 3.4em;
-  resize: vertical;
-}
-.site-author-edit svg,
-.site-description-edit svg {
-  color: var(--fuwari-fg-50);
-  flex-shrink: 0;
-}
-.site-description-edit svg {
-  margin-top: 9px;
-}
-.site-author-edit:focus-within,
-.site-description-edit:focus-within {
-  background: var(--fuwari-input-bg);
-}
-.site-section-copy h2,
-.site-section-copy > label,
-.site-section-copy > strong {
-  font-size: calc(16 * var(--admin-unit));
-  line-height: 1.5;
-  font-weight: 600;
-  color: var(--fuwari-fg-90);
-}
-.site-section-copy p,
-.site-section-hint {
-  display: block;
-  margin-top: 5px;
-  color: var(--fuwari-fg-50);
-  font-size: calc(13 * var(--admin-unit));
-  font-weight: 400;
-  line-height: 1.6;
-}
-.site-theme-row {
-  display: grid;
-  grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.3fr);
-  gap: 28px;
-  align-items: center;
-  padding: calc(24 * var(--admin-unit)) 0;
-  border-top: 1px solid var(--admin-rule);
-}
-.site-hue-control {
-  display: flex;
-  align-items: center;
-  gap: calc(24 * var(--admin-unit));
-}
-.site-hue-control input {
-  flex: 1;
-  min-width: 0;
-  height: 9px;
-  border-radius: 999px;
-  appearance: none;
-  accent-color: var(--fuwari-primary);
-  cursor: pointer;
-}
-.site-hue-control input::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--fuwari-primary);
-  border: 3px solid var(--fuwari-card-bg);
-  box-shadow: 0 0 0 1px var(--fuwari-input-border);
-}
-.site-hue-control input::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--fuwari-primary);
-  border: 3px solid var(--fuwari-card-bg);
-}
-.site-hue-control output {
-  display: grid;
-  place-items: center;
-  min-width: calc(72 * var(--admin-unit));
-  min-height: 38px;
-  border: 1px solid var(--fuwari-input-border);
-  background: var(--fuwari-input-bg);
-  border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
-.site-nav-section {
-  padding: calc(24 * var(--admin-unit)) 0;
-  border-top: 1px solid var(--admin-rule);
+/* The title and the description as a search engine lists them. */
+.site-search-preview {
+  padding: 14px 16px 16px;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
 }
+.site-search-preview-site {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.site-search-preview-site > span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--admin-surface);
+  box-shadow: 0 0 0 1px var(--admin-line);
+}
+.site-search-preview-site img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.site-search-preview-site > p {
+  display: grid;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+.site-search-preview-site :is(b, i) {
+  overflow: hidden;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-search-preview-site b {
+  font-weight: 500;
+  color: var(--admin-fg);
+}
+.site-search-preview-site i {
+  color: var(--admin-fg-3);
+}
+.site-search-preview-title {
+  margin-top: 8px;
+  overflow: hidden;
+  /* A result's headline, larger than the body; no role has this size. */
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--admin-fg);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-search-preview-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.site-add-link {
+  margin-top: 8px;
+}
+.site-sort-hint {
+  display: block;
+  margin-top: 4px;
+}
+
+/* The navigation: a handle, the name, the address and remove. */
 .site-nav-fields {
   display: grid;
   gap: 10px;
-  max-width: calc(760 * var(--admin-unit));
-  margin-top: 18px;
 }
 .site-nav-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.3fr) 36px;
+  grid-template-columns:
+    var(--site-nav-handle) minmax(0, 0.8fr) minmax(0, 1.2fr)
+    36px;
   align-items: center;
-  gap: 10px;
-}
-.site-nav-section > .site-add-link {
-  margin-top: 10px;
-}
-.site-social {
-  margin-top: 8px;
-}
-.site-social-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-.site-social-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 0 4px;
-  max-width: 700px;
-}
-.site-icons {
-  padding: calc(22 * var(--admin-unit)) 0 6px;
-  border-top: 1px solid var(--admin-rule);
-}
-.site-icon-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 20px;
-}
-@media (max-width: 750px) {
-  .site-banner {
-    height: 180px;
-  }
-  .site-title-edit {
-    top: 16px;
-    left: 16px;
-    max-width: calc(100% - 150px);
-  }
-  .site-title-edit input {
-    font-size: 19px;
-  }
-  .site-profile {
-    padding: 0 10px 22px;
-    gap: 18px;
-  }
-  .site-avatar-edit {
-    width: 92px;
-    margin-top: -24px;
-  }
-  .site-profile-copy {
-    padding-top: 12px;
-  }
-  .site-theme-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-  .site-icon-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .site-nav-row {
-    grid-template-columns: 24px minmax(0, 0.8fr) minmax(0, 1.2fr) 36px;
-    gap: 8px;
-  }
-  .site-social-editor > .flex {
-    flex-wrap: wrap;
-  }
-}
-@media (max-width: 450px) {
-  .site-profile {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .site-profile-copy {
-    flex-basis: 100%;
-    padding-top: 0;
-  }
-  .site-banner-upload {
-    top: auto;
-    bottom: 14px;
-    right: 12px;
-  }
-  .site-title-edit {
-    max-width: calc(100% - 32px);
-  }
-}
-.site-sort-hint {
-  margin-top: 8px;
-  color: var(--fuwari-fg-50);
-  font-size: 12px;
+  gap: var(--site-nav-gap);
 }
 .site-nav-item {
   position: relative;
@@ -333,76 +124,155 @@
   outline: 2px solid color-mix(in srgb, var(--fuwari-primary) 45%, transparent);
   outline-offset: 3px;
 }
-.site-nav-handle {
+/* A group says it does not navigate where an address would be. */
+.site-nav-group-note {
+  min-width: 0;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+/*
+ * Under a link: the add action, in line with the name field (the handle's
+ * column and the gap). With child links it becomes their list, hung from a
+ * hairline under the middle of the parent's handle; the children sort inside
+ * it only. The literals: 10px between rows is the gap of the other row
+ * stacks of this file, 8px above the list is the gap inside a row, 1px is
+ * the hairline.
+ */
+.site-nav-children {
+  display: grid;
+  gap: 10px;
+  margin-left: calc(var(--site-nav-handle) + var(--site-nav-gap));
+}
+.site-nav-children[data-group="true"] {
+  margin-top: 8px;
+  margin-left: calc(var(--site-nav-handle) / 2);
+  padding-left: calc(var(--site-nav-handle) / 2 + var(--site-nav-gap) - 1px);
+  border-left: 1px solid var(--admin-line);
+}
+.site-nav-add-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.site-nav-limit {
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+/* The social links, as rows of platform, address and remove. */
+.site-social-rows {
+  display: grid;
+  gap: 10px;
+}
+.site-social-item {
+  display: grid;
+  gap: 8px;
+}
+/* A handle, the platform's mark, the platform, the address and remove. */
+.site-social-row {
+  display: grid;
+  grid-template-columns: 24px 32px 124px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 8px;
+}
+.site-social-icon {
   display: grid;
   place-items: center;
-  align-self: stretch;
-  color: var(--fuwari-fg-50);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--admin-hover);
+  color: var(--admin-fg-2);
 }
-.site-nav-handle:hover {
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+.site-social-icon img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
-.site-nav-handle:active {
-  cursor: grabbing;
-}
-.site-nav-handle:disabled {
-  opacity: 0.3;
-  cursor: default;
+/* A custom link's name and icon, under its platform and address. */
+.site-social-custom {
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-content: start;
+  padding-left: 72px;
 }
 
-/* Inline editing highlights the entire label, never a second box inside it. */
-.settings-workspace .site-studio .site-inline-input,
-.settings-workspace .site-studio .site-inline-input:focus,
-.settings-workspace .site-studio .site-inline-input:focus-visible {
-  outline: none;
-  outline-offset: 0;
-  border: 0;
-  box-shadow: none;
-  background: transparent;
+/* The six icons, two to a row: what each is, the file in use, and 更换. */
+.site-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 28px;
+  padding-top: 10px;
 }
-.site-title-edit,
-.site-author-edit,
-.site-description-edit {
-  transition:
-    background-color 240ms ease,
-    box-shadow 240ms ease;
-  border-radius: 9px;
-  padding: 4px 8px;
-  margin-left: -8px;
+.site-icon {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
 }
-.site-title-edit:focus-within {
-  box-shadow: 0 0 0 2px rgb(255 255 255/0.3);
+.site-icon-preview {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
 }
-.site-author-edit:focus-within,
-.site-description-edit:focus-within {
-  background: color-mix(
-    in srgb,
-    var(--fuwari-primary) 6%,
-    var(--fuwari-card-bg)
-  );
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--fuwari-primary) 18%, transparent);
+.site-icon-preview img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
-.site-author-edit {
-  width: fit-content;
-  max-width: 100%;
+.site-icon-name {
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg);
+  overflow-wrap: anywhere;
 }
-.site-author-edit input {
-  width: auto;
-  max-width: 100%;
+
+/* Where the presentation settings went: a hint at the foot of the page. */
+.site-moved-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  max-width: 960px;
+  padding-top: 20px;
+  border-top: 1px solid var(--admin-rule);
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
 }
-.site-description-edit textarea {
-  resize: none;
+@media (max-width: 700px) {
+  .site-icon-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
-@media (prefers-reduced-motion: reduce) {
-  .site-title-edit,
-  .site-author-edit,
-  .site-description-edit {
-    transition: none;
+@media (max-width: 450px) {
+  /* Platform and address stack, the remove button beside the platform. */
+  .site-social-row:not(.site-social-custom) {
+    grid-template-columns: 24px 32px minmax(0, 1fr) 36px;
+  }
+  .site-social-row:not(.site-social-custom) > :nth-child(4) {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+  .site-social-custom {
+    padding-left: 0;
+  }
+  .site-nav-row {
+    grid-template-columns: var(--site-nav-handle) minmax(0, 1fr) 36px;
+  }
+  .site-nav-row > :nth-child(3) {
+    grid-column: 2 / 3;
+    grid-row: 2;
+  }
+  .site-nav-row > :nth-child(4) {
+    grid-column: 3;
+    grid-row: 1 / 3;
   }
 }

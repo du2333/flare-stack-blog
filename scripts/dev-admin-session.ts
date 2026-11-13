@@ -38,6 +38,19 @@ interface SeedState {
   seededAt: number;
 }
 
+/**
+ * When the database was last written. A running dev server holds it in WAL
+ * mode, where writes land in the `-wal` file and the main file's time stands
+ * still, so the newer of the two counts.
+ */
+function lastWrite(file: string) {
+  const wal = `${file}-wal`;
+  return Math.max(
+    statSync(file).mtimeMs,
+    existsSync(wal) ? statSync(wal).mtimeMs : 0,
+  );
+}
+
 function findDatabase() {
   const candidates = readdirSync(D1_DIR)
     .filter((name) => name.endsWith(".sqlite") && name !== "metadata.sqlite")
@@ -53,7 +66,7 @@ function findDatabase() {
         db.close();
       }
     })
-    .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+    .sort((a, b) => lastWrite(b) - lastWrite(a));
   if (!candidates[0]) {
     throw new Error(
       `No local D1 database with a posts table in ${D1_DIR}; run the dev server once first.`,

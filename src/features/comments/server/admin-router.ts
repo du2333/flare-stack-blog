@@ -1,5 +1,8 @@
 import { z } from "zod";
 import {
+  AdminCommentedPostSchema,
+  AdminCommentsInputSchema,
+  AdminCommentsPageSchema,
   CommentHandledInputSchema,
   CommentsHandledCountSchema,
 } from "@/features/comments/comments.schema";
@@ -62,7 +65,41 @@ const markAllHandled = adminProcedure
     CommentService.markAllUnrepliedCommentsHandled(context),
   );
 
+const list = adminProcedure
+  .errors({ POST_NOT_FOUND: commentErrors.POST_NOT_FOUND })
+  .route({
+    method: "GET",
+    path: "/admin/comments",
+    summary: "List comments",
+    description:
+      "Published Comments on Posts and Moments, newest first, with the total that matches. view=unreplied lists the visitor Comments awaiting a reply, the dashboard's count; view=all lists every one. search matches the author's name or the body; postId keeps one Post's.",
+    tags: ["Admin Comments"],
+  })
+  .input(AdminCommentsInputSchema)
+  .output(AdminCommentsPageSchema)
+  .handler(({ context, input, errors }) =>
+    unwrapResult(CommentService.listAdminComments(context, input), {
+      POST_NOT_FOUND: () => {
+        throw errors.POST_NOT_FOUND();
+      },
+    }),
+  );
+
+const commentedPosts = adminProcedure
+  .route({
+    method: "GET",
+    path: "/admin/comments/posts",
+    summary: "List posts with comments",
+    description:
+      "Every Post that has published Comments, with how many, the most recently commented first.",
+    tags: ["Admin Comments"],
+  })
+  .output(z.array(AdminCommentedPostSchema))
+  .handler(({ context }) => CommentService.listCommentedPosts(context));
+
 export default {
+  list,
+  commentedPosts,
   markHandled,
   unmarkHandled,
   markAllHandled,

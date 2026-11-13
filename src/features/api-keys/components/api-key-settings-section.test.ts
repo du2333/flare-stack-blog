@@ -1,14 +1,27 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { AdminChromeProvider } from "@/components/admin/admin-chrome";
 import { m } from "@/paraglide/messages";
 import { ApiKeySettingsSection } from "./api-key-settings-section";
 
-const authKeys = vi.hoisted(() => ({ list: vi.fn() }));
+const authKeys = vi.hoisted(() => ({ list: vi.fn(), delete: vi.fn() }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+// Close the menu at once; exit motion is not under test.
+vi.mock("@/hooks/use-motion", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
+  useMotionPresence: (open: boolean) => open,
+}));
 vi.mock("@/lib/auth/auth-client", () => ({
   getAuthClient: () => ({ apiKey: authKeys }),
 }));
@@ -75,7 +88,11 @@ function mountPage() {
     createElement(
       QueryClientProvider,
       { client },
-      createElement(ApiKeySettingsSection),
+      createElement(
+        AdminChromeProvider,
+        null,
+        createElement(ApiKeySettingsSection),
+      ),
     ),
   );
 }
@@ -93,13 +110,51 @@ it("marks only the keys whose metadata says pairing created them", async () => {
   expect(within(cell("CI script")).queryByText(badge)).toBeNull();
 });
 
+it("lists each key with its prefix and when it was created and last used, and revokes from the row's menu", async () => {
+  authKeys.delete.mockResolvedValue({ data: {}, error: null });
+  mountPage();
+  const rows = await screen.findAllByRole("row");
+  // The header row, then one row per key.
+  expect(rows).toHaveLength(4);
+  const row = rows.find((item) => within(item).queryByText("CI script"))!;
+  expect(within(row).getByText("fsb_cd…")).toBeTruthy();
+  expect(
+    within(row).getAllByText(m.settings_api_keys_never_used()).length,
+  ).toBeGreaterThan(0);
+  fireEvent.click(
+    within(row).getByRole("button", {
+      name: m.settings_api_keys_row_actions({ name: "CI script" }),
+    }),
+  );
+  fireEvent.click(
+    await screen.findByRole("menuitem", { name: m.settings_api_keys_delete() }),
+  );
+  fireEvent.click(
+    within(screen.getByRole("dialog")).getByRole("button", {
+      name: m.settings_api_keys_delete_confirm(),
+    }),
+  );
+  await waitFor(() =>
+    expect(authKeys.delete).toHaveBeenCalledWith({ keyId: "key-2" }),
+  );
+});
+
+it("says so in one sentence, with a create button, when there are no keys", async () => {
+  authKeys.list.mockResolvedValue({ data: { apiKeys: [] }, error: null });
+  mountPage();
+  expect(await screen.findByText(m.settings_api_keys_empty())).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: m.settings_api_keys_create() }),
+  ).toBeTruthy();
+});
+
 it("points to the Agent Skill tab instead of carrying the install hint", async () => {
   mountPage();
   await screen.findAllByRole("row");
   const link = screen.getByRole("link", {
     name: m.settings_api_keys_agent_pointer_link(),
   });
-  expect(link.getAttribute("href")).toBe("/admin/settings/agent-skill");
+  expect(link.getAttribute("href")).toBe("/admin/access/agent-skill");
   // Only the words are linked; the brackets and "tab" stay outside.
   expect(link.textContent).toBe("Agent Skill");
   expect(document.body.textContent).not.toContain("npx skills add");

@@ -1,0 +1,569 @@
+/* 「沉浸」's stylesheet (themes.ts links it only while 「沉浸」 is the selected
+   Theme; the shell's modules import no CSS): its design-variable values, then
+   the shell's own styles. */
+@import "./navbar.css";
+@import "./first-screen.css";
+
+/* What the values below and the shell share. The ink is a near-black tinted
+   with the hue, for shadows and for the shades white text stands on; the
+   glass and the frost are the surfaces of what lies on the banner and of
+   what floats over the page. Only the shadows and the frost change with the
+   Colour Scheme: everything else derives from the base layer, which already
+   follows it. */
+:root[data-theme="immersive"] {
+  --immersive-ink: 0.19 0.035 var(--fuwari-hue);
+  --immersive-card-shadow:
+    0 1px 2px oklch(var(--immersive-ink) / 0.04),
+    0 12px 32px -20px oklch(var(--immersive-ink) / 0.28);
+  /* Glass for what is filled on the banner: a mid grey, so it lightens a
+     dark image and darkens a bright one, and white text reads on both. */
+  --immersive-glass: oklch(0.56 0.03 var(--fuwari-hue) / 0.4);
+  --immersive-glass-strong: oklch(0.64 0.03 var(--fuwari-hue) / 0.5);
+  --immersive-glass-edge: rgb(255 255 255 / 0.22);
+  --immersive-frost-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 72%,
+    transparent
+  );
+  --immersive-frost-edge: rgb(255 255 255 / 0.55);
+  /* Thicker frost for the navbar's menu panel: long lists of quiet text
+     that open over the banner, whose brightest parts would show through
+     the frost of a small float. */
+  --immersive-panel-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 88.8%,
+    transparent
+  );
+  --immersive-frost-shadow:
+    0 14px 40px -14px oklch(var(--immersive-ink) / 0.32),
+    0 2px 8px oklch(var(--immersive-ink) / 0.07),
+    inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --immersive-panel-shadow:
+    0 20px 56px -16px oklch(var(--immersive-ink) / 0.4),
+    0 0 0 1px oklch(var(--immersive-ink) / 0.06);
+  /* The dark edge of a float, outside its light one. */
+  --immersive-float-edge: oklch(var(--immersive-ink) / 0.07);
+  /* How much of the banner shows in the wash under the page. */
+  --immersive-ambient-strength: 0.36;
+  --immersive-ambient-filter: blur(72px) saturate(1.25);
+  /* How far the content rises over the lower edge of the banner, and how
+     tall the strip of cards that leads the home page is (a card in one row:
+     2rem between twice 0.875rem), to stand astride that edge. */
+  --immersive-overlap: 3.5rem;
+  --immersive-strip-h: 3.75rem;
+  --immersive-gutter: 1rem;
+  --immersive-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --immersive-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The navbar changing shape, and the banner changing height between the
+     home page and the others. */
+  --immersive-morph: 560ms;
+  --immersive-resize: 700ms;
+}
+:root[data-theme="immersive"].dark {
+  --immersive-card-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.04), 0 16px 36px -22px rgb(0 0 0 / 0.7);
+  --immersive-frost-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 68%,
+    transparent
+  );
+  --immersive-frost-edge: rgb(255 255 255 / 0.09);
+  --immersive-panel-bg: color-mix(
+    in oklab,
+    var(--fuwari-card-bg) 87%,
+    transparent
+  );
+  --immersive-frost-shadow:
+    0 16px 44px -14px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --immersive-panel-shadow:
+    0 20px 56px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --immersive-float-edge: rgb(0 0 0 / 0.4);
+  --immersive-ambient-strength: 0.34;
+  --immersive-ambient-filter: blur(72px) saturate(1.3) brightness(0.72);
+}
+/* A reader who asked for less transparency gets what floats as a plain
+   surface, and no wash. */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme="immersive"] {
+    --immersive-frost-bg: var(--fuwari-card-bg);
+    --immersive-panel-bg: var(--fuwari-card-bg);
+    --immersive-ambient-strength: 0;
+  }
+}
+
+:root[data-theme="immersive"] {
+  /* Soft raised surfaces with generous corners; pills for what is pressed.
+     The radius has a name of its own too, as the shadow has, for the strip
+     that is one surface under several cards. */
+  --immersive-card-radius: 1.25rem;
+  --theme-card-radius: var(--immersive-card-radius);
+  --theme-card-shadow: var(--immersive-card-shadow);
+  --theme-cover-radius: 0.875rem;
+  --theme-chip-radius: 999px;
+  --theme-button-radius: 999px;
+  --theme-pager-radius: 999px;
+  --theme-floating-radius: 999px;
+  --theme-standalone-radius: 1.25rem;
+
+  --theme-heading-tracking: -0.005em;
+  --theme-page-title-size: clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem);
+  --theme-meta-size: 0.8125rem;
+  --theme-kicker-size: 0.75rem;
+  --theme-kicker-tracking: 0.04em;
+  --theme-widget-title-size: 1rem;
+  --theme-rule-style: solid;
+  --theme-link-underline-style: solid;
+
+  /* Smoke for what is tonal: a neutral ink with a breath of the hue, laid
+     thin, so a tag, a count or a regular button reads on a surface and on
+     the washed ground alike, and the text on it is ink, not the hue. The
+     hue stays where it says something: links, the current entry, what is
+     solid. */
+  --immersive-smoke: color-mix(
+    in oklab,
+    var(--fuwari-fg) 80%,
+    var(--fuwari-primary)
+  );
+  --theme-tonal-bg: color-mix(in oklab, var(--immersive-smoke) 8%, transparent);
+  --theme-tonal-bg-hover: color-mix(
+    in oklab,
+    var(--immersive-smoke) 13%,
+    transparent
+  );
+  --theme-tonal-bg-active: color-mix(
+    in oklab,
+    var(--immersive-smoke) 18%,
+    transparent
+  );
+  --theme-tonal-fg: var(--fuwari-fg-75);
+  --theme-plain-bg-hover: color-mix(
+    in oklab,
+    var(--immersive-smoke) 6%,
+    transparent
+  );
+  --theme-plain-bg-active: color-mix(
+    in oklab,
+    var(--immersive-smoke) 10%,
+    transparent
+  );
+  --theme-toc-bg-hover: var(--theme-plain-bg-hover);
+  --theme-toc-bg-active: var(--theme-plain-bg-active);
+  --theme-toc-badge-bg: var(--theme-tonal-bg-hover);
+  --theme-rule: color-mix(in oklab, var(--immersive-smoke) 12%, transparent);
+
+  /* What floats is frost: menus, popovers, toasts, dialogs, sheets, back to
+     top and the bar of a Theme preview blur the page behind them, as the
+     navbar's pill does. */
+  --theme-float-bg: var(--immersive-frost-bg);
+  --theme-float-backdrop: blur(22px) saturate(1.8);
+  --theme-float-shadow:
+    var(--immersive-frost-shadow), 0 0 0 1px var(--immersive-float-edge);
+  --theme-float-radius: 1.125rem;
+  --theme-dialog-radius: 1.75rem;
+  --theme-dialog-shadow:
+    var(--immersive-panel-shadow), inset 0 1px 0 var(--immersive-frost-edge);
+  --theme-toast-pad: 0.875rem 1rem 0.875rem 1.25rem;
+
+  /* Back to top from lg: just right of the content, and 4.75rem from the
+     edge of the window where the gutter is no wider than the lane the shell
+     keeps for it. It stands in a box of the shell's, which places it (the
+     footer region, below). The table of contents of a Post is placed with
+     the Post page, below. */
+  --shell-floating-actions-position: static;
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}
+
+/* The Post list as tiles (Theme Recipe, postCard: "tile"): a title that fits
+   a tile half the column wide, and the deeper shadow of a tile under the
+   pointer. */
+:root[data-theme="immersive"] {
+  --immersive-tile-shadow-hover:
+    0 2px 4px oklch(var(--immersive-ink) / 0.05),
+    0 22px 44px -22px oklch(var(--immersive-ink) / 0.42);
+  --theme-card-shadow-hover: var(--immersive-tile-shadow-hover);
+  --theme-list-title-size: 1.3125rem;
+}
+:root[data-theme="immersive"].dark {
+  --immersive-tile-shadow-hover:
+    0 0 0 1px rgb(255 255 255 / 0.09), 0 24px 48px -22px rgb(0 0 0 / 0.85);
+}
+
+/* The banner is a low band, and the tall first screen of the home page; it
+   never gets so low that the navbar and, on the home page, the introduction
+   no longer fit on it. The navbar condenses a bar's height, the overlap and
+   some air before the banner has scrolled past (navbar.tsx measures the
+   same line).
+
+   The page is one centred column of --fuwari-page-width with its gutters,
+   and no closer to an edge of the window than the lane. Below lg the lane
+   is the gutter. From lg it is 5.5rem: the room in which back to top and
+   the page's actions float right of the column, 4.75rem from the edge of
+   the window (--shell-floating-actions-left), so they never lie on the
+   content. Everything that keeps to the page width stands by this inset:
+   the navbar, the introduction, the regions before the footer and what the
+   footer shows. */
+.immersive-shell {
+  --immersive-banner-h: max(47svh, 14rem);
+  --immersive-condense-at: max(
+    2.5rem,
+    calc(var(--immersive-banner-h) - 10.5rem)
+  );
+  --immersive-lane: var(--immersive-gutter);
+  --immersive-page-inset: max(
+    var(--immersive-lane),
+    calc(50% - var(--fuwari-page-width) / 2 + var(--immersive-gutter))
+  );
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--theme-ground);
+}
+.immersive-shell[data-home="true"] {
+  --immersive-banner-h: max(78svh, 24rem);
+}
+/* A focused page is one panel, and what it asks for is at its foot (the
+   button of a sign-in form): under a band this low the panel is whole in
+   the first screen of a laptop and of a phone. */
+.immersive-shell[data-focused="true"] {
+  --immersive-banner-h: max(24svh, 11rem);
+}
+@media (width >= 64rem) {
+  .immersive-shell {
+    --immersive-lane: 5.5rem;
+  }
+}
+
+/* The body starts on the lower edge of the banner and runs to the foot of
+   the window, as wide as the window: the content with the sidebar cards
+   before and after it, each region keeping to the page width by itself,
+   then the footer, which does not. The body is no layer; each region is
+   one, over the banner and the navbar's scrim. */
+.immersive-body {
+  position: relative;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-top: calc(var(--immersive-banner-h) - var(--immersive-overlap));
+}
+.immersive-body > :is(.immersive-main, .immersive-cards) {
+  z-index: 30;
+  margin-inline: var(--immersive-page-inset);
+}
+.immersive-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* The sidebar cards stand in groups in the column, each group a row that
+   wraps, a card to a row and as tall as its row. The slot of every card is a
+   container named `card`: that is what lets a card take its wide form here
+   and its narrow one where a slot is narrow, without being told where it
+   stands (docs/theme-shell-checklist.md). */
+.immersive-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-width: 0;
+}
+.immersive-card {
+  container: card / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 100%;
+  min-width: 0;
+}
+/* A card that shows nothing leaves no gap, and neither does a group of
+   them. */
+.immersive-card:empty,
+.immersive-cards:not(:has(> .immersive-card:not(:empty))) {
+  display: none;
+}
+/* The groups follow the content, 1.5rem further from it than from each
+   other. Below lg that includes the group whose place is before the content:
+   it comes last, so the cards keep the order they were given in. */
+.immersive-cards[data-place="after"] {
+  margin-top: 1.5rem;
+}
+.immersive-cards[data-place="before"] {
+  order: 1;
+}
+@media (width < 64rem) {
+  .immersive-body:not(
+      :has(> .immersive-cards[data-place="after"] > .immersive-card:not(:empty))
+    )
+    > .immersive-cards[data-place="before"] {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (width >= 64rem) {
+  /* Two ways into the Posts share a row. */
+  .immersive-card[data-kind="index"] {
+    flex-basis: 28rem;
+  }
+  /* Before the content the cards are one slim strip astride the lower edge
+     of the banner: one surface, on which they lie flat with a hairline
+     between them, which is the strip's own ground showing through a gap.
+     Each card is in one row (the form such a card takes from 34rem): side
+     by side where the column holds two of them, and where it does not, one
+     under the other, the first astride the edge. */
+  .immersive-cards[data-place="before"] {
+    order: 0;
+    gap: 1px;
+    overflow: hidden;
+    margin-top: calc(var(--immersive-overlap) - var(--immersive-strip-h) / 2);
+    border-radius: var(--immersive-card-radius);
+    background-color: var(--theme-surface);
+    background-image: linear-gradient(
+      var(--theme-rule, var(--fuwari-divider)) 0 0
+    );
+    box-shadow: var(--immersive-card-shadow);
+  }
+  .immersive-cards[data-place="before"] > .immersive-card {
+    flex-basis: 34rem;
+  }
+  .immersive-cards[data-place="before"] > .immersive-card > * {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* ── Cards beside the content: [data-place="beside"] ──────────────────────
+   The option 「卡片位置」 set to the column (card-placement.ts): every card of
+   the home page and of an inner page is in one group, which from lg is a
+   narrow column right of the content. Below lg the group follows the
+   content as the group after it does, and the box around the ways into the
+   Posts (immersive-shell.tsx) is no box at all. */
+.immersive-cards[data-place="beside"] {
+  margin-top: 1.5rem;
+}
+.immersive-cards-pinned {
+  display: contents;
+}
+/* The rule for a group of empty cards looks at the group's own slots; in
+   this group some are a step further in. */
+.immersive-cards[data-place="beside"]:has(.immersive-card:not(:empty)) {
+  display: flex;
+}
+
+@media (width >= 64rem) {
+  /* The content, and 1rem right of it a column of 17.5rem: less than the
+     20rem from which a card lies wide, so every card there takes its narrow
+     form. Only while some card shows; with none the content keeps the whole
+     width. The two stand between the insets of the page, which are columns
+     of the grid here, and the footer closes all four, at the foot of the
+     window on a short page. */
+  .immersive-body:has(
+    > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+  ) {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns:
+      var(--immersive-page-inset) minmax(0, 1fr)
+      18.5rem var(--immersive-page-inset);
+    column-gap: 0;
+  }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-main {
+    grid-area: 1 / 2;
+    margin-inline: 0;
+  }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-footer {
+    grid-area: 2 / 1 / auto / -1;
+  }
+  .immersive-body:has(
+      > .immersive-cards[data-place="beside"] .immersive-card:not(:empty)
+    )
+    > .immersive-floating {
+    grid-area: 1 / 1 / auto / -1;
+    align-self: end;
+    justify-self: start;
+    margin-top: 0;
+  }
+  /* The column starts level with the content and is as tall as it, each
+     card as tall as what it shows. */
+  .immersive-cards[data-place="beside"] {
+    grid-area: 1 / 3;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin: 0 0 0 1rem;
+  }
+  .immersive-cards[data-place="beside"] .immersive-card {
+    flex: none;
+  }
+  /* The ways into the Posts stay in view, 5rem down, below the floating
+     navbar, while the rest of the column scrolls away with the page. Where
+     they are taller than the window has room for (a list shown in full, a
+     low window), their box scrolls by itself, so its end can be reached
+     from anywhere on the page, and what it cuts off fades out over its
+     last 1rem. The box is larger than the cards by its padding: room for
+     the shadows it would otherwise cut off, and under them for that fade.
+     Only the cards in it take the pointer, so the padding covers nothing. */
+  .immersive-cards[data-place="beside"] > .immersive-cards-pinned {
+    position: sticky;
+    top: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100svh - 4rem);
+    margin: -1rem -1rem -2.5rem;
+    padding: 1rem 1rem 2.5rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(#000 calc(100% - 1rem), transparent);
+    pointer-events: none;
+  }
+  .immersive-cards[data-place="beside"]
+    > .immersive-cards-pinned
+    > .immersive-card {
+    pointer-events: auto;
+  }
+  .immersive-cards[data-place="beside"]
+    > .immersive-cards-pinned:not(:has(> .immersive-card:not(:empty))) {
+    display: none;
+  }
+}
+
+/* ── The footer region, and what floats ───────────────────────────────────
+   The footer closes the page from one edge of the window to the other and
+   ends it: the band (Theme Recipe, footer: "band") is a surface that fills
+   the region it is given and keeps what it shows to the page width itself,
+   here inside the same insets as the regions before it.
+
+   Back to top and the page's actions are not fixed to the window
+   (--shell-floating-actions-position): they stand in a box that sticks to
+   the foot of the window and whose own place is the end of the content, so
+   at the end of a page they come to rest above the band, never on it, and
+   stay in reach there. Below lg that box is a row of the page, in the
+   corner of which they float over the content and at last rest clear of
+   it. From lg it has no height: they float in the lane right of the
+   column and rest there, 1.25rem above the band, in the 4rem the footer
+   stands clear of what is before it. */
+.immersive-footer {
+  order: 2;
+  margin-top: auto;
+}
+.immersive-floating {
+  position: sticky;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  z-index: 40;
+  order: 2;
+  align-self: flex-end;
+  margin-right: 1rem;
+}
+@media (width >= 64rem) {
+  .immersive-footer {
+    padding-top: 3rem;
+  }
+  .immersive-footer > * {
+    padding-inline: calc(var(--immersive-lane) - var(--immersive-gutter));
+  }
+  .immersive-floating {
+    bottom: 10rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-self: flex-start;
+    height: 0;
+    margin: 1.75rem 0 -2.75rem var(--shell-floating-actions-left);
+  }
+}
+/* The room above the band is the footer's. It lets the pointer through to
+   what shows in it, the end of the content or back to top. */
+.immersive-footer {
+  pointer-events: none;
+}
+.immersive-footer > * {
+  pointer-events: auto;
+}
+/* The band is the last layer of the page: the table of contents of a Post,
+   which renders outside the shell and keeps clear of the footer by itself,
+   never shows on it. */
+.immersive-body > .immersive-footer {
+  z-index: 45;
+}
+
+/* ── The Post page ─────────────────────────────────────────────────────────
+   One centred reading column from the title to the last card: the article,
+   the Posts next to it, the comments, then the sidebar cards. The gutter
+   right of the column is the table of contents'. Nothing in the column is
+   wider than the text; a wide table and a long line of code scroll within
+   themselves, as the shared content styles have them. The footer keeps the
+   width it has on every page. */
+
+/* The column with its gutters, as --fuwari-page-width is the page's with
+   its: 46rem of surface and, inside the panel's padding, 41.5rem of text,
+   which is 41 Chinese characters or some 85 Latin letters to a line of the
+   body. On the root, because the table of contents renders outside the
+   shell. The shell says when the page on screen is a Post's (data-column),
+   and the regions before the footer are centred by the reading width
+   instead of the page's. */
+:root[data-theme="immersive"] {
+  --immersive-reading-width: 48rem;
+}
+.immersive-shell[data-column="reading"]
+  .immersive-body
+  > :is(.immersive-main, .immersive-cards) {
+  margin-inline: max(
+    var(--immersive-gutter),
+    calc(50% - var(--immersive-reading-width) / 2 + var(--immersive-gutter))
+  );
+}
+/* The two ways into the Posts share a row of the column, each with its pills
+   in two rows under its title (the form such a card takes from 20rem). */
+.immersive-shell[data-column="reading"] .immersive-card[data-kind="index"] {
+  flex-basis: 20rem;
+}
+
+/* The table of contents of a Post: a list in the gutter right of the
+   reading column from 80rem, where the gutter has room for it, and until
+   then the button in the floating column. The list stands below the floating
+   navbar, 1rem clear of the column, and ends 0.75rem short of back to top:
+   it has the lane between the two, 14rem where the window is wide enough. */
+:root[data-theme="immersive"] {
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc(
+    var(--shell-floating-actions-left) - 0.75rem -
+      (50% + var(--immersive-reading-width) / 2 - var(--immersive-gutter) + 1rem)
+  );
+}
+@media (width >= 80rem) {
+  :root[data-theme="immersive"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .immersive-shell,
+  .immersive-footer {
+    transition: background-color 300ms;
+  }
+  .immersive-body {
+    transition: margin-top var(--immersive-resize) var(--immersive-ease);
+  }
+  .immersive-cards[data-place="before"] {
+    transition: background-color 300ms;
+  }
+  /* Going back or forward: at once, so the restored scroll position holds. */
+  .immersive-shell[data-instant="true"] .immersive-body {
+    transition: none;
+  }
+}

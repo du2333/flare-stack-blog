@@ -1,18 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Copy, ExternalLink, FileText, Images, Upload, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  FileText,
+  Images,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { IconButton } from "@/components/ui/icon-button";
 import { SectionHeading } from "@/components/ui/page-heading";
-import {
-  MOTION,
-  useContentMotion,
-  useMediaQuery,
-  useReducedMotion,
-} from "@/hooks/use-motion";
+import { MOTION, useContentMotion, useReducedMotion } from "@/hooks/use-motion";
 import { toast } from "sonner";
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -20,7 +25,7 @@ import {
 } from "@/features/media/media.schema";
 import { linkedMomentsQuery, linkedPostsQuery } from "@/features/media/queries";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import type { MediaAsset } from "../types";
 
@@ -70,23 +75,27 @@ export function MediaDetail({
   onDelete,
   isReplacing,
   preventClose = false,
+  onStep,
+  hasPrevious = false,
+  hasNext = false,
 }: {
   asset: MediaAsset;
   open: boolean;
   onClose: () => void;
+  /** Go to the image before (-1) or after (1) this one in the wall. */
+  onStep?: (delta: -1 | 1) => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
   onReplace: (key: string, file: File) => Promise<void>;
   onDelete: (asset: MediaAsset) => void;
   isReplacing: boolean;
   preventClose?: boolean;
 }) {
   const reduced = useReducedMotion();
-  const compact = useMediaQuery("(max-width: 1199px)");
   const contentRef = useRef<HTMLDivElement>(null);
-  useContentMotion(contentRef, `${asset.key}:${compact}`);
+  useContentMotion(contentRef, asset.key);
   useEffect(() => {
-    const inspector =
-      contentRef.current?.closest<HTMLElement>(".media-inspector");
-    if (inspector) inspector.scrollTop = 0;
+    contentRef.current?.scrollTo({ top: 0 });
   }, [asset.key]);
   const fileRef = useRef<HTMLInputElement>(null);
   const busy = isReplacing;
@@ -96,8 +105,6 @@ export function MediaDetail({
     usage !== "current" ||
     asset.postCount > 0 ||
     asset.revisionOnlyPostCount > 0;
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose;
   const {
     data: linkedPosts = [],
     isPending,
@@ -105,58 +112,146 @@ export function MediaDetail({
     refetch,
   } = useQuery(linkedPostsQuery(asset.key));
 
+  // The arrows move through the wall while the image is up.
+  const stepRef = useRef(onStep);
+  stepRef.current = onStep;
   useEffect(() => {
-    if (!open || compact || preventClose || busy) return;
-    const dismiss = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.defaultPrevented) {
-        event.preventDefault();
-        closeRef.current();
-      }
+    if (!open || preventClose || busy) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey) return;
+      if (event.key === "ArrowLeft" && hasPrevious) stepRef.current?.(-1);
+      else if (event.key === "ArrowRight" && hasNext) stepRef.current?.(1);
+      else return;
+      event.preventDefault();
     };
-    document.addEventListener("keydown", dismiss);
-    return () => document.removeEventListener("keydown", dismiss);
-  }, [open, compact, preventClose, busy]);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, preventClose, busy, hasPrevious, hasNext]);
 
-  const content = (
-    <>
-      <SectionHeading
-        className="media-inspector-header"
-        size="sm"
-        title={m.media_preview_title()}
-        actions={
-          <IconButton
-            label={m.common_close()}
-            size="md"
-            disabled={preventClose || busy}
-            onClick={onClose}
-          >
-            <X size={19} />
-          </IconButton>
-        }
-      />
-      <div ref={contentRef}>
-        <div className="media-inspector-preview">
-          <img
-            src={asset.url}
-            alt={asset.fileName}
-            onLoad={(event) => {
-              if (open && !reduced)
-                event.currentTarget.animate([{ opacity: 0 }, { opacity: 1 }], {
-                  duration: MOTION.content,
-                  easing: "ease-out",
-                });
+  return (
+    <FuwariModal
+      open={open}
+      onClose={onClose}
+      busy={preventClose || busy}
+      className="media-lightbox admin-workspace"
+      label={m.media_preview_title()}
+    >
+      <div className="media-lightbox-stage">
+        <img
+          key={asset.key}
+          src={asset.url}
+          alt={asset.fileName}
+          onLoad={(event) => {
+            if (open && !reduced)
+              event.currentTarget.animate([{ opacity: 0 }, { opacity: 1 }], {
+                duration: MOTION.content,
+                easing: "ease-out",
+              });
+          }}
+        />
+        {onStep ? (
+          <>
+            <IconButton
+              className="media-lightbox-step"
+              data-side="previous"
+              size="md"
+              label={m.media_preview_previous()}
+              disabled={!hasPrevious || busy}
+              onClick={() => onStep(-1)}
+            >
+              <ChevronLeft size={20} />
+            </IconButton>
+            <IconButton
+              className="media-lightbox-step"
+              data-side="next"
+              size="md"
+              label={m.media_preview_next()}
+              disabled={!hasNext || busy}
+              onClick={() => onStep(1)}
+            >
+              <ChevronRight size={20} />
+            </IconButton>
+          </>
+        ) : null}
+      </div>
+      <div className="media-inspector custom-scrollbar" ref={contentRef}>
+        <SectionHeading
+          className="media-inspector-header"
+          size="sm"
+          title={m.media_preview_title()}
+          actions={
+            <IconButton
+              variant="quiet"
+              label={m.common_close()}
+              size="sm"
+              disabled={preventClose || busy}
+              onClick={onClose}
+            >
+              <X size={17} />
+            </IconButton>
+          }
+        />
+        <h3 className="media-inspector-name">{asset.fileName}</h3>
+        <dl className="media-inspector-facts">
+          {asset.width && asset.height ? (
+            <div>
+              <dt>{m.media_col_dimensions()}</dt>
+              <dd>
+                {asset.width} × {asset.height}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>{m.media_preview_size()}</dt>
+            <dd>{formatBytes(asset.sizeInBytes)}</dd>
+          </div>
+          <div>
+            <dt>{m.media_col_uploaded()}</dt>
+            <dd>{formatDate(asset.createdAt)}</dd>
+          </div>
+        </dl>
+        <div className="media-inspector-actions">
+          <Button
+            variant="ink"
+            size="sm"
+            icon={<Copy size={15} />}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  new URL(asset.url, window.location.origin).href,
+                );
+                toast.success(m.media_copied());
+              } catch {
+                toast.error(m.media_copy_failed());
+              }
             }}
-          />
+          >
+            {m.media_copy_link()}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Upload size={15} />}
+            loading={isReplacing}
+            disabled={busy}
+            onClick={() => fileRef.current?.click()}
+          >
+            {isReplacing ? m.common_processing() : m.media_replace()}
+          </Button>
+          {usage === "none" ? (
+            <IconButton
+              className="media-inspector-delete"
+              variant="quiet"
+              size="sm"
+              tone="danger"
+              label={m.media_delete()}
+              disabled={busy}
+              onClick={() => onDelete(asset)}
+            >
+              <Trash2 size={16} />
+            </IconButton>
+          ) : null}
         </div>
-        <div className="media-inspector-name">
-          <span>{asset.fileName}</span>
-        </div>
-        <p className="media-inspector-facts">
-          {asset.width && asset.height
-            ? `${asset.width} × ${asset.height} · `
-            : ""}
-          {formatBytes(asset.sizeInBytes)}
-        </p>
         {showPosts ? (
           <section className="media-inspector-usage">
             <h3>
@@ -210,43 +305,6 @@ export function MediaDetail({
           </section>
         ) : null}
         {asset.momentCount > 0 ? <MomentReferences asset={asset} /> : null}
-        <div className="media-inspector-actions">
-          <Button
-            icon={<Copy size={16} />}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(
-                  new URL(asset.url, window.location.origin).href,
-                );
-                toast.success(m.media_copied());
-              } catch {
-                toast.error(m.media_copy_failed());
-              }
-            }}
-          >
-            {m.media_copy_link()}
-          </Button>
-          <Button
-            icon={<Upload size={16} />}
-            loading={isReplacing}
-            disabled={busy}
-            onClick={() => fileRef.current?.click()}
-          >
-            {isReplacing ? m.common_processing() : m.media_replace()}
-          </Button>
-        </div>
-        {usage === "none" ? (
-          <Button
-            variant="text"
-            size="sm"
-            tone="danger"
-            className="media-inspector-delete"
-            disabled={busy}
-            onClick={() => onDelete(asset)}
-          >
-            {m.media_delete()}
-          </Button>
-        ) : null}
         <input
           ref={fileRef}
           type="file"
@@ -268,26 +326,6 @@ export function MediaDetail({
           }}
         />
       </div>
-    </>
-  );
-  return compact ? (
-    <FuwariModal
-      open={open}
-      onClose={onClose}
-      busy={preventClose || busy}
-      className="media-inspector media-inspector-dialog admin-workspace"
-      label={m.media_preview_title()}
-    >
-      {content}
     </FuwariModal>
-  ) : (
-    <aside
-      className="media-inspector"
-      data-state={open ? "open" : "closing"}
-      inert={!open}
-      aria-label={m.media_preview_title()}
-    >
-      {content}
-    </aside>
   );
 }

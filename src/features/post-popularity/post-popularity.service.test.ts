@@ -18,6 +18,9 @@ describe("post popularity service", () => {
       getPathMetrics: vi.fn(async () => [
         { path: "/post/alpha", pageviews: 4 },
       ]),
+      getDailyViews: vi.fn(async () => [
+        { day: Date.parse("2026-08-22T00:00:00.000Z"), views: 6 },
+      ]),
       listPublishedPosts: vi.fn(async () => [
         {
           postId: 1,
@@ -44,6 +47,7 @@ describe("post popularity service", () => {
       expect.objectContaining({
         entries: [{ postId: 1, score: 4 }],
         syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+        daily: [{ day: Date.parse("2026-08-22T00:00:00.000Z"), views: 6 }],
       }),
     );
     expect(writeStatus).toHaveBeenCalledWith(expect.anything(), {
@@ -56,6 +60,67 @@ describe("post popularity service", () => {
     expect(invalidate).toHaveBeenCalledOnce();
   });
 
+  it("still replaces the snapshot when the daily series cannot be fetched", async () => {
+    const writeSnapshot = vi.fn(async () => undefined);
+    const writeStatus = vi.fn(async () => undefined);
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const service = createPostPopularityService({
+      now: () => new Date("2026-08-23T00:15:00.000Z"),
+      resolveConfig: vi.fn(() => ({
+        type: "cloud" as const,
+        apiUrl: "https://api.umami.is/v1",
+        websiteId: "website-id",
+        apiKey: "cloud-key",
+      })),
+      getPathMetrics: vi.fn(async () => [
+        { path: "/post/alpha", pageviews: 4 },
+      ]),
+      getDailyViews: vi.fn(async () => {
+        throw new Error("pageviews 502");
+      }),
+      listPublishedPosts: vi.fn(async () => [
+        {
+          postId: 1,
+          publicSlug: "alpha",
+          publishedAt: Date.parse("2026-08-01T00:00:00.000Z"),
+        },
+      ]),
+      readSnapshot: vi.fn(async () => null),
+      writeSnapshot,
+      readStatus: vi.fn(async () => null),
+      writeStatus,
+      invalidate: vi.fn(async () => undefined),
+      getPopularPosts: vi.fn(async () => []),
+    });
+
+    const result = await service.sync({
+      env: {},
+      executionCtx: {},
+    } as DbContext & { executionCtx: ExecutionContext });
+
+    expect(result.error).toBeNull();
+    expect(writeSnapshot).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        entries: [{ postId: 1, score: 4 }],
+        daily: [],
+      }),
+    );
+    expect(writeStatus).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ lastError: null }),
+    );
+    expect(consoleError).toHaveBeenCalledWith(
+      JSON.stringify({
+        message: "post popularity daily views failed",
+        error: "pageviews 502",
+      }),
+    );
+    consoleError.mockRestore();
+  });
+
   describe("purging cached pages", () => {
     const previousAt = Date.parse("2026-08-22T00:15:00.000Z");
     const previousSnapshot = {
@@ -63,6 +128,7 @@ describe("post popularity service", () => {
       windowStart: Date.parse("2026-07-23T00:00:00.000Z"),
       windowEnd: Date.parse("2026-08-21T23:59:59.999Z"),
       syncedAt: previousAt,
+      daily: [],
     };
     const completedStatus = {
       lastAttemptAt: previousAt,
@@ -92,6 +158,7 @@ describe("post popularity service", () => {
           apiKey: "cloud-key",
         })),
         getPathMetrics: vi.fn(async () => [{ path: "/post/alpha", pageviews }]),
+        getDailyViews: vi.fn(async () => []),
         listPublishedPosts: vi.fn(async () => [
           {
             postId: 1,
@@ -154,6 +221,7 @@ describe("post popularity service", () => {
         throw new Error("Umami API credentials are not configured");
       }),
       getPathMetrics: vi.fn(),
+      getDailyViews: vi.fn(),
       listPublishedPosts: vi.fn(),
       readSnapshot: vi.fn(async () => null),
       writeSnapshot: vi.fn(),
@@ -194,6 +262,7 @@ describe("post popularity service", () => {
       now: () => new Date("2026-08-23T00:15:00.000Z"),
       resolveConfig: vi.fn(),
       getPathMetrics: vi.fn(),
+      getDailyViews: vi.fn(),
       listPublishedPosts: vi.fn(),
       readSnapshot: vi.fn(async () => ({
         entries: [
@@ -203,6 +272,7 @@ describe("post popularity service", () => {
         windowStart: Date.parse("2026-07-23T00:00:00.000Z"),
         windowEnd: Date.parse("2026-08-21T23:59:59.999Z"),
         syncedAt,
+        daily: [],
       })),
       writeSnapshot: vi.fn(),
       readStatus: vi.fn(),
@@ -231,12 +301,14 @@ describe("post popularity service", () => {
       now: () => new Date("2026-08-30T00:15:00.001Z"),
       resolveConfig: vi.fn(),
       getPathMetrics: vi.fn(),
+      getDailyViews: vi.fn(),
       listPublishedPosts: vi.fn(),
       readSnapshot: vi.fn(async () => ({
         entries: [{ postId: 7, score: 12 }],
         windowStart: Date.parse("2026-07-23T00:00:00.000Z"),
         windowEnd: Date.parse("2026-08-21T23:59:59.999Z"),
         syncedAt: Date.parse("2026-08-23T00:15:00.000Z"),
+        daily: [],
       })),
       writeSnapshot: vi.fn(),
       readStatus: vi.fn(),

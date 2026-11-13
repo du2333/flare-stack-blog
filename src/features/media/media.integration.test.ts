@@ -320,6 +320,105 @@ describe("MediaService", () => {
     unwrap(await PostService.publishPost(adminContext, { id: postId }));
   }
 
+  describe("Media sort", () => {
+    // Uploaded in this order; c and d are the same size.
+    const uploads = [
+      ["sort-a.jpg", 3000],
+      ["sort-b.jpg", 1000],
+      ["sort-c.jpg", 2000],
+      ["sort-d.jpg", 2000],
+      ["sort-e.jpg", 500],
+    ] as const;
+    type ListOptions = NonNullable<
+      Parameters<typeof MediaService.getMediaList>[1]
+    >;
+    const named = (...letters: Array<string>) =>
+      letters.map((letter) => `sort-${letter}.jpg`);
+
+    async function listPage(options: ListOptions) {
+      const page = await MediaService.getMediaList(adminContext, options);
+      return {
+        names: page.items.map((item) => item.fileName),
+        nextCursor: page.nextCursor,
+      };
+    }
+
+    /** Every page of the list, `limit` items at a time. */
+    async function listAll(options: ListOptions, limit: number) {
+      const names: Array<string> = [];
+      let cursor: number | undefined;
+      do {
+        const page = await listPage({ ...options, limit, cursor });
+        names.push(...page.names);
+        cursor = page.nextCursor ?? undefined;
+      } while (cursor);
+      return names;
+    }
+
+    beforeEach(async () => {
+      for (const [name, size] of uploads) {
+        unwrap(
+          await MediaService.upload(adminContext, {
+            file: jpegFile(name, size),
+          }),
+        );
+      }
+    });
+
+    it("lists the newest upload first by default", async () => {
+      const expected = named("e", "d", "c", "b", "a");
+      expect((await listPage({})).names).toEqual(expected);
+      expect((await listPage({ sort: "newest" })).names).toEqual(expected);
+    });
+
+    it("lists the earliest upload first for oldest", async () => {
+      expect((await listPage({ sort: "oldest" })).names).toEqual(
+        named("a", "b", "c", "d", "e"),
+      );
+    });
+
+    it("lists the largest file first, equal sizes newest first", async () => {
+      expect((await listPage({ sort: "largest" })).names).toEqual(
+        named("a", "d", "c", "b", "e"),
+      );
+    });
+
+    it("continues each sort from its cursor without skipping or repeating", async () => {
+      for (const sort of ["newest", "oldest", "largest"] as const) {
+        const whole = (await listPage({ sort })).names;
+        expect(await listAll({ sort }, 2)).toEqual(whole);
+        expect(await listAll({ sort }, 1)).toEqual(whole);
+      }
+    });
+
+    it("ends the last page of every sort with a null cursor", async () => {
+      for (const sort of ["newest", "oldest", "largest"] as const) {
+        expect((await listPage({ sort, limit: 5 })).nextCursor).toBeNull();
+      }
+    });
+
+    it("sorts and pages a search result", async () => {
+      expect(await listAll({ sort: "largest", search: "sort-" }, 2)).toEqual(
+        named("a", "d", "c", "b", "e"),
+      );
+      expect(await listAll({ sort: "largest", search: "-c." }, 1)).toEqual(
+        named("c"),
+      );
+    });
+
+    it("keeps unusedOnly and sort together", async () => {
+      const { items } = await MediaService.getMediaList(adminContext, {
+        search: "sort-a",
+      });
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(postId, imageDoc(items[0].key));
+
+      expect(await listAll({ sort: "largest", unusedOnly: true }, 2)).toEqual(
+        named("d", "c", "b", "e"),
+      );
+    });
+  });
+
   // ============================================
   // 文章-媒体关联 (Post-Media Relationships)
   // ============================================

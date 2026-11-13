@@ -1,0 +1,39 @@
+/* A row of a master list that is chosen by clicking (PickRow). The Admin's
+   (admin-variables.css). */
+@layer components {
+  .admin-pick-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--admin-radius-row);
+    text-align: left;
+    transition:
+      background-color 0.16s,
+      box-shadow 0.16s;
+  }
+  .admin-pick-row:hover {
+    background: var(--admin-hover);
+  }
+  .admin-pick-row[aria-current="true"] {
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-line),
+      var(--admin-shadow-card);
+  }
+  .admin-pick-row:focus-visible {
+    outline: 2px solid var(--admin-accent);
+    outline-offset: -2px;
+  }
+  .admin-pick-row:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-pick-row {
+      transition: none;
+    }
+  }
+}

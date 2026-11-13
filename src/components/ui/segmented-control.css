@@ -13,8 +13,8 @@
     border-radius: 11px;
     background: color-mix(
       in srgb,
-      var(--fuwari-btn-regular-bg) 35%,
-      var(--fuwari-card-bg)
+      var(--theme-tonal-bg) 35%,
+      var(--theme-surface)
     );
   }
   .fuwari-segment {
@@ -45,7 +45,7 @@
     color: var(--fuwari-fg-50);
   }
   .fuwari-segment:hover:not(:disabled) {
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-segmented:not([data-track])
     > .fuwari-segment:hover:not(
@@ -53,16 +53,42 @@
       [aria-checked="true"],
       [aria-selected="true"]
     ) {
-    background: var(--fuwari-btn-plain-bg-hover);
+    background: var(--theme-plain-bg-hover);
   }
   .fuwari-segmented
     > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
-    background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-primary);
+    background: var(--theme-tonal-bg);
+    color: var(--theme-accent);
+    font-weight: 500;
+  }
+  /* The Admin (admin-variables.css) only: ink text; a track is a soft grey
+     strip and the selected segment a raised white piece of it. */
+  :root:has(.admin-layout) .fuwari-segment:hover:not(:disabled),
+  :root:has(.admin-layout)
+    .fuwari-segmented
+    > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
+    color: var(--admin-fg);
+  }
+  :root:has(.admin-layout)
+    .fuwari-segmented
+    > .fuwari-segment:is([aria-checked="true"], [aria-selected="true"]) {
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-line),
+      var(--admin-shadow-card);
+  }
+  :root:has(.admin-layout) .fuwari-segmented[data-track] {
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--admin-hover);
+  }
+  :root:has(.admin-layout) .fuwari-segment {
+    border-radius: 9px;
+    color: var(--admin-fg-2);
     font-weight: 500;
   }
   .fuwari-segment:focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: 1px;
   }
   .fuwari-segment:disabled {

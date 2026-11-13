@@ -10,9 +10,6 @@ import { m } from "@/paraglide/messages";
 const TITLES: Record<SettingsPageId, () => string> = {
   site: () => m.settings_nav_site(),
   notify: () => m.settings_nav_notify(),
-  "api-keys": () => m.settings_nav_api_keys(),
-  "agent-skill": () => m.settings_nav_agent_skill(),
-  "muted-users": () => m.muted_users_title(),
   maintenance: () => m.settings_nav_maintenance(),
 };
 
@@ -20,7 +17,11 @@ export const Route = createFileRoute("/admin/settings")({
   ssr: false,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(systemConfigQuery);
-    return { title: m.settings_header_title() };
+    // The top bar names Settings; the tabs and the tab title name the section.
+    return {
+      title: m.settings_header_title(),
+      topBarTitle: m.settings_header_title(),
+    };
   },
   component: SettingsLayout,
 });

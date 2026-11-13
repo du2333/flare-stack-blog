@@ -7,7 +7,9 @@
     display: flex;
     flex-direction: column;
     width: min(100%, 23rem);
-    background: var(--fuwari-card-bg);
+    background: var(--theme-float-bg, var(--theme-raised));
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
     outline: none;
   }
   .fuwari-sheet[data-size="lg"] {
@@ -20,6 +22,34 @@
   .fuwari-sheet[data-side="right"] {
     --fuwari-sheet-offset: 24px;
     right: 0;
+  }
+  .fuwari-sheet[data-side="bottom"] {
+    --fuwari-sheet-offset: 24px;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: min(85dvh, 36rem);
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: 16px 16px 0 0;
+  }
+  .fuwari-sheet[data-side="bottom"][data-state="open"] {
+    animation-name: fuwari-sheet-rise-in;
+  }
+  .fuwari-sheet[data-side="bottom"][data-state="closing"] {
+    animation-name: fuwari-sheet-rise-out;
+  }
+  /* The Admin (admin-variables.css) only: a hairline on the edge that faces
+     the page. */
+  :root:has(.admin-layout) .fuwari-sheet[data-side="left"] {
+    border-right: 1px solid var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-sheet[data-side="right"] {
+    border-left: 1px solid var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-sheet[data-side="bottom"] {
+    border-top: 1px solid var(--admin-hairline);
   }
   .fuwari-sheet[data-state="closed"] {
     visibility: hidden;
@@ -74,6 +104,26 @@
   to {
     opacity: 0;
     transform: translateX(var(--fuwari-sheet-offset));
+  }
+}
+@keyframes fuwari-sheet-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--fuwari-sheet-offset));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fuwari-sheet-rise-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--fuwari-sheet-offset));
   }
 }
 @keyframes fuwari-sheet-fade {

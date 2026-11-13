@@ -12,7 +12,7 @@ export function ImagePlaceholderView({
 }: NodeViewProps) {
   const className = cn(
     "flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-(--fuwari-input-border) bg-(--fuwari-btn-regular-bg) px-4 py-10 text-sm fuwari-text-50",
-    selected && "border-(--fuwari-primary) text-(--fuwari-primary)",
+    selected && "border-(--fuwari-primary) text-(--fuwari-fg)",
   );
   const content = (
     <>
@@ -36,7 +36,7 @@ export function ImagePlaceholderView({
           }}
           className={cn(
             className,
-            "transition-colors hover:border-(--fuwari-primary) hover:text-(--fuwari-primary)",
+            "transition-colors hover:border-(--fuwari-primary) hover:text-(--fuwari-fg)",
           )}
         >
           {content}

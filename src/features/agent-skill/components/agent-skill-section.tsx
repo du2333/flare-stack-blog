@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
-import { SectionHeading } from "@/components/ui/page-heading";
+import { SettingsLead } from "@/features/config/components/admin/settings-lead";
 import { m } from "@/paraglide/messages";
 import { InstallStep } from "./install-step";
 import { PairedAgents } from "./paired-agents";
@@ -8,6 +7,7 @@ import { PairingStep } from "./pairing-step";
 import { TryStep } from "./try-step";
 import "./agent-skill.css";
 
+/** One step: a card with its number, its title and what to do. */
 function Step({
   number,
   title,
@@ -19,19 +19,13 @@ function Step({
 }) {
   return (
     <li className="agent-skill-step">
-      <SectionHeading
-        level={3}
-        size="md"
-        title={
-          <>
-            <Badge tone="primary" size="sm">
-              {number}
-            </Badge>{" "}
-            {title}
-          </>
-        }
-      />
-      {children}
+      <span className="agent-skill-step-number" aria-hidden="true">
+        {number}
+      </span>
+      <div className="agent-skill-step-main">
+        <h2>{title}</h2>
+        {children}
+      </div>
     </li>
   );
 }
@@ -39,22 +33,20 @@ function Step({
 export function AgentSkillSection() {
   return (
     <div className="agent-skill">
-      <SectionHeading
-        className="settings-section-heading"
-        title={m.agent_skill_title()}
-        description={m.agent_skill_intro()}
-      />
-      <ol className="agent-skill-steps">
-        <Step number={1} title={m.agent_skill_step_install()}>
-          <InstallStep />
-        </Step>
-        <Step number={2} title={m.agent_skill_step_pair()}>
-          <PairingStep />
-        </Step>
-        <Step number={3} title={m.agent_skill_step_try()}>
-          <TryStep />
-        </Step>
-      </ol>
+      <SettingsLead description={m.agent_skill_intro()} />
+      <div className="agent-skill-guide">
+        <ol className="agent-skill-steps">
+          <Step number={1} title={m.agent_skill_step_install()}>
+            <InstallStep />
+          </Step>
+          <Step number={2} title={m.agent_skill_step_pair()}>
+            <PairingStep />
+          </Step>
+          <Step number={3} title={m.agent_skill_step_try()}>
+            <TryStep />
+          </Step>
+        </ol>
+      </div>
       <PairedAgents />
     </div>
   );

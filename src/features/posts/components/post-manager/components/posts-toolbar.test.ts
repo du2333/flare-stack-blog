@@ -7,14 +7,15 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { createElement } from "react";
+import { createElement, type ComponentProps } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, expect, it, vi } from "vitest";
 import { m } from "@/paraglide/messages";
-import { PostsToolbar } from "./posts-toolbar";
+import type { PostPopularity } from "../types";
+import { PostsStatusTabs, PostsTools } from "./posts-toolbar";
 
-vi.mock("@/hooks/use-motion", () => ({
-  MOTION: { popover: 120 },
+vi.mock("@/hooks/use-motion", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
   useMotionPresence: (open: boolean) => open,
 }));
 vi.mock("@/lib/orpc", async () => {
@@ -35,10 +36,18 @@ vi.mock("@/lib/orpc", async () => {
 
 afterEach(cleanup);
 
-function renderToolbar(filters: { category?: number | "none"; tag?: number }) {
+function renderTools(
+  filters: { category?: number | "none"; tag?: number } = {},
+  {
+    popularity,
+    sortBy = "updatedAt",
+  }: Partial<
+    Pick<ComponentProps<typeof PostsTools>, "popularity" | "sortBy">
+  > = {},
+) {
   const onCategoryChange = vi.fn();
   const onTagChange = vi.fn();
-  const onManageTaxonomy = vi.fn();
+  const onSortByChange = vi.fn();
   render(
     createElement(
       QueryClientProvider,
@@ -47,68 +56,53 @@ function renderToolbar(filters: { category?: number | "none"; tag?: number }) {
           defaultOptions: { queries: { retry: false } },
         }),
       },
-      createElement(PostsToolbar, {
+      createElement(PostsTools, {
         searchTerm: "",
         onSearchChange: vi.fn(),
-        searchRef: null,
-        status: "ALL",
-        onStatusChange: vi.fn(),
-        sortBy: "updatedAt",
-        onSortByChange: vi.fn(),
+        sortBy,
+        onSortByChange,
         onCategoryChange,
         onTagChange,
-        onManageTaxonomy,
+        popularity,
         ...filters,
       }),
     ),
   );
-  return { onCategoryChange, onTagChange, onManageTaxonomy };
+  return { onCategoryChange, onTagChange, onSortByChange };
 }
 
+const chip = (name: string) => screen.getByRole("button", { name });
+
 async function pick(menu: string, option: string) {
-  fireEvent.click(screen.getByRole("button", { name: menu }));
+  fireEvent.click(chip(menu));
   fireEvent.click(await findInPopover("menuitemradio", { name: option }));
 }
 
 it("offers the unpublished changes filter with its count between published and draft", () => {
   const onStatusChange = vi.fn();
   render(
-    createElement(
-      QueryClientProvider,
-      { client: new QueryClient() },
-      createElement(PostsToolbar, {
-        searchTerm: "",
-        onSearchChange: vi.fn(),
-        searchRef: null,
-        status: "ALL",
-        statusCounts: { draft: 3, published: 5, unpublishedChanges: 2 },
-        onStatusChange,
-        sortBy: "updatedAt",
-        onSortByChange: vi.fn(),
-        onCategoryChange: vi.fn(),
-        onTagChange: vi.fn(),
-      }),
-    ),
+    createElement(PostsStatusTabs, {
+      status: "ALL",
+      statusCounts: { published: 5, draft: 2, unpublishedChanges: 1 },
+      onStatusChange,
+    }),
   );
-
-  const tabs = screen.getAllByRole("tab");
-  expect(tabs.map((tab) => tab.getAttribute("data-value"))).toEqual([
-    "ALL",
-    "PUBLISHED",
-    "CHANGED",
-    "DRAFT",
+  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+    `${m.admin_posts_filter_all()} 7`,
+    `${m.admin_posts_filter_published()} 5`,
+    `${m.admin_posts_filter_changed()} 1`,
+    `${m.admin_posts_filter_draft()} 2`,
   ]);
-  const changed = tabs[2]!;
-  expect(changed.textContent).toBe(`${m.admin_posts_filter_changed()} 2`);
-  expect(tabs[1]!.textContent).toBe(`${m.admin_posts_filter_published()} 5`);
-  fireEvent.click(changed);
+  fireEvent.click(
+    screen.getByRole("tab", {
+      name: new RegExp(m.admin_posts_filter_changed()),
+    }),
+  );
   expect(onStatusChange).toHaveBeenCalledWith("CHANGED");
 });
 
-it("filters by a category, by uncategorized posts and by a tag", async () => {
-  const { onCategoryChange, onTagChange } = renderToolbar({});
-  await screen.findByText(m.admin_posts_filter_category_all());
-
+it("filters by a category, by uncategorized posts and by a tag from their chips", async () => {
+  const { onCategoryChange, onTagChange } = renderTools();
   await pick(m.admin_posts_filter_category(), "Notes");
   expect(onCategoryChange).toHaveBeenLastCalledWith(2);
   await pick(m.admin_posts_filter_category(), m.post_uncategorized());
@@ -117,14 +111,25 @@ it("filters by a category, by uncategorized posts and by a tag", async () => {
   expect(onTagChange).toHaveBeenLastCalledWith(5);
 });
 
-it("shows the chosen filters and clears them through the all options", async () => {
-  const { onCategoryChange, onTagChange } = renderToolbar({
+it("shows a chip's name alone until it filters, then its value, tinted", async () => {
+  renderTools({ category: 2 });
+  const category = chip(m.admin_posts_filter_category());
+  await waitFor(() =>
+    expect(category.textContent).toBe(
+      `${m.admin_posts_filter_category()}Notes`,
+    ),
+  );
+  expect(category.hasAttribute("data-active")).toBe(true);
+  const tag = chip(m.admin_posts_filter_tag());
+  expect(tag.textContent).toBe(m.admin_posts_filter_tag());
+  expect(tag.hasAttribute("data-active")).toBe(false);
+});
+
+it("clears a chosen filter through the all option of its chip", async () => {
+  const { onCategoryChange, onTagChange } = renderTools({
     category: 2,
     tag: 5,
   });
-  await screen.findByText("Notes");
-  await screen.findByText("Rust");
-
   await pick(
     m.admin_posts_filter_category(),
     m.admin_posts_filter_category_all(),
@@ -135,27 +140,62 @@ it("shows the chosen filters and clears them through the all options", async () 
 });
 
 it("drops a filter whose category or tag no longer exists without a history entry", async () => {
-  const stale = renderToolbar({ category: 99 });
+  const stale = renderTools({ category: 99 });
   await waitFor(() =>
     expect(stale.onCategoryChange).toHaveBeenCalledWith(undefined, true),
   );
   cleanup();
-  const staleTag = renderToolbar({ tag: 99 });
+  const staleTag = renderTools({ tag: 99 });
   await waitFor(() =>
     expect(staleTag.onTagChange).toHaveBeenCalledWith(undefined, true),
   );
   expect(staleTag.onCategoryChange).not.toHaveBeenCalled();
 });
 
-it("opens the categories and tags sheet from beside the filters", () => {
-  const { onManageTaxonomy } = renderToolbar({});
-  const manage = screen.getByRole("button", {
-    name: m.admin_posts_manage_taxonomy(),
-  });
-  expect(manage.getAttribute("aria-haspopup")).toBe("dialog");
-  expect(manage.previousElementSibling?.textContent).toContain(
-    m.admin_posts_filter_tag_all(),
+it("offers the sorts by comments, and by views only while views can be read", async () => {
+  const sorts = async (popularity: PostPopularity) => {
+    renderTools({}, { popularity });
+    fireEvent.click(chip(m.admin_posts_sort_label()));
+    await findInPopover("menuitemradio", {
+      name: m.admin_posts_sort_recent_upd(),
+    });
+    const options = screen
+      .getAllByRole("menuitemradio")
+      .map((option) => option.textContent);
+    cleanup();
+    return options;
+  };
+  const withoutViews = [
+    m.admin_posts_sort_recent_pub(),
+    m.admin_posts_sort_recent_upd(),
+    m.admin_posts_sort_comments(),
+  ];
+  expect(await sorts("ready")).toEqual([
+    ...withoutViews.slice(0, 2),
+    m.admin_posts_sort_views(),
+    m.admin_posts_sort_comments(),
+  ]);
+  for (const popularity of ["unconfigured", "missing", "expired"] as const)
+    expect(await sorts(popularity)).toEqual(withoutViews);
+});
+
+it("names the recent sort instead of the views when the views cannot be read", () => {
+  renderTools({}, { popularity: "missing", sortBy: "viewCount" });
+  expect(chip(m.admin_posts_sort_label()).textContent).toBe(
+    `${m.admin_posts_sort_label()}${m.admin_posts_sort_recent_upd()}`,
   );
-  fireEvent.click(manage);
-  expect(onManageTaxonomy).toHaveBeenCalledOnce();
+});
+
+it('puts the caret in the search on "/", unless one is typing elsewhere', () => {
+  renderTools();
+  const search = screen.getByRole("searchbox");
+  fireEvent.keyDown(document.body, { key: "/" });
+  expect(document.activeElement).toBe(search);
+  search.blur();
+  const other = document.createElement("input");
+  document.body.appendChild(other);
+  other.focus();
+  fireEvent.keyDown(other, { key: "/" });
+  expect(document.activeElement).toBe(other);
+  other.remove();
 });

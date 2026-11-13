@@ -6,8 +6,8 @@
     gap: 10px;
     padding: 12px 14px;
     border-radius: 12px;
-    background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     font-size: var(--fuwari-callout-font-size, 14px);
     line-height: 1.6;
   }
@@ -22,6 +22,11 @@
   .fuwari-callout[data-tone="success"] {
     background: var(--fuwari-success-bg);
     color: var(--fuwari-success-fg);
+  }
+  /* The Admin (admin-variables.css) only: a tighter radius and a hairline. */
+  :root:has(.admin-layout) .fuwari-callout {
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: 8px;
   }
   .fuwari-callout-icon {
     flex-shrink: 0;

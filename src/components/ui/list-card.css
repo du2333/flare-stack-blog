@@ -1,0 +1,77 @@
+@layer components {
+  .fuwari-list-card-cols {
+    flex: none;
+    display: grid;
+    align-items: center;
+    height: 40px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--admin-line);
+    color: var(--admin-fg-3);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .fuwari-sort-header {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 26px;
+    margin: 0 -7px;
+    padding: 0 7px;
+    border-radius: 7px;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
+  .fuwari-sort-header:hover {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  .fuwari-sort-header[aria-pressed="true"] {
+    color: var(--admin-fg);
+  }
+  .fuwari-list-card-rows {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-line-strong) transparent;
+    transition: opacity 0.2s;
+  }
+  .fuwari-list-card-rows[aria-busy="true"] {
+    opacity: 0.55;
+  }
+  /* Rows rise in one after another; --i is the row's place. */
+  .fuwari-list-card-row-in {
+    animation: fuwari-list-card-row-in 0.42s var(--admin-ease) both;
+    animation-delay: calc(min(var(--i, 0), 14) * 22ms);
+  }
+  .fuwari-list-card-foot {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 12px 0 20px;
+    border-top: 1px solid var(--admin-line);
+    color: var(--admin-fg-3);
+    font-size: var(--admin-text-meta);
+  }
+  .fuwari-list-card-foot > .fuwari-pagination {
+    margin-left: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fuwari-list-card-row-in {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+    }
+  }
+}
+
+@keyframes fuwari-list-card-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

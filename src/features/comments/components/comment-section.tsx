@@ -408,31 +408,29 @@ export function CommentSection({ target }: CommentSectionProps) {
   );
 }
 
+/**
+ * The section while its comments load: its heading, and the boxes of what
+ * most often follows, each as tall as the real thing: the line that invites
+ * a reader to sign in, and the one line a Post without comments has in
+ * place of a list. Such a Post, the usual case, then loads without moving
+ * what comes after the section; one with comments grows from there.
+ */
 function CommentSectionSkeleton() {
   return (
-    <div className="space-y-6">
-      <Skeleton className="h-7 w-24" />
-      <Skeleton className="h-32 w-full rounded-(--fuwari-radius-large)" />
-      <div className="space-y-0">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="py-6 flex gap-4 border-b border-black/5 dark:border-white/5"
-          >
-            <Skeleton className="w-9 h-9 rounded-full shrink-0" />
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-20 rounded" />
-                <Skeleton className="h-3 w-16 rounded" />
-              </div>
-              <div className="space-y-1.5">
-                <Skeleton className="h-3.5 w-full rounded" />
-                <Skeleton className="h-3.5 w-3/4 rounded" />
-              </div>
-            </div>
-          </div>
-        ))}
+    <section className="comments-section" aria-busy="true">
+      <h2>{m.comments_heading()}</h2>
+      <div className="comments-login">
+        {/* As the line of text it stands for: it takes the room left. */}
+        <div className="min-w-35 flex-1">
+          <Skeleton className="h-3.5 w-48 max-w-full rounded" />
+        </div>
+        <Skeleton className="h-11 w-28 rounded-(--theme-button-radius)" />
       </div>
-    </div>
+      <div className="fuwari-empty" data-size="compact">
+        <div className="flex h-[1lh] items-center">
+          <Skeleton className="h-3.5 w-40 rounded" />
+        </div>
+      </div>
+    </section>
   );
 }

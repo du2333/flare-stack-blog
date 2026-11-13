@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
-import { Search, ShieldCheck, UserRound } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { CircleAlert, Search, ShieldCheck, UserRound } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { SectionHeading } from "@/components/ui/page-heading";
 import { SearchField } from "@/components/ui/search-field";
-import { Select } from "@/components/ui/select";
+import DropdownMenu from "@/components/ui/dropdown-menu";
+import { SettingsShell } from "@/features/config/components/admin/settings-shell";
 import { useContentMotion } from "@/hooks/use-motion";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
 import type { MutedUser } from "@/features/muted-users/muted-users.schema";
@@ -28,7 +27,6 @@ export function MutedUsersSettingsSection() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("recent");
   const searchRef = useRef<HTMLInputElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const items = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
@@ -50,59 +48,61 @@ export function MutedUsersSettingsSection() {
     contentRef,
     `${isPending}:${isError}:${items.map((user) => user.id).join(",")}`,
   );
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [search, sort]);
   const clearSearch = () => {
     setSearch("");
     searchRef.current?.focus();
   };
-  return (
-    <div className="muted-users">
-      <SectionHeading
-        className="settings-section-heading"
-        title={m.muted_users_title()}
-        description={m.muted_manager_hint()}
-        actions={
-          <Badge tone="primary">
-            {isPending || isError
-              ? "—"
-              : m.muted_manager_count({ count: data?.length ?? 0 })}
-          </Badge>
-        }
+  const tools = (
+    <>
+      <SearchField
+        ref={searchRef}
+        variant="raised"
+        shortcut="/"
+        value={search}
+        onValueChange={setSearch}
+        placeholder={m.muted_manager_search()}
+        aria-label={m.muted_manager_search()}
+        maxLength={200}
+        clearLabel={m.muted_manager_clear()}
       />
-      <div className="muted-toolbar">
-        <SearchField
-          ref={searchRef}
-          className="muted-search"
-          value={search}
-          onValueChange={setSearch}
-          placeholder={m.muted_manager_search()}
-          aria-label={m.muted_manager_search()}
-          maxLength={200}
-          clearLabel={m.muted_manager_clear()}
-        />
-        <div className="muted-sort">
-          <span>{m.muted_manager_sort()}</span>
-          <Select
-            value={sort}
-            onChange={setSort}
-            options={[
-              { value: "recent", label: m.muted_manager_recent() },
-              { value: "oldest", label: m.muted_manager_oldest() },
-              { value: "name", label: m.muted_manager_name() },
-            ]}
-          />
-        </div>
-      </div>
-      <div className="muted-list-scroll" ref={scrollRef} aria-busy={isPending}>
-        <div ref={contentRef}>
+      <DropdownMenu
+        variant="chip"
+        ariaLabel={m.muted_manager_sort()}
+        value={sort}
+        onChange={setSort}
+        options={[
+          { value: "recent", label: m.muted_manager_recent() },
+          { value: "oldest", label: m.muted_manager_oldest() },
+          { value: "name", label: m.muted_manager_name() },
+        ]}
+      />
+    </>
+  );
+  return (
+    <SettingsShell
+      title={m.muted_users_title()}
+      section="muted-users"
+      regionLabel={m.muted_users_title()}
+      count={isPending || isError ? undefined : (data?.length ?? 0)}
+      description={m.muted_manager_hint()}
+      tools={tools}
+      body="list"
+      scrollKey={`${search}\0${sort}`}
+    >
+      <div className="muted-users">
+        <div ref={contentRef} aria-busy={isPending}>
           {isError ? (
             <EmptyState
+              variant="tile"
               role="alert"
+              icon={CircleAlert}
               description={m.muted_users_toast_error()}
               action={
-                <Button onClick={() => void refetch()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void refetch()}
+                >
                   {m.muted_manager_retry()}
                 </Button>
               }
@@ -111,6 +111,7 @@ export function MutedUsersSettingsSection() {
             <MutedUsersListSkeleton />
           ) : items.length === 0 ? (
             <EmptyState
+              variant="tile"
               icon={data?.length ? Search : ShieldCheck}
               title={
                 data?.length
@@ -124,7 +125,7 @@ export function MutedUsersSettingsSection() {
               }
               action={
                 search && (
-                  <Button onClick={clearSearch}>
+                  <Button variant="outline" size="sm" onClick={clearSearch}>
                     {m.muted_manager_clear()}
                   </Button>
                 )
@@ -133,19 +134,23 @@ export function MutedUsersSettingsSection() {
           ) : (
             <ul className="muted-list">
               {items.map((user) => (
-                <li key={user.id} className="muted-row">
+                <li key={user.id} className="admin-list-row muted-row">
                   <Avatar image={user.image} />
-                  <div className="muted-user">
-                    <h3>{user.name}</h3>
-                    <p>
-                      <ClientOnly fallback="—">
-                        {m.muted_users_muted_at({
-                          date: formatDate(user.mutedAt, { includeTime: true }),
-                        })}
-                      </ClientOnly>
-                    </p>
-                  </div>
+                  <h3 className="muted-name" title={user.name}>
+                    {user.name}
+                  </h3>
+                  <p className="muted-since">
+                    <ClientOnly fallback="—">
+                      {m.muted_users_muted_at({
+                        date: formatDate(user.mutedAt, {
+                          includeTime: true,
+                        }),
+                      })}
+                    </ClientOnly>
+                  </p>
                   <Button
+                    variant="outline"
+                    size="sm"
                     disabled={isUnmuting}
                     onClick={() => setPending(user)}
                     aria-label={m.muted_manager_unmute_named({
@@ -159,36 +164,36 @@ export function MutedUsersSettingsSection() {
             </ul>
           )}
         </div>
+        <footer className="muted-footer" role="status">
+          {!isPending && !isError && search.trim() && items.length > 0
+            ? m.muted_manager_results({
+                shown: items.length,
+                total: data?.length ?? 0,
+              })
+            : null}
+        </footer>
+        <ConfirmationModal
+          isOpen={pending !== null}
+          onClose={() => {
+            if (!isUnmuting) setPending(null);
+          }}
+          onConfirm={async () => {
+            if (!pending || isUnmuting) return;
+            try {
+              await unmuteUser({ userId: pending.id });
+              setPending(null);
+            } catch {
+              /* The mutation displays the error; keep the dialog available for retry. */
+            }
+          }}
+          title={m.muted_users_unmute()}
+          message={m.muted_users_unmute_message({ name: pending?.name ?? "" })}
+          confirmLabel={m.muted_users_unmute()}
+          isLoading={isUnmuting}
+          fallbackFocus={() => searchRef.current}
+        />
       </div>
-      <footer className="muted-footer" role="status">
-        {!isPending &&
-          !isError &&
-          m.muted_manager_results({
-            shown: items.length,
-            total: data?.length ?? 0,
-          })}
-      </footer>
-      <ConfirmationModal
-        isOpen={pending !== null}
-        onClose={() => {
-          if (!isUnmuting) setPending(null);
-        }}
-        onConfirm={async () => {
-          if (!pending || isUnmuting) return;
-          try {
-            await unmuteUser({ userId: pending.id });
-            setPending(null);
-          } catch {
-            /* The mutation displays the error; keep the dialog available for retry. */
-          }
-        }}
-        title={m.muted_users_unmute()}
-        message={m.muted_users_unmute_message({ name: pending?.name ?? "" })}
-        confirmLabel={m.muted_users_unmute()}
-        isLoading={isUnmuting}
-        fallbackFocus={() => searchRef.current}
-      />
-    </div>
+    </SettingsShell>
   );
 }
 
@@ -206,7 +211,7 @@ function Avatar({ image }: { image: string | null }) {
           onError={() => setFailedUrl(image)}
         />
       ) : (
-        <UserRound size={22} />
+        <UserRound size={16} />
       )}
     </span>
   );

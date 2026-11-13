@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import { SearchCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { orpcClient } from "@/lib/orpc";
 import { StatusText } from "@/components/ui/status-text";
@@ -34,35 +36,35 @@ export function SearchMaintenance() {
 
   return (
     <>
-      <div className="flex items-center gap-3 py-4 border-b border-(--fuwari-input-border)">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium fuwari-text-90">
-            {m.settings_maintenance_search_title()}
-          </p>
-          <p className="text-xs fuwari-text-50">
-            {m.settings_maintenance_search_desc_short()}
-          </p>
-          {rebuildSearchIndexMutation.isSuccess && (
-            <StatusText className="mt-2">
-              {m.settings_maintenance_search_toast_success({
-                duration: rebuildSearchIndexMutation.data.duration,
-                indexed: rebuildSearchIndexMutation.data.indexed,
-              })}
-            </StatusText>
-          )}
-          {rebuildSearchIndexMutation.isError && (
-            <StatusText error className="mt-2">
-              {rebuildSearchIndexMutation.error.message}
-            </StatusText>
-          )}
-        </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          loading={rebuildSearchIndexMutation.isPending}
-        >
-          {m.settings_maintenance_search_btn()}
-        </Button>
-      </div>
+      <MaintenanceItem
+        icon={SearchCheck}
+        title={m.settings_maintenance_search_title()}
+        lines={[m.settings_maintenance_search_desc_short()]}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsModalOpen(true)}
+            loading={rebuildSearchIndexMutation.isPending}
+          >
+            {m.settings_maintenance_search_btn()}
+          </Button>
+        }
+      >
+        {rebuildSearchIndexMutation.isSuccess && (
+          <StatusText className="mt-2">
+            {m.settings_maintenance_search_toast_success({
+              duration: rebuildSearchIndexMutation.data.duration,
+              indexed: rebuildSearchIndexMutation.data.indexed,
+            })}
+          </StatusText>
+        )}
+        {rebuildSearchIndexMutation.isError && (
+          <StatusText error className="mt-2">
+            {rebuildSearchIndexMutation.error.message}
+          </StatusText>
+        )}
+      </MaintenanceItem>
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

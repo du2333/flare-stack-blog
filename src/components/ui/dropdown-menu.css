@@ -1,0 +1,53 @@
+/* The chip trigger (the Admin's list toolbar, admin-variables.css): a name,
+   the chosen value in bold, and a chevron that turns while the menu is open.
+   Tinted in the accent while it filters. */
+@layer components {
+  .fuwari-chip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 9px 0 12px;
+    border-radius: var(--admin-radius-control);
+    background: var(--admin-surface);
+    box-shadow:
+      0 0 0 1px var(--admin-line),
+      var(--admin-shadow-card);
+    color: var(--admin-fg-2);
+    font-size: var(--admin-text-small);
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      box-shadow 0.15s,
+      color 0.15s;
+  }
+  .fuwari-chip-trigger:hover,
+  .fuwari-chip-trigger[aria-expanded="true"] {
+    color: var(--admin-fg);
+    box-shadow:
+      0 0 0 1px var(--admin-line-strong),
+      var(--admin-shadow-card);
+  }
+  .fuwari-chip-trigger b {
+    max-width: 10em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--admin-fg);
+    font-weight: 550;
+  }
+  .fuwari-chip-trigger[data-active] {
+    background: var(--admin-accent-soft);
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--admin-accent) 35%, transparent);
+  }
+  .fuwari-chip-trigger[data-active] b {
+    color: var(--admin-accent-text);
+  }
+  .fuwari-chip-trigger svg {
+    color: var(--admin-fg-3);
+    transition: transform 0.25s var(--admin-ease);
+  }
+  .fuwari-chip-trigger[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+}

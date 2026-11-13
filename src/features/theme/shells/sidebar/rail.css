@@ -1,0 +1,619 @@
+/* The rail: the frame of the site from 1024px, with the brand, who writes
+   here, search and the navigation, and at its foot the social links, the
+   account entry and the switches. Below 1024px it has no box; the top bar
+   stands in for it (top-bar.css). The brand and the panel around the shared
+   menu rows are the top bar's too. */
+
+.sidebar-rail {
+  display: none;
+}
+@media (width >= 64rem) {
+  /* As tall as the window and fixed in it while the page scrolls. Its upper
+     part takes what the foot leaves and scrolls by itself in a window too
+     low for it, so the foot is in view in any window; what is cut off above
+     the foot fades out over the last 1.5rem, which nothing stands in while
+     everything fits. */
+  .sidebar-rail {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: var(--sidebar-rail-w);
+    height: 100vh;
+    height: 100dvh;
+  }
+  /* The line between the rail and the page, in the middle of the room
+     between them, from the top of the window to its foot. */
+  .sidebar-rail::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -0.875rem;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--sidebar-edge);
+    pointer-events: none;
+  }
+  .sidebar-rail-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    padding: 1rem 0.25rem 1.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent);
+  }
+  .sidebar-rail-body > * {
+    flex: none;
+  }
+  .sidebar-rail-foot {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 1rem;
+  }
+}
+
+/* The entries of the table of contents draw their own ring, inside the
+   entry: the list clips what is drawn around it. */
+.sidebar-shell
+  :is(.sidebar-rail, .sidebar-topbar)
+  :is(a, button):not(.sidebar-rail-toc-slot *):focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+/* ── The brand ───────────────────────────────────────────────────────────── */
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--fuwari-fg);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.sidebar-brand > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .sidebar-brand:hover {
+    color: var(--theme-accent);
+  }
+}
+/* The mark before the title: the built-in icon as a seal, the avatar round,
+   the site icon as it is. */
+.sidebar-brand-mark {
+  flex: none;
+  width: 1.75rem;
+  max-width: none;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  object-fit: contain;
+}
+.sidebar-brand-mark[data-mark="default"] {
+  display: grid;
+  place-items: center;
+  border-radius: 0.5rem;
+  background-color: var(--theme-tonal-bg);
+  color: var(--theme-tonal-fg);
+}
+.sidebar-brand-mark[data-mark="avatar"] {
+  border-radius: 999px;
+  object-fit: cover;
+}
+/* A dark site icon would vanish on the dark page without an edge. */
+.dark .sidebar-brand-mark[data-mark="siteIcon"] {
+  filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.6));
+}
+
+/* ── Who writes here ─────────────────────────────────────────────────────── */
+
+/* It stands in a grid row, which goes to nothing where the table of
+   contents of a Post has its place (below); the room above the avatar is
+   the avatar's own margin, so it goes with the row. */
+.sidebar-identity-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.sidebar-identity {
+  min-height: 0;
+  padding-inline: 0.5rem;
+  overflow: hidden;
+}
+.sidebar-avatar {
+  display: block;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin: 1.5rem 0 1rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  background-color: var(--theme-surface);
+  box-shadow: 0 0 0 1px var(--sidebar-edge);
+}
+.sidebar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sidebar-author {
+  color: var(--fuwari-fg);
+  font-family: var(--theme-heading-font);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+/* Three lines at most; the profile card has it in full below 1024px. */
+.sidebar-description {
+  display: -webkit-box;
+  margin-top: 0.25rem;
+  overflow: hidden;
+  color: var(--fuwari-fg-50);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* ── Search ──────────────────────────────────────────────────────────────── */
+
+/* A link in the shape of a field; on the search page it is the field in
+   focus. */
+.sidebar-search {
+  justify-content: flex-start;
+  gap: 0.625rem;
+  height: 2.5rem;
+  margin: 1.25rem 0.25rem 0;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1px var(--sidebar-edge);
+  color: var(--fuwari-fg-50);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+.sidebar-search:hover {
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1px var(--sidebar-edge-strong);
+  color: var(--fuwari-fg-75);
+}
+.sidebar-search[data-current="true"] {
+  background-color: var(--theme-surface);
+  box-shadow: inset 0 0 0 1.5px var(--theme-accent);
+  color: var(--fuwari-fg);
+}
+
+/* ── The navigation ──────────────────────────────────────────────────────── */
+
+.sidebar-nav {
+  --sidebar-nav-h: 2.75rem;
+  --sidebar-nav-gap: 2px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0.75rem 0.25rem 0;
+}
+/* One pill for the current row, which stands where that row is among the
+   rows on show (--sidebar-current counts them from the top; rail.tsx) and
+   glides from row to row. */
+.sidebar-nav-pill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--sidebar-nav-h);
+  border-radius: 0.5rem;
+  background-color: var(--sidebar-pill-bg);
+  box-shadow: var(--sidebar-pill-shadow);
+  opacity: 0;
+  transform: translateY(
+    calc(
+      var(--sidebar-current, 0) *
+        (var(--sidebar-nav-h) + var(--sidebar-nav-gap))
+    )
+  );
+}
+.sidebar-nav-pill[data-shown="true"] {
+  opacity: 1;
+}
+.sidebar-nav-pill::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.25rem;
+  height: 1rem;
+  border-radius: 999px;
+  background-color: var(--theme-accent);
+  transform: translate(-50%, -50%);
+}
+.sidebar-nav-row {
+  position: relative;
+  height: var(--sidebar-nav-h);
+}
+/* Rows are as high as each other and a gap apart. The gap is the top margin
+   of a row (or group) after another, so a group that is closed, with its
+   links folded to nothing, leaves none behind. */
+.sidebar-nav-row + .sidebar-nav-row,
+.sidebar-nav-row + .sidebar-nav-group,
+.sidebar-nav-group + .sidebar-nav-row,
+.sidebar-nav-group + .sidebar-nav-group,
+.sidebar-nav-panel .sidebar-nav-row {
+  margin-top: var(--sidebar-nav-gap);
+}
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0.75rem 0 2.75rem;
+  border-radius: 0.5rem;
+  color: var(--fuwari-fg-75);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.sidebar-nav-link:hover {
+  background-color: var(--sidebar-hover);
+  color: var(--fuwari-fg);
+}
+.sidebar-nav-link.sidebar-nav-current {
+  background-color: transparent;
+  color: var(--fuwari-fg);
+}
+/* The icon leads the row from outside the link, so the link's name is its
+   label alone. */
+.sidebar-nav-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.875rem;
+  display: flex;
+  color: var(--fuwari-fg-50);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.sidebar-nav-link:hover + .sidebar-nav-icon {
+  color: var(--fuwari-fg-75);
+}
+
+/* A group: its row is a button with a chevron at the end, and the links
+   stand under it, set in past the icons, along a guide line. */
+.sidebar-nav-trigger {
+  justify-content: flex-start;
+  gap: 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.sidebar-nav-trigger > .fuwari-disclosure-chevron {
+  margin-left: auto;
+  opacity: 0.6;
+}
+.sidebar-nav-trigger[data-holds-current]:not(.sidebar-nav-current) {
+  color: var(--fuwari-fg);
+}
+.sidebar-nav-trigger[data-holds-current]:not(.sidebar-nav-current)
+  + .sidebar-nav-icon {
+  color: var(--theme-accent);
+}
+.sidebar-nav-panel > div {
+  position: relative;
+}
+.sidebar-nav-panel > div::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--sidebar-nav-gap) + 0.5rem);
+  bottom: 0.5rem;
+  left: 1.4375rem;
+  width: 1px;
+  background-color: var(--sidebar-hairline);
+}
+.sidebar-nav-row[data-child] .sidebar-nav-link {
+  padding-left: 3.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+/* A folded group's links draw their focus ring inside the row, which the
+   panel would otherwise clip. */
+.sidebar-shell .sidebar-rail .sidebar-nav-panel a:focus-visible {
+  outline-offset: -2px;
+}
+.sidebar-nav-current + .sidebar-nav-icon,
+.sidebar-nav-current:hover + .sidebar-nav-icon {
+  color: var(--theme-accent);
+}
+
+/* ── The foot ────────────────────────────────────────────────────────────── */
+
+/* The social links, over a hairline that is theirs: a site without them has
+   neither. */
+.sidebar-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem;
+  padding: 0 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--sidebar-hairline);
+}
+.sidebar-socials:empty {
+  display: none;
+}
+/* Where back to top rests in the foot of the rail (sidebar.css), the end of
+   this row is its place: the links wrap short of it, and the row is there
+   for it without them. */
+@media (64rem <= width < 89.5rem) {
+  .sidebar-socials,
+  .sidebar-socials:empty {
+    display: flex;
+    min-height: 3rem;
+    padding-right: calc(var(--shell-floating-actions-size) + 0.75rem);
+  }
+}
+.sidebar-socials a {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* The account entry has the row; the two switches end it. */
+.sidebar-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding-inline: 0.25rem;
+}
+.sidebar-account {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-account-button {
+  justify-content: flex-start;
+  gap: 0.625rem;
+  width: 100%;
+  min-width: 0;
+  height: 2.75rem;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.sidebar-account-button:not(:disabled):hover,
+.sidebar-account-button[aria-expanded="true"] {
+  background-color: var(--sidebar-hover);
+  color: var(--fuwari-fg);
+}
+.sidebar-account-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--theme-tonal-bg);
+  color: var(--theme-tonal-fg);
+  object-fit: cover;
+}
+.sidebar-account-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-account-chevron {
+  margin-left: auto;
+  opacity: 0.5;
+}
+.sidebar-tool {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--fuwari-fg-75);
+}
+.sidebar-tool:hover,
+.sidebar-tool[aria-expanded="true"] {
+  background-color: var(--sidebar-hover);
+  color: var(--theme-accent);
+}
+/* The Colour Scheme toggle draws at 14px; the other tools at 18px. */
+.sidebar-tool-scheme > div,
+.sidebar-tool-scheme svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── The panel around the shared menu rows (mobile-menu.css) ─────────────── */
+
+.sidebar-panel {
+  position: absolute;
+  z-index: 60;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border-radius: 0.75rem;
+  background-color: var(--theme-raised);
+  box-shadow: var(--sidebar-panel-shadow);
+}
+.sidebar-panel .public-menu-item {
+  border-radius: 0.5rem;
+}
+/* The account menu opens above its row, from the row's left edge. */
+.sidebar-account-panel {
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max(100%, 13.5rem);
+  max-height: calc(100dvh - 6rem);
+  transform-origin: bottom left;
+}
+
+/* ── The table of contents of a Post ─────────────────────────────────────── */
+
+/* The rail gives the list a place under the navigation (rail.tsx; the
+   option 「文章页目录位置」, in the rail). The place is on every page and has
+   no height. The page itself says, from the first paint, when it has a
+   table of contents ([data-table-of-contents]); it says so exactly while a
+   Post with headings is on screen, the one that is fading out included.
+   Then who writes here folds away, the navigation stands under the brand
+   and search, and the place takes what the rail has left down to its foot,
+   never less than 9rem: the list fills it and scrolls within it. A Post
+   without headings leaves the rail as it is on any page. */
+.sidebar-rail-toc {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+}
+.sidebar-rail-body > .sidebar-rail-toc {
+  flex: 0 1 0px;
+}
+.sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+  .sidebar-rail-toc {
+  flex-grow: 1;
+  min-height: 9rem;
+  opacity: 1;
+  visibility: visible;
+}
+.sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+  .sidebar-identity-fold {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+}
+/* Its title, under a hairline that parts it from the navigation. */
+.sidebar-rail-toc-title {
+  flex: none;
+  margin: 1rem 0.25rem 0;
+  padding: 0.875rem 0.5rem 0;
+  border-top: 1px solid var(--sidebar-hairline);
+  color: var(--fuwari-fg-50);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+/* The slot has a height of its own, so the list scrolls in it. */
+.sidebar-rail-toc-slot {
+  flex: 1 1 0px;
+  min-height: 0;
+}
+
+/* ── A low window ────────────────────────────────────────────────────────── */
+
+/* Below 800px of height the rail draws closer: a smaller avatar and lower
+   rows, so that a navigation of the usual length still fits a laptop's
+   window without scrolling. */
+@media (width >= 64rem) and (height < 50rem) {
+  .sidebar-avatar {
+    width: 4rem;
+    height: 4rem;
+    margin: 1rem 0 0.75rem;
+    border-radius: 0.75rem;
+  }
+  .sidebar-search {
+    margin-top: 1rem;
+  }
+  .sidebar-nav {
+    --sidebar-nav-h: 2.5rem;
+  }
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-brand,
+  .sidebar-search,
+  .sidebar-nav-link,
+  .sidebar-tool {
+    transition:
+      background-color 180ms,
+      color 180ms,
+      box-shadow 180ms;
+  }
+  .sidebar-nav-pill {
+    transition:
+      transform 520ms var(--sidebar-ease),
+      opacity 240ms,
+      background-color 300ms;
+  }
+  /* While a group opens or closes, the pill moves with the rows, over the
+     time and the curve they take (ui/disclosure.css). */
+  .sidebar-nav[data-fold="true"] .sidebar-nav-pill {
+    transition:
+      transform 320ms var(--fuwari-motion-ease),
+      opacity 240ms,
+      background-color 300ms;
+  }
+  .sidebar-nav-icon {
+    transition:
+      color 180ms,
+      transform 300ms var(--sidebar-ease);
+  }
+  .sidebar-nav-link:hover + .sidebar-nav-icon {
+    transform: translateY(-50%) scale(1.08);
+  }
+  /* Who writes here folds away and the place of the table of contents
+     opens, over the same time, as a Post with headings comes on screen;
+     and back as it goes. What goes is out of reach once it has gone, and
+     what comes fades in a little after it has begun to open. */
+  .sidebar-identity-fold {
+    transition:
+      grid-template-rows var(--sidebar-fold) var(--sidebar-ease),
+      opacity 320ms ease 160ms,
+      visibility 0s;
+  }
+  .sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+    .sidebar-identity-fold {
+    transition:
+      grid-template-rows var(--sidebar-fold) var(--sidebar-ease),
+      opacity 200ms ease,
+      visibility 0s var(--sidebar-fold);
+  }
+  .sidebar-rail-toc {
+    transition:
+      flex-grow var(--sidebar-fold) var(--sidebar-ease),
+      min-height var(--sidebar-fold) var(--sidebar-ease),
+      opacity 200ms ease,
+      visibility 0s var(--sidebar-fold);
+  }
+  .sidebar-shell[data-toc="rail"]:has([data-table-of-contents])
+    .sidebar-rail-toc {
+    transition:
+      flex-grow var(--sidebar-fold) var(--sidebar-ease),
+      min-height var(--sidebar-fold) var(--sidebar-ease),
+      opacity 320ms ease 160ms,
+      visibility 0s;
+  }
+  .sidebar-avatar {
+    transition: transform 400ms var(--sidebar-ease);
+  }
+  .sidebar-avatar img {
+    transition: transform 600ms var(--sidebar-ease);
+  }
+  .sidebar-avatar:active {
+    transform: scale(0.96);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .sidebar-avatar:hover img {
+    transform: scale(1.08) rotate(-2deg);
+  }
+}

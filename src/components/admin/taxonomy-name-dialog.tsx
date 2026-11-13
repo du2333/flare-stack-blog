@@ -1,10 +1,11 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
+import { StatusText } from "@/components/ui/status-text";
 import { m } from "@/paraglide/messages";
 import "./taxonomy-name-dialog.css";
 
@@ -18,6 +19,7 @@ export function TaxonomyNameDialog({
   busy,
   submitLabel = m.category_manager_save(),
   maxLength,
+  error,
   fallbackFocus,
 }: {
   open: boolean;
@@ -29,9 +31,12 @@ export function TaxonomyNameDialog({
   busy: boolean;
   submitLabel?: string;
   maxLength?: number;
+  /** Why the name cannot be saved, shown under the field. */
+  error?: string | null;
   fallbackFocus?: () => HTMLElement | null;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const errorId = useId();
   return (
     <ClientOnly>
       <FuwariModal
@@ -65,9 +70,16 @@ export function TaxonomyNameDialog({
             value={name}
             maxLength={maxLength}
             disabled={busy}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
             onChange={(event) => onNameChange(event.target.value)}
             autoComplete="off"
           />
+          {error ? (
+            <StatusText error id={errorId}>
+              {error}
+            </StatusText>
+          ) : null}
           <footer>
             <Button disabled={busy} onClick={onClose}>
               {m.category_manager_cancel()}

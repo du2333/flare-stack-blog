@@ -7,10 +7,17 @@
   width: min(28rem, calc(100% - 32px));
   max-height: calc(100dvh - 32px);
   overflow: auto;
-  border-radius: var(--radius-large, 20px);
-  background: var(--fuwari-card-bg);
+  border-radius: var(--theme-dialog-radius, var(--radius-large, 20px));
+  background: var(--theme-float-bg, var(--theme-raised));
   color: var(--fuwari-fg-75);
-  box-shadow: 0 20px 70px rgb(0 0 0 / 0.12);
+  box-shadow: var(--theme-dialog-shadow, 0 20px 70px rgb(0 0 0 / 0.12));
+  -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+  backdrop-filter: var(--theme-float-backdrop, none);
+}
+/* The Admin (admin-variables.css) only: a hairline and a lighter shadow. */
+:root:has(.admin-layout) .fuwari-modal {
+  border: 1px solid var(--admin-hairline);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.14);
 }
 .fuwari-modal::backdrop {
   background: rgb(0 0 0 / 0.25);

@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { AppTheme } from "@/components/common/theme-provider";
+import type { ColourScheme } from "@/components/common/colour-scheme-provider";
 import { cn } from "@/lib/utils";
 import { StatusText } from "@/components/ui/status-text";
 import { m } from "@/paraglide/messages";
@@ -15,8 +15,8 @@ import { mermaidThemeVariables } from "./mermaid-theme";
 export interface MermaidDiagramProps {
   /** Mermaid source of the code block. */
   source: string;
-  /** Current site theme; the diagram re-renders with its colours when it changes. */
-  theme: AppTheme;
+  /** Current colour scheme; the diagram re-renders with its colours when it changes. */
+  colourScheme: ColourScheme;
   /**
    * Shown until the diagram renders, and kept when rendering fails.
    * Defaults to the source as plain text.
@@ -38,7 +38,7 @@ type DiagramState =
  */
 export function MermaidDiagram({
   source,
-  theme,
+  colourScheme,
   fallback,
   className,
 }: MermaidDiagramProps) {
@@ -47,7 +47,10 @@ export function MermaidDiagram({
 
   useEffect(() => {
     let current = true;
-    const themeVariables = mermaidThemeVariables(containerRef.current, theme);
+    const themeVariables = mermaidThemeVariables(
+      containerRef.current,
+      colourScheme,
+    );
     renderMermaid(source, themeVariables).then(
       (svg) => {
         if (current) setState({ status: "rendered", svg });
@@ -59,7 +62,7 @@ export function MermaidDiagram({
     return () => {
       current = false;
     };
-  }, [source, theme]);
+  }, [source, colourScheme]);
 
   const svg = state.status === "rendered" ? state.svg : null;
   useLayoutEffect(() => {

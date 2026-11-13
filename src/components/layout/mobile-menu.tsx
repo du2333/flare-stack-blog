@@ -1,14 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
-import { useState } from "react";
-import { useTheme } from "@/components/common/theme-provider";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { useId, useState } from "react";
+import { useColourScheme } from "@/components/common/colour-scheme-provider";
+import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { isNavGroup } from "./nav-options";
 import { PublicNavLink } from "./public-nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
 import { getLocale, setLocale } from "@/paraglide/runtime";
+import "./mobile-menu.css";
 
 interface MobileMenuProps {
   navOptions: Array<NavOption>;
@@ -28,31 +30,61 @@ export function MobileMenu({
   mobile,
   isLoading,
 }: MobileMenuProps) {
+  const groupId = useId();
   const [loggingOut, setLoggingOut] = useState(false);
-  const { userTheme } = useTheme();
-  const themeLabel =
-    userTheme === "light"
-      ? m.theme_light()
-      : userTheme === "dark"
-        ? m.theme_dark()
-        : m.theme_system();
+  const { colourSchemePreference } = useColourScheme();
+  const schemeLabel =
+    colourSchemePreference === "light"
+      ? m.colour_scheme_light()
+      : colourSchemePreference === "dark"
+        ? m.colour_scheme_dark()
+        : m.colour_scheme_system();
   return (
     <>
       {mobile && (
         <>
-          <nav className="public-menu-links">
-            {navOptions.map((option) => (
-              <PublicNavLink
-                key={option.id}
-                option={option}
-                onClick={onClose}
-                className="public-menu-item"
-                activeClassName="public-menu-active"
-              />
-            ))}
+          <nav className="public-menu-links" aria-label={m.nav_main_label()}>
+            {navOptions.map((option) =>
+              isNavGroup(option) ? (
+                // Always open: a group is a heading over its links.
+                <div
+                  key={option.id}
+                  role="group"
+                  aria-labelledby={`${groupId}-${option.id}`}
+                  className="public-menu-group"
+                >
+                  <p
+                    id={`${groupId}-${option.id}`}
+                    className="public-menu-group-label"
+                  >
+                    {option.label}
+                  </p>
+                  {option.children.map((child) => (
+                    <PublicNavLink
+                      key={child.id}
+                      option={child}
+                      onClick={onClose}
+                      className="public-menu-item public-menu-subitem"
+                      activeClassName="public-menu-active"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <PublicNavLink
+                  key={option.id}
+                  option={option}
+                  onClick={onClose}
+                  className="public-menu-item"
+                  activeClassName="public-menu-active"
+                />
+              ),
+            )}
           </nav>
           <div className="public-menu-preferences">
-            <ThemeToggle className="public-menu-theme" label={themeLabel} />
+            <ColourSchemeToggle
+              className="public-menu-colour-scheme"
+              label={schemeLabel}
+            />
             <SegmentedControl
               className="public-menu-languages"
               aria-label={m.common_switch_language()}

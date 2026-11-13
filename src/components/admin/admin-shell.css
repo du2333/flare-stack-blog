@@ -1,0 +1,338 @@
+/*
+ * The Admin's shell (admin-shell.tsx): the navigation and the page on one
+ * canvas. Sizes come from admin-variables.css. Below 1024px the navigation
+ * is the drawer: the same Sheet, fixed to the left edge, sliding in.
+ */
+
+.admin-shell {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--admin-canvas);
+  color: var(--admin-fg);
+  font-family: var(--font-sans);
+  font-size: var(--admin-text-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* One focus ring for the whole shell; fields show focus with their own. */
+.admin-shell :focus-visible:not(input, textarea) {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.admin-side {
+  width: var(--admin-sidebar-width);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 10px 10px 12px;
+  min-height: 0;
+}
+
+/* The site's name, and in the drawer the close button beside it. */
+.admin-side-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-side-head > .admin-brand {
+  flex: 1;
+  min-width: 0;
+}
+.admin-side-close.fuwari-icon-button {
+  display: none;
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 8px;
+  border-radius: var(--admin-radius-row);
+  transition: background 0.15s;
+}
+.admin-brand:hover {
+  background: var(--admin-hover);
+}
+.admin-brand-mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--admin-ink);
+  color: var(--admin-on-ink);
+  font-size: var(--admin-text-small);
+  font-weight: 650;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+.admin-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-brand-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.admin-brand-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.admin-brand-ext {
+  color: var(--admin-fg-3);
+  opacity: 0;
+  transform: translate(-3px, 3px);
+  transition:
+    opacity 0.2s,
+    transform 0.3s var(--admin-ease);
+}
+.admin-brand:hover .admin-brand-ext {
+  opacity: 1;
+  transform: none;
+}
+
+.admin-quick {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 14px;
+}
+.admin-compose.fuwari-icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--admin-radius-control);
+}
+
+.admin-nav {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  margin: 0 -2px;
+  padding: 0 2px 8px;
+}
+.admin-nav-pill {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  height: var(--admin-sidebar-row);
+  border-radius: var(--admin-radius-control);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+  pointer-events: none;
+  opacity: 0;
+}
+.admin-nav[data-pill] .admin-nav-pill {
+  opacity: 1;
+}
+.admin-nav[data-pill="moving"] .admin-nav-pill {
+  transition:
+    transform 0.42s var(--admin-ease),
+    opacity 0.2s;
+}
+.admin-nav-group + .admin-nav-group {
+  margin-top: 16px;
+}
+.admin-nav-label {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--admin-fg-3);
+}
+.admin-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--admin-sidebar-row);
+  padding: 0 10px;
+  border-radius: var(--admin-radius-control);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-sidebar-text);
+  font-weight: 450;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.admin-nav-item svg {
+  flex: none;
+  transition: color 0.2s;
+}
+.admin-nav-item:hover {
+  color: var(--admin-fg);
+  background: var(--admin-hover);
+}
+.admin-nav-item[data-current] {
+  color: var(--admin-fg);
+  font-weight: 550;
+  background: none;
+}
+.admin-nav-item[data-current] svg {
+  color: var(--admin-accent-text);
+}
+/* Before the sliding pill has measured itself (the server's render). */
+.admin-nav:not([data-pill]) .admin-nav-item[data-current] {
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+}
+.admin-nav-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-nav-count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-side-foot {
+  padding-top: 8px;
+}
+.admin-account {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 8px;
+  border-radius: var(--admin-radius-row);
+  color: var(--admin-fg);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.15s;
+}
+.admin-account:hover,
+.admin-account[aria-expanded="true"] {
+  background: var(--admin-hover);
+}
+.admin-avatar {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--admin-press);
+  color: var(--admin-fg-2);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.admin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-account-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-account svg {
+  color: var(--admin-fg-3);
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.admin-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* Laid out in place: the Sheet's fixed panel becomes the column. */
+@media (min-width: 1024px) {
+  .admin-side.fuwari-sheet {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    z-index: auto;
+    background: none;
+    border-right: 0;
+    visibility: visible;
+    animation: none;
+  }
+  .admin-side-scrim {
+    display: none;
+  }
+}
+
+/* The drawer slides in from the left over a dimmed page. */
+@media (max-width: 1023px) {
+  .admin-side.fuwari-sheet {
+    width: min(288px, 86vw);
+    background: var(--admin-canvas);
+    border-right: 0;
+    box-shadow: var(--admin-shadow-pop);
+    transform: translateX(-104%);
+    transition: transform 0.36s var(--admin-ease);
+    animation: none;
+  }
+  .admin-side.fuwari-sheet[data-state="open"] {
+    transform: none;
+  }
+  .admin-side-close.fuwari-icon-button {
+    display: inline-flex;
+  }
+  .admin-side-scrim.fuwari-sheet-backdrop {
+    background: rgb(10 10 14 / 0.36);
+    backdrop-filter: none;
+    animation-duration: 0.25s;
+  }
+}
+
+/* A page's head, bar and cards rise in one after another; --i is the place
+   (riseOrder, rise.ts). */
+.admin-rise {
+  animation: admin-rise 0.55s var(--admin-ease) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell * {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

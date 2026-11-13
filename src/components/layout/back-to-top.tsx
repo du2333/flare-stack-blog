@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
   FLOATING_ACTION_BUTTON_CLASS,
+  FLOATING_ACTION_ICON_CLASS,
   useFloatingActionsSlotRef,
 } from "./floating-actions";
 
@@ -13,10 +14,9 @@ export function BackToTop() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Same logic as original Fuwari: show after banner height
-      // The current Fuwari banner logic sets banner to ~35vh or 65vh, let's use 35vh as base threshold
-      const bannerHeight = window.innerHeight * 0.35;
-      setIsVisible(window.scrollY > bannerHeight);
+      // A fixed share of the viewport, the same in every Theme Shell: it says
+      // "the reader has scrolled", not "the first screen is gone".
+      setIsVisible(window.scrollY > window.innerHeight * 0.35);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -44,7 +44,7 @@ export function BackToTop() {
         aria-label={m.post_back_to_top()}
         className={FLOATING_ACTION_BUTTON_CLASS}
       >
-        <ArrowUp className="w-6 h-6 lg:w-7 lg:h-7" strokeWidth={2.5} />
+        <ArrowUp className={FLOATING_ACTION_ICON_CLASS} strokeWidth={2.5} />
       </button>
     </div>
   );

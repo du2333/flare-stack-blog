@@ -4,6 +4,7 @@ import { CommentSection } from "@/features/comments/components/comment-section";
 import { useSettledScroll } from "@/features/comments/hooks/use-scroll-to-comment";
 import { MomentCard } from "@/features/moments/components/moment-card";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { m } from "@/paraglide/messages";
 
 /**
@@ -24,6 +25,9 @@ export function MomentPage({ moment }: { moment: PublicMoment }) {
     atComments && commentId == null ? "comments" : undefined,
     "start",
   );
+  // As rows (Theme Recipe) the way back is plain text and a rule sets the
+  // comments apart.
+  const row = useThemeRecipe().postCard === "row";
   return (
     <div
       className="fuwari-onload-animation flex flex-col gap-4"
@@ -32,13 +36,23 @@ export function MomentPage({ moment }: { moment: PublicMoment }) {
       <h1 className="sr-only">{m.moments_title()}</h1>
       <Link
         to="/moments"
-        className="fuwari-card-base inline-flex w-fit items-center gap-1.5 px-4 py-2 text-sm font-medium fuwari-text-75 transition hover:text-(--fuwari-primary)"
+        className={
+          row
+            ? "inline-flex w-fit items-center gap-1.5 pt-4 text-sm font-medium fuwari-text-75 transition hover:text-(--theme-accent)"
+            : "fuwari-card-base fuwari-card-item inline-flex w-fit items-center gap-1.5 px-4 py-2 text-sm font-medium fuwari-text-75 transition hover:text-(--theme-accent)"
+        }
       >
         <ArrowLeft size={16} aria-hidden="true" />
         {m.moments_all()}
       </Link>
       <MomentCard moment={moment} />
-      <div className="fuwari-card-base p-6">
+      <div
+        className={
+          row
+            ? "fuwari-card-base fuwari-card-panel fuwari-list-rule mt-4 py-6 px-[var(--theme-panel-pad-x,1.5rem)]"
+            : "fuwari-card-base fuwari-card-panel py-6 px-[var(--theme-panel-pad-x,1.5rem)]"
+        }
+      >
         <CommentSection target={{ type: "moment", id: moment.id }} />
       </div>
     </div>

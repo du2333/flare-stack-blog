@@ -137,11 +137,20 @@ export const UpdateMediaNameInputSchema = z.strictObject({
   ),
 });
 
+export const MEDIA_SORTS = ["newest", "oldest", "largest"] as const;
+export type MediaSort = (typeof MEDIA_SORTS)[number];
+
 export const GetMediaListInputSchema = z.strictObject({
   cursor: IdCursorSchema.optional(),
   limit: pageLimitSchema(100).optional(),
   search: z.string().optional(),
   unusedOnly: z.boolean().optional(),
+  sort: z
+    .enum(MEDIA_SORTS)
+    .optional()
+    .describe(
+      "Order of the list. newest (the default) is the latest upload first, oldest the earliest upload first, largest the biggest file first (equal sizes fall back to newest first). Pass the same sort with each nextCursor: a cursor continues the list in the order it came from.",
+    ),
 });
 
 export const ImportMediaUrlInputSchema = z.strictObject({

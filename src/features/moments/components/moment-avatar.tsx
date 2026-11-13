@@ -9,10 +9,7 @@ export function MomentAvatar() {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   return (
     <img
-      src={getPublicImageSrc(
-        siteConfig.theme.fuwari.avatar,
-        PUBLIC_IMAGE_WIDTH.avatar,
-      )}
+      src={getPublicImageSrc(siteConfig.avatar, PUBLIC_IMAGE_WIDTH.avatar)}
       alt=""
       width={40}
       height={40}

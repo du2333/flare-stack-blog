@@ -7,9 +7,7 @@ import {
   commentSnippet,
   DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
   DASHBOARD_RECENT_COMMENT_DAYS,
-  DASHBOARD_RECENT_POSTS_LIMIT,
   DASHBOARD_TOP_POST_CANDIDATES,
-  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
   DASHBOARD_WRITING_LOOKBACK_DAYS,
   popularityAlertFromStatus,
   popularityState,
@@ -17,6 +15,10 @@ import {
   siteIdentityIsDefault,
   totalViews,
 } from "@/features/dashboard/dashboard";
+import {
+  DASHBOARD_RECENT_POSTS_LIMIT,
+  DASHBOARD_UNREPLIED_COMMENTS_LIMIT,
+} from "@/features/dashboard/dashboard-limits";
 import type {
   DashboardComment,
   DashboardOverview,
@@ -45,6 +47,7 @@ async function getPopularity(context: DbContext) {
         windowEnd: null,
         totalViews: 0,
         topPosts: [],
+        daily: [],
       },
     };
   }
@@ -62,6 +65,7 @@ async function getPopularity(context: DbContext) {
       windowEnd: snapshot.windowEnd,
       totalViews: totalViews(snapshot.entries),
       topPosts: rankTopPosts(candidates, publicPosts),
+      daily: snapshot.daily,
     },
   };
 }
@@ -98,8 +102,7 @@ export async function getDashboardOverview(
     DashboardRepo.countPublicComments(db, recentCommentsSince),
     FriendLinkRepo.getFriendLinkStatusCounts(db),
     DashboardRepo.findLatestDraft(db),
-    // One extra so the list stays full after leaving out the latest draft.
-    DashboardRepo.listRecentPosts(db, DASHBOARD_RECENT_POSTS_LIMIT + 1),
+    DashboardRepo.listRecentPosts(db, DASHBOARD_RECENT_POSTS_LIMIT),
     FriendLinkRepo.getAllFriendLinks(db, {
       status: "pending",
       limit: DASHBOARD_PENDING_FRIEND_LINKS_LIMIT,
@@ -134,9 +137,7 @@ export async function getDashboardOverview(
     popularity,
     writingActivity,
     latestDraft,
-    recentPosts: recentPosts
-      .filter((post) => post.id !== latestDraft?.id)
-      .slice(0, DASHBOARD_RECENT_POSTS_LIMIT),
+    recentPosts,
     pendingFriendLinks: {
       items: pendingItems.map((item) => ({
         id: item.id,

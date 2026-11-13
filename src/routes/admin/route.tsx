@@ -8,19 +8,23 @@ import {
 } from "@tanstack/react-router";
 import { isAdminWorkspace } from "@/components/admin/content-workspace";
 import "@/components/admin/content-workspace.css";
+import "@fontsource-variable/geist/wght.css";
 import { Menu } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import {
   AdminChromeProvider,
   useAdminChrome,
 } from "@/components/admin/admin-chrome";
-import { SideBar } from "@/components/admin/side-bar";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { PageFade } from "@/components/layout/page-fade";
 import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { sessionQuery } from "@/features/auth/queries";
-import { settingsSectionFromPath } from "@/features/config/components/admin/settings-pages";
+import {
+  accessSectionFromPath,
+  settingsSectionFromPath,
+} from "@/features/config/components/admin/settings-pages";
 import { useVersionCheck } from "@/features/version/hooks/use-version-check";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -55,46 +59,45 @@ export const Route = createFileRoute("/admin")({
   },
 });
 
+type TitledLoaderData = { title?: string; topBarTitle?: string } | undefined;
+
+/**
+ * The top bar names the workspace: the deepest `topBarTitle` a route gives,
+ * such as Settings over its section, otherwise the deepest `title`.
+ */
 function pageTitleFromMatches(matches: ReturnType<typeof useMatches>): string {
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const title = (matches[i]?.loaderData as { title?: string } | undefined)
-      ?.title;
-    if (typeof title === "string" && title.length > 0) return title;
+  for (const key of ["topBarTitle", "title"] as const) {
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const title = (matches[i]?.loaderData as TitledLoaderData)?.[key];
+      if (typeof title === "string" && title.length > 0) return title;
+    }
   }
   return "";
 }
 
 function AdminLayout() {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
   const pathname = useLocation({ select: (location) => location.pathname });
   const editorWorkspace = isPostEditorPath(pathname);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => editorWorkspace,
-  );
   useVersionCheck();
+
+  // The editor is a workspace of its own: no sidebar and no top bar, and it
+  // brings its own header at every width.
+  if (editorWorkspace)
+    return (
+      <AdminChromeProvider>
+        <div className="admin-layout admin-editor-layout flex h-dvh flex-col overflow-hidden bg-(--admin-surface) font-sans text-foreground">
+          <AdminMain />
+        </div>
+        <Toaster variant="admin" />
+      </AdminChromeProvider>
+    );
 
   return (
     <AdminChromeProvider>
-      <div
-        className={cn(
-          "admin-layout h-dvh overflow-hidden bg-(--fuwari-page-bg) text-foreground flex gap-4 p-4 relative font-sans",
-          editorWorkspace && "admin-editor-layout",
-        )}
-      >
-        <SideBar
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          closeMobileSidebar={closeMobileSidebar}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
-        />
-
-        <main className="flex-1 flex flex-col min-w-0 min-h-0">
-          <MobileTopBar onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
-          <AdminMain />
-        </main>
-        <Toaster />
-      </div>
+      <AdminShell topBar={(open) => <MobileTopBar onOpenSidebar={open} />}>
+        <AdminMain />
+      </AdminShell>
+      <Toaster variant="admin" />
     </AdminChromeProvider>
   );
 }
@@ -129,6 +132,7 @@ function AdminMain() {
           includeSearch={false}
           pathKey={(path) => {
             if (settingsSectionFromPath(path)) return "/admin/settings/*";
+            if (accessSectionFromPath(path)) return "/admin/access/*";
             const edit = path.match(/\/admin\/posts\/edit\/([^/]+)/);
             if (edit) return `/admin/posts/edit/${edit[1]}`;
             return path;
@@ -150,16 +154,16 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const { primaryAction, mobileTitle } = useAdminChrome();
 
   return (
-    <header className="lg:hidden shrink-0 mb-4">
-      <div className="fuwari-card-base flex items-center gap-3 px-3 h-16">
+    <header className="lg:hidden shrink-0">
+      <div className="flex items-center gap-2 h-14 pl-1 pr-3 border-b border-(--admin-hairline)">
         <IconButton
-          size="md"
+          size="lg"
           onClick={onOpenSidebar}
           label={m.admin_layout_open_navigation()}
         >
           <Menu size={20} strokeWidth={1.5} />
         </IconButton>
-        <h1 className="flex-1 min-w-0 truncate text-base font-medium fuwari-text-90">
+        <h1 className="flex-1 min-w-0 truncate text-(length:--admin-text-section) leading-(--admin-leading-section) font-semibold fuwari-text-90">
           <ClientOnly fallback={m.admin_layout_title()}>
             {mobileTitle ?? pageTitle}
           </ClientOnly>
@@ -167,13 +171,15 @@ function MobileTopBar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         {primaryAction ? (
           <Button
             variant="primary"
+            icon={primaryAction.icon}
+            loading={primaryAction.loading}
             onClick={primaryAction.onClick}
             disabled={primaryAction.disabled}
           >
             {primaryAction.label}
           </Button>
         ) : (
-          <span className="w-9" />
+          <span className="w-11" />
         )}
       </div>
     </header>

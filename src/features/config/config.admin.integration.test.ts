@@ -1,5 +1,7 @@
 import { createTestContext } from "tests/test-utils";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
+import { invalidate } from "@/features/cache/public-cache";
 import { SystemConfigTable } from "@/lib/db/schema";
 import {
   getAdminConfig,
@@ -8,6 +10,7 @@ import {
   getSiteConfig,
 } from "./service/config.service";
 import { getSystemConfig } from "./data/config.data";
+import type { StoredSystemConfig } from "./config.storage";
 import {
   UpdateConfigSectionSchema,
   type UpdateConfigSection,
@@ -285,6 +288,216 @@ describe("versioned System Config", () => {
     await expect(
       context.db.insert(SystemConfigTable).values({ id: 2, configJson: {} }),
     ).rejects.toThrow();
+  });
+});
+
+// The shape of `site.theme.fuwari` that builds before the shared fields read.
+const OlderBuildFuwariSchema = z
+  .object({
+    homeBg: z.string(),
+    avatar: z.string(),
+    primaryHue: z.number().int().min(0).max(360),
+  })
+  .strict();
+
+describe("personalization shared by all Themes", () => {
+  const legacy = {
+    homeBg: "/images/asset/themes/fuwari/home-bg.webp?v=1",
+    avatar: "/images/asset/themes/fuwari/avatar.png?v=1",
+    primaryHue: 120,
+  };
+
+  it("reads the old location and an unknown Theme on both read paths, then saves the new location", async () => {
+    const context = createTestContext();
+    await invalidate.siteConfigChanged(context);
+    await context.db.insert(SystemConfigTable).values({
+      id: 1,
+      // A Theme id that this build does not offer, as a newer build may write.
+      configJson: {
+        schemaVersion: 1,
+        site: {
+          title: "Legacy",
+          theme: { id: "retired", fuwari: legacy },
+        },
+      } as unknown as StoredSystemConfig,
+    });
+
+    const expected = {
+      bannerImage: legacy.homeBg,
+      avatar: legacy.avatar,
+      primaryHue: 120,
+      bannerFocus: { x: 50, y: 50 },
+      brandMark: "default",
+      tagline: "",
+      theme: { id: "classic", options: {} },
+    };
+    expect(await getSiteConfig(context)).toMatchObject(expected);
+    const snapshot = await getAdminConfig(context);
+    expect(snapshot.config.site).toMatchObject(expected);
+
+    // The Admin form submits the snapshot's site section with its edits.
+    await updateSystemConfig(context, {
+      section: "site",
+      expectedRevision: snapshot.revisions.site,
+      site: { ...snapshot.config.site, primaryHue: 200, tagline: "Hello" },
+    });
+    const row = (await context.db.select().from(SystemConfigTable))[0];
+    expect(row.configJson.schemaVersion).toBe(1);
+    expect(row.configJson.site).toMatchObject({
+      title: "Legacy",
+      bannerImage: legacy.homeBg,
+      avatar: legacy.avatar,
+      primaryHue: 200,
+      tagline: "Hello",
+      theme: { id: "classic" },
+    });
+    // An older build reads only theme.fuwari, and finds the saved values there.
+    expect(
+      OlderBuildFuwariSchema.parse(row.configJson.site?.theme?.fuwari),
+    ).toEqual({ ...legacy, primaryHue: 200 });
+  });
+
+  it("returns omitted fields, including the Theme options, to their defaults", async () => {
+    const context = createTestContext();
+    await updateSystemConfig(context, {
+      section: "site",
+      expectedRevision: 0,
+      site: {
+        bannerFocus: { x: 10, y: 90 },
+        brandMark: "avatar",
+        tagline: "Tagline",
+        theme: { id: "classic", options: { classic: { future: true } } },
+      },
+    });
+    expect((await getAdminConfig(context)).config.site).toMatchObject({
+      bannerFocus: { x: 10, y: 90 },
+      brandMark: "avatar",
+      tagline: "Tagline",
+      theme: { id: "classic", options: { classic: { future: true } } },
+    });
+    const saved = await updateSystemConfig(context, {
+      section: "site",
+      expectedRevision: 1,
+      site: { title: "Only title" },
+    });
+    expect(saved.config.site).toMatchObject({
+      bannerFocus: { x: 50, y: 50 },
+      brandMark: "default",
+      tagline: "",
+      theme: { id: "classic", options: {} },
+    });
+  });
+
+  it("accepts only registered Theme ids and valid shared fields", () => {
+    const site = (value: Record<string, unknown>) =>
+      UpdateConfigSectionSchema.safeParse({
+        section: "site",
+        expectedRevision: 0,
+        site: value,
+      }).success;
+    expect(site({ theme: { id: "classic" } })).toBe(true);
+    expect(site({ theme: { id: "retired" } })).toBe(false);
+    expect(site({ bannerFocus: { x: 101, y: 50 } })).toBe(false);
+    expect(site({ brandMark: "logo" })).toBe(false);
+    expect(site({ tagline: "x".repeat(81) })).toBe(false);
+  });
+});
+
+describe("navigation groups", () => {
+  const site = (navLinks: Array<Record<string, unknown>>) =>
+    UpdateConfigSectionSchema.safeParse({
+      section: "site",
+      expectedRevision: 0,
+      site: { navLinks },
+    }).success;
+  const child = (index: number) => ({ label: `Link ${index}`, href: "/x" });
+
+  it("saves a group without its address and reads it back on both read paths", async () => {
+    const context = createTestContext();
+    await updateSystemConfig(context, {
+      section: "site",
+      expectedRevision: 0,
+      site: {
+        navLinks: [
+          { label: "About", href: "/post/about" },
+          {
+            label: "Elsewhere",
+            href: "/ignored",
+            children: [
+              { label: "GitHub", href: "https://github.com/du2333" },
+              { label: "Tags", href: "/tags" },
+            ],
+          },
+        ],
+      },
+    });
+    const expected = [
+      { label: "About", href: "/post/about" },
+      {
+        label: "Elsewhere",
+        children: [
+          { label: "GitHub", href: "https://github.com/du2333" },
+          { label: "Tags", href: "/tags" },
+        ],
+      },
+    ];
+    const row = (await context.db.select().from(SystemConfigTable))[0];
+    expect(row.configJson.site?.navLinks).toEqual(expected);
+    expect((await getAdminConfig(context)).config.site?.navLinks).toEqual(
+      expected,
+    );
+    await invalidate.siteConfigChanged(context);
+    expect((await getSiteConfig(context)).navLinks).toEqual(expected);
+  });
+
+  it("accepts a link or a group of one level and rejects anything else", () => {
+    expect(site([{ label: "A", href: "/a" }])).toBe(true);
+    expect(site([{ label: "A", href: "/a", children: [] }])).toBe(true);
+    expect(site([{ label: "G", children: [child(1)] }])).toBe(true);
+    expect(
+      site([
+        { label: "G", children: Array.from({ length: 6 }, (_, i) => child(i)) },
+      ]),
+    ).toBe(true);
+    // Neither links nor an address.
+    expect(site([{ label: "G" }])).toBe(false);
+    expect(site([{ label: "G", children: [] }])).toBe(false);
+    // A second level.
+    expect(
+      site([
+        {
+          label: "G",
+          children: [{ ...child(1), children: [child(2)] }],
+        },
+      ]),
+    ).toBe(false);
+    // Past the limits.
+    expect(
+      site([
+        { label: "G", children: Array.from({ length: 7 }, (_, i) => child(i)) },
+      ]),
+    ).toBe(false);
+    expect(
+      site(
+        Array.from({ length: 6 }, (_, i) => ({ label: `L${i}`, href: "/a" })),
+      ),
+    ).toBe(false);
+    // Any other key a child carries is stripped, as on a link.
+    const parsed = UpdateConfigSectionSchema.parse({
+      section: "site",
+      expectedRevision: 0,
+      site: { navLinks: [{ label: "G", children: [{ ...child(1), x: 1 }] }] },
+    });
+    expect(parsed.section === "site" && parsed.site.navLinks).toEqual([
+      { label: "G", children: [child(1)] },
+    ]);
+    // A child follows the rules of a link.
+    expect(site([{ label: "G", children: [{ label: "", href: "/a" }] }])).toBe(
+      false,
+    );
+    expect(
+      site([{ label: "G", children: [{ label: "C", href: "javascript:1" }] }]),
+    ).toBe(false);
   });
 });
 

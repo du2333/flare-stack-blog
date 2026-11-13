@@ -10,7 +10,14 @@ import {
   type ErrorComponentProps,
   type RouteComponent,
 } from "@tanstack/react-router";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { createElement } from "react";
 import { useFormContext } from "react-hook-form";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -22,7 +29,12 @@ import {
 } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
 import { Route as SettingsRoute } from "@/routes/admin/settings/route";
-import { settingsSectionFromPath } from "./settings-pages";
+import {
+  accessSectionFromPath,
+  LEGACY_SETTINGS_TAB_TO,
+  MOVED_SETTINGS_PAGE_TO,
+  settingsSectionFromPath,
+} from "./settings-pages";
 
 vi.mock("@/features/config/queries", () => ({
   systemConfigQuery: { queryKey: ["settings-navigation"] },
@@ -148,7 +160,7 @@ it.each(["site", "notifications"])(
   },
 );
 
-it("shows the muted users list as a settings tab without a save bar", async () => {
+it("keeps only site, notifications and maintenance as settings tabs", async () => {
   const root = createRootRoute({
     component: () =>
       createElement(AdminChromeProvider, null, createElement(Outlet)),
@@ -158,30 +170,90 @@ it("shows the muted users list as a settings tab without a save bar", async () =
     path: "/admin/settings",
     component: SettingsRoute.options.component as RouteComponent,
   });
-  const mutedUsers = createRoute({
+  const maintenance = createRoute({
     getParentRoute: () => settings,
-    path: "muted-users",
-    component: () => createElement("h2", null, "Muted list"),
+    path: "maintenance",
+    component: () => createElement("h2", null, "Maintenance"),
   });
   const router = createRouter({
-    routeTree: root.addChildren([settings.addChildren([mutedUsers])]),
+    routeTree: root.addChildren([settings.addChildren([maintenance])]),
     history: createMemoryHistory({
-      initialEntries: ["/admin/settings/muted-users"],
+      initialEntries: ["/admin/settings/maintenance"],
     }),
     context: { queryClient: new QueryClient() },
   });
   render(createElement(RouterProvider, { router }));
-  await screen.findByRole("heading", { name: "Muted list" });
+  await screen.findByRole("heading", { name: "Maintenance" });
+  const tabs = screen.getByRole("navigation", {
+    name: m.settings_header_title(),
+  });
+  expect(
+    [...tabs.querySelectorAll("a")].map((link) => link.getAttribute("href")),
+  ).toEqual([
+    "/admin/settings/site",
+    "/admin/settings/notifications",
+    "/admin/settings/maintenance",
+  ]);
   expect(
     screen
-      .getByRole("link", { name: m.muted_users_title() })
+      .getByRole("link", { name: m.settings_nav_maintenance() })
       .getAttribute("aria-current"),
   ).toBe("page");
   expect(document.querySelector(".settings-savebar")).toBeNull();
 });
 
-it("maps the muted users path to its settings tab", () => {
-  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBe(
-    "muted-users",
+it("sends the pages that left 「设置」 to their new addresses", () => {
+  expect(MOVED_SETTINGS_PAGE_TO).toEqual({
+    "api-keys": "/admin/access/api-keys",
+    "agent-skill": "/admin/access/agent-skill",
+    "muted-users": "/admin/muted-users",
+  });
+  expect(LEGACY_SETTINGS_TAB_TO["api-keys"]).toBe("/admin/access/api-keys");
+  expect(settingsSectionFromPath("/admin/settings/muted-users/")).toBeNull();
+  expect(accessSectionFromPath("/admin/access/agent-skill/")).toBe(
+    "agent-skill",
   );
+});
+
+it("shows the save bar only once the section has unsaved changes", async () => {
+  const root = createRootRoute({
+    component: () =>
+      createElement(AdminChromeProvider, null, createElement(Outlet)),
+  });
+  const settings = createRoute({
+    getParentRoute: () => root,
+    path: "/admin/settings",
+    component: SettingsRoute.options.component as RouteComponent,
+  });
+  const site = createRoute({
+    getParentRoute: () => settings,
+    path: "site",
+    component: FormRoute,
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([settings.addChildren([site])]),
+    history: createMemoryHistory({ initialEntries: ["/admin/settings/site"] }),
+    context: { queryClient: new QueryClient() },
+  });
+  render(createElement(RouterProvider, { router }));
+  const input = await screen.findByRole("textbox", { name: "Site title" });
+  expect(document.querySelector(".settings-savebar")).toBeNull();
+  fireEvent.input(input, { target: { value: "A new title" } });
+  const bar = await screen.findByRole("button", {
+    name: m.settings_config_save_site(),
+  });
+  expect(bar.closest(".settings-savebar")).not.toBeNull();
+  // It says how many settings changed.
+  expect(
+    within(bar.closest<HTMLElement>(".settings-savebar")!).getByText(
+      m.settings_config_changed_count({ count: 1 }),
+    ),
+  ).not.toBeNull();
+  // The tab names the section; the page header carries no description.
+  expect(
+    screen.queryByText(m.settings_nav_site(), { selector: "h2" }),
+  ).toBeNull();
+  expect(
+    screen.getByRole("region", { name: m.settings_nav_site() }),
+  ).not.toBeNull();
 });

@@ -13,23 +13,33 @@ import { MomentTime } from "@/features/moments/components/moment-time";
 import { MomentVideo } from "@/features/moments/components/moment-video";
 import { useIsAdmin } from "@/features/moments/hooks/use-is-admin";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 
 /**
  * One Moment as a card: who posted it and when, the text, then the images or
  * the video, then its comment count and share button. The Admin's edit and delete actions sit
- * in the header; editing turns the card into the composer, in place.
+ * in the header; editing turns the card into the composer, in place. Where
+ * the Theme Recipe lists Posts as rows, it is a flat row too, and the
+ * timeline draws the rules.
  */
 export function MomentCard({ moment }: { moment: PublicMoment }) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const isAdmin = useIsAdmin();
   const [editing, setEditing] = useState(false);
+  const row = useThemeRecipe().postCard === "row";
 
   if (isAdmin && editing) {
     return <MomentEditor moment={moment} onDone={() => setEditing(false)} />;
   }
 
   return (
-    <article className="fuwari-card-base flex flex-col gap-3 p-5 md:p-6">
+    <article
+      className={
+        row
+          ? "flex flex-col gap-3"
+          : "fuwari-card-base fuwari-card-item flex flex-col gap-3 p-5 md:p-6"
+      }
+    >
       <header className="flex items-center gap-3">
         <MomentAvatar />
         <div className="flex min-w-0 flex-1 flex-col">

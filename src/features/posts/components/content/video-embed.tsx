@@ -70,7 +70,7 @@ function PosterCard({
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <div className="absolute inset-0 bg-linear-to-br from-(--fuwari-primary)/40 via-neutral-800 to-neutral-900" />
+        <div className="absolute inset-0 bg-linear-to-br from-(--theme-accent)/40 via-neutral-800 to-neutral-900" />
       )}
       <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0" />
       <div className="absolute inset-0 flex items-center justify-center">
@@ -198,7 +198,7 @@ export function VideoEmbed({
               ? m.post_video_play_title({ provider: name, title: meta.title })
               : m.post_video_play({ provider: name })
           }
-          className="group block w-full cursor-pointer rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary) focus-visible:ring-offset-2"
+          className="group block w-full cursor-pointer rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-(--theme-accent) focus-visible:ring-offset-2"
         >
           <VideoPoster source={source} meta={meta} />
         </button>
@@ -208,7 +208,7 @@ export function VideoEmbed({
           href={videoPageUrl(source)}
           target="_blank"
           rel="noopener noreferrer"
-          className="no-styling inline-flex items-center gap-1 fuwari-text-50 transition-colors hover:text-(--fuwari-primary)"
+          className="no-styling inline-flex items-center gap-1 fuwari-text-50 transition-colors hover:text-(--theme-accent)"
         >
           {m.post_video_open({ provider: name })}
           <ExternalLink className="h-3.5 w-3.5" />
@@ -250,7 +250,7 @@ export function DirectVideoEmbed({ video }: { video: DirectVideo }) {
               ? m.post_video_play_direct_title({ title: video.title })
               : m.post_video_play_direct()
           }
-          className="group block w-full cursor-pointer rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary) focus-visible:ring-offset-2"
+          className="group block w-full cursor-pointer rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-(--theme-accent) focus-visible:ring-offset-2"
         >
           <DirectVideoPoster video={video} />
         </button>
@@ -261,7 +261,7 @@ export function DirectVideoEmbed({ video }: { video: DirectVideo }) {
             href={video.pageUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="no-styling inline-flex items-center gap-1 fuwari-text-50 transition-colors hover:text-(--fuwari-primary)"
+            className="no-styling inline-flex items-center gap-1 fuwari-text-50 transition-colors hover:text-(--theme-accent)"
           >
             {m.post_video_open_page()}
             <ExternalLink className="h-3.5 w-3.5" />

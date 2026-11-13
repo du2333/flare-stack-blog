@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./styles/motion.css";
+@import "./styles/theme-variables.css";
+@import "./styles/admin-variables.css";
 @import "tw-animate-css";
 @import "@fontsource/roboto/400.css";
 @import "@fontsource/roboto/500.css";
@@ -44,12 +46,7 @@
   html {
     scroll-behavior: smooth;
     color: var(--fuwari-fg);
-    background-color: var(--fuwari-page-bg);
-  }
-
-  /* Admin workbench: 16px through laptop width, 18px at 1920, 20px from 2560. */
-  html:has(.admin-layout) {
-    font-size: clamp(16px, 0.3125vw + 12px, 20px);
+    background-color: var(--theme-ground);
   }
 
   button:not(:disabled),
@@ -57,6 +54,13 @@
     cursor: pointer;
   }
 
+  /* The base layer for public pages: colours derive from --fuwari-hue. The
+     Admin reads the same names with fixed values of its own, in
+     styles/admin-variables.css. Theme variables are in
+     styles/theme-variables.css. --fuwari-inline-code-bg/-color,
+     --fuwari-codeblock-selection and --fuwari-toc-width are not declared:
+     their consumers fall back to the derivation, so they follow an override
+     of their source at any scope. */
   :root {
     --fuwari-radius-large: 1rem;
     --fuwari-hue: 250;
@@ -66,14 +70,14 @@
     --fuwari-content-delay: 150ms;
     --fuwari-stagger: 1;
     --fuwari-page-width: 75rem;
-    --fuwari-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 1rem);
 
     --fuwari-primary: oklch(0.7 0.14 var(--fuwari-hue));
     --fuwari-primary-hover: oklch(0.65 0.14 var(--fuwari-hue));
     --fuwari-primary-active: oklch(0.6 0.14 var(--fuwari-hue));
     --fuwari-page-bg: oklch(0.95 0.01 var(--fuwari-hue));
     --fuwari-card-bg: white;
-    --fuwari-btn-content: oklch(0.55 0.12 var(--fuwari-hue));
+    /* Tonal text on btn-regular-bg and its hover: 4.5:1 or more at every hue. */
+    --fuwari-btn-content: oklch(0.46 0.12 var(--fuwari-hue));
     --fuwari-btn-regular-bg: oklch(0.95 0.025 var(--fuwari-hue));
     --fuwari-btn-regular-bg-hover: oklch(0.9 0.05 var(--fuwari-hue));
     --fuwari-btn-regular-bg-active: oklch(0.85 0.08 var(--fuwari-hue));
@@ -84,23 +88,25 @@
     --fuwari-enter-btn-bg-hover: var(--fuwari-btn-regular-bg-hover);
     --fuwari-enter-btn-bg-active: var(--fuwari-btn-regular-bg-active);
     --fuwari-meta-divider: rgba(0, 0, 0, 0.2);
+    /* Ink laid over a surface, from a scheme's own side: the edge of a quiet box, a chip fill, a page separator, a cover's hover scrim. */
+    --fuwari-ink-faint: rgb(0 0 0 / 0.05);
+    --fuwari-hairline: rgb(0 0 0 / 0.05);
+    --fuwari-divider: rgb(0 0 0 / 0.1);
+    --fuwari-scrim-hover: rgb(0 0 0 / 0.3);
+    --fuwari-scrim-active: rgb(0 0 0 / 0.5);
     --fuwari-selection-bg: oklch(0.9 0.05 var(--fuwari-hue));
-    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
-    --fuwari-inline-code-color: var(--fuwari-btn-content);
     --fuwari-code-bg: var(--fuwari-card-bg);
     --fuwari-input-bg: rgba(0, 0, 0, 0.07);
     --fuwari-input-border: rgba(0, 0, 0, 0.1);
     --fuwari-fg: rgb(0 0 0 / 0.9);
     --fuwari-fg-75: rgb(0 0 0 / 0.75);
-    --fuwari-fg-50: rgb(0 0 0 / 0.5);
+    /* fg-50 is the secondary-text tier: keep it at 4.5:1 or more on card, page and tint backgrounds. */
+    --fuwari-fg-50: rgb(0 0 0 / 0.58);
     --fuwari-fg-30: rgb(0 0 0 / 0.3);
-    --fuwari-link-underline: color-mix(
-      in oklab,
-      var(--fuwari-primary) 55%,
-      transparent
-    );
-    --fuwari-link-hover: var(--fuwari-primary);
-    --fuwari-codeblock-selection: var(--fuwari-selection-bg);
+    --fuwari-fg-faint: rgb(0 0 0 / 0.5);
+    --fuwari-meta-text: rgb(0 0 0 / 0.5);
+    --fuwari-row-text: oklch(0.371 0 0);
+    --fuwari-popular: oklch(0.705 0.213 47.604);
     --fuwari-toc-btn-hover: oklch(0.926 0.015 var(--fuwari-hue));
     --fuwari-toc-btn-active: oklch(0.9 0.015 var(--fuwari-hue));
     --fuwari-toc-badge-bg: oklch(0.89 0.05 var(--fuwari-hue));
@@ -112,6 +118,9 @@
     --fuwari-warning-fg: oklch(0.5 0.13 var(--fuwari-warning-hue));
     --fuwari-warning-bg: oklch(0.95 0.07 var(--fuwari-warning-hue));
     --fuwari-danger: oklch(0.65 0.16 var(--fuwari-danger-hue));
+    /* The fill under white text: 4.5:1 or more, also while hovered. Dark mode puts dark text on --fuwari-danger instead. */
+    --fuwari-danger-solid: oklch(0.52 0.16 var(--fuwari-danger-hue));
+    --fuwari-danger-solid-hover: oklch(0.46 0.16 var(--fuwari-danger-hue));
     --fuwari-danger-fg: oklch(0.5 0.16 var(--fuwari-danger-hue));
     --fuwari-danger-bg: oklch(0.95 0.05 var(--fuwari-danger-hue));
   }
@@ -129,16 +138,20 @@
     --fuwari-btn-plain-bg-hover: oklch(0.3 0.035 var(--fuwari-hue));
     --fuwari-btn-plain-bg-active: oklch(0.27 0.025 var(--fuwari-hue));
     --fuwari-meta-divider: rgba(255, 255, 255, 0.2);
+    --fuwari-ink-faint: rgb(255 255 255 / 0.1);
+    --fuwari-hairline: rgb(255 255 255 / 0.05);
+    --fuwari-divider: rgb(255 255 255 / 0.15);
     --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
-    --fuwari-inline-code-bg: var(--fuwari-btn-regular-bg);
-    --fuwari-inline-code-color: var(--fuwari-btn-content);
     --fuwari-code-bg: var(--fuwari-card-bg);
     --fuwari-input-bg: rgba(255, 255, 255, 0.05);
     --fuwari-input-border: rgba(255, 255, 255, 0.1);
     --fuwari-fg: rgb(255 255 255 / 0.9);
     --fuwari-fg-75: rgb(255 255 255 / 0.75);
-    --fuwari-fg-50: rgb(255 255 255 / 0.5);
+    --fuwari-fg-50: rgb(255 255 255 / 0.58);
     --fuwari-fg-30: rgb(255 255 255 / 0.3);
+    --fuwari-fg-faint: rgb(255 255 255 / 0.5);
+    --fuwari-meta-text: rgb(255 255 255 / 0.4);
+    --fuwari-row-text: oklch(0.87 0 0);
     --fuwari-toc-btn-hover: oklch(0.22 0.02 var(--fuwari-hue));
     --fuwari-toc-btn-active: oklch(0.25 0.02 var(--fuwari-hue));
     --fuwari-toc-badge-bg: var(--fuwari-btn-regular-bg);
@@ -150,6 +163,7 @@
     --fuwari-warning-fg: oklch(0.82 0.1 var(--fuwari-warning-hue));
     --fuwari-warning-bg: oklch(0.33 0.055 var(--fuwari-warning-hue));
     --fuwari-danger: oklch(0.72 0.14 var(--fuwari-danger-hue));
+    --fuwari-danger-hover: oklch(0.78 0.14 var(--fuwari-danger-hue));
     --fuwari-danger-fg: oklch(0.8 0.1 var(--fuwari-danger-hue));
     --fuwari-danger-bg: oklch(0.33 0.05 var(--fuwari-danger-hue));
   }
@@ -172,68 +186,449 @@
       background-color 0.3s,
       color 0.3s;
   }
+  /* The roles a public card plays, each a Theme can treat on its own. A card
+     with no role (the navbar, the Admin frames) keeps the base surface. */
+  .fuwari-card-panel,
+  .fuwari-card-item,
+  .fuwari-card-widget {
+    border-radius: var(--theme-card-radius);
+    background-color: var(--theme-surface);
+    box-shadow: var(--theme-card-shadow);
+  }
+  .fuwari-card-widget {
+    border-top: var(--theme-widget-rule);
+  }
+  .fuwari-card-standalone {
+    border: var(--theme-standalone-border);
+    border-radius: var(--theme-standalone-radius);
+    background-color: var(--theme-surface);
+  }
+  .fuwari-card-floating {
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
+  }
+  /* A toast of the public site: a float with room of its own. */
+  .fuwari-toast {
+    padding: var(--theme-toast-pad, 1.25rem);
+    border-radius: var(--theme-float-radius, var(--fuwari-radius-large));
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
+  }
+  /* What floats over the page and is no dialog: a menu, a popover, a toast,
+     the bar of a Theme preview. A Theme gives it its fill, its shadow with
+     any edge, its corners and what it does to the page behind it. */
+  .fuwari-float {
+    border-radius: var(--theme-float-radius, 0.75rem);
+    background-color: var(--theme-float-bg, var(--theme-raised));
+    box-shadow: var(
+      --theme-float-shadow,
+      0 0 0 1px var(--fuwari-input-border),
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1)
+    );
+    -webkit-backdrop-filter: var(--theme-float-backdrop, none);
+    backdrop-filter: var(--theme-float-backdrop, none);
+  }
+  /* The Admin (styles/admin-variables.css) only: every card has a hairline
+     edge. Public pages keep the cards above as they are. */
+  :root:has(.admin-layout)
+    :is(
+      .fuwari-card-base,
+      .fuwari-card-panel,
+      .fuwari-card-item,
+      .fuwari-card-widget,
+      .fuwari-card-standalone,
+      .fuwari-card-floating
+    ) {
+    border: 1px solid var(--admin-hairline);
+  }
+
+  .fuwari-heading {
+    font-family: var(--theme-heading-font);
+    letter-spacing: var(--theme-heading-tracking);
+  }
+  .fuwari-list-title {
+    font-size: var(--theme-list-title-size);
+    line-height: calc(2.25 / 1.875);
+  }
+  .fuwari-page-title {
+    font-size: var(--theme-page-title-size, 1.875rem);
+    line-height: calc(2.25 / 1.875);
+  }
+  @variant md {
+    .fuwari-page-title {
+      font-size: var(--theme-page-title-size, 2.25rem);
+      line-height: 2.75rem;
+    }
+  }
+  .fuwari-meta-text {
+    font-size: var(--theme-meta-size);
+    font-weight: var(--theme-meta-weight);
+    line-height: calc(1.25 / 0.875);
+  }
+  .fuwari-meta-rule {
+    border-bottom: 1px var(--theme-rule-style)
+      var(--theme-rule, var(--fuwari-meta-divider));
+  }
+  /* The rule between two entries of a flat list: Posts as rows, the archive
+     as an index (Theme Recipe). */
+  .fuwari-list-rule {
+    border-top: 1px var(--theme-rule-style)
+      var(--theme-rule, var(--fuwari-meta-divider));
+  }
+  /* A meta row in the inline form of the Theme Recipe: plain text with a dot
+     between the items. The dot hangs before its item and takes no room there:
+     its room is the invisible one that ends the item before, so two items on
+     a line stand exactly as far apart as a dot in the flow would set them.
+     An item that starts a line therefore starts flush with the row, and its
+     dot hangs outside the row, which cuts it off: the row reaches 0.4375rem
+     past its items on either side, enough for the focus ring of a link at
+     its end and short of the dot, which ends 0.5rem out. */
+  .fuwari-meta-inline {
+    margin-inline: -0.4375rem;
+    padding-inline: 0.4375rem;
+    overflow-x: clip;
+  }
+  .fuwari-meta-inline > :not(:first-child)::before {
+    content: "·";
+    display: inline-flex;
+    flex: none;
+    justify-content: flex-end;
+    width: 0;
+    margin-inline: -0.5rem 0.5rem;
+    white-space: pre;
+    color: var(--theme-rule, var(--fuwari-meta-divider));
+  }
+  .fuwari-meta-inline > :not(:last-child)::after {
+    content: "·";
+    flex: none;
+    margin-left: 0.5rem;
+    visibility: hidden;
+  }
+  /* The pinned or popular label above a post in a list. */
+  .fuwari-kicker {
+    font-size: var(--theme-kicker-size);
+    line-height: calc(1.25 / 0.875);
+    letter-spacing: var(--theme-kicker-tracking);
+  }
+  .fuwari-kicker[data-kind="pinned"] {
+    color: var(--theme-kicker-color, var(--theme-accent));
+  }
+  .fuwari-kicker[data-kind="popular"] {
+    color: var(--theme-kicker-color, var(--fuwari-popular));
+  }
+
+  /* Posts as tiles (Theme Recipe). The list is one column, and two once the
+     list itself is 42rem wide, whatever stands beside it. A cell and its tile
+     pass the rows of the grid on, so the leads of a row share one height and
+     the texts another: a plate is as tall as the cover beside it, two plates
+     make a low row, titles start on one line and metas end on one. Without
+     subgrid the tiles of a row are still equally tall, and a plate is low. */
+  .fuwari-tile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @container (min-width: 42rem) {
+    .fuwari-tile-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+  .fuwari-tile-cell,
+  .fuwari-tile {
+    display: grid;
+    min-width: 0;
+  }
+  .fuwari-tile {
+    position: relative;
+    grid-template-rows: auto 1fr;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @supports (grid-template-rows: subgrid) {
+    .fuwari-tile-cell,
+    .fuwari-tile {
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
+  }
+  /* What leads a tile: the cover at one shape, cropped, or for a Post without
+     one a plate, which has no shape of its own. The lead clips itself, not
+     the tile, so the tile's link can reach past the tile's edge (below). */
+  .fuwari-tile-lead {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 7rem;
+    border-radius: var(--theme-card-radius) var(--theme-card-radius) 0 0;
+    background-color: var(--theme-tonal-bg);
+    transition: background-color 0.3s;
+  }
+  .fuwari-tile-lead[data-lead="cover"] {
+    aspect-ratio: 16 / 9;
+  }
+  .fuwari-tile-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* The plate: a wash of the accent with the first character of the title,
+     as large as the plate allows, so a low one shows it whole. */
+  .fuwari-tile-plate {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+    background:
+      radial-gradient(
+        85% 120% at 100% 0%,
+        color-mix(in oklab, var(--theme-accent) 30%, transparent),
+        transparent 64%
+      ),
+      radial-gradient(
+        70% 110% at 0% 100%,
+        color-mix(in oklab, var(--theme-accent) 14%, transparent),
+        transparent 70%
+      );
+  }
+  .fuwari-tile-plate span {
+    position: absolute;
+    right: 6%;
+    bottom: -0.16em;
+    font-family: var(--theme-heading-font);
+    font-size: clamp(5rem, min(36cqw, 96cqh), 13rem);
+    font-weight: 800;
+    line-height: 1;
+    color: color-mix(in oklab, var(--theme-accent) 26%, transparent);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    user-select: none;
+  }
+  /* The archive as rows led by a cover (Theme Recipe, archive: "covers"):
+     the row reaches past its text on either side, so what shows under the
+     pointer has room around the cover. */
+  .fuwari-archive-covers {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 2rem;
+  }
+  @media (width >= 56rem) {
+    .fuwari-archive-covers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .fuwari-archive-cover-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-inline: -0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: calc(var(--theme-cover-radius) + 0.25rem);
+    transition: background-color 0.15s;
+  }
+  a.fuwari-archive-cover-row:hover {
+    background-color: var(--theme-plain-bg-hover);
+  }
+  a.fuwari-archive-cover-row:active {
+    background-color: var(--theme-plain-bg-active);
+  }
+  .fuwari-archive-cover {
+    position: relative;
+    flex: none;
+    width: 5.25rem;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: calc(var(--theme-cover-radius) * 0.75);
+    background-color: var(--theme-tonal-bg);
+  }
+  .fuwari-archive-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fuwari-archive-cover[data-lead="plate"] {
+    display: grid;
+    place-items: center;
+    background: radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in oklab, var(--theme-accent) 30%, transparent),
+      color-mix(in oklab, var(--theme-accent) 10%, transparent) 70%
+    );
+  }
+  .fuwari-archive-cover[data-lead="plate"] span {
+    font-family: var(--theme-heading-font);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: color-mix(in oklab, var(--theme-accent) 55%, transparent);
+    user-select: none;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .fuwari-archive-cover-row:hover .fuwari-archive-cover img {
+      transform: scale(1.06);
+    }
+  }
+  @media (width < 30rem) {
+    .fuwari-archive-cover-row {
+      gap: 0.75rem;
+    }
+    .fuwari-archive-cover {
+      width: 4.25rem;
+    }
+  }
+  /* The pinned or popular label, on a corner of the lead. */
+  .fuwari-tile-flag {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 1.625rem;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.5);
+    -webkit-backdrop-filter: blur(8px) saturate(1.4);
+    backdrop-filter: blur(8px) saturate(1.4);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  /* The title is the tile's one link to the Post and covers the whole tile;
+     a link of the meta lies over it. The ring of the title goes around the
+     tile. */
+  .fuwari-tile-title {
+    transition: color 0.2s;
+  }
+  .fuwari-tile-title::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--theme-card-radius);
+  }
+  .fuwari-tile:has(.fuwari-tile-title:focus-visible) {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: 2px;
+  }
+  .fuwari-tile:has(.fuwari-tile-title:focus-visible) .fuwari-tile-title {
+    outline: none;
+  }
+  @media (hover: hover) {
+    .fuwari-tile:hover {
+      box-shadow: var(--theme-card-shadow-hover, var(--theme-card-shadow));
+    }
+    .fuwari-tile:hover .fuwari-tile-title {
+      color: var(--theme-accent);
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .fuwari-tile:hover {
+      transform: translateY(-3px);
+    }
+    /* The pointer stays on the tile where the tile rose from under it. */
+    .fuwari-tile:hover .fuwari-tile-title::after {
+      bottom: -3px;
+    }
+    .fuwari-tile:hover .fuwari-tile-cover {
+      transform: scale(1.04);
+    }
+    .fuwari-tile:hover .fuwari-tile-plate span {
+      transform: translate(-3%, -4%);
+    }
+  }
+
+  .fuwari-widget-title {
+    font-size: var(--theme-widget-title-size);
+    line-height: calc(1.75 / 1.125);
+    letter-spacing: var(--theme-widget-title-tracking);
+    color: var(--theme-widget-title-color);
+  }
+  /* A row in a sidebar block, wider than the block's padding by the bleed. */
+  .fuwari-widget-row {
+    width: calc(100% + 2 * var(--theme-widget-row-bleed));
+    margin-inline: calc(-1 * var(--theme-widget-row-bleed));
+  }
+  /* An expandable sidebar card in its wide form (expandable-sidebar-card.tsx,
+     in a `card` container from 20rem, `@xs/card:` there). Until the reader
+     asks for all of them, the entries show through a window: the title's
+     line and two rows of pills under it, and from 34rem (`@[34rem]/card:`)
+     the one row beside the title. The window is a little larger than that,
+     for the focus ring of what lies at its edge; a row further down starts
+     beyond it.
+     「更多」 shows only while the window cuts entries off, and the stylesheet
+     can tell without a script, so it is right from the first paint: the grid
+     area of 「更多」 is as tall as the title's line and all the entries (as
+     all the entries, beside the title), and unless that is taller than the
+     window, 「更多」 is moved down, out of it. The component then measures the
+     same thing and says so (`data-cut-off`), which settles it wherever the
+     percentage resolves differently, and takes a 「更多」 that is out of
+     sight from the keyboard too. */
+  @container card (width >= 20rem) {
+    .fuwari-widget-window {
+      --widget-window: 7rem;
+      max-height: calc(var(--widget-window) + 0.5rem);
+      margin: -0.25rem -0.5rem;
+      padding: 0.25rem 0.5rem;
+      overflow: clip;
+    }
+    .fuwari-widget-more {
+      position: relative;
+      top: clamp(
+        0px,
+        (var(--widget-window) + 0.25rem - 100%) * 9999,
+        var(--widget-window) + 1rem
+      );
+    }
+    [data-cut-off="true"] .fuwari-widget-more {
+      top: 0;
+    }
+    [data-cut-off="false"] .fuwari-widget-more {
+      visibility: hidden;
+    }
+  }
+  @container card (width >= 34rem) {
+    .fuwari-widget-window {
+      --widget-window: 2rem;
+    }
+  }
 
   .fuwari-btn-regular {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     transition:
       background-color 0.2s,
       color 0.2s;
   }
   .fuwari-btn-regular:hover {
-    background-color: var(--fuwari-btn-regular-bg-hover);
+    background-color: var(--theme-tonal-bg-hover);
   }
   .fuwari-btn-regular:active {
-    background-color: var(--fuwari-btn-regular-bg-active);
+    background-color: var(--theme-tonal-bg-active);
   }
   .dark .fuwari-btn-regular {
-    color: rgb(255 255 255 / 0.75);
-  }
-
-  .fuwari-btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--fuwari-primary);
-    color: white;
-    transition:
-      background-color 0.2s,
-      color 0.2s,
-      opacity 0.2s;
-  }
-  .fuwari-btn-primary:hover {
-    background-color: var(--fuwari-primary-hover);
-  }
-  .fuwari-btn-primary:active {
-    background-color: var(--fuwari-primary-active);
-  }
-  .fuwari-btn-primary:disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  .dark .fuwari-btn-primary {
-    color: rgb(0 0 0 / 0.75);
-  }
-
-  .fuwari-btn-danger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--fuwari-danger);
-    color: white;
-    transition:
-      opacity 0.2s,
-      background-color 0.2s;
-  }
-  .fuwari-btn-danger:hover {
-    opacity: 0.9;
-  }
-  .fuwari-btn-danger:disabled {
-    opacity: 0.5;
-    pointer-events: none;
+    color: var(--fuwari-fg-75);
   }
 
   .fuwari-text-90 {
@@ -266,10 +661,10 @@
   }
   .fuwari-expand-animation:hover::before {
     scale: 1;
-    background-color: var(--fuwari-btn-plain-bg-hover);
+    background-color: var(--theme-plain-bg-hover);
   }
   .fuwari-expand-animation:active::before {
-    background-color: var(--fuwari-btn-plain-bg-active);
+    background-color: var(--theme-plain-bg-active);
   }
 
   .fuwari-meta-icon {
@@ -279,8 +674,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     margin-right: 0.5rem;
     transition:
       background-color 0.2s,
@@ -296,13 +691,10 @@
     width: 10%;
     height: 100%;
     left: calc(50% - 1px);
-    border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    border-left: 2px dashed var(--theme-rule, var(--fuwari-input-border));
     pointer-events: none;
     transition: all 0.3s;
     transform: translateY(-50%);
-  }
-  .dark .fuwari-timeline-dash::before {
-    border-left: 2px dashed rgba(255, 255, 255, 0.1);
   }
 
   .fuwari-code-folding-wrapper {
@@ -311,24 +703,24 @@
 
   .fuwari-code-mask {
     @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
-    background: linear-gradient(to bottom, transparent, var(--fuwari-card-bg));
+    background: linear-gradient(to bottom, transparent, var(--theme-raised));
     z-index: 10;
   }
 
-  /* Back to top and page actions: the screen corner on phones; beside the
-     content from lg, kept on screen when the side gutter is too narrow. */
+  /* Back to top and page actions: the screen corner on phones; from lg, where
+     the Theme Shell puts them (--shell-floating-actions-left). A shell that
+     stands them in a box of its own says so
+     (--shell-floating-actions-position: static) and places that box. */
   .fuwari-floating-actions {
-    @apply fixed right-4 flex flex-col gap-2;
+    @apply right-4 flex flex-col gap-2;
+    position: var(--shell-floating-actions-position, fixed);
     bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
   @variant lg {
     .fuwari-floating-actions {
       right: auto;
       bottom: 10rem;
-      left: min(
-        calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
-        calc(100% - 4.75rem)
-      );
+      left: var(--shell-floating-actions-left);
     }
   }
 
@@ -341,7 +733,7 @@
       border-radius: inherit;
       padding: 2px;
       background: conic-gradient(
-        var(--fuwari-primary) calc(var(--progress, 0) * 360deg),
+        var(--theme-accent) calc(var(--progress, 0) * 360deg),
         transparent 0
       );
       mask:
@@ -357,41 +749,6 @@
   }
   .fuwari-hide-scrollbar::-webkit-scrollbar {
     display: none;
-  }
-
-  .fuwari-toc-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
-  }
-  .dark .fuwari-toc-scrollbar {
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-  }
-  .fuwari-toc-scrollbar:hover {
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-  }
-  .dark .fuwari-toc-scrollbar:hover {
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-  }
-  .fuwari-toc-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  .fuwari-toc-scrollbar::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-  .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    border: none;
-  }
-  .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-  }
-  .dark .fuwari-toc-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  .dark .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -450,8 +807,8 @@
   }
 }
 
-.theme-transition::view-transition-old(root),
-.theme-transition::view-transition-new(root) {
+.colour-scheme-transition::view-transition-old(root),
+.colour-scheme-transition::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
@@ -516,39 +873,42 @@
 }
 
 .fuwari-custom-md {
-  --tw-prose-body: rgb(0 0 0 / 0.9);
-  --tw-prose-headings: rgb(0 0 0 / 0.9);
-  --tw-prose-lead: rgb(0 0 0 / 0.75);
-  --tw-prose-links: var(--fuwari-primary);
-  --tw-prose-bold: rgb(0 0 0 / 0.9);
-  --tw-prose-counters: rgb(0 0 0 / 0.5);
-  --tw-prose-bullets: rgb(0 0 0 / 0.3);
-  --tw-prose-hr: var(--fuwari-meta-divider);
-  --tw-prose-quotes: rgb(0 0 0 / 0.75);
-  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
-  --tw-prose-captions: rgb(0 0 0 / 0.5);
-  --tw-prose-code: var(--fuwari-inline-code-color);
-  --tw-prose-pre-code: var(--fuwari-btn-content);
-  --tw-prose-pre-bg: var(--fuwari-card-bg);
-  --tw-prose-th-borders: var(--fuwari-meta-divider);
-  --tw-prose-td-borders: var(--fuwari-meta-divider);
+  --tw-prose-body: var(--fuwari-fg);
+  --tw-prose-headings: var(--fuwari-fg);
+  --tw-prose-lead: var(--fuwari-fg-75);
+  --tw-prose-links: var(--theme-accent);
+  --tw-prose-bold: var(--fuwari-fg);
+  --tw-prose-counters: var(--fuwari-fg-faint);
+  --tw-prose-bullets: var(--fuwari-fg-30);
+  --tw-prose-hr: var(--theme-rule, var(--fuwari-meta-divider));
+  --tw-prose-quotes: var(--fuwari-fg-75);
+  --tw-prose-quote-borders: var(--theme-tonal-bg);
+  --tw-prose-captions: var(--fuwari-fg-faint);
+  --tw-prose-code: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
+  --tw-prose-pre-code: var(--theme-tonal-fg);
+  --tw-prose-pre-bg: var(--theme-raised);
+  --tw-prose-th-borders: var(--theme-rule, var(--fuwari-meta-divider));
+  --tw-prose-td-borders: var(--theme-rule, var(--fuwari-meta-divider));
   color: var(--tw-prose-body);
+  /* A word longer than its line, such as an address, breaks instead of
+     running out of the column. */
+  overflow-wrap: break-word;
 
   h1 {
-    @apply text-3xl font-bold font-sans tracking-normal mt-10 mb-6;
+    @apply text-3xl font-bold mt-10 mb-6;
   }
   h2 {
-    @apply text-2xl font-bold font-sans tracking-normal mt-10 mb-5;
+    @apply text-2xl font-bold mt-10 mb-5;
   }
   h3 {
-    @apply text-xl font-bold font-sans tracking-normal mt-8 mb-4;
+    @apply text-xl font-bold mt-8 mb-4;
   }
   h4 {
-    @apply text-lg font-bold font-sans tracking-normal mt-6 mb-3;
+    @apply text-lg font-bold mt-6 mb-3;
   }
   h5,
   h6 {
-    @apply text-base font-bold font-sans tracking-normal mt-6 mb-3;
+    @apply text-base font-bold mt-6 mb-3;
   }
   h1,
   h2,
@@ -556,15 +916,17 @@
   h4,
   h5,
   h6 {
+    font-family: var(--theme-heading-font);
+    letter-spacing: var(--theme-heading-tracking);
     /* Matches the offset in use-jump-to-heading.ts, below the sticky navbar. */
     scroll-margin-top: 5rem;
     /* The editor has no anchor link, so it keeps a decorative mark. */
     &:hover:not(:has(> .anchor))::after {
       content: "#";
-      @apply text-(--fuwari-primary) opacity-50 transition-opacity font-normal no-underline ml-[0.2ch];
+      @apply text-(--theme-accent) opacity-50 transition-opacity font-normal no-underline ml-[0.2ch];
     }
     .anchor {
-      @apply ml-[0.2ch] text-(--fuwari-primary) font-normal no-underline select-none opacity-0 transition-opacity;
+      @apply ml-[0.2ch] text-(--theme-accent) font-normal no-underline select-none opacity-0 transition-opacity;
     }
     &:hover .anchor {
       @apply opacity-50;
@@ -576,21 +938,30 @@
   }
 
   a:not(.no-styling) {
-    @apply relative bg-none font-medium text-(--fuwari-primary) underline decoration-(--fuwari-link-underline) decoration-1 decoration-dashed underline-offset-4;
+    @apply relative bg-none font-medium text-(--theme-accent) underline decoration-1 underline-offset-4;
+    text-decoration-color: var(
+      --theme-link-underline,
+      color-mix(in oklab, var(--theme-accent) 55%, transparent)
+    );
+    text-decoration-style: var(--theme-link-underline-style);
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
     display: inline-block;
+    /* So a long address breaks within the line instead of widening the box. */
+    max-width: 100%;
     &:hover,
     &:active {
       @apply decoration-transparent;
-      background: var(--fuwari-btn-plain-bg-hover);
-      border-bottom: 1px dashed var(--fuwari-link-hover);
+      background: var(--theme-plain-bg-hover);
+      border-bottom: 1px var(--theme-link-underline-style) var(--theme-accent);
       text-decoration: none;
     }
   }
 
   :not(pre) > code {
-    @apply bg-(--fuwari-inline-code-bg) text-(--fuwari-inline-code-color) px-1 py-0.5 rounded-md overflow-hidden;
+    @apply px-1 py-0.5 rounded-md overflow-hidden;
+    background-color: var(--fuwari-inline-code-bg, var(--theme-tonal-bg));
+    color: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
   }
   code {
     font-family:
@@ -610,7 +981,8 @@
     counter-reset: line;
     span.line {
       &:before {
-        @apply text-black/30 mr-4 w-4 inline-block whitespace-nowrap;
+        @apply mr-4 w-4 inline-block whitespace-nowrap;
+        color: var(--fuwari-fg-30);
         content: counter(line);
         counter-increment: line;
         direction: rtl;
@@ -625,7 +997,10 @@
   .expressive-code {
     @apply my-4;
     ::selection {
-      @apply bg-(--fuwari-codeblock-selection);
+      background-color: var(
+        --fuwari-codeblock-selection,
+        var(--fuwari-selection-bg)
+      );
       color: inherit;
     }
   }
@@ -633,7 +1008,7 @@
   ul,
   ol {
     li::marker {
-      @apply text-(--fuwari-primary);
+      @apply text-(--theme-accent);
     }
   }
 
@@ -641,7 +1016,7 @@
     @apply not-italic border-transparent relative;
     font-weight: inherit;
     &:before {
-      @apply content-[''] absolute -left-1 block transition bg-(--fuwari-btn-regular-bg) h-full w-1 rounded-full;
+      @apply content-[''] absolute -left-1 block transition bg-(--theme-tonal-bg) h-full w-1 rounded-full;
     }
     p:before,
     p:after {
@@ -658,14 +1033,14 @@
     border-collapse: collapse;
   }
   thead {
-    border-bottom: 1px solid var(--fuwari-meta-divider);
+    border-bottom: 1px solid var(--theme-rule, var(--fuwari-meta-divider));
   }
   thead th {
     font-weight: 600;
     vertical-align: bottom;
   }
   tbody tr {
-    border-bottom: 1px solid var(--fuwari-meta-divider);
+    border-bottom: 1px solid var(--theme-rule, var(--fuwari-meta-divider));
   }
   tbody tr:last-child {
     border-bottom-width: 0;
@@ -686,28 +1061,6 @@
     overflow-y: hidden;
     text-align: center;
   }
-}
-
-:is(.dark .fuwari-custom-md) {
-  --tw-prose-body: rgb(255 255 255 / 0.9);
-  --tw-prose-headings: rgb(255 255 255 / 0.9);
-  --tw-prose-lead: rgb(255 255 255 / 0.75);
-  --tw-prose-links: var(--fuwari-primary);
-  --tw-prose-bold: rgb(255 255 255 / 0.9);
-  --tw-prose-counters: rgb(255 255 255 / 0.5);
-  --tw-prose-bullets: rgb(255 255 255 / 0.3);
-  --tw-prose-hr: var(--fuwari-meta-divider);
-  --tw-prose-quotes: rgb(255 255 255 / 0.75);
-  --tw-prose-quote-borders: var(--fuwari-btn-regular-bg);
-  --tw-prose-captions: rgb(255 255 255 / 0.5);
-  --tw-prose-code: var(--fuwari-inline-code-color);
-  --tw-prose-pre-code: var(--fuwari-btn-content);
-  --tw-prose-pre-bg: var(--fuwari-card-bg);
-  --tw-prose-th-borders: var(--fuwari-meta-divider);
-  --tw-prose-td-borders: var(--fuwari-meta-divider);
-}
-:is(.dark .fuwari-custom-md) code span.line:before {
-  @apply text-white/30;
 }
 
 .fuwari-custom-md.ProseMirror :is(h1, h2, h3, h4, h5, h6):hover::after {

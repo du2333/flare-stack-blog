@@ -17,6 +17,8 @@
   text-align: center;
 }
 .auth-heading h1 {
+  font-family: var(--theme-heading-font);
+  letter-spacing: var(--theme-heading-tracking);
   font-size: 26px;
   font-weight: 700;
   line-height: 1.4;
@@ -36,7 +38,7 @@
     .fuwari-button,
     .fuwari-icon-button
   ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+  outline: 2px solid var(--theme-accent);
   outline-offset: 3px;
 }
 .auth-divider {
@@ -52,7 +54,10 @@
   content: "";
   height: 1px;
   flex: 1;
-  background: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
+  background: var(
+    --theme-rule,
+    color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent)
+  );
 }
 .auth-form {
   --fuwari-field-height: 46px;
@@ -66,7 +71,7 @@
 }
 @media (max-width: 639px) {
   .auth-card:has(.auth-page) {
-    padding: 24px;
+    padding: 24px var(--theme-standalone-pad-x-narrow, 24px);
   }
 }
 .auth-form fieldset {

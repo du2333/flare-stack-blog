@@ -4,10 +4,7 @@ function intlLocale() {
   return getLocale() === "zh" ? "zh-CN" : "en-US";
 }
 
-/** A whole number with the locale's thousands separators. */
-export function formatCount(value: number) {
-  return new Intl.NumberFormat(intlLocale()).format(value);
-}
+export { formatCount } from "@/lib/utils";
 
 /** A popularity window's first to last UTC day, e.g. "Sep 14 – Oct 13". */
 export function formatWindow(start: number, end: number) {
@@ -34,6 +31,32 @@ export function formatDay(date: Date) {
     month: "long",
     day: "numeric",
   }).format(date);
+}
+
+/** A local day's weekday in one character or letter, e.g. "四" or "T". */
+export function formatWeekdayNarrow(date: Date) {
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: "narrow" }).format(
+    date,
+  );
+}
+
+/** A UTC day as month and day, e.g. "10/14" or "10/14". */
+export function formatUtcDay(day: number) {
+  return new Intl.DateTimeFormat(intlLocale(), {
+    month: "numeric",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(day);
+}
+
+/** A UTC day with its weekday, e.g. "10月14日周三" or "Wed, Oct 14". */
+export function formatUtcDayLong(day: number) {
+  return new Intl.DateTimeFormat(intlLocale(), {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(day);
 }
 
 /** A month label, e.g. "10月" or "Oct". */

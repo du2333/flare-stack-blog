@@ -2,6 +2,11 @@
   --pswp-bg: oklch(0.12 0.01 var(--fuwari-hue));
   --pswp-placeholder-bg: oklch(0.2 0.015 var(--fuwari-hue));
 }
+/* The Admin lightbox does not follow the site hue (admin-variables.css). */
+:root:has(.admin-layout) .pswp {
+  --pswp-bg: #12100d;
+  --pswp-placeholder-bg: #1f1b17;
+}
 
 .pswp__post-caption {
   position: absolute;

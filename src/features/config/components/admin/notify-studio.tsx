@@ -1,6 +1,6 @@
 import { SettingsDisclosure } from "./settings-disclosure";
-import { useMediaQuery } from "@/hooks/use-motion";
 import { SecretControl } from "./secret-control";
+import { SettingPart, SettingRow, SwitchRow } from "./setting-row";
 import { useConfigEditing, type ConfigFormValues } from "./config-editing";
 import { MessageCircle, Search, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -24,11 +24,10 @@ import {
   type WebhookEndpoint,
   type WebhookProvider,
 } from "@/features/webhook/webhook.schema";
+import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FormField } from "@/components/ui/form-field";
 import { Input, Textarea } from "@/components/ui/input";
-import { SectionHeading } from "@/components/ui/page-heading";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -44,7 +43,6 @@ export function NotifyStudio() {
 }
 
 function EmailChannel() {
-  const widePreview = useMediaQuery("(min-width:1051px)");
   const { register, setValue, control, getValues } =
     useFormContext<ConfigFormValues>();
   const { testEmailConnection } = useEmailConnection();
@@ -143,151 +141,172 @@ function EmailChannel() {
     }
   };
 
+  const lastTest =
+    !matchesTest &&
+    savedTest.data?.testedAt &&
+    (savedTestState === "verified" || savedTestState === "failed")
+      ? savedTestState === "verified"
+        ? m.settings_email_last_test_verified({
+            time: formatTestedAt(savedTest.data.testedAt),
+          })
+        : m.settings_email_last_test_failed({
+            time: formatTestedAt(savedTest.data.testedAt),
+            error: savedTest.data.error ?? m.settings_email_unknown_error(),
+          })
+      : null;
+
   return (
-    <section className="notify-email">
-      <div className="notify-form">
-        <SectionHeading
-          title={m.settings_tab_email()}
-          description={m.settings_design_email_hint()}
-          actions={
-            <Badge
-              role="status"
-              tone={
-                connectionStatus === "verified"
-                  ? "success"
-                  : connectionStatus === "failed"
-                    ? "danger"
-                    : "neutral"
-              }
-            >
-              {connectionLabels[connectionStatus]}
-            </Badge>
+    <AdminFormSection
+      title={m.settings_tab_email()}
+      description={m.settings_design_email_hint()}
+      status={
+        <Badge
+          role="status"
+          tone={
+            connectionStatus === "verified"
+              ? "success"
+              : connectionStatus === "failed"
+                ? "danger"
+                : "neutral"
           }
-        />
-
-        <Switch
-          className="notify-switch"
-          label={m.settings_email_scope_admin_label()}
-          checked={adminOn}
-          onCheckedChange={(checked) =>
-            setValue("notification.admin.channels.email", checked, {
-              shouldDirty: true,
-            })
-          }
-        />
-        <Switch
-          className="notify-switch"
-          label={m.settings_email_scope_user_label()}
-          checked={userOn}
-          onCheckedChange={(checked) =>
-            setValue("notification.user.emailEnabled", checked, {
-              shouldDirty: true,
-            })
-          }
-        />
-
-        <SectionHeading
-          className="settings-group-title"
-          level={3}
-          size="md"
-          title={m.settings_email_account()}
-        />
-        <div className="settings-field-grid">
-          <FormField label={m.settings_email_creds_host_label()}>
-            <Input
-              {...register("email.host")}
-              placeholder={m.settings_email_creds_host_ph()}
-            />
-          </FormField>
-          <FormField label={m.settings_email_creds_port_label()}>
-            <Input
-              type="number"
-              {...register("email.port", { valueAsNumber: true })}
-              placeholder={m.settings_email_creds_port_ph()}
-            />
-          </FormField>
-          <FormField label={m.settings_email_creds_username_label()}>
-            <Input
-              {...register("email.username")}
-              autoComplete="off"
-              placeholder={m.settings_email_creds_username_ph()}
-            />
-          </FormField>
-          <FormField label={m.settings_email_creds_password_label()}>
-            <SecretControl
-              kind="email"
-              stored={secrets.emailPasswordConfigured}
-            />
-          </FormField>
-          <FormField label={m.settings_email_creds_sender_name_label()}>
-            <Input
-              {...register("email.senderName")}
-              placeholder={m.settings_email_creds_sender_name_ph()}
-            />
-          </FormField>
-          <FormField label={m.settings_email_creds_sender_addr_label()}>
-            <Input
-              type="email"
-              {...register("email.senderAddress")}
-              placeholder={m.settings_email_creds_sender_addr_ph()}
-            />
-          </FormField>
-        </div>
-
-        <Button
-          onClick={() => void handleTest()}
-          disabled={!configured}
-          loading={testing}
-          icon={<Send size={14} />}
         >
-          {m.settings_email_test_btn_send()}
-        </Button>
-        <p className="settings-muted notify-test-hint">
-          {m.settings_design_test_hint()}
-        </p>
-        {!matchesTest &&
-          savedTest.data?.testedAt &&
-          (savedTestState === "verified" || savedTestState === "failed") && (
-            <p className="settings-muted">
-              {savedTestState === "verified"
-                ? m.settings_email_last_test_verified({
-                    time: formatTestedAt(savedTest.data.testedAt),
-                  })
-                : m.settings_email_last_test_failed({
-                    time: formatTestedAt(savedTest.data.testedAt),
-                    error:
-                      savedTest.data.error ?? m.settings_email_unknown_error(),
-                  })}
-            </p>
-          )}
-      </div>
-      <aside className="notify-preview">
-        <SettingsDisclosure
-          defaultOpen={widePreview}
-          title={m.settings_design_email_preview()}
-        >
-          <p className="settings-muted">{m.settings_design_preview_hint()}</p>
-          <div className="notify-preview-card">
-            <p className="text-sm font-medium fuwari-text-90">
-              {senderName ||
-                siteTitle ||
-                m.settings_email_creds_sender_name_label()}
-            </p>
-            <p className="text-sm fuwari-text-75">
-              {m.email_comment_admin_root_subject({
-                postTitle: m.webhook_example_post_title(),
-              })}
-            </p>
-            <p className="text-sm fuwari-text-50 leading-relaxed">
-              {m.email_comment_admin_root_preview({
-                commenterName: m.webhook_example_commenter_name(),
-                postTitle: m.webhook_example_post_title(),
-              })}
-            </p>
+          {connectionLabels[connectionStatus]}
+        </Badge>
+      }
+    >
+      <SwitchRow label={m.settings_email_scope_admin_label()}>
+        {(field) => (
+          <Switch
+            {...field}
+            checked={adminOn}
+            onCheckedChange={(checked) =>
+              setValue("notification.admin.channels.email", checked, {
+                shouldDirty: true,
+              })
+            }
+          />
+        )}
+      </SwitchRow>
+      <SwitchRow label={m.settings_email_scope_user_label()}>
+        {(field) => (
+          <Switch
+            {...field}
+            checked={userOn}
+            onCheckedChange={(checked) =>
+              setValue("notification.user.emailEnabled", checked, {
+                shouldDirty: true,
+              })
+            }
+          />
+        )}
+      </SwitchRow>
+
+      <AdminFormRow label={m.settings_email_account()}>
+        <div className="setting-parts">
+          <div className="setting-parts-pair">
+            <SettingPart label={m.settings_email_creds_host_label()}>
+              {(field) => (
+                <Input
+                  {...register("email.host")}
+                  {...field}
+                  placeholder={m.settings_email_creds_host_ph()}
+                />
+              )}
+            </SettingPart>
+            <SettingPart label={m.settings_email_creds_port_label()}>
+              {(field) => (
+                <Input
+                  type="number"
+                  {...register("email.port", { valueAsNumber: true })}
+                  {...field}
+                  placeholder={m.settings_email_creds_port_ph()}
+                />
+              )}
+            </SettingPart>
           </div>
-        </SettingsDisclosure>
-      </aside>
-    </section>
+          <SettingPart label={m.settings_email_creds_username_label()}>
+            {(field) => (
+              <Input
+                {...register("email.username")}
+                {...field}
+                autoComplete="off"
+                placeholder={m.settings_email_creds_username_ph()}
+              />
+            )}
+          </SettingPart>
+          <SettingPart label={m.settings_email_creds_password_label()}>
+            {(field) => (
+              <SecretControl
+                {...field}
+                kind="email"
+                stored={secrets.emailPasswordConfigured}
+              />
+            )}
+          </SettingPart>
+          <SettingPart label={m.settings_email_creds_sender_name_label()}>
+            {(field) => (
+              <Input
+                {...register("email.senderName")}
+                {...field}
+                placeholder={m.settings_email_creds_sender_name_ph()}
+              />
+            )}
+          </SettingPart>
+          <SettingPart label={m.settings_email_creds_sender_addr_label()}>
+            {(field) => (
+              <Input
+                type="email"
+                {...register("email.senderAddress")}
+                {...field}
+                placeholder={m.settings_email_creds_sender_addr_ph()}
+              />
+            )}
+          </SettingPart>
+        </div>
+      </AdminFormRow>
+
+      <AdminFormRow
+        label={m.settings_connection_test_label()}
+        description={m.settings_design_test_hint()}
+      >
+        <div className="setting-test">
+          <Button
+            onClick={() => void handleTest()}
+            disabled={!configured}
+            loading={testing}
+            icon={<Send size={14} />}
+          >
+            {m.settings_email_test_btn_send()}
+          </Button>
+          {lastTest ? <p className="settings-muted">{lastTest}</p> : null}
+        </div>
+      </AdminFormRow>
+
+      <SettingsDisclosure
+        className="notify-preview"
+        title={m.settings_design_email_preview()}
+      >
+        <p className="settings-muted">{m.settings_design_preview_hint()}</p>
+        <div className="notify-preview-card">
+          <p className="text-sm font-medium fuwari-text-90">
+            {senderName ||
+              siteTitle ||
+              m.settings_email_creds_sender_name_label()}
+          </p>
+          <p className="text-sm fuwari-text-75">
+            {m.email_comment_admin_root_subject({
+              postTitle: m.webhook_example_post_title(),
+            })}
+          </p>
+          <p className="text-sm fuwari-text-50 leading-relaxed">
+            {m.email_comment_admin_root_preview({
+              commenterName: m.webhook_example_commenter_name(),
+              postTitle: m.webhook_example_post_title(),
+            })}
+          </p>
+        </div>
+      </SettingsDisclosure>
+    </AdminFormSection>
   );
 }
 
@@ -516,43 +535,39 @@ function WebhookChannel() {
     provider === "telegram" ? webhook?.chatId?.trim() : webhook?.url?.trim();
 
   return (
-    <SettingsDisclosure
-      className="notify-webhook"
-      title={
-        <>
-          {m.settings_webhook_endpoint_title()}
-          <span className="settings-muted">
-            {summary
-              ? `${copy.label()} · ${summary}`
-              : m.settings_connection_unconfigured()}
-          </span>
-        </>
+    <AdminFormSection
+      collapsible
+      title={m.settings_webhook_endpoint_title()}
+      summary={
+        summary
+          ? `${copy.label()} · ${summary}`
+          : m.settings_connection_unconfigured()
       }
     >
-      <div className="notify-webhook-content">
-        <FormField
-          label={m.settings_webhook_provider()}
-          hint={
-            <>
-              {copy.hint()}
-              {provider === "generic" || provider === "custom" ? (
-                <>
-                  {" "}
-                  <a
-                    href={WEBHOOK_DOCS_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-(--fuwari-primary) hover:underline"
-                  >
-                    {m.settings_webhook_docs_link()}
-                  </a>
-                </>
-              ) : null}
-            </>
-          }
-        >
+      <SettingRow
+        label={m.settings_webhook_provider()}
+        description={
+          <>
+            {copy.hint()}
+            {provider === "generic" || provider === "custom" ? (
+              <>
+                {" "}
+                <a
+                  href={WEBHOOK_DOCS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-(--fuwari-primary) hover:underline"
+                >
+                  {m.settings_webhook_docs_link()}
+                </a>
+              </>
+            ) : null}
+          </>
+        }
+      >
+        {(field) => (
           <Select
-            className="w-56 max-w-full"
+            id={field.id}
             value={provider}
             onChange={(next) => changeProvider(next as WebhookProvider)}
             options={WEBHOOK_PROVIDERS.map((value) => ({
@@ -560,104 +575,127 @@ function WebhookChannel() {
               label: PROVIDER_COPY[value].label(),
             }))}
           />
-        </FormField>
+        )}
+      </SettingRow>
 
-        {provider === "telegram" ? (
-          <>
-            <FormField label={m.settings_webhook_field_bot_token()}>
-              <SecretControl kind="webhook" stored={stored} />
-            </FormField>
-            <div className="grid gap-2">
-              <FormField label={m.settings_webhook_field_chat_id()}>
+      {provider === "telegram" ? (
+        <>
+          <SettingRow label={m.settings_webhook_field_bot_token()}>
+            {(field) => (
+              <SecretControl {...field} kind="webhook" stored={stored} />
+            )}
+          </SettingRow>
+          <SettingRow label={m.settings_webhook_field_chat_id()}>
+            {(field) => (
+              <>
                 <Input
                   {...register("notification.webhook.chatId")}
+                  {...field}
                   placeholder={m.settings_webhook_field_chat_id_ph()}
                 />
-              </FormField>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => void handleFindChats()}
-                  disabled={!hasSecret}
-                  loading={isFindingChats}
-                  icon={<Search size={14} />}
-                >
-                  {m.settings_webhook_find_chats()}
-                </Button>
-                {chats?.map((chat) => (
-                  <button
-                    key={chat.id}
-                    type="button"
-                    onClick={() =>
-                      setValue("notification.webhook.chatId", chat.id, {
-                        shouldDirty: true,
-                      })
-                    }
-                    className={cn(
-                      "rounded-xl h-8 px-3 text-sm border border-(--admin-rule) fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)",
-                      webhook?.chatId === chat.id &&
-                        "border-(--fuwari-primary) fuwari-text-90",
-                    )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => void handleFindChats()}
+                    disabled={!hasSecret}
+                    loading={isFindingChats}
+                    icon={<Search size={14} />}
                   >
-                    {chat.name}
-                    <span className="ml-1.5 text-xs fuwari-text-50">
-                      {chatTypeLabel(chat.type)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {chats?.length === 0 ? (
-                <p className="text-xs fuwari-text-50">
-                  {m.settings_webhook_chats_empty()}
-                </p>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <FormField label={copy.urlLabel()} error={fieldError?.url?.message}>
+                    {m.settings_webhook_find_chats()}
+                  </Button>
+                  {chats?.map((chat) => (
+                    <button
+                      key={chat.id}
+                      type="button"
+                      onClick={() =>
+                        setValue("notification.webhook.chatId", chat.id, {
+                          shouldDirty: true,
+                        })
+                      }
+                      className={cn(
+                        "rounded-xl h-8 px-3 text-sm border border-(--admin-rule) fuwari-text-75 hover:bg-(--fuwari-btn-regular-bg)",
+                        webhook?.chatId === chat.id &&
+                          "border-(--fuwari-primary) fuwari-text-90",
+                      )}
+                    >
+                      {chat.name}
+                      <span className="ml-1.5 text-xs fuwari-text-50">
+                        {chatTypeLabel(chat.type)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {chats?.length === 0 ? (
+                  <p className="text-xs fuwari-text-50">
+                    {m.settings_webhook_chats_empty()}
+                  </p>
+                ) : null}
+              </>
+            )}
+          </SettingRow>
+        </>
+      ) : (
+        <SettingRow label={copy.urlLabel()} error={fieldError?.url?.message}>
+          {(field) => (
             <Input
               {...register("notification.webhook.url")}
+              {...field}
               placeholder={copy.urlPlaceholder}
             />
-          </FormField>
-        )}
+          )}
+        </SettingRow>
+      )}
 
-        {provider === "custom" ? (
-          <FormField
-            label={m.settings_webhook_field_template()}
-            hint={
-              <>
-                {m.settings_webhook_template_variables()}
-                {": "}
-                {WEBHOOK_TEMPLATE_VARIABLES.map((name) => (
-                  <code key={name} className="mx-1 font-mono">
-                    {`{{${name}}}`}
-                  </code>
-                ))}
-              </>
-            }
-          >
+      {provider === "custom" ? (
+        <SettingRow
+          label={m.settings_webhook_field_template()}
+          description={
+            <>
+              {m.settings_webhook_template_variables()}
+              {": "}
+              {WEBHOOK_TEMPLATE_VARIABLES.map((name) => (
+                <code key={name} className="mx-1 font-mono">
+                  {`{{${name}}}`}
+                </code>
+              ))}
+            </>
+          }
+        >
+          {(field) => (
             <Textarea
               {...register("notification.webhook.template")}
+              {...field}
               mono
               rows={6}
               spellCheck={false}
             />
-          </FormField>
-        ) : null}
+          )}
+        </SettingRow>
+      ) : null}
 
-        {provider === "generic" || provider === "custom" ? (
-          <FormField
-            label={
-              secretUse === "optional"
-                ? m.settings_webhook_field_secret_optional()
-                : m.settings_webhook_endpoint_field_secret()
-            }
-          >
-            <SecretControl kind="webhook" stored={stored} canGenerate />
-          </FormField>
-        ) : null}
+      {provider === "generic" || provider === "custom" ? (
+        <SettingRow
+          label={
+            secretUse === "optional"
+              ? m.settings_webhook_field_secret_optional()
+              : m.settings_webhook_endpoint_field_secret()
+          }
+        >
+          {(field) => (
+            <SecretControl
+              {...field}
+              kind="webhook"
+              stored={stored}
+              canGenerate
+            />
+          )}
+        </SettingRow>
+      ) : null}
 
+      <AdminFormRow
+        label={m.settings_connection_test_label()}
+        description={m.settings_webhook_test_hint()}
+      >
         <Button
           onClick={() => void handleTest()}
           disabled={!canTest}
@@ -666,11 +704,10 @@ function WebhookChannel() {
         >
           {m.settings_webhook_endpoint_btn_test()}
         </Button>
+      </AdminFormRow>
 
-        <div className="fuwari-card-base p-4 space-y-2">
-          <p className="text-xs fuwari-text-50">
-            {m.settings_webhook_sample()}
-          </p>
+      <AdminFormRow label={m.settings_webhook_sample()}>
+        <div className="fuwari-card-base p-4">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 w-2 h-2 rounded-full bg-(--fuwari-success) shrink-0" />
             <MessageCircle
@@ -687,8 +724,7 @@ function WebhookChannel() {
             </div>
           </div>
         </div>
-        <p className="text-xs fuwari-text-50">{m.settings_webhook_empty()}</p>
-      </div>
-    </SettingsDisclosure>
+      </AdminFormRow>
+    </AdminFormSection>
   );
 }

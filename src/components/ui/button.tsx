@@ -9,8 +9,16 @@ export type ButtonVariant =
   | "plain"
   | "danger"
   | "text"
-  | "overlay";
-export type ButtonSize = "sm" | "md" | "lg";
+  | "overlay"
+  // The Admin's own (admin-variables.css), on their own scale: xs 28px,
+  // sm 30px, md 36px. inverse and glass sit on a dark card.
+  | "ink"
+  | "outline"
+  | "quiet"
+  | "inverse"
+  | "glass";
+/** xs (28px) is for the Admin's variants only. */
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 export interface ButtonStyle {
   variant?: ButtonVariant;
@@ -65,7 +73,11 @@ export function Button({
       aria-busy={loading || undefined}
       className={buttonClass({ variant, size, tone, className })}
     >
-      {loading ? <Spinner size={size === "sm" ? 14 : 16} /> : icon}
+      {loading ? (
+        <Spinner size={size === "sm" || size === "xs" ? 14 : 16} />
+      ) : (
+        icon
+      )}
       {children}
     </button>
   );

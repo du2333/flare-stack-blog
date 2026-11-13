@@ -70,7 +70,7 @@ export default function ZoomableImage({
       target="_blank"
       rel="noreferrer"
       className={cn(
-        "block cursor-zoom-in select-none overflow-hidden m-0 p-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--fuwari-primary)",
+        "block cursor-zoom-in select-none overflow-hidden m-0 p-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--theme-accent)",
         isPortrait
           ? "flex items-center justify-center w-full max-h-[70vh]"
           : "w-full h-auto",

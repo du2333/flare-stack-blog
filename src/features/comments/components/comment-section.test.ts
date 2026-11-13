@@ -40,6 +40,8 @@ const boundary = vi.hoisted(() => ({
       remove: vi.fn<Client["comments"]["remove"]>(),
       mine: vi.fn<Client["comments"]["mine"]>(),
       admin: {
+        list: vi.fn<Client["comments"]["admin"]["list"]>(),
+        commentedPosts: vi.fn<Client["comments"]["admin"]["commentedPosts"]>(),
         markHandled: vi.fn<Client["comments"]["admin"]["markHandled"]>(),
         unmarkHandled: vi.fn<Client["comments"]["admin"]["unmarkHandled"]>(),
         markAllHandled: vi.fn<Client["comments"]["admin"]["markAllHandled"]>(),
@@ -614,6 +616,48 @@ it("reads a Moment's Comments through the Moment procedures and leaves the Post 
     `${m.comments_heading()} 3`,
   );
   expect(boundary.client.comments.roots).not.toHaveBeenCalled();
+});
+
+// What comes after the section (the sidebar cards, in a Theme that stands
+// them there) moves by the difference between the placeholder and what
+// loads: it is as tall as a section without comments, the usual one.
+it("stands in for a section without comments while the comments load: its heading, a line to sign in from and one line for the list", async () => {
+  let answer!: (roots: {
+    items: [];
+    total: number;
+    viewerMuted: boolean;
+  }) => void;
+  boundary.client.comments.moment.roots.mockReturnValue(
+    new Promise((resolve) => {
+      answer = resolve;
+    }),
+  );
+  await mountSection({ type: "moment", ready: m.comments_heading() });
+
+  const placeholder = screen.getByRole("heading", { level: 2 }).parentElement!;
+  expect(placeholder.getAttribute("aria-busy")).toBe("true");
+  expect(
+    [...placeholder.children].map((part) =>
+      [
+        part.tagName.toLowerCase(),
+        part.className,
+        part.getAttribute("data-size"),
+      ]
+        .filter(Boolean)
+        .join(" "),
+    ),
+  ).toEqual(["h2", "div comments-login", "div fuwari-empty compact"]);
+  expect(screen.queryByText(m.comments_list_empty())).toBeNull();
+
+  await act(async () => answer({ items: [], total: 0, viewerMuted: false }));
+  // The list's line, now with what it stood for.
+  const empty = await screen.findByText(m.comments_list_empty());
+  expect(empty.closest(".fuwari-empty")!.getAttribute("data-size")).toBe(
+    "compact",
+  );
+  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(
+    `${m.comments_heading()} 0`,
+  );
 });
 
 it("shows the empty state for a Moment nobody has commented on", async () => {

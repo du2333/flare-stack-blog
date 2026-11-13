@@ -1,18 +1,141 @@
-/* Every Admin workspace scales with one unit and draws one hairline rule. */
+/*
+ * Every Admin workspace draws one hairline rule: --admin-hairline
+ * (admin-variables.css). Its sizes are plain pixels: nothing in the Admin
+ * grows with the window.
+ */
 .admin-workspace {
-  --admin-unit: clamp(1px, 0.07vw, 1.5px);
-  --admin-rule: color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent);
-  --fuwari-tabs-gap: calc(28 * var(--admin-unit));
-  --fuwari-tabs-rule: var(--admin-rule);
-  --fuwari-tab-height: calc(46 * var(--admin-unit));
-  --fuwari-tab-font-size: calc(14 * var(--admin-unit));
-  --fuwari-segment-height: calc(36 * var(--admin-unit));
-  --fuwari-segment-padding-x: calc(12 * var(--admin-unit));
-  --fuwari-segment-font-size: calc(14 * var(--admin-unit));
+  --fuwari-tabs-gap: 28px;
+  --fuwari-tabs-rule: var(--admin-hairline);
+  --fuwari-tab-height: 46px;
+  --fuwari-tab-font-size: 14px;
+  --fuwari-segment-height: 36px;
+  --fuwari-segment-padding-x: 12px;
+  --fuwari-segment-font-size: 14px;
+  /* The side inset of every workspace, the dashboard included. */
+  --admin-frame-x: 30px;
+}
+@media (max-width: 1023px) {
+  .admin-workspace {
+    --admin-frame-x: 24px;
+  }
 }
 @media (max-width: 767px) {
   .admin-workspace {
     --fuwari-tabs-gap: 22px;
+    --admin-frame-x: 16px;
+  }
+}
+
+/*
+ * The inset of the page frame (AdminPage, admin-page.tsx): everything sits
+ * inside one inset, so titles, tabs and primary actions line up page to
+ * page. A region that runs edge to edge (a split pane, a scroller, a bar)
+ * takes .admin-frame-bleed and pads itself with --admin-frame-x; a page that
+ * ends in such a bar sets --admin-frame-bottom to 0.
+ */
+.admin-frame {
+  --admin-frame-top: 20px;
+  /*
+   * A classic scrollbar (a mouse) takes its width from a scroller's content
+   * box, 10px as styles.css sets it; touch scrollbars overlay and take none.
+   * A padded scroller reserves that gutter and pads its right side by
+   * --admin-scroll-end, so its content and rules end at the frame inset like
+   * the title and tabs. An unpadded one grows right by --admin-scrollbar.
+   */
+  --admin-scrollbar: 0px;
+  --admin-scroll-end: calc(var(--admin-frame-x) - var(--admin-scrollbar));
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--admin-frame-top) var(--admin-frame-x)
+    var(--admin-frame-bottom, 20px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-frame {
+    --admin-scrollbar: 10px;
+  }
+}
+/*
+ * The same condition, negated: with no classic scrollbar there is no gutter to
+ * reserve. styles.css gives every scrollbar 10px, which touch emulation keeps,
+ * so these scrollers drop their scrollbar and the gutter with it. :root lifts
+ * the rule over the page rules that declare scrollbar-gutter.
+ */
+@media not all and (hover: hover) and (pointer: fine) {
+  :root
+    :is(
+      .settings-body,
+      .settings-key-list,
+      .muted-list-scroll,
+      .friend-queue-scroll,
+      .friend-detail-scroll,
+      .post-list-scroll,
+      .media-browser,
+      .media-inspector
+    ) {
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
+  }
+  :root
+    :is(
+      .settings-body,
+      .settings-key-list,
+      .muted-list-scroll,
+      .friend-queue-scroll,
+      .friend-detail-scroll,
+      .post-list-scroll,
+      .media-browser,
+      .media-inspector
+    )::-webkit-scrollbar {
+    display: none;
+  }
+}
+.admin-frame-bleed {
+  margin-inline: calc(-1 * var(--admin-frame-x));
+}
+/*
+ * Tabs on the left, the page's controls on the right. The rule is the bottom
+ * edge of the whole sticky head (.admin-page-head), at every width, so
+ * neither the tabs nor this row draw one.
+ */
+.admin-frame-toolbar {
+  --fuwari-tabs-rule-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: var(--fuwari-tab-height);
+}
+.admin-frame-toolbar > .fuwari-tabs {
+  align-self: stretch;
+  min-width: 0;
+}
+/*
+ * Below 1024px the tabs and the tools do not share a row: the tabs take the
+ * full width and scroll sideways when they do not fit, and the tools go on a
+ * line of their own under them, full width.
+ */
+@media (max-width: 1023px) {
+  .admin-frame-toolbar {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .admin-frame-toolbar > .fuwari-tabs {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .admin-frame-toolbar > .admin-page-tools {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    padding-block: 10px;
+  }
+}
+@media (max-width: 1023px) {
+  .admin-frame {
+    --admin-frame-top: 8px;
   }
 }
 .admin-list-region {
@@ -31,14 +154,8 @@
     min-height: 100%;
     overflow: visible;
   }
-  .admin-list-region
-    :is(
-      .post-manager,
-      .media-workspace,
-      .friend-workspace,
-      .muted-workspace,
-      .settings-workspace
-    ) {
+  .admin-list-region :is(.admin-page, .admin-page-body),
+  .admin-list-region .admin-page-body[data-scroll] {
     display: block;
     height: auto;
     min-height: 100%;

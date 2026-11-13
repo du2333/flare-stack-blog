@@ -16,11 +16,13 @@ import {
   getPublicImageSrcSet,
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
+import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
+import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 const THUMBNAIL_WIDTH = PUBLIC_IMAGE_WIDTH.thumbnail;
 
-/** What stands at the right of an entry: the first image with its count, or a video mark. */
+/** What stands beside an entry, after it in a list and before it in a row: the first image with its count, or a video mark. */
 function Thumbnail({ moment }: { moment: PublicMoment }) {
   const [first] = moment.images;
   if (first) {
@@ -92,38 +94,50 @@ function Thumbnail({ moment }: { moment: PublicMoment }) {
   return null;
 }
 
-/** The home sidebar's card of the latest Moments; it is not there when there are none. */
+/**
+ * The card of the latest Moments; it is not there when there are none. Two
+ * forms on one markup. Narrow: the entries are a list under the title, a rule
+ * between them. Wide (in a `card` container): they stand side by side, the
+ * thumbnail before the text, two from 28rem and three from 42rem, and from
+ * 56rem the title leads their row. From 20rem the title starts where the
+ * other cards' titles do in their wide forms, without the accent mark.
+ */
 export function LatestMoments() {
   const { data: moments } = useSuspenseQuery(latestMomentsQuery);
+  const { headingAccent } = useThemeRecipe();
 
   if (moments.length === 0) return null;
 
   return (
-    <div className="fuwari-card-base pb-3">
-      <div className="relative mt-4 mb-2 ml-6 text-lg font-bold">
-        <span
-          className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md"
-          style={{ backgroundColor: "var(--fuwari-primary)" }}
-        />
+    <div className="fuwari-card-base fuwari-card-widget pb-3 @4xl/card:flex @4xl/card:items-center @4xl/card:py-3">
+      <div className="fuwari-widget-title relative mt-4 mb-2 ml-(--theme-widget-pad-x,1.5rem) font-bold @xs/card:ml-(--theme-widget-pad-x,1.25rem) @4xl/card:my-0 @4xl/card:shrink-0">
+        {headingAccent === "on" ? (
+          <span
+            className="absolute top-[5.5px] -left-4 h-4 w-1 rounded-md @xs/card:hidden"
+            style={{ backgroundColor: "var(--theme-accent)" }}
+          />
+        ) : null}
         <Link
           to="/moments"
-          className="inline-flex items-center gap-1 fuwari-text-90 transition hover:text-(--fuwari-primary)"
+          className="inline-flex items-center gap-1 text-(--theme-widget-title-color) transition hover:text-(--theme-accent)"
         >
           {m.moments_latest_title()}
           <ChevronRight size={20} aria-hidden="true" />
         </Link>
       </div>
-      <div className="px-2">
+      <div className="px-(--theme-widget-pad-x,0.5rem) @md/card:grid @md/card:grid-cols-2 @md/card:gap-x-2 @2xl/card:grid-cols-3 @4xl/card:min-w-0 @4xl/card:flex-1">
         {moments.map((moment, index) => (
           <Link
             key={moment.id}
             to="/moments/$id"
             params={{ id: String(moment.id) }}
-            className={`flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) ${
-              index > 0
-                ? "border-t border-dashed border-black/10 dark:border-white/15"
-                : ""
-            }`}
+            className={cn(
+              "fuwari-widget-row flex gap-3 rounded-lg px-2 py-2.5 transition hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) @md/card:flex-row-reverse @md/card:items-center",
+              index > 0 &&
+                "border-t [border-top-style:var(--theme-rule-style)] border-(--theme-rule,var(--fuwari-divider)) @md/card:border-t-0",
+              // Two abreast show two entries; the third waits for room.
+              index >= 2 && "@md/card:hidden @2xl/card:flex",
+            )}
           >
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <MomentTimeText

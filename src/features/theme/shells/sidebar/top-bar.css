@@ -1,0 +1,79 @@
+/* The top bar: what the rail is below 1024px. It stays at the top of the
+   window, frosted, with the brand, search and the button of the shared
+   compact menu. */
+
+.sidebar-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: color-mix(in srgb, var(--theme-ground) 86%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+}
+.sidebar-topbar-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  height: var(--sidebar-topbar-h);
+  max-width: var(--sidebar-frame);
+  margin-inline: auto;
+  padding: 0 0.5rem;
+}
+.sidebar-topbar .sidebar-brand {
+  flex: 1;
+  font-size: 1rem;
+}
+/* The compact menu opens under the bar, from its right end. */
+.sidebar-topbar-panel {
+  top: calc(100% + 6px);
+  right: 0.5rem;
+  width: 280px;
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100dvh - 5rem);
+  transform-origin: top right;
+}
+/* The menu icon turns into the close icon. */
+.sidebar-burger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.sidebar-burger svg {
+  grid-area: 1 / 1;
+}
+.sidebar-burger svg:last-child,
+.sidebar-burger[data-open="true"] svg:first-child {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+.sidebar-burger[data-open="true"] svg:last-child {
+  opacity: 1;
+  transform: none;
+}
+@media (width >= 48rem) {
+  .sidebar-topbar-inner {
+    padding-inline: 1rem;
+  }
+  .sidebar-topbar-panel {
+    right: 1rem;
+  }
+}
+@media (width >= 64rem) {
+  .sidebar-topbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-topbar {
+    transition: background-color 300ms;
+  }
+  .sidebar-burger svg {
+    transition:
+      opacity 200ms,
+      transform 320ms var(--sidebar-ease);
+  }
+}

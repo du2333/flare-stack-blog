@@ -18,6 +18,7 @@ import type {
 import { parseRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { removeCodeBlockHighlighting } from "@/features/posts/utils/apply-code-block-highlighting";
 import { withEditorAttributes } from "@/features/posts/utils/post-content-rules";
+import { convertToPlainText } from "@/features/posts/utils/content";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { isUniqueViolation, POST_SLUG } from "@/lib/db/unique-keys";
 import { ms } from "@/lib/duration";
@@ -82,6 +83,14 @@ async function editConflictOrNotFound(db: DB, postId: number) {
     : err({ reason: "EDIT_CONFLICT", saveToken });
 }
 
+/** Characters of text in the body, without whitespace, so the list can show how much a version holds. */
+function countBodyCharacters(contentJson: PostRevisionSnapshot["contentJson"]) {
+  return (
+    convertToPlainText(contentJson).replace(/\s/g, "").match(/./gsu)?.length ??
+    0
+  );
+}
+
 export async function listPostRevisions(
   context: DbContext,
   data: ListPostRevisionsInput,
@@ -99,6 +108,7 @@ export async function listPostRevisions(
     createdAt: revision.createdAt,
     title: revision.snapshotJson.title,
     summary: revision.snapshotJson.summary,
+    contentLength: countBodyCharacters(revision.snapshotJson.contentJson),
   }));
 }
 

@@ -47,7 +47,7 @@ export function ActionMenu({
         triggerClassName ??
         iconButtonClass({
           className:
-            "pointer-coarse:size-10 aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--fuwari-primary)",
+            "pointer-coarse:size-10 aria-expanded:bg-(--theme-tonal-bg) aria-expanded:text-(--theme-accent)",
         })
       }
       triggerTitle={trigger ? undefined : label}
@@ -74,7 +74,7 @@ export function ActionMenu({
                 <Check
                   size={14}
                   aria-hidden
-                  className="shrink-0 text-(--fuwari-primary)"
+                  className="shrink-0 text-(--theme-accent)"
                 />
               )}
             </MenuItem>

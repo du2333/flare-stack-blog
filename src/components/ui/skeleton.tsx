@@ -1,13 +1,30 @@
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
+import "./skeleton.css";
 
-/** A pulsing placeholder block; size and round it with `className`. */
-function Skeleton({ className, ...props }: ComponentProps<"div">) {
+/**
+ * A pulsing placeholder block; size and round it with `className`. With
+ * `shimmer` (the Admin's redesigned pages) a light band sweeps across it
+ * instead; it is a span, so it can sit in a line of text.
+ */
+function Skeleton({
+  className,
+  shimmer = false,
+  ...props
+}: ComponentProps<"div"> & { shimmer?: boolean }) {
+  if (shimmer)
+    return (
+      <span
+        aria-hidden="true"
+        className={cn("fuwari-skeleton-shimmer", className)}
+        {...(props as ComponentProps<"span">)}
+      />
+    );
   return (
     <div
       aria-hidden="true"
       className={cn(
-        "animate-pulse rounded-lg bg-(--fuwari-btn-regular-bg)",
+        "animate-pulse rounded-lg bg-(--theme-tonal-bg)",
         className,
       )}
       {...props}

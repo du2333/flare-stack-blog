@@ -1,0 +1,44 @@
+/*
+ * The click surface fills its positioned parent; the marker sits at the
+ * point it is given through --focal-x and --focal-y, kept a radius inside
+ * the surface so the whole marker stays on the image. White ring over a dark
+ * outline, so it reads on any image. On touch the hit area grows to 44px
+ * around the same 22px marker.
+ */
+@layer components {
+  .fuwari-focal-picker {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+    /* A touch drag moves the point instead of scrolling the page. */
+    touch-action: none;
+  }
+  .fuwari-focal-marker {
+    position: absolute;
+    left: clamp(11px, var(--focal-x), calc(100% - 11px));
+    top: clamp(11px, var(--focal-y), calc(100% - 11px));
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--theme-accent) 60%, transparent);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 1px 4px rgb(0 0 0 / 0.45);
+    outline: none;
+  }
+  @media (pointer: coarse) {
+    .fuwari-focal-marker::after {
+      content: "";
+      position: absolute;
+      inset: -11px;
+      border-radius: 50%;
+    }
+  }
+  .fuwari-focal-marker:focus-visible {
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 0 0 4px var(--theme-accent);
+  }
+}

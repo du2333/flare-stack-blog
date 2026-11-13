@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import { DatabaseZap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { orpcClient } from "@/lib/orpc";
 import { StatusText } from "@/components/ui/status-text";
@@ -23,34 +25,36 @@ export function CacheMaintenance() {
 
   return (
     <>
-      <div className="flex items-center gap-3 py-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium fuwari-text-90">
-            {m.settings_maintenance_cache_title()}
-          </p>
-          <p className="text-xs fuwari-text-50">
-            {m.settings_maintenance_cache_desc_short()}
-          </p>
-          {mutation.isSuccess && (
-            <StatusText className="mt-2">
-              {m.settings_maintenance_cache_toast_success()}
-            </StatusText>
-          )}
-          {mutation.isError && (
-            <StatusText error className="mt-2">
-              {m.settings_maintenance_cache_toast_error()}
-            </StatusText>
-          )}
-        </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          loading={mutation.isPending}
-        >
-          {mutation.isPending
-            ? m.common_processing()
-            : m.settings_maintenance_cache_btn()}
-        </Button>
-      </div>
+      <MaintenanceItem
+        icon={DatabaseZap}
+        danger
+        flag={m.settings_maintenance_group_danger()}
+        title={m.settings_maintenance_cache_title()}
+        lines={[m.settings_maintenance_cache_desc_short()]}
+        action={
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setIsModalOpen(true)}
+            loading={mutation.isPending}
+          >
+            {mutation.isPending
+              ? m.common_processing()
+              : m.settings_maintenance_cache_btn()}
+          </Button>
+        }
+      >
+        {mutation.isSuccess && (
+          <StatusText className="mt-2">
+            {m.settings_maintenance_cache_toast_success()}
+          </StatusText>
+        )}
+        {mutation.isError && (
+          <StatusText error className="mt-2">
+            {m.settings_maintenance_cache_toast_error()}
+          </StatusText>
+        )}
+      </MaintenanceItem>
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

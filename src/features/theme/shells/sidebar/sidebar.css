@@ -1,0 +1,518 @@
+/* 「侧栏」's stylesheet (themes.ts links it only while 「侧栏」 is the selected
+   Theme; the shell's modules import no CSS): its design-variable values, then
+   the shell's own styles. */
+@import "./rail.css";
+@import "./top-bar.css";
+
+/* What the values below and the shell share. The frame is the rail and the
+   content column together, centred in a wider window. The ground is a
+   neutral with only a trace of the hue, and nothing on it casts a shadow:
+   an edge, one hairline of ink, is what sets a surface off it, and a
+   stronger one what is under the pointer. The hairline and the hover tint
+   are those of the rail, which lies on the page itself; the pill marks the
+   current entry of the navigation. */
+:root[data-theme="sidebar"] {
+  --sidebar-frame: 81rem;
+  --sidebar-rail-w: 15rem;
+  --sidebar-topbar-h: 3.5rem;
+  --sidebar-ground: oklch(0.973 0.004 var(--fuwari-hue));
+  --sidebar-edge: rgb(0 0 0 / 0.09);
+  --sidebar-edge-strong: rgb(0 0 0 / 0.2);
+  --sidebar-hairline: var(--sidebar-edge);
+  --sidebar-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --sidebar-pill-bg: color-mix(in srgb, var(--fuwari-fg) 7%, transparent);
+  --sidebar-pill-shadow: none;
+  --sidebar-card-shadow: 0 0 0 1px var(--sidebar-edge);
+  --sidebar-tile-shadow-hover:
+    0 0 0 1px var(--sidebar-edge-strong), 0 6px 16px -10px rgb(0 0 0 / 0.18);
+  --sidebar-panel-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 10px 28px -10px rgb(0 0 0 / 0.2);
+  --sidebar-dialog-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 24px 64px -20px rgb(0 0 0 / 0.3);
+  --sidebar-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The banner changing height between the home page and the others, and
+     the headline folding with it (banner.tsx waits as long). */
+  --sidebar-resize: 600ms;
+  /* Who writes here folding away in the rail for the table of contents of a
+     Post, and back. */
+  --sidebar-fold: 520ms;
+}
+:root[data-theme="sidebar"].dark {
+  --sidebar-ground: oklch(0.155 0.006 var(--fuwari-hue));
+  --sidebar-surface: oklch(0.2 0.008 var(--fuwari-hue));
+  --sidebar-raised: oklch(0.235 0.01 var(--fuwari-hue));
+  --sidebar-edge: rgb(255 255 255 / 0.09);
+  --sidebar-edge-strong: rgb(255 255 255 / 0.22);
+  --sidebar-tile-shadow-hover:
+    0 0 0 1px var(--sidebar-edge-strong), 0 8px 20px -10px rgb(0 0 0 / 0.6);
+  --sidebar-panel-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 12px 32px -10px rgb(0 0 0 / 0.7);
+  --sidebar-dialog-shadow:
+    0 0 0 1px var(--sidebar-edge), 0 24px 64px -20px rgb(0 0 0 / 0.8);
+}
+
+:root[data-theme="sidebar"] {
+  /* Flat surfaces with a hairline edge and tight corners on a neutral
+     ground. */
+  --theme-ground: var(--sidebar-ground);
+  --theme-surface: var(--sidebar-surface, var(--fuwari-card-bg));
+  --theme-raised: var(--sidebar-raised, var(--fuwari-card-bg));
+  --theme-card-radius: 0.75rem;
+  --theme-card-shadow: var(--sidebar-card-shadow);
+  --theme-card-shadow-hover: var(--sidebar-tile-shadow-hover);
+  --theme-cover-radius: 0.5rem;
+  --theme-standalone-border: 1px solid var(--sidebar-edge);
+  --theme-standalone-radius: 0.75rem;
+  --theme-floating-radius: 0.625rem;
+  --theme-chip-radius: 0.375rem;
+  --theme-button-radius: 0.5rem;
+  --theme-pager-radius: 0.5rem;
+  --theme-rule: var(--sidebar-edge);
+  --theme-rule-style: solid;
+  --theme-link-underline-style: solid;
+  --theme-heading-tracking: -0.012em;
+
+  /* Ink for what is tonal: a tag, a count, a regular button and the row
+     under the pointer are a thin layer of the text colour, and the text on
+     them is ink. The hue is for links, the current entry and what is solid. */
+  --theme-tonal-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-tonal-bg-hover: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --theme-tonal-bg-active: color-mix(
+    in srgb,
+    var(--fuwari-fg) 14%,
+    transparent
+  );
+  --theme-tonal-fg: var(--fuwari-fg-75);
+  --theme-plain-bg-hover: var(--sidebar-hover);
+  --theme-plain-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-bg-hover: var(--sidebar-hover);
+  --theme-toc-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-badge-bg: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+
+  /* A block beside or under the content is named by a small, spaced,
+     quiet label. */
+  --theme-widget-title-size: 0.75rem;
+  --theme-widget-title-tracking: 0.08em;
+  --theme-widget-title-color: var(--fuwari-fg-50);
+
+  /* What floats is a surface with the same edge and one short shadow. */
+  --theme-float-shadow: var(--sidebar-panel-shadow);
+  --theme-float-radius: 0.625rem;
+  --theme-dialog-radius: 0.875rem;
+  --theme-dialog-shadow: var(--sidebar-dialog-shadow);
+  --theme-toast-pad: 0.75rem 0.875rem 0.75rem 1rem;
+  /* A column narrowed by a rail: titles a size smaller than 「经典」's. */
+  --theme-list-title-size: 1.5rem;
+  --theme-page-title-size: clamp(1.75rem, 1.35rem + 1.3vw, 2.375rem);
+  --theme-meta-size: 0.8125rem;
+  --theme-kicker-size: 0.75rem;
+  --theme-kicker-tracking: 0.04em;
+
+  /* Back to top from lg, where the window has room right of the frame
+     (89.5rem, below): in that gutter, and 4.75rem from the edge of the
+     window where the gutter is no wider. */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--sidebar-frame) / 2 + 0.25rem),
+    calc(100% - 4.75rem)
+  );
+  /* The table of contents of a Post: the button in the floating column
+     opens it below 1024px, and from there it is a list (below). Where the
+     list is has two answers (options.ts), which this root cannot tell
+     apart, so both show it from the same width. In the rail it stands in
+     the slot the rail gives it, and the three lengths here are not read.
+     Beside the article it stands in a lane right of the reading column,
+     1.5rem clear of it and as wide as the lane; back to top floats at the
+     foot of the same lane, or right of the frame. */
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 1.5rem;
+  --shell-toc-left: calc(100% + var(--sidebar-toc-gap));
+  --shell-toc-width: var(--sidebar-toc-lane);
+}
+@media (width >= 64rem) {
+  :root[data-theme="sidebar"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+/* Where the rail stands, the content is the column right of it: after the
+   rail and the room that follows it, and 1rem inside the frame. What floats
+   centred over the foot of the window, such as the bar of a Theme preview,
+   is centred over that column, clear of the foot of the rail. */
+@media (width >= 64rem) {
+  :root[data-theme="sidebar"] {
+    --shell-content-inset-left: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) +
+        1.75rem
+    );
+    --shell-content-inset-right: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem
+    );
+  }
+}
+/* From 1024px to where the window has room right of the frame, the column
+   reaches the edge of the window and back to top would lie on it. There it
+   rests in the foot of the rail instead, in a box of the shell's (below),
+   as large as a social link and rounded as a tool of the rail is. */
+@media (64rem <= width < 89.5rem) {
+  :root[data-theme="sidebar"] {
+    --shell-floating-actions-position: static;
+    --shell-floating-actions-size: 2.5rem;
+    --theme-floating-radius: 0.5rem;
+  }
+}
+
+/* A Post's page. The article with what follows it is a reading column:
+   46rem of surface and, inside the panel's padding, 41.5rem of text, which
+   is 41 Chinese characters or some 85 Latin letters to a line of the body.
+   That is what the column right of the rail is at 1024px, so an article is
+   as wide in every window from there. On the root, with the lane beside it,
+   because the table of contents renders outside the shell.
+
+   The lane of a table of contents beside the article is what the frame has
+   left right of the rail, the reading column and the gap between them:
+   14.75rem in a window as wide as the frame or wider. In a narrower one the
+   column gives way instead, and the lane is never under 10.5rem. */
+:root[data-theme="sidebar"] {
+  --sidebar-reading-w: 46rem;
+  --sidebar-toc-gap: 1.5rem;
+  --sidebar-toc-lane: max(
+    10.5rem,
+    calc(
+      min(100vw, var(--sidebar-frame)) - 2rem - var(--sidebar-rail-w) -
+        1.75rem - var(--sidebar-reading-w) - var(--sidebar-toc-gap)
+    )
+  );
+}
+
+/* ── The shell and its frame ─────────────────────────────────────────────── */
+
+/* The banner is a low band, and a tall one on the home page; from 1024px,
+   where the rail takes the brand and the navigation out of the column, it
+   has more of the window. */
+.sidebar-shell {
+  --sidebar-banner-h: 6rem;
+  position: relative;
+  min-height: 100vh;
+  background-color: var(--theme-ground);
+}
+.sidebar-shell[data-home="true"] {
+  --sidebar-banner-h: clamp(12rem, 36svh, 20rem);
+}
+@media (width >= 64rem) {
+  .sidebar-shell {
+    --sidebar-banner-h: 9rem;
+  }
+  .sidebar-shell[data-home="true"] {
+    --sidebar-banner-h: clamp(14rem, 40svh, 28rem);
+  }
+}
+/* Below 1024px the frame is the content column alone, under the top bar.
+   From 1024px it is a row: the rail, which stays in the window, and the
+   column, which scrolls with the page. */
+.sidebar-frame {
+  position: relative;
+  max-width: var(--sidebar-frame);
+  margin-inline: auto;
+}
+/* One column: the headline, the banner, the page, the cards, the footer. It
+   is at least as tall as the window has room, so the footer of a short page
+   stands at the foot of the window. Below 1024px back to top floats in the
+   corner of the window; the column ends 3rem below the footer, the row in
+   which it comes to rest clear of the footer's line. */
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: calc(100svh - var(--sidebar-topbar-h));
+  padding-block: 0.5rem calc(3rem + env(safe-area-inset-bottom));
+}
+.sidebar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+@media (width >= 48rem) {
+  .sidebar-frame {
+    padding-inline: 1rem;
+  }
+}
+@media (width >= 64rem) {
+  .sidebar-frame {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.75rem;
+  }
+  /* The footer's rule then lies level with the hairline at the foot of the
+     rail, 4.25rem above the foot of the window. */
+  .sidebar-content {
+    flex: 1;
+    min-height: 100svh;
+    padding-block: 1rem 0.25rem;
+  }
+  /* A Post's page (the shell says when the page on screen is one,
+     data-column): the reading column, centred in what the rail leaves, for
+     the article, the cards after it and the footer. Nothing in it is wider
+     than the text; a wide table and a long line of code scroll within
+     themselves, as the shared content styles have them. */
+  .sidebar-shell[data-column="reading"] .sidebar-content {
+    max-width: var(--sidebar-reading-w);
+    margin-inline: auto;
+  }
+  /* With the table of contents beside the article, the column and the lane
+     right of it are centred together, and the lane is kept clear down the
+     whole page. A Post without headings has no lane. */
+  .sidebar-shell[data-column="reading"][data-toc="beside"]:has(
+      [data-table-of-contents]
+    )
+    .sidebar-content {
+    max-width: calc(
+      var(--sidebar-reading-w) + var(--sidebar-toc-gap) +
+        var(--sidebar-toc-lane)
+    );
+    padding-right: calc(var(--sidebar-toc-gap) + var(--sidebar-toc-lane));
+  }
+}
+
+/* Back to top and the page's actions. Below 1024px, and where the window
+   has room right of the frame, they float where the shared styles and the
+   root put them, and this box is none. Between the two it holds them
+   (--shell-floating-actions-position, above) in the foot of the rail, which
+   keeps the end of its row of social links free for it (rail.css): level
+   with those links and flush with their end, in every window, however far
+   the page has scrolled. */
+.sidebar-floating {
+  display: contents;
+}
+@media (64rem <= width < 89.5rem) {
+  .sidebar-floating {
+    position: fixed;
+    /* Over the foot's padding, the row of tools, the gap above it and the
+       rule under the social links (rail.css). */
+    bottom: calc(1rem + 2.75rem + 0.5rem + 0.5rem + 1px);
+    /* The frame's edge and padding, then the rail less the padding of its
+       foot and of the row. */
+    left: calc(
+      max(0px, 50% - var(--sidebar-frame) / 2) + 1rem + var(--sidebar-rail-w) -
+        0.5rem - var(--shell-floating-actions-size)
+    );
+    z-index: 40;
+    display: block;
+  }
+}
+
+/* ── The headline and the banner ─────────────────────────────────────────── */
+
+/* The tagline, the headline of the home page: under a short stroke of the
+   accent, above the banner. Its box is a grid row that goes to nothing when
+   the home page is left, and takes the space after it along. */
+.sidebar-headline {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.sidebar-headline[data-shown="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.sidebar-headline > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.sidebar-headline h1 {
+  padding: 0.75rem 1.25rem 1.25rem;
+  color: var(--fuwari-fg);
+  font-family: var(--theme-heading-font);
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.sidebar-headline h1::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 0.1875rem;
+  margin-bottom: 0.875rem;
+  border-radius: 999px;
+  background-color: var(--theme-accent);
+}
+@media (width >= 64rem) {
+  .sidebar-headline h1 {
+    padding: 1.25rem 0.5rem 1.5rem;
+  }
+}
+
+/* The banner: a rounded band with the image alone, cropped around its focal
+   point. Its height is there from the first paint, and its colour stands in
+   until the image has loaded. Between a page that has it and one that has
+   not it folds to nothing, with the space after it (banner.tsx). */
+.sidebar-banner {
+  position: relative;
+  flex: none;
+  height: var(--sidebar-banner-h);
+  margin: 0 0.75rem 1rem;
+  overflow: hidden;
+  border-radius: var(--theme-card-radius);
+  background-color: var(--theme-tonal-bg);
+}
+.sidebar-banner[data-shown="false"] {
+  height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+}
+/* On the way into a Post's page, which has neither, both fade with the page
+   that is left and are gone when the Post shows. */
+.sidebar-headline[data-leaving="true"],
+.sidebar-banner[data-leaving="true"] {
+  opacity: 0;
+}
+.sidebar-banner > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+}
+/* An edge of light, so a pale image does not run into the page. */
+.sidebar-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  pointer-events: none;
+}
+@media (width >= 48rem) {
+  .sidebar-banner {
+    margin-inline: 0;
+  }
+}
+
+/* ── The sidebar cards ───────────────────────────────────────────────────── */
+
+/* One group after the content: a row that wraps, a card to a row and as
+   tall as its row. The slot of every card is a container named `card`: that
+   is what lets a card take its wide form here without being told where it
+   stands (docs/theme-shell-checklist.md). Where the row holds two of them,
+   the ways into the Posts stand side by side. */
+.sidebar-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-width: 0;
+  margin-top: 2.5rem;
+}
+.sidebar-card {
+  container: card / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.sidebar-card[data-kind="index"] {
+  flex-basis: 23rem;
+}
+/* A card that shows nothing leaves no gap, and neither does a group of
+   them. */
+.sidebar-card:empty,
+.sidebar-cards:not(:has(> .sidebar-card:not(:empty))) {
+  display: none;
+}
+@media (width >= 64rem) {
+  .sidebar-card[data-kind="index"] {
+    flex-basis: 26rem;
+  }
+  /* The rail shows who writes here, so the profile card does not: its slot
+     is hidden exactly where the rail shows that, and the card stays in the
+     page. The rail does not show it on a Post whose table of contents has
+     taken that place in the rail (rail.css folds it by the same test), so
+     there the card closes the article with its author. A group with no
+     other card to show is no group. */
+  .sidebar-shell:not([data-toc="rail"]:has([data-table-of-contents]))
+    .sidebar-card[data-kind="identity"],
+  .sidebar-shell:not([data-toc="rail"]:has([data-table-of-contents]))
+    .sidebar-cards:not(
+      :has(> .sidebar-card:not(:empty, [data-kind="identity"]))
+    ) {
+    display: none;
+  }
+}
+
+/* ── The footer region ───────────────────────────────────────────────────── */
+
+/* At the end of the content column, and at the foot of the window on a
+   short page. The colophon (Theme Recipe, footer: "colophon") lies flat on
+   the page under its rule; it stands clear of what is before it and keeps a
+   gutter where the frame has none. */
+.sidebar-footer {
+  margin: auto 1.25rem 0;
+  padding-top: 2.5rem;
+}
+@media (width >= 48rem) {
+  .sidebar-footer {
+    margin-inline: 0;
+  }
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+@keyframes sidebar-banner-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@keyframes sidebar-lead-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-shell {
+    transition: background-color 300ms;
+  }
+  /* The banner changes height between the home page and the others, and
+     the headline folds away and unfolds with it; so does a banner that
+     comes or goes. Either comes into the document with the page, fading
+     in. */
+  .sidebar-banner {
+    transition:
+      height var(--sidebar-resize) var(--sidebar-ease),
+      margin-bottom var(--sidebar-resize) var(--sidebar-ease),
+      opacity 320ms ease 120ms;
+    animation: sidebar-lead-in 300ms ease backwards;
+  }
+  .sidebar-banner > img {
+    animation: sidebar-banner-in 900ms var(--sidebar-ease) backwards;
+  }
+  .sidebar-headline {
+    transition:
+      grid-template-rows var(--sidebar-resize) var(--sidebar-ease),
+      opacity 320ms ease 120ms;
+    animation: sidebar-lead-in 300ms ease backwards;
+  }
+  .sidebar-headline[data-shown="false"] {
+    transition:
+      grid-template-rows var(--sidebar-resize) var(--sidebar-ease),
+      opacity 200ms ease;
+  }
+  .sidebar-banner[data-shown="false"] {
+    transition:
+      height var(--sidebar-resize) var(--sidebar-ease),
+      margin-bottom var(--sidebar-resize) var(--sidebar-ease),
+      opacity 200ms ease;
+  }
+  /* As long as the page that is left takes to fade (PAGE_FADE_MS). */
+  .sidebar-headline[data-leaving="true"],
+  .sidebar-banner[data-leaving="true"] {
+    transition: opacity 200ms ease;
+  }
+  /* Going back or forward: at once, so the restored scroll position holds. */
+  .sidebar-shell[data-instant="true"] :is(.sidebar-banner, .sidebar-headline) {
+    transition: none;
+  }
+}

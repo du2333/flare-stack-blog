@@ -1,0 +1,57 @@
+/* 「经典」's stylesheet (themes.ts links it only while 「经典」 is the selected
+   Theme; the shell's modules import no CSS). Its design variables are the
+   defaults in theme-variables.css, so it overrides none. */
+@import "./navbar.css";
+
+/* Where things outside the shell's tree sit. The table of contents renders
+   into the body, so these live on the root. The content is one centred
+   column of --fuwari-page-width. */
+:root[data-theme="classic"] {
+  /* The table of contents of a Post: the button in the floating column opens
+     it, until from 2xl (below) the right gutter has room for it. There it
+     stands below the navbar, 1rem clear of the content. */
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: 3.5rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: calc((100vw - var(--fuwari-page-width)) / 2 - 2rem);
+  /* Back to top from lg: just right of the content, kept on screen when the
+     gutter is too narrow. */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}
+@media (width >= 96rem) {
+  :root[data-theme="classic"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+
+/* The tagline on the home page banner: bottom-left, above the 3.5rem the
+   content overlaps the banner by, on a scrim that darkens the image under it
+   in either Colour Scheme. It is out of flow and ignores the pointer. */
+.classic-tagline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 8rem 1rem calc(3.5rem + 1.5rem);
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.6),
+    rgb(0 0 0 / 0.3) 55%,
+    transparent
+  );
+  pointer-events: none;
+}
+.classic-tagline p {
+  width: min(100%, calc(var(--fuwari-page-width) - 2rem));
+  margin-inline: auto;
+  color: white;
+  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.45;
+  text-wrap: balance;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.5);
+}

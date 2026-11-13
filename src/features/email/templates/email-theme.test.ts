@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emailSiteOf, emailTheme, oklchToHex } from "./email-theme";
+import { resolveSiteConfig } from "@/features/config/config.resolve";
 
 describe("oklchToHex", () => {
   it("converts reference colors", () => {
@@ -22,12 +23,19 @@ describe("emailTheme", () => {
 });
 
 describe("emailSiteOf", () => {
-  it("takes the title and primary hue from the site config", () => {
+  it("takes the title and the shared primary hue from the site config", () => {
     expect(
       emailSiteOf({
         title: "我的博客",
-        theme: { fuwari: { primaryHue: 120 } },
+        primaryHue: 120,
       }),
     ).toEqual({ title: "我的博客", primaryHue: 120 });
+  });
+
+  it("follows a hue still stored under the old theme location", () => {
+    const site = resolveSiteConfig({
+      site: { title: "我的博客", theme: { fuwari: { primaryHue: 30 } } },
+    });
+    expect(emailSiteOf(site)).toEqual({ title: "我的博客", primaryHue: 30 });
   });
 });

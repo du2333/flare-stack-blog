@@ -1,3 +1,2 @@
-export { PostRow } from "./post-row";
-export { PostsToolbar } from "./posts-toolbar";
-export { TaxonomySheet, type TaxonomyKind } from "./taxonomy-sheet";
+export { PostListColumns, PostRow } from "./post-row";
+export { PostsStatusTabs, PostsTools } from "./posts-toolbar";

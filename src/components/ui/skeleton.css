@@ -1,0 +1,29 @@
+/* The shimmer form of a placeholder (the Admin's, admin-variables.css): a
+   light band sweeps across it. */
+@layer components {
+  .fuwari-skeleton-shimmer {
+    border-radius: 6px;
+    background: linear-gradient(
+      90deg,
+      var(--admin-hover) 25%,
+      var(--admin-press) 45%,
+      var(--admin-hover) 65%
+    );
+    background-size: 300% 100%;
+    animation: fuwari-skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fuwari-skeleton-shimmer {
+      animation: none;
+    }
+  }
+}
+
+@keyframes fuwari-skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}

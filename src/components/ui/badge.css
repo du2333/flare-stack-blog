@@ -10,8 +10,8 @@
     padding-inline: var(--fuwari-badge-padding-x, 10px);
     overflow: hidden;
     border-radius: 999px;
-    background: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
     font-size: var(--fuwari-badge-font-size, 12px);
     font-weight: 500;
     line-height: var(--fuwari-badge-height, 24px);
@@ -20,13 +20,47 @@
     vertical-align: middle;
     flex-shrink: 0;
   }
+  /* A chip: the label gives way to the remove button. */
+  .fuwari-badge[data-removable] {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding-inline-end: 3px;
+  }
+  .fuwari-badge-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fuwari-badge-remove {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: calc(var(--fuwari-badge-height, 24px) - 6px);
+    height: calc(var(--fuwari-badge-height, 24px) - 6px);
+    border-radius: 999px;
+    color: inherit;
+    opacity: 0.7;
+    transition:
+      background-color 180ms,
+      opacity 180ms;
+  }
+  .fuwari-badge-remove:hover {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+    opacity: 1;
+  }
+  .fuwari-badge-remove:focus-visible {
+    outline: 2px solid var(--theme-accent);
+    outline-offset: 1px;
+    opacity: 1;
+  }
   .fuwari-badge[data-size="sm"] {
     --fuwari-badge-height: 20px;
     --fuwari-badge-padding-x: 7px;
     --fuwari-badge-font-size: 11px;
   }
   .fuwari-badge[data-tone="primary"] {
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
   }
   .fuwari-badge[data-tone="success"] {
     background: var(--fuwari-success-bg);
@@ -39,5 +73,14 @@
   .fuwari-badge[data-tone="danger"] {
     background: var(--fuwari-danger-bg);
     color: var(--fuwari-danger-fg);
+  }
+  /* The Admin (admin-variables.css) only: a hairline, so a fill is not the
+     badge's only edge. */
+  :root:has(.admin-layout) .fuwari-badge:not([data-tone]) {
+    box-shadow: inset 0 0 0 1px var(--admin-hairline);
+  }
+  :root:has(.admin-layout) .fuwari-badge[data-tone] {
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, currentColor 22%, transparent);
   }
 }

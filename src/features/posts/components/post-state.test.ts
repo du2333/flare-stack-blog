@@ -59,6 +59,22 @@ describe("the wording of each state", () => {
     },
   );
 
+  it("writes a published Post as plain text when quiet, and keeps the chip for the rest", () => {
+    const { container } = render(
+      createElement(PostStatusBadge, { state: "published", quiet: true }),
+    );
+    expect(screen.getByText(m.admin_posts_status_published())).toBeDefined();
+    expect(container.querySelector(".fuwari-badge")).toBeNull();
+    cleanup();
+    for (const state of ["draft", "published-changed"] as const) {
+      const view = render(
+        createElement(PostStatusBadge, { state, quiet: true }),
+      );
+      expect(view.container.querySelector(".fuwari-badge")).not.toBeNull();
+      cleanup();
+    }
+  });
+
   it("gives the three states three different publish labels", () => {
     expect(new Set(states.map(([, , action]) => action)).size).toBe(3);
   });

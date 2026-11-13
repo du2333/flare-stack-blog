@@ -1,0 +1,448 @@
+/*
+ * The Admin page frame (admin-page.tsx, docs/admin-page-frame.md). The frame
+ * is also .admin-frame and .admin-workspace (content-workspace.css), which
+ * give it the side inset --admin-frame-x, the bleed helper and the scrollbar
+ * gutter. Sizes come from admin-variables.css.
+ */
+.admin-page {
+  --admin-frame-top: 24px;
+  /* The canvas's side inset, the overview's too (admin-variables.css). */
+  --admin-frame-x: var(--admin-page-x);
+  width: 100%;
+  max-width: var(--admin-page-max);
+  margin-inline: auto;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--admin-fg);
+  font-variant-numeric: tabular-nums;
+}
+/* A form body scrolls to the bottom edge and pads itself. */
+.admin-page:has(> .admin-page-body[data-form="form"][data-scroll]) {
+  --admin-frame-bottom: 0px;
+}
+
+/* A card body keeps a gap under it, whatever its page set for a bar. */
+.admin-page:has(
+  > .admin-page-body:is([data-form="list"], [data-form="split"])
+) {
+  --admin-frame-bottom: 20px;
+}
+
+/* The head sits on the canvas: the title, then the tabs and the tools. */
+.admin-page-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex-shrink: 0;
+  padding-bottom: 14px;
+  background: var(--admin-canvas);
+}
+.admin-page-header {
+  --fuwari-button-height: 36px;
+  --fuwari-button-font-size: 13.5px;
+  --fuwari-button-padding-x: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  min-height: 40px;
+}
+.admin-page-header[data-toolbar] {
+  margin-bottom: 18px;
+}
+.admin-page-heading {
+  min-width: 0;
+}
+.admin-page-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.admin-page-header h1 {
+  min-width: 0;
+  color: var(--admin-fg);
+  overflow: hidden;
+  font-size: var(--admin-text-title);
+  line-height: var(--admin-leading-title);
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-page-count {
+  flex-shrink: 0;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-weight: 500;
+  color: var(--admin-fg-3);
+}
+.admin-page-description {
+  margin-top: 2px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-3);
+}
+.admin-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.admin-page-primary.fuwari-button {
+  padding-left: 12px;
+}
+.admin-page-toolbar {
+  gap: 10px 12px;
+  min-height: 36px;
+}
+.admin-page-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The tabs in the head are the segmented track (Tabs, TabNav): as wide as
+   its tabs, also where the row gives the tabs a line of their own. */
+.admin-frame-toolbar > .fuwari-tabs[data-variant="segmented"] {
+  flex: 0 1 auto;
+  align-self: center;
+}
+
+/* The body: a column that fills the rest of the frame. */
+.admin-page-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.admin-page-body[data-scroll] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  margin-inline: calc(-1 * var(--admin-frame-x));
+  padding: 6px var(--admin-scroll-end) 40px var(--admin-frame-x);
+}
+.admin-page-body[data-scroll] > * {
+  flex-shrink: 0;
+}
+/*
+ * A list or a split body is one card. Inside it the frame's inset is the
+ * card's, so whatever bleeds to the frame's edge ends at the card's.
+ */
+.admin-page-body:is([data-form="list"], [data-form="split"]) {
+  --admin-frame-x: 20px;
+  --admin-scroll-end: calc(var(--admin-frame-x) - var(--admin-scrollbar));
+  position: relative;
+  overflow: hidden;
+  margin-inline: 0;
+  padding-inline: var(--admin-frame-x);
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+}
+.admin-page-body:is([data-form="list"], [data-form="split"])[data-scroll] {
+  overflow-y: auto;
+  padding: 8px var(--admin-scroll-end) 8px var(--admin-frame-x);
+}
+/* A list whose pieces pad themselves (ListCardColumns, ListCardRows,
+   ListCardFoot): the card has no inset of its own. */
+.admin-page-body[data-inset="none"],
+.admin-page-body[data-inset="none"][data-scroll] {
+  padding: 0;
+}
+/* A thin line runs along the card's top while its list is fetched. */
+.admin-page-body:is([data-form="list"], [data-form="split"])::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 34%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--admin-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.admin-page-body[data-loading]::before {
+  opacity: 1;
+  animation: admin-page-loading 1.1s var(--admin-ease-soft) infinite;
+}
+@keyframes admin-page-loading {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-body[data-loading]::before {
+    animation: none;
+  }
+}
+
+/*
+ * Master and detail (AdminSplit): the list keeps a column of its own, the
+ * detail takes the rest, each a column that scrolls by itself. Below 768px
+ * one of them fills the card and the other waits beside it.
+ */
+.admin-split {
+  display: grid;
+  grid-template-columns:
+    var(--admin-split-list, clamp(280px, 36%, 380px))
+    minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.admin-split-list,
+.admin-split-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.admin-split-list {
+  border-right: 1px solid var(--admin-line);
+}
+@media (max-width: 767px) {
+  .admin-split {
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-split-list,
+  .admin-split-detail {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    transition:
+      transform 360ms var(--admin-ease),
+      opacity 260ms ease,
+      visibility 360ms;
+  }
+  .admin-split-detail,
+  .admin-split[data-detail] > .admin-split-list {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .admin-split-detail {
+    transform: translateX(28px);
+  }
+  .admin-split[data-detail] > .admin-split-list {
+    transform: translateX(-24px);
+  }
+  .admin-split[data-detail] > .admin-split-detail {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-split-list,
+  .admin-split-detail {
+    transition: none;
+  }
+}
+
+/*
+ * A link in a page body is ink with an underline. The links that say so by
+ * their colour (text-(--fuwari-primary), or .text-link) get the underline here
+ * instead of each page adding it; a button, a tab, a menu item, a row that is
+ * a link and a card are not text links and keep their own look.
+ */
+.admin-page-body
+  a:is(.text-\(--fuwari-primary\), .text-link):not(
+    .fuwari-button,
+    .fuwari-icon-button,
+    .fuwari-tab,
+    .admin-list-row,
+    .no-styling,
+    [role="tab"],
+    [role="button"],
+    [role="menuitem"],
+    [class*="card"]
+  ) {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* The form body: one setting per row. */
+.admin-form-row {
+  display: grid;
+  gap: 8px;
+  max-width: var(--admin-form-max);
+  padding: 16px 0;
+  border-bottom: 1px solid var(--admin-line);
+}
+.admin-form-row-label {
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  font-weight: 550;
+}
+.admin-form-row-description {
+  margin-top: 2px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-3);
+}
+.admin-form-row-control {
+  min-width: 0;
+  max-width: var(--admin-form-control-max);
+}
+@media (min-width: 1024px) {
+  .admin-form-row {
+    grid-template-columns: minmax(0, 1fr) minmax(
+        0,
+        var(--admin-form-control-max)
+      );
+    gap: 32px;
+    align-items: start;
+  }
+}
+
+/*
+ * A titled group of settings (AdminFormSection) is a card: the title, an
+ * optional line, its rows with a hairline between them.
+ */
+.admin-form-section {
+  max-width: var(--admin-form-max);
+  padding: 18px 24px 4px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
+}
+.admin-form-section + .admin-form-section {
+  margin-top: 16px;
+}
+.admin-form-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+.admin-form-section-title {
+  min-width: 0;
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
+  font-weight: 620;
+  letter-spacing: -0.005em;
+}
+.admin-form-section-summary {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-form-section-trigger {
+  width: 100%;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  text-align: left;
+}
+.admin-form-section-trigger > .fuwari-disclosure-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--admin-fg-3);
+}
+.admin-form-section-trigger:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 4px;
+}
+.admin-form-section-description {
+  margin-top: 2px;
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+}
+.admin-form-section-body {
+  margin-top: 4px;
+}
+.admin-form-section-body > .admin-form-row:last-child {
+  border-bottom: 0;
+}
+
+/*
+ * A row of a list body: at most --admin-row-max tall, a hairline under it, a
+ * light fill under the pointer. Make the whole row the link or button; put
+ * its actions in an ActionMenu at the end.
+ *
+ * A row's hairline and fill end exactly at the edges of the list or section
+ * it is in; the row pads its own content by --admin-row-x. Never give a list
+ * of rows a negative margin to line its text up with a heading: it pushes the
+ * rules past the section and past the page's inset.
+ */
+.admin-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  max-height: var(--admin-row-max);
+  padding: 0 var(--admin-row-x);
+  border-radius: var(--admin-radius-control);
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  transition: background-color 150ms;
+}
+.admin-list-row:hover {
+  background: var(--admin-hover);
+}
+
+/* Below 1024px the top bar has the title and the primary action. */
+@media (max-width: 1023px) {
+  /* The tools' own line sits 10px under the tabs; the card 14px under both,
+     as at full width. */
+  .admin-page-toolbar > .admin-page-tools {
+    padding-block: 10px 0;
+  }
+  .admin-page-header[data-toolbar] {
+    margin-bottom: 8px;
+  }
+  .admin-page-header :is(h1, .admin-page-count),
+  .admin-page-primary,
+  .admin-page-header[data-compact] {
+    display: none;
+  }
+}
+
+/* On a phone the raised search takes the tools' first line. */
+@media (max-width: 767px) {
+  .admin-page-tools .fuwari-field-shell[data-variant="raised"],
+  .admin-page-tools .fuwari-field-shell[data-variant="raised"]:focus-within {
+    flex: 1 1 100%;
+    width: auto;
+  }
+}
+
+/* A page that stacks on a phone: it scrolls, the head with it, and its card
+   grows with the rows. */
+@media (max-width: 767px) {
+  .admin-page[data-stack] {
+    display: block;
+    overflow-y: auto;
+  }
+  .admin-page[data-stack] > .admin-page-head {
+    position: static;
+  }
+  .admin-page[data-stack] > .admin-page-body {
+    overflow: visible;
+  }
+  .admin-page[data-stack] .fuwari-list-card-rows {
+    overflow: visible;
+  }
+}

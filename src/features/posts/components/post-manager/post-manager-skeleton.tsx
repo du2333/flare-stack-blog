@@ -1,58 +1,115 @@
+import { Plus } from "lucide-react";
+import { AdminPage, AdminPageToolbar } from "@/components/admin/admin-page";
+import DropdownMenu from "@/components/ui/dropdown-menu";
+import { ListCardRows } from "@/components/ui/list-card";
+import { SearchField } from "@/components/ui/search-field";
 import { Skeleton } from "@/components/ui/skeleton";
-import "@/components/ui/page-heading.css";
-import "@/components/ui/tabs.css";
+import { m } from "@/paraglide/messages";
+import { PostListColumns } from "./components/post-row";
+import { PostsStatusTabs, sortLabel } from "./components/posts-toolbar";
 import "./post-manager.css";
 
-function PostRowSkeleton() {
-  return (
-    <tr aria-hidden="true">
-      <td colSpan={4}>
-        <div className="flex items-center gap-8 py-2">
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-2/3 rounded" />
-            <Skeleton className="h-3 w-1/3 rounded" />
-          </div>
-          <Skeleton className="h-5 w-14 rounded-full" />
-          <Skeleton className="hidden sm:block h-4 w-24 rounded" />
-        </div>
-      </td>
-    </tr>
-  );
+/** Rows of placeholders in the rows' grid and at their height. */
+export function PostRowsSkeleton() {
+  return Array.from({ length: 9 }, (_, index) => (
+    <div key={index} className="post-skel" aria-hidden>
+      <div>
+        <Skeleton shimmer style={{ width: `${38 + ((index * 17) % 34)}%` }} />
+        <Skeleton
+          shimmer
+          style={{ width: `${18 + ((index * 11) % 16)}%`, height: 10 }}
+        />
+      </div>
+      <div>
+        <Skeleton shimmer style={{ display: "block", width: 52 }} />
+      </div>
+      <div />
+      <div />
+      <div>
+        <Skeleton shimmer style={{ display: "block", width: 48 }} />
+      </div>
+      <div />
+    </div>
+  ));
 }
 
-export function PostManagerSkeleton() {
-  return (
-    <>
-      {[1, 2, 3, 4, 5].map((id) => (
-        <PostRowSkeleton key={id} />
-      ))}
-    </>
-  );
-}
+const noop = () => {};
 
+/**
+ * The Posts list while its first page loads: the page's own head and bar,
+ * their controls still and without counts, so each takes its real size in
+ * any language, then the card with placeholder rows.
+ */
 export function PostManagerPageSkeleton() {
   return (
-    <div
-      className="post-manager admin-workspace fuwari-card-base"
+    <AdminPage
+      className="post-manager"
       aria-busy="true"
+      title={m.admin_posts_title()}
+      primaryAction={{
+        label: m.admin_posts_create(),
+        icon: <Plus size={17} />,
+        onClick: noop,
+        disabled: true,
+      }}
+      toolbar={
+        <AdminPageToolbar
+          tabs={<PostsStatusTabs status="ALL" onStatusChange={noop} />}
+          tools={
+            <div inert className="contents">
+              <SearchField
+                variant="raised"
+                shortcut="/"
+                value=""
+                onValueChange={noop}
+                placeholder={m.admin_posts_search_placeholder()}
+                aria-label={m.admin_posts_search_placeholder()}
+                clearLabel={m.admin_posts_clear_search()}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_filter_category()}
+                neutral=""
+                value=""
+                onChange={noop}
+                options={[{ value: "", label: "" }]}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_filter_tag()}
+                neutral=""
+                value=""
+                onChange={noop}
+                options={[{ value: "", label: "" }]}
+              />
+              <DropdownMenu
+                variant="chip"
+                ariaLabel={m.admin_posts_sort_label()}
+                value="updatedAt"
+                onChange={noop}
+                options={[
+                  { value: "updatedAt", label: sortLabel("updatedAt") },
+                ]}
+              />
+            </div>
+          }
+        />
+      }
+      body="list"
+      scroll={false}
+      inset={false}
+      stackOnPhone
     >
-      <div className="fuwari-page-header post-list-heading">
-        <Skeleton className="h-8 w-28 rounded" />
-        <Skeleton className="h-10 w-24 rounded" />
+      <div inert className="contents">
+        <PostListColumns
+          sortBy="updatedAt"
+          viewsSortable
+          onSortByChange={noop}
+        />
       </div>
-      <div className="fuwari-tabs post-list-tabs h-12 items-center">
-        {[1, 2, 3].map((id) => (
-          <Skeleton key={id} className="h-4 w-16 rounded" />
-        ))}
-      </div>
-      <div className="post-list-controls">
-        <Skeleton className="h-11 w-80" />
-      </div>
-      <table className="post-list-table">
-        <tbody>
-          <PostManagerSkeleton />
-        </tbody>
-      </table>
-    </div>
+      <ListCardRows aria-busy="true">
+        <PostRowsSkeleton />
+      </ListCardRows>
+    </AdminPage>
   );
 }

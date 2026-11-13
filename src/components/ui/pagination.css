@@ -1,0 +1,48 @@
+@layer components {
+  .fuwari-pagination {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .fuwari-pagination button {
+    display: grid;
+    place-items: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    border-radius: 8px;
+    color: var(--admin-fg-2);
+    font-size: var(--admin-text-small);
+    font-weight: 500;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
+  .fuwari-pagination button:hover:not(:disabled) {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  .fuwari-pagination button[aria-current="page"] {
+    background: var(--admin-ink);
+    color: var(--admin-on-ink);
+  }
+  .fuwari-pagination button:disabled {
+    opacity: 0.35;
+  }
+  .fuwari-pagination span {
+    padding: 0 4px;
+  }
+}
+
+@layer components {
+  .fuwari-pagination-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding-top: 16px;
+    color: var(--admin-fg-3);
+    font-size: var(--admin-text-meta);
+  }
+}

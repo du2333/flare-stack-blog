@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAdminChrome } from "@/components/admin/admin-chrome";
-import { AdminPagination } from "@/components/admin/admin-pagination";
-import { Button } from "@/components/ui/button";
+import { AdminPage } from "@/components/admin/admin-page";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
-import { PageHeader } from "@/components/ui/page-heading";
+import { Pagination } from "@/components/ui/pagination";
+import { SearchField } from "@/components/ui/search-field";
 import { Tabs } from "@/components/ui/tabs";
 import type {
   FriendLinkStatusCounts,
@@ -47,12 +47,21 @@ export function FriendLinkManager({
   onSearchChange,
 }: FriendLinkManagerProps) {
   const navigate = useNavigate();
-  const { setPrimaryAction } = useAdminChrome();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<FriendLinkWithUser | null>(null);
   const [rejecting, setRejecting] = useState<FriendLinkWithUser | null>(null);
   const [deleting, setDeleting] = useState<FriendLinkWithUser | null>(null);
   const countsRef = useRef(emptyCounts);
+  // Search as the Admin types, a moment after they stop.
+  const [input, setInput] = useState(search);
+  const searchCallback = useRef(onSearchChange);
+  searchCallback.current = onSearchChange;
+  useEffect(() => setInput(search), [search]);
+  useEffect(() => {
+    if (input === search) return;
+    const timer = window.setTimeout(() => searchCallback.current(input), 300);
+    return () => window.clearTimeout(timer);
+  }, [input, search]);
 
   const { data, isPending, isError } = useQuery(
     allFriendLinksQuery({
@@ -91,17 +100,6 @@ export function FriendLinkManager({
   };
 
   useEffect(() => {
-    setPrimaryAction({
-      label: m.friend_links_admin_add(),
-      onClick: () => {
-        setEditing(null);
-        setFormOpen(true);
-      },
-    });
-    return () => setPrimaryAction(null);
-  }, [setPrimaryAction]);
-
-  useEffect(() => {
     if (data && page > totalPages) onPageChange(totalPages);
   }, [data, page, totalPages, onPageChange]);
 
@@ -112,30 +110,46 @@ export function FriendLinkManager({
   }[status];
 
   return (
-    <div className="friend-workspace admin-workspace fuwari-card-base">
-      <PageHeader
-        className="friend-header"
-        title={m.friend_links_admin_title()}
-        description={m.friend_review_hint()}
-        actions={
-          <Button onClick={openCreate}>{m.friend_links_admin_add()}</Button>
-        }
-      />
-      <Tabs
-        className="friend-tabs"
-        aria-label={m.friend_links_admin_title()}
-        value={status}
-        onValueChange={onStatusChange}
-        items={STATUSES.map((item) => ({
-          value: item,
-          label: {
-            pending: m.friend_links_tab_pending(),
-            approved: m.friend_links_tab_approved(),
-            rejected: m.friend_links_tab_rejected(),
-          }[item],
-          count: counts[item],
-        }))}
-      />
+    <AdminPage
+      className="friend-workspace"
+      title={m.friend_links_admin_title()}
+      count={counts.pending || undefined}
+      primaryAction={{
+        label: m.friend_links_admin_add(),
+        icon: <Plus size={17} />,
+        onClick: openCreate,
+      }}
+      tabs={
+        <Tabs
+          aria-label={m.friend_links_admin_title()}
+          value={status}
+          onValueChange={onStatusChange}
+          items={STATUSES.map((item) => ({
+            value: item,
+            label: {
+              pending: m.friend_links_tab_pending(),
+              approved: m.friend_links_tab_approved(),
+              rejected: m.friend_links_tab_rejected(),
+            }[item],
+            count: counts[item],
+          }))}
+        />
+      }
+      tools={
+        <SearchField
+          variant="raised"
+          shortcut="/"
+          value={input}
+          onValueChange={setInput}
+          clearLabel={m.search_clear()}
+          maxLength={200}
+          placeholder={m.friend_review_search()}
+          aria-label={m.friend_review_search()}
+        />
+      }
+      body="split"
+      inset={false}
+    >
       <FriendLinkReview
         key={status}
         items={items}
@@ -144,7 +158,10 @@ export function FriendLinkManager({
         error={isError}
         emptyCopy={emptyCopy}
         search={search}
-        onSearchChange={onSearchChange}
+        onClearSearch={() => {
+          setInput("");
+          onSearchChange("");
+        }}
         page={page}
         onApprove={(item) => approve({ id: item.id })}
         onReject={setRejecting}
@@ -154,14 +171,16 @@ export function FriendLinkManager({
         }}
         onDelete={setDeleting}
         pagination={
-          <AdminPagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={total}
-            itemsPerPage={ADMIN_ITEMS_PER_PAGE}
-            currentPageItemCount={items.length}
-            onPageChange={onPageChange}
-          />
+          totalPages > 1 ? (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              label={m.admin_pagination_label()}
+              previousLabel={m.admin_pagination_previous()}
+              nextLabel={m.admin_pagination_next()}
+            />
+          ) : null
         }
       />
 
@@ -224,13 +243,13 @@ export function FriendLinkManager({
           );
         }}
         title={m.friend_links_delete_title()}
-        message={m.friend_links_delete_message({
-          name: deleting?.siteName ?? "",
-        })}
+        message={(deleting?.status === "approved"
+          ? m.friend_links_delete_message_approved
+          : m.friend_links_delete_message)({ name: deleting?.siteName ?? "" })}
         confirmLabel={m.friend_links_delete_confirm()}
         isDanger
         isLoading={isAdminDeleting}
       />
-    </div>
+    </AdminPage>
   );
 }

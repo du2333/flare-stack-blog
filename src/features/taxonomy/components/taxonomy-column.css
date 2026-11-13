@@ -1,0 +1,226 @@
+/*
+ * The taxonomy page: Categories on the left as rows with a bar for each
+ * one's share of the Posts, Tags on the right as chips, side by side from
+ * 1024px and one at a time below it. Sizes come from admin-variables.css.
+ */
+.taxonomy-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.taxonomy-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 16px 0;
+  --fuwari-field-height: 36px;
+}
+@media (min-width: 1024px) {
+  .taxonomy-columns {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+  .taxonomy-column {
+    padding: 18px 24px 0;
+  }
+  .taxonomy-column + .taxonomy-column {
+    border-left: 1px solid var(--admin-line);
+  }
+}
+.taxonomy-column-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+.taxonomy-column-head h2 {
+  font-size: var(--admin-text-section);
+  line-height: var(--admin-leading-section);
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+.taxonomy-column-count {
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-small);
+  font-variant-numeric: tabular-nums;
+}
+.taxonomy-column-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.taxonomy-column-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 12px 4px;
+}
+.taxonomy-column-search > [role="search"] {
+  flex: 1;
+  min-width: 0;
+}
+.taxonomy-column-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-inline: -8px;
+  padding: 8px 8px 20px;
+}
+
+/* ── A Category ── */
+.taxonomy-bar-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) clamp(48px, 28%, 168px) minmax(40px, auto)
+    32px;
+  align-items: center;
+  gap: 14px;
+  min-height: 46px;
+  padding: 6px 4px 6px 10px;
+  border-radius: var(--admin-radius-row);
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  transition: background-color 0.15s;
+}
+li.taxonomy-bar-row:hover,
+li.taxonomy-bar-row:focus-within {
+  background: var(--admin-hover);
+}
+.taxonomy-row-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-fg);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.taxonomy-row-count {
+  justify-self: end;
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-meta);
+  font-variant-numeric: tabular-nums;
+}
+a.taxonomy-row-count:hover {
+  color: var(--admin-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.taxonomy-row-count[data-empty] {
+  color: var(--admin-fg-3);
+}
+/* The track, and on it the share of the Category with the most Posts. */
+.taxonomy-bar {
+  position: relative;
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--admin-hover);
+}
+span.taxonomy-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--admin-accent);
+  transform: scaleX(var(--share, 0));
+  transform-origin: left;
+  animation: taxonomy-bar-in 0.7s var(--admin-ease) backwards;
+}
+@keyframes taxonomy-bar-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+/* With a pointer the menu waits for the row; a keyboard or a finger has it. */
+@media (hover: hover) {
+  .taxonomy-bar-row > .fuwari-icon-button {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .taxonomy-bar-row:hover > .fuwari-icon-button,
+  .taxonomy-bar-row
+    > .fuwari-icon-button:is(:focus-visible, [aria-expanded="true"]) {
+    opacity: 1;
+  }
+}
+
+/* ── A Tag ── */
+.taxonomy-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 8px 0;
+}
+.taxonomy-chip {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--admin-radius-control);
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line-strong),
+    var(--admin-shadow-card);
+  font-size: 13.5px;
+  line-height: 20px;
+}
+.taxonomy-chip-name {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 9px 0 12px;
+  color: var(--admin-fg);
+  font-weight: 500;
+  transition: background-color 0.15s;
+}
+.taxonomy-chip-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.taxonomy-chip-count {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 10px 0 9px;
+  border-left: 1px solid var(--admin-line);
+  color: var(--admin-fg-3);
+  font-size: var(--admin-text-meta);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.taxonomy-chip-name:is(:hover, [aria-expanded="true"]),
+a.taxonomy-chip-count:hover {
+  background: var(--admin-hover);
+  color: var(--admin-fg);
+}
+.taxonomy-chip :is(button, a):focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: -2px;
+}
+/* A Tag no Post carries: an outline, to be filled or cleared away. */
+.taxonomy-chip[data-unused] {
+  background: none;
+  box-shadow: none;
+  outline: 1px dashed var(--admin-line-strong);
+  outline-offset: -1px;
+}
+.taxonomy-chip[data-unused] .taxonomy-chip-name {
+  color: var(--admin-fg-2);
+  font-weight: 400;
+}
+.taxonomy-chip[data-unused] .taxonomy-chip-count {
+  border-left-style: dashed;
+}
+@media (prefers-reduced-motion: reduce) {
+  span.taxonomy-bar::before {
+    animation: none;
+  }
+}

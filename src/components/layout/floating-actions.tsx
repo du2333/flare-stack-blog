@@ -14,9 +14,17 @@ type SlotState = [
 
 const FloatingActionsContext = createContext<SlotState | null>(null);
 
-/** Shared by every button in the floating column. */
+/**
+ * Shared by every button in the floating column: 3rem a side, and from lg
+ * 3.75rem unless the Theme Shell says otherwise
+ * (`--shell-floating-actions-size`, theme-shell.ts).
+ */
 export const FLOATING_ACTION_BUTTON_CLASS =
-  "flex items-center justify-center w-12 h-12 lg:w-15 lg:h-15 rounded-2xl fuwari-card-base shadow-md text-(--fuwari-primary) hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) active:scale-90 transition-all";
+  "flex items-center justify-center size-12 lg:size-(--shell-floating-actions-size,3.75rem) rounded-(--theme-floating-radius,var(--radius-2xl)) fuwari-card-base fuwari-card-floating text-(--theme-accent) hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) active:scale-90 transition-all";
+
+/** The icon of such a button: 1.5rem, and from lg 7/15 of its button. */
+export const FLOATING_ACTION_ICON_CLASS =
+  "size-6 lg:size-[calc(var(--shell-floating-actions-size,3.75rem)*7/15)]";
 
 /**
  * Lets a page add its own buttons to the floating column, stacked above

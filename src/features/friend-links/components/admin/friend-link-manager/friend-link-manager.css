@@ -1,366 +1,281 @@
+/*
+ * The Friend Links page: a queue of sites on the lower ground (as on
+ * Comments), the chosen one beside it with what the public page will show,
+ * and the decision at the foot.
+ */
 .friend-workspace {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  color: var(--fuwari-fg-90);
-  --fuwari-field-height: calc(44 * var(--admin-unit));
-  --fuwari-field-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-height: calc(40 * var(--admin-unit));
-  --fuwari-button-font-size: calc(14 * var(--admin-unit));
-  --fuwari-button-padding-x: calc(18 * var(--admin-unit));
+  color: var(--admin-fg);
 }
-.friend-header {
-  padding: calc(28 * var(--admin-unit)) calc(30 * var(--admin-unit));
-}
-.friend-tabs {
-  margin: 0 calc(30 * var(--admin-unit));
-  flex-shrink: 0;
-}
-.friend-body {
-  display: grid;
-  grid-template-columns: minmax(230px, 32%) minmax(0, 1fr);
-  flex: 1;
-  min-height: 0;
+
+/* ── The queue ── */
+.friend-split > .admin-split-list {
+  background: var(--admin-sunken);
 }
 .friend-queue {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border-right: 1px solid var(--fuwari-input-border);
-}
-.friend-search {
-  width: auto;
-  margin: calc(20 * var(--admin-unit));
-}
-.friend-queue-scroll,
-.friend-detail-scroll {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  padding: 8px;
 }
-.friend-queue-scroll {
-  flex: 1;
-}
-.friend-queue-item {
+/* A row is a PickRow, also as a skeleton. */
+.friend-row {
   display: flex;
-  align-items: center;
-  text-align: left;
-  width: 100%;
-  gap: 14px;
-  padding: calc(20 * var(--admin-unit));
-  border-bottom: 1px solid var(--fuwari-input-border);
-  border-left: 3px solid transparent;
-  transition:
-    background 0.22s ease,
-    border-color 0.22s ease;
-}
-.friend-queue-item:hover {
-  background: var(--fuwari-btn-regular-bg);
-}
-.friend-queue-item[aria-current="true"] {
-  background: var(--fuwari-btn-regular-bg);
-  border-left-color: var(--fuwari-primary);
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
 }
 .friend-logo {
   display: grid;
   place-items: center;
-  width: calc(48 * var(--admin-unit));
-  height: calc(48 * var(--admin-unit));
-  border-radius: 50%;
   flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   overflow: hidden;
-  background: var(--fuwari-btn-regular-bg);
-  color: var(--fuwari-primary);
+  border-radius: 10px;
+  background: var(--admin-press);
+  color: var(--admin-fg-3);
 }
 .friend-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.friend-queue-copy {
+.friend-logo svg {
+  width: 50%;
+  height: 50%;
+}
+.friend-row-main {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-width: 0;
-  gap: 5px;
-  font-size: calc(14 * var(--admin-unit));
 }
-.friend-queue-copy strong,
-.friend-queue-copy span {
+.friend-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.friend-row-top > strong {
   overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--admin-fg);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.friend-queue-copy span,
-.friend-queue-copy small {
-  color: var(--fuwari-fg-50);
-  font-size: 0.85em;
+.friend-row-top > time {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
 }
-.friend-detail {
+.friend-row-host,
+.friend-row-text {
+  overflow: hidden;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friend-row-text {
+  margin-top: 3px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+}
+.friend-queue-foot {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 8px;
+  border-top: 1px solid var(--admin-line);
+}
+
+/* ── The site ── */
+.friend-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--admin-line);
+}
+.friend-back {
+  display: none;
+  margin-right: auto;
+}
+.friend-position {
+  margin-right: 4px;
+  font-size: var(--admin-text-meta);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
 }
 .friend-detail-scroll {
   flex: 1;
-  padding: calc(30 * var(--admin-unit));
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 28px 28px 32px;
 }
-.friend-site-heading {
+.friend-detail-scroll > * {
+  max-width: 640px;
+}
+.friend-site {
   display: flex;
   align-items: center;
-  gap: calc(22 * var(--admin-unit));
-  padding-bottom: calc(30 * var(--admin-unit));
+  gap: 16px;
 }
-.friend-site-heading > div {
+.friend-site > div {
   min-width: 0;
 }
-.friend-site-heading .friend-logo {
-  width: calc(80 * var(--admin-unit));
-  height: calc(80 * var(--admin-unit));
+.friend-site .friend-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
 }
-.friend-site-heading h2 {
-  font-size: calc(24 * var(--admin-unit));
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-.friend-site-heading a {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  color: var(--fuwari-primary);
-  font-size: calc(13 * var(--admin-unit));
-  margin-top: 10px;
-  overflow-wrap: anywhere;
-}
-.friend-section {
-  border-top: 1px solid var(--fuwari-input-border);
-  padding: calc(24 * var(--admin-unit)) 0;
-}
-.friend-section h3 {
-  font-size: calc(14 * var(--admin-unit));
+.friend-site h2 {
+  /* The site's name is this pane's title, a step under the page's. */
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 10px;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+  color: var(--admin-fg);
+  overflow-wrap: anywhere;
 }
-.friend-section p {
-  font-size: calc(14 * var(--admin-unit));
-  line-height: 1.8;
-  color: var(--fuwari-fg-75);
+.friend-site a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.friend-site a:hover {
+  color: var(--admin-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.friend-facts {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+}
+.friend-facts > div {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+}
+.friend-facts dt {
+  color: var(--admin-fg-3);
+}
+.friend-facts dd {
+  color: var(--admin-fg);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.friend-muted,
-.friend-section p.friend-muted {
-  color: var(--fuwari-fg-50);
+.friend-facts dd[data-empty] {
+  color: var(--admin-fg-3);
+}
+/* How the public page shows it, on a stage of its own. */
+.friend-stage {
+  margin-top: 28px;
+  padding: 18px 20px 22px;
+  border-radius: var(--admin-radius-card);
+  background: var(--admin-sunken);
+  box-shadow: inset 0 0 0 1px var(--admin-line);
+}
+.friend-stage h3 {
+  font-size: var(--admin-text-small);
+  font-weight: 600;
+  line-height: var(--admin-leading-small);
+}
+.friend-stage > p {
+  margin-top: 2px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
 }
 .friend-preview {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-top: 16px;
-  padding: 20px;
-  border: 1px solid var(--fuwari-input-border);
-  border-radius: 12px;
+  gap: 14px;
+  max-width: 360px;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--admin-surface);
+  box-shadow:
+    0 0 0 1px var(--admin-line),
+    var(--admin-shadow-card);
 }
 .friend-preview > div {
   min-width: 0;
 }
+.friend-preview .friend-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
 .friend-preview strong {
-  font-size: calc(15 * var(--admin-unit));
+  display: block;
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  line-height: var(--admin-leading-body);
   overflow-wrap: anywhere;
 }
 .friend-preview p {
-  margin-top: 6px;
-  font-size: calc(13 * var(--admin-unit));
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
 }
 .friend-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: calc(20 * var(--admin-unit));
-  border-top: 1px solid var(--fuwari-input-border);
   flex-shrink: 0;
+  padding: 12px 16px 12px 20px;
+  border-top: 1px solid var(--admin-line);
 }
-.friend-step,
 .friend-decisions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  margin-left: auto;
 }
-.friend-step {
-  color: var(--fuwari-fg-50);
-  font-size: 12px;
-}
-.friend-workspace button:not(.fuwari-button, .fuwari-icon-button):disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.friend-workspace
-  :is(
-    button:not(
-      .fuwari-button,
-      .fuwari-icon-button,
-      .fuwari-tab,
-      .fuwari-segment
-    ),
-    a
-  ):focus-visible {
-  outline: 2px solid var(--fuwari-primary);
+.friend-workspace a:focus-visible {
+  outline: 2px solid var(--admin-accent);
   outline-offset: 2px;
 }
-.friend-pagination {
-  padding: 8px calc(24 * var(--admin-unit));
-  border-top: 1px solid var(--fuwari-input-border);
-  flex-shrink: 0;
-}
-.friend-detail-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 30px;
-  color: var(--fuwari-fg-50);
-}
-.friend-mobile-back {
-  display: none;
-}
-@media (max-width: 767px) {
-  .friend-header {
-    padding: 18px;
-  }
-  .friend-header p {
-    display: none;
-  }
-  .friend-header .fuwari-heading-actions {
-    display: none;
-  }
-  .friend-tabs {
-    margin: 0 18px;
-  }
-  .friend-body {
-    display: block;
-    position: relative;
-    overflow: hidden;
-  }
-  .friend-queue,
-  .friend-detail {
-    position: absolute;
-    inset: 0;
-    border: 0;
-    transition:
-      transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 260ms ease,
-      visibility 360ms;
-  }
-  .friend-detail {
-    transform: translateX(28px);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .friend-body[data-detail="true"] .friend-queue {
-    transform: translateX(-24px);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .friend-body[data-detail="true"] .friend-detail {
-    transform: none;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-  .friend-mobile-back {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 18px;
-    color: var(--fuwari-primary);
-    flex-shrink: 0;
-  }
-  .friend-detail-scroll {
-    padding: 10px 20px 20px;
-  }
-  .friend-site-heading {
-    gap: 16px;
-  }
-  .friend-site-heading .friend-logo {
-    width: 60px;
-    height: 60px;
-  }
-  .friend-site-heading h2 {
-    font-size: 22px;
-  }
-  .friend-site-heading a span {
-    display: none;
-  }
-  .friend-actions {
-    padding: 12px 16px;
-  }
-  .friend-step {
-    gap: 5px;
-  }
-  .friend-decisions {
-    gap: 6px;
-  }
-  .friend-workspace {
-    --fuwari-button-padding-x: 12px;
-  }
-  .friend-pagination {
-    padding: 4px 16px;
-  }
-  .friend-preview {
-    padding: 14px;
-    gap: 12px;
-  }
-}
-@media (max-height: 540px) {
-  .friend-body {
-    min-height: 400px;
-    flex: none;
-  }
-  .friend-detail-scroll {
-    overflow: visible;
-  }
-  .friend-actions {
-    position: sticky;
-    bottom: 0;
-    background: var(--fuwari-card-bg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .friend-queue,
-  .friend-detail,
-  .friend-queue-item {
-    transition: none;
-  }
-}
 
-@media (max-height: 540px) and (max-width: 767px) {
-  .friend-body {
-    min-height: 0;
-    overflow: visible;
+@media (max-width: 767px) {
+  .friend-split > .admin-split-detail {
+    background: var(--admin-surface);
   }
-  .friend-queue,
-  .friend-detail {
-    position: relative;
-    inset: auto;
-    transform: none;
-    transition: none;
+  .friend-back {
+    display: inline-grid;
   }
-  .friend-detail,
-  .friend-body[data-detail="true"] .friend-queue {
-    display: none;
+  .friend-detail-scroll {
+    padding: 20px 16px 24px;
   }
-  .friend-body[data-detail="true"] .friend-detail {
-    display: flex;
+  .friend-facts > div {
+    grid-template-columns: 72px minmax(0, 1fr);
   }
 }

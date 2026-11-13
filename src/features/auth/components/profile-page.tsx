@@ -3,7 +3,7 @@ import { lazy, Suspense, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { PublicPageHeading } from "@/components/ui/page-heading";
+import { ThemedPageHeading } from "@/features/theme/components/themed-page-heading";
 import { Switch } from "@/components/ui/switch";
 import type { useProfileForm } from "../hooks/use-profile-form";
 import type { useNotificationToggle } from "../hooks/use-notification-toggle";
@@ -44,8 +44,8 @@ export function ProfilePage({
   const pickAvatarRef = useRef<HTMLButtonElement>(null);
   const image = profileForm.image;
   return (
-    <section className="account-page fuwari-card-base">
-      <PublicPageHeading
+    <section className="account-page fuwari-card-base fuwari-card-standalone">
+      <ThemedPageHeading
         title={m.account_title()}
         back={{ to: "/", label: m.account_back() }}
         description={m.account_intro()}

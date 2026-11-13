@@ -7,15 +7,20 @@ import { withTagFilter } from "@/features/posts/utils/post-public-search";
 import { tagsQueryOptions } from "@/features/tags/queries";
 import { m } from "@/paraglide/messages";
 
+/** From this many tags the narrow form cuts the list short. */
 const COLLAPSE_THRESHOLD = 20;
 
+/** The card while its tags load, in both of its forms. */
 export function TagsSkeleton() {
   return (
-    <div className="fuwari-card-base p-4">
-      <Skeleton className="h-5 w-20 mb-3" />
-      <div className="flex flex-wrap gap-2">
+    <div className="fuwari-card-base fuwari-card-widget py-4 px-(--theme-widget-pad-x,1rem) @xs/card:grid @xs/card:gap-x-4 @xs/card:gap-y-2 @xs/card:px-(--theme-widget-pad-x,1.25rem) @xs/card:py-3.5 @[34rem]/card:grid-cols-[auto_minmax(0,1fr)]">
+      <Skeleton className="h-5 w-20 mb-3 @xs/card:my-1.5 @xs/card:w-10" />
+      <div className="flex flex-wrap gap-2 @xs/card:flex-nowrap @xs/card:overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-16 rounded-lg" />
+          <Skeleton
+            key={i}
+            className="h-8 w-16 rounded-lg @xs/card:shrink-0 @xs/card:rounded-(--theme-chip-radius)"
+          />
         ))}
       </div>
     </div>
@@ -28,12 +33,11 @@ export function Tags() {
 
   if (tags.length === 0) return null;
 
-  const collapsed = tags.length >= COLLAPSE_THRESHOLD && !expanded;
-
   return (
     <ExpandableSidebarCard
       title={m.tags_title()}
-      collapsed={collapsed}
+      long={tags.length >= COLLAPSE_THRESHOLD}
+      expanded={expanded}
       onExpand={() => setExpanded(true)}
       contentClassName="flex flex-wrap gap-2"
     >
@@ -42,7 +46,7 @@ export function Tags() {
           key={tag.id}
           to="/posts"
           search={withTagFilter(tag.name)}
-          className="fuwari-btn-regular h-8 text-sm px-3 rounded-lg"
+          className="fuwari-btn-regular h-8 text-sm px-3 rounded-(--theme-chip-radius)"
         >
           {tag.name}
         </Link>

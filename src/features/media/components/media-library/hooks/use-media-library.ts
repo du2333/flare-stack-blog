@@ -12,6 +12,7 @@ import {
   mediaInfiniteQueryOptions,
   mediaStatsQuery,
 } from "@/features/media/queries";
+import type { MediaSort } from "@/features/media/media.schema";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import { MediaInUseError, mediaInUseMessage } from "../media-usage";
@@ -30,11 +31,28 @@ async function mediaInUseError(key: string) {
 export function useMediaLibrary() {
   const queryClient = useQueryClient();
   const navigate = useNavigate({ from: "/admin/media/" });
-  const { unused, view } = useSearch({ from: "/admin/media/" });
+  const { unused, view, search, sort } = useSearch({ from: "/admin/media/" });
 
   const setUnusedOnly = (val: boolean) => {
     void navigate({
       search: (prev) => ({ ...prev, unused: val || undefined }),
+    });
+  };
+
+  const setSearch = (value: string) => {
+    void navigate({
+      search: (prev) => ({ ...prev, search: value || undefined }),
+      replace: true,
+    });
+  };
+
+  const setSort = (value: MediaSort) => {
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        sort: value === "newest" ? undefined : value,
+      }),
+      replace: true,
     });
   };
 
@@ -48,7 +66,7 @@ export function useMediaLibrary() {
     isFetchNextPageError,
     refetch,
   } = useInfiniteQuery({
-    ...mediaInfiniteQueryOptions("", unused ?? false),
+    ...mediaInfiniteQueryOptions(search?.trim(), unused ?? false, sort),
   });
 
   const mediaItems = data?.pages.flatMap((page) => page.items) ?? [];
@@ -125,6 +143,10 @@ export function useMediaLibrary() {
       navigate({ search: (prev) => ({ ...prev, view }), replace: true }),
     unusedOnly: unused ?? false,
     setUnusedOnly,
+    search: search ?? "",
+    setSearch,
+    sort: sort ?? "newest",
+    setSort,
     loadMore,
     hasMore: hasNextPage ?? false,
     isLoadingMore: isFetchingNextPage,

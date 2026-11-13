@@ -20,7 +20,7 @@ export function MomentText({
           <a
             key={index}
             {...publicLinkAttributes({ href: part.value })}
-            className="break-all text-(--fuwari-primary) underline decoration-dashed underline-offset-4 hover:decoration-solid"
+            className="break-all text-(--theme-accent) underline [text-decoration-style:var(--theme-link-underline-style)] underline-offset-4 hover:decoration-solid"
           >
             {part.value}
           </a>

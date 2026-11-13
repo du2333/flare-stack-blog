@@ -1,7 +1,19 @@
 import { blogConfig } from "@/blog.config";
 import type { SiteConfig, SystemConfig } from "@/features/config/config.schema";
 import { DEFAULT_CONFIG } from "@/features/config/config.schema";
-import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
+import type { z } from "zod";
+import {
+  AvatarSchema,
+  BannerFocusSchema,
+  BannerImageSchema,
+  BrandMarkSchema,
+  DEFAULT_THEME_ID,
+  FullSiteConfigSchema,
+  isThemeId,
+  PrimaryHueSchema,
+  TaglineSchema,
+  ThemeOptionValueSchema,
+} from "@/features/config/site-config.schema";
 import { normalizeNavLinks } from "@/features/config/utils/nav-links";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
@@ -43,9 +55,84 @@ function migrateSocial(social: unknown): SocialLink[] {
   return [...blogConfig.social];
 }
 
+/** The first candidate the schema accepts, or the fallback. */
+function firstValid<T>(
+  schema: z.ZodType<T>,
+  candidates: Array<unknown>,
+  fallback: T,
+): T {
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null) continue;
+    const parsed = schema.safeParse(candidate);
+    if (parsed.success) return parsed.data;
+  }
+  return fallback;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Each Theme reads its own options, so only their shape is checked here, and
+ * an unreadable entry is dropped instead of failing the whole Site Config.
+ */
+function resolveThemeOptions(value: unknown): SiteConfig["theme"]["options"] {
+  if (!isPlainObject(value)) return {};
+  // Entries, not assignment, so a stored "__proto__" key stays a plain key.
+  const themes: Array<[string, SiteConfig["theme"]["options"][string]]> = [];
+  for (const [id, options] of Object.entries(value)) {
+    if (!isPlainObject(options)) continue;
+    const readable: Array<[string, z.infer<typeof ThemeOptionValueSchema>]> =
+      [];
+    for (const [key, option] of Object.entries(options)) {
+      const parsed = ThemeOptionValueSchema.safeParse(option);
+      if (parsed.success) readable.push([key, parsed.data]);
+    }
+    themes.push([id, Object.fromEntries(readable)]);
+  }
+  return Object.fromEntries(themes);
+}
+
+/**
+ * The banner image, avatar and hue used to live under `theme.fuwari`. A
+ * document without the shared field still has them there.
+ */
+function resolveSharedFields(site: SystemConfig["site"]) {
+  const legacy = site?.theme?.fuwari;
+  return {
+    bannerImage: firstValid(
+      BannerImageSchema,
+      [site?.bannerImage, legacy?.homeBg],
+      blogConfig.bannerImage,
+    ),
+    bannerFocus: firstValid(BannerFocusSchema, [site?.bannerFocus], {
+      ...blogConfig.bannerFocus,
+    }),
+    avatar: firstValid(
+      AvatarSchema,
+      [site?.avatar, legacy?.avatar],
+      blogConfig.avatar,
+    ),
+    primaryHue: firstValid(
+      PrimaryHueSchema,
+      [site?.primaryHue, legacy?.primaryHue],
+      blogConfig.primaryHue,
+    ),
+    brandMark: firstValid(
+      BrandMarkSchema,
+      [site?.brandMark],
+      blogConfig.brandMark,
+    ),
+    tagline: firstValid(TaglineSchema, [site?.tagline], blogConfig.tagline),
+  };
+}
+
 export function resolveSiteConfig(
   config: SystemConfig | null | undefined,
 ): SiteConfig {
+  const shared = resolveSharedFields(config?.site);
+  const themeId = config?.site?.theme?.id;
   return FullSiteConfigSchema.parse({
     title: config?.site?.title ?? blogConfig.title,
     author: config?.site?.author ?? blogConfig.author,
@@ -63,15 +150,17 @@ export function resolveSiteConfig(
       webApp192: config?.site?.icons?.webApp192 || blogConfig.icons.webApp192,
       webApp512: config?.site?.icons?.webApp512 || blogConfig.icons.webApp512,
     },
+    ...shared,
     theme: {
+      // A Theme this build does not offer is read as the default, not an error.
+      id: isThemeId(themeId) ? themeId : DEFAULT_THEME_ID,
+      options: resolveThemeOptions(config?.site?.theme?.options),
+      // Copy for builds that still read `theme.fuwari`, so rolling back keeps
+      // the banner, avatar and hue. Drop it one release after the shared fields.
       fuwari: {
-        homeBg:
-          config?.site?.theme?.fuwari?.homeBg ?? blogConfig.theme.fuwari.homeBg,
-        avatar:
-          config?.site?.theme?.fuwari?.avatar ?? blogConfig.theme.fuwari.avatar,
-        primaryHue:
-          config?.site?.theme?.fuwari?.primaryHue ??
-          blogConfig.theme.fuwari.primaryHue,
+        homeBg: shared.bannerImage,
+        avatar: shared.avatar,
+        primaryHue: shared.primaryHue,
       },
     },
   });

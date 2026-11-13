@@ -4,6 +4,7 @@ import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 import packageJson from "./package.json";
 import { routedFirstSegmentsPlugin } from "./scripts/vite-routed-segments.ts";
+import { themeFixturePlugin } from "./scripts/vite-theme-fixture.ts";
 
 export default defineConfig(async () => {
   const migrationsPath = path.join(__dirname, "migrations");
@@ -16,6 +17,8 @@ export default defineConfig(async () => {
     },
     plugins: [
       routedFirstSegmentsPlugin(),
+      // The fixture Theme stays out of the registry; tests inject it.
+      themeFixturePlugin(false),
       cloudflareTest({
         experimental: {
           newConfig: { configPath: "./cloudflare.config.ts" },

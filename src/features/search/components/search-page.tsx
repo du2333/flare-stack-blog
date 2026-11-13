@@ -66,7 +66,7 @@ export function SearchPage({
           : `${searchedQuery}:${results.map((result) => result.post.id).join(",")}`,
   );
   return (
-    <section className="public-search fuwari-card-base">
+    <section className="public-search fuwari-card-base fuwari-card-panel">
       <h1>{m.search_page_heading()}</h1>
       <SearchField
         ref={inputRef}

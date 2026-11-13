@@ -1,0 +1,101 @@
+/* The fixture Theme's stylesheet. Each rule is meant to be seen: the marker
+   frame says this file is applied, the raised surface (menus, dialogs,
+   toasts) says its design variable reached what renders outside the shell. */
+:root[data-theme="fixture"] {
+  --theme-raised: rgb(255 212 0);
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  /* Where the side list would stand without the slot, which every page has
+     here (the list fills the slot instead). */
+  --shell-toc-top: 7rem;
+  --shell-toc-left: calc(100% + 1rem);
+  --shell-toc-width: 15rem;
+  --shell-floating-actions-left: calc(100% - 4.75rem);
+}
+/* The table of contents in the shell's slot from 2xl, the button below,
+   where the slot is hidden. */
+@media (width >= 96rem) {
+  :root[data-theme="fixture"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+  }
+}
+
+/* The slot for the side table of contents (fixture-shell.tsx): a box at the
+   head of the body, 20rem tall, that the list scrolls in. It has a place
+   only from 2xl, and only on a page with a table of contents: a Post
+   without headings leaves it empty, and nothing then stands for it. */
+.fixture-toc {
+  display: none;
+  height: 20rem;
+}
+@media (width >= 96rem) {
+  .fixture-toc {
+    display: block;
+  }
+}
+.fixture-shell:not(:has([data-table-of-contents])) .fixture-toc {
+  display: none;
+}
+
+/* The marker. */
+[data-theme-shell="fixture"] {
+  min-height: 100vh;
+  outline: 12px solid rgb(255 0 170);
+  outline-offset: -12px;
+  background: var(--fuwari-page-bg);
+}
+
+.fixture-banner {
+  display: block;
+  width: 100%;
+  height: 12rem;
+  object-fit: cover;
+}
+
+.fixture-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-height: 6rem;
+  padding: 24px;
+}
+.fixture-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.fixture-brand img {
+  border-radius: 6px;
+  object-fit: cover;
+}
+.fixture-tagline {
+  max-width: 60rem;
+  margin: 0 auto 16px;
+  padding: 0 24px;
+  font-size: 1.25rem;
+}
+.fixture-nav {
+  display: flex;
+  gap: 12px;
+}
+.fixture-menu {
+  position: absolute;
+  top: 100%;
+  right: 24px;
+  z-index: 60;
+  width: 280px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--theme-raised);
+}
+.fixture-body {
+  display: grid;
+  gap: 16px;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}

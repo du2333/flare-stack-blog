@@ -1,5 +1,18 @@
 import type { SQL } from "drizzle-orm";
-import { and, count, desc, eq, inArray, lt, or, sql, sum } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  or,
+  sql,
+  sum,
+} from "drizzle-orm";
+import type { MediaSort } from "@/features/media/media.schema";
 import { containsText } from "@/lib/db/text-match";
 import {
   MediaTable,
@@ -112,6 +125,44 @@ export async function updateMediaFile(
 
 const DEFAULT_PAGE_SIZE = 20;
 
+/**
+ * The cursor is the id of the page's last item under every sort, so it never
+ * changes shape. Newest and oldest order by id, which follows the upload
+ * order; largest orders by size with the id as tie-break, and continues after
+ * the cursor item by comparing against that item's size. An item deleted
+ * between two pages ends a largest list early.
+ */
+function sortPage(sort: MediaSort, cursor: number | undefined, db: DB) {
+  if (sort === "oldest") {
+    return {
+      after: cursor ? gt(MediaTable.id, cursor) : undefined,
+      order: [asc(MediaTable.id)],
+    };
+  }
+  if (sort === "largest") {
+    const cursorSize = sql`(${db
+      .select({ size: MediaTable.sizeInBytes })
+      .from(MediaTable)
+      .where(eq(MediaTable.id, cursor ?? 0))})`;
+    return {
+      after: cursor
+        ? or(
+            sql`${MediaTable.sizeInBytes} < ${cursorSize}`,
+            and(
+              sql`${MediaTable.sizeInBytes} = ${cursorSize}`,
+              lt(MediaTable.id, cursor),
+            ),
+          )
+        : undefined,
+      order: [desc(MediaTable.sizeInBytes), desc(MediaTable.id)],
+    };
+  }
+  return {
+    after: cursor ? lt(MediaTable.id, cursor) : undefined,
+    order: [desc(MediaTable.id)],
+  };
+}
+
 export async function getMediaList(
   db: DB,
   options?: {
@@ -119,6 +170,7 @@ export async function getMediaList(
     limit?: number;
     search?: string;
     unusedOnly?: boolean;
+    sort?: MediaSort;
   },
 ): Promise<{ items: Array<MediaListItem>; nextCursor: number | null }> {
   const {
@@ -126,11 +178,13 @@ export async function getMediaList(
     limit = DEFAULT_PAGE_SIZE,
     search,
     unusedOnly,
+    sort = "newest",
   } = options ?? {};
 
+  const { after, order } = sortPage(sort, cursor, db);
   const conditions: Array<SQL> = [];
-  if (cursor) {
-    conditions.push(lt(MediaTable.id, cursor));
+  if (after) {
+    conditions.push(after);
   }
   if (search) {
     conditions.push(containsText(MediaTable.fileName, search));
@@ -144,7 +198,7 @@ export async function getMediaList(
     .select()
     .from(MediaTable)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(MediaTable.id))
+    .orderBy(...order)
     .limit(limit + 1);
 
   const hasMore = items.length > limit;

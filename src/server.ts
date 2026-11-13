@@ -3,7 +3,7 @@ import handler from "@tanstack/react-start/server-entry";
 import { applyWorkersCachePurge } from "@/features/cache/workers-cache";
 import {
   applyWorkersCachePolicy,
-  workersEdgeCacheKey,
+  workersCacheRoute,
   type WorkersCachePurgeTarget,
 } from "@/features/cache/workers-cache-policy";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
@@ -57,14 +57,14 @@ export default {
       return probeNotFoundResponse(request);
     }
     const locale = extractLocaleFromRequest(request);
-    return ctx.exports.App({ props: { locale } }).fetch(request, {
-      cf: {
-        cacheKey: workersEdgeCacheKey(
-          request.url,
-          request.headers.get("Accept") || "",
-          __BUILD_ID__,
-        ),
-      },
+    const app = ctx.exports.App({ props: { locale } });
+    const route = workersCacheRoute(request, __BUILD_ID__);
+    if (route.cache === "bypass") {
+      // A Theme preview: neither read from the cache nor stored in it.
+      return app.fetch(route.request, { cache: "no-store" });
+    }
+    return app.fetch(route.request, {
+      cf: { cacheKey: route.cacheKey },
     });
   },
   async queue(batch, env, ctx) {

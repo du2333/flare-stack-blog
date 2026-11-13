@@ -2,7 +2,7 @@ import { useBlocker } from "@tanstack/react-router";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { ConfigEditingContext } from "./config-editing";
 import { m } from "@/paraglide/messages";
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { FormProvider } from "react-hook-form";
 import type { SettingsPageId } from "@/features/config/components/admin/settings-pages";
 import {
@@ -10,7 +10,9 @@ import {
   SettingsShell,
 } from "@/features/config/components/admin/settings-shell";
 import { SettingsInnerSkeleton } from "@/features/config/components/admin/settings-skeleton";
+import { SettingsNav } from "@/features/config/components/admin/settings-nav";
 import { useSystemConfigForm } from "@/features/config/hooks/use-system-config-form";
+import type { PERSONALIZE_PAGE } from "@/features/config/utils/site-field-pages";
 
 export function SettingsSectionFrame({
   title,
@@ -18,7 +20,7 @@ export function SettingsSectionFrame({
   children,
 }: {
   title: string;
-  nav: SettingsPageId | null;
+  nav: SettingsPageId | typeof PERSONALIZE_PAGE | null;
   children: ReactNode;
 }) {
   const {
@@ -28,26 +30,27 @@ export function SettingsSectionFrame({
     isDirty,
     sectionDirty,
     dirtySections,
+    changedCount,
     onSubmit,
     baseline,
     conflict,
     discardSection,
+    reloadSection,
   } = useSystemConfigForm(nav);
+  const personalize = nav === "personalize";
   const blocker = useBlocker({
+    // The settings pages share one form; 「个性化」 has a form of its own.
     shouldBlockFn: ({ next }) =>
-      isDirty && !/^\/admin\/settings(?:\/|$)/.test(next.pathname),
+      isDirty &&
+      !(
+        personalize
+          ? /^\/admin\/personalize(?:\/|$)/
+          : /^\/admin\/settings(?:\/|$)/
+      ).test(next.pathname),
     enableBeforeUnload: isDirty,
     withResolver: true,
   });
-  const hueRaw = methods.watch("site.theme.fuwari.primaryHue");
-  const hue =
-    typeof hueRaw === "number" && !Number.isNaN(hueRaw) ? hueRaw : 250;
-  const needsSave = nav === "site" || nav === "notify";
-  useLiveDocumentHue(
-    hue,
-    baseline.config.site?.theme?.fuwari?.primaryHue ?? 250,
-    isLoading,
-  );
+  const needsSave = nav === "site" || nav === "notify" || personalize;
 
   // An outgoing child can still render after the pathname points to the
   // directory. Keep its form context alive for the entire settings layout.
@@ -58,16 +61,26 @@ export function SettingsSectionFrame({
           children
         ) : (
           <SettingsShell
-            title={title}
-            nav={nav}
+            title={
+              personalize ? m.personalize_title() : m.settings_header_title()
+            }
+            section={nav}
+            regionLabel={title}
+            tabs={
+              nav === "personalize" ? undefined : <SettingsNav current={nav} />
+            }
             save={
               needsSave
                 ? {
                     disabled: !sectionDirty || isLoading,
                     busy: isSubmitting,
                     dirty: sectionDirty,
+                    changedCount,
                     conflict,
                     onDiscard: () => void discardSection(),
+                    // Only Site Config is shared by two pages.
+                    onReload:
+                      nav === "notify" ? undefined : () => void reloadSection(),
                   }
                 : undefined
             }
@@ -98,23 +111,5 @@ export function SettingsSectionFrame({
         />
       </FormProvider>
     </ConfigEditingContext.Provider>
-  );
-}
-
-function useLiveDocumentHue(hue: number, savedHue: number, isLoading: boolean) {
-  const savedRef = useRef(savedHue);
-  savedRef.current = savedHue;
-  useLayoutEffect(() => {
-    if (isLoading) return;
-    document.documentElement.style.setProperty("--fuwari-hue", String(hue));
-  }, [hue, isLoading]);
-  useEffect(
-    () => () => {
-      document.documentElement.style.setProperty(
-        "--fuwari-hue",
-        String(savedRef.current),
-      );
-    },
-    [],
   );
 }

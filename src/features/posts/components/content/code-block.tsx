@@ -96,7 +96,7 @@ export function CodeHtml({
 }) {
   const html =
     highlightedHtml ||
-    `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-(--fuwari-btn-content) bg-transparent! p-0 m-0 border-0"><code>${escapeCodeHtml(code)}</code></pre>`;
+    `<pre class="shiki font-mono text-sm leading-relaxed whitespace-pre text-(--theme-tonal-fg) bg-transparent! p-0 m-0 border-0"><code>${escapeCodeHtml(code)}</code></pre>`;
 
   return (
     <div className="text-sm font-mono leading-relaxed transition-opacity duration-300">
@@ -125,13 +125,13 @@ export function CodeBlockFrame({
 
   return (
     <div className="relative group max-w-full my-6 not-prose">
-      <div className="expressive-code relative rounded-xl border border-black/10 dark:border-white/10 bg-(--fuwari-code-bg) overflow-hidden transition-colors shadow-sm">
+      <div className="expressive-code relative rounded-xl border border-(--theme-rule,var(--fuwari-input-border)) bg-(--theme-raised) overflow-hidden transition-colors shadow-sm">
         {/* Language Badge */}
         <div
           className={cn(
             "absolute z-10 right-2 top-2 px-2 py-0.5",
             "font-mono text-xs font-bold uppercase pointer-events-none transition-opacity duration-300",
-            "text-(--fuwari-primary) bg-(--fuwari-primary)/10 rounded-lg",
+            "text-(--theme-accent) bg-(--theme-accent)/10 rounded-lg",
             "group-hover:opacity-0",
           )}
         >

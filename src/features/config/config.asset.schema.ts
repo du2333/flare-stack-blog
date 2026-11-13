@@ -18,6 +18,9 @@ export const SITE_ASSET_ACCEPTED_TYPES = [
 const ALLOWED_ASSET_PREFIXES = [
   "favicon/",
   "social/",
+  // Banner image and avatar, shared by every Theme.
+  "site/",
+  // Where they were uploaded before; saved addresses still point here.
   "themes/fuwari/",
 ] as const;
 

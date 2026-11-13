@@ -1,9 +1,11 @@
 import { ImageOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
+import { Badge } from "@/components/ui/badge";
 import { mediaUsageOf } from "@/features/media/utils/media.utils";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { useMediaGridMotion } from "../hooks/use-media-grid-motion";
+import { splitMediaName } from "../media-name";
 import { usageCount } from "../media-usage";
 import type { MediaAsset } from "../types";
 import type { MediaView } from "./media-toolbar";
@@ -22,6 +24,29 @@ function MediaThumbnail({ asset }: { asset: MediaAsset }) {
           onError={() => setFailed(true)}
         />
       )}
+    </span>
+  );
+}
+
+/**
+ * How wide a tile is for its height: the image's own shape, kept between a
+ * tall portrait and a wide banner so no tile is a sliver or takes a row.
+ */
+export function tileRatio(asset: {
+  width: number | null;
+  height: number | null;
+}) {
+  if (!asset.width || !asset.height) return 1.4;
+  return Math.min(2.4, Math.max(0.62, asset.width / asset.height));
+}
+
+/** A file name cut in the middle: the ellipsis falls before its last characters and extension. */
+function MediaName({ name }: { name: string }) {
+  const { head, tail } = splitMediaName(name);
+  return (
+    <span className="media-name" title={name}>
+      {head ? <span className="media-name-head">{head}</span> : null}
+      <span className="media-name-tail">{tail}</span>
     </span>
   );
 }
@@ -50,6 +75,8 @@ export function MediaCollection({
         ? m.media_badge_revisions()
         : m.media_unreferenced();
   };
+  const dimensions = (asset: MediaAsset) =>
+    asset.width && asset.height ? `${asset.width} × ${asset.height}` : "";
   if (view === "list")
     return (
       <div className="media-table-scroll">
@@ -59,6 +86,7 @@ export function MediaCollection({
               <th>{m.media_col_image()}</th>
               <th>{m.media_col_dimensions()}</th>
               <th>{m.media_preview_size()}</th>
+              <th>{m.media_col_uploaded()}</th>
               <th>{m.media_col_usage()}</th>
             </tr>
           </thead>
@@ -77,16 +105,22 @@ export function MediaCollection({
                     onClick={(event) => onSelect(asset, event.currentTarget)}
                   >
                     <MediaThumbnail asset={asset} />
-                    <span title={asset.fileName}>{asset.fileName}</span>
+                    <span className="media-file-text">
+                      <MediaName name={asset.fileName} />
+                      {/* Stands in for the two columns a narrow table drops. */}
+                      <span className="media-file-meta">
+                        {dimensions(asset) ? (
+                          <span>{dimensions(asset)}</span>
+                        ) : null}
+                        <span>{formatDate(asset.createdAt)}</span>
+                      </span>
+                    </span>
                   </button>
                 </td>
-                <td>
-                  {asset.width && asset.height
-                    ? `${asset.width} × ${asset.height}`
-                    : "—"}
-                </td>
+                <td>{dimensions(asset) || "—"}</td>
                 <td>{formatBytes(asset.sizeInBytes)}</td>
-                <td>{usage(asset)}</td>
+                <td>{formatDate(asset.createdAt)}</td>
+                <td title={usage(asset)}>{usage(asset)}</td>
               </tr>
             ))}
           </tbody>
@@ -100,18 +134,25 @@ export function MediaCollection({
           key={asset.key}
           type="button"
           className="media-gallery-item"
+          style={{ "--media-ratio": tileRatio(asset) } as CSSProperties}
           data-media-key={asset.key}
           aria-pressed={asset.key === selectedKey}
+          aria-label={asset.fileName}
           onClick={(event) => onSelect(asset, event.currentTarget)}
         >
           <MediaThumbnail asset={asset} />
-          <span className="media-gallery-name" title={asset.fileName}>
-            {asset.fileName}
-          </span>
-          <span className="media-gallery-meta">
-            {usage(asset)}
-            <span>·</span>
-            {formatBytes(asset.sizeInBytes)}
+          {mediaUsageOf(asset) === "none" ? (
+            <Badge tone="warning" size="sm" className="media-gallery-flag">
+              {m.media_unreferenced()}
+            </Badge>
+          ) : null}
+          <span className="media-gallery-caption" aria-hidden="true">
+            <MediaName name={asset.fileName} />
+            <span className="media-gallery-meta">
+              {usage(asset)}
+              <span>·</span>
+              {formatBytes(asset.sizeInBytes)}
+            </span>
           </span>
         </button>
       ))}

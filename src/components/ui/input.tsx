@@ -19,11 +19,14 @@ export function Textarea({
   bare = false,
   autoGrow = false,
   rows,
+  maxRows,
   ...props
 }: ComponentProps<"textarea"> & {
   mono?: boolean;
   bare?: boolean;
   autoGrow?: boolean;
+  /** With `autoGrow`: the most lines it grows to before it scrolls. */
+  maxRows?: number;
 }) {
   const shared = {
     className: cn("fuwari-input", className),
@@ -32,7 +35,14 @@ export function Textarea({
   };
   if (autoGrow) {
     const { style: _style, ...rest } = props;
-    return <TextareaAutosize {...shared} minRows={rows ?? 1} {...rest} />;
+    return (
+      <TextareaAutosize
+        {...shared}
+        minRows={rows ?? 1}
+        maxRows={maxRows}
+        {...rest}
+      />
+    );
   }
   return <textarea {...shared} rows={rows} {...props} />;
 }

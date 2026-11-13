@@ -63,7 +63,7 @@ function TableActionMenu({
       triggerClassName={cn(
         "group",
         buttonClass({ variant: "plain", size }),
-        "aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--fuwari-primary)",
+        "aria-expanded:bg-(--fuwari-btn-regular-bg) aria-expanded:text-(--fuwari-fg)",
       )}
       items={group.actions
         .filter((action) => state[action.id]?.available)
@@ -114,7 +114,7 @@ function TableActionButton({
       onClick={() => action.run(editor)}
       icon={<Icon size={14} aria-hidden />}
       className={cn(
-        active && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)",
+        active && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-fg)",
       )}
     >
       {action.label()}

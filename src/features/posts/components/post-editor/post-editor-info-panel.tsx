@@ -8,6 +8,8 @@ import { Sheet } from "@/components/ui/sheet";
 import { m } from "@/paraglide/messages";
 
 // A non-modal inspector: media pickers and select menus may portal outside it.
+// From 1024px it is docked beside the document, which moves over for it;
+// below that it covers the document (see post-editor.css).
 export function PostEditorInfoPanel({
   open,
   onClose,

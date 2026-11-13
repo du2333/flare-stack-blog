@@ -1,0 +1,109 @@
+/* The rows of the public menu (mobile-menu.tsx): the compact navigation, the
+   preferences and the account actions. Every Theme Shell that opens the menu
+   shares them; the panel around them is the shell's. */
+.public-menu-links {
+  display: flex;
+  flex-direction: column;
+}
+.public-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--fuwari-fg-75);
+  font-size: 14px;
+  text-align: left;
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.public-menu-item:hover,
+.public-menu-active {
+  color: var(--theme-accent);
+  background: var(--theme-tonal-bg);
+}
+.public-menu-item svg {
+  flex-shrink: 0;
+}
+/* A group of the navigation: its name as a small heading, its links set in
+   under it. */
+.public-menu-group {
+  display: flex;
+  flex-direction: column;
+}
+.public-menu-group-label {
+  padding: 12px 14px 4px;
+  overflow: hidden;
+  color: var(--fuwari-fg-50);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-menu-subitem {
+  padding-inline-start: 28px;
+}
+.public-menu-item:disabled {
+  opacity: 0.5;
+}
+.public-menu-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--fuwari-fg);
+  font-weight: 700;
+}
+.public-menu-identity img {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.public-menu-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-menu-logout {
+  color: var(--fuwari-danger-fg);
+}
+.public-menu-logout:hover,
+.public-menu-logout:focus-visible {
+  color: var(--fuwari-danger-fg);
+  background: var(--fuwari-danger-bg);
+}
+.public-menu-preferences {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 6px;
+  padding: 8px 0;
+  border-block: 1px solid
+    var(--theme-rule, color-mix(in srgb, var(--fuwari-fg-50) 20%, transparent));
+}
+.public-menu-colour-scheme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px !important;
+  font-size: 12px !important;
+  border-radius: 8px;
+}
+.public-menu-languages {
+  --fuwari-segment-height: 44px;
+  --fuwari-segment-padding-x: 8px;
+}
+.public-menu-loading {
+  padding: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-menu-item {
+    transition: none;
+  }
+}

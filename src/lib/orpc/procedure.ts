@@ -170,26 +170,42 @@ export function withRateLimit(options: RateLimitOptions & { key?: string }) {
     });
 }
 
-export const turnstileMiddleware = os
-  .$context<ApiContext>()
-  .errors(turnstileErrors)
-  .middleware(async ({ context, errors, next }) => {
-    const secretKey = serverEnv(context.env).TURNSTILE_SECRET_KEY;
-    if (!secretKey) return next();
+function turnstile(options: { unlessAdmin?: boolean } = {}) {
+  return os
+    .$context<ApiContext>()
+    .errors(turnstileErrors)
+    .middleware(async ({ context, errors, next }) => {
+      const secretKey = serverEnv(context.env).TURNSTILE_SECRET_KEY;
+      if (!secretKey) return next();
 
-    const token = context.headers.get("X-Turnstile-Token");
-    if (!token) {
-      throw errors.TURNSTILE_FAILED({
-        data: { detail: "MISSING_TOKEN" },
-      });
-    }
+      if (options.unlessAdmin) {
+        const session = await readSession(context);
+        if (session?.user.role === "admin") return next();
+      }
 
-    const result = await verifyTurnstileToken({ secretKey, token });
-    if (!result.success) {
-      throw errors.TURNSTILE_FAILED({
-        data: { detail: "VERIFY_FAILED" },
-      });
-    }
+      const token = context.headers.get("X-Turnstile-Token");
+      if (!token) {
+        throw errors.TURNSTILE_FAILED({
+          data: { detail: "MISSING_TOKEN" },
+        });
+      }
 
-    return next();
-  });
+      const result = await verifyTurnstileToken({ secretKey, token });
+      if (!result.success) {
+        throw errors.TURNSTILE_FAILED({
+          data: { detail: "VERIFY_FAILED" },
+        });
+      }
+
+      return next();
+    });
+}
+
+/** The caller proves it is a person, wherever Turnstile is configured. */
+export const turnstileMiddleware = turnstile();
+
+/**
+ * As `turnstileMiddleware`, for an operation Users and the Admin both call:
+ * an Admin is signed in and runs the site, so they are not challenged.
+ */
+export const turnstileUnlessAdmin = turnstile({ unlessAdmin: true });

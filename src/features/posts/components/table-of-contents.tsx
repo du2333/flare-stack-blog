@@ -11,16 +11,20 @@ import {
 import { createPortal } from "react-dom";
 import {
   FLOATING_ACTION_BUTTON_CLASS,
+  FLOATING_ACTION_ICON_CLASS,
   useFloatingActionsSlot,
 } from "@/components/layout/floating-actions";
 import { FloatingPopover } from "@/components/ui/floating-popover";
 import { useJumpToHeading } from "@/features/posts/components/content/use-jump-to-heading";
 import type { TableOfContentsItem } from "@/features/posts/utils/toc";
+import { useFirstScreenHeight } from "@/features/theme/components/first-screen";
+import { useTocSlot } from "@/features/theme/components/toc-slot";
 import { cn, isSSR } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-const BANNER_HEIGHT_PAGE_VH = 35;
 const MAX_LEVEL = 3;
+/** How far above a footer that runs under it the side list ends. */
+const FOOTER_GAP_PX = 16;
 
 function removeTailingHash(text: string) {
   const lastIndexOfHash = text.lastIndexOf("#");
@@ -30,6 +34,16 @@ function removeTailingHash(text: string) {
   return text;
 }
 
+/**
+ * The table of contents of a Post: a list beside the article, or a button in
+ * the floating column that opens it. Which of the two shows, and where the
+ * side one stands, is the Theme Shell's to say through the `--shell-toc-*`
+ * properties (`theme-shell.ts`): fixed beside the article column, or in the
+ * slot the shell gives it (`TocSlot`), where it fills the slot's box.
+ * Nothing here knows a breakpoint. While it has entries, the page carries
+ * `[data-table-of-contents]` from the first paint, so a shell can tell a
+ * Post that has none.
+ */
 export default function TableOfContents({
   headers,
 }: {
@@ -55,7 +69,11 @@ export default function TableOfContents({
       });
   }, [headers]);
 
-  const slotRef = useRef<HTMLDivElement>(null);
+  const firstScreenHeight = useFirstScreenHeight();
+  // The shell's place for the side list, if it gives one (toc-slot.tsx).
+  const shellSlot = useTocSlot();
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const tocEl = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
   const anchorTarget = useRef<string | null>(null);
@@ -69,10 +87,10 @@ export default function TableOfContents({
     opacity: 0,
   });
 
-  const updateSlotLeft = useCallback(() => {
-    const slot = slotRef.current;
-    if (!slot) return;
-    setLeft(slot.getBoundingClientRect().left);
+  const updateLeft = useCallback(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    setLeft(anchor.getBoundingClientRect().left);
   }, []);
 
   const computeActive = useCallback(() => {
@@ -129,17 +147,55 @@ export default function TableOfContents({
     );
   }, [visibleHeaders]);
 
+  // The side list is fixed to the window, so at the end of a page it would
+  // lie on a footer that runs under it, as one as wide as the window does.
+  // There it ends short of the footer instead. Written straight to the
+  // element so scrolling does not re-render. In the shell's slot it keeps to
+  // the slot's box, which is the shell's to place.
+  const clearFooter = useCallback(() => {
+    const nav = navRef.current;
+    const list = tocEl.current;
+    if (shellSlot) return;
+    if (!nav || !list || nav.getClientRects().length === 0) return;
+    const footer = document
+      .querySelector('[data-shell-region="footer"]')
+      ?.getBoundingClientRect();
+    const box = nav.getBoundingClientRect();
+    const given =
+      Number.parseFloat(nav.style.getPropertyValue("--toc-yield")) || 0;
+    const under =
+      footer && footer.left < box.right && box.left < footer.right
+        ? box.top + list.offsetHeight + given + FOOTER_GAP_PX - footer.top
+        : 0;
+    const next = Math.max(0, Math.round(under));
+    if (next !== given) nav.style.setProperty("--toc-yield", `${next}px`);
+  }, [shellSlot]);
+
+  // The side list stands where its column puts the anchor, which moves when
+  // the window is resized and when the column changes width without that: a
+  // rail that comes in beside it, a reading column the shell switches to.
   useLayoutEffect(() => {
-    updateSlotLeft();
-    window.addEventListener("resize", updateSlotLeft);
-    return () => window.removeEventListener("resize", updateSlotLeft);
-  }, [updateSlotLeft]);
+    updateLeft();
+    window.addEventListener("resize", updateLeft);
+    const column = anchorRef.current?.parentElement;
+    const observer =
+      column && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateLeft)
+        : null;
+    if (column) observer?.observe(column);
+    return () => {
+      window.removeEventListener("resize", updateLeft);
+      observer?.disconnect();
+    };
+  }, [updateLeft]);
 
   useEffect(() => {
     const onScroll = () => {
-      const banner = window.innerHeight * (BANNER_HEIGHT_PAGE_VH / 100);
-      setIsVisible(window.scrollY > banner);
+      // Past the first screen; on a page that has none (a height of 0)
+      // that is from the top of the page.
+      setIsVisible(window.scrollY >= firstScreenHeight());
       computeActive();
+      clearFooter();
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -148,7 +204,7 @@ export default function TableOfContents({
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [computeActive]);
+  }, [computeActive, clearFooter, firstScreenHeight]);
 
   useEffect(() => {
     setIsReady(false);
@@ -218,19 +274,35 @@ export default function TableOfContents({
   if (visibleHeaders.length === 0) return null;
   const toc = (
     <nav
+      ref={navRef}
       className={cn(
-        // The portal must sit above the full-width public content wrapper (z-30).
-        "hidden 2xl:block fixed top-14 z-40 pl-4 transition duration-300",
-        isVisible && isReady ? "opacity-100" : "opacity-0 pointer-events-none",
+        shellSlot
+          ? // In the shell's slot it fills the slot's box and is in view from
+            // the top of the page, as the slot is.
+            "h-full transition duration-300"
+          : // The portal must sit above the full-width public content wrapper (z-30).
+            "fixed top-(--shell-toc-top) z-40 transition duration-300",
+        (shellSlot || isVisible) && isReady
+          ? "opacity-100"
+          : "opacity-0 pointer-events-none",
       )}
-      style={{
-        left: left ?? 0,
-        width: "var(--fuwari-toc-width)",
-      }}
+      style={
+        shellSlot
+          ? { display: "var(--shell-toc-side, none)" }
+          : {
+              display: "var(--shell-toc-side, none)",
+              left: left ?? 0,
+              width: "var(--shell-toc-width)",
+            }
+      }
     >
       <div
         ref={tocEl}
-        className="fuwari-hide-scrollbar h-[calc(100vh-20rem)] overflow-y-scroll overflow-x-hidden"
+        className={
+          shellSlot
+            ? "fuwari-hide-scrollbar h-full overflow-y-scroll overflow-x-hidden"
+            : "fuwari-hide-scrollbar h-[max(0px,calc(100vh-20rem-var(--toc-yield,0px)))] overflow-y-scroll overflow-x-hidden"
+        }
         style={{
           maskImage:
             "linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%)",
@@ -250,7 +322,9 @@ export default function TableOfContents({
               }}
               className={cn(
                 "px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl py-2 z-10",
-                "hover:bg-(--fuwari-toc-btn-hover) active:bg-(--fuwari-toc-btn-active)",
+                "hover:bg-(--theme-toc-bg-hover) active:bg-(--theme-toc-bg-active)",
+                // Inside the entry: the list clips what is drawn around it.
+                "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--theme-accent)",
               )}
             >
               <TocBadge heading={heading} />
@@ -265,7 +339,7 @@ export default function TableOfContents({
             </a>
           ))}
           <div
-            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 border-dashed border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+            className="-z-10 absolute left-0 right-0 rounded-xl transition-all bg-(--theme-toc-bg-hover) border-2 [border-style:var(--theme-rule-style)] border-(--theme-toc-bg-hover) group-hover:bg-transparent group-hover:border-(--theme-toc-bg-active) pointer-events-none"
             style={{
               top: indicator.top,
               height: indicator.height,
@@ -277,28 +351,42 @@ export default function TableOfContents({
       </div>
     </nav>
   );
+  const compact = (
+    <CompactToc
+      headers={visibleHeaders}
+      activeIndices={activeIndices}
+      shown={isVisible && isReady}
+      onSelect={(id) => void jumpTo(id)}
+    />
+  );
 
   return (
     <>
+      {/* Where the side list starts (--shell-toc-left), from the left of the
+          article column it is in: the element around it. It also tells the
+          shell, from the first paint, that the page has a table of
+          contents. */}
       <div
-        ref={slotRef}
-        className="hidden 2xl:block absolute top-0 right-0 w-0 h-0"
+        ref={anchorRef}
+        className="absolute top-0 left-(--shell-toc-left) w-0 h-0"
+        style={{ display: "var(--shell-toc-side, none)" }}
         aria-hidden
+        data-table-of-contents=""
       />
-      {!isSSR && left != null
-        ? createPortal(
-            <>
-              {toc}
-              <CompactToc
-                headers={visibleHeaders}
-                activeIndices={activeIndices}
-                shown={isVisible && isReady}
-                onSelect={(id) => void jumpTo(id)}
-              />
-            </>,
-            document.body,
-          )
-        : null}
+      {isSSR || left == null ? null : shellSlot ? (
+        <>
+          {createPortal(toc, shellSlot)}
+          {createPortal(compact, document.body)}
+        </>
+      ) : (
+        createPortal(
+          <>
+            {toc}
+            {compact}
+          </>,
+          document.body,
+        )
+      )}
     </>
   );
 }
@@ -318,25 +406,25 @@ function TocBadge({ heading }: { heading: VisibleHeader }) {
       className={cn(
         "transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
         heading.relative === 0 &&
-          "bg-(--fuwari-toc-badge-bg) text-(--fuwari-btn-content)",
+          "bg-(--theme-toc-badge-bg) text-(--theme-tonal-fg)",
         heading.relative === 1 && "ml-4",
         heading.relative === 2 && "ml-8",
       )}
     >
       {heading.relative === 0 && heading.number}
       {heading.relative === 1 && (
-        <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--fuwari-toc-badge-bg)" />
+        <div className="transition w-2 h-2 rounded-[0.1875rem] bg-(--theme-toc-badge-bg)" />
       )}
       {heading.relative === 2 && (
-        <div className="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10" />
+        <div className="transition w-1.5 h-1.5 rounded-sm bg-(--fuwari-ink-faint)" />
       )}
     </div>
   );
 }
 
 /**
- * Below 2xl the side TOC has no room, so a button in the floating column
- * opens it instead.
+ * Where the shell has no room for the side TOC (--shell-toc-compact), a
+ * button in the floating column opens it instead.
  */
 function CompactToc({
   headers,
@@ -360,6 +448,17 @@ function CompactToc({
   useEffect(() => {
     if (!shown) setOpen(false);
   }, [shown]);
+
+  // Where the shell hides the button (the side TOC takes over), an open list
+  // goes with it.
+  useEffect(() => {
+    if (!open) return;
+    const closeIfHidden = () => {
+      if (buttonRef.current?.getClientRects().length === 0) setOpen(false);
+    };
+    window.addEventListener("resize", closeIfHidden);
+    return () => window.removeEventListener("resize", closeIfHidden);
+  }, [open]);
 
   // Written straight to the button so scrolling does not re-render.
   useEffect(() => {
@@ -409,13 +508,17 @@ function CompactToc({
               aria-expanded={open}
               className={cn(
                 FLOATING_ACTION_BUTTON_CLASS,
-                "fuwari-progress-ring 2xl:hidden duration-300",
+                "fuwari-progress-ring duration-300",
                 shown
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-90 pointer-events-none",
               )}
+              style={{ display: "var(--shell-toc-compact, flex)" }}
             >
-              <TocIcon className="w-6 h-6 lg:w-7 lg:h-7" strokeWidth={2.5} />
+              <TocIcon
+                className={FLOATING_ACTION_ICON_CLASS}
+                strokeWidth={2.5}
+              />
             </button>,
             slot,
           )
@@ -424,6 +527,7 @@ function CompactToc({
         open={open}
         anchor={open ? buttonRef.current : null}
         onDismiss={() => setOpen(false)}
+        returnFocusOnEscape
         placement="top-end"
         // Focusing the current section scrolls it into view.
         initialFocus={() =>
@@ -431,7 +535,7 @@ function CompactToc({
           listRef.current?.querySelector<HTMLElement>("a") ??
           null
         }
-        className="2xl:hidden w-[min(20rem,calc(100vw-2rem))]"
+        className="w-[min(20rem,calc(100vw-2rem))]"
       >
         <nav aria-label={m.post_toc()}>
           <div
@@ -454,7 +558,7 @@ function CompactToc({
                     }}
                     className={cn(
                       "px-2 flex gap-2 relative z-10 w-full min-h-10 rounded-xl py-2.5 outline-none transition",
-                      "hover:bg-(--fuwari-toc-btn-hover) active:bg-(--fuwari-toc-btn-active) focus-visible:bg-(--fuwari-toc-btn-hover)",
+                      "hover:bg-(--theme-toc-bg-hover) active:bg-(--theme-toc-bg-active) focus-visible:bg-(--theme-toc-bg-hover)",
                     )}
                   >
                     <TocBadge heading={heading} />
@@ -473,7 +577,7 @@ function CompactToc({
               })}
               {/* The same range indicator as the side TOC. */}
               <div
-                className="absolute left-0 right-0 rounded-xl transition-all bg-(--fuwari-toc-btn-hover) border-2 border-dashed border-(--fuwari-toc-btn-hover) group-hover:bg-transparent group-hover:border-(--fuwari-toc-btn-active) pointer-events-none"
+                className="absolute left-0 right-0 rounded-xl transition-all bg-(--theme-toc-bg-hover) border-2 [border-style:var(--theme-rule-style)] border-(--theme-toc-bg-hover) group-hover:bg-transparent group-hover:border-(--theme-toc-bg-active) pointer-events-none"
                 style={{
                   top: indicator.top,
                   height: indicator.height,

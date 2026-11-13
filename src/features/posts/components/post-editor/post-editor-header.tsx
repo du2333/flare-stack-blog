@@ -4,6 +4,8 @@ import {
   Check,
   ExternalLink,
   EyeOff,
+  History,
+  PanelRight,
   Pause,
   Trash2,
   Undo2,
@@ -18,7 +20,6 @@ import { postStateOf, publishActionLabel } from "../post-state";
 import { PostStatusBadge } from "../post-status-badge";
 import { openPublicPost } from "@/features/posts/utils/open-public-post";
 import { m } from "@/paraglide/messages";
-import { cn } from "@/lib/utils";
 import type { SaveStatus } from "./types";
 
 interface PostEditorHeaderProps {
@@ -156,33 +157,38 @@ export function PostEditorHeader({
       <Link
         to="/admin/posts"
         search={returnLocation}
-        className="post-editor-back hidden lg:inline-flex"
+        className="post-editor-back"
+        aria-label={m.editor_back_to_posts()}
       >
         <ArrowLeft size={17} />
-        {m.editor_back_to_posts()}
+        <span>{m.admin_posts_title()}</span>
       </Link>
       <div className="post-editor-status">
         <PostStatusBadge state={state} />
         <p
           role="status"
-          className={cn(
-            "post-editor-save",
+          className="post-editor-save"
+          data-state={
             conflicted
-              ? "fuwari-text-50"
+              ? "paused"
               : saveStatus === "ERROR"
-                ? "text-(--fuwari-danger-fg)"
+                ? "error"
                 : saveStatus === "PENDING"
-                  ? "text-(--fuwari-warning-fg)"
-                  : "fuwari-text-50",
-          )}
+                  ? "pending"
+                  : saveStatus === "SAVING"
+                    ? "saving"
+                    : "saved"
+          }
         >
           {saveStatus === "SAVING" ? (
-            <Spinner size={15} />
+            <Spinner size={14} />
           ) : conflicted ? (
-            <Pause size={15} />
+            <Pause size={14} />
           ) : saveStatus === "SYNCED" ? (
-            <Check size={15} />
-          ) : null}
+            <Check size={14} />
+          ) : (
+            <i aria-hidden="true" />
+          )}
           <span>
             {saveLabel(saveStatus, lastSaved, conflicted, slugWithheld)}
           </span>
@@ -191,23 +197,29 @@ export function PostEditorHeader({
       <div className="post-editor-header-actions">
         <Button
           variant="plain"
+          icon={<PanelRight size={16} />}
           onClick={onOpenInfo}
           aria-expanded={infoOpen}
-          className={cn(
-            infoOpen && "bg-(--fuwari-btn-regular-bg) text-(--fuwari-primary)",
-          )}
+          aria-label={m.editor_info_title()}
+          className="post-editor-header-tool"
         >
-          {m.editor_info_title()}
+          <span>{m.editor_info_title()}</span>
         </Button>
-        <Button variant="plain" onClick={onOpenHistory}>
-          {m.editor_history_list_title()}
+        <Button
+          variant="plain"
+          icon={<History size={16} />}
+          onClick={onOpenHistory}
+          aria-label={m.editor_history_list_title()}
+          className="post-editor-header-tool"
+        >
+          <span>{m.editor_history_list_title()}</span>
         </Button>
         <Button
           variant="primary"
           onClick={onPublish}
           disabled={busy || !canPublish}
           loading={processState === "PROCESSING"}
-          className="hidden lg:inline-flex"
+          className="post-editor-publish"
         >
           {publishLabel}
         </Button>

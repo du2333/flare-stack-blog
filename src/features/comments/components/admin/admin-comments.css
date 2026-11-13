@@ -1,0 +1,367 @@
+/*
+ * The Admin's Comments page: an inbox. The queue lies a step lower than the
+ * card (--admin-sunken) and the chosen Comment is a white slip on it, as the
+ * sidebar marks the current page; the conversation is on the card, the chosen
+ * Comment set apart in it, and the reply box stays under it.
+ */
+/* ── The queue ── */
+.cmt-inbox > .admin-split-list {
+  background: var(--admin-sunken);
+}
+.cmt-queue {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+}
+/* A row is a PickRow, also as a skeleton. */
+.cmt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+}
+/* The author's picture, or their initial (CommentAvatar). */
+.admin-comments .comment-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--admin-press);
+  color: var(--admin-fg-2);
+  font-size: var(--admin-text-small);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.admin-comments .comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cmt-row-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.cmt-row-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.cmt-row-top > strong {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--admin-fg);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Still waiting for an answer, where the queue mixes both. */
+.cmt-row[data-waiting] .cmt-row-top > strong::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  vertical-align: 1px;
+}
+.cmt-row-top > time {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 6px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
+}
+.cmt-row-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: 1px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.cmt-row-src {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-top: 5px;
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+}
+.cmt-row-src > svg {
+  flex-shrink: 0;
+}
+.cmt-row-src > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmt-row-src > em {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 8px;
+  font-style: normal;
+}
+.cmt-queue-foot {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 8px;
+  border-top: 1px solid var(--admin-line);
+}
+
+/* ── The conversation ── */
+.cmt-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 8px 12px 8px 22px;
+  border-bottom: 1px solid var(--admin-line);
+}
+.cmt-back {
+  display: none;
+}
+.cmt-source {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--admin-fg);
+}
+.cmt-source > span:not(.fuwari-badge) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmt-source > :is(svg, .fuwari-badge) {
+  flex-shrink: 0;
+}
+.cmt-source > svg {
+  color: var(--admin-fg-3);
+  transition: color 0.15s;
+}
+a.cmt-source:hover > span:not(.fuwari-badge) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+a.cmt-source:hover > svg {
+  color: var(--admin-fg);
+}
+.cmt-detail-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.cmt-position {
+  margin-right: 4px;
+  font-size: var(--admin-text-meta);
+  color: var(--admin-fg-3);
+  font-variant-numeric: tabular-nums;
+}
+.cmt-handle {
+  margin-inline: 8px 4px;
+}
+.cmt-handle .admin-kbd {
+  margin-left: 2px;
+  margin-right: -3px;
+}
+.cmt-detail-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
+}
+.cmt-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 760px;
+  padding: 16px 16px 24px;
+}
+.cmt-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  scroll-margin: 16px;
+}
+.cmt-msg[data-reply] {
+  margin-left: 22px;
+}
+/* The Comment the queue chose: larger, on a tinted ground. */
+.cmt-msg[data-current] {
+  margin-block: 6px;
+  padding-block: 14px 16px;
+  background: var(--admin-sunken);
+  box-shadow: 0 0 0 1px var(--admin-line);
+}
+.cmt-msg-main {
+  flex: 1;
+  min-width: 0;
+}
+.cmt-msg-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  font-size: var(--admin-text-meta);
+  line-height: 20px;
+  color: var(--admin-fg-3);
+}
+.cmt-msg-by > strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+.cmt-msg-by > time {
+  font-variant-numeric: tabular-nums;
+}
+.cmt-msg-text,
+.cmt-msg-deleted {
+  margin-top: 3px;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.cmt-msg[data-current] .cmt-msg-text {
+  margin-top: 5px;
+  /* The one being answered reads a size up; no role has this size. */
+  font-size: 15px;
+  line-height: 26px;
+  color: var(--admin-fg);
+}
+.cmt-msg-deleted {
+  color: var(--admin-fg-3);
+}
+
+/* ── The reply box: right under the conversation, and held at the foot of
+   the pane once the conversation is longer than it. ── */
+.cmt-reply {
+  position: sticky;
+  bottom: 0;
+  max-width: 760px;
+  margin-top: -14px;
+  padding: 8px 16px 16px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--admin-surface) 14px
+  );
+}
+.cmt-reply-box {
+  border: 1px solid var(--admin-line-strong);
+  border-radius: 14px;
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow-card);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.cmt-reply-box:focus-within {
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-accent-soft);
+}
+.cmt-reply-box textarea {
+  display: block;
+  width: 100%;
+  padding: 12px 14px 4px;
+  resize: none;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
+  color: var(--admin-fg);
+}
+.cmt-reply-box textarea:focus-visible {
+  outline: none;
+}
+.cmt-reply-box textarea::placeholder {
+  color: var(--admin-fg-3);
+}
+.cmt-reply-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 8px 8px 14px;
+}
+.cmt-reply-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--admin-fg-3);
+}
+.cmt-reply-hint > .admin-kbd:not(:first-child) {
+  margin-left: 8px;
+}
+.cmt-reply-none {
+  max-width: 760px;
+  margin-top: -10px;
+  padding: 0 30px 20px;
+  font-size: var(--admin-text-small);
+  color: var(--admin-fg-3);
+}
+/* Keys are for a keyboard: a finger sees no hints. */
+@media (hover: none) {
+  .cmt-reply-hint,
+  .cmt-handle .admin-kbd {
+    display: none;
+  }
+}
+
+/* Below 768px the queue and the conversation take turns (AdminSplit). */
+@media (max-width: 767px) {
+  .cmt-inbox > .admin-split-detail {
+    background: var(--admin-surface);
+  }
+  .cmt-back {
+    display: inline-grid;
+    margin-left: -6px;
+  }
+  .cmt-detail-head {
+    padding-left: 14px;
+  }
+  .cmt-position,
+  .cmt-step {
+    display: none;
+  }
+  .cmt-thread {
+    padding: 10px 8px 20px;
+  }
+  .cmt-reply {
+    padding: 8px 8px 10px;
+  }
+  .cmt-reply-none {
+    padding-inline: 22px;
+  }
+}

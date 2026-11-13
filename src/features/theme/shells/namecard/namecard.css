@@ -1,0 +1,367 @@
+/* 「名片」's stylesheet (themes.ts links it only while 「名片」 is the selected
+   Theme; the shell's modules import no CSS): its design-variable values, then
+   the shell's own styles. */
+@import "./navbar.css";
+@import "./first-screen.css";
+
+/* The palette the values below and the shell share. Ink is the text colour at
+   full strength, used for solid fills; the accent ink is the hue dark enough
+   to read as text. Only these change with the Colour Scheme: everything else
+   derives from them or from the base layer, which already follows it. */
+:root[data-theme="namecard"] {
+  --namecard-ink: var(--fuwari-deep-text);
+  --namecard-ink-hover: color-mix(in oklab, var(--fuwari-deep-text) 86%, white);
+  --namecard-accent-ink: var(--fuwari-btn-content);
+  --namecard-hairline: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --namecard-tint: color-mix(
+    in oklab,
+    var(--fuwari-primary) 22%,
+    var(--fuwari-page-bg)
+  );
+  --namecard-frame-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 14px 28px -12px oklch(0.45 0.08 var(--fuwari-hue) / 0.28),
+    0 36px 72px -28px oklch(0.4 0.1 var(--fuwari-hue) / 0.38);
+  --namecard-nav-height: 60px;
+  --namecard-gutter: 1rem;
+  /* The spread: the column right of the content, which is the portrait
+     frame's on the first screen (a third of the page, 20rem to 24rem), and
+     the room between the two columns. A percentage is of the page between
+     its gutters, here and in the first screen. */
+  --namecard-aside: clamp(20rem, 33%, 24rem);
+  --namecard-col-gap: clamp(2.5rem, 6vw, 5.5rem);
+  --namecard-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --namecard-ease-fold: cubic-bezier(0.32, 0.72, 0, 1);
+  --namecard-fold: 640ms;
+}
+:root[data-theme="namecard"].dark {
+  --namecard-ink: oklch(0.96 0.01 var(--fuwari-hue));
+  --namecard-ink-hover: oklch(0.88 0.015 var(--fuwari-hue));
+  --namecard-tint: color-mix(
+    in oklab,
+    var(--fuwari-primary) 26%,
+    var(--fuwari-page-bg)
+  );
+  --namecard-frame-shadow:
+    0 1px 2px rgb(0 0 0 / 0.3), 0 18px 36px -14px rgb(0 0 0 / 0.55),
+    0 40px 80px -30px rgb(0 0 0 / 0.6);
+}
+@media (max-width: 719px) {
+  :root[data-theme="namecard"] {
+    --namecard-nav-height: 56px;
+    --namecard-gutter: 1.25rem;
+  }
+}
+
+:root[data-theme="namecard"] {
+  /* Content sits on the page itself; only what floats keeps a surface. */
+  --theme-surface: var(--fuwari-page-bg);
+  --theme-raised: var(--fuwari-card-bg);
+  --theme-card-radius: 0;
+  --theme-card-shadow: none;
+  --theme-rule: var(--namecard-hairline);
+  --theme-rule-style: solid;
+  --theme-panel-pad-x: 0px;
+  --theme-row-pad-y: 1.75rem;
+  --theme-cover-radius: 0.875rem;
+
+  /* Ink for what is solid, neutral ink tints for what is tonal. */
+  --theme-accent: var(--namecard-accent-ink);
+  --theme-solid-bg: var(--namecard-ink);
+  --theme-solid-bg-hover: var(--namecard-ink-hover);
+  --theme-solid-bg-active: var(--namecard-ink-hover);
+  --theme-solid-fg: var(--fuwari-page-bg);
+  --theme-tonal-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-tonal-bg-hover: color-mix(in srgb, var(--fuwari-fg) 10%, transparent);
+  --theme-tonal-bg-active: color-mix(
+    in srgb,
+    var(--fuwari-fg) 14%,
+    transparent
+  );
+  --theme-tonal-fg: var(--namecard-ink);
+  --theme-plain-bg-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --theme-plain-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-bg-hover: color-mix(in srgb, var(--fuwari-fg) 5%, transparent);
+  --theme-toc-bg-active: color-mix(in srgb, var(--fuwari-fg) 9%, transparent);
+  --theme-toc-badge-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-count-bg: color-mix(in srgb, var(--fuwari-fg) 6%, transparent);
+  --theme-count-fg: var(--namecard-ink);
+
+  /* Serif titles. No web font: the system's serif, and where it has none for
+     Chinese, its sans face in the same weight. */
+  --theme-heading-font:
+    ui-serif, "New York", Georgia, "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", "Songti SC", serif;
+  --theme-heading-tracking: -0.005em;
+  --theme-list-title-size: 1.625rem;
+  --theme-page-title-size: clamp(2rem, 3.4vw, 2.75rem);
+  --theme-meta-size: 0.8125rem;
+  --theme-meta-weight: 400;
+  --theme-kicker-size: 0.75rem;
+  --theme-kicker-tracking: 0.2em;
+  --theme-kicker-color: var(--namecard-accent-ink);
+
+  /* Sidebar blocks: a rule above, a small spaced title. */
+  --theme-widget-rule: 1px solid var(--namecard-hairline);
+  --theme-widget-title-size: 0.8125rem;
+  --theme-widget-title-tracking: 0.24em;
+  --theme-widget-title-color: var(--namecard-accent-ink);
+  --theme-widget-pad-x: 0px;
+  --theme-widget-row-bleed: 0.5rem;
+  --theme-widget-more-color: var(--fuwari-fg-50);
+
+  /* Pills. */
+  --theme-chip-radius: 999px;
+  --theme-button-radius: 999px;
+  --theme-pager-radius: 999px;
+  --theme-floating-radius: 999px;
+
+  /* What floats is a sheet of paper with a hairline round it. */
+  --theme-float-shadow:
+    0 0 0 1px var(--namecard-hairline), 0 14px 36px -14px rgb(0 0 0 / 0.22);
+  --theme-float-radius: 0.875rem;
+  --theme-dialog-radius: 1.25rem;
+  --theme-dialog-shadow:
+    0 0 0 1px var(--namecard-hairline), 0 28px 72px -24px rgb(0 0 0 / 0.32);
+  --theme-toast-pad: 0.875rem 1rem 0.875rem 1.25rem;
+
+  /* Sign-in, status and profile panels: a frame instead of a fill. */
+  --theme-standalone-border: 1px solid var(--namecard-hairline);
+  --theme-standalone-radius: 1.25rem;
+  --theme-standalone-pad-x-narrow: 20px;
+
+  --theme-link-underline-style: solid;
+
+  /* The table of contents of a Post: from 1024px (below) a list in the right
+     column, which the sidebar cards have on every other page; until then
+     the button in the floating column opens it. The list starts where that
+     column does, below the navbar, and is 15.5rem wide: within the column
+     in every window. It is there from the top of the page: a Post's page
+     has no first screen (namecard-shell.tsx). */
+  --shell-toc-side: none;
+  --shell-toc-compact: flex;
+  --shell-toc-top: calc(var(--namecard-nav-height) + 1rem);
+  --shell-toc-left: calc(100% + var(--namecard-col-gap));
+  --shell-toc-width: 15.5rem;
+  /* Back to top where the window has room right of the page: 1.25rem clear
+     of it, and no closer than 1rem to the edge of the window. From lg the
+     shell stands it in a box of its own, which it places (below). */
+  --shell-floating-actions-left: min(
+    calc(50% + var(--fuwari-page-width) / 2 + 1.25rem),
+    calc(100% - 4.75rem)
+  );
+}
+@media (min-width: 1024px) {
+  :root[data-theme="namecard"] {
+    --shell-toc-side: block;
+    --shell-toc-compact: none;
+    --shell-floating-actions-position: static;
+    /* The room between the two columns holds back to top, 3.75rem wide,
+       until the window has room for it right of the page (below): never
+       under 4.5rem, so it stands 0.375rem clear of either column, and the
+       content keeps a line of 37 characters at 1024px. */
+    --namecard-col-gap: clamp(4.5rem, 6vw, 5.5rem);
+  }
+}
+
+.namecard-shell {
+  position: relative;
+  min-height: 100vh;
+  background: var(--theme-ground);
+  transition: background-color 300ms;
+}
+
+/* One centred column of --fuwari-page-width: the content, the sidebar cards
+   after it, the footer. From 1024px it is the spread (below). */
+.namecard-body {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  max-width: var(--fuwari-page-width);
+  margin-inline: auto;
+  padding: 0.75rem var(--namecard-gutter) 2rem;
+}
+/* A focused page stands a little apart from the navbar. */
+.namecard-body[data-focused="true"] {
+  padding-top: clamp(1.25rem, 5vh, 3.5rem);
+}
+.namecard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+/* With cards on the page the content starts under a rule, as each card
+   does. */
+.namecard-body[data-focused="false"] .namecard-main {
+  border-top: 1px solid var(--namecard-hairline);
+}
+/* The page transition cuts off what leaves its box, and the page lies flat
+   in this column, its links at the very edge: the box is larger than the
+   column by its padding, room for the focus rings it would otherwise cut
+   off. */
+.namecard-main > .fuwari-page-fade {
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+}
+
+/* The sidebar cards stand in groups, a card under a card. The slot of every
+   card is a container named `card`: that is what lets a card take the form
+   the width of its slot calls for, without being told where it stands
+   (docs/theme-shell-checklist.md). In the right column, 20rem to 24rem, the
+   profile card lies on its side and the ways into the Posts are pills in
+   two rows; in the column of the content the pills are one row beside their
+   title. */
+.namecard-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  margin-top: 1.5rem;
+}
+.namecard-card {
+  container: card / inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+/* The box around the ways into the Posts (namecard-shell.tsx) is no box
+   unless the cards have a column of their own: below 1024px, and after the
+   article of a Post, they stand as any other card does. */
+.namecard-cards-pinned {
+  display: contents;
+}
+/* A card that shows nothing leaves no gap, and neither does a group of
+   them. */
+.namecard-card:empty,
+.namecard-cards:not(:has(.namecard-card:not(:empty))) {
+  display: none;
+}
+
+/* The footer closes the page 3rem clear of what is before it, as wide as
+   the page; the signature (Theme Recipe, footer: "signature") brings its
+   own rule. */
+.namecard-footer {
+  padding-top: 2rem;
+}
+
+/* ── The spread: one grid from the first screen down ──────────────────────
+   The first screen stands the words on the left and the picture on the
+   right. From 1024px the page under it keeps that: the content under the
+   greeting, and a right column for what stands beside the content, with the
+   first screen's own room between the two. The right column is as wide as
+   the portrait frame (--namecard-aside); the wider frames reach further
+   left on the first screen and share its right edge. On a Post's page the
+   article has the content's column and the table of contents the other
+   (the root's --shell-toc-*, above), with the cards after the article. The
+   footer closes both columns. */
+@media (min-width: 1024px) {
+  .namecard-body[data-focused="false"] {
+    grid-template-columns: minmax(0, 1fr) var(--namecard-aside);
+    column-gap: var(--namecard-col-gap);
+  }
+  .namecard-body[data-focused="false"] > .namecard-main {
+    grid-area: 1 / 1;
+  }
+  .namecard-body[data-focused="false"] > .namecard-cards[data-place="beside"] {
+    grid-area: 1 / 2;
+    margin-top: 0;
+  }
+  .namecard-body[data-focused="false"] > .namecard-cards[data-place="after"] {
+    grid-area: 2 / 1;
+  }
+  /* A Post without headings has no table of contents, and the right column
+     would stand empty beside it: its cards stay there, as they stand beside
+     every other page. The page says whether it has one from the first
+     paint ([data-table-of-contents], toc-slot.tsx). */
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"] {
+    grid-area: 1 / 2;
+    margin-top: 0;
+  }
+  .namecard-body[data-focused="false"] > .namecard-footer {
+    grid-column: 1 / -1;
+  }
+  /* In the right column the ways into the Posts stay in view below the
+     navbar, while the rest of the column scrolls away with the page. Where
+     they are taller than the window has room for (a list shown in full, a
+     low window), their box scrolls by itself, so its end can be reached
+     from anywhere on the page, and what it cuts off fades out over its last
+     1rem. The box is larger than the cards by its padding: room for the
+     focus rings it would otherwise cut off, and under them for that fade. */
+  .namecard-cards[data-place="beside"] > .namecard-cards-pinned,
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"]
+    > .namecard-cards-pinned {
+    position: sticky;
+    top: calc(var(--namecard-nav-height) + 0.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100svh - var(--namecard-nav-height) - 0.5rem);
+    margin: -0.5rem -0.5rem -1.5rem;
+    padding: 0.5rem 0.5rem 1.5rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    mask-image: linear-gradient(#000 calc(100% - 1rem), transparent);
+  }
+  .namecard-cards-pinned > .namecard-card {
+    flex: none;
+  }
+  .namecard-cards[data-place="beside"]
+    > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))),
+  .namecard-body[data-focused="false"]:not(:has([data-table-of-contents]))
+    > .namecard-cards[data-place="after"]
+    > .namecard-cards-pinned:not(:has(> .namecard-card:not(:empty))) {
+    display: none;
+  }
+}
+
+/* ── Back to top ──────────────────────────────────────────────────────────
+   Below 1024px back to top and the page's actions float in the corner of
+   the window, as the shared styles have them, and this box is none. From
+   1024px they stand in it (--shell-floating-actions-position, above), and
+   it floats right of the page, 10rem above the foot of the window, where
+   the window has that room: from 1344px, and on a focused page, whose one
+   column is narrow and centred.
+
+   In a narrower window nothing is free right of the page: the right column
+   reaches the edge. There the box floats in the room between the two
+   columns instead, centred in it, so back to top lies on neither the
+   content nor the cards. It sticks 10rem above the foot of the window for
+   as long as the columns run, and comes to rest at their end, above the
+   footer. */
+.namecard-floating {
+  display: contents;
+}
+@media (min-width: 1024px) {
+  .namecard-floating {
+    position: fixed;
+    bottom: 10rem;
+    left: var(--shell-floating-actions-left);
+    z-index: 40;
+    display: block;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1343px) {
+  .namecard-body[data-focused="false"] > .namecard-floating {
+    position: sticky;
+    left: auto;
+    grid-area: 1 / 1 / 2 / -1;
+    align-self: end;
+    justify-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 0;
+    margin-left: calc(
+      100% - var(--namecard-aside) - var(--namecard-col-gap) / 2 - 1.875rem
+    );
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .namecard-shell {
+    transition: none;
+  }
+}

@@ -1,7 +1,8 @@
 /*
  * The one Fuwari button look. md and lg read --fuwari-button-height,
- * --fuwari-button-font-size and --fuwari-button-padding-x, so a surface can
- * resize them; the Admin workspaces scale them with their unit.
+ * --fuwari-button-font-size and --fuwari-button-padding-x, and sm reads
+ * --fuwari-button-height-sm, so a surface can resize them; the Admin
+ * workspaces scale them with their unit.
  */
 @layer components {
   .fuwari-button,
@@ -22,7 +23,7 @@
   }
   .fuwari-button {
     gap: 8px;
-    border-radius: 12px;
+    border-radius: var(--theme-button-radius);
     font-weight: 500;
     line-height: 1.25;
     white-space: nowrap;
@@ -32,10 +33,10 @@
     flex-shrink: 0;
   }
   .fuwari-button-sm {
-    min-height: 32px;
+    min-height: var(--fuwari-button-height-sm, 32px);
     padding: 0 12px;
     gap: 6px;
-    border-radius: 10px;
+    border-radius: calc(var(--theme-button-radius) - 2px);
     font-size: 13px;
   }
   .fuwari-button-md {
@@ -50,40 +51,48 @@
     font-weight: 700;
   }
 
+  /* --admin-on-accent is set only in the Admin (admin-variables.css). */
   .fuwari-button-primary {
-    background-color: var(--fuwari-primary);
-    color: white;
+    background-color: var(--theme-solid-bg);
+    color: var(--theme-solid-fg, var(--admin-on-accent, white));
   }
   .dark .fuwari-button-primary {
-    color: rgb(0 0 0 / 0.75);
+    color: var(--theme-solid-fg, var(--admin-on-accent, rgb(0 0 0 / 0.75)));
   }
   .fuwari-button-primary:not(:disabled):hover {
-    background-color: var(--fuwari-primary-hover);
+    background-color: var(--theme-solid-bg-hover);
   }
   .fuwari-button-primary:not(:disabled):active {
-    background-color: var(--fuwari-primary-active);
+    background-color: var(--theme-solid-bg-active);
   }
 
   .fuwari-button-regular {
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-btn-content);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-tonal-fg);
   }
   .dark .fuwari-button-regular {
     color: var(--fuwari-fg-75);
   }
   .fuwari-button-regular:not(:disabled):hover {
-    background-color: var(--fuwari-btn-regular-bg-hover);
+    background-color: var(--theme-tonal-bg-hover);
   }
   .fuwari-button-regular:not(:disabled):active {
-    background-color: var(--fuwari-btn-regular-bg-active);
+    background-color: var(--theme-tonal-bg-active);
   }
 
   .fuwari-button-danger {
-    background-color: var(--fuwari-danger);
+    background-color: var(--fuwari-danger-solid);
     color: white;
   }
+  .dark .fuwari-button-danger {
+    background-color: var(--fuwari-danger);
+    color: rgb(0 0 0 / 0.75);
+  }
   .fuwari-button-danger:not(:disabled):hover {
-    opacity: 0.9;
+    background-color: var(--fuwari-danger-solid-hover);
+  }
+  .dark .fuwari-button-danger:not(:disabled):hover {
+    background-color: var(--fuwari-danger-hover);
   }
 
   /* On top of an image, such as a cover. */
@@ -126,8 +135,8 @@
   .fuwari-icon-button:not(:disabled):hover,
   .fuwari-icon-button:is([aria-pressed="true"], [aria-expanded="true"]),
   .fuwari-icon-button-active {
-    background-color: var(--fuwari-btn-regular-bg);
-    color: var(--fuwari-primary);
+    background-color: var(--theme-tonal-bg);
+    color: var(--theme-accent);
   }
   .fuwari-button-plain.fuwari-button-tone-danger:not(:disabled):hover,
   .fuwari-icon-button.fuwari-button-tone-danger:not(:disabled):hover {
@@ -141,7 +150,7 @@
     padding: 0;
     border-radius: 4px;
     background: none;
-    color: var(--fuwari-primary);
+    color: var(--theme-accent);
     font-weight: inherit;
   }
   .fuwari-button-text.fuwari-button-tone-danger {
@@ -151,14 +160,213 @@
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+  /* The Admin's accent is ink, the colour of its text, so a link-style
+     button is told apart by its underline, always. */
+  :root:has(.admin-layout) .fuwari-button-text:not(.fuwari-button-tone-danger) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* The Admin (admin-variables.css) only: a regular button has a hairline,
+     so a grey fill is not its only edge, and a plain or icon button that
+     tints on hover or is pressed reads ink on grey, not accent on tint.
+     Public pages keep the rules above. */
+  :root:has(.admin-layout) .fuwari-button-regular {
+    background: var(--admin-surface);
+    box-shadow:
+      inset 0 0 0 1px var(--admin-line-strong),
+      var(--admin-shadow-card);
+  }
+  :root:has(.admin-layout) .fuwari-button-regular:not(:disabled):hover {
+    background: var(--admin-sunken);
+  }
+  :root:has(.admin-layout) .fuwari-button-regular:not(:disabled):active {
+    background: var(--admin-press);
+  }
+  :root:has(.admin-layout)
+    :is(.fuwari-button-plain, .fuwari-icon-button):not(
+      .fuwari-button-tone-danger,
+      .fuwari-icon-button-ink
+    ):not(:disabled):hover,
+  :root:has(.admin-layout)
+    .fuwari-icon-button:is([aria-pressed="true"], [aria-expanded="true"]),
+  :root:has(.admin-layout) .fuwari-icon-button-active {
+    color: var(--fuwari-fg);
+  }
+
+  /*
+   * The Admin's own buttons (admin-variables.css): ink, outline and quiet on
+   * the canvas and its cards, inverse and glass on the dark hero card. They
+   * bring their own scale (xs 28px, sm 30px, md 36px) and a little motion:
+   * a solid one gives when pressed, and the md ink lifts under the pointer.
+   */
+  .fuwari-button:is(
+    .fuwari-button-ink,
+    .fuwari-button-outline,
+    .fuwari-button-quiet,
+    .fuwari-button-inverse,
+    .fuwari-button-glass
+  ) {
+    min-height: 0;
+    font-weight: 550;
+    line-height: inherit;
+    transition:
+      transform 0.2s var(--admin-ease),
+      background-color 0.15s,
+      color 0.15s,
+      box-shadow 0.15s,
+      opacity 0.15s;
+  }
+  .fuwari-button:is(
+      .fuwari-button-ink,
+      .fuwari-button-outline,
+      .fuwari-button-quiet,
+      .fuwari-button-inverse,
+      .fuwari-button-glass
+    ).fuwari-button-xs {
+    height: 28px;
+    padding: 0 8px;
+    gap: 5px;
+    border-radius: 8px;
+    font-size: var(--admin-text-meta);
+  }
+  .fuwari-button:is(
+      .fuwari-button-ink,
+      .fuwari-button-outline,
+      .fuwari-button-quiet,
+      .fuwari-button-inverse,
+      .fuwari-button-glass
+    ).fuwari-button-sm {
+    height: 30px;
+    padding: 0 10px;
+    gap: 5px;
+    border-radius: 8px;
+    font-size: var(--admin-text-small);
+  }
+  .fuwari-button:is(
+      .fuwari-button-ink,
+      .fuwari-button-outline,
+      .fuwari-button-quiet,
+      .fuwari-button-inverse,
+      .fuwari-button-glass
+    ).fuwari-button-md {
+    height: 36px;
+    padding: 0 14px;
+    gap: 7px;
+    border-radius: var(--admin-radius-control);
+    font-size: 13.5px;
+  }
+  .fuwari-button:is(
+      .fuwari-button-ink,
+      .fuwari-button-outline,
+      .fuwari-button-quiet,
+      .fuwari-button-inverse,
+      .fuwari-button-glass
+    )
+    svg {
+    transition: transform 0.28s var(--admin-ease);
+  }
+  .fuwari-button-ink {
+    background: var(--admin-ink);
+    color: var(--admin-on-ink);
+  }
+  .fuwari-button-ink.fuwari-button-md {
+    box-shadow: 0 6px 16px -8px rgb(18 18 23 / 0.5);
+  }
+  .fuwari-button.fuwari-button-ink.fuwari-button-xs {
+    padding: 0 12px;
+  }
+  .fuwari-button-ink.fuwari-button-md:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+  .fuwari-button-ink.fuwari-button-md:not(:disabled):active,
+  .fuwari-button-inverse:not(:disabled):active,
+  .fuwari-button-glass:not(:disabled):active {
+    transform: scale(0.97);
+  }
+  .fuwari-button-ink.fuwari-button-xs:not(:disabled):active {
+    transform: scale(0.96);
+  }
+  .fuwari-button-outline {
+    background: none;
+    color: var(--admin-fg);
+    box-shadow: inset 0 0 0 1px var(--admin-line-strong);
+  }
+  .fuwari-button-quiet {
+    background: none;
+    color: var(--admin-fg-2);
+  }
+  .fuwari-button.fuwari-button-quiet {
+    font-weight: 500;
+  }
+  .fuwari-button-outline:not(:disabled):hover,
+  .fuwari-button-quiet:not(:disabled):hover {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  .fuwari-button-inverse {
+    background: #fff;
+    color: #131316;
+    box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.5);
+  }
+  .fuwari-button-glass {
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+    backdrop-filter: blur(10px);
+  }
+  .fuwari-button-glass:not(:disabled):hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+  /* The icon-only forms: ink for the sidebar's compose button, quiet for a
+     row's actions. */
+  .fuwari-icon-button.fuwari-icon-button-ink {
+    background: var(--admin-ink);
+    color: var(--admin-on-ink);
+    transition:
+      transform 0.2s var(--admin-ease),
+      opacity 0.15s;
+  }
+  .fuwari-icon-button.fuwari-icon-button-ink:not(:disabled):hover {
+    background: var(--admin-ink);
+    color: var(--admin-on-ink);
+    transform: translateY(-1px);
+  }
+  .fuwari-icon-button.fuwari-icon-button-ink:not(:disabled):active {
+    transform: scale(0.96);
+  }
+  .fuwari-icon-button.fuwari-icon-button-quiet {
+    color: var(--admin-fg-2);
+    transition:
+      background-color 0.15s,
+      color 0.15s,
+      opacity 0.15s;
+  }
+  .fuwari-icon-button.fuwari-icon-button-quiet:not(:disabled):hover,
+  .fuwari-icon-button.fuwari-icon-button-quiet[aria-expanded="true"] {
+    background: var(--admin-hover);
+    color: var(--admin-fg);
+  }
+  .fuwari-icon-button-xs {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
 
   :is(.fuwari-button, .fuwari-icon-button):disabled,
   :is(.fuwari-button, .fuwari-icon-button)[aria-disabled="true"] {
     opacity: 0.5;
     cursor: not-allowed;
   }
+  .fuwari-button.fuwari-button-ink:disabled,
+  .fuwari-icon-button.fuwari-icon-button-ink:disabled {
+    opacity: 0.6;
+  }
+  .fuwari-button.fuwari-button-ink.fuwari-button-xs:disabled {
+    opacity: 0.35;
+  }
   :is(.fuwari-button, .fuwari-icon-button):focus-visible {
-    outline: 2px solid var(--fuwari-primary);
+    outline: 2px solid var(--theme-accent);
     outline-offset: 2px;
   }
 }

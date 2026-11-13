@@ -1,30 +1,21 @@
-import { useNavSort } from "./use-nav-sort";
-import { SettingsDisclosure } from "./settings-disclosure";
-import "./site-studio.css";
-import {
-  ExternalLink,
-  GripVertical,
-  Pencil,
-  Plus,
-  Trash2,
-  UserRound,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
+import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
+import { Button, buttonClass } from "@/components/ui/button";
+import { DragHandle } from "@/components/ui/drag-handle";
 import { IconButton } from "@/components/ui/icon-button";
-import { Input } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
+import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
-import {
-  FUWARI_THEME_HUE_MAX,
-  FUWARI_THEME_HUE_MIN,
-} from "@/features/config/site-config.schema";
+import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
   isExternalNavHref,
+  NAV_LINK_CHILDREN_MAX,
   NAV_LINKS_MAX,
 } from "@/features/config/utils/nav-links";
 import {
@@ -33,8 +24,10 @@ import {
 } from "@/features/config/utils/social-platforms";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+import { SettingRow } from "./setting-row";
+import { useNavSort } from "./use-nav-sort";
+import "./site-studio.css";
 
-const IMAGE_ACCEPT = ".png,.webp,.jpg,.jpeg";
 const ICON_ACCEPT = ".svg,.ico,.png,.webp";
 
 const ICON_FIELDS = [
@@ -76,258 +69,221 @@ const ICON_FIELDS = [
   },
 ];
 
-function previewSrc(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith("/") || /^https?:\/\//.test(trimmed)) return trimmed;
-  return null;
-}
-
 export function SiteStudio() {
-  const { register, control, setValue } = useFormContext<SystemConfig>();
-  const title = useWatch({ control, name: "site.title" }) ?? "";
-  const author = useWatch({ control, name: "site.author" }) ?? "";
-  const banner = useWatch({ control, name: "site.theme.fuwari.homeBg" });
-  const avatar = useWatch({ control, name: "site.theme.fuwari.avatar" });
-  const hueRaw = useWatch({ control, name: "site.theme.fuwari.primaryHue" });
-  const hue =
-    typeof hueRaw === "number" && !Number.isNaN(hueRaw) ? hueRaw : 250;
-  const bannerSrc = previewSrc(banner);
-  const avatarSrc = previewSrc(avatar);
-
   return (
     <div className="site-studio">
-      <section className="site-identity">
-        <div className="site-banner">
-          {bannerSrc && (
-            <img src={bannerSrc} alt="" className="site-banner-image" />
-          )}
-          <label className="site-title-edit">
-            <input
-              {...register("site.title")}
-              className="site-inline-input"
-              size={Math.min(28, Math.max(8, title.length * 2))}
-              placeholder={m.settings_site_field_title_ph()}
-              aria-label={m.settings_site_field_title()}
-            />
-            <Pencil size={17} aria-hidden="true" />
-          </label>
-          <OverlayUpload
-            name="site.theme.fuwari.homeBg"
-            assetPath="themes/fuwari/home-bg.webp"
-            accept={IMAGE_ACCEPT}
-            className="site-banner-upload"
-            label={
-              bannerSrc
-                ? m.settings_site_banner_replace()
-                : m.settings_site_banner_upload()
-            }
-          />
-        </div>
-        <div className="site-profile">
-          <div className="site-avatar-edit">
-            <div className="site-avatar">
-              {avatarSrc ? (
-                <img src={avatarSrc} alt="" />
-              ) : (
-                <UserRound size={38} aria-hidden="true" />
-              )}
-            </div>
-            <OverlayUpload
-              name="site.theme.fuwari.avatar"
-              assetPath="themes/fuwari/avatar.png"
-              accept={IMAGE_ACCEPT}
-              className="site-avatar-upload"
-              label={
-                avatarSrc
-                  ? m.settings_site_avatar_replace()
-                  : m.settings_site_avatar_upload()
-              }
-            />
-          </div>
-          <div className="site-profile-copy">
-            <label className="site-author-edit">
-              <input
-                {...register("site.author")}
-                className="site-inline-input"
-                size={Math.min(24, Math.max(4, author.length * 2))}
-                placeholder={m.settings_site_field_author_ph()}
-                aria-label={m.settings_site_field_author()}
-              />
-              <Pencil size={15} aria-hidden="true" />
-            </label>
-            <label className="site-description-edit">
-              <textarea
-                {...register("site.description")}
-                className="site-inline-input"
-                rows={2}
-                placeholder={m.settings_site_field_description_ph()}
-                aria-label={m.settings_site_field_description()}
-              />
-              <Pencil size={14} aria-hidden="true" />
-            </label>
-            <SocialPills />
-          </div>
-        </div>
-      </section>
-      <section className="site-theme-row">
-        <div className="site-section-copy">
-          <label htmlFor="theme-hue-slider">{m.settings_hue()}</label>
-          <p>{m.settings_hue_hint()}</p>
-        </div>
-        <div className="site-hue-control">
-          <input
-            id="theme-hue-slider"
-            type="range"
-            min={FUWARI_THEME_HUE_MIN}
-            max={FUWARI_THEME_HUE_MAX}
-            step={1}
-            value={hue}
-            onChange={(event) =>
-              setValue(
-                "site.theme.fuwari.primaryHue",
-                Number(event.target.value),
-                { shouldDirty: true },
-              )
-            }
-            style={{
-              background:
-                "linear-gradient(to right, oklch(0.7 0.14 0), oklch(0.7 0.14 60), oklch(0.7 0.14 120), oklch(0.7 0.14 180), oklch(0.7 0.14 240), oklch(0.7 0.14 300), oklch(0.7 0.14 360))",
-            }}
-          />
-          <output htmlFor="theme-hue-slider">{hue}°</output>
-        </div>
-      </section>
-      <NavLinksEditor />
-      <SettingsDisclosure
-        className="site-icons"
-        title={
-          <span className="site-section-copy">
-            <strong>{m.settings_icons()}</strong>
-            <span className="site-section-hint">{m.settings_icons_hint()}</span>
-          </span>
-        }
+      <AdminFormSection title={m.settings_group_site_identity()}>
+        <TextFields />
+      </AdminFormSection>
+      <AdminFormSection title={m.settings_group_site_links()}>
+        <SocialLinksEditor />
+        <NavLinksEditor />
+      </AdminFormSection>
+      <AdminFormSection
+        title={m.settings_icons()}
+        description={m.settings_icons_hint()}
       >
         <div className="site-icon-grid">
           {ICON_FIELDS.map((item) => (
             <IconTile key={item.name} {...item} />
           ))}
         </div>
-      </SettingsDisclosure>
+      </AdminFormSection>
+      <p className="site-moved-hint">
+        {m.settings_site_moved_to_personalize()}
+        <Link
+          to="/admin/personalize"
+          className={buttonClass({ variant: "text", size: "sm" })}
+        >
+          {m.settings_site_moved_to_personalize_link()}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/** The title, the author and the description: a row each, with where it shows. */
+function TextFields() {
+  const { register, control, formState } = useFormContext<SystemConfig>();
+  const errors = formState.errors.site;
+  const description = useWatch({ control, name: "site.description" }) ?? "";
+  return (
+    <>
+      <SettingRow
+        label={m.settings_site_field_title()}
+        description={m.settings_site_title_hint()}
+        error={errors?.title?.message}
+      >
+        {(field) => (
+          <Input
+            {...register("site.title")}
+            {...field}
+            placeholder={m.settings_site_field_title_ph()}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.settings_site_field_author()}
+        description={m.settings_site_author_hint()}
+        error={errors?.author?.message}
+      >
+        {(field) => (
+          <Input
+            {...register("site.author")}
+            {...field}
+            placeholder={m.settings_site_field_author_ph()}
+          />
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.settings_site_field_description()}
+        description={m.settings_site_description_hint()}
+        error={errors?.description?.message}
+      >
+        {(field) => (
+          <>
+            <Textarea
+              {...register("site.description")}
+              {...field}
+              rows={3}
+              placeholder={m.settings_site_field_description_ph()}
+            />
+            <p className="site-char-count">
+              {m.settings_site_char_count({
+                count: description.length,
+                max: SITE_DESCRIPTION_MAX,
+              })}
+            </p>
+          </>
+        )}
+      </SettingRow>
+      <SearchPreview />
+    </>
+  );
+}
+
+/** The title and the description as a search engine lists them, live. */
+function SearchPreview() {
+  const { control } = useFormContext<SystemConfig>();
+  const title = useWatch({ control, name: "site.title" }) ?? "";
+  const description = useWatch({ control, name: "site.description" }) ?? "";
+  const icon =
+    previewSrc(useWatch({ control, name: "site.icons.favicon96" })) ??
+    previewSrc(useWatch({ control, name: "site.icons.faviconSvg" }));
+  const host = typeof window === "undefined" ? "" : window.location.host;
+  return (
+    <AdminFormRow
+      label={m.settings_site_search_preview()}
+      description={m.settings_site_search_preview_hint()}
+    >
+      <div className="site-search-preview" aria-hidden="true">
+        <div className="site-search-preview-site">
+          <span>{icon ? <img src={icon} alt="" /> : null}</span>
+          <p>
+            <b>{title}</b>
+            <i>{host}</i>
+          </p>
+        </div>
+        <p className="site-search-preview-title">{title}</p>
+        <p className="site-search-preview-text">{description}</p>
+      </div>
+    </AdminFormRow>
+  );
+}
+
+type NavSorting = ReturnType<typeof useNavSort>;
+type NavHrefName =
+  | `site.navLinks.${number}.href`
+  | `site.navLinks.${number}.children.${number}.href`;
+
+/** What a row of a sortable list hands its element: its ref, its drag state. */
+function sortableRow(sorting: NavSorting, id: string) {
+  return {
+    ref: (node: HTMLDivElement | null) => {
+      if (node) sorting.rows.current.set(id, node);
+      else sorting.rows.current.delete(id);
+    },
+    "data-dragging": sorting.drag?.id === id,
+    "data-drop-target": sorting.drag?.target === id && sorting.drag?.id !== id,
+    style:
+      sorting.drag?.id === id
+        ? { transform: `translateY(${sorting.drag.offset}px)` }
+        : undefined,
+  };
+}
+
+/** The address of a link or of a child link; it completes a bare host. */
+function NavHrefInput({
+  name,
+  label,
+  invalid,
+}: {
+  name: NavHrefName;
+  label: string;
+  invalid: boolean;
+}) {
+  const { register, setValue, watch } = useFormContext<SystemConfig>();
+  const canonicalHref = canonicalizeNavHref(watch(name) ?? "");
+  const external = isExternalNavHref(canonicalHref);
+  return (
+    <div className="relative min-w-0 flex-1">
+      <Input
+        {...register(name, {
+          onBlur: (event) => {
+            const next = canonicalizeNavHref(event.target.value);
+            if (next !== event.target.value) {
+              setValue(name, next, { shouldDirty: true, shouldValidate: true });
+            }
+          },
+        })}
+        aria-label={label}
+        aria-invalid={invalid || undefined}
+        placeholder={m.settings_site_nav_href_ph()}
+        className={cn(external && "pr-10")}
+      />
+      {external ? (
+        <ExternalLink
+          size={14}
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fuwari-text-30"
+        />
+      ) : null}
     </div>
   );
 }
 
 function NavLinksEditor() {
-  const { control, register, setValue, watch, formState } =
-    useFormContext<SystemConfig>();
+  const { control } = useFormContext<SystemConfig>();
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: "site.navLinks",
   });
-  const linkErrors = formState.errors.site?.navLinks;
   const sorting = useNavSort(
     fields.map((field) => field.id),
     move,
   );
 
   return (
-    <section className="site-nav-section">
-      <div className="site-section-copy">
-        <h2>{m.settings_site_nav_title()}</h2>
-        <p className="mt-1 text-xs fuwari-text-50">
+    <AdminFormRow
+      label={m.settings_site_nav_title()}
+      description={
+        <>
           {m.settings_site_nav_hint()}
-        </p>
-      </div>
-
-      <p className="site-sort-hint">{m.settings_nav_drag_hint()}</p>
+          <span className="site-sort-hint">{m.settings_nav_drag_hint()}</span>
+        </>
+      }
+    >
       <div className="site-nav-fields">
-        {fields.map((field, index) => {
-          const href = watch(`site.navLinks.${index}.href`) ?? "";
-          const canonicalHref = canonicalizeNavHref(href);
-          const labelError = linkErrors?.[index]?.label?.message;
-          const hrefError = linkErrors?.[index]?.href?.message;
-          return (
-            <div
-              key={field.id}
-              ref={(node) => {
-                if (node) sorting.rows.current.set(field.id, node);
-                else sorting.rows.current.delete(field.id);
-              }}
-              className="site-nav-item space-y-1"
-              data-dragging={sorting.drag?.id === field.id}
-              data-drop-target={
-                sorting.drag?.target === field.id &&
-                sorting.drag?.id !== field.id
-              }
-              style={
-                sorting.drag?.id === field.id
-                  ? { transform: `translateY(${sorting.drag.offset}px)` }
-                  : undefined
-              }
-            >
-              <div className="site-nav-row">
-                <button
-                  type="button"
-                  className="site-nav-handle"
-                  {...sorting.handleProps(field.id)}
-                  aria-label={m.settings_nav_drag_label({
-                    name:
-                      watch(`site.navLinks.${index}.label`) ||
-                      String(index + 1),
-                  })}
-                  title={m.settings_nav_drag_hint()}
-                  disabled={fields.length < 2}
-                >
-                  <GripVertical size={18} />
-                </button>
-                <Input
-                  {...register(`site.navLinks.${index}.label`)}
-                  placeholder={m.settings_site_nav_label_ph()}
-                  aria-label={m.settings_site_nav_name()}
-                />
-                <div className="relative min-w-0 flex-1">
-                  <Input
-                    {...register(`site.navLinks.${index}.href`, {
-                      onBlur: (event) => {
-                        const next = canonicalizeNavHref(event.target.value);
-                        if (next !== event.target.value) {
-                          setValue(`site.navLinks.${index}.href`, next, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }
-                      },
-                    })}
-                    aria-label={m.settings_site_nav_url()}
-                    placeholder={m.settings_site_nav_href_ph()}
-                    className={cn(isExternalNavHref(canonicalHref) && "pr-10")}
-                  />
-                  {isExternalNavHref(canonicalHref) ? (
-                    <ExternalLink
-                      size={14}
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fuwari-text-30"
-                    />
-                  ) : null}
-                </div>
-                <IconButton
-                  size="md"
-                  tone="danger"
-                  onClick={() => remove(index)}
-                  label={m.settings_site_nav_remove()}
-                >
-                  <Trash2 size={16} />
-                </IconButton>
-              </div>
-              {labelError || hrefError ? (
-                <p className="fuwari-form-field-error">
-                  {hrefError || labelError}
-                </p>
-              ) : null}
-            </div>
-          );
-        })}
+        {fields.map((field, index) => (
+          <NavLinkRow
+            key={field.id}
+            id={field.id}
+            index={index}
+            sortable={fields.length > 1}
+            sorting={sorting}
+            onRemove={() => remove(index)}
+          />
+        ))}
       </div>
 
       {fields.length < NAV_LINKS_MAX ? (
@@ -341,145 +297,371 @@ function NavLinksEditor() {
           {m.settings_site_nav_add()}
         </Button>
       ) : null}
-    </section>
+    </AdminFormRow>
   );
 }
 
-function SocialPills() {
-  const { control, register, watch, setValue } = useFormContext<SystemConfig>();
-  const { fields, append, remove } = useFieldArray({
+/**
+ * One custom link. With child links it is a group: its address gives way to a
+ * note, and its children are listed under it, sorted among themselves only.
+ */
+function NavLinkRow({
+  id,
+  index,
+  sortable,
+  sorting,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  sortable: boolean;
+  sorting: NavSorting;
+  onRemove: () => void;
+}) {
+  const { control, register, setValue, watch, clearErrors, formState } =
+    useFormContext<SystemConfig>();
+  const children = useFieldArray({
+    control,
+    name: `site.navLinks.${index}.children`,
+  });
+  const childSorting = useNavSort(
+    children.fields.map((field) => field.id),
+    children.move,
+  );
+  const addChild = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(refocus.current), []);
+  const errors = formState.errors.site?.navLinks?.[index];
+  const label = watch(`site.navLinks.${index}.label`) ?? "";
+  const isGroup = children.fields.length > 0;
+  const full = children.fields.length >= NAV_LINK_CHILDREN_MAX;
+  const error = errors?.href?.message || errors?.label?.message;
+
+  return (
+    <div {...sortableRow(sorting, id)} className="site-nav-item space-y-1">
+      <div className="site-nav-row">
+        <DragHandle
+          {...sorting.handleProps(id)}
+          label={m.settings_nav_drag_label({
+            name: label || String(index + 1),
+          })}
+          title={m.settings_nav_drag_hint()}
+          disabled={!sortable}
+        />
+        <Input
+          {...register(`site.navLinks.${index}.label`)}
+          placeholder={m.settings_site_nav_label_ph()}
+          aria-label={m.settings_site_nav_name()}
+          aria-invalid={errors?.label ? true : undefined}
+        />
+        {isGroup ? (
+          <p className="site-nav-group-note">
+            {m.settings_site_nav_group_note()}
+          </p>
+        ) : (
+          <NavHrefInput
+            name={`site.navLinks.${index}.href`}
+            label={m.settings_site_nav_url()}
+            invalid={Boolean(errors?.href)}
+          />
+        )}
+        <IconButton
+          size="md"
+          tone="danger"
+          onClick={onRemove}
+          label={m.settings_site_nav_remove()}
+        >
+          <Trash2 size={16} />
+        </IconButton>
+      </div>
+      {error ? <p className="fuwari-form-field-error">{error}</p> : null}
+      <div
+        className="site-nav-children"
+        data-group={isGroup}
+        role={isGroup ? "group" : undefined}
+        aria-label={
+          isGroup
+            ? label
+              ? m.settings_site_nav_children_label({ name: label })
+              : m.settings_site_nav_children_label_unnamed({
+                  position: index + 1,
+                })
+            : undefined
+        }
+      >
+        {children.fields.map((child, childIndex) => (
+          <NavChildRow
+            key={child.id}
+            id={child.id}
+            index={index}
+            childIndex={childIndex}
+            sortable={children.fields.length > 1}
+            sorting={childSorting}
+            onRemove={() => {
+              children.remove(childIndex);
+              // The row under the pointer is gone; the add action stays.
+              cancelAnimationFrame(refocus.current);
+              refocus.current = requestAnimationFrame(() =>
+                addChild.current?.focus(),
+              );
+            }}
+          />
+        ))}
+        <div className="site-nav-add-child">
+          <Button
+            ref={addChild}
+            variant="quiet"
+            size="xs"
+            disabled={full}
+            aria-describedby={full ? `${id}-child-limit` : undefined}
+            icon={<Plus size={14} />}
+            onClick={() => {
+              if (!isGroup) {
+                // A group leads nowhere: its address goes when it becomes one.
+                setValue(`site.navLinks.${index}.href`, "", {
+                  shouldDirty: true,
+                });
+                clearErrors(`site.navLinks.${index}.href`);
+              }
+              children.append({ label: "", href: "" });
+            }}
+          >
+            {m.settings_site_nav_child_add()}
+          </Button>
+          {full ? (
+            <span id={`${id}-child-limit`} className="site-nav-limit">
+              {m.settings_site_nav_child_limit({ max: NAV_LINK_CHILDREN_MAX })}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** One child link of a group: a handle, the name, the address and remove. */
+function NavChildRow({
+  id,
+  index,
+  childIndex,
+  sortable,
+  sorting,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  childIndex: number;
+  sortable: boolean;
+  sorting: NavSorting;
+  onRemove: () => void;
+}) {
+  const { register, watch, formState } = useFormContext<SystemConfig>();
+  const errors =
+    formState.errors.site?.navLinks?.[index]?.children?.[childIndex];
+  const label =
+    watch(`site.navLinks.${index}.children.${childIndex}.label`) ?? "";
+  const error = errors?.href?.message || errors?.label?.message;
+  return (
+    <div {...sortableRow(sorting, id)} className="site-nav-item space-y-1">
+      <div className="site-nav-row">
+        <DragHandle
+          {...sorting.handleProps(id)}
+          label={
+            label
+              ? m.settings_site_nav_child_drag_label({ name: label })
+              : m.settings_site_nav_child_drag_label_unnamed({
+                  position: childIndex + 1,
+                })
+          }
+          title={m.settings_nav_drag_hint()}
+          disabled={!sortable}
+        />
+        <Input
+          {...register(`site.navLinks.${index}.children.${childIndex}.label`)}
+          placeholder={m.settings_site_nav_label_ph()}
+          aria-label={m.settings_site_nav_child_name()}
+          aria-invalid={errors?.label ? true : undefined}
+        />
+        <NavHrefInput
+          name={`site.navLinks.${index}.children.${childIndex}.href`}
+          label={m.settings_site_nav_child_url()}
+          invalid={Boolean(errors?.href)}
+        />
+        <IconButton
+          size="md"
+          tone="danger"
+          onClick={onRemove}
+          label={m.settings_site_nav_child_remove()}
+        >
+          <Trash2 size={16} />
+        </IconButton>
+      </div>
+      {error ? <p className="fuwari-form-field-error">{error}</p> : null}
+    </div>
+  );
+}
+
+function SocialLinksEditor() {
+  const { control, register, watch, setValue, formState } =
+    useFormContext<SystemConfig>();
+  const { fields, append, remove, move } = useFieldArray({
     control,
     name: "site.social",
   });
+  const sorting = useNavSort(
+    fields.map((field) => field.id),
+    move,
+  );
   const social = useWatch({ control, name: "site.social" }) ?? [];
-  const [selected, setSelected] = useState<number | null>(null);
   const taken = (key: string, except: number) =>
     key !== "custom" &&
     social.some((item, index) => index !== except && item.platform === key);
   const unused = SOCIAL_PLATFORM_KEYS.filter(
     (key) => key === "custom" || !social.some((item) => item.platform === key),
   );
+  const error = formState.errors.site?.social;
 
   return (
-    <div className="site-social">
-      <div className="site-social-actions">
+    <AdminFormRow
+      label={m.settings_social_title()}
+      description={
+        <>
+          {m.settings_social_hint()}
+          <span className="site-sort-hint">{m.settings_nav_drag_hint()}</span>
+        </>
+      }
+    >
+      <div className="site-social-rows">
         {fields.map((field, index) => {
           const platform = watch(`site.social.${index}.platform`);
-          const preset =
+          const urlPlaceholder =
+            platform === "email"
+              ? m.settings_social_email_ph()
+              : platform === "rss"
+                ? m.settings_social_rss_ph()
+                : m.settings_social_url_ph();
+          const rowError =
+            error?.[index]?.url?.message ?? error?.[index]?.label?.message;
+          const platformLabel =
+            !platform || platform === "custom"
+              ? watch(`site.social.${index}.label`) ||
+                m.settings_social_custom()
+              : SOCIAL_PLATFORMS[platform].label;
+          const PlatformIcon =
             platform && platform !== "custom"
-              ? SOCIAL_PLATFORMS[platform]
+              ? SOCIAL_PLATFORMS[platform].icon
               : null;
-          const Icon = preset?.icon;
-          const iconSrc = watch(`site.social.${index}.icon`);
+          const customIcon = previewSrc(watch(`site.social.${index}.icon`));
           return (
-            <IconButton
+            <div
               key={field.id}
-              onClick={() =>
-                setSelected((current) => (current === index ? null : index))
+              ref={(node) => {
+                if (node) sorting.rows.current.set(field.id, node);
+                else sorting.rows.current.delete(field.id);
+              }}
+              className="site-social-item site-nav-item"
+              data-dragging={sorting.drag?.id === field.id}
+              data-drop-target={
+                sorting.drag?.target === field.id &&
+                sorting.drag?.id !== field.id
               }
-              label={preset?.label ?? field.label ?? ""}
-              aria-expanded={selected === index}
+              style={
+                sorting.drag?.id === field.id
+                  ? { transform: `translateY(${sorting.drag.offset}px)` }
+                  : undefined
+              }
             >
-              {Icon ? (
-                <Icon size={18} strokeWidth={1.5} />
-              ) : iconSrc ? (
-                <img src={iconSrc} alt="" className="w-4 h-4" />
-              ) : (
-                <Plus size={16} />
-              )}
-            </IconButton>
+              <div className="site-social-row">
+                <DragHandle
+                  {...sorting.handleProps(field.id)}
+                  label={m.settings_nav_drag_label({ name: platformLabel })}
+                  title={m.settings_nav_drag_hint()}
+                  disabled={fields.length < 2}
+                />
+                <span className="site-social-icon" aria-hidden="true">
+                  {PlatformIcon ? (
+                    <PlatformIcon size={16} />
+                  ) : customIcon ? (
+                    <img src={customIcon} alt="" />
+                  ) : (
+                    <Link2 size={16} />
+                  )}
+                </span>
+                <Select
+                  value={platform ?? ""}
+                  aria-label={m.settings_social_platform_label()}
+                  onChange={(next) =>
+                    setValue(
+                      `site.social.${index}.platform`,
+                      next as (typeof SOCIAL_PLATFORM_KEYS)[number],
+                      { shouldDirty: true },
+                    )
+                  }
+                  options={SOCIAL_PLATFORM_KEYS.map((key) => ({
+                    value: key,
+                    label:
+                      key === "custom"
+                        ? m.settings_social_custom()
+                        : SOCIAL_PLATFORMS[key].label,
+                    disabled: taken(key, index),
+                  }))}
+                />
+                <Input
+                  {...register(`site.social.${index}.url`)}
+                  aria-label={m.settings_social_address_label()}
+                  placeholder={urlPlaceholder}
+                />
+                <IconButton
+                  size="md"
+                  tone="danger"
+                  onClick={() => remove(index)}
+                  label={m.settings_social_remove()}
+                >
+                  <X size={16} />
+                </IconButton>
+              </div>
+              {platform === "custom" ? (
+                <div className="site-social-row site-social-custom">
+                  <Input
+                    {...register(`site.social.${index}.label`)}
+                    aria-label={m.settings_social_label_label()}
+                    placeholder={m.settings_social_label_ph()}
+                  />
+                  <OverlayUpload
+                    name={`site.social.${index}.icon`}
+                    assetPath={`social/custom-${index}`}
+                    accept=".svg,.png,.webp"
+                    variant="regular"
+                    label={
+                      watch(`site.social.${index}.icon`)
+                        ? m.settings_replace()
+                        : m.settings_social_custom_icon_upload()
+                    }
+                  />
+                </div>
+              ) : null}
+              {rowError ? (
+                <p className="fuwari-form-field-error">{rowError}</p>
+              ) : null}
+            </div>
           );
         })}
-        {unused.length > 0 ? (
-          <Button
-            variant="text"
-            size="sm"
-            onClick={() => {
-              const next = unused[0];
-              if (!next) return;
-              append({ platform: next, url: "" });
-              setSelected(fields.length);
-            }}
-            icon={<Plus size={14} />}
-          >
-            {m.settings_social_add()}
-          </Button>
-        ) : null}
       </div>
-
-      {selected !== null && fields[selected]
-        ? (() => {
-            const platform = watch(`site.social.${selected}.platform`);
-            const urlPlaceholder =
-              platform === "email"
-                ? m.settings_social_email_ph()
-                : platform === "rss"
-                  ? m.settings_social_rss_ph()
-                  : m.settings_social_url_ph();
-
-            return (
-              <div className="site-social-editor">
-                <div className="flex gap-2">
-                  <Select
-                    className="w-36 shrink-0"
-                    value={platform ?? ""}
-                    onChange={(next) =>
-                      setValue(
-                        `site.social.${selected}.platform`,
-                        next as (typeof SOCIAL_PLATFORM_KEYS)[number],
-                        { shouldDirty: true },
-                      )
-                    }
-                    options={SOCIAL_PLATFORM_KEYS.map((key) => ({
-                      value: key,
-                      label:
-                        key === "custom"
-                          ? m.settings_social_custom()
-                          : SOCIAL_PLATFORMS[key].label,
-                      disabled: taken(key, selected),
-                    }))}
-                  />
-                  <Input
-                    {...register(`site.social.${selected}.url`)}
-                    placeholder={urlPlaceholder}
-                  />
-                  <IconButton
-                    size="md"
-                    tone="danger"
-                    onClick={() => {
-                      remove(selected);
-                      setSelected(null);
-                    }}
-                    label={m.settings_social_remove()}
-                  >
-                    <X size={16} />
-                  </IconButton>
-                </div>
-                {platform === "custom" ? (
-                  <div className="flex gap-2">
-                    <Input
-                      {...register(`site.social.${selected}.label`)}
-                      placeholder={m.settings_social_label_ph()}
-                      className="w-36 shrink-0"
-                    />
-                    <OverlayUpload
-                      name={`site.social.${selected}.icon`}
-                      assetPath={`social/custom-${selected}`}
-                      accept=".svg,.png,.webp"
-                      variant="regular"
-                      label={
-                        watch(`site.social.${selected}.icon`)
-                          ? m.settings_replace()
-                          : m.settings_social_custom_icon_upload()
-                      }
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })()
-        : null}
-    </div>
+      {unused.length > 0 ? (
+        <Button
+          variant="text"
+          size="sm"
+          onClick={() => {
+            const next = unused[0];
+            if (next) append({ platform: next, url: "" });
+          }}
+          icon={<Plus size={14} />}
+          className="site-add-link"
+        >
+          {m.settings_social_add()}
+        </Button>
+      ) : null}
+    </AdminFormRow>
   );
 }
 
@@ -503,21 +685,17 @@ function IconTile({
   const { watch } = useFormContext<SystemConfig>();
   const src = previewSrc(watch(name));
   return (
-    <div className="space-y-1.5">
-      <div className="relative group aspect-square rounded-xl overflow-hidden bg-(--fuwari-card-bg) border border-(--fuwari-input-border)">
-        {src ? (
-          <img src={src} alt="" className="w-full h-full object-contain p-2" />
-        ) : null}
-        <OverlayUpload
-          name={name}
-          assetPath={path}
-          accept={accept || ICON_ACCEPT}
-          className="absolute inset-x-1 bottom-1 justify-center"
-        />
-      </div>
-      <p className="text-[11px] fuwari-text-50 truncate" title={label()}>
-        {label()}
-      </p>
+    <div className="site-icon">
+      <span className="site-icon-preview">
+        {src ? <img src={src} alt="" /> : null}
+      </span>
+      <p className="site-icon-name">{label()}</p>
+      <OverlayUpload
+        name={name}
+        assetPath={path}
+        accept={accept || ICON_ACCEPT}
+        variant="outline"
+      />
     </div>
   );
 }

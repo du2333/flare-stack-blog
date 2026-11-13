@@ -24,8 +24,8 @@ export function OverlayUpload({
   accept: string;
   className?: string;
   label?: string;
-  /** `regular` where the button does not sit on an image. */
-  variant?: "overlay" | "regular";
+  /** `regular` or `outline` where the button does not sit on an image. */
+  variant?: "overlay" | "regular" | "outline";
 }) {
   const { setValue, watch } = useFormContext<SystemConfig>();
   const inputRef = useRef<HTMLInputElement>(null);

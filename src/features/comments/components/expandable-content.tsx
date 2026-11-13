@@ -51,7 +51,7 @@ export function ExpandableContent({
         <div ref={contentRef} className="comment-body-text">
           <CommentBody
             content={content}
-            linkClassName="underline underline-offset-4 decoration-(--fuwari-primary)/40 hover:decoration-(--fuwari-primary) text-(--fuwari-primary) transition-all duration-300 break-all"
+            linkClassName="underline underline-offset-4 decoration-(--theme-accent)/40 hover:decoration-(--theme-accent) text-(--theme-accent) transition-all duration-300 break-all"
           />
         </div>
       </div>

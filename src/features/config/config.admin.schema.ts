@@ -67,7 +67,9 @@ export const UpdateConfigSectionSchema = z.discriminatedUnion("section", [
     .object({
       section: z.literal("site"),
       expectedRevision: ConfigRevisionSchema,
-      site: SiteConfigInputSchema,
+      site: SiteConfigInputSchema.describe(
+        "The whole Site Config. It replaces the saved one: omitted fields, including theme.id, return to their defaults.",
+      ),
     })
     .strict(),
   z

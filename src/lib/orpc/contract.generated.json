@@ -82,6 +82,7 @@
             "method": "GET",
             "path": "/admin/posts",
             "summary": "List posts for admin",
+            "description": "Each item carries its category (null when it has none) and its tags, so a client lists them without reading every post. They are the draft's assignments, or the published ones when taxonomy.scope is public, read for the whole page at once.",
             "tags": ["Admin Posts"]
           }
         }
@@ -714,6 +715,32 @@
       }
     },
     "admin": {
+      "list": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/comments",
+            "summary": "List comments",
+            "description": "Published Comments on Posts and Moments, newest first, with the total that matches. view=unreplied lists the visitor Comments awaiting a reply, the dashboard's count; view=all lists every one. search matches the author's name or the body; postId keeps one Post's.",
+            "tags": ["Admin Comments"]
+          }
+        }
+      },
+      "commentedPosts": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "GET",
+            "path": "/admin/comments/posts",
+            "summary": "List posts with comments",
+            "description": "Every Post that has published Comments, with how many, the most recently commented first.",
+            "tags": ["Admin Comments"]
+          }
+        }
+      },
       "markHandled": {
         "~orpc": {
           "errorMap": {},
@@ -764,7 +791,7 @@
           "method": "GET",
           "path": "/admin/media",
           "summary": "List media",
-          "description": "Lists the media library, newest first, a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
+          "description": "Lists the media library, newest first unless sort says otherwise (oldest first, or the largest file first), a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
           "tags": ["Admin Media"]
         }
       }
@@ -960,6 +987,7 @@
           "method": "GET",
           "path": "/site/config",
           "summary": "Get public site config",
+          "description": "Returns the resolved Site Config: identity, social and navigation links, icons, the personalization every Theme honours (bannerImage, bannerFocus, avatar, primaryHue, brandMark, tagline) and the selected Theme with its options. A saved Theme id this version does not offer is returned as the default Theme. theme.fuwari is a deprecated copy of bannerImage, avatar and primaryHue kept for older versions.",
           "tags": ["Site"]
         }
       }
@@ -998,7 +1026,7 @@
             "method": "PATCH",
             "path": "/admin/config",
             "summary": "Update system config",
-            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
+            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. A site update replaces the whole Site Config: omitted fields, including theme.id, the Theme options and the shared bannerImage, bannerFocus, avatar, primaryHue, brandMark and tagline, return to their defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
             "tags": ["Admin Config"]
           }
         }

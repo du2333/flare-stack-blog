@@ -30,7 +30,7 @@ export function HomePagination({
   totalPages: number;
 }) {
   const buttonClass =
-    "bg-(--fuwari-card-bg) hover:bg-(--fuwari-btn-regular-bg-hover) transition flex items-center justify-center h-11 w-9 sm:w-11 rounded-lg hover:text-(--fuwari-primary)";
+    "bg-(--theme-surface) hover:bg-(--theme-tonal-bg-hover) transition flex items-center justify-center h-11 w-9 sm:w-11 rounded-(--theme-pager-radius) hover:text-(--theme-accent)";
   const pages = (visible: number) =>
     pageNumbers(page, totalPages, visible).map((number) => {
       if (typeof number !== "number")
@@ -49,7 +49,7 @@ export function HomePagination({
             key={number}
             aria-current="page"
             aria-label={m.home_page_number({ page: number })}
-            className="flex h-11 w-9 sm:w-11 items-center justify-center rounded-lg bg-(--fuwari-primary) text-white dark:text-black/70"
+            className="flex h-11 w-9 sm:w-11 items-center justify-center rounded-(--theme-pager-radius) bg-(--theme-solid-bg) text-(--theme-solid-fg,white) dark:text-(--theme-solid-fg,color-mix(in_oklab,var(--color-black)_70%,transparent))"
           >
             {number}
           </span>
@@ -87,15 +87,15 @@ export function HomePagination({
           to={to}
           search={{ page: page === 2 ? undefined : page - 1 }}
           aria-label={m.home_previous_page()}
-          className={`${buttonClass} text-(--fuwari-primary)`}
+          className={`${buttonClass} text-(--theme-accent)`}
         >
           <ChevronLeft size={28} />
         </Link>
       )}
-      <div className="flex rounded-lg bg-(--fuwari-card-bg) font-bold fuwari-text-75 sm:hidden">
+      <div className="flex rounded-(--theme-pager-radius) bg-(--theme-surface) font-bold fuwari-text-75 sm:hidden">
         {pages(1)}
       </div>
-      <div className="hidden rounded-lg bg-(--fuwari-card-bg) font-bold fuwari-text-75 sm:flex">
+      <div className="hidden rounded-(--theme-pager-radius) bg-(--theme-surface) font-bold fuwari-text-75 sm:flex">
         {pages(5)}
       </div>
       {page === totalPages ? (
@@ -113,7 +113,7 @@ export function HomePagination({
           to={to}
           search={{ page: page + 1 }}
           aria-label={m.home_next_page()}
-          className={`${buttonClass} text-(--fuwari-primary)`}
+          className={`${buttonClass} text-(--theme-accent)`}
         >
           <ChevronRight size={28} />
         </Link>

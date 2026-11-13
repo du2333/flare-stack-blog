@@ -3,8 +3,13 @@ import { cn } from "@/lib/utils";
 import "./button.css";
 
 export interface IconButtonStyle {
-  /** sm 32px, md 36px, lg 44px (the public toolbar). */
-  size?: "sm" | "md" | "lg";
+  /** xs 28px, sm 32px, md 36px, lg 44px (the public toolbar). */
+  size?: "xs" | "sm" | "md" | "lg";
+  /**
+   * plain (the default) rests muted and tints on hover. The Admin's ink is
+   * a solid ink square, its quiet a muted one on a card.
+   */
+  variant?: "plain" | "ink" | "quiet";
   /** Turns red on hover, for destructive actions. */
   tone?: "danger";
   /** Shows the on state, for links; buttons get it from `aria-pressed`. */
@@ -15,6 +20,7 @@ export interface IconButtonStyle {
 /** The look of a square icon button, for links that look like one. */
 export function iconButtonClass({
   size = "sm",
+  variant = "plain",
   tone,
   active = false,
   className,
@@ -22,6 +28,7 @@ export function iconButtonClass({
   return cn(
     "fuwari-icon-button",
     `fuwari-icon-button-${size}`,
+    variant !== "plain" && `fuwari-icon-button-${variant}`,
     tone === "danger" && "fuwari-button-tone-danger",
     active && "fuwari-icon-button-active",
     className,
@@ -45,6 +52,7 @@ export function IconButton({
   label,
   active,
   size,
+  variant,
   tone,
   className,
   children,
@@ -58,7 +66,7 @@ export function IconButton({
       {...props}
       aria-label={label}
       title={label}
-      className={iconButtonClass({ size, tone, active, className })}
+      className={iconButtonClass({ size, variant, tone, active, className })}
     >
       {children}
     </button>
