@@ -16,6 +16,7 @@ import {
   type SystemConfig,
 } from "@/features/config/config.schema";
 import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
+import { NAV_LINK_CHILDREN_MAX } from "@/features/config/utils/nav-links";
 import { m } from "@/paraglide/messages";
 import { SiteStudio } from "./site-studio";
 
@@ -213,4 +214,144 @@ it("points to the personalize page with a quiet hint after the form", () => {
     title.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
   expect(within(hint).getAllByRole("link")).toHaveLength(1);
+});
+
+const child = (label: string, href: string) => ({ label, href });
+const navSite = (navLinks: Array<Record<string, unknown>>) =>
+  ({ navLinks }) as unknown as Partial<NonNullable<SystemConfig["site"]>>;
+const addChildButtons = () =>
+  screen.getAllByRole("button", { name: m.settings_site_nav_child_add() });
+
+it("offers every plain link a quiet add action and keeps its address field", () => {
+  renderSite(
+    navSite([
+      { label: "About", href: "/about" },
+      { label: "Docs", href: "/docs" },
+    ]),
+  );
+  expect(screen.getAllByLabelText(m.settings_site_nav_url())).toHaveLength(2);
+  expect(addChildButtons()).toHaveLength(2);
+  expect(screen.queryByText(m.settings_site_nav_group_note())).toBeNull();
+});
+
+it("turns a link into a group on the first child: the address goes, a note and a child row take its place", () => {
+  const form = renderSite(navSite([{ label: "More", href: "/more" }]));
+  fireEvent.click(addChildButtons()[0]);
+
+  expect(screen.queryByLabelText(m.settings_site_nav_url())).toBeNull();
+  expect(screen.getByText(m.settings_site_nav_group_note())).toBeTruthy();
+  expect(screen.getByLabelText(m.settings_site_nav_child_name())).toBeTruthy();
+  expect(screen.getByLabelText(m.settings_site_nav_child_url())).toBeTruthy();
+  expect(form().getValues("site.navLinks.0.href")).toBe("");
+  expect(form().getValues("site.navLinks.0.children")).toEqual([child("", "")]);
+});
+
+it("turns a group back into a plain link with an empty address when its last child goes", () => {
+  renderSite(
+    navSite([
+      { label: "More", children: [child("A", "/a"), child("B", "/b")] },
+    ]),
+  );
+  expect(screen.queryByLabelText(m.settings_site_nav_url())).toBeNull();
+  const remove = () =>
+    screen.getAllByRole("button", { name: m.settings_site_nav_child_remove() });
+  fireEvent.click(remove()[0]);
+  expect(screen.getByText(m.settings_site_nav_group_note())).toBeTruthy();
+  fireEvent.click(remove()[0]);
+
+  const href = screen.getByLabelText(m.settings_site_nav_url());
+  expect((href as HTMLInputElement).value).toBe("");
+  expect(screen.queryByText(m.settings_site_nav_group_note())).toBeNull();
+});
+
+it("disables the add action at the limit and says why", () => {
+  renderSite(
+    navSite([
+      {
+        label: "More",
+        children: Array.from({ length: NAV_LINK_CHILDREN_MAX }, (_, i) =>
+          child(`C${i}`, `/c${i}`),
+        ),
+      },
+      { label: "Other", href: "/other" },
+    ]),
+  );
+  const [full, other] = addChildButtons();
+  expect((full as HTMLButtonElement).disabled).toBe(true);
+  expect(
+    screen.getByText(
+      m.settings_site_nav_child_limit({ max: NAV_LINK_CHILDREN_MAX }),
+    ),
+  ).toBeTruthy();
+  expect((other as HTMLButtonElement).disabled).toBe(false);
+});
+
+it("sorts children by keyboard inside their group, never across groups", () => {
+  const form = renderSite(
+    navSite([
+      { label: "One", children: [child("A", "/a"), child("B", "/b")] },
+      { label: "Two", children: [child("C", "/c"), child("D", "/d")] },
+    ]),
+  );
+  const handle = (name: string) =>
+    screen.getByRole("button", { name: m.settings_nav_drag_label({ name }) });
+  const labels = () =>
+    form()
+      .getValues("site.navLinks")
+      .map((link) => (link.children ?? []).map((item) => item.label));
+
+  // ArrowDown on the last child of a group has nowhere to go.
+  fireEvent.keyDown(handle("B"), { key: "ArrowDown" });
+  expect(labels()).toEqual([
+    ["A", "B"],
+    ["C", "D"],
+  ]);
+  fireEvent.keyDown(handle("A"), { key: "ArrowDown" });
+  expect(labels()).toEqual([
+    ["B", "A"],
+    ["C", "D"],
+  ]);
+  fireEvent.keyDown(handle("D"), { key: "Home" });
+  expect(labels()).toEqual([
+    ["B", "A"],
+    ["D", "C"],
+  ]);
+});
+
+it("moves a group with its children when the group is sorted", () => {
+  const form = renderSite(
+    navSite([
+      { label: "One", children: [child("A", "/a"), child("B", "/b")] },
+      { label: "Two", href: "/two" },
+    ]),
+  );
+  fireEvent.keyDown(
+    screen.getByRole("button", {
+      name: m.settings_nav_drag_label({ name: "One" }),
+    }),
+    { key: "ArrowDown" },
+  );
+  const links = form().getValues("site.navLinks");
+  expect(links.map((link) => link.label)).toEqual(["Two", "One"]);
+  expect(links[1].children).toEqual([child("A", "/a"), child("B", "/b")]);
+  const names = screen.getAllByLabelText(m.settings_site_nav_child_name());
+  expect(names.map((input) => (input as HTMLInputElement).value)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+it("shows a validation error on the child row it belongs to", () => {
+  const form = renderSite(
+    navSite([{ label: "More", children: [child("A", "/a"), child("", "")] }]),
+  );
+  act(() => {
+    form().setError("site.navLinks.0.children.1.label", {
+      message: "Child name missing",
+    });
+  });
+  const message = screen.getByText("Child name missing");
+  const rows = document.querySelectorAll(".site-nav-children .site-nav-item");
+  expect(rows[1].contains(message)).toBe(true);
+  expect(rows[0].contains(message)).toBe(false);
 });
