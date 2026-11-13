@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ADMIN_COMMENT_VIEWS } from "@/features/comments/admin-comments-search";
 import type { CommentsTable } from "@/lib/db/schema";
 import { COMMENT_STATUSES } from "@/lib/enum-values";
 import { PageOffsetSchema, pageLimitSchema } from "@/lib/orpc/pagination";
@@ -180,9 +181,7 @@ export const CommentsHandledCountSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
-/** The Admin's Comments page: what awaits a reply, or every Comment. */
-export const ADMIN_COMMENT_VIEWS = ["unreplied", "all"] as const;
-export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
+export type { AdminCommentView } from "@/features/comments/admin-comments-search";
 
 /** Comments per page on the Admin's Comments page, unless a caller asks for fewer. */
 export const ADMIN_COMMENTS_PAGE_SIZE = 20;

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { MEDIA_SORTS } from "@/features/media/media.schema";
+import { MEDIA_SORTS } from "@/features/media/utils/media.utils";
 import { MediaLibrary } from "@/features/media/components/media-library";
 import { MediaLibraryPageSkeleton } from "@/features/media/components/media-library/media-library-skeleton";
 import { m } from "@/paraglide/messages";
