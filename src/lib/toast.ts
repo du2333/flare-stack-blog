@@ -7,7 +7,9 @@ import type { toast as sonnerToast } from "sonner";
  * over sonner's `toast` (`provideToast`), then runs. The first call is also
  * what makes the public layout mount that `Toaster` (`LazyToaster`).
  *
- * The Admin imports sonner directly and mounts its `Toaster` up front.
+ * The Admin pages that only it uses import sonner directly and mount its
+ * `Toaster` up front; code that also runs on a public page (the Comments, the
+ * Moment's Admin tools, the media picker) calls this.
  */
 type Sonner = typeof sonnerToast;
 type Message = Parameters<Sonner["success"]>[0];
@@ -39,6 +41,19 @@ export const toast = {
     show((s) => void s.error(message, options)),
   warning: (message: Message, options?: Options) =>
     show((s) => void s.warning(message, options)),
+  info: (message: Message, options?: Options) =>
+    show((s) => void s.info(message, options)),
+  loading: (message: Message, options?: Options) =>
+    show((s) => void s.loading(message, options)),
+  /**
+   * Closes a toast by its `id`. With sonner not loaded and nothing requested
+   * there is nothing on screen to close, so this does not load it; once a
+   * request is waiting it queues behind it, so the order is kept.
+   */
+  dismiss: (id: string) => {
+    if (sonner) sonner.dismiss(id);
+    else if (requested) waiting.push((s) => void s.dismiss(id));
+  },
 };
 
 /** Called by a mounted `Toaster`; shows what was asked for before it was. */

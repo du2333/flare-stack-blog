@@ -12,7 +12,7 @@ import {
 import type { ReactNode } from "react";
 import { createElement } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type {
   AdminMoment,
   PublicMoment,
@@ -31,7 +31,7 @@ vi.mock("@/hooks/use-motion", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
   useMotionPresence: (open: boolean) => open,
 }));
-vi.mock("sonner", () => ({
+vi.mock("@/lib/toast", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 

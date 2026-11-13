@@ -60,14 +60,13 @@ const boundary = vi.hoisted(() => ({
   toastError: vi.fn(),
 }));
 
-vi.mock("sonner", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("sonner")>()),
-  toast: Object.assign(vi.fn(), {
+vi.mock("@/lib/toast", () => ({
+  toast: {
     error: boundary.toastError,
     loading: vi.fn(),
     dismiss: vi.fn(),
     success: vi.fn(),
-  }),
+  },
 }));
 
 vi.mock("@/lib/orpc", async () => {

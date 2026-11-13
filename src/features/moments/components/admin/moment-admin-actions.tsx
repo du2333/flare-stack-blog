@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { IconButton } from "@/components/ui/icon-button";
 import type { PublicMoment } from "@/features/moments/schema/moments.schema";
