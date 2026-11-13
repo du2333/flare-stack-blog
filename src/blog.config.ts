@@ -13,7 +13,6 @@ export const blogConfig = {
   navLinks: [],
   icons: {
     faviconSvg: "/favicon.svg",
-    faviconIco: "/favicon.ico",
     favicon96: "/favicon-96x96.png",
     appleTouchIcon: "/apple-touch-icon.png",
     webApp192: "/web-app-manifest-192x192.png",

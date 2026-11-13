@@ -28,47 +28,6 @@ import { SettingRow } from "./setting-row";
 import { useNavSort } from "./use-nav-sort";
 import "./site-studio.css";
 
-const ICON_ACCEPT = ".svg,.ico,.png,.webp";
-
-const ICON_FIELDS = [
-  {
-    name: "site.icons.faviconSvg" as const,
-    path: "favicon/favicon.svg",
-    accept: ".svg",
-    label: () => m.settings_site_field_favicon_svg(),
-  },
-  {
-    name: "site.icons.faviconIco" as const,
-    path: "favicon/favicon.ico",
-    accept: ".ico",
-    label: () => m.settings_site_field_favicon_ico(),
-  },
-  {
-    name: "site.icons.favicon96" as const,
-    path: "favicon/favicon-96x96.png",
-    accept: ".png",
-    label: () => m.settings_site_field_favicon_96(),
-  },
-  {
-    name: "site.icons.appleTouchIcon" as const,
-    path: "favicon/apple-touch-icon.png",
-    accept: ".png",
-    label: () => m.settings_site_field_apple_touch_icon(),
-  },
-  {
-    name: "site.icons.webApp192" as const,
-    path: "favicon/web-app-manifest-192x192.png",
-    accept: ".png,.webp",
-    label: () => m.settings_site_field_web_app_192(),
-  },
-  {
-    name: "site.icons.webApp512" as const,
-    path: "favicon/web-app-manifest-512x512.png",
-    accept: ".png,.webp",
-    label: () => m.settings_site_field_web_app_512(),
-  },
-];
-
 export function SiteStudio() {
   return (
     <div className="site-studio">
@@ -78,16 +37,6 @@ export function SiteStudio() {
       <AdminFormSection title={m.settings_group_site_links()}>
         <SocialLinksEditor />
         <NavLinksEditor />
-      </AdminFormSection>
-      <AdminFormSection
-        title={m.settings_icons()}
-        description={m.settings_icons_hint()}
-      >
-        <div className="site-icon-grid">
-          {ICON_FIELDS.map((item) => (
-            <IconTile key={item.name} {...item} />
-          ))}
-        </div>
       </AdminFormSection>
       <p className="site-moved-hint">
         {m.settings_site_moved_to_personalize()}
@@ -662,40 +611,5 @@ function SocialLinksEditor() {
         </Button>
       ) : null}
     </AdminFormRow>
-  );
-}
-
-function IconTile({
-  name,
-  path,
-  accept,
-  label,
-}: {
-  name:
-    | "site.icons.faviconSvg"
-    | "site.icons.faviconIco"
-    | "site.icons.favicon96"
-    | "site.icons.appleTouchIcon"
-    | "site.icons.webApp192"
-    | "site.icons.webApp512";
-  path: string;
-  accept: string;
-  label: () => string;
-}) {
-  const { watch } = useFormContext<SystemConfig>();
-  const src = previewSrc(watch(name));
-  return (
-    <div className="site-icon">
-      <span className="site-icon-preview">
-        {src ? <img src={src} alt="" /> : null}
-      </span>
-      <p className="site-icon-name">{label()}</p>
-      <OverlayUpload
-        name={name}
-        assetPath={path}
-        accept={accept || ICON_ACCEPT}
-        variant="outline"
-      />
-    </div>
   );
 }

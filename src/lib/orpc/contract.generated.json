@@ -828,6 +828,16 @@
             "path": "/admin/config/assets"
           }
         }
+      },
+      "uploadIcon": {
+        "~orpc": {
+          "errorMap": {},
+          "meta": {},
+          "route": {
+            "method": "POST",
+            "path": "/admin/config/assets/icon"
+          }
+        }
       }
     }
   },

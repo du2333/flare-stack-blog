@@ -80,20 +80,20 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         },
       ],
       links: [
-        {
-          rel: "icon",
-          type: "image/svg+xml",
-          href: loaderData?.siteConfig?.icons.faviconSvg,
-        },
+        ...(loaderData?.siteConfig?.icons.faviconSvg
+          ? [
+              {
+                rel: "icon",
+                type: "image/svg+xml",
+                href: loaderData.siteConfig.icons.faviconSvg,
+              },
+            ]
+          : []),
         {
           rel: "icon",
           type: "image/png",
           href: loaderData?.siteConfig?.icons.favicon96,
           sizes: "96x96",
-        },
-        {
-          rel: "shortcut icon",
-          href: loaderData?.siteConfig?.icons.faviconIco,
         },
         {
           rel: "apple-touch-icon",

@@ -23,6 +23,13 @@ import { PREVIEW_LOAD_TIMEOUT_MS } from "./preview-stage";
 
 vi.mock("@/lib/orpc", () => ({
   orpcClient: { config: { admin: { uploadAsset: vi.fn() } } },
+  orpc: {
+    config: {
+      admin: {
+        uploadIcon: { mutationOptions: (options: object) => options },
+      },
+    },
+  },
 }));
 let wide = true;
 let queued: Array<() => void> = [];

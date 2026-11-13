@@ -255,6 +255,69 @@ it("saves the personalize page's fields in the Site Config as loaded, leaving th
   });
 });
 
+const uploadedIcons = {
+  favicon96: "/images/asset/favicon/favicon-96x96.png?original=true&v=2",
+  appleTouchIcon:
+    "/images/asset/favicon/apple-touch-icon.png?original=true&v=2",
+  webApp192:
+    "/images/asset/favicon/web-app-manifest-192x192.png?original=true&v=2",
+  webApp512:
+    "/images/asset/favicon/web-app-manifest-512x512.png?original=true&v=2",
+};
+
+/** Puts the addresses of one icon upload into the form, as the icon row does. */
+function uploadIcons(
+  methods: ReturnType<typeof useSystemConfigForm>["methods"],
+) {
+  for (const [field, address] of Object.entries(uploadedIcons)) {
+    methods.setValue(
+      `site.icons.${field as keyof typeof uploadedIcons}`,
+      address,
+      { shouldDirty: true },
+    );
+  }
+}
+
+it("saves the four icon addresses of an upload from the personalize page", async () => {
+  const loaded = loadSavedSite();
+  const { result } = renderHook(() => useSystemConfigForm("personalize"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() => uploadIcons(result.current.methods));
+  expect(result.current.sectionDirty).toBe(true);
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 3, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[0][0].site.icons).toEqual({
+    ...loaded.icons,
+    ...uploadedIcons,
+  });
+});
+
+it("leaves the icons to the personalize page: the site page neither saves nor counts them", async () => {
+  const loaded = loadSavedSite();
+  const { result } = renderHook(() => useSystemConfigForm("site"));
+  await waitFor(() => expect(result.current.baseline.revisions.site).toBe(2));
+  act(() => uploadIcons(result.current.methods));
+  expect(result.current.sectionDirty).toBe(false);
+  act(() =>
+    result.current.methods.setValue("site.title", "New title", {
+      shouldDirty: true,
+    }),
+  );
+  state.save.mockResolvedValue({
+    ...state.snapshot!,
+    revisions: { site: 3, notifications: 3 },
+  });
+  await act(async () => {
+    await result.current.onSubmit();
+  });
+  expect(state.save.mock.calls[0][0].site.icons).toEqual(loaded.icons);
+});
+
 it("marks the page dirty only by the fields it owns", async () => {
   const personalize = renderHook(() => useSystemConfigForm("personalize"));
   const site = renderHook(() => useSystemConfigForm("site"));

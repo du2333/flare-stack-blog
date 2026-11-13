@@ -15,6 +15,7 @@ import {
   ThemeOptionValueSchema,
 } from "@/features/config/site-config.schema";
 import { normalizeNavLinks } from "@/features/config/utils/nav-links";
+import { resolveFaviconSvg } from "@/features/config/utils/site-icon";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import type { WebhookEndpoint } from "@/features/webhook/webhook.schema";
 
@@ -140,10 +141,7 @@ export function resolveSiteConfig(
     social: migrateSocial(config?.site?.social),
     navLinks: normalizeNavLinks(config?.site?.navLinks),
     icons: {
-      faviconSvg:
-        config?.site?.icons?.faviconSvg || blogConfig.icons.faviconSvg,
-      faviconIco:
-        config?.site?.icons?.faviconIco || blogConfig.icons.faviconIco,
+      faviconSvg: resolveFaviconSvg(config?.site?.icons),
       favicon96: config?.site?.icons?.favicon96 || blogConfig.icons.favicon96,
       appleTouchIcon:
         config?.site?.icons?.appleTouchIcon || blogConfig.icons.appleTouchIcon,
