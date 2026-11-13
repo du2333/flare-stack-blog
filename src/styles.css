@@ -142,7 +142,12 @@
     --fuwari-hairline: rgb(255 255 255 / 0.05);
     --fuwari-divider: rgb(255 255 255 / 0.15);
     --fuwari-selection-bg: oklch(0.4 0.08 var(--fuwari-hue));
-    --fuwari-code-bg: var(--fuwari-card-bg);
+    /* A well in dark: code sits a step below the card, towards the page. */
+    --fuwari-code-bg: color-mix(
+      in oklab,
+      var(--fuwari-card-bg) 55%,
+      var(--fuwari-page-bg)
+    );
     --fuwari-input-bg: rgba(255, 255, 255, 0.05);
     --fuwari-input-border: rgba(255, 255, 255, 0.1);
     --fuwari-fg: rgb(255 255 255 / 0.9);
@@ -168,13 +173,13 @@
     --fuwari-danger-bg: oklch(0.33 0.05 var(--fuwari-danger-hue));
   }
 
-  /* Highlighted code keeps Shiki's token colours and takes the Theme's
-     surface: the HTML stored in a snapshot carries the highlighter theme's
+  /* Highlighted code keeps Shiki's token colours and takes the Theme's code
+     fill: the HTML stored in a snapshot carries the highlighter theme's
      background inline (white, and a neutral grey in dark). Painted here, not
      left transparent over the frame, so the code stays on an opaque fill and
      its text is antialiased as before. */
   .shiki {
-    background-color: var(--theme-raised) !important;
+    background-color: var(--theme-code-bg) !important;
   }
   html.dark .shiki,
   html.dark .shiki span {
@@ -716,7 +721,7 @@
 
   .fuwari-code-mask {
     @apply absolute bottom-0 left-0 right-0 h-24 pointer-events-none;
-    background: linear-gradient(to bottom, transparent, var(--theme-raised));
+    background: linear-gradient(to bottom, transparent, var(--theme-code-bg));
     z-index: 10;
   }
 
@@ -899,7 +904,7 @@
   --tw-prose-captions: var(--fuwari-fg-faint);
   --tw-prose-code: var(--fuwari-inline-code-color, var(--theme-tonal-fg));
   --tw-prose-pre-code: var(--theme-tonal-fg);
-  --tw-prose-pre-bg: var(--theme-raised);
+  --tw-prose-pre-bg: var(--theme-code-bg);
   --tw-prose-th-borders: var(--theme-rule, var(--fuwari-meta-divider));
   --tw-prose-td-borders: var(--theme-rule, var(--fuwari-meta-divider));
   color: var(--tw-prose-body);

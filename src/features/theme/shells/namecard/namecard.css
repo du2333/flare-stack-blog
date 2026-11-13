@@ -57,6 +57,8 @@
   /* Content sits on the page itself; only what floats keeps a surface. */
   --theme-surface: var(--fuwari-page-bg);
   --theme-raised: var(--fuwari-card-bg);
+  /* Code is one of the few things with a surface here: raised, not a well. */
+  --theme-code-bg: var(--theme-raised);
   --theme-card-radius: 0;
   --theme-card-shadow: none;
   --theme-rule: var(--namecard-hairline);

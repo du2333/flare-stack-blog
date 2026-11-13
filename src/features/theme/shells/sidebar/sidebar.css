@@ -57,6 +57,8 @@
   --theme-ground: var(--sidebar-ground);
   --theme-surface: var(--sidebar-surface, var(--fuwari-card-bg));
   --theme-raised: var(--sidebar-raised, var(--fuwari-card-bg));
+  /* Code stands a step above the panel it is in, as a menu does. */
+  --theme-code-bg: var(--theme-raised);
   --theme-card-radius: 0.75rem;
   --theme-card-shadow: var(--sidebar-card-shadow);
   --theme-card-shadow-hover: var(--sidebar-tile-shadow-hover);
