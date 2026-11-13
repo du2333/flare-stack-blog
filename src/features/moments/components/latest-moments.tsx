@@ -14,12 +14,13 @@ import {
 import {
   getPublicImageSrc,
   getPublicImageSrcSet,
+  PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { useThemeRecipe } from "@/features/theme/components/theme-recipe";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
-const THUMBNAIL_WIDTH = 120;
+const THUMBNAIL_WIDTH = PUBLIC_IMAGE_WIDTH.thumbnail;
 
 /** What stands beside an entry, after it in a list and before it in a row: the first image with its count, or a video mark. */
 function Thumbnail({ moment }: { moment: PublicMoment }) {
@@ -29,10 +30,7 @@ function Thumbnail({ moment }: { moment: PublicMoment }) {
       <div className="relative size-14 shrink-0 overflow-hidden rounded-lg">
         <img
           src={getPublicImageSrc(first.url, THUMBNAIL_WIDTH)}
-          srcSet={getPublicImageSrcSet(first.url, [
-            THUMBNAIL_WIDTH,
-            THUMBNAIL_WIDTH * 2,
-          ])}
+          srcSet={getPublicImageSrcSet(first.url, [THUMBNAIL_WIDTH])}
           sizes="3.5rem"
           alt=""
           loading="lazy"

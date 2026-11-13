@@ -143,6 +143,8 @@ export function isGifKey(key: string, contentType?: string | null) {
 }
 
 export const PUBLIC_IMAGE_WIDTH = {
+  // Small square thumbnails such as the latest Moments list.
+  thumbnail: 160,
   banner: 1600,
   cover: 800,
   body: 800,
@@ -155,23 +157,6 @@ export const PUBLIC_IMAGE_WIDTH = {
 
 export function getOriginalImageUrl(key: string) {
   return `/images/${key}`;
-}
-
-/**
- * The original an image transform reads. Cloudflare keeps transformed images
- * by their source URL, and only a zone purge clears that, so the source names
- * the stored file's version (its R2 ETag): once a file is replaced at the same
- * key, transforms read and cache the new one.
- */
-export function getTransformSourceUrl(
-  requestUrl: URL,
-  key: string,
-  fileVersion: string,
-) {
-  const source = new URL(getOriginalImageUrl(key), requestUrl.origin);
-  source.searchParams.set("original", "true");
-  source.searchParams.set("v", fileVersion);
-  return source.toString();
 }
 
 export function getOptimizedImageUrl(key: string, width?: number) {
@@ -207,7 +192,7 @@ export function getPublicImageSrc(src: string, width: number) {
 // Cloudflare bills each image and parameter set once a month, so only the
 // widths the site requests are transformed. Anything else gets the original,
 // which keeps arbitrary parameters from using up the transformation quota.
-export const IMAGE_TRANSFORM_WIDTHS = [400, 800, 1600, 2560] as const;
+export const IMAGE_TRANSFORM_WIDTHS = [160, 400, 800, 1600, 2560] as const;
 const IMAGE_TRANSFORM_QUALITY = 80;
 const IMAGE_TRANSFORM_PARAMS = new Set(["width", "quality", "v"]);
 
@@ -239,4 +224,21 @@ export function parseImageTransform(
     quality: IMAGE_TRANSFORM_QUALITY,
     ...(format ? { format } : {}),
   };
+}
+
+/**
+ * The format a public image request is answered in, by the rules the image
+ * route applies: "avif" or "webp" from the Accept header, "source" for a
+ * transform that keeps the stored format, or null when the original is
+ * served. The edge cache keys on this, so it must not drift from the route.
+ */
+export function imageServedFormat(
+  key: string,
+  searchParams: URLSearchParams,
+  accept: string,
+) {
+  if (isGifKey(key)) return null;
+  const transform = parseImageTransform(searchParams, accept);
+  if (!transform) return null;
+  return transform.format ?? "source";
 }

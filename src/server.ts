@@ -58,15 +58,13 @@ export default {
     }
     const locale = extractLocaleFromRequest(request);
     const app = ctx.exports.App({ props: { locale } });
-    const route = workersCacheRoute(request);
+    const route = workersCacheRoute(request, __BUILD_ID__);
     if (route.cache === "bypass") {
       // A Theme preview: neither read from the cache nor stored in it.
       return app.fetch(route.request, { cache: "no-store" });
     }
     return app.fetch(route.request, {
-      // Cached pages name the hashed assets of the build that rendered them,
-      // and a deploy removes those assets, so each build gets its own keys.
-      cf: { cacheKey: `/_build/${__BUILD_ID__}${route.cacheKey}` },
+      cf: { cacheKey: route.cacheKey },
     });
   },
   async queue(batch, env, ctx) {
