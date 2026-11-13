@@ -208,6 +208,11 @@
    footer shows. */
 .immersive-shell {
   --immersive-banner-h: max(47svh, 14rem);
+  /* How much of the banner's foot dissolves into the wash
+     (first-screen.css). On the home page it starts under the introduction,
+     or just into its last row, where the image is still nine tenths
+     there. */
+  --immersive-fade: 6rem;
   --immersive-condense-at: max(
     2.5rem,
     calc(var(--immersive-banner-h) - 10.5rem)
@@ -232,9 +237,23 @@
 .immersive-shell[data-focused="true"] {
   --immersive-banner-h: max(24svh, 11rem);
 }
+/* The fade is as long as the band can spare: the tall first screen has the
+   most, the low band of a focused page the least. */
+.immersive-shell[data-home="true"] {
+  --immersive-fade: 7rem;
+}
+.immersive-shell[data-focused="true"] {
+  --immersive-fade: 4rem;
+}
 @media (width >= 64rem) {
   .immersive-shell {
     --immersive-lane: 5.5rem;
+  }
+}
+/* A phone's introduction ends 5rem above the banner's foot. */
+@media (max-width: 767px) {
+  .immersive-shell[data-home="true"] {
+    --immersive-fade: 5rem;
   }
 }
 

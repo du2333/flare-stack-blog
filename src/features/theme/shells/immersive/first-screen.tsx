@@ -138,24 +138,28 @@ export function FirstScreen({
         />
       </div>
       <section className="immersive-first-screen" data-home={home}>
-        <div className="immersive-banner">
-          <img
-            src={getPublicImageSrc(
-              siteConfig.bannerImage,
-              PUBLIC_IMAGE_WIDTH.banner,
-            )}
-            alt="banner"
-            fetchPriority={home ? "high" : "auto"}
-            style={
-              bannerCentred
-                ? undefined
-                : {
-                    objectPosition: focalObjectPosition(bannerFocus),
-                  }
-            }
-          />
+        {/* One still box around the image and its shade, for the mask that
+            dissolves both into the wash: the banner itself drifts. */}
+        <div className="immersive-backdrop">
+          <div className="immersive-banner">
+            <img
+              src={getPublicImageSrc(
+                siteConfig.bannerImage,
+                PUBLIC_IMAGE_WIDTH.banner,
+              )}
+              alt="banner"
+              fetchPriority={home ? "high" : "auto"}
+              style={
+                bannerCentred
+                  ? undefined
+                  : {
+                      objectPosition: focalObjectPosition(bannerFocus),
+                    }
+              }
+            />
+          </div>
+          <div className="immersive-shade" aria-hidden="true" />
         </div>
-        <div className="immersive-shade" aria-hidden="true" />
         {present ? (
           <div
             ref={introRef}
