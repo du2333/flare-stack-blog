@@ -3,7 +3,9 @@
  *
  *   bun run worktree:setup --port 3506
  *
- * Installs dependencies (through scripts/heavy.sh), copies the sample data from
+ * Installs dependencies (through scripts/heavy.sh) and fails when that left a
+ * nested copy of a package that must be single (check-single-packages.ts),
+ * copies the sample data from
  * `<git common dir>/sample-data/.wrangler` into `./.wrangler`, and writes
  * `./.dev.vars` from the main checkout's with BETTER_AUTH_URL for that port.
  * It reads the main checkout and never writes there.
@@ -13,6 +15,7 @@ import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
+import { checkSinglePackages } from "./check-single-packages.ts";
 
 /** `.dev.vars` content with BETTER_AUTH_URL pointing at the local port. */
 export function withAuthUrl(content: string, port: number) {
@@ -80,6 +83,11 @@ function main() {
     { cwd: here, stdio: "inherit" },
   );
   if (install.status !== 0) fail("bun install failed");
+
+  // A second router in node_modules installs without a word and only shows as
+  // hundreds of tsc errors later.
+  const duplicates = checkSinglePackages(path.join(here, "node_modules"));
+  if (duplicates) fail(duplicates);
 
   if (existsSync(path.join(here, ".wrangler"))) {
     console.log(".wrangler already here, kept as it is");
