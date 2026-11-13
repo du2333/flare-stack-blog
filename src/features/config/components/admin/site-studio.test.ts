@@ -297,7 +297,7 @@ it("sorts children by keyboard inside their group, never across groups", () => {
     screen.getByRole("button", { name: m.settings_nav_drag_label({ name }) });
   const labels = () =>
     form()
-      .getValues("site.navLinks")
+      .getValues("site.navLinks")!
       .map((link) => (link.children ?? []).map((item) => item.label));
 
   // ArrowDown on the last child of a group has nowhere to go.
@@ -331,7 +331,7 @@ it("moves a group with its children when the group is sorted", () => {
     }),
     { key: "ArrowDown" },
   );
-  const links = form().getValues("site.navLinks");
+  const links = form().getValues("site.navLinks")!;
   expect(links.map((link) => link.label)).toEqual(["Two", "One"]);
   expect(links[1].children).toEqual([child("A", "/a"), child("B", "/b")]);
   const names = screen.getAllByLabelText(m.settings_site_nav_child_name());
