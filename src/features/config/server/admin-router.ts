@@ -15,9 +15,9 @@ import {
   SITE_ICON_MIN_SIZE,
   SITE_ICON_SIZES,
   SITE_ICON_SVG_PATH,
+  type SiteIconField,
 } from "@/features/config/utils/site-icon";
 import { adminProcedure } from "@/lib/orpc/procedure";
-import { unwrapResult } from "@/lib/orpc/unwrap-result";
 
 const getSystem = adminProcedure
   .errors(CONFIG_ERRORS)
@@ -90,27 +90,44 @@ const SITE_ICON_DETAILS = [
   "UNREADABLE",
 ] as const;
 
+const siteIconErrors = {
+  SITE_ICON_INVALID: {
+    status: 400,
+    message: "The site icon was refused; nothing was stored.",
+    data: z.object({
+      detail: z
+        .enum(SITE_ICON_DETAILS)
+        .describe(
+          `Why. UNSUPPORTED_TYPE: the bytes are not a PNG or a JPEG. NOT_SQUARE: width and height differ. TOO_SMALL: narrower than ${SITE_ICON_MIN_SIZE} px. UNREADABLE: the image could not be read.`,
+        ),
+      width: z.number().int().optional().describe("The image's width in px."),
+      height: z.number().int().optional().describe("The image's height in px."),
+    }),
+  },
+  SITE_ICON_STORE_FAILED: {
+    status: 500,
+    message:
+      "The site icon could not be stored. Upload it again; the saved config is unchanged.",
+  },
+} as const;
+
+// One address per size an upload makes, named as in config.site.icons.
+const siteIconAddresses = z.object(
+  Object.fromEntries(
+    SITE_ICON_SIZES.map(({ field, size }) => [
+      field,
+      z.string().describe(`The ${size}×${size} icon's address.`),
+    ]),
+  ) as Record<SiteIconField, z.ZodString>,
+);
+
 const uploadIcon = adminProcedure
-  .errors({
-    SITE_ICON_INVALID: {
-      status: 400,
-      message: "The site icon was refused; the saved icons are unchanged.",
-      data: z.object({
-        detail: z
-          .enum(SITE_ICON_DETAILS)
-          .describe(
-            `Why. UNSUPPORTED_TYPE: the bytes are not a PNG or a JPEG. NOT_SQUARE: width and height differ. TOO_SMALL: narrower than ${SITE_ICON_MIN_SIZE} px. UNREADABLE: the image could not be read.`,
-          ),
-        width: z.number().optional(),
-        height: z.number().optional(),
-      }),
-    },
-  })
+  .errors(siteIconErrors)
   .route({
     method: "POST",
     path: "/admin/config/assets/icon",
     summary: "Upload the site icon",
-    description: `Takes one square PNG or JPEG of at least ${SITE_ICON_MIN_SIZE}×${SITE_ICON_MIN_SIZE} and stores it as the site's raster icons: PNGs of ${SITE_ICON_SIZES.map((target) => target.size).join(", ")} px, made at upload. Returns their addresses for config.site.icons (favicon96, appleTouchIcon, webApp192, webApp512); save them with PATCH /admin/config. resized is false when the sizes could not be made (for example, the image transform quota is used up) and each address holds the original file. The vector tab icon is a separate SVG, uploaded with POST /admin/config/assets to ${SITE_ICON_SVG_PATH}. Answers 400 SITE_ICON_INVALID when the image is refused; data.detail says why.`,
+    description: `Takes one square PNG or JPEG of at least ${SITE_ICON_MIN_SIZE}×${SITE_ICON_MIN_SIZE} and makes the site's raster icons from it: PNGs of ${SITE_ICON_SIZES.map((target) => target.size).join(", ")} px. The files at their fixed object-storage paths are replaced at upload, before any config is saved; discarding an unsaved settings draft does not revert them. Returns their addresses for config.site.icons; save them with PATCH /admin/config. resized is false when the sizes could not be made (for example, the image transform quota is used up) and each address holds the original file. The vector tab icon is a separate SVG, uploaded with POST /admin/config/assets to ${SITE_ICON_SVG_PATH}. Answers 400 SITE_ICON_INVALID when the image is refused, with data.detail saying why, and nothing is stored.`,
     tags: ["Admin Config"],
   })
   .input(
@@ -123,12 +140,7 @@ const uploadIcon = adminProcedure
   )
   .output(
     z.object({
-      icons: z.object({
-        favicon96: z.string(),
-        appleTouchIcon: z.string(),
-        webApp192: z.string(),
-        webApp512: z.string(),
-      }),
+      icons: siteIconAddresses,
       resized: z
         .boolean()
         .describe(
@@ -136,28 +148,41 @@ const uploadIcon = adminProcedure
         ),
     }),
   )
-  .handler(({ context, input, errors }) => {
-    const invalid = (
-      detail: (typeof SITE_ICON_DETAILS)[number],
-      size: { width?: number; height?: number } = {},
-    ) => errors.SITE_ICON_INVALID({ data: { detail, ...size } });
-    return unwrapResult(
-      ConfigService.uploadSiteIcon(context, { file: input.file }),
-      {
-        SITE_ICON_UNSUPPORTED_TYPE: () => {
-          throw invalid("UNSUPPORTED_TYPE");
-        },
-        SITE_ICON_NOT_SQUARE: ({ width, height }) => {
-          throw invalid("NOT_SQUARE", { width, height });
-        },
-        SITE_ICON_TOO_SMALL: ({ width, height }) => {
-          throw invalid("TOO_SMALL", { width, height });
-        },
-        SITE_ICON_UNREADABLE: () => {
-          throw invalid("UNREADABLE");
-        },
-      },
-    );
+  .handler(async ({ context, input, errors }) => {
+    const result = await ConfigService.uploadSiteIcon(context, {
+      file: input.file,
+    });
+    if (!result.error) return result.data;
+    const error = result.error;
+    switch (error.reason) {
+      case "SITE_ICON_UNSUPPORTED_TYPE":
+        throw errors.SITE_ICON_INVALID({
+          data: { detail: "UNSUPPORTED_TYPE" },
+        });
+      case "SITE_ICON_UNREADABLE":
+        throw errors.SITE_ICON_INVALID({ data: { detail: "UNREADABLE" } });
+      case "SITE_ICON_NOT_SQUARE":
+        throw errors.SITE_ICON_INVALID({
+          data: {
+            detail: "NOT_SQUARE",
+            width: error.width,
+            height: error.height,
+          },
+        });
+      case "SITE_ICON_TOO_SMALL":
+        throw errors.SITE_ICON_INVALID({
+          data: {
+            detail: "TOO_SMALL",
+            width: error.width,
+            height: error.height,
+          },
+        });
+      case "SITE_ICON_STORE_FAILED":
+        throw errors.SITE_ICON_STORE_FAILED();
+      default:
+        error satisfies never;
+        throw new Error("Unknown site icon error");
+    }
   });
 
 export default {

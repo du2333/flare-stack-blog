@@ -47,7 +47,6 @@ it("refuses a square smaller than the minimum", () => {
     reason: "SITE_ICON_TOO_SMALL",
     width: 400,
     height: 400,
-    min: 512,
   });
   expect(
     planSiteIcon({ format: "image/png", width: 511, height: 511 }).error
@@ -58,7 +57,6 @@ it("refuses a square smaller than the minimum", () => {
 it("refuses anything but a PNG or a JPEG by its bytes", () => {
   expect(planSiteIcon({ format: "image/svg+xml" }).error).toEqual({
     reason: "SITE_ICON_UNSUPPORTED_TYPE",
-    format: "image/svg+xml",
   });
   for (const format of ["image/webp", "image/gif"])
     expect(

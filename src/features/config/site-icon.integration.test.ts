@@ -159,6 +159,55 @@ describe("uploading the site icon", () => {
       "earlier icon",
     );
   });
+
+  it("refuses an image the binding cannot read and writes nothing", async () => {
+    await env.R2.put("asset/favicon/favicon-96x96.png", "earlier icon");
+    const { images, transforms } = fakeImages(square);
+    const unreadable = Object.assign(images, {
+      info: async () => {
+        throw Object.assign(new Error("IMAGES_INFO_ERROR 9412: not an image"), {
+          code: 9412,
+        });
+      },
+    });
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await upload(
+      unreadable,
+      new File(["not an image"], "icon.png", { type: "image/png" }),
+    );
+
+    expect(result.error).toEqual({ reason: "SITE_ICON_UNREADABLE" });
+    expect(transforms).toEqual([]);
+    expect((await stored("favicon/favicon-96x96.png")).body).toBe(
+      "earlier icon",
+    );
+    expect(JSON.parse(String(logged.mock.calls[0]?.[0]))).toEqual({
+      message: "site icon info error",
+      error: "IMAGES_INFO_ERROR 9412: not an image",
+    });
+  });
+
+  it("answers a failed write as a failed upload, logged", async () => {
+    const { images } = fakeImages(square);
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const failingR2 = {
+      put: async () => {
+        throw new Error("R2 put failed");
+      },
+    } as unknown as R2Bucket;
+
+    const result = await ConfigService.uploadSiteIcon(
+      { env: { ...env, IMAGES: images, R2: failingR2 } },
+      { file: new File(["icon bytes"], "icon.png", { type: "image/png" }) },
+    );
+
+    expect(result.error).toEqual({ reason: "SITE_ICON_STORE_FAILED" });
+    expect(JSON.parse(String(logged.mock.calls[0]?.[0]))).toEqual({
+      message: "site icon store error",
+      error: "R2 put failed",
+    });
+  });
 });
 
 /** A request from someone with this role (null: signed out). */
@@ -235,5 +284,23 @@ describe("the site icon procedure", () => {
       code: "SITE_ICON_INVALID",
       data: { detail: "NOT_SQUARE", width: 800, height: 600 },
     });
+  });
+
+  it("answers a failed write with its own error", async () => {
+    const { images } = fakeImages(square);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const context = contextOf("admin", images);
+    context.env = {
+      ...context.env,
+      R2: {
+        put: async () => {
+          throw new Error("R2 put failed");
+        },
+      } as unknown as R2Bucket,
+    };
+
+    await expect(
+      call(adminRouter.uploadIcon, { file: file() }, { context }),
+    ).rejects.toMatchObject({ code: "SITE_ICON_STORE_FAILED", status: 500 });
   });
 });

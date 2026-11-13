@@ -19,6 +19,7 @@ import {
   type SiteIconField,
   type SiteIconInfo,
   type SiteIconRejection,
+  type SiteIconSize,
 } from "@/features/config/utils/site-icon";
 import * as Storage from "@/features/media/data/media.storage";
 import { err, ok, type Result } from "@/lib/errors";
@@ -231,14 +232,18 @@ export async function uploadSiteAsset(
     input.file,
     input.assetPath,
   );
+  return { url: siteAssetAddress(url, input.assetPath) };
+}
 
-  const timestamp = Math.floor(Date.now() / 1000);
-  const isFavicon = input.assetPath.startsWith("favicon/");
-  const finalUrl = isFavicon
-    ? `${url}?original=true&v=${timestamp}`
-    : `${url}?v=${timestamp}`;
-
-  return { url: finalUrl };
+/**
+ * The address a stored site asset is saved under: the version busts caches,
+ * and a favicon is served as stored.
+ */
+function siteAssetAddress(url: string, assetPath: string) {
+  const version = Math.floor(Date.now() / 1000);
+  return assetPath.startsWith("favicon/")
+    ? `${url}?original=true&v=${version}`
+    : `${url}?v=${version}`;
 }
 
 export type SiteIconUpload = {
@@ -246,6 +251,11 @@ export type SiteIconUpload = {
   /** False when the sizes could not be made and each holds the original. */
   resized: boolean;
 };
+
+export type SiteIconError =
+  | SiteIconRejection
+  | { reason: "SITE_ICON_UNREADABLE" }
+  | { reason: "SITE_ICON_STORE_FAILED" };
 
 /**
  * Stores one square PNG or JPEG as the site's raster icons: the Images binding
@@ -257,9 +267,7 @@ export type SiteIconUpload = {
 export async function uploadSiteIcon(
   context: { env: Env },
   input: { file: File },
-): Promise<
-  Result<SiteIconUpload, SiteIconRejection | { reason: "SITE_ICON_UNREADABLE" }>
-> {
+): Promise<Result<SiteIconUpload, SiteIconError>> {
   const { env } = context;
   const { file } = input;
 
@@ -275,42 +283,44 @@ export async function uploadSiteIcon(
   const plan = planSiteIcon(info);
   if (plan.error) return plan;
 
-  let files: Array<File>;
+  let outputs: Array<{ target: SiteIconSize; file: File }>;
   let resized = true;
   try {
-    files = await Promise.all(
+    outputs = await Promise.all(
       plan.data.map(async (target) => {
         const result = await env.IMAGES.input(file.stream())
           .transform({ width: target.size, height: target.size, fit: "cover" })
           .output({ format: "image/png" });
         const bytes = await result.response().arrayBuffer();
-        return new File([bytes], `${target.field}.png`, {
+        const png = new File([bytes], `${target.field}.png`, {
           type: "image/png",
         });
+        return { target, file: png };
       }),
     );
   } catch (error) {
     logIconError("site icon transform error", error);
-    files = plan.data.map(() => file);
+    outputs = plan.data.map((target) => ({ target, file }));
     resized = false;
   }
 
-  const timestamp = Math.floor(Date.now() / 1000);
-  const stored = await Promise.all(
-    plan.data.map(async (target, index) => {
-      const { url } = await Storage.putSiteAsset(
-        env,
-        files[index] ?? file,
-        target.path,
-      );
-      return [target.field, `${url}?original=true&v=${timestamp}`] as const;
-    }),
-  );
-
-  return ok({
-    icons: Object.fromEntries(stored) as Record<SiteIconField, string>,
-    resized,
-  });
+  // A failed write may leave some paths replaced; the saved addresses stay as
+  // they were until the config is saved, and the Admin uploads again.
+  try {
+    const stored = await Promise.all(
+      outputs.map(async ({ target, file: output }) => {
+        const { url } = await Storage.putSiteAsset(env, output, target.path);
+        return [target.field, siteAssetAddress(url, target.path)] as const;
+      }),
+    );
+    return ok({
+      icons: Object.fromEntries(stored) as Record<SiteIconField, string>,
+      resized,
+    });
+  } catch (error) {
+    logIconError("site icon store error", error);
+    return err({ reason: "SITE_ICON_STORE_FAILED" });
+  }
 }
 
 function logIconError(message: string, error: unknown) {

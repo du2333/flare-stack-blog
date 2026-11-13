@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "@/lib/errors/error";
+import { err, ok, type Result } from "@/lib/errors";
 import { blogConfig } from "@/blog.config";
 
 /** The square raster icon is at least this wide; the largest size made from it is 512. */
@@ -37,14 +37,9 @@ export type SiteIconInfo =
   | { format: string; width: number; height: number };
 
 export type SiteIconRejection =
-  | { reason: "SITE_ICON_UNSUPPORTED_TYPE"; format: string }
+  | { reason: "SITE_ICON_UNSUPPORTED_TYPE" }
   | { reason: "SITE_ICON_NOT_SQUARE"; width: number; height: number }
-  | {
-      reason: "SITE_ICON_TOO_SMALL";
-      width: number;
-      height: number;
-      min: number;
-    };
+  | { reason: "SITE_ICON_TOO_SMALL"; width: number; height: number };
 
 /**
  * The sizes to make from an uploaded icon, or why it is refused: it must be a
@@ -59,19 +54,14 @@ export function planSiteIcon(
     !("width" in info) ||
     !(SITE_ICON_ACCEPTED_TYPES as ReadonlyArray<string>).includes(format)
   ) {
-    return err({ reason: "SITE_ICON_UNSUPPORTED_TYPE", format });
+    return err({ reason: "SITE_ICON_UNSUPPORTED_TYPE" });
   }
   const { width, height } = info;
   if (width !== height) {
     return err({ reason: "SITE_ICON_NOT_SQUARE", width, height });
   }
   if (width < SITE_ICON_MIN_SIZE) {
-    return err({
-      reason: "SITE_ICON_TOO_SMALL",
-      width,
-      height,
-      min: SITE_ICON_MIN_SIZE,
-    });
+    return err({ reason: "SITE_ICON_TOO_SMALL", width, height });
   }
   return ok(SITE_ICON_SIZES);
 }
