@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * A group of the navigation in a bar: a trigger with the group's name, and a
- * menu of its links below it on the shared float surface (`--theme-float-*`).
+ * menu of its links below it on the shared float surface (`.fuwari-float`).
  * The group leads nowhere itself. A click opens and closes the menu, a mouse
  * resting on the trigger opens it and leaving closes it shortly after; Enter
  * or Space opens it on the current link or the first, the arrows move between
