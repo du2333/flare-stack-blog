@@ -1,19 +1,16 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
 import { FRIEND_LINK_STATUSES } from "@/lib/enum-values";
 
 /** The Admin's Friend Links address. */
 export const adminFriendLinksSearchSchema = z.object({
-  search: z
-    .string()
-    .max(SEARCH_TEXT_MAX_LENGTH)
-    .optional()
-    .default("")
-    .catch(""),
-  status: z
-    .enum(FRIEND_LINK_STATUSES)
-    .optional()
-    .default("pending")
-    .catch("pending"),
-  page: z.number().int().positive().optional().default(1).catch(1),
+  search: z.catch(
+    z._default(z.string().check(z.maxLength(SEARCH_TEXT_MAX_LENGTH)), ""),
+    "",
+  ),
+  status: z.catch(
+    z._default(z.enum(FRIEND_LINK_STATUSES), "pending"),
+    "pending",
+  ),
+  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
 });

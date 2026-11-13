@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
 
 /**
@@ -11,19 +11,16 @@ export type AdminCommentView = (typeof ADMIN_COMMENT_VIEWS)[number];
 
 /** The Admin's Comments address. */
 export const adminCommentsSearchSchema = z.object({
-  view: z
-    .enum(ADMIN_COMMENT_VIEWS)
-    .optional()
-    .default("unreplied")
-    .catch("unreplied"),
-  page: z.number().int().positive().optional().default(1).catch(1),
-  search: z
-    .string()
-    .max(SEARCH_TEXT_MAX_LENGTH)
-    .optional()
-    .default("")
-    .catch(""),
-  post: z.number().int().positive().optional().catch(undefined),
+  view: z.catch(
+    z._default(z.enum(ADMIN_COMMENT_VIEWS), "unreplied"),
+    "unreplied",
+  ),
+  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
+  search: z.catch(
+    z._default(z.string().check(z.maxLength(SEARCH_TEXT_MAX_LENGTH)), ""),
+    "",
+  ),
+  post: z.catch(z.optional(z.int().check(z.positive())), undefined),
 });
 
 interface AdminCommentsAddress {

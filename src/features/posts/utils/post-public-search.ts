@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 
 /** A name given as `""` names no filter. */
 export function normalizePostTagName(
@@ -15,12 +15,24 @@ export function normalizePostCategoryName(
 
 /** The address of the public posts page: a Tag or a Category, or the uncategorized. */
 export const postsPublicSearchSchema = z.object({
-  tagName: z.string().transform(normalizePostTagName).optional(),
-  categoryName: z.string().transform(normalizePostCategoryName).optional(),
-  uncategorized: z
-    .union([z.boolean(), z.literal("true"), z.literal("false")])
-    .transform((value) => value === true || value === "true")
-    .optional(),
+  tagName: z.optional(
+    z.pipe(
+      z.string(),
+      z.transform((name: string) => normalizePostTagName(name)),
+    ),
+  ),
+  categoryName: z.optional(
+    z.pipe(
+      z.string(),
+      z.transform((name: string) => normalizePostCategoryName(name)),
+    ),
+  ),
+  uncategorized: z.optional(
+    z.pipe(
+      z.union([z.boolean(), z.literal("true"), z.literal("false")]),
+      z.transform((value) => value === true || value === "true"),
+    ),
+  ),
 });
 
 export type PostsPublicSearch = {

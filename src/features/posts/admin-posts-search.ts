@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 import {
   SORT_FIELDS,
   STATUS_FILTERS,
@@ -6,19 +6,15 @@ import {
 
 /** The Admin's Posts list address. */
 export const adminPostsSearchSchema = z.object({
-  page: z.number().int().positive().optional().default(1).catch(1),
-  status: z.enum(STATUS_FILTERS).optional().default("ALL").catch("ALL"),
-  sortBy: z
-    .enum(SORT_FIELDS)
-    .optional()
-    .default("updatedAt")
-    .catch("updatedAt"),
-  search: z.string().optional().default("").catch(""),
-  category: z
-    .union([z.number().int().positive(), z.literal("none")])
-    .optional()
-    .catch(undefined),
-  tag: z.number().int().positive().optional().catch(undefined),
+  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
+  status: z.catch(z._default(z.enum(STATUS_FILTERS), "ALL"), "ALL"),
+  sortBy: z.catch(z._default(z.enum(SORT_FIELDS), "updatedAt"), "updatedAt"),
+  search: z.catch(z._default(z.string(), ""), ""),
+  category: z.catch(
+    z.optional(z.union([z.int().check(z.positive()), z.literal("none")])),
+    undefined,
+  ),
+  tag: z.catch(z.optional(z.int().check(z.positive())), undefined),
 });
 
 export type AdminPostsSearch = z.infer<typeof adminPostsSearchSchema>;
