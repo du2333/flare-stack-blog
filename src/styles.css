@@ -168,10 +168,17 @@
     --fuwari-danger-bg: oklch(0.33 0.05 var(--fuwari-danger-hue));
   }
 
+  /* Highlighted code keeps Shiki's token colours and takes the Theme's
+     surface: the HTML stored in a snapshot carries the highlighter theme's
+     background inline (white, and a neutral grey in dark). Painted here, not
+     left transparent over the frame, so the code stays on an opaque fill and
+     its text is antialiased as before. */
+  .shiki {
+    background-color: var(--theme-raised) !important;
+  }
   html.dark .shiki,
   html.dark .shiki span {
     color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
   }
