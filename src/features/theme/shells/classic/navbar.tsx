@@ -120,6 +120,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
               <NavGroupMenu
                 key={option.id}
                 group={option}
+                navOptions={navOptions}
                 className="public-nav-link"
                 activeClassName="public-nav-active"
               />

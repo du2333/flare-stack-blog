@@ -1,7 +1,13 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
-import type { NavGroupOption } from "@/components/layout/layout-props";
-import { isNavOptionCurrent } from "@/components/layout/nav-options";
+import type {
+  NavGroupOption,
+  NavOption,
+} from "@/components/layout/layout-props";
+import {
+  currentNavLink,
+  isNavOptionCurrent,
+} from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { Menu, MenuLinkItem } from "@/components/ui/menu";
 import { cn } from "@/lib/utils";
@@ -12,29 +18,36 @@ import { cn } from "@/lib/utils";
  * The group leads nowhere itself. A click opens and closes the menu, a mouse
  * resting on the trigger opens it and leaving closes it shortly after; Enter
  * or Space opens it on the current link or the first, the arrows move between
- * the links, and Escape closes it back onto the trigger. The trigger is marked
- * current (`activeClassName`, `data-current`) while one of the links is the
- * page, and so is that link in the menu.
+ * the links, and Escape closes it back onto the trigger.
+ *
+ * `navOptions` is the whole navigation the group stands in, which decides the
+ * one current link (`currentNavLink`). While the group holds it, the trigger
+ * is marked current (`aria-current`, `data-current`, `activeClassName`), and
+ * so is that link in the menu.
  *
  * `className` is the shell's for its navigation entries; the trigger is a
  * `button`, and its chevron turns while the menu is open.
  */
 export function NavGroupMenu({
   group,
+  navOptions,
   className,
   activeClassName,
 }: {
   group: NavGroupOption;
+  navOptions: ReadonlyArray<NavOption>;
   className?: string;
   activeClassName?: string;
 }) {
   const pathname = useLocation({ select: (location) => location.pathname });
-  const current = isNavOptionCurrent(group, pathname);
+  const currentLink = currentNavLink(navOptions, pathname);
+  const current = isNavOptionCurrent(group, currentLink);
   return (
     <Menu
       label={group.label}
       placement="bottom-start"
       openOnHover
+      triggerCurrent={current}
       triggerClassName={cn(
         "group/nav-group",
         className,
@@ -56,7 +69,7 @@ export function NavGroupMenu({
       {group.children.map((child) => (
         <MenuLinkItem
           key={child.id}
-          current={isNavOptionCurrent(child, pathname)}
+          current={isNavOptionCurrent(child, currentLink)}
           render={(props) => <PublicNavLink option={child} {...props} />}
         />
       ))}

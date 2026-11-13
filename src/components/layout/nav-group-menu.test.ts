@@ -15,7 +15,10 @@ import {
 import { createElement } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { NavGroupOption } from "@/components/layout/layout-props";
+import type {
+  NavGroupOption,
+  NavOption,
+} from "@/components/layout/layout-props";
 import {
   MENU_HOVER_CLOSE_DELAY,
   MENU_HOVER_OPEN_DELAY,
@@ -52,14 +55,19 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function renderGroup(path = "/") {
+async function renderGroup(
+  path = "/",
+  group: NavGroupOption = GROUP,
+  navOptions: Array<NavOption> = [group],
+) {
   const root = createRootRoute({
     component: () =>
       createElement(
         "nav",
         null,
         createElement(NavGroupMenu, {
-          group: GROUP,
+          group,
+          navOptions,
           className: "entry",
           activeClassName: "entry-current",
         }),
@@ -149,6 +157,7 @@ describe("NavGroupMenu", () => {
 
     expect(trigger.className).toContain("entry-current");
     expect(trigger.getAttribute("data-current")).toBe("true");
+    expect(trigger.getAttribute("aria-current")).toBe("true");
     fireEvent.click(trigger);
     const tags = await findInPopover("menuitem", { name: "Tags" });
     expect(tags.getAttribute("aria-current")).toBe("page");
@@ -165,6 +174,47 @@ describe("NavGroupMenu", () => {
     const trigger = await renderGroup("/posts");
     expect(trigger.className).not.toContain("entry-current");
     expect(trigger.hasAttribute("data-current")).toBe(false);
+    expect(trigger.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("is current by the one rule of the whole navigation", async () => {
+    const group: NavGroupOption = {
+      id: "custom-0",
+      label: "Elsewhere",
+      children: [
+        { id: "custom-0-0", label: "Deep", href: "/posts/x", external: false },
+      ],
+    };
+    const posts = {
+      id: "posts",
+      label: "Posts",
+      href: "/posts",
+      external: false,
+    };
+    // Under /posts/x the group's longer address wins over the Post list.
+    let trigger = await renderGroup("/posts/x", group, [posts, group]);
+    expect(trigger.getAttribute("aria-current")).toBe("true");
+    cleanup();
+    // Under /posts/y the Post list wins, and the group is not current.
+    trigger = await renderGroup("/posts/y", group, [posts, group]);
+    expect(trigger.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("closes a menu the mouse opened once Tab moves focus on from the trigger", async () => {
+    const trigger = await renderGroup();
+    trigger.focus();
+    vi.useFakeTimers();
+    fireEvent.pointerOver(trigger, { pointerType: "mouse" });
+    act(() => {
+      vi.advanceTimersByTime(MENU_HOVER_OPEN_DELAY);
+    });
+    vi.useRealTimers();
+    const menu = await findInPopover("menu");
+    expect(document.activeElement).toBe(trigger);
+
+    const after = screen.getByRole("link", { name: "After" });
+    fireEvent.blur(trigger, { relatedTarget: after });
+    expect(menu.isConnected).toBe(false);
   });
 
   it("opens while a mouse rests on it, without taking focus, and closes once it has left", async () => {

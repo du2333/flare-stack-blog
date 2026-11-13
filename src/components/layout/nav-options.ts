@@ -54,7 +54,7 @@ export function flattenNavOptions(
 }
 
 /** A path without its query, hash and trailing slash, decoded. */
-function normalisePath(href: string) {
+export function normaliseNavPath(href: string) {
   let path = href.split(/[?#]/)[0] ?? "";
   try {
     path = decodeURIComponent(path);
@@ -65,20 +65,51 @@ function normalisePath(href: string) {
 }
 
 /**
- * Whether a navigation entry is the page at `pathname`: a link when the page
- * is its address or lies under it (the home link only on the home page), the
- * rule the router's own links mark themselves by; a group when any of its
- * links is. An external link never is.
+ * The one link of the navigation that the page at `pathname` belongs to, or
+ * null: the link whose address is the page's or leads to it (the home link
+ * on the home page only), the longest such address winning, so a link to a
+ * Post beats the Post list and a group's `/posts/x` beats `/posts`. A Post no
+ * link points at belongs to the Post list. An external link never is.
+ */
+export function currentNavLink(
+  navOptions: ReadonlyArray<NavOption>,
+  pathname: string,
+): NavLinkOption | null {
+  const links = flattenNavOptions(navOptions).filter(
+    (option) => !option.external,
+  );
+  const path = normaliseNavPath(pathname);
+  let current: NavLinkOption | null = null;
+  let longest = -1;
+  for (const option of links) {
+    const href = normaliseNavPath(option.href);
+    const leadsHere =
+      href === "/"
+        ? path === "/"
+        : path === href || path.startsWith(`${href}/`);
+    if (leadsHere && href.length > longest) {
+      current = option;
+      longest = href.length;
+    }
+  }
+  if (!current && path.startsWith("/post/")) {
+    current =
+      links.find((option) => normaliseNavPath(option.href) === "/posts") ??
+      null;
+  }
+  return current;
+}
+
+/**
+ * Whether a navigation entry is current, given the navigation's current link
+ * (`currentNavLink`): a link when it is that link, a group when it holds it.
  */
 export function isNavOptionCurrent(
   option: NavOption,
-  pathname: string,
+  current: NavLinkOption | null,
 ): boolean {
+  if (!current) return false;
   if (isNavGroup(option))
-    return option.children.some((child) => isNavOptionCurrent(child, pathname));
-  if (option.external) return false;
-  const href = normalisePath(option.href);
-  const path = normalisePath(pathname);
-  if (href === "/") return path === "/";
-  return path === href || path.startsWith(`${href}/`);
+    return option.children.some((child) => child.id === current.id);
+  return option.id === current.id;
 }
