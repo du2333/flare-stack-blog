@@ -15,9 +15,6 @@ export const POST_LINK =
 export const accountTrigger = (page: Page) =>
   page.locator(".public-account-trigger, .immersive-account").first();
 
-export const accountLabel = (page: Page) =>
-  accountTrigger(page).getAttribute("aria-label");
-
 /** Opens the public account menu, reads it, closes it. */
 export async function readAccountMenu(page: Page) {
   await accountTrigger(page).click();
@@ -85,12 +82,4 @@ export async function settle(page: Page, extraMs = 2000) {
     .waitForLoadState("networkidle", { timeout: 10000 })
     .catch(() => {});
   await page.waitForTimeout(extraMs);
-}
-
-/** The title of the error or not-found page on screen (`StatusPage`), or undefined. */
-export async function statusPageTitle(page: Page) {
-  const title = page.locator(".site-status h1").first();
-  return (await title.count())
-    ? ((await title.textContent())?.trim() ?? "")
-    : undefined;
 }

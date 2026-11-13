@@ -17,15 +17,7 @@ import type { LocalDb } from "./local-db.ts";
 export type Value = string | number | boolean;
 
 /** What a flow needs from the run; a flow missing one is skipped with a line. */
-export type Need =
-  /** A signed-in browser: `--session`, or `--api-key-file`. */
-  | "session"
-  /** The `--session` cookie itself: an API key cannot sign in or out. */
-  | "cookie"
-  /** A local dev server and its database file, which the flow writes to. */
-  | "local-db"
-  /** A form a deployed site guards with a human check. */
-  | "local-site";
+export type Need = "session";
 
 export interface Flow {
   /** What `--only` takes: lowercase words joined by hyphens. */
@@ -56,8 +48,6 @@ export interface Tab {
   toasts(): Promise<Array<string>>;
   /** Waits for a toast, up to `timeoutMs`; returns the toasts on screen, none after the time. */
   waitForToast(timeoutMs?: number): Promise<Array<string>>;
-  /** Another tab in the same browser context: same cookies, same storage. */
-  sibling(): Promise<Tab>;
   /** Slows this tab's network the way the earlier hand-written scripts did. */
   throttle(): Promise<CDPSession>;
 }
@@ -142,9 +132,4 @@ export function readToasts(page: Page) {
       (toast) => toast.textContent?.trim() ?? "",
     ),
   );
-}
-
-/** What `observe` records for a list: its length and the texts, short. */
-export function shortList(values: Array<string>) {
-  return values.length ? values.map((v) => v.slice(0, 40)).join(" | ") : "none";
 }

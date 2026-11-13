@@ -92,19 +92,9 @@ function readKeyFile(file: string, fail: Deps["fail"]) {
 function skipReason(
   needs: ReadonlyArray<Need>,
   site: Site,
-  db: LocalDb | undefined,
 ): string | undefined {
   if (needs.includes("session") && !site.session && !site.apiKey) {
     return "needs --session or --api-key-file";
-  }
-  if (needs.includes("cookie") && !site.session) {
-    return "needs --session (an API key cannot sign in or out)";
-  }
-  if (needs.includes("local-site") && !db) {
-    return "submits a form a deployed site guards with a human check: needs a local dev server";
-  }
-  if (needs.includes("local-db") && !db) {
-    return "writes to the local database: needs a local dev server and its throwaway Admin";
   }
   return undefined;
 }
@@ -123,7 +113,7 @@ async function runFlow(
     problems: [],
     ms: 0,
   };
-  const reason = skipReason(flow.needs ?? [], site, db);
+  const reason = skipReason(flow.needs ?? [], site);
   if (reason) return { ...outcome, status: "skip", reason };
 
   const started = Date.now();
@@ -164,9 +154,6 @@ async function runFlow(
           .waitForSelector("[data-sonner-toast]", { timeout: timeoutMs })
           .catch(() => {});
         return readToasts(page);
-      },
-      async sibling() {
-        return attach(context, await context.newPage());
       },
       throttle: async () => {
         const session = await context.newCDPSession(page);
