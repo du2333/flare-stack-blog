@@ -45,7 +45,7 @@ function FriendLinkFormDialogInternal({
   onSubmit,
 }: FriendLinkFormDialogProps) {
   const form = useForm<CreateFriendLinkInput>({
-    resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
+    resolver: standardSchemaResolver(createCreateFriendLinkSchema()),
     defaultValues: emptyValues,
   });
   const {

@@ -1,14 +1,28 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { CategoriesTable } from "@/lib/db/schema";
+import type { CategoriesTable } from "@/lib/db/schema";
 import { atLeastOneField } from "@/lib/orpc/changes";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
 import { hasControlCharacter } from "@/lib/unicode-text";
 import { coercedDate } from "@/lib/orpc/dates";
+import type { Equal, Expect } from "@/lib/type-equal";
 
-export const CategorySelectSchema = createSelectSchema(CategoriesTable, {
+export const CategorySelectSchema = z.object({
+  id: z.int(),
+  name: z.string(),
   createdAt: coercedDate,
-}).omit({ nameKey: true });
+});
+
+/**
+ * Fails to compile when a column of `categories` is missing from the schema
+ * or reads differently. `nameKey` is left out: unique keys are the
+ * database's to compare by, not part of what is read.
+ */
+export type CategorySelectMatchesTable = Expect<
+  Equal<
+    z.output<typeof CategorySelectSchema>,
+    Omit<typeof CategoriesTable.$inferSelect, "nameKey">
+  >
+>;
 
 export const CategoryOptionSchema = z.object({
   id: z.number().int(),
