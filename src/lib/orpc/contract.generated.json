@@ -6,9 +6,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts",
-          "summary": "List published posts",
-          "tags": ["Posts"]
+          "path": "/posts"
         }
       }
     },
@@ -18,9 +16,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/home/page",
-          "summary": "List homepage posts, pinned first",
-          "tags": ["Posts"]
+          "path": "/posts/home/page"
         }
       }
     },
@@ -30,10 +26,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{slug}",
-          "summary": "Get a published post by slug",
-          "description": "Returns the published post, or answers 404 POST_NOT_FOUND when no published post has that slug. A draft, or a post that was unpublished, has none.",
-          "tags": ["Posts"]
+          "path": "/posts/{slug}"
         }
       }
     },
@@ -43,9 +36,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{slug}/adjacent",
-          "summary": "Get the adjacent published posts by publication date",
-          "tags": ["Posts"]
+          "path": "/posts/{slug}/adjacent"
         }
       }
     },
@@ -55,9 +46,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/pinned",
-          "summary": "List pinned published posts",
-          "tags": ["Posts"]
+          "path": "/posts/pinned"
         }
       }
     },
@@ -67,9 +56,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/popular",
-          "summary": "List popular published posts",
-          "tags": ["Posts"]
+          "path": "/posts/popular"
         }
       }
     },
@@ -80,10 +67,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts",
-            "summary": "List posts for admin",
-            "description": "Each item carries its category (null when it has none) and its tags, so a client lists them without reading every post. They are the draft's assignments, or the published ones when taxonomy.scope is public, read for the whole page at once.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts"
           }
         }
       },
@@ -93,10 +77,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts/{id}",
-            "summary": "Get a post by id",
-            "description": "Returns the editable Post, or answers 404 POST_NOT_FOUND when there is none. hasUnpublishedChanges tells whether the draft differs from the published version. The published body, from the Public Content Snapshot, comes next to the draft: publicSnapshotContentJson, or publicSnapshotContentMarkdown with contentFormat=markdown, so one read compares the draft with what is published, whatever Post Revisions were deleted. saveToken identifies this read: state it when saving or publishing.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}"
           }
         }
       },
@@ -106,10 +87,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts/slug",
-            "summary": "Generate a post slug",
-            "description": "Makes a slug from a title that no other post uses, without saving anything. Pass excludeId to leave out the post being edited.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/slug"
           }
         }
       },
@@ -119,10 +97,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts/video-meta",
-            "summary": "Look up an embedded video's title, cover and length",
-            "description": "Asks the video's provider once, when the editor embeds it. Returns null when the provider has nothing to give or cannot be reached.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/video-meta"
           }
         }
       },
@@ -132,10 +107,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts/direct-video",
-            "summary": "Look up the address of a Direct Video",
-            "description": "Asks the address once, when the editor embeds a Direct Video: a video file is returned as is, and from a web page its title, cover and the video file it names are read, the file only once a request for it answers a video file. Only https addresses are asked, and a redirect only to another one. Writes in Markdown over the API never call it; their <video> lines are kept as written.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/direct-video"
           }
         }
       },
@@ -145,10 +117,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts",
-            "summary": "Create a draft post",
-            "description": "With data, creates a new draft post carrying that content. An image shown by a Media path (/images/<key>, alone or on the blog's own address, as https://<blog>/images/<key>) must be existing Media: otherwise it answers 400 CONTENT_IMAGE_NOT_FOUND naming it and creates nothing. A post stores at most 800000 bytes of serialized contentJson, measured after any Markdown is converted, which makes it larger. A body over that is refused with 413 POST_CONTENT_TOO_LARGE, whose data holds the limit and the size, and nothing is written. Without data, returns an existing empty draft post when one exists, otherwise creates one. Returns the post's id and saveToken, never the body, so it takes no contentFormat; read the post to get it in either format.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts"
           }
         }
       },
@@ -158,10 +127,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/posts/{id}",
-            "summary": "Update a post",
-            "description": "Writes only the fields in data, at least one (an empty data answers 400), and returns the updated Post with its new saveToken. The Post's Tags are not among them: set them with tags.admin.setPostTags (PUT /admin/posts/{postId}/tags), which takes saveToken the same way. A save that leaves every stated field as it is writes nothing and answers the current saveToken. A post stores at most 800000 bytes of serialized contentJson, measured after any Markdown is converted, which makes it larger. A body over that is refused with 413 POST_CONTENT_TOO_LARGE, whose data holds the limit and the size, and nothing is written. The body comes back as contentJson, or as contentMarkdown instead when contentFormat=markdown (a top-level field next to data); it follows contentFormat, not the format the body was written in. An image the body shows by a Media path (/images/<key>, alone or on the blog's own address, as https://<blog>/images/<key>) must be existing Media, unless the draft already showed it: otherwise it answers 400 CONTENT_IMAGE_NOT_FOUND naming it and writes nothing. A cover (coverMediaId) that is not existing Media answers 404 MEDIA_NOT_FOUND. Media the draft uses cannot be deleted, so a body saved at the same time as its image is deleted ends with one of them refused. With saveToken, the write happens only if the post was not saved since that token was read; otherwise it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}"
           }
         }
       },
@@ -171,9 +137,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/posts/{id}",
-            "summary": "Delete a post",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}"
           }
         }
       },
@@ -183,10 +147,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts/{id}/publish",
-            "summary": "Publish a post",
-            "description": "Publishes the post and generates or updates its Public Content Snapshot. Code blocks are highlighted on the server and stored in the snapshot, in order, up to 30000 characters of new code per publish; a block past that is stored unhighlighted, as plain text. Answers 409 PUBLIC_SLUG_TAKEN when another post's live page uses the slug, ignoring case and Unicode compatibility forms (NFKC), and 400 PUBLISHED_AT_IN_FUTURE while the publication date is later than the server's current time, to the second. Answers 413 POST_CONTENT_TOO_LARGE, writing nothing, when the serialized Public Content Snapshot (the body with its code highlighted, which is larger than the draft) takes more than 800000 bytes; shorten the post. When the snapshot is over the limit even before its code is highlighted, it answers at once and data.size counts it unhighlighted. With saveToken, only the draft that token was read from is published; if the post was saved since, it answers 409 EDIT_CONFLICT, publishes nothing, and data.saveToken is the current token.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}/publish"
           }
         }
       },
@@ -196,10 +157,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts/{id}/unpublish",
-            "summary": "Unpublish a post",
-            "description": "Discards the Public Content Snapshot, so the post becomes a draft post and leaves the public site. A post that is already a draft is left as it is: it answers 200 with its current saveToken, unchanged.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}/unpublish"
           }
         }
       },
@@ -209,10 +167,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts/{id}/discard-changes",
-            "summary": "Discard a post's unpublished changes",
-            "description": "Makes the draft of a published post that has unpublished changes (hasUnpublishedChanges) match the published version again: title, summary, slug, body, publication date, cover, category and tags, read from the published version itself, so it works whatever Post Revisions were deleted. The draft as it is now is first saved as a Post Revision (reason restore_backup), so the discarded changes can be restored from the revision list. The published page is not touched. Answers 409 POST_NOT_PUBLISHED for a draft post, 409 NO_UNPUBLISHED_CHANGES when the draft already matches, and 409 SLUG_TAKEN when another post's draft has taken the published slug meanwhile. With saveToken, only the draft that token was read from is discarded; if the post was saved since, it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token. Returns the post's new saveToken.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}/discard-changes"
           }
         }
       },
@@ -222,10 +177,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts/{id}/pin",
-            "summary": "Pin a post",
-            "description": "Pins the post to the top of the homepage. Takes effect at once, without publishing: the public site reads the post's own pin, not the Public Content Snapshot, and its caches are purged. Pinning an already pinned post keeps its place. A draft can be pinned too; the pin shows once it is published. The pin is not part of the draft, so the post's saveToken stays as it was.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}/pin"
           }
         }
       },
@@ -235,10 +187,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/posts/{id}/unpin",
-            "summary": "Unpin a post",
-            "description": "Removes the post's pin. Takes effect at once, without publishing, and purges the public caches. The pin is not part of the draft, so the post's saveToken stays as it was.",
-            "tags": ["Admin Posts"]
+            "path": "/admin/posts/{id}/unpin"
           }
         }
       },
@@ -249,10 +198,7 @@
             "meta": {},
             "route": {
               "method": "GET",
-              "path": "/admin/posts/{postId}/revisions",
-              "summary": "List post revisions",
-              "description": "A post that does not exist answers 404 POST_NOT_FOUND; a post without revisions answers an empty list.",
-              "tags": ["Admin Posts"]
+              "path": "/admin/posts/{postId}/revisions"
             }
           }
         },
@@ -262,10 +208,7 @@
             "meta": {},
             "route": {
               "method": "GET",
-              "path": "/admin/posts/{postId}/revisions/{revisionId}",
-              "summary": "Get a post revision",
-              "description": "Answers 404 POST_REVISION_NOT_FOUND when the post has no such revision. The snapshot's body comes back as snapshotJson.contentJson, or as snapshotJson.contentMarkdown instead when contentFormat=markdown.",
-              "tags": ["Admin Posts"]
+              "path": "/admin/posts/{postId}/revisions/{revisionId}"
             }
           }
         },
@@ -275,10 +218,7 @@
             "meta": {},
             "route": {
               "method": "POST",
-              "path": "/admin/posts/{postId}/revisions/{revisionId}/restore",
-              "summary": "Restore a post revision",
-              "description": "Writes the revision back into the draft, after saving the draft as it is now as a Post Revision. post.saveToken is the post's token after the restore. Answers 409 SLUG_TAKEN, writing nothing, when another post now uses the revision's slug. With saveToken, the restore happens only if the post was not saved since that token was read; otherwise it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token. Without saveToken it restores over whatever the draft is when the restore starts, and answers 409 EDIT_CONFLICT in the same way if a save lands while it runs, so no save is overwritten without being kept in the revision of the draft.",
-              "tags": ["Admin Posts"]
+              "path": "/admin/posts/{postId}/revisions/{revisionId}/restore"
             }
           }
         },
@@ -288,10 +228,7 @@
             "meta": {},
             "route": {
               "method": "DELETE",
-              "path": "/admin/posts/{postId}/revisions",
-              "summary": "Delete post revisions",
-              "description": "Permanently deletes the listed Post Revisions of the post; ids that are not its revisions are skipped, and deletedIds lists what was deleted. A post that does not exist answers 404 POST_NOT_FOUND. Revisions are history, not the draft: deleting them leaves the draft, its saveToken and the published page as they are, so it takes no saveToken. It cannot be undone. A restore_backup revision is the only copy of a draft that a restore or a discard replaced, so deleting it loses those changes for good. Media used only by deleted revisions is no longer in use and can then be deleted. Publishing, unpublishing and discard-changes do not need any revision.",
-              "tags": ["Admin Posts"]
+              "path": "/admin/posts/{postId}/revisions"
             }
           }
         }
@@ -305,10 +242,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/moments",
-          "summary": "List moments",
-          "description": "Lists the Moments newest first, by when they were posted, 20 a page. A page past the last answers the last page; page says which was answered, and totalPages how many there are (1 when there are no Moments).",
-          "tags": ["Moments"]
+          "path": "/moments"
         }
       }
     },
@@ -318,10 +252,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/moments/latest",
-          "summary": "List the latest moments",
-          "description": "The 3 newest Moments, as the home page sidebar shows them; an empty list when there are none.",
-          "tags": ["Moments"]
+          "path": "/moments/latest"
         }
       }
     },
@@ -331,10 +262,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/moments/exists",
-          "summary": "Tell whether any moment exists",
-          "description": "The public navigation and the home page show Moments only once at least one exists.",
-          "tags": ["Moments"]
+          "path": "/moments/exists"
         }
       }
     },
@@ -344,10 +272,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/moments/{id}",
-          "summary": "Get a moment by id",
-          "description": "Returns the Moment, or answers 404 MOMENT_NOT_FOUND when there is none, such as one that was deleted.",
-          "tags": ["Moments"]
+          "path": "/moments/{id}"
         }
       }
     },
@@ -358,10 +283,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/moments/{id}",
-            "summary": "Get a moment to edit",
-            "description": "Returns the Moment with its saveToken, or answers 404 MOMENT_NOT_FOUND. The Moment comes back as readers see it, each image with its address and size, together with its saveToken. saveToken identifies this read: state it when saving. Images are written back as /images/{key}.",
-            "tags": ["Admin Moments"]
+            "path": "/admin/moments/{id}"
           }
         }
       },
@@ -371,10 +293,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/moments",
-            "summary": "Post a moment",
-            "description": "Posts a Moment, public at once: text, with either up to 50 images or one video, never both and never nothing (400 MOMENT_EMPTY). The Moment comes back as readers see it, each image with its address and size, together with its saveToken. postedAt is now, and edits never change it. A refused Moment writes nothing.",
-            "tags": ["Admin Moments"]
+            "path": "/admin/moments"
           }
         }
       },
@@ -384,10 +303,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/moments/{id}",
-            "summary": "Edit a moment",
-            "description": "Writes only the fields in data, at least one (an empty data answers 400), public at once; the Moment keeps its postedAt and no history of it is kept. The result is held to the rules a new Moment is: images or a video, not both, and not nothing. The Moment comes back as readers see it, each image with its address and size, together with its saveToken. A save that leaves every stated field as it is writes nothing and answers the current saveToken. Media the Moment shows cannot be deleted, so a Moment saved at the same time as its image is deleted ends with one of them refused. With saveToken, the write happens only if the Moment was not saved since that token was read; otherwise it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token.",
-            "tags": ["Admin Moments"]
+            "path": "/admin/moments/{id}"
           }
         }
       },
@@ -397,10 +313,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/moments/{id}",
-            "summary": "Delete a moment",
-            "description": "Deletes the Moment at once; its images stay in the media library, no longer used by it. Cannot be undone. A Moment that does not exist answers 404 MOMENT_NOT_FOUND.",
-            "tags": ["Admin Moments"]
+            "path": "/admin/moments/{id}"
           }
         }
       }
@@ -413,10 +326,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/tags",
-          "summary": "List public tags",
-          "description": "The tags of published posts, most used first. postCount counts published posts only.",
-          "tags": ["Tags"]
+          "path": "/tags"
         }
       }
     },
@@ -427,9 +337,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/tags",
-            "summary": "List tags for admin",
-            "tags": ["Admin Tags"]
+            "path": "/admin/tags"
           }
         }
       },
@@ -439,9 +347,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/tags/with-count",
-            "summary": "List tags with post counts",
-            "tags": ["Admin Tags"]
+            "path": "/admin/tags/with-count"
           }
         }
       },
@@ -451,9 +357,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/tags",
-            "summary": "Create a tag",
-            "tags": ["Admin Tags"]
+            "path": "/admin/tags"
           }
         }
       },
@@ -463,9 +367,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/tags/{id}",
-            "summary": "Update a tag",
-            "tags": ["Admin Tags"]
+            "path": "/admin/tags/{id}"
           }
         }
       },
@@ -475,9 +377,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/tags/{id}",
-            "summary": "Delete a tag",
-            "tags": ["Admin Tags"]
+            "path": "/admin/tags/{id}"
           }
         }
       },
@@ -487,10 +387,7 @@
           "meta": {},
           "route": {
             "method": "PUT",
-            "path": "/admin/posts/{postId}/tags",
-            "summary": "Set tags on a post",
-            "description": "Replaces the post's draft tags; the public site shows them once the post is published. Like every write to a post, it replaces the post's saveToken and the response carries the new one, except that setting the tags the post already has writes nothing and answers its current saveToken. A post that does not exist answers 404 POST_NOT_FOUND, and a tag id no tag has answers 404 TAG_NOT_FOUND; either way nothing is written. With saveToken, the write happens only if the post was not saved since that token was read; otherwise it answers 409 EDIT_CONFLICT, writes nothing, and data.saveToken is the current token. Without it, the write is unconditional.",
-            "tags": ["Admin Tags", "Admin Posts"]
+            "path": "/admin/posts/{postId}/tags"
           }
         }
       },
@@ -500,10 +397,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/posts/{postId}/tags",
-            "summary": "List tags for a post",
-            "description": "Lists the tags the post's draft carries. A post that does not exist answers 404 POST_NOT_FOUND; a post without tags answers an empty list.",
-            "tags": ["Admin Tags"]
+            "path": "/admin/posts/{postId}/tags"
           }
         }
       }
@@ -516,10 +410,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/categories",
-          "summary": "List public categories",
-          "description": "The categories of published posts, ordered by name. postCount counts published posts only.",
-          "tags": ["Categories"]
+          "path": "/categories"
         }
       }
     },
@@ -530,9 +421,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/categories",
-            "summary": "List categories for admin",
-            "tags": ["Admin Categories"]
+            "path": "/admin/categories"
           }
         }
       },
@@ -542,9 +431,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/categories/options",
-            "summary": "List category options",
-            "tags": ["Admin Categories"]
+            "path": "/admin/categories/options"
           }
         }
       },
@@ -554,9 +441,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/categories",
-            "summary": "Create a category",
-            "tags": ["Admin Categories"]
+            "path": "/admin/categories"
           }
         }
       },
@@ -566,9 +451,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/categories/{id}",
-            "summary": "Update a category",
-            "tags": ["Admin Categories"]
+            "path": "/admin/categories/{id}"
           }
         }
       },
@@ -578,9 +461,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/categories/{id}",
-            "summary": "Delete a category",
-            "tags": ["Admin Categories"]
+            "path": "/admin/categories/{id}"
           }
         }
       }
@@ -593,10 +474,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{postId}/comments",
-          "summary": "List root comments on a post",
-          "description": "Returns visible root threads with reply previews. Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the post, excluding deleted placeholders; it must not be used to calculate root pagination.",
-          "tags": ["Comments"]
+          "path": "/posts/{postId}/comments"
         }
       }
     },
@@ -606,9 +484,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{postId}/comments/{rootId}/replies",
-          "summary": "List replies in a comment thread",
-          "tags": ["Comments"]
+          "path": "/posts/{postId}/comments/{rootId}/replies"
         }
       }
     },
@@ -618,9 +494,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/posts/{postId}/comments/{id}/thread",
-          "summary": "Load the visible comment thread containing a comment",
-          "tags": ["Comments"]
+          "path": "/posts/{postId}/comments/{id}/thread"
         }
       }
     },
@@ -630,9 +504,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/posts/{postId}/comments",
-          "summary": "Create a comment",
-          "tags": ["Comments"]
+          "path": "/posts/{postId}/comments"
         }
       }
     },
@@ -643,10 +515,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/moments/{momentId}/comments",
-            "summary": "List root comments on a moment",
-            "description": "As for a post: visible root threads with reply previews, paginated by root thread; total counts all published roots and replies on the Moment, excluding deleted placeholders. A Moment that does not exist has none.",
-            "tags": ["Comments"]
+            "path": "/moments/{momentId}/comments"
           }
         }
       },
@@ -656,9 +525,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/moments/{momentId}/comments/{rootId}/replies",
-            "summary": "List replies on a moment",
-            "tags": ["Comments"]
+            "path": "/moments/{momentId}/comments/{rootId}/replies"
           }
         }
       },
@@ -668,10 +535,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/moments/{momentId}/comments/{id}/thread",
-            "summary": "Load a comment thread on a moment",
-            "description": "Resolves a comment link, /moments/{momentId}?comment={id}. Answers 404 COMMENT_NOT_FOUND when the comment is not on the Moment or its thread is not shown.",
-            "tags": ["Comments"]
+            "path": "/moments/{momentId}/comments/{id}/thread"
           }
         }
       },
@@ -681,10 +545,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/moments/{momentId}/comments",
-            "summary": "Comment on a moment",
-            "description": "Any existing Moment takes comments (404 MOMENT_NOT_FOUND otherwise); Muted Users are refused as on a post. A reply names its thread with rootId, on the same Moment, and the comment it answers with replyToCommentId.",
-            "tags": ["Comments"]
+            "path": "/moments/{momentId}/comments"
           }
         }
       }
@@ -695,9 +556,7 @@
         "meta": {},
         "route": {
           "method": "DELETE",
-          "path": "/comments/{id}",
-          "summary": "Delete own comment",
-          "tags": ["Comments"]
+          "path": "/comments/{id}"
         }
       }
     },
@@ -707,10 +566,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/me/comments",
-          "summary": "List the current user's comments",
-          "description": "Newest first, on Posts and Moments. Each says where it is: postId or momentId, a Moment's momentTitle, and its public commentPath.",
-          "tags": ["Comments"]
+          "path": "/me/comments"
         }
       }
     },
@@ -721,10 +577,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/comments",
-            "summary": "List comments",
-            "description": "Published Comments on Posts and Moments, newest first, with the total that matches. view=unreplied lists the visitor Comments awaiting a reply, the dashboard's count; view=all lists every one. search matches the author's name or the body; postId keeps one Post's.",
-            "tags": ["Admin Comments"]
+            "path": "/admin/comments"
           }
         }
       },
@@ -734,10 +587,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/comments/posts",
-            "summary": "List posts with comments",
-            "description": "Every Post that has published Comments, with how many, the most recently commented first.",
-            "tags": ["Admin Comments"]
+            "path": "/admin/comments/posts"
           }
         }
       },
@@ -747,10 +597,7 @@
           "meta": {},
           "route": {
             "method": "PUT",
-            "path": "/admin/comments/{id}/handled",
-            "summary": "Mark a comment handled",
-            "description": "Takes the Comment off the dashboard's unreplied list without replying. An Admin reply marks the Comment it answers handled too.",
-            "tags": ["Admin Comments"]
+            "path": "/admin/comments/{id}/handled"
           }
         }
       },
@@ -760,10 +607,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/comments/{id}/handled",
-            "summary": "Unmark a handled comment",
-            "description": "Undoes marking the Comment handled. It returns to the unreplied list unless an Admin Comment still answers it.",
-            "tags": ["Admin Comments"]
+            "path": "/admin/comments/{id}/handled"
           }
         }
       },
@@ -773,10 +617,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/comments/handled",
-            "summary": "Mark all unreplied comments handled",
-            "description": "Marks every Comment on the dashboard's unreplied list handled and returns how many it marked.",
-            "tags": ["Admin Comments"]
+            "path": "/admin/comments/handled"
           }
         }
       }
@@ -789,10 +630,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/media",
-          "summary": "List media",
-          "description": "Lists the media library, newest first unless sort says otherwise (oldest first, or the largest file first), a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media"
         }
       }
     },
@@ -802,10 +640,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/media",
-          "summary": "Upload an image",
-          "description": "Stores an image in the media library from a multipart/form-data body with one part, image. Returns the new Media; use its url as the src of an image in a post body, or its id as a post's coverMediaId. Answers 400 MEDIA_INVALID when the file's bytes are not the type it declares; data.detail says why.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media"
         }
       }
     },
@@ -815,10 +650,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/media/import",
-          "summary": "Import an image from a URL",
-          "description": "Downloads a public http(s) image and stores it in the media library, as an upload would. Its file name is name when given, else the last part of the address, ending in the extension of the downloaded image type; without a usable name it is image.<extension>. Answers 400 MEDIA_INVALID_URL for an address that is not public: a loopback, private, link-local or reserved IP in any notation, a local name, a name any of whose DNS answers is such an address, or a redirect to any of these or to a name public DNS has no address for, such as an intranet host. Redirects are followed up to five times. Answers MEDIA_IMPORT_FAILED when the download fails or the name does not resolve, and MEDIA_INVALID when the response is not an accepted image type, is empty or over the size limit, or its bytes are not that type; data.detail says which.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/import"
         }
       }
     },
@@ -828,10 +660,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/media/stats",
-          "summary": "Get media library stats",
-          "description": "Counts the images in the media library, how many of them nothing uses, and their total size in bytes.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/stats"
         }
       }
     },
@@ -841,10 +670,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/media/size",
-          "summary": "Get total media size",
-          "description": "The total size of the media library in bytes.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/size"
         }
       }
     },
@@ -854,10 +680,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/media/linked-keys",
-          "summary": "Resolve which media keys are linked",
-          "description": "Returns the given keys that a post uses, in its draft, its published version or a Post Revision, or that a Moment shows. Media with such a key cannot be deleted.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/linked-keys"
         }
       }
     },
@@ -867,10 +690,7 @@
         "meta": {},
         "route": {
           "method": "DELETE",
-          "path": "/admin/media/unused",
-          "summary": "Delete unused media",
-          "description": "Deletes every image no post uses (draft, published version or Post Revision), no Moment shows and no Admin has as an avatar. Cannot be undone.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/unused"
         }
       }
     },
@@ -880,10 +700,7 @@
         "meta": {},
         "route": {
           "method": "DELETE",
-          "path": "/admin/media/{key}",
-          "summary": "Delete media",
-          "description": "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts and GET /admin/media/{key}/moments lists the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/{key}"
         }
       }
     },
@@ -893,10 +710,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/media/{key}/posts",
-          "summary": "List posts linked to media",
-          "description": "Lists the posts that use the image in their body or as their cover, in the draft, the published version or a Post Revision. revisionsOnly marks a post whose Post Revisions alone use it. A key no Media has answers 404 MEDIA_NOT_FOUND; Media no post uses answers an empty list.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/{key}/posts"
         }
       }
     },
@@ -906,10 +720,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/media/{key}/moments",
-          "summary": "List Moments linked to media",
-          "description": "Lists the Moments that show the image, newest first. title is the start of the Moment's text, or a name for an image Moment when it has none. A key no Media has answers 404 MEDIA_NOT_FOUND; Media no Moment shows answers an empty list.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/{key}/moments"
         }
       }
     },
@@ -919,10 +730,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/media/{key}/replace",
-          "summary": "Replace media file",
-          "description": "Puts a new file at the same key, from a multipart/form-data body with one part, image. Every post that uses the image shows the new file at once, on the public site and in the editor, without being saved: no post is written, so none gains Unpublished Changes or a new saveToken. The Media's fileName becomes the uploaded file's name, or stays as it was when the part has none. Returns the updated Media. The new file must be the same image type as the one it replaces (a PNG stays a PNG, jpg and jpeg are one type): another type answers 400 MEDIA_INVALID with data.detail TYPE_CHANGED and nothing is replaced, so upload a new image instead. Answers 404 MEDIA_NOT_FOUND when no Media has the key and 400 MEDIA_INVALID when the file's bytes are not the type it declares (data.detail says why).",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/{key}/replace"
         }
       }
     },
@@ -932,10 +740,7 @@
         "meta": {},
         "route": {
           "method": "PATCH",
-          "path": "/admin/media/{key}",
-          "summary": "Rename media",
-          "description": "Changes the image's file name in the media library. Its key and address stay. The name follows the rules of a tag name: trimmed, not empty, no control or format characters, at most 255 characters; otherwise 400. Answers 404 MEDIA_NOT_FOUND when no Media has the key.",
-          "tags": ["Admin Media"]
+          "path": "/admin/media/{key}"
         }
       }
     }
@@ -947,9 +752,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/muted-users",
-          "summary": "List currently muted users",
-          "tags": ["Admin Muted Users"]
+          "path": "/admin/muted-users"
         }
       }
     },
@@ -959,9 +762,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/muted-users",
-          "summary": "Mute a user",
-          "tags": ["Admin Muted Users"]
+          "path": "/admin/muted-users"
         }
       }
     },
@@ -971,9 +772,7 @@
         "meta": {},
         "route": {
           "method": "DELETE",
-          "path": "/admin/muted-users/{userId}",
-          "summary": "Unmute a user",
-          "tags": ["Admin Muted Users"]
+          "path": "/admin/muted-users/{userId}"
         }
       }
     }
@@ -985,10 +784,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/site/config",
-          "summary": "Get public site config",
-          "description": "Returns the resolved Site Config: identity, social and navigation links, icons, the personalization every Theme honours (bannerImage, bannerFocus, avatar, primaryHue, brandMark, tagline) and the selected Theme with its options. A saved Theme id this version does not offer is returned as the default Theme. theme.fuwari is a deprecated copy of bannerImage, avatar and primaryHue kept for older versions.",
-          "tags": ["Site"]
+          "path": "/site/config"
         }
       }
     },
@@ -998,9 +794,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/site/domain",
-          "summary": "Get the public site domain",
-          "tags": ["Site"]
+          "path": "/site/domain"
         }
       }
     },
@@ -1011,10 +805,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/config",
-            "summary": "Get system config",
-            "description": "Returns a fresh database snapshot with redacted secrets and independent site/notification revisions. Internal runtime and public Site Config formats are unchanged.",
-            "tags": ["Admin Config"]
+            "path": "/admin/config"
           }
         }
       },
@@ -1024,10 +815,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/config",
-            "summary": "Update system config",
-            "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. A site update replaces the whole Site Config: omitted fields, including theme.id, the Theme options and the shared bannerImage, bannerFocus, avatar, primaryHue, brandMark and tagline, return to their defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
-            "tags": ["Admin Config"]
+            "path": "/admin/config"
           }
         }
       },
@@ -1037,10 +825,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/config/assets",
-            "summary": "Upload a site asset",
-            "description": "Uploads immediately to the selected object-storage path. Discarding an unsaved settings draft does not revert uploaded image content.",
-            "tags": ["Admin Config"]
+            "path": "/admin/config/assets"
           }
         }
       }
@@ -1053,9 +838,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/friend-links",
-          "summary": "List approved friend links",
-          "tags": ["Friend Links"]
+          "path": "/friend-links"
         }
       }
     },
@@ -1065,10 +848,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/friend-links",
-          "summary": "Submit or resubmit a friend link",
-          "description": "Notifications use the applicant’s current account email. No contact email is stored or accepted. An optional id revises an owned rejected application in place; pending and approved applications cannot be resubmitted.",
-          "tags": ["Friend Links"]
+          "path": "/friend-links"
         }
       }
     },
@@ -1078,9 +858,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/me/friend-links",
-          "summary": "List the current user's friend links",
-          "tags": ["Friend Links"]
+          "path": "/me/friend-links"
         }
       }
     },
@@ -1091,9 +869,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/friend-links",
-            "summary": "List friend links for admin",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links"
           }
         }
       },
@@ -1103,9 +879,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/friend-links",
-            "summary": "Create a friend link",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links"
           }
         }
       },
@@ -1115,9 +889,7 @@
           "meta": {},
           "route": {
             "method": "PATCH",
-            "path": "/admin/friend-links/{id}",
-            "summary": "Update a friend link",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links/{id}"
           }
         }
       },
@@ -1127,9 +899,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/friend-links/{id}/approve",
-            "summary": "Approve a friend link",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links/{id}/approve"
           }
         }
       },
@@ -1139,9 +909,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/friend-links/{id}/reject",
-            "summary": "Reject a friend link",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links/{id}/reject"
           }
         }
       },
@@ -1151,9 +919,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/friend-links/{id}",
-            "summary": "Delete a friend link",
-            "tags": ["Admin Friend Links"]
+            "path": "/admin/friend-links/{id}"
           }
         }
       }
@@ -1166,9 +932,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/email/configured",
-          "summary": "Check if email is configured",
-          "tags": ["Email"]
+          "path": "/email/configured"
         }
       }
     },
@@ -1178,10 +942,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/email/test-status",
-          "summary": "Get the last email test result for the saved settings",
-          "description": "Returns verified or failed when the last test used exactly the saved email settings, and untested otherwise.",
-          "tags": ["Admin Email"]
+          "path": "/admin/email/test-status"
         }
       }
     },
@@ -1191,9 +952,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/email/unsubscribe",
-          "summary": "Unsubscribe from email notifications",
-          "tags": ["Email"]
+          "path": "/email/unsubscribe"
         }
       }
     },
@@ -1203,9 +962,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/me/notifications/reply",
-          "summary": "Get reply notification status",
-          "tags": ["Email"]
+          "path": "/me/notifications/reply"
         }
       }
     },
@@ -1215,9 +972,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/me/notifications/availability",
-          "summary": "Get notification availability",
-          "tags": ["Email"]
+          "path": "/me/notifications/availability"
         }
       }
     },
@@ -1227,9 +982,7 @@
         "meta": {},
         "route": {
           "method": "PATCH",
-          "path": "/me/notifications/reply",
-          "summary": "Toggle reply notifications",
-          "tags": ["Email"]
+          "path": "/me/notifications/reply"
         }
       }
     },
@@ -1239,10 +992,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/email/test",
-          "summary": "Send a test email",
-          "description": "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
-          "tags": ["Admin Email"]
+          "path": "/admin/email/test"
         }
       }
     }
@@ -1254,10 +1004,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/search",
-          "summary": "Search published posts",
-          "description": "Searches the title, summary, body, category and tags of published posts. Call GET /search/version first and pass what it returns as v; v is required.",
-          "tags": ["Search"]
+          "path": "/search"
         }
       }
     },
@@ -1267,10 +1014,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/search/version",
-          "summary": "Get search index version",
-          "description": "The version of the search index, which changes whenever the index does. Pass it as v to GET /search.",
-          "tags": ["Search"]
+          "path": "/search/version"
         }
       }
     },
@@ -1280,9 +1024,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/search/rebuild",
-          "summary": "Rebuild the search index",
-          "tags": ["Admin Search"]
+          "path": "/admin/search/rebuild"
         }
       }
     }
@@ -1294,9 +1036,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/post-popularity",
-          "summary": "Get post popularity sync status",
-          "tags": ["Admin Post Popularity"]
+          "path": "/admin/post-popularity"
         }
       }
     },
@@ -1306,9 +1046,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/post-popularity/sync",
-          "summary": "Sync post popularity from Umami",
-          "tags": ["Admin Post Popularity"]
+          "path": "/admin/post-popularity/sync"
         }
       }
     }
@@ -1320,9 +1058,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/dashboard",
-          "summary": "Get admin dashboard overview",
-          "tags": ["Admin Dashboard"]
+          "path": "/admin/dashboard"
         }
       }
     },
@@ -1332,10 +1068,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/dashboard/unreplied-comments",
-          "summary": "List unreplied comments",
-          "description": "Every visitor Comment on a public Post that no Admin has replied to or marked handled, newest first. Pass the previous page's nextBeforeId as beforeId to continue; pages stay stable while Comments leave the list.",
-          "tags": ["Admin Dashboard"]
+          "path": "/admin/dashboard/unreplied-comments"
         }
       }
     }
@@ -1347,9 +1080,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/cache/invalidate",
-          "summary": "Invalidate the public cache",
-          "tags": ["Admin Cache"]
+          "path": "/admin/cache/invalidate"
         }
       }
     }
@@ -1361,9 +1092,7 @@
         "meta": {},
         "route": {
           "method": "GET",
-          "path": "/admin/version",
-          "summary": "Check for application updates",
-          "tags": ["Admin Version"]
+          "path": "/admin/version"
         }
       }
     },
@@ -1373,9 +1102,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/version/check",
-          "summary": "Force-check for application updates",
-          "tags": ["Admin Version"]
+          "path": "/admin/version/check"
         }
       }
     }
@@ -1387,10 +1114,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/webhooks/test",
-          "summary": "Send a test webhook",
-          "description": "Tests the supplied connection without saving settings. The secret (the generic or custom signing key, or the Telegram bot token) accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side, rejects stale revisions with CONFIG_CONFLICT, and rejects a channel other than the saved one with CONFIG_INVALID. Saved secrets are never returned. DELIVERY_FAILED carries the receiving service's error.",
-          "tags": ["Admin Webhooks"]
+          "path": "/admin/webhooks/test"
         }
       }
     },
@@ -1400,10 +1124,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/admin/webhooks/telegram/chats",
-          "summary": "List the chats a Telegram bot was messaged from",
-          "description": "Reads the bot's pending updates (getUpdates) and returns each chat once, so the Admin can pick a Chat ID. A chat appears after someone messages the bot there or adds it to a group, and updates expire after 24 hours. The token accepts replace or keep, as for the test.",
-          "tags": ["Admin Webhooks"]
+          "path": "/admin/webhooks/telegram/chats"
         }
       }
     }
@@ -1415,10 +1136,7 @@
         "meta": {},
         "route": {
           "method": "POST",
-          "path": "/pairing",
-          "summary": "Exchange a Pairing Code for an API Key",
-          "description": "Pairing: an Admin generates a Pairing Code in the admin UI and gives it to the agent, which exchanges it here, without a key, for a new API Key owned by that Admin and named after the agent. A code lives ten minutes and works once. A wrong, expired, cancelled or already used code answers 404 PAIRING_CODE_NOT_FOUND, alike; ask the Admin for a new code. Exchanges are limited to 10 a minute per IP address.",
-          "tags": ["Agent Pairing"]
+          "path": "/pairing"
         }
       }
     },
@@ -1429,10 +1147,7 @@
           "meta": {},
           "route": {
             "method": "POST",
-            "path": "/admin/pairing-code",
-            "summary": "Generate a Pairing Code",
-            "description": "Replaces the Admin's current Pairing Code, which stops working. The code is shown only in this answer.",
-            "tags": ["Admin Agent Pairing"]
+            "path": "/admin/pairing-code"
           }
         }
       },
@@ -1442,9 +1157,7 @@
           "meta": {},
           "route": {
             "method": "GET",
-            "path": "/admin/pairing-code",
-            "summary": "Read the state of the current Pairing Code",
-            "tags": ["Admin Agent Pairing"]
+            "path": "/admin/pairing-code"
           }
         }
       },
@@ -1454,10 +1167,7 @@
           "meta": {},
           "route": {
             "method": "DELETE",
-            "path": "/admin/pairing-code",
-            "summary": "Cancel the current Pairing Code",
-            "description": "A code already exchanged or expired stays so; cancelling then changes nothing.",
-            "tags": ["Admin Agent Pairing"]
+            "path": "/admin/pairing-code"
           }
         }
       }
