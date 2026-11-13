@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { flattenNavOptions } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +93,7 @@ function FixtureShell({
             {siteConfig.title}
           </Link>
           <nav className="fixture-nav" aria-label={m.nav_main_label()}>
-            {navOptions.map((option) => (
+            {flattenNavOptions(navOptions).map((option) => (
               <PublicNavLink key={option.id} option={option} />
             ))}
           </nav>

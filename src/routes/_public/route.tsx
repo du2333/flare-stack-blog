@@ -7,6 +7,8 @@ import {
   useRouteContext,
 } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
+import type { NavOption } from "@/components/layout/layout-props";
+import { customNavOptions } from "@/components/layout/nav-options";
 import { Toaster } from "@/components/layout/toaster";
 import { NameGate } from "@/features/auth/components/name-gate";
 import { categoriesQueryOptions } from "@/features/categories/queries";
@@ -14,7 +16,6 @@ import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useSession } from "@/lib/auth/auth-client";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { clientEnv } from "@/lib/env/client.env";
-import { isExternalNavHref } from "@/features/config/utils/nav-links";
 import { useIsAdmin } from "@/features/moments/hooks/use-is-admin";
 import { momentsExistQuery } from "@/features/moments/queries";
 import { tagsQueryOptions } from "@/features/tags/queries";
@@ -114,7 +115,7 @@ function PublicLayout() {
   // The Admin always has the entry, to post the first Moment.
   const showMoments = moments?.exists === true || isAdmin;
 
-  const navOptions = [
+  const navOptions: Array<NavOption> = [
     { id: "home", label: m.nav_home(), href: "/", external: false },
     { id: "posts", label: m.nav_posts(), href: "/posts", external: false },
     ...(showMoments
@@ -133,12 +134,7 @@ function PublicLayout() {
       href: "/friend-links",
       external: false,
     },
-    ...siteConfig.navLinks.map((link, index) => ({
-      id: `custom-${index}`,
-      label: link.label,
-      href: link.href,
-      external: isExternalNavHref(link.href),
-    })),
+    ...customNavOptions(siteConfig.navLinks),
   ];
 
   // Someone who may not preview keeps the plain address, so the parameters

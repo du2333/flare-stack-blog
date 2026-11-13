@@ -403,6 +403,104 @@ describe("personalization shared by all Themes", () => {
   });
 });
 
+describe("navigation groups", () => {
+  const site = (navLinks: Array<Record<string, unknown>>) =>
+    UpdateConfigSectionSchema.safeParse({
+      section: "site",
+      expectedRevision: 0,
+      site: { navLinks },
+    }).success;
+  const child = (index: number) => ({ label: `Link ${index}`, href: "/x" });
+
+  it("saves a group without its address and reads it back on both read paths", async () => {
+    const context = createTestContext();
+    await updateSystemConfig(context, {
+      section: "site",
+      expectedRevision: 0,
+      site: {
+        navLinks: [
+          { label: "About", href: "/post/about" },
+          {
+            label: "Elsewhere",
+            href: "/ignored",
+            children: [
+              { label: "GitHub", href: "https://github.com/du2333" },
+              { label: "Tags", href: "/tags" },
+            ],
+          },
+        ],
+      },
+    });
+    const expected = [
+      { label: "About", href: "/post/about" },
+      {
+        label: "Elsewhere",
+        children: [
+          { label: "GitHub", href: "https://github.com/du2333" },
+          { label: "Tags", href: "/tags" },
+        ],
+      },
+    ];
+    const row = (await context.db.select().from(SystemConfigTable))[0];
+    expect(row.configJson.site?.navLinks).toEqual(expected);
+    expect((await getAdminConfig(context)).config.site?.navLinks).toEqual(
+      expected,
+    );
+    await invalidate.siteConfigChanged(context);
+    expect((await getSiteConfig(context)).navLinks).toEqual(expected);
+  });
+
+  it("accepts a link or a group of one level and rejects anything else", () => {
+    expect(site([{ label: "A", href: "/a" }])).toBe(true);
+    expect(site([{ label: "A", href: "/a", children: [] }])).toBe(true);
+    expect(site([{ label: "G", children: [child(1)] }])).toBe(true);
+    expect(
+      site([
+        { label: "G", children: Array.from({ length: 6 }, (_, i) => child(i)) },
+      ]),
+    ).toBe(true);
+    // Neither links nor an address.
+    expect(site([{ label: "G" }])).toBe(false);
+    expect(site([{ label: "G", children: [] }])).toBe(false);
+    // A second level.
+    expect(
+      site([
+        {
+          label: "G",
+          children: [{ ...child(1), children: [child(2)] }],
+        },
+      ]),
+    ).toBe(false);
+    // Past the limits.
+    expect(
+      site([
+        { label: "G", children: Array.from({ length: 7 }, (_, i) => child(i)) },
+      ]),
+    ).toBe(false);
+    expect(
+      site(
+        Array.from({ length: 6 }, (_, i) => ({ label: `L${i}`, href: "/a" })),
+      ),
+    ).toBe(false);
+    // Any other key a child carries is stripped, as on a link.
+    const parsed = UpdateConfigSectionSchema.parse({
+      section: "site",
+      expectedRevision: 0,
+      site: { navLinks: [{ label: "G", children: [{ ...child(1), x: 1 }] }] },
+    });
+    expect(parsed.section === "site" && parsed.site.navLinks).toEqual([
+      { label: "G", children: [child(1)] },
+    ]);
+    // A child follows the rules of a link.
+    expect(site([{ label: "G", children: [{ label: "", href: "/a" }] }])).toBe(
+      false,
+    );
+    expect(
+      site([{ label: "G", children: [{ label: "C", href: "javascript:1" }] }]),
+    ).toBe(false);
+  });
+});
+
 // Exercise the actual migration SQL against a separately named legacy table.
 describe("System Config migration", () => {
   it.each([0, 1, 2])(
