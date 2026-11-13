@@ -1,0 +1,22 @@
+{
+  "home": {
+    "js": 218,
+    "css": 19
+  },
+  "post": {
+    "js": 249,
+    "css": 22
+  },
+  "posts": {
+    "js": 220,
+    "css": 19
+  },
+  "moments": {
+    "js": 263,
+    "css": 21
+  },
+  "friend-links": {
+    "js": 219,
+    "css": 20
+  }
+}

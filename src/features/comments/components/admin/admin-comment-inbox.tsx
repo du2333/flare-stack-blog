@@ -18,7 +18,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AdminSplit } from "@/components/admin/admin-page";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ import {
 import { useComments } from "@/features/comments/hooks/use-comments";
 import { useMutedUsers } from "@/features/muted-users/hooks/use-muted-users";
 import { useContentMotion, useMediaQuery } from "@/hooks/use-motion";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { formatDate, formatTimeAgo } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import { AdminCommentThread } from "./admin-comment-thread";

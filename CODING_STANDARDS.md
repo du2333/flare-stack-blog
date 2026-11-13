@@ -16,6 +16,7 @@ Read at review, against a diff. `bun run check` already holds what a machine can
 - A control comes from `src/components/ui`. When a page needs something the primitives lack, the primitive grows; the page does not grow its own.
 - An Admin page renders inside `AdminPage` and takes its sizes from the Admin variables (`docs/admin-page-frame.md`). A size literal in an Admin stylesheet needs a reason.
 - A **Theme** differs through its shell, its design variables and its recipe only (`docs/adr/0038-themes-are-built-in-shells-chosen-at-runtime.md`, `docs/theme-shell-checklist.md`). Nothing a Theme sets reaches `/admin`.
+- A route file imports only plain modules (queries, params, schemas, constants) for anything outside its `component`: `loader`, `head`, `validateSearch`, `beforeLoad` and `staticData` are in the first load of every page, and a hook or component module drags its dependencies (a toast library, an editor) in with it. Put what the loader needs in a module of its own; `bun scripts/bundle-report.ts --check` holds each page to its budget. Classic `zod` is about 90 KB of that first load, so a schema the browser runs on a public page (a search schema, a Theme's options, a client-side parse) is built with `zod/mini`, in a plain module named `*-search.ts` for a route; a constant the browser needs lives in a plain module, not in a `*.schema.ts` file. Lint stops a route file from importing `zod`.
 - A state the user can reach has a design: empty, loading (a skeleton with the final layout's size), error, and the narrow layout.
 
 ## Copy

@@ -1,7 +1,7 @@
 import FileHandler from "@tiptap/extension-file-handler";
 import Placeholder from "@tiptap/extension-placeholder";
 import type { Editor as TiptapEditor } from "@tiptap/react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { CodeBlockExtension } from "@/features/posts/editor/extensions/code-block";
 import { ImageExtension } from "@/features/posts/editor/extensions/images";
 import { ImagePlaceholder } from "@/features/posts/editor/extensions/image-placeholder";

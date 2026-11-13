@@ -1,4 +1,4 @@
-import { normalizePostTagName } from "@/features/posts/schema/posts.schema";
+import { normalizePostTagName } from "@/features/posts/utils/post-public-search";
 
 export function getNextPostTagFilter(
   currentTagName: string | undefined,

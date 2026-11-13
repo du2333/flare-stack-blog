@@ -3,7 +3,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
 import { overviewWithoutComment } from "@/features/dashboard/unreplied-comments";
 import { orpc, orpcClient } from "@/lib/orpc";

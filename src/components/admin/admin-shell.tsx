@@ -25,7 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useColourScheme } from "@/components/common/colour-scheme-provider";
 import {
   CommandPalette,
@@ -346,7 +346,7 @@ function AccountMenu() {
       toast.error(m.admin_sidebar_logout_failed());
       return;
     }
-    resetAuthBoundQueries(queryClient);
+    resetAuthBoundQueries(queryClient, "signed-out");
     void navigate({ to: "/login" });
   };
 

@@ -4,7 +4,6 @@ import {
 } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { z } from "zod";
 import { siteConfigQuery, siteDomainQuery } from "@/features/config/queries";
 import {
   POSTS_PER_PAGE,
@@ -15,11 +14,8 @@ import { PostsPageSkeleton } from "@/features/posts/components/posts-page-skelet
 import { categoriesQueryOptions } from "@/features/categories/queries";
 import { postsInfiniteQueryOptions } from "@/features/posts/queries";
 import {
-  PostCategoryNameSchema,
-  PostTagNameSchema,
-} from "@/features/posts/schema/posts.schema";
-import {
   findMissingPublicFilter,
+  postsPublicSearchSchema,
   resolvePublicName,
   withTagFilter,
 } from "@/features/posts/utils/post-public-search";
@@ -28,14 +24,7 @@ import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public/posts")({
-  validateSearch: z.object({
-    tagName: PostTagNameSchema,
-    categoryName: PostCategoryNameSchema,
-    uncategorized: z
-      .union([z.boolean(), z.literal("true"), z.literal("false")])
-      .transform((value) => value === true || value === "true")
-      .optional(),
-  }),
+  validateSearch: postsPublicSearchSchema,
   component: RouteComponent,
   notFoundComponent: PostsFilterNotFound,
   pendingComponent: PostsSkeleton,

@@ -1,5 +1,5 @@
 import type { BetterAuthErrorCode } from "@/lib/auth/auth-client";
-import type { Messages } from "@/lib/i18n";
+import { m } from "@/paraglide/messages";
 
 const CUSTOM_AUTH_ERROR_CODES = [
   "RATE_LIMITED",
@@ -42,7 +42,6 @@ function isCommonAuthErrorCode(code: string): code is CommonAuthErrorCode {
 
 function getCustomAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
   const code = getErrorCode(error);
   if (!code || !isCustomAuthErrorCode(code)) return undefined;
@@ -50,14 +49,14 @@ function getCustomAuthErrorMessage(
   switch (code) {
     case "TURNSTILE_MISSING_TOKEN":
     case "TURNSTILE_VERIFICATION_FAILED":
-      return messages.turnstile_error_failed_desc();
+      return m.turnstile_error_failed_desc();
     case "RATE_LIMITED": {
       const seconds =
         typeof error?.retryAfterMs === "number"
           ? Math.max(1, Math.ceil(error.retryAfterMs / 1000))
           : 60;
 
-      return messages.request_error_rate_limited_desc({
+      return m.request_error_rate_limited_desc({
         seconds: String(seconds),
       });
     }
@@ -66,9 +65,8 @@ function getCustomAuthErrorMessage(
 
 function getSharedAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
-  const customMessage = getCustomAuthErrorMessage(error, messages);
+  const customMessage = getCustomAuthErrorMessage(error);
   if (customMessage) return customMessage;
 
   const code = getErrorCode(error);
@@ -76,15 +74,15 @@ function getSharedAuthErrorMessage(
 
   switch (code) {
     case "USER_NOT_FOUND":
-      return messages.auth_error_user_not_found();
+      return m.auth_error_user_not_found();
     case "SESSION_EXPIRED":
-      return messages.auth_error_session_expired();
+      return m.auth_error_session_expired();
     case "INVALID_OTP":
-      return messages.auth_error_invalid_otp();
+      return m.auth_error_invalid_otp();
     case "OTP_EXPIRED":
-      return messages.auth_error_otp_expired();
+      return m.auth_error_otp_expired();
     case "TOO_MANY_ATTEMPTS":
-      return messages.auth_error_otp_too_many_attempts();
+      return m.auth_error_otp_too_many_attempts();
   }
 }
 
@@ -109,28 +107,24 @@ export function getRetryAfterMs(error: AuthClientErrorLike | null | undefined) {
 
 export function getSignInCodeAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
-  return getSharedAuthErrorMessage(error, messages);
+  return getSharedAuthErrorMessage(error);
 }
 
 export function getSocialLoginAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
-  return getSharedAuthErrorMessage(error, messages);
+  return getSharedAuthErrorMessage(error);
 }
 
 export function getProfileAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
-  return getSharedAuthErrorMessage(error, messages);
+  return getSharedAuthErrorMessage(error);
 }
 
 export function getLogoutAuthErrorMessage(
   error: AuthClientErrorLike | null | undefined,
-  messages: Messages,
 ): string | undefined {
-  return getSharedAuthErrorMessage(error, messages);
+  return getSharedAuthErrorMessage(error);
 }

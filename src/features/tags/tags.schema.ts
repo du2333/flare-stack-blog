@@ -1,15 +1,29 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { TagsTable } from "@/lib/db/schema";
+import type { TagsTable } from "@/lib/db/schema";
 import { atLeastOneField } from "@/lib/orpc/changes";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
 import { hasControlCharacter } from "@/lib/unicode-text";
 import { coercedDate } from "@/lib/orpc/dates";
+import type { Equal, Expect } from "@/lib/type-equal";
 import { StatedSaveTokenSchema } from "@/features/posts/schema/save-token.schema";
 
-export const TagSelectSchema = createSelectSchema(TagsTable, {
+export const TagSelectSchema = z.object({
+  id: z.int(),
+  name: z.string(),
   createdAt: coercedDate,
-}).omit({ nameKey: true });
+});
+
+/**
+ * Fails to compile when a column of `tags` is missing from the schema or reads
+ * differently. `nameKey` is left out: unique keys are the database's to
+ * compare by, not part of what is read.
+ */
+export type TagSelectMatchesTable = Expect<
+  Equal<
+    z.output<typeof TagSelectSchema>,
+    Omit<typeof TagsTable.$inferSelect, "nameKey">
+  >
+>;
 
 export const TagWithCountSchema = TagSelectSchema.extend({
   postCount: z.number(),

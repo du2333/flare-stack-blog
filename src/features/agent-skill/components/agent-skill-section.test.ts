@@ -9,7 +9,7 @@ import {
   within,
 } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -22,7 +22,7 @@ const pairing = vi.hoisted(() => ({
 }));
 const authKeys = vi.hoisted(() => ({ list: vi.fn(), delete: vi.fn() }));
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 // Close the menu at once; exit motion is not under test.
 vi.mock("@/hooks/use-motion", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/hooks/use-motion")>()),

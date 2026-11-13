@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { SearchCheck } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import ConfirmationModal from "@/components/ui/confirmation-modal";

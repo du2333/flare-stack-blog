@@ -1,9 +1,13 @@
-import { createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { MediaTable, POST_STATUSES } from "@/lib/db/schema";
-import { MEDIA_NAME_MAX_LENGTH } from "@/features/media/utils/media.utils";
+import type { MediaTable } from "@/lib/db/schema";
+import { POST_STATUSES } from "@/lib/enum-values";
+import {
+  MEDIA_NAME_MAX_LENGTH,
+  MEDIA_SORTS,
+} from "@/features/media/utils/media.utils";
 import { IdCursorSchema, pageLimitSchema } from "@/lib/orpc/pagination";
 import { coercedDate } from "@/lib/orpc/dates";
+import type { Equal, Expect } from "@/lib/type-equal";
 import { hasControlCharacter } from "@/lib/unicode-text";
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -26,7 +30,8 @@ export const ACCEPTED_IMAGE_TYPES = [
   "image/svg+xml",
 ];
 
-export const MediaSelectSchema = createSelectSchema(MediaTable, {
+export const MediaSelectSchema = z.object({
+  id: z.int(),
   key: z
     .string()
     .describe(
@@ -37,11 +42,21 @@ export const MediaSelectSchema = createSelectSchema(MediaTable, {
     .describe(
       "Address of the file. Use it as the src of an image in a post body. Replacing the file adds a new v query to it so pages that show it load the new file; addresses already in posts keep working and show the new file too.",
     ),
+  fileName: z.string(),
   width: z.number().int().nullable().describe("Pixels. Null when unknown."),
   height: z.number().int().nullable().describe("Pixels. Null when unknown."),
+  mimeType: z.string(),
   sizeInBytes: z.number().int(),
   createdAt: coercedDate,
 });
+
+/**
+ * Fails to compile when a column of `media` is missing from the schema or
+ * reads differently.
+ */
+export type MediaSelectMatchesTable = Expect<
+  Equal<z.output<typeof MediaSelectSchema>, typeof MediaTable.$inferSelect>
+>;
 
 export const MediaListItemSchema = MediaSelectSchema.extend({
   postCount: z
@@ -137,8 +152,7 @@ export const UpdateMediaNameInputSchema = z.strictObject({
   ),
 });
 
-export const MEDIA_SORTS = ["newest", "oldest", "largest"] as const;
-export type MediaSort = (typeof MEDIA_SORTS)[number];
+export type { MediaSort } from "@/features/media/utils/media.utils";
 
 export const GetMediaListInputSchema = z.strictObject({
   cursor: IdCursorSchema.optional(),

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import type { Locale, Messages } from "@/lib/i18n";
+import { afterEach, describe, expect, it } from "vitest";
 import { m } from "@/paraglide/messages";
+import { getLocale, overwriteGetLocale } from "@/paraglide/runtime";
 import {
   CreateFriendLinkInputSchema,
   createCreateFriendLinkSchema,
@@ -10,6 +10,9 @@ import {
 } from "./friend-links.schema";
 
 const listing = { siteName: "My site", siteUrl: "https://example.com" };
+
+const runtimeGetLocale = getLocale;
+afterEach(() => overwriteGetLocale(runtimeGetLocale));
 
 describe("Friend Link input schemas", () => {
   it("refuses an admin update that tries to approve or reassign", () => {
@@ -92,19 +95,10 @@ describe("Friend Link input schemas", () => {
   ] as const)(
     "captures localized %s errors when the form is created",
     (_, createSchema) => {
-      let locale: Locale = "en";
-      const messages: Messages = {
-        ...m,
-        friend_link_validation_required: () =>
-          m.friend_link_validation_required({}, { locale }),
-        friend_link_validation_too_long: (inputs) =>
-          m.friend_link_validation_too_long(inputs, { locale }),
-        friend_link_validation_invalid_url: () =>
-          m.friend_link_validation_invalid_url({}, { locale }),
-      };
-      const englishSchema = createSchema(messages);
-      locale = "zh";
-      const chineseSchema = createSchema(messages);
+      overwriteGetLocale(() => "en");
+      const englishSchema = createSchema();
+      overwriteGetLocale(() => "zh");
+      const chineseSchema = createSchema();
 
       for (const [schema, errorLocale] of [
         [englishSchema, "en"],

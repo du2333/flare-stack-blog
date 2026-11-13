@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { m } from "@/paraglide/messages";
 import { useJumpToHeading } from "./use-jump-to-heading";
 

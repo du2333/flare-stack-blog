@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { sessionQuery } from "@/features/auth/queries";
 import { orpc } from "@/lib/orpc";
@@ -10,9 +10,11 @@ import { m } from "@/paraglide/messages";
 import { useLogout } from "./use-logout";
 
 const { signOut } = vi.hoisted(() => ({ signOut: vi.fn() }));
-vi.mock("@/lib/auth/auth-client", () => ({
-  getAuthClient: () => ({ signOut }),
-}));
+vi.mock("@/lib/auth/sign-out", () => ({ signOut }));
+// Signing out needs no chunk of Better Auth's client.
+vi.mock("@/lib/auth/auth-client", () => {
+  throw new Error("useLogout loaded the auth client");
+});
 vi.mock("@/lib/orpc", async () => {
   const { createTanstackQueryUtils } = await import("@orpc/tanstack-query");
   const unusedProcedure = async () => {
@@ -26,7 +28,7 @@ vi.mock("@/lib/orpc", async () => {
     }),
   };
 });
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 let queryClient: QueryClient;
 const authBoundKeys = [
@@ -66,7 +68,7 @@ it.each([false, true])(
       }),
     );
     const onSuccess = vi.fn(() => {
-      expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeUndefined();
+      expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeNull();
       expect(toast.success).toHaveBeenCalledOnce();
     });
     const { result } = renderHook(
@@ -85,7 +87,7 @@ it.each([false, true])(
       await pending;
     });
 
-    expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeUndefined();
+    expect(queryClient.getQueryData(sessionQuery.queryKey)).toBeNull();
     for (const key of authBoundKeys) {
       expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
     }

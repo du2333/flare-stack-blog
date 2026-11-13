@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME_ID, THEME_IDS } from "./theme-ids";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "./theme-recipe";
 import { resolveThemeOptions, selectTheme, THEMES } from "./themes";
+import { themeThumbnail } from "./thumbnails/theme-thumbnail";
 import { documentThemeId } from "./utils/document-theme";
 
 const ROOT = join(import.meta.dirname, "../../..");
@@ -56,9 +57,17 @@ describe("the Theme registry", () => {
   it.each(THEMES.map((theme) => [theme.id, theme] as const))(
     "draws a thumbnail for %s, so the picker never shows the placeholder",
     (_id, theme) => {
-      expect(theme.thumbnail).toBeDefined();
+      expect(themeThumbnail(theme)).toBeDefined();
     },
   );
+
+  it("keeps the thumbnails out of the registry, which every public page loads", () => {
+    const registry = readFileSync(
+      join(import.meta.dirname, "themes.ts"),
+      "utf8",
+    );
+    expect(registry).not.toMatch(/from "\.\/thumbnails\//);
+  });
 
   it("uses every value of every Theme Recipe item in some Theme", () => {
     const values = recipeValues();

@@ -1,11 +1,18 @@
-import { createSelectSchema, createUpdateSchema } from "drizzle-zod";
+import type { JSONContent } from "@tiptap/react";
 import { z } from "zod";
 import {
   CategorySelectSchema,
   PublicCategorySchema,
 } from "@/features/categories/categories.schema";
 import { TagSelectSchema } from "@/features/tags/tags.schema";
-import { POST_STATUSES, PostsTable } from "@/lib/db/schema";
+import type { PostsTable } from "@/lib/db/schema";
+import { POST_STATUSES } from "@/lib/enum-values";
+import {
+  normalizePostCategoryName,
+  normalizePostTagName,
+} from "@/features/posts/utils/post-public-search";
+import { POST_SORT_KEYS } from "@/features/posts/posts.constants";
+import { MAX_PAGE_NUMBER } from "@/lib/constants";
 import { atLeastOneField } from "@/lib/orpc/changes";
 import {
   IdCursorSchema,
@@ -36,6 +43,7 @@ import type { DirectVideoLookup } from "@/features/posts/utils/video-source";
 import { NullableJsonContentSchema } from "./json-content.schema";
 import { SaveTokenSchema, StatedSaveTokenSchema } from "./save-token.schema";
 import { coercedDate } from "@/lib/orpc/dates";
+import type { Equal, Expect } from "@/lib/type-equal";
 
 const coercedDateNullable = coercedDate.nullable();
 
@@ -186,20 +194,56 @@ const PublishedAtInputSchema = z
 
 export { SaveTokenSchema, StatedSaveTokenSchema };
 
-const PostSelectSchema = createSelectSchema(PostsTable, {
-  saveToken: SaveTokenSchema,
+/**
+ * Any JSON value: what a read checks a post's stored body against, as it did
+ * when this schema was derived from the table. Typed as the column is.
+ */
+const StoredJsonContentSchema = z.union([
+  z.union([z.string(), z.number(), z.boolean(), z.null()]),
+  z.record(z.string(), z.any()),
+  z.array(z.any()),
+]) as z.ZodType<JSONContent, JSONContent>;
+
+const PostSelectSchema = z.object({
+  id: z.int(),
+  title: z.string(),
+  summary: z.string().nullable(),
+  slug: z.string(),
+  contentJson: StoredJsonContentSchema.nullable(),
+  publicSlug: z.string().nullable(),
+  status: z.enum(POST_STATUSES),
   publishedAt: coercedDateNullable,
   pinnedAt: coercedDateNullable,
+  coverMediaId: z.int().nullable(),
+  categoryId: z.int().nullable(),
+  saveToken: SaveTokenSchema,
   createdAt: coercedDate,
   updatedAt: coercedDate,
-}).omit({
-  publicSnapshotJson: true,
-  draftFingerprint: true,
-  publishedFingerprint: true,
-  publicCategoryId: true,
-  slugKey: true,
-  publicSlugKey: true,
 });
+
+/**
+ * Columns a read of a post leaves out: the Public Content Snapshot and what is
+ * written with it, the change-tracking fingerprints, and the unique keys,
+ * which are the database's to compare by.
+ */
+type UnreadPostColumns =
+  | "publicSnapshotJson"
+  | "publicCategoryId"
+  | "draftFingerprint"
+  | "publishedFingerprint"
+  | "slugKey"
+  | "publicSlugKey";
+
+/**
+ * Fails to compile when a column of `posts` is missing from the schema or
+ * reads differently.
+ */
+export type PostSelectMatchesTable = Expect<
+  Equal<
+    z.output<typeof PostSelectSchema>,
+    Omit<typeof PostsTable.$inferSelect, UnreadPostColumns>
+  >
+>;
 
 const SET_TAGS_HINT =
   "A Post's Tags are not set with its fields: set them with PUT /admin/posts/{postId}/tags, body { tagIds, saveToken }.";
@@ -219,10 +263,10 @@ function pointTagIdsToSetTags(issue: z.core.$ZodRawIssue) {
 /**
  * Strict on purpose, and narrower than the table.
  *
- * `createUpdateSchema` takes every column, so `id`, `createdAt` and
- * `updatedAt` were writable: a PATCH could move a row to another id or
- * backdate it, and `updatedAt` is the default list sort key, so a forged
- * value buried the post. They are the server's to set, never the client's.
+ * `id`, `createdAt` and `updatedAt` were once writable: a PATCH could move a
+ * row to another id or backdate it, and `updatedAt` is the default list sort
+ * key, so a forged value buried the post. They are the server's to set, never
+ * the client's.
  *
  * Publication is not a field either. A plain object would silently strip
  * these: a client that PATCHed `{ status: "published" }` got a 200 back and a
@@ -233,31 +277,42 @@ function pointTagIdsToSetTags(issue: z.core.$ZodRawIssue) {
  * have theirs too: a PATCH carrying `tagIds` is refused naming it.
  */
 const PostUpdateSchema = z.strictObject(
-  createUpdateSchema(PostsTable, {
-    contentJson: ContentJsonInputSchema,
+  {
     title: PostTitleInputSchema.optional(),
-    slug: PostSlugInputSchema.optional(),
     summary: PostSummaryInputSchema.optional(),
+    slug: PostSlugInputSchema.optional(),
+    contentJson: ContentJsonInputSchema,
     publishedAt: PublishedAtInputSchema,
-  })
-    .omit({
-      publicSnapshotJson: true,
-      publicCategoryId: true,
-      publicSlug: true,
-      pinnedAt: true,
-      status: true,
-      id: true,
-      createdAt: true,
-      updatedAt: true,
-      saveToken: true,
-      draftFingerprint: true,
-      publishedFingerprint: true,
-      slugKey: true,
-      publicSlugKey: true,
-    })
-    .extend({ contentMarkdown: ContentMarkdownInputSchema }).shape,
+    coverMediaId: z.int().nullable().optional(),
+    categoryId: z.int().nullable().optional(),
+    contentMarkdown: ContentMarkdownInputSchema,
+  },
   { error: pointTagIdsToSetTags },
 );
+
+/**
+ * Fails to compile when a column of `posts` is added without deciding whether
+ * a PATCH writes it: every column is either a field here or listed as one the
+ * server alone sets.
+ */
+export type PostUpdateMatchesTable = Expect<
+  Equal<
+    Omit<z.output<typeof PostUpdateSchema>, "contentMarkdown">,
+    Partial<
+      Omit<
+        typeof PostsTable.$inferSelect,
+        | UnreadPostColumns
+        | "id"
+        | "publicSlug"
+        | "status"
+        | "pinnedAt"
+        | "saveToken"
+        | "createdAt"
+        | "updatedAt"
+      >
+    >
+  >
+>;
 const NonEmptyPostUpdateSchema = atLeastOneField(PostUpdateSchema);
 
 const PublicUpdatedAtSchema = coercedDate.describe(
@@ -282,9 +337,8 @@ export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
   nextCursor: z.number().nullable(),
 });
-export const HOME_POSTS_PER_PAGE = 8;
 export const HomePostsInputSchema = z.object({
-  page: z.number().int().min(1).max(1_000_000).default(1),
+  page: z.number().int().min(1).max(MAX_PAGE_NUMBER).default(1),
 });
 export const HomePostsResponseSchema = z.object({
   items: z.array(PostItemSchema),
@@ -335,18 +389,6 @@ export const AdminPostSchema = PostSelectSchema.extend({
   serverToday: z.string(),
   cover: AdminPostCoverSchema.nullable(),
 });
-
-export function normalizePostTagName(
-  tagName: string | undefined,
-): string | undefined {
-  return tagName === "" ? undefined : tagName;
-}
-
-export function normalizePostCategoryName(
-  categoryName: string | undefined,
-): string | undefined {
-  return categoryName === "" ? undefined : categoryName;
-}
 
 export const PostTagNameSchema = z
   .string()
@@ -439,14 +481,7 @@ export const GetPostsInputSchema = z.strictObject({
   search: z.string().optional(),
   sortDir: z.enum(["ASC", "DESC"]).optional(),
   sortBy: z
-    .enum([
-      "publishedAt",
-      "updatedAt",
-      "createdAt",
-      "id",
-      "commentCount",
-      "viewCount",
-    ])
+    .enum(POST_SORT_KEYS)
     .optional()
     .describe(
       "Sort key. Defaults to updatedAt. createdAt is when the post was first created and never changes. commentCount sorts by the published comments; viewCount by the views of the last 30 days, and falls back to updatedAt while popularity is not ready. Ties are broken by id in the sortDir direction.",

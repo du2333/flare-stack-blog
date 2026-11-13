@@ -8,9 +8,10 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { POST_STATUSES } from "../../enum-values";
 import { createdAt, id, updatedAt } from "./helper";
 
-export const POST_STATUSES = ["draft", "published"] as const;
+export { POST_STATUSES };
 
 export type PublicPostCover = {
   mediaId: number;

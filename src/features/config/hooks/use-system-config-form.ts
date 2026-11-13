@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { createSiteConfigInputFormSchema } from "../site-config.schema";
 import { DEFAULT_CONFIG } from "../config.schema";
 import {
@@ -187,7 +187,7 @@ export function useSystemConfigForm(
     const site = siteForSave(baseline.config.site, submitted.site, sitePage);
     const parsedSite =
       section === "site"
-        ? createSiteConfigInputFormSchema(m).safeParse(site)
+        ? createSiteConfigInputFormSchema().safeParse(site)
         : null;
     if (parsedSite && !parsedSite.success) {
       const issue = parsedSite.error.issues[0];

@@ -8,31 +8,31 @@ import {
 
 describe("sign-in code errors", () => {
   it("explains each Better Auth code error", () => {
-    expect(getSignInCodeAuthErrorMessage({ code: "INVALID_OTP" }, m)).toBe(
+    expect(getSignInCodeAuthErrorMessage({ code: "INVALID_OTP" })).toBe(
       m.auth_error_invalid_otp(),
     );
-    expect(getSignInCodeAuthErrorMessage({ code: "OTP_EXPIRED" }, m)).toBe(
+    expect(getSignInCodeAuthErrorMessage({ code: "OTP_EXPIRED" })).toBe(
       m.auth_error_otp_expired(),
     );
-    expect(
-      getSignInCodeAuthErrorMessage({ code: "TOO_MANY_ATTEMPTS" }, m),
-    ).toBe(m.auth_error_otp_too_many_attempts());
+    expect(getSignInCodeAuthErrorMessage({ code: "TOO_MANY_ATTEMPTS" })).toBe(
+      m.auth_error_otp_too_many_attempts(),
+    );
   });
 
   it("tells the user how long to wait when rate limited", () => {
     expect(
-      getSignInCodeAuthErrorMessage(
-        { code: "RATE_LIMITED", retryAfterMs: 90_500 },
-        m,
-      ),
+      getSignInCodeAuthErrorMessage({
+        code: "RATE_LIMITED",
+        retryAfterMs: 90_500,
+      }),
     ).toBe(m.request_error_rate_limited_desc({ seconds: "91" }));
   });
 
   it("leaves unknown codes to the caller", () => {
     expect(
-      getSignInCodeAuthErrorMessage({ code: "SOMETHING_ELSE" }, m),
+      getSignInCodeAuthErrorMessage({ code: "SOMETHING_ELSE" }),
     ).toBeUndefined();
-    expect(getSignInCodeAuthErrorMessage(null, m)).toBeUndefined();
+    expect(getSignInCodeAuthErrorMessage(null)).toBeUndefined();
   });
 
   it("sends the user back for a new code only when this one is spent", () => {

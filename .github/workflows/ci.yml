@@ -55,6 +55,10 @@ jobs:
       - name: Build
         run: bun run build
 
+      # What a page preloads, against scripts/bundle-budgets.json.
+      - name: Bundle Budget
+        run: bun scripts/bundle-report.ts --check
+
       - name: Run Node Tests
         run: bun run test:node
 

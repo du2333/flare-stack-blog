@@ -29,6 +29,20 @@ interface PostCardProps {
   post: PostItem;
   pinned?: boolean;
   popular?: boolean;
+  /** Where the card stands in its list; without one, its cover loads eagerly. */
+  index?: number;
+}
+
+/**
+ * How many covers at the top of a list load eagerly. React preloads the
+ * first ten images of a page that are not lazy, and on a slow connection
+ * those preloads compete with the stylesheets; the first cards are what
+ * the first screen shows, the rest wait to scroll in.
+ */
+export const EAGER_COVER_COUNT = 3;
+
+function coverLoading(index: number | undefined) {
+  return index !== undefined && index >= EAGER_COVER_COUNT ? "lazy" : undefined;
 }
 
 /** A Post in the home list, as a card, a row or a tile (Theme Recipe). */
@@ -125,7 +139,7 @@ function PostListMeta({ post }: { post: PostItem }) {
   );
 }
 
-function PostCardBox({ post, pinned, popular }: PostCardProps) {
+function PostCardBox({ post, pinned, popular, index }: PostCardProps) {
   const recipe = useThemeRecipe();
   const hasCover = Boolean(post.cover);
   const strip = !hasCover && recipe.noCoverStrip === "keep";
@@ -221,6 +235,7 @@ function PostCardBox({ post, pinned, popular }: PostCardProps) {
             ])}
             sizes="(min-width: 768px) 28vw, 100vw"
             alt={post.title}
+            loading={coverLoading(index)}
             width={post.cover.width ?? undefined}
             height={post.cover.height ?? undefined}
             className="w-full h-full object-cover"
@@ -248,7 +263,7 @@ function PostCardBox({ post, pinned, popular }: PostCardProps) {
  * on one line, with a small cover on the right. The home list draws the
  * rules between rows.
  */
-function PostRow({ post, pinned, popular }: PostCardProps) {
+function PostRow({ post, pinned, popular, index }: PostCardProps) {
   const recipe = useThemeRecipe();
   const inlineMeta = recipe.meta === "inline";
 
@@ -315,6 +330,7 @@ function PostRow({ post, pinned, popular }: PostCardProps) {
           <img
             src={getPublicImageSrc(post.cover.url, PUBLIC_IMAGE_WIDTH.cover)}
             alt={post.title}
+            loading={coverLoading(index)}
             width={post.cover.width ?? undefined}
             height={post.cover.height ?? undefined}
             className="size-full object-cover"

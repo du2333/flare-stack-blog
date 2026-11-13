@@ -1,7 +1,7 @@
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { CircleAlert, Copy, KeyRound, Plus, Trash2 } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAdminPrimaryAction } from "@/components/admin/admin-chrome";
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";

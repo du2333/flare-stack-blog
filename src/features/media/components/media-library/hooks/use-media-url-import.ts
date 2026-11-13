@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { extractImageKey } from "@/features/media/utils/media.utils";
 import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";

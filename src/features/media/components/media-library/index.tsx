@@ -1,6 +1,6 @@
 import { CheckCheck, ImageOff, Images, Search, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AdminPage } from "@/components/admin/admin-page";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
 import { formatBytes } from "@/lib/utils";

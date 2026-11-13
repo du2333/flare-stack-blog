@@ -1,5 +1,5 @@
 import { isDefinedError } from "@orpc/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { m } from "@/paraglide/messages";
 import { parseRequestError } from "./request-errors";
 

@@ -1,8 +1,8 @@
+import type { GetPostsInput } from "@/features/posts/schema/posts.schema";
 import {
   normalizePostCategoryName,
   normalizePostTagName,
-  type GetPostsInput,
-} from "@/features/posts/schema/posts.schema";
+} from "@/features/posts/utils/post-public-search";
 import { orpc } from "@/lib/orpc";
 import {
   emptyListOnNotFound,

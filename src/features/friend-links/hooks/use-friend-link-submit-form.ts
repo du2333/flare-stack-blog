@@ -19,7 +19,7 @@ export function useFriendLinkSubmitForm(
     turnstileProps,
   } = useTurnstile("friend-link");
   const form = useForm<SubmitFriendLinkInput>({
-    resolver: standardSchemaResolver(createSubmitFriendLinkSchema(m)),
+    resolver: standardSchemaResolver(createSubmitFriendLinkSchema()),
     defaultValues: initial ?? {
       siteName: "",
       siteUrl: "",

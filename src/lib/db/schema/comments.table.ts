@@ -9,11 +9,12 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.table";
+import { COMMENT_STATUSES, EMAIL_UNSUBSCRIBE_TYPES } from "../../enum-values";
 import { createdAt, id, updatedAt } from "./helper";
 import { MomentsTable } from "./moments.table";
 import { PostsTable } from "./posts.table";
 
-export const COMMENT_STATUSES = ["published", "deleted"] as const;
+export { COMMENT_STATUSES, EMAIL_UNSUBSCRIBE_TYPES };
 
 export const CommentsTable = sqliteTable(
   "comments",
@@ -72,8 +73,6 @@ export const CommentsTable = sqliteTable(
     ),
   ],
 );
-
-export const EMAIL_UNSUBSCRIBE_TYPES = ["reply_notification"] as const;
 
 export const EmailUnsubscriptionsTable = sqliteTable(
   "email_unsubscriptions",

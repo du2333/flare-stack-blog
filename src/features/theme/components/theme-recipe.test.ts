@@ -25,10 +25,8 @@ import { PostPage } from "@/features/posts/components/post-page";
 import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
 import { PostSummary } from "@/features/posts/components/post-summary";
 import { PostsPage } from "@/features/posts/components/posts-page";
-import {
-  HOME_POSTS_PER_PAGE,
-  type PostItem,
-} from "@/features/posts/schema/posts.schema";
+import { HOME_POSTS_PER_PAGE } from "@/features/posts/posts.constants";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "../theme-recipe";
 import { ThemeRecipeProvider } from "./theme-recipe";
@@ -85,7 +83,7 @@ vi.mock("@tanstack/react-query", async () => ({
 vi.mock("@/features/posts/utils/cached-public-post", () => ({
   findCachedPublicPost: () => state.cached,
 }));
-vi.mock("@/lib/auth/auth-client", () => ({
+vi.mock("@/features/auth/hooks/use-session", () => ({
   useSession: () => ({ data: null }),
 }));
 vi.mock("@/features/comments/components/comment-section", () => ({
@@ -259,6 +257,37 @@ describe("Theme Recipe", () => {
       });
       expect(linksTo(withoutCover, "/post/a-post")).toHaveLength(1);
     });
+
+    it.each(["card", "row"] as const)(
+      "%s: the home list loads the first covers eagerly and the rest lazily",
+      (postCard) => {
+        const posts = Array.from({ length: 5 }, (_, i) =>
+          post({
+            slug: `post-${i}`,
+            cover: COVER,
+          } as Partial<PostItem>),
+        );
+        const host = render(
+          createElement(HomePage, { posts, page: 1, totalPages: 1 }),
+          { postCard },
+        );
+        // React hoists preload links; the covers are the images in the list.
+        const covers = [...host.querySelectorAll("a[href^='/post/'] img")];
+        expect(covers).toHaveLength(5);
+        expect(covers.map((cover) => cover.getAttribute("loading"))).toEqual([
+          null,
+          null,
+          null,
+          "lazy",
+          "lazy",
+        ]);
+        // A card outside a list has no position and keeps its cover eager.
+        const alone = render(createElement(PostCard, { post: posts[0] }), {
+          postCard,
+        });
+        expect(alone.querySelector("img")!.hasAttribute("loading")).toBe(false);
+      },
+    );
 
     it("tile: the cover leads, then title, summary and one meta line with the stats, without Tags", () => {
       const host = render(

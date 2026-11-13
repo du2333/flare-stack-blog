@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Flame } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { MaintenanceItem } from "@/features/config/components/maintenance-item";
 import { usePostPopularitySync } from "@/features/post-popularity/hooks/use-post-popularity-sync";

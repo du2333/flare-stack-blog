@@ -30,8 +30,7 @@ export function useSocialLogin(options: UseSocialLoginOptions) {
       });
       if (error)
         setErrorMessage(
-          getSocialLoginAuthErrorMessage(error, m) ??
-            m.auth_error_default_desc(),
+          getSocialLoginAuthErrorMessage(error) ?? m.auth_error_default_desc(),
         );
     } catch {
       setErrorMessage(m.auth_error_default_desc());

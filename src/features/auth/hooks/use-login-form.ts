@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
 import { resetAuthBoundQueries } from "@/features/auth/queries";
 import { usePreviousLocation } from "@/hooks/use-previous-location";
@@ -13,7 +13,6 @@ import {
   getSignInCodeAuthErrorMessage,
   isSignInCodeSpentError,
 } from "@/lib/auth/auth-errors";
-import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 import {
   getResendCooldownMs,
@@ -25,14 +24,14 @@ import { useCooldown } from "./use-cooldown";
 
 export type LoginStep = "email" | "code" | "name";
 
-const createEmailSchema = (messages: Messages) =>
+const createEmailSchema = () =>
   z.object({
-    email: z.email(messages.login_validation_invalid_email()),
+    email: z.email(m.login_validation_invalid_email()),
   });
 
-const createCodeSchema = (messages: Messages) =>
+const createCodeSchema = () =>
   z.object({
-    code: z.string().refine(isSignInCode, messages.login_validation_code()),
+    code: z.string().refine(isSignInCode, m.login_validation_code()),
   });
 
 type EmailSchema = z.infer<ReturnType<typeof createEmailSchema>>;
@@ -58,10 +57,10 @@ export function useLoginForm(options: UseLoginFormOptions) {
   const queryClient = useQueryClient();
 
   const emailForm = useForm<EmailSchema>({
-    resolver: standardSchemaResolver(createEmailSchema(m)),
+    resolver: standardSchemaResolver(createEmailSchema()),
   });
   const codeForm = useForm<CodeSchema>({
-    resolver: standardSchemaResolver(createCodeSchema(m)),
+    resolver: standardSchemaResolver(createCodeSchema()),
   });
 
   const performRedirect = (
@@ -86,7 +85,6 @@ export function useLoginForm(options: UseLoginFormOptions) {
 
   const finish = () => {
     setSignedIn(true);
-    resetAuthBoundQueries(queryClient);
     setTimeout(() => {
       performRedirect(redirectTo, previousLocation);
       toast.success(m.login_toast_success());
@@ -107,7 +105,7 @@ export function useLoginForm(options: UseLoginFormOptions) {
         });
       if (sendError) {
         setError(
-          getSignInCodeAuthErrorMessage(sendError, m) ??
+          getSignInCodeAuthErrorMessage(sendError) ??
             m.auth_error_default_desc(),
         );
         const retryAfterMs = getRetryAfterMs(sendError);
@@ -149,11 +147,13 @@ export function useLoginForm(options: UseLoginFormOptions) {
           setStep("email");
         }
         setError(
-          getSignInCodeAuthErrorMessage(signInError, m) ??
+          getSignInCodeAuthErrorMessage(signInError) ??
             m.auth_error_default_desc(),
         );
         return;
       }
+      // Signed in from here on, even before the name step finishes.
+      resetAuthBoundQueries(queryClient, "signed-in");
       if (!result.user.name.trim()) {
         setStep("name");
         return;

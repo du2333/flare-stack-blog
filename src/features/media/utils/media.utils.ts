@@ -1,5 +1,9 @@
 import { withoutControlCharacters } from "@/lib/unicode-text";
 
+/** The orders of the Media list; the Admin's address and the list input share them. */
+export const MEDIA_SORTS = ["newest", "oldest", "largest"] as const;
+export type MediaSort = (typeof MEDIA_SORTS)[number];
+
 /** The longest file name a Media can have, the usual limit of a file system. */
 export const MEDIA_NAME_MAX_LENGTH = 255;
 

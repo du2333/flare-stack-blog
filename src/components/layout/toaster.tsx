@@ -1,5 +1,7 @@
-import { Toaster as Sonner } from "sonner";
+import { useEffect } from "react";
+import { Toaster as Sonner, toast } from "sonner";
 import { buttonClass } from "@/components/ui/button";
+import { provideToast } from "@/lib/toast";
 
 const MOTION =
   "transition-all duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-10 data-[state=open]:slide-in-from-bottom-4";
@@ -33,6 +35,9 @@ const ADMIN = {
 };
 
 export function Toaster({ variant = "site" }: { variant?: "site" | "admin" }) {
+  // Runs after sonner's own Toaster has subscribed, so what the facade held
+  // back is shown rather than dropped.
+  useEffect(() => provideToast(toast), []);
   return (
     <Sonner
       className="toaster group"

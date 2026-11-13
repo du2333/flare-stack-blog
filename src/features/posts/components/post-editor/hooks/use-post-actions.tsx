@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type { PostEditorData } from "@/features/posts/components/post-editor/types";
 import { FALLBACK_SLUG, slugify } from "@/features/posts/utils/content";
 import {

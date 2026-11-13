@@ -18,7 +18,7 @@ import { FuwariModal } from "@/components/ui/fuwari-modal";
 import { IconButton } from "@/components/ui/icon-button";
 import { SectionHeading } from "@/components/ui/page-heading";
 import { MOTION, useContentMotion, useReducedMotion } from "@/hooks/use-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FILE_SIZE,

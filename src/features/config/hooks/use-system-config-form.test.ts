@@ -34,7 +34,7 @@ vi.mock("./use-system-setting", () => ({
     isLoading: false,
   }),
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 // Site Config accepts the fixture Theme, as in a THEME_FIXTURE=1 build.
 vi.mock("@/features/theme/theme-ids", async (importOriginal) => {
   const actual =

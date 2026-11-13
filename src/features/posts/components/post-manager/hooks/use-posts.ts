@@ -5,35 +5,14 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
-import type { GetPostsInput } from "@/features/posts/schema/posts.schema";
+import { toast } from "@/lib/toast";
 import { adminPostsQuery } from "@/features/posts/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import type { PostListLocation } from "../list-position";
 import type { AdminPostListItem } from "../types";
-import { POSTS_PER_PAGE, statusFilterToApi } from "../types";
-
-export function adminPostsListParams({
-  page,
-  status,
-  sortBy,
-  search,
-  category,
-  tag,
-}: PostListLocation): GetPostsInput {
-  return {
-    offset: (page - 1) * POSTS_PER_PAGE,
-    limit: POSTS_PER_PAGE,
-    ...statusFilterToApi(status),
-    sortDir: "DESC",
-    sortBy,
-    search: search || undefined,
-    categoryId: typeof category === "number" ? category : undefined,
-    uncategorized: category === "none" || undefined,
-    tagId: tag,
-  };
-}
+import { adminPostsListParams } from "../list-params";
+import { POSTS_PER_PAGE } from "../types";
 
 export function usePosts(location: PostListLocation) {
   const postsQuery = useQuery({

@@ -3,7 +3,7 @@ import { memo } from "react";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import type { CommentWithUser } from "@/features/comments/comments.schema";
 import { isMuted } from "@/features/muted-users/muted-users";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { cn, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { m } from "@/paraglide/messages";

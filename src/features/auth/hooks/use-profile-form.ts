@@ -1,21 +1,22 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { z } from "zod";
+import { refreshSession } from "@/features/auth/queries";
 import { createPublicNameSchema } from "@/features/auth/utils/public-name";
 import { getAuthClient } from "@/lib/auth/auth-client";
 import { getProfileAuthErrorMessage } from "@/lib/auth/auth-errors";
-import type { Messages } from "@/lib/i18n";
 import { m } from "@/paraglide/messages";
 
-const createProfileSchema = (messages: Messages) =>
+const createProfileSchema = () =>
   z.object({
-    name: createPublicNameSchema(messages),
+    name: createPublicNameSchema(),
     image: z
       .union([
         z.literal(""),
-        z.string().url(messages.profile_validation_avatar_invalid()).trim(),
+        z.string().url(m.profile_validation_avatar_invalid()).trim(),
       ])
       .optional(),
   });
@@ -28,13 +29,14 @@ interface UseProfileFormOptions {
 
 export function useProfileForm(options: UseProfileFormOptions) {
   const { user } = options;
+  const queryClient = useQueryClient();
 
   const [feedback, setFeedback] = useState<{
     error: boolean;
     message: string;
   } | null>(null);
   const form = useForm<ProfileSchema>({
-    resolver: standardSchemaResolver(createProfileSchema(m)),
+    resolver: standardSchemaResolver(createProfileSchema()),
     defaultValues: { name: user?.name || "", image: user?.image || "" },
   });
   const {
@@ -63,11 +65,12 @@ export function useProfileForm(options: UseProfileFormOptions) {
         setFeedback({
           error: true,
           message:
-            getProfileAuthErrorMessage(error, m) ?? m.auth_error_default_desc(),
+            getProfileAuthErrorMessage(error) ?? m.auth_error_default_desc(),
         });
         return;
       }
       reset(data);
+      void refreshSession(queryClient);
       setFeedback({ error: false, message: m.profile_toast_profile_updated() });
       toast.success(m.profile_toast_profile_updated());
     } catch {

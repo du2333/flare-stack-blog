@@ -1,3 +1,5 @@
+import type { LEGACY_SETTINGS_TABS } from "@/features/config/legacy-settings-search";
+
 /** The tabs of 「设置」: what the site is, how it notifies, its upkeep. */
 export const SETTINGS_PAGE_TO = {
   site: "/admin/settings/site",
@@ -39,7 +41,7 @@ export const LEGACY_SETTINGS_TAB_TO = {
   webhook: SETTINGS_PAGE_TO.notify,
   "api-keys": ACCESS_PAGE_TO["api-keys"],
   maintenance: SETTINGS_PAGE_TO.maintenance,
-} as const;
+} as const satisfies Record<(typeof LEGACY_SETTINGS_TABS)[number], string>;
 
 export function settingsSectionFromPath(
   pathname: string,

@@ -60,14 +60,13 @@ const boundary = vi.hoisted(() => ({
   toastError: vi.fn(),
 }));
 
-vi.mock("sonner", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("sonner")>()),
-  toast: Object.assign(vi.fn(), {
+vi.mock("@/lib/toast", () => ({
+  toast: {
     error: boundary.toastError,
     loading: vi.fn(),
     dismiss: vi.fn(),
     success: vi.fn(),
-  }),
+  },
 }));
 
 vi.mock("@/lib/orpc", async () => {
@@ -77,7 +76,7 @@ vi.mock("@/lib/orpc", async () => {
     orpc: createTanstackQueryUtils(boundary.client),
   };
 });
-vi.mock("@/lib/auth/auth-client", async () => {
+vi.mock("@/features/auth/hooks/use-session", async () => {
   const { useSyncExternalStore } = await import("react");
   return {
     useSession: () => ({

@@ -1,7 +1,39 @@
-import {
-  normalizePostCategoryName,
-  normalizePostTagName,
-} from "@/features/posts/schema/posts.schema";
+import { z } from "zod/mini";
+
+/** A name given as `""` names no filter. */
+export function normalizePostTagName(
+  tagName: string | undefined,
+): string | undefined {
+  return tagName === "" ? undefined : tagName;
+}
+
+export function normalizePostCategoryName(
+  categoryName: string | undefined,
+): string | undefined {
+  return categoryName === "" ? undefined : categoryName;
+}
+
+/** The address of the public posts page: a Tag or a Category, or the uncategorized. */
+export const postsPublicSearchSchema = z.object({
+  tagName: z.optional(
+    z.pipe(
+      z.string(),
+      z.transform((name: string) => normalizePostTagName(name)),
+    ),
+  ),
+  categoryName: z.optional(
+    z.pipe(
+      z.string(),
+      z.transform((name: string) => normalizePostCategoryName(name)),
+    ),
+  ),
+  uncategorized: z.optional(
+    z.pipe(
+      z.union([z.boolean(), z.literal("true"), z.literal("false")]),
+      z.transform((value) => value === true || value === "true"),
+    ),
+  ),
+});
 
 export type PostsPublicSearch = {
   tagName?: string;

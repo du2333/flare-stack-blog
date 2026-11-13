@@ -40,7 +40,6 @@ updates:
       drizzle:
         patterns:
           - "drizzle-orm"
-          - "drizzle-zod"
           - "drizzle-kit"
       ui:
         patterns:

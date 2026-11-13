@@ -1,12 +1,9 @@
 import { index, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.table";
+import { FRIEND_LINK_STATUSES } from "../../enum-values";
 import { createdAt, id, updatedAt } from "./helper";
 
-export const FRIEND_LINK_STATUSES = [
-  "pending",
-  "approved",
-  "rejected",
-] as const;
+export { FRIEND_LINK_STATUSES };
 
 export const FriendLinksTable = sqliteTable(
   "friend_links",
