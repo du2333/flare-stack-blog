@@ -16,7 +16,8 @@ import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { flattenNavOptions } from "@/components/layout/nav-options";
+import { NavGroupMenu } from "@/components/layout/nav-group-menu";
+import { isNavGroup } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
@@ -125,8 +126,12 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   // through the glider, a frame later while something is still gliding.
   const shape = useRef<boolean | null>(null);
   const away = useRef(false);
+  // While the parts glide, a trigger slides under a pointer that rests on
+  // the bar and would open its menu there, beside a trigger still on its
+  // way: the groups take no pointer until every part is still (navbar.css).
+  const [gliding, setGliding] = useState(false);
   const [glider] = useState(
-    () => new Glider(() => barRef.current, SURFACES, MORPH),
+    () => new Glider(() => barRef.current, SURFACES, MORPH, setGliding),
   );
   // Not before the first frames, and not for a reader who asked for less
   // motion: then a change is made at once.
@@ -265,6 +270,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
         data-state={state}
         data-hidden={hidden && !open}
         data-ready={ready}
+        data-gliding={gliding || undefined}
         data-brand={siteConfig.brandMark}
         onFocusCapture={() => hide(false)}
       >
@@ -282,14 +288,26 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
             </div>
 
             <nav className="immersive-links" aria-label={m.nav_main_label()}>
-              {flattenNavOptions(navOptions).map((option) => (
-                <PublicNavLink
-                  key={option.id}
-                  option={option}
-                  className="immersive-link"
-                  activeClassName="immersive-link-active"
-                />
-              ))}
+              {navOptions.map((option) =>
+                isNavGroup(option) ? (
+                  <NavGroupMenu
+                    key={option.id}
+                    group={option}
+                    navOptions={navOptions}
+                    // Its menu stands below it: a new shape moves it away.
+                    dismissOn={state}
+                    className="immersive-link immersive-group"
+                    activeClassName="immersive-link-active"
+                  />
+                ) : (
+                  <PublicNavLink
+                    key={option.id}
+                    option={option}
+                    className="immersive-link"
+                    activeClassName="immersive-link-active"
+                  />
+                ),
+              )}
             </nav>
 
             <div className="immersive-side immersive-side-end">

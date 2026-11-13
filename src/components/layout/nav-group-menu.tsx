@@ -26,18 +26,22 @@ import { cn } from "@/lib/utils";
  * so is that link in the menu.
  *
  * `className` is the shell's for its navigation entries; the trigger is a
- * `button`, and its chevron turns while the menu is open.
+ * `button`, and its chevron turns while the menu is open. `dismissOn` closes
+ * the open menu whenever it changes (`Menu`), for a bar that moves the
+ * trigger away.
  */
 export function NavGroupMenu({
   group,
   navOptions,
   className,
   activeClassName,
+  dismissOn,
 }: {
   group: NavGroupOption;
   navOptions: ReadonlyArray<NavOption>;
   className?: string;
   activeClassName?: string;
+  dismissOn?: unknown;
 }) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const currentLink = currentNavLink(navOptions, pathname);
@@ -47,6 +51,7 @@ export function NavGroupMenu({
       label={group.label}
       placement="bottom-start"
       openOnHover
+      dismissOn={dismissOn}
       triggerCurrent={current}
       triggerClassName={cn(
         "group/nav-group",

@@ -14,7 +14,9 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
+import { findInPopover } from "tests/popover";
 import { createElement, useState } from "react";
 import {
   afterEach,
@@ -25,7 +27,9 @@ import {
   vi,
   type MockInstance,
 } from "vitest";
+import type { NavOption } from "@/components/layout/layout-props";
 import { PAGE_FADE_MS } from "@/components/layout/page-fade";
+import { MENU_HOVER_OPEN_DELAY } from "@/components/ui/menu";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import { m } from "@/paraglide/messages";
@@ -65,18 +69,22 @@ async function renderShell({
   site,
   cards = cardsFor(pageKind),
   stored,
+  navOptions = [{ id: "home", label: "Nav home", href: "/", external: false }],
+  path = "/",
 }: {
   pageKind: PageKind;
   site?: SystemConfig["site"];
   cards?: Array<SidebarCard>;
   /** 「沉浸」's options as Site Config holds them. */
   stored?: Record<string, unknown>;
+  navOptions?: Array<NavOption>;
+  path?: string;
 }) {
   const props: ThemeShellProps = {
     pageKind,
     pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
-    navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
+    navOptions,
     sidebarCards: cards,
     isSessionLoading: false,
     logout: async () => {},
@@ -91,7 +99,7 @@ async function renderShell({
   });
   const router = createRouter({
     routeTree: root,
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    history: createMemoryHistory({ initialEntries: [path] }),
   });
   await act(async () => {
     render(createElement(RouterProvider, { router }));
@@ -898,6 +906,234 @@ describe("the navbar", () => {
     await renderShell({ pageKind: "home", site: { brandMark: "none" } });
 
     expect(navbar().dataset.brand).toBe("none");
+  });
+
+  describe("with a group", () => {
+    const GROUP_NAV: Array<NavOption> = [
+      { id: "home", label: "Nav home", href: "/", external: false },
+      {
+        id: "custom-0",
+        label: "Nav group",
+        children: [
+          {
+            id: "custom-0-0",
+            label: "Nav kyoto",
+            href: "/kyoto",
+            external: false,
+          },
+          {
+            id: "custom-0-1",
+            label: "Nav coffee",
+            href: "/coffee",
+            external: false,
+          },
+        ],
+      },
+      { id: "custom-1", label: "Nav about", href: "/about", external: false },
+    ];
+    const links = () =>
+      screen.getByRole("navigation", { name: m.nav_main_label() });
+    const group = () =>
+      within(links()).getByRole("button", { name: "Nav group" });
+
+    it("stands it among the links, in its place, as a menu of its links", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+
+      expect([...links().children].map((entry) => entry.textContent)).toEqual([
+        "Nav home",
+        "Nav group",
+        "Nav about",
+      ]);
+      expect(group().classList).toContain("immersive-link");
+      expect(within(links()).queryByRole("link", { name: "Nav kyoto" })).toBe(
+        null,
+      );
+    });
+
+    it("marks it current, as a link is, while one of its links is the page", async () => {
+      await renderShell({
+        pageKind: "inner",
+        navOptions: GROUP_NAV,
+        path: "/kyoto",
+      });
+
+      expect(group().getAttribute("aria-current")).toBe("true");
+      expect(group().classList).toContain("immersive-link-active");
+    });
+
+    it("closes its menu when the bar changes shape, the focus that was in it back on the same trigger", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+      vi.useRealTimers();
+      const trigger = group();
+      fireEvent.click(trigger);
+      const menu = await findInPopover("menu", { name: "Nav group" });
+      expect(menu.contains(document.activeElement)).toBe(true);
+
+      scrollTo(CONDENSE_AT + 1);
+
+      expect(navbar().dataset.state).toBe("pill");
+      expect(screen.queryByRole("menu", { name: "Nav group" })).toBe(null);
+      // The same element, so the glide carries it as itself.
+      expect(group()).toBe(trigger);
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it("closes a menu the mouse opened and leaves the focus on another group", async () => {
+      const second: NavOption = {
+        id: "custom-2",
+        label: "Nav second",
+        children: [
+          { id: "custom-2-0", label: "Nav tea", href: "/tea", external: false },
+        ],
+      };
+      await renderShell({
+        pageKind: "home",
+        navOptions: [...GROUP_NAV, second],
+      });
+      const other = within(links()).getByRole("button", { name: "Nav second" });
+      fireEvent.pointerEnter(group(), { pointerType: "mouse" });
+      act(() => {
+        vi.advanceTimersByTime(MENU_HOVER_OPEN_DELAY);
+      });
+      expect(group().getAttribute("aria-expanded")).toBe("true");
+      other.focus();
+
+      scrollTo(CONDENSE_AT + 1);
+
+      expect(group().getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(other);
+    });
+
+    it("leaves a closed group as it is when the bar changes shape", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+      const before = group();
+
+      scrollTo(CONDENSE_AT + 1);
+
+      expect(navbar().dataset.state).toBe("pill");
+      expect(group()).toBe(before);
+    });
+
+    describe("while the parts glide", () => {
+      let frames: Array<FrameRequestCallback>;
+      let animations: Array<{ playState: string; finish: () => void }>;
+      const flush = () =>
+        act(() => {
+          for (let round = 0; round < 4; round += 1) {
+            const due = frames;
+            frames = [];
+            for (const callback of due) callback(0);
+          }
+        });
+
+      beforeEach(() => {
+        frames = [];
+        animations = [];
+        vi.stubGlobal(
+          "requestAnimationFrame",
+          (callback: FrameRequestCallback) => frames.push(callback),
+        );
+        vi.stubGlobal("cancelAnimationFrame", vi.fn());
+        HTMLElement.prototype.animate = function (this: HTMLElement) {
+          const listeners: Array<() => void> = [];
+          const animation = {
+            playState: "running",
+            effect: { target: this, pseudoElement: null },
+            cancel: () => {
+              animation.playState = "idle";
+            },
+            addEventListener: (_type: string, listener: () => void) =>
+              listeners.push(listener),
+            finish: () => {
+              animation.playState = "finished";
+              for (const listener of listeners) listener();
+            },
+          };
+          animations.push(animation);
+          return animation as unknown as Animation;
+        };
+        // The bar is further in as the pill than on the banner.
+        vi.spyOn(
+          HTMLElement.prototype,
+          "getBoundingClientRect",
+        ).mockImplementation(function (this: HTMLElement) {
+          const pill =
+            this.classList.contains("immersive-bar") &&
+            navbar().dataset.state === "pill";
+          return {
+            left: pill ? 400 : 100,
+            top: 0,
+            width: 100,
+            height: 40,
+          } as DOMRect;
+        });
+      });
+      afterEach(() => {
+        // @ts-expect-error jsdom has none of its own
+        delete HTMLElement.prototype.animate;
+      });
+
+      it("keeps the pointer off the groups from the change of shape until the last part is still", async () => {
+        await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+        flush();
+        expect(navbar().dataset.ready).toBe("true");
+        expect(navbar().dataset.gliding).toBeUndefined();
+
+        scrollTo(CONDENSE_AT + 1);
+        expect(navbar().dataset.gliding).toBe("true");
+        // The animations start two frames on; the glide is not over then.
+        flush();
+        expect(animations.length).toBeGreaterThan(0);
+        expect(navbar().dataset.gliding).toBe("true");
+
+        act(() => {
+          for (const animation of animations) animation.finish();
+        });
+        expect(navbar().dataset.gliding).toBeUndefined();
+      });
+
+      it("does the same while the pill slides away", async () => {
+        await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+        flush();
+        scrollTo(CONDENSE_AT + 1);
+        flush();
+        act(() => {
+          for (const animation of animations) animation.finish();
+        });
+        expect(navbar().dataset.gliding).toBeUndefined();
+        vi.spyOn(
+          HTMLElement.prototype,
+          "getBoundingClientRect",
+        ).mockImplementation(function (this: HTMLElement) {
+          const away =
+            this.classList.contains("immersive-bar") &&
+            navbar().dataset.hidden === "true";
+          return {
+            left: 400,
+            top: away ? -80 : 12,
+            width: 100,
+            height: 40,
+          } as DOMRect;
+        });
+
+        scrollTo(CONDENSE_AT + 400);
+        expect(navbar().dataset.hidden).toBe("true");
+        expect(navbar().dataset.gliding).toBe("true");
+      });
+
+      it("ends with the navbar, and starts nothing after", async () => {
+        await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+        flush();
+        scrollTo(CONDENSE_AT + 1);
+        expect(navbar().dataset.gliding).toBe("true");
+
+        cleanup();
+        flush();
+
+        expect(animations).toEqual([]);
+      });
+    });
   });
 });
 

@@ -12,7 +12,7 @@ import {
   render,
   screen,
 } from "@testing-library/react";
-import { createElement } from "react";
+import { createElement, useState } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
@@ -83,6 +83,41 @@ async function renderGroup(
     render(createElement(RouterProvider, { router }));
   });
   return screen.findByRole("button", { name: "Elsewhere" });
+}
+
+/** The group in a bar whose "Move" button changes its `dismissOn`. */
+async function renderMovingGroup() {
+  function Bar() {
+    const [moves, setMoves] = useState(0);
+    return createElement(
+      "nav",
+      null,
+      createElement(NavGroupMenu, {
+        group: GROUP,
+        navOptions: [GROUP],
+        dismissOn: moves,
+      }),
+      createElement("a", { href: "/after" }, "After"),
+      // Not a control of the page: it stands for whatever moves the bar.
+      createElement("span", { onClick: () => setMoves((n) => n + 1) }, "Move"),
+    );
+  }
+  const root = createRootRoute({
+    component: Bar,
+    notFoundComponent: () => null,
+  });
+  const router = createRouter({
+    routeTree: root,
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
+  await act(async () => {
+    render(createElement(RouterProvider, { router }));
+  });
+  return screen.findByRole("button", { name: "Elsewhere" });
+}
+
+function move() {
+  fireEvent.click(screen.getByText("Move"));
 }
 
 function menuLinks() {
@@ -283,5 +318,52 @@ describe("NavGroupMenu", () => {
       vi.advanceTimersByTime(MENU_HOVER_OPEN_DELAY * 2);
     });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  describe("with dismissOn", () => {
+    it("closes once it changes, and gives the focus that was in the menu to the trigger", async () => {
+      const trigger = await renderMovingGroup();
+      fireEvent.click(trigger);
+      const menu = await findInPopover("menu");
+      expect(menu.contains(document.activeElement)).toBe(true);
+
+      move();
+
+      expect(menu.isConnected).toBe(false);
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it("leaves focus that was elsewhere where it is", async () => {
+      const trigger = await renderMovingGroup();
+      vi.useFakeTimers();
+      fireEvent.pointerOver(trigger, { pointerType: "mouse" });
+      act(() => {
+        vi.advanceTimersByTime(MENU_HOVER_OPEN_DELAY);
+      });
+      vi.useRealTimers();
+      const menu = await findInPopover("menu");
+      const after = screen.getByRole("link", { name: "After" });
+      after.focus();
+
+      move();
+
+      expect(menu.isConnected).toBe(false);
+      expect(document.activeElement).toBe(after);
+    });
+
+    it("leaves a closed menu closed, and one opened after the change open", async () => {
+      const trigger = await renderMovingGroup();
+      move();
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+      fireEvent.click(trigger);
+      const menu = await findInPopover("menu");
+      expect(menu.isConnected).toBe(true);
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+      move();
+      expect(menu.isConnected).toBe(false);
+    });
   });
 });

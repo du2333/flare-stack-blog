@@ -342,10 +342,21 @@
   background-color: var(--immersive-chip);
   color: var(--immersive-fg);
 }
-.immersive-link-active {
+.immersive-link-active,
+.immersive-link[aria-expanded="true"] {
   background-color: var(--immersive-chip);
   box-shadow: inset 0 0 0 1px var(--immersive-chip-edge);
   color: var(--immersive-accent);
+}
+/* A group (nav-group-menu.tsx) is a link of the bar whose name opens a menu:
+   open, it looks as the current link does, and its menu is the Theme's
+   float, below it. */
+.immersive-group {
+  cursor: pointer;
+}
+/* Not under a resting pointer while the bar changes shape (navbar.tsx). */
+.immersive-nav[data-gliding] .immersive-group {
+  pointer-events: none;
 }
 
 /* Search: a glass field on the bar where there is room, otherwise an icon
@@ -422,7 +433,7 @@
   background-color: var(--immersive-chip);
   color: var(--immersive-accent);
 }
-.immersive-bar :is(.immersive-search, .immersive-tool) svg {
+.immersive-bar :is(.immersive-search, .immersive-tool, .immersive-group) svg {
   filter: drop-shadow(var(--immersive-icon-shadow));
 }
 /* The Colour Scheme toggle draws at 14px; the other tools at 18px. */
@@ -471,7 +482,8 @@
   transform: none;
 }
 
-/* The panel around the shared menu rows (mobile-menu.css). */
+/* The panel around the shared menu rows (mobile-menu.css), in the thicker
+   frost of --immersive-panel-bg (immersive.css). */
 .immersive-panel {
   position: absolute;
   top: calc(100% + 10px);
@@ -484,7 +496,7 @@
   overscroll-behavior: contain;
   padding: 8px;
   border-radius: 20px;
-  background: var(--theme-float-bg);
+  background: var(--immersive-panel-bg);
   -webkit-backdrop-filter: var(--theme-float-backdrop);
   backdrop-filter: var(--theme-float-backdrop);
   box-shadow:
