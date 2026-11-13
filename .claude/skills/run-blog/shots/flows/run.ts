@@ -27,7 +27,7 @@ import {
 } from "./local-db.ts";
 
 export const FLOWS_USAGE = `  shots.ts flows --base <url> [--session <token> | --api-key-file <toml>]
-                 [--only <names>] [--compare <other-base>] [--tolerance 50] [--deadline 15] [--list]`;
+                 [--only <names>] [--compare <other-base>] [--tolerance 50] [--deadline 15] [--flow-timeout <s>] [--list]`;
 
 interface Deps {
   launch: () => Promise<Browser>;
@@ -111,6 +111,7 @@ async function runFlow(
   site: Site,
   browser: Browser,
   db: LocalDb | undefined,
+  timeoutOverrideMs?: number,
 ): Promise<Outcome> {
   const outcome: Outcome = {
     name: flow.name,
@@ -236,7 +237,7 @@ async function runFlow(
       new Promise<never>((_, reject) => {
         timer = setTimeout(
           () => reject(new Error("timed out")),
-          flow.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+          timeoutOverrideMs ?? flow.timeoutMs ?? DEFAULT_TIMEOUT_MS,
         );
       }),
     ]);
@@ -304,6 +305,7 @@ async function runAll(
   deps: Deps,
   print: boolean,
   deadlineMs: number,
+  flowTimeoutMs?: number,
 ): Promise<Array<Outcome>> {
   const user = await preflight(site, deps);
   const db =
@@ -329,14 +331,19 @@ async function runAll(
               ],
               ms: 0,
             } satisfies Outcome)
-          : await runFlow(flow, site, browser, db);
+          : await runFlow(flow, site, browser, db, flowTimeoutMs);
       // A flow that signed out ended the session the next one needs.
       guard?.restore();
       outcomes.push(outcome);
       if (print) printOutcome(outcome, width);
     }
   } finally {
-    await browser.close();
+    // A run once hung here, after its last flow, with the browser gone but
+    // never reaped: do not wait for it longer than the contexts.
+    await Promise.race([
+      browser.close().catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, CLOSE_TIMEOUT_MS)),
+    ]);
     db?.close();
   }
   return outcomes;
@@ -399,6 +406,7 @@ export async function flows(args: Array<string>, deps: Deps) {
       only: { type: "string" },
       compare: { type: "string" },
       tolerance: { type: "string", default: "50" },
+      "flow-timeout": { type: "string" },
       deadline: { type: "string", default: String(DEFAULT_DEADLINE_MINUTES) },
       list: { type: "boolean", default: false },
     },
@@ -422,6 +430,12 @@ export async function flows(args: Array<string>, deps: Deps) {
   }
   const deadlineMs = Number(values.deadline) * 60_000;
   if (!(deadlineMs > 0)) deps.fail("--deadline is a number of minutes");
+  const flowTimeoutMs = values["flow-timeout"]
+    ? Number(values["flow-timeout"]) * 1000
+    : undefined;
+  if (flowTimeoutMs !== undefined && !(flowTimeoutMs > 0)) {
+    deps.fail("--flow-timeout is a number of seconds");
+  }
   const tolerance = Number(values.tolerance);
   if (!(tolerance >= 0)) deps.fail("--tolerance is a percentage");
 
@@ -447,7 +461,14 @@ export async function flows(args: Array<string>, deps: Deps) {
   // Both sites are checked before the first flow runs, so a cookie that the
   // other site does not know costs seconds, not a run.
   if (other) await preflight(other, deps);
-  const outcomes = await runAll(selected, site, deps, !other, deadlineMs);
+  const outcomes = await runAll(
+    selected,
+    site,
+    deps,
+    !other,
+    deadlineMs,
+    flowTimeoutMs,
+  );
   const total = (list: Array<Outcome>) => ({
     passed: list.filter((o) => o.status === "pass").length,
     failed: list.filter((o) => o.status === "fail").length,
@@ -462,7 +483,14 @@ export async function flows(args: Array<string>, deps: Deps) {
     return failed ? 1 : 0;
   }
 
-  const compared = await runAll(selected, other, deps, false, deadlineMs);
+  const compared = await runAll(
+    selected,
+    other,
+    deps,
+    false,
+    deadlineMs,
+    flowTimeoutMs,
+  );
   const width = Math.max(...selected.map((flow) => flow.name.length));
   let different = 0;
   let failed = 0;

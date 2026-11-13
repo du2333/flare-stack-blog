@@ -53,7 +53,7 @@ const ROUTES: Array<Route> = [
 
 const SKELETON = ".animate-pulse, .fuwari-skeleton-shimmer";
 const SETTLE_AFTER_MS = 1500;
-const GIVE_UP_MS = 150_000;
+const GIVE_UP_MS = 45_000;
 
 async function navigate(ctx: FlowContext, route: Route) {
   const tab = await ctx.open({ signedIn: route.signedIn });
@@ -133,7 +133,7 @@ function report(
 
   ctx.check(
     settled,
-    `${label}: the destination did not settle within ${GIVE_UP_MS / 1000} s`,
+    `${label}: the destination did not settle within ${GIVE_UP_MS / 1000} s; last sample ${JSON.stringify(samples.at(-1))}`,
   );
   ctx.check(
     blanks.length === 0,
@@ -149,7 +149,7 @@ export const throttledNavigation: Flow = {
   name: "throttled-navigation",
   summary:
     "on a slow network (400 ms latency, 400 KB/s), clicking without hovering: home to a Post, /admin to /admin/posts and to /admin/media show a skeleton, never a blank screen, then the content",
-  timeoutMs: 600_000,
+  timeoutMs: 240_000,
   async run(ctx) {
     if (!ctx.canSignIn) {
       ctx.observe(
