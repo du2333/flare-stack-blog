@@ -1,5 +1,6 @@
 import { useLocation } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import type { Placement } from "@floating-ui/dom";
+import { ArrowUpRight, ChevronDown, ChevronRight } from "lucide-react";
 import type {
   NavGroupOption,
   NavOption,
@@ -7,10 +8,12 @@ import type {
 import {
   currentNavLink,
   isNavOptionCurrent,
+  navLinkHost,
 } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { Menu, MenuLinkItem } from "@/components/ui/menu";
 import { cn } from "@/lib/utils";
+import "./nav-group-menu.css";
 
 /**
  * A group of the navigation in a bar: a trigger with the group's name, and a
@@ -29,6 +32,14 @@ import { cn } from "@/lib/utils";
  * `button`, and its chevron turns while the menu is open. `dismissOn` closes
  * the open menu whenever it changes (`Menu`), for a bar that moves the
  * trigger away.
+ *
+ * The menu is `.nav-group-menu` and a row `.nav-group-item`: the link's name
+ * (`-label`), where it leads when it leaves the site (`-host`, which carries
+ * the host in `data-host` for a Theme to draw), and a mark at
+ * the end (`-mark`, an arrow out of the site or a chevron). The look in
+ * nav-group-menu.css is 「经典」's; a Theme draws its own over it in its
+ * stylesheet, as it does the trigger. `placement` is where the menu stands
+ * against the trigger.
  */
 export function NavGroupMenu({
   group,
@@ -36,12 +47,14 @@ export function NavGroupMenu({
   className,
   activeClassName,
   dismissOn,
+  placement = "bottom-start",
 }: {
   group: NavGroupOption;
   navOptions: ReadonlyArray<NavOption>;
   className?: string;
   activeClassName?: string;
   dismissOn?: unknown;
+  placement?: Placement;
 }) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const currentLink = currentNavLink(navOptions, pathname);
@@ -49,7 +62,8 @@ export function NavGroupMenu({
   return (
     <Menu
       label={group.label}
-      placement="bottom-start"
+      placement={placement}
+      menuClassName="nav-group-menu"
       openOnHover
       dismissOn={dismissOn}
       triggerCurrent={current}
@@ -71,13 +85,38 @@ export function NavGroupMenu({
         </>
       }
     >
-      {group.children.map((child) => (
-        <MenuLinkItem
-          key={child.id}
-          current={isNavOptionCurrent(child, currentLink)}
-          render={(props) => <PublicNavLink option={child} {...props} />}
-        />
-      ))}
+      {group.children.map((child) => {
+        const host = navLinkHost(child);
+        const Mark = child.external ? ArrowUpRight : ChevronRight;
+        return (
+          <MenuLinkItem
+            key={child.id}
+            current={isNavOptionCurrent(child, currentLink)}
+            className="nav-group-item"
+            render={(props) => (
+              <PublicNavLink option={child} {...props}>
+                <span className="nav-group-item-label">{child.label}</span>
+                {host ? (
+                  // Drawn by the stylesheet of a Theme that shows it; the
+                  // link's name stays the link's name.
+                  <span
+                    className="nav-group-item-host"
+                    data-host={host}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <Mark
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="nav-group-item-mark"
+                  data-external={child.external || undefined}
+                />
+              </PublicNavLink>
+            )}
+          />
+        );
+      })}
     </Menu>
   );
 }

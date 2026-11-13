@@ -9,6 +9,7 @@ import {
   flattenNavOptions,
   isNavGroup,
   isNavOptionCurrent,
+  navLinkHost,
 } from "./nav-options";
 
 const link = (id: string, href: string, external = false): NavOption => ({
@@ -49,6 +50,31 @@ describe("customNavOptions", () => {
       { id: "custom-0", label: "Tags", href: "/tags", external: false },
       GROUP,
     ]);
+  });
+});
+
+describe("navLinkHost", () => {
+  it("names where a link out of the site leads, without www", () => {
+    expect(
+      navLinkHost({
+        id: "a",
+        label: "A",
+        href: "https://www.example.org/path?x=1",
+        external: true,
+      }),
+    ).toBe("example.org");
+  });
+
+  it("has nothing for a link within the site or an address that is not one", () => {
+    expect(
+      navLinkHost({ id: "a", label: "A", href: "/posts", external: false }),
+    ).toBeNull();
+    expect(
+      navLinkHost({ id: "a", label: "A", href: "mailto:", external: true }),
+    ).toBeNull();
+    expect(
+      navLinkHost({ id: "a", label: "A", href: "not a url", external: true }),
+    ).toBeNull();
   });
 });
 

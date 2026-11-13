@@ -151,6 +151,15 @@ describe("NavGroupMenu", () => {
     const github = screen.getByRole("menuitem", { name: "GitHub" });
     expect(github.getAttribute("href")).toBe("https://github.com/du2333");
     expect(github.getAttribute("target")).toBe("_blank");
+    // Where it leads is for a Theme's stylesheet to draw, not part of the name.
+    const host = github.querySelector(".nav-group-item-host")!;
+    expect(host.getAttribute("data-host")).toBe("github.com");
+    expect(host.getAttribute("aria-hidden")).toBe("true");
+    expect(
+      screen
+        .getByRole("menuitem", { name: "Tags" })
+        .querySelector(".nav-group-item-host"),
+    ).toBeNull();
     expect(
       screen.getByRole("menuitem", { name: "Tags" }).getAttribute("target"),
     ).toBeNull();

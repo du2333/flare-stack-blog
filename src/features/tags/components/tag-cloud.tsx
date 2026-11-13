@@ -46,7 +46,7 @@ export function Tags() {
           key={tag.id}
           to="/posts"
           search={withTagFilter(tag.name)}
-          className="fuwari-btn-regular h-8 text-sm px-3 rounded-(--theme-chip-radius)"
+          className="fuwari-btn-regular fuwari-chip h-8 text-sm px-3 rounded-(--theme-chip-radius)"
         >
           {tag.name}
         </Link>

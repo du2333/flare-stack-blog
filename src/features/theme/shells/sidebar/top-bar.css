@@ -1,6 +1,6 @@
 /* The top bar: what the rail is below 1024px. It stays at the top of the
-   window, frosted, with the brand, search and the button of the shared
-   compact menu. */
+   window, frosted, with the menu button, the brand and search; the button
+   brings the rail in as a drawer (below). */
 
 .sidebar-topbar {
   position: sticky;
@@ -24,41 +24,121 @@
   flex: 1;
   font-size: 1rem;
 }
-/* The compact menu opens under the bar, from its right end. */
-.sidebar-topbar-panel {
-  top: calc(100% + 6px);
-  right: 0.5rem;
-  width: 280px;
-  max-width: calc(100vw - 1rem);
-  max-height: calc(100dvh - 5rem);
-  transform-origin: top right;
+
+/* The drawer: the rail, brought in from the left over the page. It is of
+   the ground, with a hairline where it ends, and its rows are the rail's:
+   an icon, a name, the row of the page that is open filled and ticked. */
+.sidebar-drawer {
+  width: min(20rem, 100vw - 3.5rem);
+  background: var(--theme-ground);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 1px 0 0 var(--sidebar-hairline);
 }
-/* The menu icon turns into the close icon. */
-.sidebar-burger {
+.sidebar-drawer-backdrop {
+  background: rgb(0 0 0 / 0.32);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.sidebar-drawer-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  height: var(--sidebar-topbar-h);
+  padding: 0 0.5rem 0 1rem;
+}
+.sidebar-drawer-head .sidebar-brand {
+  flex: 1;
+  font-size: 1rem;
+}
+.sidebar-drawer-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.5rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+}
+.sidebar-drawer .public-menu-links {
+  gap: 2px;
+}
+.sidebar-drawer .public-menu-item {
+  border-radius: 0.5rem;
+}
+.sidebar-drawer :is(.public-menu-link, .public-menu-group-label) {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
+  gap: 0.875rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem 0 0.875rem;
+  color: var(--fuwari-fg-75);
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
-.sidebar-burger svg {
-  grid-area: 1 / 1;
+.sidebar-drawer-icon {
+  color: var(--fuwari-fg-50);
 }
-.sidebar-burger svg:last-child,
-.sidebar-burger[data-open="true"] svg:first-child {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.6);
+.sidebar-drawer .public-menu-mark {
+  display: none;
 }
-.sidebar-burger[data-open="true"] svg:last-child {
-  opacity: 1;
-  transform: none;
+.sidebar-drawer .public-menu-mark[data-external] {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  color: var(--fuwari-fg-30);
+}
+.sidebar-drawer .public-menu-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--fuwari-fg);
+}
+.sidebar-drawer .public-menu-active,
+.sidebar-drawer .public-menu-active:hover {
+  background: var(--sidebar-pill-bg);
+  box-shadow: var(--sidebar-pill-shadow);
+  color: var(--fuwari-fg);
+}
+.sidebar-drawer .public-menu-active::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.25rem;
+  height: 1rem;
+  border-radius: 999px;
+  background-color: var(--theme-accent);
+  transform: translate(-50%, -50%);
+}
+.sidebar-drawer .public-menu-active .sidebar-drawer-icon {
+  color: var(--theme-accent);
+}
+/* A group's links stand under its name, set in past the icons, along the
+   rail's guide line. */
+.sidebar-drawer .public-menu-group {
+  gap: 2px;
+}
+.sidebar-drawer .public-menu-group-links {
+  gap: 2px;
+  margin: 0 0 0 1.4375rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--sidebar-hairline);
+}
+.sidebar-drawer .public-menu-subitem {
+  padding-left: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+/* The account and the switches are the drawer's foot. */
+.sidebar-drawer .public-menu-links + .public-menu-account {
+  margin-top: auto;
+  border-top-color: var(--sidebar-hairline);
+}
+.sidebar-drawer .public-menu-preferences {
+  border-top-color: var(--sidebar-hairline);
 }
 @media (width >= 48rem) {
   .sidebar-topbar-inner {
     padding-inline: 1rem;
-  }
-  .sidebar-topbar-panel {
-    right: 1rem;
   }
 }
 @media (width >= 64rem) {
@@ -70,10 +150,5 @@
 @media (prefers-reduced-motion: no-preference) {
   .sidebar-topbar {
     transition: background-color 300ms;
-  }
-  .sidebar-burger svg {
-    transition:
-      opacity 200ms,
-      transform 320ms var(--sidebar-ease);
   }
 }

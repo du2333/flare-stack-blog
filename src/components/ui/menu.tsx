@@ -97,6 +97,8 @@ interface MenuProps {
    * menu goes back to the trigger; focus anywhere else stays where it is.
    */
   dismissOn?: unknown;
+  /** For the menu's own box, on top of the float surface. */
+  menuClassName?: string;
   children: ReactNode;
 }
 
@@ -121,6 +123,7 @@ export function Menu({
   matchTriggerWidth = false,
   openOnHover = false,
   dismissOn,
+  menuClassName,
   children,
 }: MenuProps) {
   const id = useId();
@@ -284,6 +287,7 @@ export function Menu({
         className={cn(
           "max-h-[min(16rem,calc(100dvh-16px))] min-w-44 overflow-y-auto overscroll-contain p-1 custom-scrollbar",
           !matchTriggerWidth && "max-w-72",
+          menuClassName,
         )}
         onKeyDown={onKeyDown}
         onPointerEnter={hover(true)}
@@ -355,20 +359,26 @@ export interface MenuLinkItemProps {
  * One row of a `Menu` that is a link, so it can be opened in a new tab like
  * any other. `render` draws the link (an `<a>`, or the router's) with the
  * props it is given; following it closes the menu. `current` marks the row
- * whose page is open, which is also where a click opens the menu.
+ * whose page is open, which is also where a click opens the menu. With
+ * `className` the row has that look instead of the menu's own, for a menu
+ * whose rows its owner draws (`aria-current="page"` marks the current one).
  */
 export function MenuLinkItem({
   current = false,
+  className,
   render,
 }: {
   current?: boolean;
+  className?: string;
   render: (props: MenuLinkItemProps) => ReactNode;
 }) {
   const select = use(SelectContext);
   return render({
     role: "menuitem",
     tabIndex: -1,
-    className: cn(ITEM_CLASS, current ? ITEM_CURRENT_CLASS : ITEM_PLAIN_CLASS),
+    className:
+      className ??
+      cn(ITEM_CLASS, current ? ITEM_CURRENT_CLASS : ITEM_PLAIN_CLASS),
     "aria-current": current ? "page" : undefined,
     onClick: () => select(() => {}),
   });

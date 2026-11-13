@@ -1,0 +1,104 @@
+/* The menu of a group of the navigation (nav-group-menu.tsx), on the float
+   surface. This is 「经典」's look: bold rows with a mark at the end, tinted
+   under the pointer. A Theme draws its own over it in its stylesheet, with
+   `:root[data-theme="…"]` before the same selectors. */
+.nav-group-menu {
+  min-width: 13rem;
+  padding: 0.5rem;
+  border-radius: var(--theme-float-radius, 1rem);
+}
+.nav-group-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.625rem 0 0.875rem;
+  border-radius: 0.625rem;
+  outline: none;
+  color: var(--fuwari-fg-75);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition:
+    background-color 180ms,
+    color 180ms;
+}
+.nav-group-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Where a link out of the site leads, for a Theme that shows it. */
+.nav-group-item-host {
+  display: none;
+}
+.nav-group-item-host::before {
+  content: attr(data-host);
+}
+.nav-group-item-mark {
+  flex-shrink: 0;
+  color: var(--fuwari-fg-30);
+  transition:
+    color 180ms,
+    transform 220ms var(--fuwari-motion-ease);
+}
+.nav-group-item:hover,
+.nav-group-item:focus-visible,
+.nav-group-item[aria-current="page"] {
+  background: var(--theme-tonal-bg);
+  color: var(--theme-accent);
+}
+.nav-group-item:hover .nav-group-item-mark,
+.nav-group-item:focus-visible .nav-group-item-mark,
+.nav-group-item[aria-current="page"] .nav-group-item-mark {
+  color: var(--theme-accent);
+}
+.nav-group-item:hover .nav-group-item-mark,
+.nav-group-item:focus-visible .nav-group-item-mark {
+  transform: translateX(3px);
+}
+.nav-group-item:hover .nav-group-item-mark[data-external],
+.nav-group-item:focus-visible .nav-group-item-mark[data-external] {
+  transform: translate(2px, -2px);
+}
+@media (pointer: coarse) {
+  .nav-group-item {
+    min-height: 2.75rem;
+  }
+}
+
+/* The rows come in one after the other, behind the menu itself. A group has
+   six links at most (NAV_LINK_CHILDREN_MAX). */
+@keyframes nav-group-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .nav-group-menu[data-state="open"] .nav-group-item {
+    animation: nav-group-item-in 320ms var(--fuwari-motion-ease) backwards;
+  }
+  .nav-group-menu[data-state="open"] .nav-group-item:nth-child(2) {
+    animation-delay: 35ms;
+  }
+  .nav-group-menu[data-state="open"] .nav-group-item:nth-child(3) {
+    animation-delay: 70ms;
+  }
+  .nav-group-menu[data-state="open"] .nav-group-item:nth-child(4) {
+    animation-delay: 105ms;
+  }
+  .nav-group-menu[data-state="open"] .nav-group-item:nth-child(5) {
+    animation-delay: 140ms;
+  }
+  .nav-group-menu[data-state="open"] .nav-group-item:nth-child(6) {
+    animation-delay: 175ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-group-item,
+  .nav-group-item-mark {
+    transition: none;
+  }
+}

@@ -47,13 +47,13 @@ export function Categories() {
           key={category.id}
           to="/posts"
           search={withCategoryFilter(category.name)}
-          className="fuwari-widget-row flex items-center h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) transition-all text-(--theme-widget-row-color) hover:text-(--theme-accent) @xs/card:mx-0 @xs/card:h-8 @xs/card:w-auto @xs/card:max-w-full @xs/card:rounded-(--theme-chip-radius) @xs/card:bg-(--theme-tonal-bg) @xs/card:pl-3 @xs/card:pr-1 @xs/card:text-sm @xs/card:text-(--theme-tonal-fg) @xs/card:hover:bg-(--theme-tonal-bg-hover) @xs/card:hover:text-(--theme-tonal-fg) @xs/card:active:bg-(--theme-tonal-bg-active) dark:@xs/card:text-(--fuwari-fg-75) dark:@xs/card:hover:text-(--fuwari-fg-75)"
+          className="fuwari-widget-row flex items-center h-10 rounded-lg pl-2 hover:pl-3 hover:bg-(--theme-plain-bg-hover) active:bg-(--theme-plain-bg-active) transition-all text-(--theme-widget-row-color) hover:text-(--theme-accent) @xs/card:mx-0 @xs/card:h-8 @xs/card:w-auto @xs/card:max-w-full @xs/card:rounded-(--theme-chip-radius) @xs/card:bg-(--theme-chip-bg,var(--theme-tonal-bg)) @xs/card:shadow-[inset_0_0_0_1px_var(--theme-chip-edge,transparent)] @xs/card:pl-3 @xs/card:pr-1 @xs/card:text-sm @xs/card:text-(--theme-tonal-fg) @xs/card:hover:bg-(--theme-tonal-bg-hover) @xs/card:hover:text-(--theme-tonal-fg) @xs/card:active:bg-(--theme-tonal-bg-active) dark:@xs/card:text-(--fuwari-fg-75) dark:@xs/card:hover:text-(--fuwari-fg-75)"
         >
           <div className="flex items-center justify-between relative mr-2 w-full min-w-0 @xs/card:mr-0 @xs/card:gap-2">
             <div className="overflow-hidden text-left whitespace-nowrap text-ellipsis">
               {category.name}
             </div>
-            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-(--theme-chip-radius) text-sm font-bold text-(--theme-count-fg,var(--theme-tonal-fg)) dark:text-(--theme-count-fg,var(--theme-solid-fg,var(--fuwari-deep-text))) bg-(--theme-count-bg,var(--theme-tonal-bg)) dark:bg-(--theme-count-bg,var(--theme-solid-bg)) flex items-center justify-center @xs/card:ml-0 @xs/card:h-6 @xs/card:min-w-6 @xs/card:px-1.5 @xs/card:text-xs @xs/card:bg-(--theme-surface) dark:@xs/card:bg-(--theme-surface) dark:@xs/card:text-(--fuwari-fg-75)">
+            <div className="transition px-2 h-7 ml-4 min-w-8 rounded-(--theme-chip-radius) text-sm font-bold text-(--theme-count-fg,var(--theme-tonal-fg)) dark:text-(--theme-count-fg,var(--theme-solid-fg,var(--fuwari-deep-text))) bg-(--theme-count-bg,var(--theme-tonal-bg)) dark:bg-(--theme-count-bg,var(--theme-solid-bg)) flex items-center justify-center @xs/card:ml-0 @xs/card:h-6 @xs/card:min-w-6 @xs/card:px-1.5 @xs/card:text-xs @xs/card:bg-(--theme-chip-count-bg,var(--theme-surface)) dark:@xs/card:bg-(--theme-chip-count-bg,var(--theme-surface)) dark:@xs/card:text-(--fuwari-fg-75)">
               {category.postCount}
             </div>
           </div>

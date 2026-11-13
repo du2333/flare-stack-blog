@@ -6,8 +6,14 @@ import { MOTION, useMotionPresence } from "@/hooks/use-motion";
  * compact menu button or from the account button. It closes on a navigation,
  * a press outside, Escape, a resize, and when focus leaves it; opening moves
  * focus to its first item and Escape gives it back to the button.
+ *
+ * With `coversPage`, the compact menu is a panel as large as the window: the
+ * page behind it does not scroll while it is open.
  */
-export function useMenuPanel(pathname: string) {
+export function useMenuPanel(
+  pathname: string,
+  { coversPage = false }: { coversPage?: boolean } = {},
+) {
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const present = useMotionPresence(open, MOTION.popover);
@@ -48,6 +54,17 @@ export function useMenuPanel(pathname: string) {
     };
   }, [open]);
 
+  const covering = coversPage && open && mobile;
+  useEffect(() => {
+    if (!covering) return;
+    const root = document.documentElement;
+    const overflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = overflow;
+    };
+  }, [covering]);
+
   return {
     open,
     /** Whether the open panel is the compact menu, not the account menu. */
@@ -65,6 +82,8 @@ export function useMenuPanel(pathname: string) {
     panelProps: {
       ref: panelRef,
       "data-state": open ? "open" : "closing",
+      /** The compact menu, which a shell may give a form of its own. */
+      "data-compact": mobile,
       inert: !open,
       "aria-hidden": !open,
       onBlur: (event: FocusEvent<HTMLDivElement>) => {

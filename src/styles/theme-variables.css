@@ -50,6 +50,9 @@
  *   --theme-widget-more-color  a sidebar block's "more" button
  *   --theme-widget-pad-x     side padding of a sidebar block
  *   --theme-count-bg, --theme-count-fg  the count beside a category
+ *   --theme-chip-bg, --theme-chip-edge, --theme-chip-count-bg  a tag or a category as a pill: its fill
+ *                            (the tonal fill without one), a 1px edge (none without one) and the fill
+ *                            under a category's count (--theme-surface without one)
  *   --theme-floating-radius  back to top and the buttons stacked above it
  *   --theme-float-bg, --theme-float-shadow, --theme-float-backdrop  what floats over the page (menus, popovers,
  *                            toasts, dialogs, sheets, back to top, the bar of a Theme preview): its fill
@@ -159,6 +162,9 @@
     --theme-widget-pad-x: initial !important;
     --theme-count-bg: initial !important;
     --theme-count-fg: initial !important;
+    --theme-chip-bg: initial !important;
+    --theme-chip-edge: initial !important;
+    --theme-chip-count-bg: initial !important;
     --theme-floating-radius: initial !important;
     --theme-float-bg: initial !important;
     --theme-float-shadow: initial !important;

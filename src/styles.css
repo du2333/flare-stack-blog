@@ -630,6 +630,12 @@
   .dark .fuwari-btn-regular {
     color: var(--fuwari-fg-75);
   }
+  /* A tag as a pill: the tonal button, unless the Theme gives pills a fill
+     and an edge of their own (theme-variables.css). */
+  .fuwari-chip {
+    background-color: var(--theme-chip-bg, var(--theme-tonal-bg));
+    box-shadow: inset 0 0 0 1px var(--theme-chip-edge, transparent);
+  }
 
   .fuwari-text-90 {
     color: var(--fuwari-fg);

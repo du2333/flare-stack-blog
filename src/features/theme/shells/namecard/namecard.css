@@ -110,7 +110,11 @@
   --theme-widget-row-bleed: 0.5rem;
   --theme-widget-more-color: var(--fuwari-fg-50);
 
-  /* Pills. */
+  /* Pills. A tag or a category is an outline on the paper, filled only
+     under the pointer, and a category's count is a figure after its name. */
+  --theme-chip-bg: transparent;
+  --theme-chip-edge: color-mix(in srgb, var(--fuwari-fg) 16%, transparent);
+  --theme-chip-count-bg: transparent;
   --theme-chip-radius: 999px;
   --theme-button-radius: 999px;
   --theme-pager-radius: 999px;

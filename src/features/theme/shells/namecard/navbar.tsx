@@ -67,14 +67,17 @@ function BrandMark() {
 /**
  * A bare bar: the wordmark, text links and the tools sit on the page itself.
  * It stays at the top and gains a tint, a blur and a hairline once content
- * passes under it.
+ * passes under it. Below 960px the links and the tools are the compact menu,
+ * a page of its own under the bar (navbar.css).
  */
 export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const pathname = useLocation({ select: (location) => location.pathname });
   const [scrolled, setScrolled] = useState(false);
-  const { open, mobile, present, toggle, close, panelProps } =
-    useMenuPanel(pathname);
+  const { open, mobile, present, toggle, close, panelProps } = useMenuPanel(
+    pathname,
+    { coversPage: true },
+  );
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > SCROLLED_AFTER_PX);
