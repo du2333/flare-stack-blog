@@ -1,5 +1,5 @@
 import { z } from "zod/mini";
-import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
+import { adminPageParam, adminSearchTextParam } from "@/lib/admin-search";
 
 /**
  * The Admin's Comments page: what awaits a reply, or every Comment. Kept here,
@@ -15,11 +15,8 @@ export const adminCommentsSearchSchema = z.object({
     z._default(z.enum(ADMIN_COMMENT_VIEWS), "unreplied"),
     "unreplied",
   ),
-  page: z.catch(z._default(z.int().check(z.positive()), 1), 1),
-  search: z.catch(
-    z._default(z.string().check(z.maxLength(SEARCH_TEXT_MAX_LENGTH)), ""),
-    "",
-  ),
+  page: adminPageParam,
+  search: adminSearchTextParam,
   post: z.catch(z.optional(z.int().check(z.positive())), undefined),
 });
 
