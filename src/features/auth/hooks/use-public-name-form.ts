@@ -1,7 +1,9 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { refreshSession } from "@/features/auth/queries";
 import { createPublicNameSchema } from "@/features/auth/utils/public-name";
 import { getAuthClient } from "@/lib/auth/auth-client";
 import { getProfileAuthErrorMessage } from "@/lib/auth/auth-errors";
@@ -18,6 +20,7 @@ interface UsePublicNameFormOptions {
 /** Asks a User who signed in without a name to choose the one others see. */
 export function usePublicNameForm(options: UsePublicNameFormOptions = {}) {
   const { onSaved } = options;
+  const queryClient = useQueryClient();
 
   const [saved, setSaved] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -41,6 +44,8 @@ export function usePublicNameForm(options: UsePublicNameFormOptions = {}) {
       return;
     }
     setSaved(true);
+    // The name gate closes once the session carries the name.
+    void refreshSession(queryClient);
     onSaved?.();
   };
 

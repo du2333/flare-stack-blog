@@ -83,7 +83,7 @@ vi.mock("@tanstack/react-query", async () => ({
 vi.mock("@/features/posts/utils/cached-public-post", () => ({
   findCachedPublicPost: () => state.cached,
 }));
-vi.mock("@/lib/auth/auth-client", () => ({
+vi.mock("@/features/auth/hooks/use-session", () => ({
   useSession: () => ({ data: null }),
 }));
 vi.mock("@/features/comments/components/comment-section", () => ({

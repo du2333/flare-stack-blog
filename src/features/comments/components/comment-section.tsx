@@ -16,7 +16,7 @@ import {
   commentThreadQuery,
   rootCommentsInfiniteQuery,
 } from "@/features/comments/queries";
-import { useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { Callout } from "@/components/ui/callout";
 import { m } from "@/paraglide/messages";
 import { CommentConfirmationModal } from "./comment-confirmation-modal";

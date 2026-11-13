@@ -2,6 +2,7 @@ import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { isAdminWorkspace } from "@/components/admin/content-workspace";
 import { NotFound } from "@/components/common/not-found";
+import { watchSession } from "@/features/auth/queries";
 import { ErrorPage } from "./components/common/error-page";
 import * as TanstackQuery from "./integrations/tanstack-query/root-provider";
 // Import the generated route tree
@@ -38,6 +39,10 @@ export function getRouter() {
     router,
     queryClient: rqContext.queryClient,
   });
+
+  // In the browser, the session query hears of changes from other tabs,
+  // focus and the network whether or not the page on screen reads it.
+  if (typeof window !== "undefined") watchSession(rqContext.queryClient);
 
   return router;
 }

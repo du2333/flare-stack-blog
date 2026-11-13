@@ -346,7 +346,7 @@ function AccountMenu() {
       toast.error(m.admin_sidebar_logout_failed());
       return;
     }
-    resetAuthBoundQueries(queryClient);
+    resetAuthBoundQueries(queryClient, "signed-out");
     void navigate({ to: "/login" });
   };
 
