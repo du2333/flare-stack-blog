@@ -46,7 +46,7 @@ async function settleLazyImports() {
   }
 }
 
-// The first import transforms the whole editor schema; keep it out of the tests.
+// The first import transforms the renderer's modules; keep it out of the tests.
 beforeAll(() => import("./content-renderer"), 60_000);
 
 beforeEach(() => {

@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { Children, lazy, type ReactNode, Suspense } from "react";
+import { Children, type ReactNode, Suspense } from "react";
 import { schemaExtensions } from "@/features/posts/editor/schema";
 import { cellAlign } from "@/features/posts/editor/extensions/table/column-align";
 import { tableColumnLayout } from "@/features/posts/editor/extensions/table/column-widths";
@@ -24,11 +24,15 @@ import {
   videoSourceOf,
 } from "@/features/posts/utils/video-source";
 import { m } from "@/paraglide/messages";
+// The same lazy component, so both renderers see Mermaid in the same state.
+import { MermaidCodeBlock } from "./render";
 
-// Only posts with a Mermaid code block load the diagram renderer (ADR 0027).
-const MermaidCodeBlock = lazy(() => import("./mermaid-code-block"));
-
-export function renderReact(
+/**
+ * The public page's renderer before it walked the JSON itself: Tiptap's
+ * ProseMirror static renderer over the editor schema. Kept for tests only, as
+ * the definition of correct output for `renderReact` in `./render`.
+ */
+export function renderReactWithProseMirror(
   content: JSONContent,
   math?: {
     inline: (latex: string) => ReactNode;
