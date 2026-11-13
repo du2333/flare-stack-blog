@@ -1,8 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
-import { z } from "zod";
 import {
-  ADMIN_COMMENT_VIEWS,
+  adminCommentsSearchSchema,
   withoutHiddenFilters,
 } from "@/features/comments/admin-comments-search";
 import {
@@ -11,20 +10,9 @@ import {
 } from "@/features/comments/components/admin/admin-comments-page";
 import { m } from "@/paraglide/messages";
 
-const searchSchema = z.object({
-  view: z
-    .enum(ADMIN_COMMENT_VIEWS)
-    .optional()
-    .default("unreplied")
-    .catch("unreplied"),
-  page: z.number().int().positive().optional().default(1).catch(1),
-  search: z.string().max(200).optional().default("").catch(""),
-  post: z.number().int().positive().optional().catch(undefined),
-});
-
 export const Route = createFileRoute("/admin/comments")({
   ssr: false,
-  validateSearch: searchSchema,
+  validateSearch: adminCommentsSearchSchema,
   // The 待回复 view has no search and no Post filter to clear them with.
   beforeLoad: ({ search }) => {
     const cleaned = withoutHiddenFilters(search);

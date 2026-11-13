@@ -7,6 +7,12 @@ import {
 import { TagSelectSchema } from "@/features/tags/tags.schema";
 import type { PostsTable } from "@/lib/db/schema";
 import { POST_STATUSES } from "@/lib/enum-values";
+import {
+  normalizePostCategoryName,
+  normalizePostTagName,
+} from "@/features/posts/utils/post-public-search";
+import { POST_SORT_KEYS } from "@/features/posts/posts.constants";
+import { MAX_PAGE_NUMBER } from "@/lib/constants";
 import { atLeastOneField } from "@/lib/orpc/changes";
 import {
   IdCursorSchema,
@@ -331,9 +337,8 @@ export const PostListResponseSchema = z.object({
   items: z.array(PostItemSchema),
   nextCursor: z.number().nullable(),
 });
-export const HOME_POSTS_PER_PAGE = 8;
 export const HomePostsInputSchema = z.object({
-  page: z.number().int().min(1).max(1_000_000).default(1),
+  page: z.number().int().min(1).max(MAX_PAGE_NUMBER).default(1),
 });
 export const HomePostsResponseSchema = z.object({
   items: z.array(PostItemSchema),
@@ -384,18 +389,6 @@ export const AdminPostSchema = PostSelectSchema.extend({
   serverToday: z.string(),
   cover: AdminPostCoverSchema.nullable(),
 });
-
-export function normalizePostTagName(
-  tagName: string | undefined,
-): string | undefined {
-  return tagName === "" ? undefined : tagName;
-}
-
-export function normalizePostCategoryName(
-  categoryName: string | undefined,
-): string | undefined {
-  return categoryName === "" ? undefined : categoryName;
-}
 
 export const PostTagNameSchema = z
   .string()
@@ -488,14 +481,7 @@ export const GetPostsInputSchema = z.strictObject({
   search: z.string().optional(),
   sortDir: z.enum(["ASC", "DESC"]).optional(),
   sortBy: z
-    .enum([
-      "publishedAt",
-      "updatedAt",
-      "createdAt",
-      "id",
-      "commentCount",
-      "viewCount",
-    ])
+    .enum(POST_SORT_KEYS)
     .optional()
     .describe(
       "Sort key. Defaults to updatedAt. createdAt is when the post was first created and never changes. commentCount sorts by the published comments; viewCount by the views of the last 30 days, and falls back to updatedAt while popularity is not ready. Ties are broken by id in the sortDir direction.",

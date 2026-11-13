@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import { adminFriendLinksSearchSchema } from "@/features/friend-links/admin-friend-links-search";
 import { FriendLinkManager } from "@/features/friend-links/components/admin/friend-link-manager";
 import { FriendLinkManagerPageSkeleton } from "@/features/friend-links/components/admin/friend-link-manager/friend-link-manager-skeleton";
 import { allFriendLinksQuery } from "@/features/friend-links/queries";
@@ -7,17 +7,9 @@ import type { FriendLinkStatus } from "@/lib/db/schema";
 import { ADMIN_ITEMS_PER_PAGE } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 
-const STATUSES = ["pending", "approved", "rejected"] as const;
-
-const searchSchema = z.object({
-  search: z.string().max(200).optional().default("").catch(""),
-  status: z.enum(STATUSES).optional().default("pending").catch("pending"),
-  page: z.number().int().positive().optional().default(1).catch(1),
-});
-
 export const Route = createFileRoute("/admin/friend-links/")({
   ssr: false,
-  validateSearch: searchSchema,
+  validateSearch: adminFriendLinksSearchSchema,
   pendingComponent: FriendLinkManagerPageSkeleton,
   pendingMs: 0,
   loader: async ({ context }) => {

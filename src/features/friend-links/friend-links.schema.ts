@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SEARCH_TEXT_MAX_LENGTH } from "@/lib/constants";
 import type { FriendLinksTable } from "@/lib/db/schema";
 import { FRIEND_LINK_STATUSES } from "@/lib/enum-values";
 import { PageOffsetSchema, pageLimitSchema } from "@/lib/orpc/pagination";
@@ -95,7 +96,7 @@ export const createCreateFriendLinkSchema = () =>
 
 // === Admin inputs ===
 export const GetAllFriendLinksInputSchema = z.strictObject({
-  search: z.string().max(200).optional(),
+  search: z.string().max(SEARCH_TEXT_MAX_LENGTH).optional(),
   offset: PageOffsetSchema.optional(),
   limit: pageLimitSchema(100).optional(),
   status: z.enum(["pending", "approved", "rejected"]).optional(),

@@ -1,14 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { z } from "zod";
+import { legacySettingsSearchSchema } from "@/features/config/legacy-settings-search";
 import { LEGACY_SETTINGS_TAB_TO } from "@/features/config/components/admin/settings-pages";
 
 export const Route = createFileRoute("/admin/settings/")({
   ssr: false,
-  validateSearch: z.object({
-    tab: z
-      .enum(["site", "email", "webhook", "api-keys", "maintenance"])
-      .optional(),
-  }),
+  validateSearch: legacySettingsSearchSchema,
   beforeLoad: ({ search }) => {
     throw redirect({
       from: "/",

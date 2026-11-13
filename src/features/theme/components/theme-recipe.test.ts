@@ -25,10 +25,8 @@ import { PostPage } from "@/features/posts/components/post-page";
 import { PostPageSkeleton } from "@/features/posts/components/post-page-skeleton";
 import { PostSummary } from "@/features/posts/components/post-summary";
 import { PostsPage } from "@/features/posts/components/posts-page";
-import {
-  HOME_POSTS_PER_PAGE,
-  type PostItem,
-} from "@/features/posts/schema/posts.schema";
+import { HOME_POSTS_PER_PAGE } from "@/features/posts/posts.constants";
+import type { PostItem } from "@/features/posts/schema/posts.schema";
 import { m } from "@/paraglide/messages";
 import { DEFAULT_THEME_RECIPE, type ThemeRecipe } from "../theme-recipe";
 import { ThemeRecipeProvider } from "./theme-recipe";

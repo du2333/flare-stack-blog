@@ -1,23 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { z } from "zod";
 import { siteDomainQuery } from "@/features/config/queries";
 import { MomentsPage } from "@/features/moments/components/moments-page";
 import { MomentsPageSkeleton } from "@/features/moments/components/moments-page-skeleton";
 import { momentsPageQuery } from "@/features/moments/queries";
+import { pageSearchSchema } from "@/lib/public-search";
 import { buildCanonicalUrl, canonicalLink } from "@/lib/seo";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_public/moments/")({
-  validateSearch: z.object({
-    page: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(1_000_000)
-      .optional()
-      .catch(undefined),
-  }),
+  validateSearch: pageSearchSchema,
   loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
   loader: async ({ context, deps }) => {
     const [moments, domain] = await Promise.all([
