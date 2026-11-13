@@ -16,7 +16,8 @@ import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { flattenNavOptions } from "@/components/layout/nav-options";
+import { NavGroupMenu } from "@/components/layout/nav-group-menu";
+import { isNavGroup } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
@@ -63,6 +64,8 @@ const HIDE_TRAVEL_PX = 14;
 const MORPH = { duration: 560, easing: "cubic-bezier(0.32, 0.72, 0, 1)" };
 /** The parts whose `::before` is the surface they draw (navbar.css). */
 const SURFACES = ".immersive-bar, .immersive-search";
+/** The trigger of a group's menu, open. */
+const OPEN_GROUP = '.immersive-group[aria-expanded="true"]';
 
 /** The mark before the title: the built-in icon unless the Site Config picks another. */
 function BrandMark() {
@@ -135,6 +138,54 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
   useLayoutEffect(() => glider.carry());
   useEffect(() => () => glider.end(), [glider]);
 
+  // A group's menu stands below its trigger, where the bar was: when the bar
+  // changes shape it closes, the groups being mounted afresh in the commit
+  // that changes it. A new trigger is carried with the links around it. The
+  // focus that was on an open group or in its menu goes to its new trigger.
+  const [groupsMount, setGroupsMount] = useState(0);
+  const refocusGroup = useRef(-1);
+  const closeGroups = useCallback(() => {
+    const triggers = [
+      ...(navRef.current?.querySelectorAll<HTMLElement>(".immersive-group") ??
+        []),
+    ];
+    const open = triggers.filter((trigger) => trigger.matches(OPEN_GROUP));
+    if (open.length === 0) return;
+    const focused = document.activeElement;
+    refocusGroup.current = triggers.findIndex(
+      (trigger) =>
+        open.includes(trigger) &&
+        focused !== null &&
+        (trigger.contains(focused) ||
+          document
+            .getElementById(trigger.getAttribute("aria-controls") ?? "")
+            ?.contains(focused)),
+    );
+    setGroupsMount((count) => count + 1);
+  }, []);
+  useLayoutEffect(() => {
+    const index = refocusGroup.current;
+    refocusGroup.current = -1;
+    if (index < 0) return;
+    navRef.current
+      ?.querySelectorAll<HTMLElement>(".immersive-group")
+      [index]?.focus({ preventScroll: true });
+  }, [groupsMount]);
+  // While the parts glide, a trigger slides under a pointer that rests on
+  // the bar and would open its menu there, beside a trigger still on its
+  // way: the groups take no pointer until the glide is over (navbar.css).
+  const [gliding, setGliding] = useState(false);
+  const glideEnd = useRef(0);
+  const glideFor = useCallback(() => {
+    window.clearTimeout(glideEnd.current);
+    setGliding(true);
+    glideEnd.current = window.setTimeout(
+      () => setGliding(false),
+      MORPH.duration,
+    );
+  }, []);
+  useEffect(() => () => window.clearTimeout(glideEnd.current), []);
+
   const hide = useCallback(
     (next: boolean) => {
       if (next === away.current) return;
@@ -186,7 +237,12 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
       // The first shape is simply the one the page is loaded in.
       const first = shape.current === null;
       shape.current = next;
-      glider.change(() => setCondensed(next), !first && glides.current);
+      const glide = !first && glides.current;
+      glider.change(() => {
+        closeGroups();
+        if (glide) glideFor();
+        setCondensed(next);
+      }, glide);
     };
     const settle = () => {
       window.clearTimeout(settling);
@@ -211,7 +267,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
       window.removeEventListener("resize", onResize);
       unsubscribe();
     };
-  }, [condenseAt, glider, router]);
+  }, [closeGroups, condenseAt, glideFor, glider, router]);
 
   // Hiding: well past the line, the pill follows the direction of the scroll,
   // unless it is in use.
@@ -265,6 +321,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
         data-state={state}
         data-hidden={hidden && !open}
         data-ready={ready}
+        data-gliding={gliding || undefined}
         data-brand={siteConfig.brandMark}
         onFocusCapture={() => hide(false)}
       >
@@ -282,14 +339,24 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
             </div>
 
             <nav className="immersive-links" aria-label={m.nav_main_label()}>
-              {flattenNavOptions(navOptions).map((option) => (
-                <PublicNavLink
-                  key={option.id}
-                  option={option}
-                  className="immersive-link"
-                  activeClassName="immersive-link-active"
-                />
-              ))}
+              {navOptions.map((option) =>
+                isNavGroup(option) ? (
+                  <NavGroupMenu
+                    key={`${option.id}:${groupsMount}`}
+                    group={option}
+                    navOptions={navOptions}
+                    className="immersive-link immersive-group"
+                    activeClassName="immersive-link-active"
+                  />
+                ) : (
+                  <PublicNavLink
+                    key={option.id}
+                    option={option}
+                    className="immersive-link"
+                    activeClassName="immersive-link-active"
+                  />
+                ),
+              )}
             </nav>
 
             <div className="immersive-side immersive-side-end">

@@ -14,7 +14,9 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
+import { findInPopover } from "tests/popover";
 import { createElement, useState } from "react";
 import {
   afterEach,
@@ -25,6 +27,7 @@ import {
   vi,
   type MockInstance,
 } from "vitest";
+import type { NavOption } from "@/components/layout/layout-props";
 import { PAGE_FADE_MS } from "@/components/layout/page-fade";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
@@ -65,18 +68,22 @@ async function renderShell({
   site,
   cards = cardsFor(pageKind),
   stored,
+  navOptions = [{ id: "home", label: "Nav home", href: "/", external: false }],
+  path = "/",
 }: {
   pageKind: PageKind;
   site?: SystemConfig["site"];
   cards?: Array<SidebarCard>;
   /** 「沉浸」's options as Site Config holds them. */
   stored?: Record<string, unknown>;
+  navOptions?: Array<NavOption>;
+  path?: string;
 }) {
   const props: ThemeShellProps = {
     pageKind,
     pageOnScreen: pageKind,
     options: resolveThemeOptions(theme, stored),
-    navOptions: [{ id: "home", label: "Nav home", href: "/", external: false }],
+    navOptions,
     sidebarCards: cards,
     isSessionLoading: false,
     logout: async () => {},
@@ -91,7 +98,7 @@ async function renderShell({
   });
   const router = createRouter({
     routeTree: root,
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    history: createMemoryHistory({ initialEntries: [path] }),
   });
   await act(async () => {
     render(createElement(RouterProvider, { router }));
@@ -859,6 +866,8 @@ describe("the navbar", () => {
         "backdrop-filter",
         // The brand mark under the pointer, the menu icon turning.
         "transform",
+        // A group's chevron turning.
+        "rotate",
         // The wordmark folds where it stands, out of the row in the pill.
         "grid-template-columns",
       ]),
@@ -898,6 +907,85 @@ describe("the navbar", () => {
     await renderShell({ pageKind: "home", site: { brandMark: "none" } });
 
     expect(navbar().dataset.brand).toBe("none");
+  });
+
+  describe("with a group", () => {
+    const GROUP_NAV: Array<NavOption> = [
+      { id: "home", label: "Nav home", href: "/", external: false },
+      {
+        id: "custom-0",
+        label: "Nav group",
+        children: [
+          {
+            id: "custom-0-0",
+            label: "Nav kyoto",
+            href: "/kyoto",
+            external: false,
+          },
+          {
+            id: "custom-0-1",
+            label: "Nav coffee",
+            href: "/coffee",
+            external: false,
+          },
+        ],
+      },
+      { id: "custom-1", label: "Nav about", href: "/about", external: false },
+    ];
+    const links = () =>
+      screen.getByRole("navigation", { name: m.nav_main_label() });
+    const group = () =>
+      within(links()).getByRole("button", { name: "Nav group" });
+
+    it("stands it among the links, in its place, as a menu of its links", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+
+      expect([...links().children].map((entry) => entry.textContent)).toEqual([
+        "Nav home",
+        "Nav group",
+        "Nav about",
+      ]);
+      expect(group().classList).toContain("immersive-link");
+      expect(within(links()).queryByRole("link", { name: "Nav kyoto" })).toBe(
+        null,
+      );
+    });
+
+    it("marks it current, as a link is, while one of its links is the page", async () => {
+      await renderShell({
+        pageKind: "inner",
+        navOptions: GROUP_NAV,
+        path: "/kyoto",
+      });
+
+      expect(group().getAttribute("aria-current")).toBe("true");
+      expect(group().classList).toContain("immersive-link-active");
+    });
+
+    it("closes its menu when the bar changes shape, and keeps the focus on the group", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+      vi.useRealTimers();
+      fireEvent.click(group());
+      const menu = await findInPopover("menu", { name: "Nav group" });
+      expect(menu.contains(document.activeElement)).toBe(true);
+
+      scrollTo(CONDENSE_AT + 1);
+
+      expect(navbar().dataset.state).toBe("pill");
+      expect(screen.queryByRole("menu", { name: "Nav group" })).toBe(null);
+      expect(group().getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(group());
+    });
+
+    it("leaves a closed group as it is when the bar changes shape", async () => {
+      await renderShell({ pageKind: "home", navOptions: GROUP_NAV });
+      const before = group();
+
+      scrollTo(CONDENSE_AT + 1);
+
+      expect(navbar().dataset.state).toBe("pill");
+      expect(group()).toBe(before);
+    });
   });
 });
 
