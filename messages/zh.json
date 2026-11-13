@@ -1074,7 +1074,7 @@
   "personalize_site_icon_raster": "方形图标",
   "personalize_site_icon_raster_hint": "PNG 或 JPEG，至少 {min}×{min}",
   "personalize_site_icon_svg": "矢量图标",
-  "personalize_site_icon_svg_hint": "SVG，可选，用于标签页",
+  "personalize_site_icon_svg_hint": "SVG，可选",
   "personalize_site_icon_svg_remove": "移除",
   "personalize_site_icon_not_resized": "未能生成缩小版本，各尺寸暂用原图",
   "personalize_site_icon_not_square": "图标须为方形，所选图片为 {width}×{height}。已保存的图标未更改。",
