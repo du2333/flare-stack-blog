@@ -296,6 +296,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
                     navOptions={navOptions}
                     // Its menu stands below it: a new shape moves it away.
                     dismissOn={state}
+                    placement="bottom"
                     className="immersive-link immersive-group"
                     activeClassName="immersive-link-active"
                   />

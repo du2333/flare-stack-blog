@@ -36,6 +36,20 @@ export function customNavOptions(
   );
 }
 
+/**
+ * Where a link that leaves the site leads, as a reader would name it: the
+ * host without `www.`. Nothing for a link within the site, or an address
+ * that is not one.
+ */
+export function navLinkHost(option: NavLinkOption): string | null {
+  if (!option.external) return null;
+  try {
+    return new URL(option.href).hostname.replace(/^www\./, "") || null;
+  } catch {
+    return null;
+  }
+}
+
 /** Whether a navigation entry is a group of links rather than a link. */
 export function isNavGroup(option: NavOption): option is NavGroupOption {
   return option.children !== undefined;

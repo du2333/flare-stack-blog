@@ -388,6 +388,14 @@
   .namecard-art {
     width: calc(100% - 10px);
   }
+  /* A portrait frame as wide as a phone would be most of a screen high and
+     push what follows it out of the first one. Here it is square at most,
+     and lower in a low window, so the description and the way to the Posts
+     stay in sight. */
+  .namecard-shell[data-frame="portrait"] .namecard-art {
+    aspect-ratio: 1;
+    max-height: max(15rem, 100svh - 30rem);
+  }
   .namecard-art-block {
     transform: translate(10px, 12px)
       rotate(calc(var(--namecard-art-tilt) * 0.7));

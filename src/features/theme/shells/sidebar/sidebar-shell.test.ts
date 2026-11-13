@@ -629,24 +629,25 @@ describe("the rail", () => {
 });
 
 describe("the top bar", () => {
-  it("stands in for the rail with the brand, search and the compact menu, and nothing else", async () => {
+  it("stands in for the rail with the menu button, the brand and search, and nothing else", async () => {
     await renderShell({ pageKind: "inner" });
     const inBar = within(topBar());
 
     expect(follows(topBar(), region("body"))).toBe(true);
     expect(
       inOrder([
+        inBar.getByRole("button", { name: m.common_open_menu() }),
         inBar.getByRole("link", { name: "Engine Notes" }),
         inBar.getByRole("link", { name: m.nav_search() }),
-        inBar.getByRole("button", { name: m.common_open_menu() }),
       ]),
     ).toBe(true);
     expect(inBar.getAllByRole("link")).toHaveLength(2);
     expect(inBar.getAllByRole("button")).toHaveLength(1);
     expect(inBar.queryByRole("navigation")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("opens the shared compact menu: the navigation, the switches and the account actions", async () => {
+  it("brings the rail in as a drawer: the brand, the navigation led by icons, the account and the switches", async () => {
     await renderShell({ pageKind: "inner" });
     const trigger = within(topBar()).getByRole("button", {
       name: m.common_open_menu(),
@@ -654,26 +655,51 @@ describe("the top bar", () => {
 
     fireEvent.click(trigger);
 
-    const panel = document.getElementById(
-      trigger.getAttribute("aria-controls")!,
-    )!;
-    expect(topBar().contains(panel)).toBe(true);
-    expect(trigger.getAttribute("aria-label")).toBe(m.common_close());
+    const drawer = screen.getByRole("dialog", { name: m.nav_menu_label() });
+    expect(drawer.id).toBe(trigger.getAttribute("aria-controls"));
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    // Beside the bar, not in it: the bar is frosted, and a frosted box
+    // would place the drawer against itself instead of the window.
+    expect(topBar().contains(drawer)).toBe(false);
+    expect(drawer.dataset.side).toBe("left");
     expect(
-      within(
-        within(panel).getByRole("navigation", { name: m.nav_main_label() }),
-      )
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(NAV_OPTIONS.map((option) => option.label));
+      within(drawer).getByRole("link", { name: "Engine Notes" }),
+    ).toBeTruthy();
+    const links = within(
+      within(drawer).getByRole("navigation", { name: m.nav_main_label() }),
+    ).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual(
+      NAV_OPTIONS.map((option) => option.label),
+    );
+    for (const link of links)
+      expect(link.querySelector("svg.sidebar-drawer-icon")).toBeTruthy();
     expect(
-      within(panel).getByRole("link", { name: m.nav_login_register() }),
+      within(drawer).getByRole("link", { name: m.nav_login_register() }),
     ).toBeTruthy();
     expect(
-      within(panel).getByRole("radiogroup", {
+      within(drawer).getByRole("radiogroup", {
         name: m.common_switch_language(),
       }),
     ).toBeTruthy();
+  });
+
+  it("closes the drawer from its own button and on Escape", async () => {
+    await renderShell({ pageKind: "inner" });
+    const trigger = within(topBar()).getByRole("button", {
+      name: m.common_open_menu(),
+    });
+    const drawer = () => screen.queryByRole("dialog");
+
+    fireEvent.click(trigger);
+    fireEvent.click(
+      within(drawer()!).getByRole("button", { name: m.common_close() }),
+    );
+    expect(drawer()).toBeNull();
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(trigger);
+    fireEvent.keyDown(drawer()!, { key: "Escape" });
+    expect(drawer()).toBeNull();
   });
 
   it("shows the same brand mark as the rail", async () => {

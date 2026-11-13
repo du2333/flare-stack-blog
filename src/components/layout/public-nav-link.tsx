@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
-import type { AnchorHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import type { NavLinkOption } from "@/components/layout/layout-props";
 
 const STATIC_HREF = {
@@ -19,24 +19,28 @@ function postSlugFromHref(href: string): string | null {
 /**
  * A navigation link: the router's for a page of this site, a plain one that
  * opens in a new tab for another site. `role`, `tabIndex` and `aria-current`
- * go to the link, for a row of a menu (`MenuLinkItem`).
+ * go to the link, for a row of a menu (`MenuLinkItem`). It shows the link's
+ * name, with a mark after it when it leaves the site; `children` replace
+ * both, for a place that draws its rows itself.
  */
 export function PublicNavLink({
   option,
   className,
   activeClassName,
   onClick,
+  children,
   ...linkProps
 }: {
   option: NavLinkOption;
   className?: string;
   activeClassName?: string;
   onClick?: () => void;
+  children?: ReactNode;
 } & Pick<
   AnchorHTMLAttributes<HTMLAnchorElement>,
   "role" | "tabIndex" | "aria-current"
 >) {
-  const label = (
+  const label = children ?? (
     <>
       <span className="truncate">{option.label}</span>
       {option.external ? (

@@ -217,6 +217,13 @@
     padding-inline: 24px;
     gap: 8px;
   }
+  /* On a phone the compact menu is as wide as the bar. */
+  .public-navigation-panel[data-compact="true"] {
+    left: 8px;
+    width: auto;
+    max-width: none;
+    transform-origin: top center;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .public-navbar-wrapper,
