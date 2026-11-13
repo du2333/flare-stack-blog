@@ -28,6 +28,24 @@
 .public-menu-item svg {
   flex-shrink: 0;
 }
+/* A group of the navigation: its name as a small heading, its links set in
+   under it. */
+.public-menu-group {
+  display: flex;
+  flex-direction: column;
+}
+.public-menu-group-label {
+  padding: 12px 14px 4px;
+  overflow: hidden;
+  color: var(--fuwari-fg-50);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-menu-subitem {
+  padding-inline-start: 28px;
+}
 .public-menu-item:disabled {
   opacity: 0.5;
 }

@@ -3,8 +3,13 @@ import { ChevronsUpDown, Search, UserIcon } from "lucide-react";
 import { useRef, type CSSProperties } from "react";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import type { NavOption, UserInfo } from "@/components/layout/layout-props";
+import type {
+  NavLinkOption,
+  NavOption,
+  UserInfo,
+} from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { flattenNavOptions } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { SocialLinks } from "@/components/layout/social-links";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
@@ -103,7 +108,7 @@ function SearchEntry() {
  * the page belongs to and glides to the next one; where the page belongs to
  * none, it fades out where it last stood.
  */
-function Navigation({ navOptions }: { navOptions: Array<NavOption> }) {
+function Navigation({ navOptions }: { navOptions: Array<NavLinkOption> }) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const current = currentEntryIndex(navOptions, pathname);
   const lastCurrent = useRef(Math.max(current, 0));
@@ -229,7 +234,7 @@ export function Rail({
         <Brand />
         <Identity />
         <SearchEntry />
-        <Navigation navOptions={props.navOptions} />
+        <Navigation navOptions={flattenNavOptions(props.navOptions)} />
         {tocSlot ? <Contents /> : null}
       </div>
       <div className="sidebar-rail-foot">

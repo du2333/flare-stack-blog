@@ -8,7 +8,7 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react";
-import type { NavOption } from "@/components/layout/layout-props";
+import type { NavLinkOption } from "@/components/layout/layout-props";
 
 /** A path without its query, hash and trailing slash, decoded. */
 function normalise(href: string) {
@@ -29,7 +29,7 @@ function normalise(href: string) {
  * never current.
  */
 export function currentEntryIndex(
-  navOptions: ReadonlyArray<NavOption>,
+  navOptions: ReadonlyArray<NavLinkOption>,
   pathname: string,
 ): number {
   const path = normalise(pathname);
@@ -67,7 +67,7 @@ const BUILT_IN_ICONS: Record<string, LucideIcon> = {
  * their own; a custom link gets one by where it leads: another site, a
  * Post, or anywhere else on this one.
  */
-export function entryIcon(option: NavOption): LucideIcon {
+export function entryIcon(option: NavLinkOption): LucideIcon {
   const builtIn = BUILT_IN_ICONS[option.id];
   if (builtIn) return builtIn;
   if (option.external) return Globe;

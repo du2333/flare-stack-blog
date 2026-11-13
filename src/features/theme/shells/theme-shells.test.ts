@@ -18,7 +18,12 @@ import { findInPopover } from "tests/popover";
 import { fixtureTheme } from "tests/theme-fixture/theme";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FloatingActionsProvider } from "@/components/layout/floating-actions";
-import type { NavOption, UserInfo } from "@/components/layout/layout-props";
+import type {
+  NavLinkOption,
+  NavOption,
+  UserInfo,
+} from "@/components/layout/layout-props";
+import { flattenNavOptions, isNavGroup } from "@/components/layout/nav-options";
 import { resolveSiteConfig } from "@/features/config/config.resolve";
 import type { SystemConfig } from "@/features/config/config.schema";
 import TableOfContents from "@/features/posts/components/table-of-contents";
@@ -54,11 +59,60 @@ const NAV_OPTIONS: Array<NavOption> = [
   { id: "custom-1", label: "Nav about", href: "/about", external: false },
   {
     id: "custom-2",
+    label: "Nav group",
+    children: [
+      { id: "custom-2-0", label: "Nav child", href: "/child", external: false },
+      {
+        id: "custom-2-1",
+        label: "Nav child elsewhere",
+        href: "https://example.org/",
+        external: true,
+      },
+    ],
+  },
+  {
+    id: "custom-3",
     label: "Nav elsewhere",
     href: "https://example.com/",
     external: true,
   },
 ];
+
+/** Every link of the navigation, a group's links in its place. */
+const NAV_LINKS = flattenNavOptions(NAV_OPTIONS);
+const NAV_GROUPS = NAV_OPTIONS.filter(isNavGroup);
+
+function hasLink(scope: HTMLElement, { label, href }: NavLinkOption) {
+  return within(scope)
+    .queryAllByRole("link", { name: label })
+    .some((link) => link.getAttribute("href") === href);
+}
+
+/**
+ * Each entry of the navigation is reachable in `scope`: a link as a link; a
+ * group as its links in its place, or as a button that opens them and is no
+ * link itself.
+ */
+async function expectEveryEntry(scope: HTMLElement) {
+  for (const option of NAV_OPTIONS) {
+    if (!isNavGroup(option)) {
+      expect(hasLink(scope, option)).toBe(true);
+      continue;
+    }
+    expect(
+      within(scope).queryByRole("link", { name: option.label }),
+    ).toBeNull();
+    if (option.children.every((child) => hasLink(scope, child))) continue;
+    const trigger = within(scope).getByRole("button", { name: option.label });
+    fireEvent.click(trigger);
+    const menu = await findInPopover("menu", { name: option.label });
+    for (const child of option.children) {
+      const item = within(menu).getByRole("menuitem", { name: child.label });
+      expect(item.getAttribute("href")).toBe(child.href);
+    }
+    fireEvent.click(trigger);
+  }
+}
 
 function card(id: string, kind: SidebarCard["kind"]): SidebarCard {
   return { id, kind, content: createElement("div", null, `Card ${id}`) };
@@ -211,12 +265,7 @@ describe.each(
     async (pageKind) => {
       await renderShell(theme, { pageKind });
 
-      for (const option of NAV_OPTIONS) {
-        const links = screen.getAllByRole("link", { name: option.label });
-        expect(links.map((link) => link.getAttribute("href"))).toContain(
-          option.href,
-        );
-      }
+      await expectEveryEntry(document.body);
       expect(
         screen.getAllByRole("link", { name: m.nav_search() }).length,
       ).toBeGreaterThan(0);
@@ -409,24 +458,18 @@ describe.each(
 
     const inBar = named();
     expect(inBar).toHaveLength(1);
-    for (const option of NAV_OPTIONS) {
-      expect(
-        within(inBar[0]).getByRole("link", { name: option.label }),
-      ).toBeTruthy();
-    }
+    await expectEveryEntry(inBar[0]);
 
     fireEvent.click(screen.getByRole("button", { name: m.common_open_menu() }));
     const [, inMenu] = named();
-    for (const option of NAV_OPTIONS) {
-      expect(
-        within(inMenu).getByRole("link", { name: option.label }),
-      ).toBeTruthy();
+    for (const option of NAV_LINKS) {
+      expect(hasLink(inMenu, option)).toBe(true);
     }
   });
 
-  it("opens the compact menu with every navigation entry", async () => {
+  it("opens the compact menu with every navigation link", async () => {
     await renderShell(theme, { pageKind: "inner" });
-    const before = NAV_OPTIONS.map((option) => linkCount(option.label));
+    const before = NAV_LINKS.map((option) => linkCount(option.label));
 
     const trigger = screen.getByRole("button", {
       name: m.common_open_menu(),
@@ -434,9 +477,30 @@ describe.each(
     fireEvent.click(trigger);
 
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    NAV_OPTIONS.forEach((option, index) => {
+    NAV_LINKS.forEach((option, index) => {
       expect(linkCount(option.label)).toBe(before[index] + 1);
     });
+  });
+
+  it("heads a group's links with its name in the compact menu, always open", async () => {
+    await renderShell(theme, { pageKind: "inner" });
+    fireEvent.click(screen.getByRole("button", { name: m.common_open_menu() }));
+
+    for (const group of NAV_GROUPS) {
+      // Only the compact menu shows a group as a heading over its links.
+      const shown = screen.getByRole("group", { name: group.label });
+      const inMenu = shown.closest("nav")!;
+      expect(inMenu.getAttribute("aria-label")).toBe(m.nav_main_label());
+      expect(within(shown).getByText(group.label).tagName).not.toBe("A");
+      expect(
+        within(shown)
+          .getAllByRole("link")
+          .map((link) => link.textContent),
+      ).toEqual(group.children.map((child) => child.label));
+      expect(within(inMenu).queryByRole("button", { name: group.label })).toBe(
+        null,
+      );
+    }
   });
 
   it("offers sign-in to a visitor", async () => {

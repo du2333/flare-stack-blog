@@ -50,6 +50,45 @@ describe("the footer as a band", () => {
     );
   });
 
+  it("lists a group's links in its place, and not the group", async () => {
+    const host = await renderFooter({
+      form: "band",
+      navOptions: [
+        NAV_OPTIONS[0]!,
+        {
+          id: "custom-0",
+          label: "Nav group",
+          children: [
+            {
+              id: "custom-0-0",
+              label: "Nav one",
+              href: "/one",
+              external: false,
+            },
+            {
+              id: "custom-0-1",
+              label: "Nav two",
+              href: "https://example.com/two",
+              external: true,
+            },
+          ],
+        },
+        NAV_OPTIONS[1]!,
+      ],
+    });
+    const nav = within(host).getByRole("navigation");
+
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Nav home", "Nav one", "Nav two", "Nav posts"]);
+    expect(nav.textContent).not.toContain("Nav group");
+    expect(
+      opensInNewTab(within(nav).getByRole("link", { name: "Nav two" })),
+    ).toBe(true);
+  });
+
   it("opens an external entry in a new tab, under the mark the navbar gives it", async () => {
     const host = await renderFooter({ form: "band" });
     const nav = within(host).getByRole("navigation");

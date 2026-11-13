@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useColourScheme } from "@/components/common/colour-scheme-provider";
 import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { isNavGroup } from "./nav-options";
 import { PublicNavLink } from "./public-nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/paraglide/messages";
@@ -29,6 +30,7 @@ export function MobileMenu({
   mobile,
   isLoading,
 }: MobileMenuProps) {
+  const groupId = useId();
   const [loggingOut, setLoggingOut] = useState(false);
   const { colourSchemePreference } = useColourScheme();
   const schemeLabel =
@@ -42,15 +44,41 @@ export function MobileMenu({
       {mobile && (
         <>
           <nav className="public-menu-links" aria-label={m.nav_main_label()}>
-            {navOptions.map((option) => (
-              <PublicNavLink
-                key={option.id}
-                option={option}
-                onClick={onClose}
-                className="public-menu-item"
-                activeClassName="public-menu-active"
-              />
-            ))}
+            {navOptions.map((option) =>
+              isNavGroup(option) ? (
+                // Always open: a group is a heading over its links.
+                <div
+                  key={option.id}
+                  role="group"
+                  aria-labelledby={`${groupId}-${option.id}`}
+                  className="public-menu-group"
+                >
+                  <p
+                    id={`${groupId}-${option.id}`}
+                    className="public-menu-group-label"
+                  >
+                    {option.label}
+                  </p>
+                  {option.children.map((child) => (
+                    <PublicNavLink
+                      key={child.id}
+                      option={child}
+                      onClick={onClose}
+                      className="public-menu-item public-menu-subitem"
+                      activeClassName="public-menu-active"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <PublicNavLink
+                  key={option.id}
+                  option={option}
+                  onClick={onClose}
+                  className="public-menu-item"
+                  activeClassName="public-menu-active"
+                />
+              ),
+            )}
           </nav>
           <div className="public-menu-preferences">
             <ColourSchemeToggle

@@ -6,6 +6,7 @@ import {
   PUBLIC_IMAGE_WIDTH,
 } from "@/features/media/utils/media.utils";
 import { m } from "@/paraglide/messages";
+import { flattenNavOptions } from "../nav-options";
 import { PublicNavLink } from "../public-nav-link";
 import { SocialLinks } from "../social-links";
 import type { FooterFormProps } from "./footer-form";
@@ -49,7 +50,7 @@ const QUIET_LINK =
  * wide as the shell lets its footer region be, with what it shows kept to
  * the page width. The site signs off (the brand mark and the title, the
  * tagline or else the description, the social links) beside every
- * navigation entry, over one quiet line with the copyright and the feed and
+ * navigation link, a group's links in its place, over one quiet line with the copyright and the feed and
  * sitemap links. It has no credit.
  */
 export function FooterBand({ navOptions }: FooterFormProps) {
@@ -87,7 +88,7 @@ export function FooterBand({ navOptions }: FooterFormProps) {
             aria-label={m.footer_nav_label()}
             className="-mx-3 flex flex-wrap content-start gap-1 md:mx-0 md:max-w-lg md:justify-end"
           >
-            {navOptions.map((option) => (
+            {flattenNavOptions(navOptions).map((option) => (
               <PublicNavLink
                 key={option.id}
                 option={option}

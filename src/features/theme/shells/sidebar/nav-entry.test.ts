@@ -8,11 +8,11 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { describe, expect, it } from "vitest";
-import type { NavOption } from "@/components/layout/layout-props";
+import type { NavLinkOption } from "@/components/layout/layout-props";
 import { currentEntryIndex, entryIcon } from "./nav-entry";
 
 /** Shaped like the host's list: the built-in entries, then the custom links. */
-const NAV_OPTIONS: Array<NavOption> = [
+const NAV_OPTIONS: Array<NavLinkOption> = [
   { id: "home", label: "Home", href: "/", external: false },
   { id: "posts", label: "Posts", href: "/posts", external: false },
   { id: "moments", label: "Moments", href: "/moments", external: false },

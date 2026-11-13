@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { flattenNavOptions } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
@@ -113,7 +114,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
           <span>{siteConfig.title}</span>
         </Link>
         <nav className="public-desktop-links" aria-label={m.nav_main_label()}>
-          {navOptions.map((option) => (
+          {flattenNavOptions(navOptions).map((option) => (
             <PublicNavLink
               key={option.id}
               option={option}

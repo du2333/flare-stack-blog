@@ -16,6 +16,7 @@ import { ColourSchemeToggle } from "@/components/common/colour-scheme-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { NavOption, UserInfo } from "@/components/layout/layout-props";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { flattenNavOptions } from "@/components/layout/nav-options";
 import { PublicNavLink } from "@/components/layout/public-nav-link";
 import { useMenuPanel } from "@/components/layout/use-menu-panel";
 import { IconButton, iconButtonClass } from "@/components/ui/icon-button";
@@ -281,7 +282,7 @@ export function Navbar({ user, navOptions, isLoading, logout }: NavbarProps) {
             </div>
 
             <nav className="immersive-links" aria-label={m.nav_main_label()}>
-              {navOptions.map((option) => (
+              {flattenNavOptions(navOptions).map((option) => (
                 <PublicNavLink
                   key={option.id}
                   option={option}

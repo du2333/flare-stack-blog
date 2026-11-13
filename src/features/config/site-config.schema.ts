@@ -4,6 +4,7 @@ import type { Messages } from "@/lib/i18n";
 import {
   canonicalizeNavHref,
   isNavHref,
+  NAV_LINK_CHILDREN_MAX,
   NAV_LINK_LABEL_MAX,
   NAV_LINKS_MAX,
 } from "./utils/nav-links";
@@ -39,59 +40,155 @@ function createSiteTextSchema(max: number) {
   return z.string().trim().max(max);
 }
 
-const NavLinkSchema = z.object({
-  label: createSiteTextSchema(NAV_LINK_LABEL_MAX).pipe(z.string().min(1)),
-  href: z.string().trim().refine(isNavHref, {
-    message: "Please enter a root-relative path or http(s) URL",
-  }),
+const NAV_HREF_MESSAGE = "Please enter a root-relative path or http(s) URL";
+const NavLabelSchema = createSiteTextSchema(NAV_LINK_LABEL_MAX).pipe(
+  z.string().min(1),
+);
+const NavHrefSchema = z.string().trim().refine(isNavHref, {
+  message: NAV_HREF_MESSAGE,
 });
+
+/** A link inside a group. Strict, so a child that nests links is rejected. */
+const NavLinkChildSchema = z.strictObject({
+  label: NavLabelSchema,
+  href: NavHrefSchema,
+});
+
+/**
+ * A custom link as it is saved: one object for a link and a group, so a
+ * form can turn the one into the other. Non-empty `children` make it a
+ * group, whose `href` is ignored and not saved; otherwise `href` is required.
+ */
+const NavLinkInputSchema = z
+  .object({
+    label: NavLabelSchema,
+    href: z
+      .string()
+      .trim()
+      .optional()
+      .describe(
+        "Where the link leads: a root-relative path or an http(s) URL. Required unless children is non-empty; a group's href is ignored and not saved.",
+      ),
+    children: z
+      .array(NavLinkChildSchema)
+      .max(NAV_LINK_CHILDREN_MAX)
+      .optional()
+      .describe(
+        `The links of a group, at most ${NAV_LINK_CHILDREN_MAX}, each a label and an href. Non-empty makes the entry a group: it opens a menu of these links and leads nowhere itself. A child cannot have children of its own.`,
+      ),
+  })
+  .superRefine((link, ctx) => {
+    if (link.children?.length) return;
+    if (!link.href || !isNavHref(link.href))
+      ctx.addIssue({
+        code: "custom",
+        message: NAV_HREF_MESSAGE,
+        path: ["href"],
+      });
+  })
+  .describe(
+    "A custom navigation link, or a group of links when children is non-empty.",
+  );
+
+/** A custom link as Site Config is read: a group, or a link. */
+const NavLinkSchema = z.union([
+  z.object({
+    label: NavLabelSchema,
+    children: z
+      .array(z.object({ label: NavLabelSchema, href: NavHrefSchema }))
+      .min(1)
+      .max(NAV_LINK_CHILDREN_MAX),
+  }),
+  z.object({ label: NavLabelSchema, href: NavHrefSchema }),
+]);
+
+function createNavLinkRowFormSchema() {
+  return z.object({ label: z.string(), href: z.string() });
+}
+
+/** The issues of one row of the links form, at `path`. */
+function navLinkRowIssues(
+  link: { label: string; href?: string },
+  path: Array<string | number>,
+  messages: Messages,
+  ctx: z.RefinementCtx,
+  { href = true }: { href?: boolean } = {},
+) {
+  if (!link.label) {
+    ctx.addIssue({
+      code: "custom",
+      message: messages.settings_site_validation_nav_label_required(),
+      path: [...path, "label"],
+    });
+  } else if (link.label.length > NAV_LINK_LABEL_MAX) {
+    ctx.addIssue({
+      code: "custom",
+      message: messages.settings_site_validation_too_long({
+        max: NAV_LINK_LABEL_MAX,
+      }),
+      path: [...path, "label"],
+    });
+  }
+  if (!href) return;
+  if (!link.href) {
+    ctx.addIssue({
+      code: "custom",
+      message: messages.settings_site_validation_nav_href_required(),
+      path: [...path, "href"],
+    });
+  } else if (!isNavHref(link.href)) {
+    ctx.addIssue({
+      code: "custom",
+      message: messages.settings_site_validation_invalid_nav_href(),
+      path: [...path, "href"],
+    });
+  }
+}
 
 function createNavLinksFormSchema(messages: Messages) {
   return z
     .array(
-      z.object({
-        label: z.string(),
-        href: z.string(),
+      createNavLinkRowFormSchema().extend({
+        href: z.string().optional(),
+        children: z
+          .array(createNavLinkRowFormSchema())
+          .max(NAV_LINK_CHILDREN_MAX)
+          .optional(),
       }),
     )
     .max(NAV_LINKS_MAX)
     .transform((links) =>
-      links.map((link) => ({
-        label: link.label.trim(),
-        href: canonicalizeNavHref(link.href),
-      })),
+      links.map((link) => {
+        const label = link.label.trim();
+        // A group keeps its links and drops its own address.
+        if (link.children?.length) {
+          return {
+            label,
+            children: link.children.map((child) => ({
+              label: child.label.trim(),
+              href: canonicalizeNavHref(child.href),
+            })),
+          };
+        }
+        return { label, href: canonicalizeNavHref(link.href ?? "") };
+      }),
     )
     .superRefine((links, ctx) => {
       links.forEach((link, index) => {
+        if (link.children) {
+          navLinkRowIssues(link, [index], messages, ctx, { href: false });
+          link.children.forEach((child, childIndex) =>
+            navLinkRowIssues(
+              child,
+              [index, "children", childIndex],
+              messages,
+              ctx,
+            ),
+          );
+          return;
+        }
         if (!link.label && !link.href) return;
-        if (!link.label) {
-          ctx.addIssue({
-            code: "custom",
-            message: messages.settings_site_validation_nav_label_required(),
-            path: [index, "label"],
-          });
-        } else if (link.label.length > NAV_LINK_LABEL_MAX) {
-          ctx.addIssue({
-            code: "custom",
-            message: messages.settings_site_validation_too_long({
-              max: NAV_LINK_LABEL_MAX,
-            }),
-            path: [index, "label"],
-          });
-        }
-        if (!link.href) {
-          ctx.addIssue({
-            code: "custom",
-            message: messages.settings_site_validation_nav_href_required(),
-            path: [index, "href"],
-          });
-        } else if (!isNavHref(link.href)) {
-          ctx.addIssue({
-            code: "custom",
-            message: messages.settings_site_validation_invalid_nav_href(),
-            path: [index, "href"],
-          });
-        }
+        navLinkRowIssues(link, [index], messages, ctx);
       });
     });
 }
@@ -321,7 +418,13 @@ export const SiteConfigInputSchema = z.object({
   author: createSiteTextSchema(80).optional(),
   description: createSiteTextSchema(SITE_DESCRIPTION_MAX).optional(),
   social: z.array(SocialLinkSchema).optional(),
-  navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX).optional(),
+  navLinks: z
+    .array(NavLinkInputSchema)
+    .max(NAV_LINKS_MAX)
+    .optional()
+    .describe(
+      `Custom links the navigation shows after its built-in entries, at most ${NAV_LINKS_MAX}. Each is a link or a group of links.`,
+    ),
   icons: z
     .object({
       faviconSvg: createOptionalAssetPathSchema().optional(),
