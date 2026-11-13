@@ -1,5 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BLOB_UPLOADING_ERROR,

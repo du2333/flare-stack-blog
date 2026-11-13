@@ -25,7 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useColourScheme } from "@/components/common/colour-scheme-provider";
 import {
   CommandPalette,

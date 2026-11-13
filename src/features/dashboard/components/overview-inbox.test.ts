@@ -21,7 +21,7 @@ const calls = vi.hoisted(() => ({
 }));
 
 const toasts = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }));
-vi.mock("sonner", () => ({ toast: toasts }));
+vi.mock("@/lib/toast", () => ({ toast: toasts }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...rest }: { children: ReactNode }) =>
     createElement("a", rest, children),

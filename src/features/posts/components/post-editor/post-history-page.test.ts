@@ -11,7 +11,7 @@ import {
 } from "@testing-library/react";
 import { createElement } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AdminChromeProvider } from "@/components/admin/admin-chrome";
 import { m } from "@/paraglide/messages";
@@ -26,7 +26,7 @@ const api = vi.hoisted(() => ({
 }));
 const navigate = vi.hoisted(() => vi.fn());
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock("@/lib/orpc", async () => {
   const { createTanstackQueryUtils } = await import("@orpc/tanstack-query");

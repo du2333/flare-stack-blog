@@ -3,7 +3,7 @@ import { useBlocker, useNavigate } from "@tanstack/react-router";
 import type { JSONContent, Editor as TiptapEditor } from "@tiptap/react";
 import { useCallback, useRef, useState } from "react";
 import { CircleAlert } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Editor } from "@/components/tiptap-editor";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";

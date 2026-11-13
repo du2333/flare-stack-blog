@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { type RefObject, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Textarea } from "@/components/ui/input";

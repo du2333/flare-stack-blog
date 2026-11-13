@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 
@@ -54,6 +54,37 @@ it("keeps every toast asked for while sonner loads", async () => {
 
   expect(await screen.findByText("kept first")).toBeTruthy();
   expect(await screen.findByText("kept second")).toBeTruthy();
+});
+
+it("shows a plain message", async () => {
+  const { toast, LazyToaster } = await load();
+  render(createElement(LazyToaster));
+
+  act(() => {
+    toast.message("a plain one", { description: "no icon" });
+  });
+
+  expect(await screen.findByText("a plain one")).toBeTruthy();
+  expect(screen.getByText("no icon")).toBeTruthy();
+});
+
+it("lets a toast asked for before sonner loaded be updated and closed by its id", async () => {
+  const { toast, LazyToaster } = await load();
+  render(createElement(LazyToaster));
+
+  let id: string | number = "";
+  act(() => {
+    id = toast.loading("working");
+    toast.success("done", { id });
+  });
+
+  expect(await screen.findByText("done")).toBeTruthy();
+  expect(screen.queryByText("working")).toBeNull();
+
+  act(() => {
+    toast.dismiss(id);
+  });
+  await waitFor(() => expect(screen.queryByText("done")).toBeNull());
 });
 
 it("shows a toast asked for after sonner has loaded straight away", async () => {

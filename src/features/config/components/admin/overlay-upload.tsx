@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { type FieldPath, useFormContext } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import {
   SITE_ASSET_MAX_FILE_SIZE,

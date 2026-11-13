@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Hash, Plus, X } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { FloatingPopover } from "@/components/ui/floating-popover";
 import { ListboxOption } from "@/components/ui/listbox-option";
 import { Spinner } from "@/components/ui/spinner";

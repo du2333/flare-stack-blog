@@ -64,25 +64,7 @@ const config = defineConfig({
     themeFixturePlugin(),
     tailwindcss(),
     devtools(),
-    tanstackStart({
-      router: {
-        codeSplittingOptions: {
-          // A route's skeleton stays in its main chunk by default, and the
-          // route tree imports every route file: the Admin skeletons and their
-          // stylesheets were in the first load of every public page. Admin
-          // routes load theirs with the page. Public routes keep the default,
-          // so a visitor on a slow connection sees the skeleton at once.
-          splitBehavior: ({ routeId }) =>
-            routeId.startsWith("/admin")
-              ? [
-                  ["component", "pendingComponent"],
-                  ["errorComponent"],
-                  ["notFoundComponent"],
-                ]
-              : undefined,
-        },
-      },
-    }),
+    tanstackStart(),
     viteReact(),
   ],
 });

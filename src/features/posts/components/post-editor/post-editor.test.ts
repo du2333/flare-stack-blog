@@ -13,7 +13,7 @@ import {
 import type { Editor } from "@tiptap/core";
 import { createElement, useState } from "react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AdminChromeProvider } from "@/components/admin/admin-chrome";
@@ -25,7 +25,7 @@ import type { PostEditorData, PostEditorProps, PostEditorSave } from "./types";
 const publish = vi.hoisted(() => vi.fn());
 const discardChanges = vi.hoisted(() => vi.fn());
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock("@/lib/orpc", async (importOriginal) => {
   const original = await importOriginal<typeof import("@/lib/orpc")>();

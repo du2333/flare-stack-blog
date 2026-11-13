@@ -13,7 +13,7 @@ import {
 import { createElement, type ReactNode } from "react";
 import { findInPopover } from "tests/popover";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AdminChromeProvider } from "@/components/admin/admin-chrome";
 import { m } from "@/paraglide/messages";
 import {
@@ -29,7 +29,7 @@ vi.mock("@/hooks/use-motion", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
   useMotionPresence: (open: boolean) => open,
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
   Link: ({
