@@ -51,6 +51,14 @@ const UpgradeEntryListSchema = z
   .array(UpgradeEntrySchema)
   .max(MAX_UPGRADE_VERSIONS);
 
+/** The one KV key: the latest version an Admin chose to stop being reminded of. No expiry. */
+export const DISMISSED_UPDATE_KEY = ["version", "dismissed-update"] as const;
+
+/** A version to stop being reminded of, or null to restore the reminder. */
+export const DismissUpdateInputSchema = z.object({
+  version: ApplicationReleaseVersionSchema.nullable(),
+});
+
 export const UpdateCheckResultSchema = z.object({
   latestVersion: ApplicationReleaseVersionSchema,
   currentVersion: RunningApplicationReleaseVersionSchema,
@@ -62,6 +70,12 @@ export const UpdateCheckResultSchema = z.object({
   entries: UpgradeEntryListSchema,
   /** False when the answer came from the release page, which carries no notes. */
   notesAvailable: z.boolean(),
+  /**
+   * True when an update exists and the Admin stopped being reminded of
+   * exactly this latest version. Read from KV when the check answers; the
+   * cached release data and `cached()` never carry it (always false there).
+   */
+  dismissed: z.boolean(),
 });
 
 export type UpdateCheckResult = z.infer<typeof UpdateCheckResultSchema>;

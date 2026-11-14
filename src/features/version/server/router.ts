@@ -1,6 +1,10 @@
+import * as DismissedUpdateService from "@/features/version/service/dismissed-update.service";
 import { versionChecker } from "@/features/version/service/version.service";
 import * as UpgradeNoticeService from "@/features/version/service/upgrade-notice.service";
-import { UpdateCheckResultSchema } from "@/features/version/update-check.schema";
+import {
+  DismissUpdateInputSchema,
+  UpdateCheckResultSchema,
+} from "@/features/version/update-check.schema";
 import { UpgradeNoticeResultSchema } from "@/features/version/upgrade-notice.schema";
 import { adminProcedure, browserAdminProcedure } from "@/lib/orpc/procedure";
 import { SuccessResponseSchema } from "@/lib/orpc/success-schema";
@@ -71,9 +75,50 @@ const acknowledgeUpgrade = browserAdminProcedure
     UpgradeNoticeService.acknowledgeUpgradeNotice(context),
   );
 
+// Silencing the notice is for the Admin who signed in to the site; an API Key
+// cannot, and the API document leaves the operation out.
+
+const dismissUpdate = browserAdminProcedure
+  .errors({
+    ...versionErrors,
+    NOT_LATEST: {
+      status: 409,
+      message: "That version is not the latest release.",
+    },
+  })
+  .route({
+    method: "POST",
+    path: "/admin/version/dismissed",
+    summary:
+      "Stop being reminded of the latest version, or restore the reminder",
+    description:
+      "Takes the latest version the check reports, or null to restore. Any other version is refused.",
+    tags: ["Admin Version"],
+  })
+  .input(DismissUpdateInputSchema)
+  .output(SuccessResponseSchema)
+  .handler(({ context, input, errors }) =>
+    unwrapResult(
+      DismissedUpdateService.dismissUpdate(
+        context,
+        input.version,
+        versionChecker.check,
+      ),
+      {
+        FETCH_FAILED: () => {
+          throw errors.FETCH_FAILED();
+        },
+        NOT_LATEST: () => {
+          throw errors.NOT_LATEST();
+        },
+      },
+    ),
+  );
+
 export default {
   check,
   forceCheck,
+  dismissUpdate,
   upgradeNotice,
   acknowledgeUpgrade,
 };
