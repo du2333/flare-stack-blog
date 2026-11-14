@@ -299,6 +299,66 @@ describe("checkRelease", () => {
     ).toMatchObject({ ok: true, level: "major" });
   });
 
+  describe("required configuration", () => {
+    const withRequires = (requires: object, fields: object = {}) => ({
+      unreleased: { summary: "摘要。", requires, ...fields },
+      versions: released,
+    });
+
+    it("fails a minor that requires a Secret", () => {
+      expect(
+        failures({
+          file: withRequires({ buildVars: [], secrets: ["BETTER_AUTH_URL"] }),
+        }),
+      ).toEqual([
+        "`unreleased` in upgrades.json requires BETTER_AUTH_URL, but 3.12.1 → 3.13.0 is a minor. Required configuration belongs in a major: make it optional, or release a major.",
+      ]);
+    });
+
+    it("passes a minor whose requires lists are empty", () => {
+      expect(
+        checkRelease(
+          input({ file: withRequires({ buildVars: [], secrets: [] }) }),
+        ),
+      ).toMatchObject({ ok: true, level: "minor" });
+    });
+
+    it("passes a major with requirements", () => {
+      expect(
+        checkRelease(
+          input({
+            to: "4.0.0",
+            file: withRequires(
+              { buildVars: ["UPGRADE_ACK"], secrets: ["BETTER_AUTH_URL"] },
+              { before: [{ id: "a", text: "一" }] },
+            ),
+          }),
+        ),
+      ).toMatchObject({ ok: true, level: "major" });
+    });
+
+    it("follows the level a prerelease is measured at", () => {
+      const file = withRequires({ buildVars: ["X"], secrets: [] });
+      expect(failures({ to: "3.13.0-beta.0", file })).toEqual([
+        expect.stringContaining("requires X"),
+      ]);
+    });
+
+    it("is reported with the other failures", () => {
+      expect(
+        failures({
+          commits: [commit("feat!: break")],
+          file: withRequires({ buildVars: ["UPGRADE_ACK"], secrets: ["S"] }),
+          addedMigrations: [{ name: "0035_rebuild.sql", sql: rebuild }],
+        }),
+      ).toEqual([
+        expect.stringContaining("marked breaking"),
+        expect.stringContaining("requires UPGRADE_ACK, S"),
+        expect.stringContaining("Migration 0035_rebuild.sql"),
+      ]);
+    });
+  });
+
   it("reports every failure at once", () => {
     const result = failures({
       commits: [commit("feat!: break")],
