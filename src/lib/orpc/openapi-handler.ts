@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/client";
 import { StandardOpenAPIMatcher } from "@orpc/openapi/standard";
 import { onError } from "@orpc/server";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import skillRevision from "@/features/agent-skill/skill-revision.json";
 import { MAX_FILE_SIZE } from "@/features/media/media.schema";
 import {
   bodyLimitOf,
@@ -71,6 +72,10 @@ Upload a file as multipart form data to the Media upload operation; its answer c
 ## Moments
 
 A Moment is a short public post with no title, slug, category, tag, draft or history, like a microblog entry. Posting or saving one is public at once, and it is shown under \`/moments\` and \`/moments/{id}\` on the site origin. Its JSON fields are \`text\` (plain text of at most 1000 characters, possibly several lines; web addresses in it become links), \`images\` (up to 50 Media paths, \`/images/{key}\`, in display order) and \`video\` (one video: \`{ url }\` for Bilibili or YouTube, or \`{ src, poster?, title?, page? }\` for a Direct Video). A Moment has images or a video, never both, and is never empty. An image must already be Media: upload the file to the Media upload operation first, then write the path it answers; a path no Media has answers 400. Media a Moment shows cannot be deleted. \`postedAt\` is when it was first posted and edits never change it; \`updatedAt\` is its last write. Saving sends only the changed fields in \`data\`, and \`saveToken\` works as for Posts: read the Moment right before saving, send the \`saveToken\` you read, and on 409 \`EDIT_CONFLICT\` read it again before deciding, never resending the same token. The Admin Moments operations list their exact fields and errors.
+
+## Agent Skill
+
+This blog serves revision ${skillRevision.revision} of the \`flare-stack-blog\` Agent Skill at \`/agent-skill.zip\` on the site origin, a public file. A copy of the Skill that states a lower revision, or none, is older than this blog: tell the human, and when they agree replace the copy with the zip's \`flare-stack-blog\` folder and read it again.
 
 ## Errors
 

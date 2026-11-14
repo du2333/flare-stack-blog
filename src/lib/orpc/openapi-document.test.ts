@@ -1,3 +1,4 @@
+import skillRevision from "@/features/agent-skill/skill-revision.json";
 import { type OpenAPI, OpenAPIGenerator } from "@orpc/openapi";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { describe, expect, it, vi } from "vitest";
@@ -185,6 +186,15 @@ describe("the index", () => {
     expect(info.description).toMatch(/^## Reading this document/);
     expect(info.description).toContain("/api/spec/index.json");
     expect(info.description).toContain("/api/spec.json?operationIds=");
+  });
+
+  // An agent compares this with the revision its own copy states, and old
+  // copies, which state none, learn here that a newer one exists.
+  it("states the revision of the Agent Skill the blog serves, and where", async () => {
+    const { info } = await documentAt("/spec/index.json");
+    expect(info.description).toContain(
+      `This blog serves revision ${skillRevision.revision} of the \`flare-stack-blog\` Agent Skill at \`/agent-skill.zip\``,
+    );
   });
 
   it("takes no query", async () => {

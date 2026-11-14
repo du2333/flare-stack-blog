@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { type Zippable, zipSync } from "fflate";
@@ -29,6 +30,40 @@ function listFiles(dir: string, prefix = ""): string[] {
     else if (entry.isFile()) found.push(relative);
   }
   return found.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/** The line of `SKILL.md` that states the copy's revision; an agent compares it with the blog's. */
+export const AGENT_SKILL_REVISION_LINE =
+  /^This copy is revision (\d+) of the Skill\./m;
+
+/** The revision the Skill under `root` states, or null when it states none. */
+export function agentSkillRevision(root: string): number | null {
+  const skill = readFileSync(path.resolve(root, SKILL_DIR, "SKILL.md"), "utf8");
+  const stated = AGENT_SKILL_REVISION_LINE.exec(skill)?.[1];
+  return stated === undefined ? null : Number(stated);
+}
+
+/**
+ * A digest of the Skill's files with the stated revision left out, so raising
+ * the revision alone does not change it. It tells whether the Skill's content
+ * differs from the content a revision was recorded for.
+ */
+export function agentSkillDigest(root: string): string {
+  const dir = path.resolve(root, SKILL_DIR);
+  const hash = createHash("sha256");
+  for (const file of listFiles(dir)) {
+    const bytes = readFileSync(path.join(dir, file));
+    const content =
+      file === "SKILL.md"
+        ? bytes
+            .toString("utf8")
+            .replace(AGENT_SKILL_REVISION_LINE, (line, stated: string) =>
+              line.replace(stated, "N"),
+            )
+        : bytes;
+    hash.update(`${file}\0${content.length}\0`).update(content);
+  }
+  return hash.digest("hex");
 }
 
 /**
