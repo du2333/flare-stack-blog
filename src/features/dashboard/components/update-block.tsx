@@ -77,7 +77,15 @@ export function UpdateBlock({
           </a>
         ) : null}
         {/* The live regions stay mounted and only their text changes. */}
-        <span role="status" className="overview-update-status">
+        {/* Before the first answer the skeleton says it; the text is for
+            assistive tech only, so the line keeps its one-line height. */}
+        <span
+          role="status"
+          className={cn(
+            "overview-update-status",
+            form === "pending" && "sr-only",
+          )}
+        >
           {checking ? m.admin_overview_update_checking() : ""}
         </span>
         <span
