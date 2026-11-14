@@ -1,6 +1,8 @@
 import { lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import path from "node:path";
+import { unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
+import { packAgentSkill } from "./vite-agent-skill-zip.ts";
 
 /**
  * Skills live in `.agents/skills`, where most coding agents look. Claude Code
@@ -38,8 +40,12 @@ describe("agent skills", () => {
     }
   });
 
-  it("releases the published skill alone", () => {
-    const release = readFileSync(path.join(root, ".release-it.ts"), "utf8");
-    expect(release).toContain(`HEAD:.agents/skills ${PUBLISHED}"`);
+  it("packs the published skill alone into the zip the Worker serves", () => {
+    const folders = new Set(
+      Object.keys(unzipSync(packAgentSkill(root))).map(
+        (name) => name.split("/")[0],
+      ),
+    );
+    expect([...folders]).toEqual([PUBLISHED]);
   });
 });

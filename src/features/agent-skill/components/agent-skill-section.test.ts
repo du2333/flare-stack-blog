@@ -162,7 +162,7 @@ it("lays out the install, pair and try steps in order", async () => {
   ]);
 });
 
-it("shows the install command with a copy button and the zip link pinned to this version", async () => {
+it("shows the install command with a copy button and the same-origin zip link named for this version", async () => {
   mountPage();
   await flush();
   const command = document.querySelector("code");
@@ -175,9 +175,11 @@ it("shows the install command with a copy button and the zip link pinned to this
   const download = screen.getByRole("link", {
     name: m.agent_skill_download({ version: __APP_VERSION__ }),
   });
-  expect(download.getAttribute("href")).toBe(
-    `https://github.com/du2333/flare-stack-blog/releases/download/v${__APP_VERSION__}/flare-stack-blog-skills-v${__APP_VERSION__}.zip`,
+  expect(download.getAttribute("href")).toBe("/agent-skill.zip");
+  expect(download.getAttribute("download")).toBe(
+    `flare-stack-blog-skills-v${__APP_VERSION__}.zip`,
   );
+  expect(download.getAttribute("target")).toBeNull();
 });
 
 it("offers the four example instructions, each with a copy button, and the draft note", async () => {
