@@ -11,11 +11,7 @@ export type NoticeTarget = {
 };
 
 export type SettingsNotice = {
-  key:
-    | "popularity-failed"
-    | "popularity-expired"
-    | "email"
-    | "identity";
+  key: "popularity-failed" | "popularity-expired" | "email" | "identity";
   title: string;
   /** One line on what the notice means. */
   description: string;
@@ -32,9 +28,7 @@ export type SettingsNotice = {
 export function settingsNotices(
   data: Pick<
     DashboardOverview,
-    | "popularityAlert"
-    | "adminEmailNeedsSetup"
-    | "defaultSiteIdentity"
+    "popularityAlert" | "adminEmailNeedsSetup" | "defaultSiteIdentity"
   >,
 ): Array<SettingsNotice> {
   const notices: Array<SettingsNotice> = [];

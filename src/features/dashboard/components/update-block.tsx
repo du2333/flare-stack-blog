@@ -47,9 +47,7 @@ export function UpdateBlock({
   if (result === null) {
     return (
       <div className="overview-update" data-state="pending">
-        <div className="overview-update-line">
-          {controls}
-        </div>
+        <div className="overview-update-line">{controls}</div>
       </div>
     );
   }

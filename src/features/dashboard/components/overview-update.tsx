@@ -25,8 +25,7 @@ export function OverviewUpdate() {
   });
 
   const result = query.data ?? null;
-  const checking =
-    recheck.isPending || (result === null && query.isFetching);
+  const checking = recheck.isPending || (result === null && query.isFetching);
   const failed = recheck.isError || query.isError;
 
   return (
