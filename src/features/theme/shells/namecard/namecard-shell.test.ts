@@ -741,8 +741,8 @@ describe("the stylesheet", () => {
     ...properties,
     ...rootProperties(under(css, SPREAD_FROM).join(" ")),
   };
-  /** Back to top is as wide from lg (floating-actions.tsx, `lg:w-15`). */
-  const BACK_TO_TOP_PX = 60;
+  /** Back to top is as wide (floating-actions.tsx, 3rem). */
+  const BACK_TO_TOP_PX = 48;
   /** From where the window has room for back to top right of the page. */
   const BESIDE_PAGE_FROM = "@media (min-width: 1024px) and (max-width: 1343px)";
   const BESIDE_PAGE_FROM_PX = 1344;

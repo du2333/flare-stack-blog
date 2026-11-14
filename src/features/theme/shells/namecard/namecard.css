@@ -57,6 +57,8 @@
   /* Content sits on the page itself; only what floats keeps a surface. */
   --theme-surface: var(--fuwari-page-bg);
   --theme-raised: var(--fuwari-card-bg);
+  /* Code is one of the few things with a surface here: raised, not a well. */
+  --theme-code-bg: var(--theme-raised);
   --theme-card-radius: 0;
   --theme-card-shadow: none;
   --theme-rule: var(--namecard-hairline);
@@ -160,9 +162,9 @@
     --shell-toc-side: block;
     --shell-toc-compact: none;
     --shell-floating-actions-position: static;
-    /* The room between the two columns holds back to top, 3.75rem wide,
+    /* The room between the two columns holds back to top, 3rem wide,
        until the window has room for it right of the page (below): never
-       under 4.5rem, so it stands 0.375rem clear of either column, and the
+       under 4.5rem, so it stands 0.75rem clear of either column, and the
        content keeps a line of 37 characters at 1024px. */
     --namecard-col-gap: clamp(4.5rem, 6vw, 5.5rem);
   }
@@ -360,7 +362,7 @@
     justify-content: flex-end;
     height: 0;
     margin-left: calc(
-      100% - var(--namecard-aside) - var(--namecard-col-gap) / 2 - 1.875rem
+      100% - var(--namecard-aside) - var(--namecard-col-gap) / 2 - 1.5rem
     );
   }
 }

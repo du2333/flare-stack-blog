@@ -1217,7 +1217,7 @@ describe("the stylesheet", () => {
       ).toEqual(["display: contents"]);
     });
 
-    // The window has that gutter where back to top, 3.75rem wide and 1rem
+    // The window has that gutter where back to top, 3rem wide and 1.75rem
     // from the edge, stands 0.5rem clear of the column, which ends 1rem
     // inside the frame.
     it("has room right of the frame from 89.5rem", () => {

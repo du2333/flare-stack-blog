@@ -194,6 +194,23 @@ function observeLayoutShifts() {
   }).observe({ type: "layout-shift", buffered: true });
 }
 
+/**
+ * The dev server's TanStack devtools button sits in the corner where back to
+ * top is on a phone. The devtools read their settings from this
+ * localStorage item, over the app's own config, so the button is never
+ * mounted in a shot. A production build has no devtools and ignores it.
+ */
+function hideDevtoolsTrigger() {
+  try {
+    localStorage.setItem(
+      "tanstack_devtools_settings",
+      JSON.stringify({ triggerHidden: true }),
+    );
+  } catch {
+    // No storage on this page (about:blank, an opaque origin).
+  }
+}
+
 /** Marks the element that scrolls the page (see `markScroller`). */
 const SCROLLER_ATTR = "data-shots-scroller";
 const SCROLLER = `[${SCROLLER_ATTR}]`;
@@ -573,6 +590,7 @@ async function shootUnit(
       }
     });
     await page.addInitScript(observeLayoutShifts);
+    await page.addInitScript(hideDevtoolsTrigger);
 
     try {
       const response = await page.goto(addressOf(options, pagePath), {

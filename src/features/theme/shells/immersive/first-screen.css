@@ -44,8 +44,7 @@
   pointer-events: none;
 }
 /* Out of flow, behind the content that rises over its lower edge. A size
-   container, so the introduction is set in its width and height. Its colour
-   stands in until the image has loaded. */
+   container, so the introduction is set in its width and height. */
 .immersive-first-screen {
   position: absolute;
   inset: 0 0 auto;
@@ -53,7 +52,30 @@
   height: var(--immersive-banner-h);
   overflow: hidden;
   container-type: size;
+}
+/* The image and its shade have no lower edge: over the last
+   --immersive-fade of the first screen they dissolve into the ground, which
+   is the wash, the same image out of focus. The mask is on this box, which
+   stands still, because the banner drifts with the scroll. The introduction
+   is outside it, so its text is never faded. The colour stands in until the
+   image has loaded. */
+.immersive-backdrop {
+  --fade: var(--immersive-fade);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   background-color: oklch(0.45 0.07 var(--fuwari-hue));
+  mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - var(--fade)),
+    rgb(0 0 0 / 0.92) calc(100% - var(--fade) * 0.82),
+    rgb(0 0 0 / 0.74) calc(100% - var(--fade) * 0.64),
+    rgb(0 0 0 / 0.5) calc(100% - var(--fade) * 0.48),
+    rgb(0 0 0 / 0.27) calc(100% - var(--fade) * 0.33),
+    rgb(0 0 0 / 0.1) calc(100% - var(--fade) * 0.18),
+    rgb(0 0 0 / 0.02) calc(100% - var(--fade) * 0.07),
+    transparent
+  );
 }
 .immersive-banner {
   position: absolute;

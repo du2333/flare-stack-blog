@@ -73,7 +73,7 @@ export type ThemeOptionValues = SiteConfig["theme"]["options"][string];
  *     sticks to the foot of the window and ends where the footer begins, so
  *     they rest above the footer at the end of a page).
  *   - `--shell-floating-actions-size`: optional. From lg, the side of back
- *     to top and of each of the page's actions; left out, 3.75rem. A shell
+ *     to top and of each of the page's actions; left out, 3rem. A shell
  *     that rests them where there is less room says how large they are
  *     (「侧栏」 does, in the foot of its rail).
  *   - `--shell-content-inset-left`, `--shell-content-inset-right`:
