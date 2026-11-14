@@ -2,16 +2,16 @@ import { Fragment } from "react";
 import { m } from "@/paraglide/messages";
 import { CopyLine } from "./copy-line";
 
-/** The skill zip attached to the upstream release this build was cut from. */
-const AGENT_SKILL_URL = `https://github.com/du2333/flare-stack-blog/releases/download/v${__APP_VERSION__}/flare-stack-blog-skills-v${__APP_VERSION__}.zip`;
+/** The skill zip the build packs and this Worker serves (scripts/vite-agent-skill-zip.ts). */
+const AGENT_SKILL_URL = "/agent-skill.zip";
+const AGENT_SKILL_FILE_NAME = `flare-stack-blog-skills-v${__APP_VERSION__}.zip`;
 const AGENT_SKILL_INSTALL_COMMAND = `npx skills add https://github.com/du2333/flare-stack-blog/tree/v${__APP_VERSION__}/.agents/skills/flare-stack-blog -g`;
 
 export function InstallStep() {
   const download = (
     <a
       href={AGENT_SKILL_URL}
-      target="_blank"
-      rel="noreferrer"
+      download={AGENT_SKILL_FILE_NAME}
       className="font-medium underline underline-offset-2"
     >
       {m.agent_skill_download({ version: __APP_VERSION__ })}
