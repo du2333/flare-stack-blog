@@ -351,3 +351,54 @@ describe("ownUpgradesFile", () => {
     }
   });
 });
+
+describe("ownUnreleasedEntry", () => {
+  async function withFile(
+    file: unknown,
+    test: (module: typeof import("./upgrades")) => void,
+  ) {
+    vi.resetModules();
+    vi.doMock("../../../upgrades.json", () => ({ default: file }));
+    try {
+      test(await import("./upgrades"));
+    } finally {
+      vi.doUnmock("../../../upgrades.json");
+      vi.resetModules();
+    }
+  }
+
+  it("reads the build's unreleased entry leniently, once", async () => {
+    await withFile(
+      {
+        unreleased: {
+          summary: "第四版。",
+          before: [{ id: "backup", text: "备份 D1 数据库" }],
+          requires: { buildVars: [], secrets: ["BETTER_AUTH_URL"] },
+          rollback: "someday",
+          later: true,
+        },
+        versions: [],
+      },
+      (module) => {
+        expect(module.ownUnreleasedEntry()).toEqual({
+          summary: "第四版。",
+          before: [{ id: "backup", text: "备份 D1 数据库" }],
+          requires: { buildVars: [], secrets: ["BETTER_AUTH_URL"] },
+        });
+        expect(module.ownUnreleasedEntry()).toBe(module.ownUnreleasedEntry());
+      },
+    );
+  });
+
+  it("is null when there is no entry or it is not usable", async () => {
+    await withFile({ versions: [] }, (module) => {
+      expect(module.ownUnreleasedEntry()).toBeNull();
+    });
+    await withFile(
+      { unreleased: { before: "backup" }, versions: [] },
+      (module) => {
+        expect(module.ownUnreleasedEntry()).toBeNull();
+      },
+    );
+  });
+});
