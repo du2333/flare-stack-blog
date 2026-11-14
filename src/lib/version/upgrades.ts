@@ -265,3 +265,25 @@ export function ownUpgradesFile(): UpgradesFile {
   own ??= parseUpgradesFile(upgradesJson) ?? { versions: [] };
   return own;
 }
+
+let ownUnreleased: UnreleasedEntry | null | undefined;
+
+/**
+ * The `unreleased` entry of the build's own `upgrades.json`, read leniently on
+ * the first call: the notes of a prerelease build's release (the deploy
+ * preflight reads them). Null when the file has none or it is not usable.
+ */
+export function ownUnreleasedEntry(): UnreleasedEntry | null {
+  if (ownUnreleased === undefined) {
+    const result = z
+      .object({ summary: text.optional(), ...noteFields("reader") })
+      .safeParse((upgradesJson as { unreleased?: unknown }).unreleased);
+    if (result.success) {
+      const { rollback, ...entry } = result.data;
+      ownUnreleased = rollback ? { ...entry, rollback } : entry;
+    } else {
+      ownUnreleased = null;
+    }
+  }
+  return ownUnreleased;
+}
