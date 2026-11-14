@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-// The browser imports this module (update-notice.ts), so it stays free of
-// server-only code; the update check's result lives in update-check.schema.ts.
+// The release versions the update check reads and compares. This module holds
+// no server-only code, so any module may import it; the update check's result
+// lives in update-check.schema.ts, which is server only.
 
 export const ApplicationReleaseVersionSchema = z
   .string()
