@@ -162,7 +162,7 @@ export function createVersionChecker({
         update = await kvStore.remember(
           context,
           VERSION_CACHE_KEYS.latestRelease,
-          CachedUpdateCheckSchema,
+          cacheFor(runningVersion),
           async () => {
             if (await kvStore.get(context, VERSION_CACHE_KEYS.recentFailure)) {
               throw new Error(
@@ -193,9 +193,9 @@ export function createVersionChecker({
     const stored = await kvStore.get(context, VERSION_CACHE_KEYS.latestRelease);
     if (!stored) return null;
     try {
-      const update = CachedUpdateCheckSchema.parse(JSON.parse(stored));
       const runningVersion =
         RunningApplicationReleaseVersionSchema.parse(getCurrentVersion());
+      const update = cacheFor(runningVersion).parse(JSON.parse(stored));
       return toResult(update, runningVersion);
     } catch {
       return null;
@@ -207,6 +207,19 @@ export function createVersionChecker({
     refresh: (context) => resolve(context, true),
     cached,
   };
+}
+
+/**
+ * A cached value the running version can answer from. A value of another
+ * format reads as no cache, and so does one whose notes start after the
+ * running version (a rollback): the entries it would need were not kept.
+ */
+function cacheFor(runningVersion: string) {
+  return CachedUpdateCheckSchema.refine(
+    (update) =>
+      !update.notesAvailable ||
+      compareAppVersions(runningVersion, update.notesSince) !== -1,
+  );
 }
 
 /** The answer for the running version, from a fetch or the cache. */

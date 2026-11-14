@@ -475,6 +475,32 @@ describe("version checker: cache", () => {
     });
   });
 
+  it("refetches when the running version is older than the cached notes", async () => {
+    const { context, flushBackgroundTasks } = createVersionContext();
+    const file = upgradesFile("3.10.0", "3.11.0", "3.12.0");
+    await createVersionChecker({
+      getCurrentVersion: () => "3.11.0",
+      readUpgradesFile: vi.fn(async () => file),
+      readLatestRelease: releasePageUnavailable(),
+    }).check(context);
+    await flushBackgroundTasks();
+
+    const readUpgradesFile = vi.fn(async () => file);
+    const rolledBack = createVersionChecker({
+      getCurrentVersion: () => "3.10.0",
+      readUpgradesFile,
+      readLatestRelease: releasePageUnavailable(),
+    });
+
+    await expect(rolledBack.cached(context)).resolves.toBeNull();
+    const result = await rolledBack.check(context);
+    expect(result.data?.entries.map((entry) => entry.version)).toEqual([
+      "3.11.0",
+      "3.12.0",
+    ]);
+    expect(readUpgradesFile).toHaveBeenCalledOnce();
+  });
+
   it("refreshes and replaces the cache", async () => {
     const { context, values, flushBackgroundTasks } = createVersionContext();
     const readUpgradesFile = vi

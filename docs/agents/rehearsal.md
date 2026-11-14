@@ -1,0 +1,3 @@
+# Rehearsals
+
+A rehearsal deploys a branch of a fork to a rehearsal Worker (`scripts/rehearse-deploy.ts`; the `measure-site` skill says how its settings are found). To rehearse the Admin's update check against a branch's own `upgrades.json`, set the runtime variable `UPDATE_SOURCE_URL` on the rehearsal Worker, as a Secret, to that file's raw `https:` address; an address that is not `https:` is ignored with a logged warning and the upstream `main` file is read instead. Point it at an address that does not exist to see the release-page fallback, whose answer carries no notes. The variable is not for site owners and stays out of `docs/deployment.md`.
