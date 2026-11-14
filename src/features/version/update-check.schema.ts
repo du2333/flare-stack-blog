@@ -16,7 +16,9 @@ import {
 } from "@/lib/version/upgrades";
 
 // Upgrade notes come from a fetched file: plain text, bounded by the limits
-// the file's reader already enforced.
+// the file's reader already enforced. This restates the reader's entry
+// (`parseUpgradesFile`) by hand; the maximal-entry test in
+// version-checker.test.ts is what holds the two shapes together.
 const UpgradeTextSchema = z.string().max(MAX_UPGRADE_TEXT_LENGTH);
 const UpgradeNameListSchema = z
   .array(z.string().max(MAX_UPGRADE_NAME_LENGTH))

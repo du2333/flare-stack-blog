@@ -1,11 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { serverEnv } from "@/lib/env/server.env";
+import {
+  MAX_UPGRADE_LIST_ITEMS,
+  MAX_UPGRADE_NAME_LENGTH,
+  MAX_UPGRADE_TEXT_LENGTH,
+  parseUpgradesFile,
+} from "@/lib/version/upgrades";
 import {
   createVersionChecker,
   fetchLatestReleaseFromReleasePage,
   readUpgradesFileFromUrl,
   UpdateSourceError,
   upgradesFileUrl,
+  versionChecker,
 } from "./service/version.service";
+import { UpdateCheckResultSchema } from "./update-check.schema";
 import { VERSION_CACHE_KEYS } from "./version.schema";
 
 type VersionContext = BaseContext & { executionCtx: ExecutionContext };
@@ -475,6 +484,37 @@ describe("version checker: cache", () => {
     });
   });
 
+  it.each([
+    ["the file", vi.fn(async () => upgradesFile("3.12.0")), 6 * 60 * 60],
+    ["the release page", fileUnavailable(), 30 * 60],
+  ])(
+    "stores an answer from %s for its own lifetime; refresh bypasses it",
+    async (_source, readUpgradesFile, expirationTtl) => {
+      const { context, flushBackgroundTasks } = createVersionContext();
+      readUpgradesFile.mockClear();
+      const readLatestRelease = vi.fn(async () => release("v3.12.0"));
+      const checker = createVersionChecker({
+        getCurrentVersion: () => "3.11.0",
+        readUpgradesFile,
+        readLatestRelease,
+      });
+
+      await checker.check(context);
+      await flushBackgroundTasks();
+      expect(context.env.KV.put).toHaveBeenCalledWith(
+        CACHE_KEY,
+        expect.any(String),
+        { expirationTtl },
+      );
+
+      await checker.check(context);
+      expect(readUpgradesFile).toHaveBeenCalledOnce();
+
+      await checker.refresh(context);
+      expect(readUpgradesFile).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it("refetches when the running version is older than the cached notes", async () => {
     const { context, flushBackgroundTasks } = createVersionContext();
     const file = upgradesFile("3.10.0", "3.11.0", "3.12.0");
@@ -605,39 +645,72 @@ describe("upgradesFileUrl", () => {
     );
   });
 
-  it.each(["http://example.test/upgrades.json", "not a url", "file:///x.json"])(
-    "ignores %s with a warning",
-    (configured) => {
-      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it.each([
+    "http://example.test/upgrades.json",
+    "not a url",
+    "file:///x.json",
+    "https://user:secret@example.test/upgrades.json",
+    "https://token@example.test/upgrades.json",
+  ])("ignores %s with a warning that does not repeat it", (configured) => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-      expect(upgradesFileUrl(configured)).toBe(UPSTREAM);
-      expect(warn).toHaveBeenCalledOnce();
-    },
-  );
+    expect(upgradesFileUrl(configured)).toBe(UPSTREAM);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(String(warn.mock.calls[0][0])).not.toContain(configured);
+    expect(String(warn.mock.calls[0][0])).not.toContain("secret");
+  });
 });
 
-describe("readUpgradesFileFromUrl", () => {
-  const URL = "https://example.test/upgrades.json";
+/** A response as `fetch` returns it: with the address it finally came from. */
+function servedFrom(url: string, response: Response) {
+  Object.defineProperty(response, "url", { value: url });
+  return response;
+}
 
-  async function refusalOf(response: Response) {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => response),
+describe("readUpgradesFileFromUrl", () => {
+  const FILE_URL = "https://example.test/upgrades.json";
+
+  async function refusalOf(response: Response, url = FILE_URL) {
+    const fetcher = vi.fn(async () => servedFrom(url, response));
+    const error = await readUpgradesFileFromUrl(FILE_URL, fetcher).catch(
+      (e: unknown) => e,
     );
-    const error = await readUpgradesFileFromUrl(URL).catch((e: unknown) => e);
     return error instanceof UpdateSourceError ? error.refusal : error;
   }
 
   it("returns the parsed JSON", async () => {
     const body = upgradesFile("3.12.0");
-    const fetch = vi.fn(async () => Response.json(body));
-    vi.stubGlobal("fetch", fetch);
+    const fetcher = vi.fn(async () =>
+      servedFrom(FILE_URL, Response.json(body)),
+    );
 
-    await expect(readUpgradesFileFromUrl(URL)).resolves.toEqual(body);
-    expect(fetch).toHaveBeenCalledWith(
-      URL,
+    await expect(readUpgradesFileFromUrl(FILE_URL, fetcher)).resolves.toEqual(
+      body,
+    );
+    expect(fetcher).toHaveBeenCalledWith(
+      FILE_URL,
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
+  });
+
+  it("follows a redirect that stays on https", async () => {
+    const body = upgradesFile("3.12.0");
+    const fetcher = vi.fn(async () =>
+      servedFrom("https://elsewhere.test/upgrades.json", Response.json(body)),
+    );
+
+    await expect(readUpgradesFileFromUrl(FILE_URL, fetcher)).resolves.toEqual(
+      body,
+    );
+  });
+
+  it("refuses a body served from outside https after a redirect", async () => {
+    expect(
+      await refusalOf(
+        Response.json(upgradesFile("3.12.0")),
+        "http://elsewhere.test/upgrades.json",
+      ),
+    ).toBe("insecure-redirect");
   });
 
   it("refuses a non-2xx status", async () => {
@@ -648,6 +721,12 @@ describe("readUpgradesFileFromUrl", () => {
 
   it("refuses a body that is not JSON", async () => {
     expect(await refusalOf(new Response("<html>"))).toBe("json");
+  });
+
+  it("refuses a body that is not UTF-8", async () => {
+    const bytes = new TextEncoder().encode('{"versions":[],"x":"__"}');
+    bytes.set([0xff, 0xfe], bytes.length - 4);
+    expect(await refusalOf(new Response(bytes))).toBe("encoding");
   });
 
   it("refuses a declared size over the cap", async () => {
@@ -678,32 +757,134 @@ describe("fetchLatestReleaseFromReleasePage", () => {
   const RELEASE_PAGE =
     "https://github.com/du2333/flare-stack-blog/releases/latest";
 
-  it("reads the latest tag from the release page redirect", async () => {
-    const fetch = vi.fn(
-      async () =>
-        new Response(null, {
-          status: 302,
-          headers: { location: release("v3.1.2").releaseUrl },
-        }),
+  function redirectTo(location: string) {
+    return vi.fn(
+      async () => new Response(null, { status: 302, headers: { location } }),
     );
-    vi.stubGlobal("fetch", fetch);
+  }
 
-    await expect(fetchLatestReleaseFromReleasePage()).resolves.toEqual(
+  it.each([
+    "https://github.com/du2333/flare-stack-blog/releases/tag/v3.1.2",
+    "/du2333/flare-stack-blog/releases/tag/v3.1.2",
+  ])("reads the latest tag from a redirect to %s", async (location) => {
+    const fetcher = redirectTo(location);
+
+    await expect(fetchLatestReleaseFromReleasePage(fetcher)).resolves.toEqual(
       release("v3.1.2"),
     );
-    expect(fetch).toHaveBeenCalledOnce();
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(fetcher).toHaveBeenCalledWith(
       RELEASE_PAGE,
       expect.objectContaining({ method: "HEAD", redirect: "manual" }),
     );
   });
 
-  it("fails when the release page does not redirect to a tag", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("", { status: 429 })),
-    );
+  it.each([
+    "http://github.com/du2333/flare-stack-blog/releases/tag/v3.1.2",
+    "https://github.com.evil.test/du2333/flare-stack-blog/releases/tag/v3.1.2",
+    "https://evil.test/du2333/flare-stack-blog/releases/tag/v3.1.2",
+    "//evil.test/du2333/flare-stack-blog/releases/tag/v3.1.2",
+    "https://github.com/someone/else/releases/tag/v3.1.2",
+    "https://github.com/du2333/flare-stack-blog/releases/tag/v3.1.2/x",
+    "https://github.com/du2333/flare-stack-blog/releases/tag/nightly",
+    "javascript:alert(1)",
+  ])("refuses a redirect to %s", async (location) => {
+    await expect(
+      fetchLatestReleaseFromReleasePage(redirectTo(location)),
+    ).rejects.toThrow(/did not redirect to a release tag/);
+  });
 
-    await expect(fetchLatestReleaseFromReleasePage()).rejects.toThrow();
+  it("rebuilds the address, dropping a query or credentials", async () => {
+    await expect(
+      fetchLatestReleaseFromReleasePage(
+        redirectTo(
+          "https://u:p@github.com/du2333/flare-stack-blog/releases/tag/v3.1.2?x=1#y",
+        ),
+      ),
+    ).resolves.toEqual(release("v3.1.2"));
+  });
+
+  it("fails when the release page does not redirect", async () => {
+    await expect(
+      fetchLatestReleaseFromReleasePage(
+        vi.fn(async () => new Response("", { status: 429 })),
+      ),
+    ).rejects.toThrow();
+  });
+});
+
+describe("the result's entry schema", () => {
+  // The result restates the reader's entry by hand (update-check.schema.ts);
+  // this test holds the two together. A field the reader gains goes here too.
+  it("keeps every field of a maximal entry the reader accepts", () => {
+    const text = (seed: string) =>
+      seed.repeat(MAX_UPGRADE_TEXT_LENGTH).slice(0, MAX_UPGRADE_TEXT_LENGTH);
+    const id = (n: number) => `item-${n}-`.padEnd(MAX_UPGRADE_NAME_LENGTH, "a");
+    const name = (n: number) =>
+      `VAR_${n}_`.padEnd(MAX_UPGRADE_NAME_LENGTH, "A");
+    const items = (seed: string) =>
+      Array.from({ length: MAX_UPGRADE_LIST_ITEMS }, (_, n) => ({
+        id: id(n),
+        text: text(seed),
+      }));
+    const names = Array.from({ length: MAX_UPGRADE_LIST_ITEMS }, (_, n) =>
+      name(n),
+    );
+    const entry = {
+      version: "4.0.0",
+      summary: text("摘要"),
+      before: items("前"),
+      after: items("后"),
+      requires: { buildVars: names, secrets: names },
+      rollback: "unsafe",
+    };
+
+    const file = parseUpgradesFile({ versions: [entry] });
+    expect(file?.versions).toEqual([entry]);
+
+    const result = UpdateCheckResultSchema.parse({
+      latestVersion: "v4.0.0",
+      currentVersion: "3.12.1",
+      hasUpdate: true,
+      releaseUrl: release("v4.0.0").releaseUrl,
+      level: "major",
+      entries: file?.versions,
+      notesAvailable: true,
+    });
+    expect(result.entries).toEqual(file?.versions);
+  });
+});
+
+describe("the deployed checker", () => {
+  it("runs with a leftover GITHUB_TOKEN in the environment", async () => {
+    const { context, flushBackgroundTasks } = createVersionContext();
+    Object.assign(context.env, {
+      BETTER_AUTH_SECRET: "secret",
+      BETTER_AUTH_URL: "https://blog.example.test",
+      GITHUB_CLIENT_ID: "id",
+      GITHUB_CLIENT_SECRET: "secret",
+      DOMAIN: "blog.example.test",
+      GITHUB_TOKEN: "leftover-token",
+    });
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const fetch = vi.fn(async (url: string) =>
+      servedFrom(url, Response.json(upgradesFile("99.0.0"))),
+    );
+    vi.stubGlobal("fetch", fetch);
+
+    expect(serverEnv(context.env)).not.toHaveProperty("GITHUB_TOKEN");
+    const result = await versionChecker.refresh(context);
+    await flushBackgroundTasks();
+
+    expect(result.data).toMatchObject({
+      latestVersion: "v99.0.0",
+      level: "major",
+      notesAvailable: true,
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledWith(
+      "https://raw.githubusercontent.com/du2333/flare-stack-blog/main/upgrades.json",
+      expect.anything(),
+    );
   });
 });

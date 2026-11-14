@@ -10,6 +10,7 @@ import {
 import type { ApplicationRelease } from "@/features/version/version.schema";
 import {
   ApplicationReleaseSchema,
+  ApplicationReleaseVersionSchema,
   RunningApplicationReleaseVersionSchema,
   VERSION_CACHE_KEYS,
 } from "@/features/version/version.schema";
@@ -18,6 +19,7 @@ import { serverEnv } from "@/lib/env/server.env";
 import type { Result } from "@/lib/errors";
 import { err, ok } from "@/lib/errors";
 import { appVersionLevel, compareAppVersions } from "@/lib/version/app-version";
+import type { UpgradeEntry } from "@/lib/version/upgrades";
 import {
   entriesBetween,
   latestReleasedVersion,
@@ -27,9 +29,11 @@ import {
 const GITHUB_REPO = "du2333/flare-stack-blog";
 const DEFAULT_UPDATE_SOURCE_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/upgrades.json`;
 const RELEASE_CACHE_TTL = "6h";
+// An answer from the release page carries no notes; the file is tried again soon.
+const FALLBACK_CACHE_TTL = "30m";
 // A failed check is remembered so every admin page load does not retry it.
 const FAILURE_CACHE_TTL = "30m";
-const GITHUB_REQUEST_TIMEOUT = ms("5s");
+const UPDATE_REQUEST_TIMEOUT = ms("5s");
 // The file grows by a few hundred bytes a release; far past this it is not ours.
 const MAX_UPGRADES_FILE_BYTES = 512 * 1024;
 
@@ -53,6 +57,8 @@ type FileRefusal =
   | "timeout"
   | "size"
   | "json"
+  | "encoding"
+  | "insecure-redirect"
   | "schema"
   | "empty"
   | "network";
@@ -85,10 +91,7 @@ export function createVersionChecker({
   readLatestRelease: ReadLatestRelease;
 }): VersionChecker {
   /** One real fetch: the upgrades file first, the release page after it. */
-  async function fetchUpdate(
-    context: VersionContext,
-    runningVersion: string,
-  ): Promise<CachedUpdateCheck> {
+  async function fetchUpdate(context: VersionContext): Promise<Answer> {
     let refusal: FileRefusal;
     try {
       const file = parseUpgradesFile(await readUpgradesFile(context));
@@ -97,10 +100,9 @@ export function createVersionChecker({
         logSource({ source: "upstream-file" });
         return {
           latestVersion: `v${latest}`,
-          releaseUrl: releasePageOf(latest),
+          releaseUrl: releasePageOf(`v${latest}`),
           notesAvailable: true,
-          notesSince: runningVersion,
-          entries: entriesBetween(file, runningVersion, latest),
+          notes: file.versions,
         };
       }
       refusal = file ? "empty" : "schema";
@@ -117,13 +119,67 @@ export function createVersionChecker({
         latestVersion: release.version,
         releaseUrl: release.releaseUrl,
         notesAvailable: false,
-        notesSince: runningVersion,
-        entries: [],
+        notes: [],
       };
     } catch (error) {
       throw new Error(
         `no update source answered (upgrades file: ${refusal}): ${errorMessage(error)}`,
       );
+    }
+  }
+
+  /** Fetches, stores the answer for the running version, and returns it. */
+  async function fetchAndStore(
+    context: VersionContext,
+    runningVersion: string,
+  ): Promise<UpdateCheckResult> {
+    let answer: Answer;
+    try {
+      answer = await fetchUpdate(context);
+    } catch (error) {
+      context.executionCtx.waitUntil(
+        kvStore.put(context, VERSION_CACHE_KEYS.recentFailure, "1", {
+          ttl: FAILURE_CACHE_TTL,
+        }),
+      );
+      throw error;
+    }
+    const result = toResult(answer, runningVersion);
+    const stored: CachedUpdateCheck = {
+      latestVersion: result.latestVersion,
+      releaseUrl: result.releaseUrl,
+      notesAvailable: result.notesAvailable,
+      notesSince: runningVersion,
+      // Only what the running version and later ones can still need.
+      entries: result.entries,
+    };
+    context.executionCtx.waitUntil(
+      kvStore.put(
+        context,
+        VERSION_CACHE_KEYS.latestRelease,
+        JSON.stringify(stored),
+        // A note-less answer is retried soon, so the file gets another chance.
+        { ttl: answer.notesAvailable ? RELEASE_CACHE_TTL : FALLBACK_CACHE_TTL },
+      ),
+    );
+    return result;
+  }
+
+  async function readCache(
+    context: BaseContext,
+    runningVersion: string,
+  ): Promise<UpdateCheckResult | null> {
+    const stored = await kvStore.get(context, VERSION_CACHE_KEYS.latestRelease);
+    if (!stored) return null;
+    try {
+      const update = cacheFor(runningVersion).parse(JSON.parse(stored));
+      return toResult(
+        // Stored oldest first; the notes are read newest first, as filed.
+        { ...update, notes: [...update.entries].reverse() },
+        runningVersion,
+      );
+    } catch {
+      return null;
     }
   }
 
@@ -134,48 +190,14 @@ export function createVersionChecker({
     try {
       const runningVersion =
         RunningApplicationReleaseVersionSchema.parse(getCurrentVersion());
-      const fetcher = async () => {
-        try {
-          return await fetchUpdate(context, runningVersion);
-        } catch (error) {
-          context.executionCtx.waitUntil(
-            kvStore.put(context, VERSION_CACHE_KEYS.recentFailure, "1", {
-              ttl: FAILURE_CACHE_TTL,
-            }),
-          );
-          throw error;
+      if (!refresh) {
+        const fromCache = await readCache(context, runningVersion);
+        if (fromCache) return ok(fromCache);
+        if (await kvStore.get(context, VERSION_CACHE_KEYS.recentFailure)) {
+          throw new Error("version check failed recently; refresh to retry");
         }
-      };
-      let update: CachedUpdateCheck;
-
-      if (refresh) {
-        update = await fetcher();
-        context.executionCtx.waitUntil(
-          kvStore.put(
-            context,
-            VERSION_CACHE_KEYS.latestRelease,
-            JSON.stringify(update),
-            { ttl: RELEASE_CACHE_TTL },
-          ),
-        );
-      } else {
-        update = await kvStore.remember(
-          context,
-          VERSION_CACHE_KEYS.latestRelease,
-          cacheFor(runningVersion),
-          async () => {
-            if (await kvStore.get(context, VERSION_CACHE_KEYS.recentFailure)) {
-              throw new Error(
-                "version check failed recently; refresh to retry",
-              );
-            }
-            return await fetcher();
-          },
-          { ttl: RELEASE_CACHE_TTL },
-        );
       }
-
-      return ok(toResult(update, runningVersion));
+      return ok(await fetchAndStore(context, runningVersion));
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -190,16 +212,9 @@ export function createVersionChecker({
   async function cached(
     context: BaseContext,
   ): Promise<UpdateCheckResult | null> {
-    const stored = await kvStore.get(context, VERSION_CACHE_KEYS.latestRelease);
-    if (!stored) return null;
-    try {
-      const runningVersion =
-        RunningApplicationReleaseVersionSchema.parse(getCurrentVersion());
-      const update = cacheFor(runningVersion).parse(JSON.parse(stored));
-      return toResult(update, runningVersion);
-    } catch {
-      return null;
-    }
+    const parsed =
+      RunningApplicationReleaseVersionSchema.safeParse(getCurrentVersion());
+    return parsed.success ? readCache(context, parsed.data) : null;
   }
 
   return {
@@ -208,6 +223,15 @@ export function createVersionChecker({
     cached,
   };
 }
+
+/** A fetched or cached answer, before it is put to the running version. */
+type Answer = {
+  latestVersion: string;
+  releaseUrl: string;
+  notesAvailable: boolean;
+  /** Upgrade entries, newest first as the file lists them. */
+  notes: Array<UpgradeEntry>;
+};
 
 /**
  * A cached value the running version can answer from. A value of another
@@ -222,31 +246,27 @@ function cacheFor(runningVersion: string) {
   );
 }
 
-/** The answer for the running version, from a fetch or the cache. */
-function toResult(
-  update: CachedUpdateCheck,
-  runningVersion: string,
-): UpdateCheckResult {
-  const level = appVersionLevel(runningVersion, update.latestVersion);
+/** The answer for the running version: the one place its entries are chosen. */
+function toResult(answer: Answer, runningVersion: string): UpdateCheckResult {
+  const level = appVersionLevel(runningVersion, answer.latestVersion);
   return UpdateCheckResultSchema.parse({
-    latestVersion: update.latestVersion,
+    latestVersion: answer.latestVersion,
     currentVersion: runningVersion,
     hasUpdate: level !== null,
-    releaseUrl: update.releaseUrl,
+    releaseUrl: answer.releaseUrl,
     level,
-    entries: level
-      ? update.entries.filter(
-          (entry) =>
-            compareAppVersions(runningVersion, entry.version) === -1 &&
-            compareAppVersions(entry.version, update.latestVersion) !== 1,
-        )
-      : [],
-    notesAvailable: update.notesAvailable,
+    entries: entriesBetween(
+      { versions: answer.notes },
+      runningVersion,
+      answer.latestVersion,
+    ),
+    notesAvailable: answer.notesAvailable,
   });
 }
 
-function releasePageOf(version: string) {
-  return `https://github.com/${GITHUB_REPO}/releases/tag/v${version}`;
+/** The release page of a tag such as `v3.12.1`. */
+function releasePageOf(tag: string) {
+  return `https://github.com/${GITHUB_REPO}/releases/tag/${tag}`;
 }
 
 function refusalOf(error: unknown): FileRefusal {
@@ -265,16 +285,19 @@ function logSource(fields: { source: string; fileRefused?: FileRefusal }) {
 
 /**
  * The upgrades file's address: `UPDATE_SOURCE_URL` when it is an `https:` URL
- * (rehearsals point it at their own branch), otherwise upstream `main`.
+ * without credentials (rehearsals point it at their own branch), otherwise
+ * upstream `main`. The warning never repeats the value.
  */
 export function upgradesFileUrl(configured: string | undefined): string {
   if (!configured) return DEFAULT_UPDATE_SOURCE_URL;
-  if (URL.canParse(configured) && new URL(configured).protocol === "https:") {
+  const url = URL.canParse(configured) ? new URL(configured) : null;
+  if (url && url.protocol === "https:" && !url.username && !url.password) {
     return configured;
   }
   console.warn(
     JSON.stringify({
-      message: "UPDATE_SOURCE_URL ignored: not an https URL",
+      message:
+        "UPDATE_SOURCE_URL ignored: not an https URL without credentials",
     }),
   );
   return DEFAULT_UPDATE_SOURCE_URL;
@@ -282,14 +305,29 @@ export function upgradesFileUrl(configured: string | undefined): string {
 
 /**
  * Fetches the upgrades file and parses it as JSON. Throws an
- * `UpdateSourceError` for a non-2xx status, a body beyond the size cap, or a
- * body that is not JSON; a timeout or network error is thrown as it comes.
+ * `UpdateSourceError` for a redirect that ends outside `https:`, a non-2xx
+ * status, a body beyond the size cap or not UTF-8, or a body that is not
+ * JSON; a timeout or network error is thrown as it comes.
  */
-export async function readUpgradesFileFromUrl(url: string): Promise<unknown> {
-  const response = await fetch(url, {
+export async function readUpgradesFileFromUrl(
+  url: string,
+  fetcher: typeof fetch = fetch,
+): Promise<unknown> {
+  const response = await fetcher(url, {
     headers: { "User-Agent": "flare-stack-blog" },
-    signal: AbortSignal.timeout(GITHUB_REQUEST_TIMEOUT),
+    signal: AbortSignal.timeout(UPDATE_REQUEST_TIMEOUT),
   });
+  // Redirects are followed; the address the body came from must still be https.
+  if (
+    !URL.canParse(response.url) ||
+    new URL(response.url).protocol !== "https:"
+  ) {
+    await response.body?.cancel();
+    throw new UpdateSourceError(
+      "insecure-redirect",
+      "upgrades file was served from outside https",
+    );
+  }
   if (!response.ok) {
     await response.body?.cancel();
     throw new UpdateSourceError(
@@ -337,36 +375,50 @@ async function readTextUpTo(response: Response, limit: number) {
     bytes.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return new TextDecoder().decode(bytes);
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    throw new UpdateSourceError("encoding", "upgrades file is not UTF-8");
+  }
 }
 
-/** The latest release as the tag the release page redirects to. */
-export async function fetchLatestReleaseFromReleasePage(): Promise<ApplicationRelease> {
-  const response = await fetch(
+const RELEASE_TAG_PREFIX = `/${GITHUB_REPO}/releases/tag/`;
+
+/**
+ * The latest release as the tag the release page redirects to. The Admin opens
+ * the address, so only this repository's `releases/tag/vX.Y.Z` on
+ * `https://github.com` is accepted, and the address is rebuilt from the tag.
+ */
+export async function fetchLatestReleaseFromReleasePage(
+  fetcher: typeof fetch = fetch,
+): Promise<ApplicationRelease> {
+  const response = await fetcher(
     `https://github.com/${GITHUB_REPO}/releases/latest`,
     {
       method: "HEAD",
       redirect: "manual",
       headers: { "User-Agent": "flare-stack-blog" },
-      signal: AbortSignal.timeout(GITHUB_REQUEST_TIMEOUT),
+      signal: AbortSignal.timeout(UPDATE_REQUEST_TIMEOUT),
     },
   );
 
   const location = response.headers.get("location");
-  const releaseUrl = location ? new URL(location, "https://github.com") : null;
-  const tag = releaseUrl
-    ? /\/releases\/tag\/([^/]+)$/.exec(releaseUrl.pathname)?.[1]
-    : undefined;
-  if (!releaseUrl || !tag) {
+  const target =
+    location && URL.canParse(location, "https://github.com")
+      ? new URL(location, "https://github.com")
+      : null;
+  const tag =
+    target?.origin === "https://github.com" &&
+    target.pathname.startsWith(RELEASE_TAG_PREFIX)
+      ? target.pathname.slice(RELEASE_TAG_PREFIX.length)
+      : undefined;
+  if (!tag || !ApplicationReleaseVersionSchema.safeParse(tag).success) {
     throw new Error(
-      `GitHub release page did not redirect to a tag: ${response.status}`,
+      `GitHub release page did not redirect to a release tag: ${response.status}`,
     );
   }
 
-  return {
-    version: decodeURIComponent(tag),
-    releaseUrl: releaseUrl.toString(),
-  };
+  return { version: tag, releaseUrl: releasePageOf(tag) };
 }
 
 export const versionChecker = createVersionChecker({
@@ -375,5 +427,5 @@ export const versionChecker = createVersionChecker({
     readUpgradesFileFromUrl(
       upgradesFileUrl(serverEnv(context.env).UPDATE_SOURCE_URL),
     ),
-  readLatestRelease: fetchLatestReleaseFromReleasePage,
+  readLatestRelease: () => fetchLatestReleaseFromReleasePage(),
 });
