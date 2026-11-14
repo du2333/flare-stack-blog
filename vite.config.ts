@@ -8,6 +8,7 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import packageJson from "./package.json";
 import { paraglideOptions } from "./scripts/paraglide-options.ts";
+import { agentSkillZipPlugin } from "./scripts/vite-agent-skill-zip.ts";
 import { routedFirstSegmentsPlugin } from "./scripts/vite-routed-segments.ts";
 import { themeFixturePlugin } from "./scripts/vite-theme-fixture.ts";
 
@@ -62,6 +63,7 @@ const config = defineConfig({
     }),
     routedFirstSegmentsPlugin(),
     themeFixturePlugin(),
+    agentSkillZipPlugin(),
     tailwindcss(),
     devtools(),
     tanstackStart(),
