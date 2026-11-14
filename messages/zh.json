@@ -1565,6 +1565,11 @@
   "admin_overview_update_major_title_unknown": "{version} 是大版本更新，同步前须先阅读发布说明",
   "admin_overview_update_before": "同步前需要完成",
   "admin_overview_update_summaries": "各版摘要",
+  "admin_overview_upgrade_title": "已更新到 {version}",
+  "admin_overview_upgrade_todo": "升级说明中列出了更新后需要完成的事项",
+  "admin_overview_upgrade_ack": "知道了",
+  "admin_overview_upgrade_acked": "已确认更新到 {version}，不再提示",
+  "admin_overview_upgrade_failed": "确认失败，请重试",
   "dashboard_stat_posts": "文章",
   "dashboard_stat_drafts": [
     {

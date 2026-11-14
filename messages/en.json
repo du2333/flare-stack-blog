@@ -1574,6 +1574,11 @@
   "admin_overview_update_major_title_unknown": "{version} is a major update; read the release notes before syncing",
   "admin_overview_update_before": "Before syncing",
   "admin_overview_update_summaries": "Summary of each version",
+  "admin_overview_upgrade_title": "Updated to {version}",
+  "admin_overview_upgrade_todo": "The upgrade notes list what remains to be done now that this version runs",
+  "admin_overview_upgrade_ack": "Got it",
+  "admin_overview_upgrade_acked": "Update to {version} acknowledged; this notice will not appear again",
+  "admin_overview_upgrade_failed": "Could not save the acknowledgement. Try again.",
   "dashboard_stat_posts": "Posts",
   "dashboard_stat_drafts": [
     {
