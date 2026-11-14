@@ -1,5 +1,5 @@
 import { versionChecker } from "@/features/version/service/version.service";
-import { UpdateCheckResultSchema } from "@/features/version/version.schema";
+import { UpdateCheckResultSchema } from "@/features/version/update-check.schema";
 import { adminProcedure } from "@/lib/orpc/procedure";
 import { unwrapResult } from "@/lib/orpc/unwrap-result";
 

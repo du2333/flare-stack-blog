@@ -27,8 +27,3 @@ ENVIRONMENT=dev
 # 还需要构建时变量 VITE_TURNSTILE_SITE_KEY。
 # 测试 key：https://developers.cloudflare.com/turnstile/troubleshooting/testing/
 # TURNSTILE_SECRET_KEY=your-turnstile-secret-key
-
-# --- 可选：GitHub API（版本更新检查） ---
-# 不配也能检查更新（读取发布页跳转）。配了会优先走 API，API 失败时退回发布页。
-# 创建无权限的 Fine-grained token: https://github.com/settings/personal-access-tokens
-# GITHUB_TOKEN=your-github-token

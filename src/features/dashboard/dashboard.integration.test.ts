@@ -744,9 +744,12 @@ describe("Dashboard overview", () => {
       adminContext,
       VERSION_CACHE_KEYS.latestRelease,
       JSON.stringify({
-        version: "v99.0.0",
+        latestVersion: "v99.0.0",
         releaseUrl:
           "https://github.com/du2333/flare-stack-blog/releases/tag/v99.0.0",
+        notesAvailable: false,
+        notesSince: __APP_VERSION__,
+        entries: [],
       }),
     );
     overview = await getDashboardOverview(adminContext);
@@ -760,8 +763,11 @@ describe("Dashboard overview", () => {
       adminContext,
       VERSION_CACHE_KEYS.latestRelease,
       JSON.stringify({
-        version: `v${__APP_VERSION__}`,
+        latestVersion: `v${__APP_VERSION__}`,
         releaseUrl: `https://github.com/du2333/flare-stack-blog/releases/tag/v${__APP_VERSION__}`,
+        notesAvailable: false,
+        notesSince: __APP_VERSION__,
+        entries: [],
       }),
     );
     overview = await getDashboardOverview(adminContext);
