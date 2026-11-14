@@ -1,11 +1,14 @@
 import { z } from "zod";
 
+// The browser imports this module (update-notice.ts), so it stays free of
+// server-only code; the update check's result lives in update-check.schema.ts.
+
 export const ApplicationReleaseVersionSchema = z
   .string()
   .regex(/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
 
 // The running build may be a prerelease (`3.13.0-beta.0`); the latest release
-// read from the release page stays a plain `vX.Y.Z`.
+// read from upgrades.json or the release page stays a plain `vX.Y.Z`.
 export const RunningApplicationReleaseVersionSchema = z
   .string()
   .regex(
@@ -17,20 +20,7 @@ export const ApplicationReleaseSchema = z.object({
   releaseUrl: z.url(),
 });
 
-export const UpdateCheckResultSchema = z.object({
-  latestVersion: ApplicationReleaseVersionSchema,
-  currentVersion: RunningApplicationReleaseVersionSchema,
-  hasUpdate: z.boolean(),
-  releaseUrl: z.url(),
-});
-
-export const GitHubReleaseSchema = z.object({
-  tag_name: ApplicationReleaseVersionSchema,
-  html_url: z.url(),
-});
-
 export type ApplicationRelease = z.infer<typeof ApplicationReleaseSchema>;
-export type UpdateCheckResult = z.infer<typeof UpdateCheckResultSchema>;
 
 export const VERSION_CACHE_KEYS = {
   latestRelease: ["version", "latest-release"] as const,

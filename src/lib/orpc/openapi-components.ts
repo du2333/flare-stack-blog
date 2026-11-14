@@ -35,7 +35,7 @@ import {
   StatedSaveTokenSchema,
 } from "@/features/posts/schema/posts.schema";
 import { TagSelectSchema } from "@/features/tags/tags.schema";
-import { UpdateCheckResultSchema } from "@/features/version/version.schema";
+import { UpdateCheckResultSchema } from "@/features/version/update-check.schema";
 import { coercedDate } from "./dates";
 
 const TipTapNodeSchema = NullableJsonContentSchema.unwrap();
