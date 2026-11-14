@@ -158,7 +158,7 @@ function NoticeBody({
               size="sm"
               icon={acknowledging ? <Spinner size={14} /> : undefined}
               aria-disabled={acknowledging || undefined}
-                      onClick={onAcknowledge}
+              onClick={onAcknowledge}
             >
               {m.admin_overview_upgrade_ack()}
             </Button>

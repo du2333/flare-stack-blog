@@ -279,7 +279,13 @@ function working(busy: boolean) {
 }
 
 type Form =
-  "pending" | "failed" | "current" | "dismissed" | "patch" | "minor" | "major";
+  | "pending"
+  | "failed"
+  | "current"
+  | "dismissed"
+  | "patch"
+  | "minor"
+  | "major";
 
 function formOf(status: UpdateStatus): Form {
   if (status.kind !== "ready") return status.kind;
