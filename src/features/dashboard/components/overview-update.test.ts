@@ -8,6 +8,7 @@ import {
   renderHook,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -29,6 +30,12 @@ vi.mock("@/features/version/queries", () => ({
     staleTime: 6 * 60 * 60 * 1000,
     retry: false,
   },
+}));
+// Unmount the sheet as soon as it closes, and render it as on a wide screen.
+vi.mock("@/hooks/use-motion", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/use-motion")>()),
+  useMotionPresence: (open: boolean) => open,
+  useMediaQuery: () => false,
 }));
 vi.mock("@/lib/orpc", () => ({
   orpcClient: {
@@ -66,6 +73,7 @@ const MINOR = result({
   entries: [{ version: "3.13.0", summary: "Adds a thing" }],
 });
 const CURRENT = result({});
+const MINOR_LINE = m.admin_overview_update_available({ version: "v3.13.0" });
 
 /** A promise settled from the test. */
 function deferred<T>() {
@@ -163,17 +171,17 @@ it("says so while a forced check runs, keeping the answer and the control", asyn
       m.admin_overview_update_checking(),
     ),
   );
-  expect((button as HTMLButtonElement).disabled).toBe(true);
+  expect(button.getAttribute("aria-disabled")).toBe("true");
   expect(
     screen.getByText(m.admin_overview_update_available({ version: "v3.12.2" })),
   ).toBeTruthy();
 
   later(1);
   await act(async () => forced.resolve(MINOR));
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
   // The control that was clicked is the one on screen, and has kept the focus.
   expect(recheckButton()).toBe(button);
-  expect((button as HTMLButtonElement).disabled).toBe(false);
+  expect(button.getAttribute("aria-disabled")).toBeNull();
   expect(document.activeElement).toBe(button);
   expect(calls.check).toHaveBeenCalledTimes(1);
 });
@@ -181,21 +189,19 @@ it("says so while a forced check runs, keeping the answer and the control", asyn
 it("keeps the old answer and says so when a forced check fails after a good one", async () => {
   calls.check.mockResolvedValue(MINOR);
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
 
   later(1);
   calls.force.mockRejectedValue(new Error("offline"));
   fireEvent.click(recheckButton());
-  await waitFor(() =>
-    expect(failure()).toBe(m.admin_overview_update_failed_kept()),
-  );
-  expect(screen.getByText("Adds a thing")).toBeTruthy();
+  await waitFor(() => expect(failure()).toBe(m.admin_overview_update_failed()));
+  expect(screen.getByText(MINOR_LINE)).toBeTruthy();
 });
 
 it("shows 「当前为最新版本」 when a forced check finds the update was applied", async () => {
   calls.check.mockResolvedValue(MINOR);
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
 
   later(1);
   calls.force.mockResolvedValue(CURRENT);
@@ -203,7 +209,7 @@ it("shows 「当前为最新版本」 when a forced check finds the update was a
   await screen.findByText(
     m.admin_overview_update_up_to_date({ current: "3.12.1" }),
   );
-  expect(screen.queryByText("Adds a thing")).toBeNull();
+  expect(screen.queryByText(MINOR_LINE)).toBeNull();
 });
 
 it("clears the failure once a later check succeeds, however it was run", async () => {
@@ -216,9 +222,7 @@ it("clears the failure once a later check succeeds, however it was run", async (
   later(1);
   calls.force.mockRejectedValue(new Error("offline"));
   fireEvent.click(recheckButton());
-  await waitFor(() =>
-    expect(failure()).toBe(m.admin_overview_update_failed_kept()),
-  );
+  await waitFor(() => expect(failure()).toBe(m.admin_overview_update_failed()));
 
   // A background refetch answers: no click needed for the message to go.
   later(1);
@@ -227,7 +231,7 @@ it("clears the failure once a later check succeeds, however it was run", async (
     await client.refetchQueries({ queryKey: ["version", "check"] });
   });
   await waitFor(() => expect(failure()).toBeUndefined());
-  expect(screen.getByText("Adds a thing")).toBeTruthy();
+  expect(screen.getByText(MINOR_LINE)).toBeTruthy();
 });
 
 it("starts the check once when the Admin opens, shared with the overview's block", async () => {
@@ -246,83 +250,98 @@ it("starts the check once when the Admin opens, shared with the overview's block
   unmount();
 });
 
+const viewButton = () =>
+  screen.getByRole("button", { name: m.admin_overview_update_view() });
 const dismissButton = () =>
-  screen.getByRole("button", { name: m.admin_overview_update_dismiss() });
+  within(screen.getByRole("dialog")).getByRole("button", {
+    name: m.admin_overview_update_dismiss(),
+  });
 const restoreButton = () =>
   screen.getByRole("button", { name: m.admin_overview_update_restore() });
 const status = () => screen.getByRole("status").textContent;
+const DISMISSED = m.admin_overview_update_dismissed({ version: "v3.13.0" });
 
-it("dismisses the latest version on the server and turns the block into one line", async () => {
+it("dismisses the latest version from the sheet, closes it and focuses 「恢复提醒」", async () => {
   calls.check.mockResolvedValue(MINOR);
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
+  fireEvent.click(viewButton());
+  expect(screen.getByText("Adds a thing")).toBeTruthy();
 
   const written = deferred<{ success: boolean }>();
   calls.dismiss.mockReturnValue(written.promise);
   const control = dismissButton();
-  control.focus();
   fireEvent.click(control);
   await waitFor(() => expect(calls.dismiss).toHaveBeenCalledTimes(1));
-  // A second press while the write is out is ignored.
-  fireEvent.click(control);
+  // A second press while the write is out is ignored; the sheet waits.
+  fireEvent.click(dismissButton());
   await act(async () => {});
   expect(calls.dismiss).toHaveBeenCalledTimes(1);
   expect(calls.dismiss).toHaveBeenCalledWith({ version: "v3.13.0" });
-  expect(screen.getByText("Adds a thing")).toBeTruthy();
+  expect(screen.getByRole("dialog")).toBeTruthy();
 
   await act(async () => written.resolve({ success: true }));
-  await screen.findByText(
-    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
-  );
-  expect(screen.queryByText("Adds a thing")).toBeNull();
+  await screen.findByText(DISMISSED);
+  expect(screen.queryByRole("dialog")).toBeNull();
   expect(status()).toBe(
     m.admin_overview_update_dismiss_done({ version: "v3.13.0" }),
   );
-  // Focus stays on the control, which is now the way back.
-  expect(restoreButton()).toBe(control);
-  expect(document.activeElement).toBe(control);
+  expect(document.activeElement).toBe(restoreButton());
   // Nothing else was asked of the server: the answer is marked in place.
   expect(calls.check).toHaveBeenCalledTimes(1);
 });
 
-it("restores the reminder and brings the full form back", async () => {
+it("restores the reminder from the line, focus staying on the control", async () => {
   calls.check.mockResolvedValue({ ...MINOR, dismissed: true });
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText(
-    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
-  );
+  await screen.findByText(DISMISSED);
 
   calls.dismiss.mockResolvedValue({ success: true });
   const control = restoreButton();
   control.focus();
   fireEvent.click(control);
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
   expect(calls.dismiss).toHaveBeenCalledWith({ version: null });
   expect(status()).toBe(m.admin_overview_update_restore_done());
-  expect(dismissButton()).toBe(control);
+  expect(viewButton()).toBe(control);
   expect(document.activeElement).toBe(control);
 });
 
-it("keeps the block as it was and says so when the write fails", async () => {
+it("keeps the sheet open and says so inside it when the write fails, until it is opened again", async () => {
   calls.check.mockResolvedValue(MINOR);
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText("Adds a thing");
+  await screen.findByText(MINOR_LINE);
+  fireEvent.click(viewButton());
 
   calls.dismiss.mockRejectedValue(new Error("offline"));
   fireEvent.click(dismissButton());
   await waitFor(() =>
-    expect(failure()).toBe(m.admin_overview_update_dismiss_failed()),
+    expect(document.querySelector(".overview-sheet-failure")?.textContent).toBe(
+      m.admin_overview_update_dismiss_failed(),
+    ),
   );
-  expect(screen.getByText("Adds a thing")).toBeTruthy();
+  expect(screen.getByRole("dialog")).toBeTruthy();
   expect(status()).toBe("");
+  // The line does not repeat it.
+  expect(document.querySelector(".overview-line-failure")?.textContent).toBe(
+    "",
+  );
+
+  // Closed and opened again, the old failure is not there.
+  fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  fireEvent.click(viewButton());
+  await waitFor(() =>
+    expect(document.querySelector(".overview-sheet-failure")?.textContent).toBe(
+      "",
+    ),
+  );
 });
 
 it("brings the full form back when a check finds a newer version", async () => {
   calls.check.mockResolvedValue({ ...MINOR, dismissed: true });
   render(wrap(createElement(OverviewUpdate)));
-  await screen.findByText(
-    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
-  );
+  await screen.findByText(DISMISSED);
 
   // The server reports the newer latest version as not dismissed.
   later(1);
@@ -335,10 +354,8 @@ it("brings the full form back when a check finds a newer version", async () => {
     }),
   );
   fireEvent.click(recheckButton());
-  await screen.findByText("Adds another thing");
-  expect(
-    screen.queryByText(
-      m.admin_overview_update_dismissed({ version: "v3.13.0" }),
-    ),
-  ).toBeNull();
+  await screen.findByText(
+    m.admin_overview_update_available({ version: "v3.14.0" }),
+  );
+  expect(screen.queryByText(DISMISSED)).toBeNull();
 });
