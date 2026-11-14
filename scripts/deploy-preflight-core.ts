@@ -8,12 +8,16 @@
  * upgrades. Each read either yields a state from the table below or fails by
  * name; nothing is guessed:
  *
- * | live Worker Version              | D1 `d1_migrations`   | state              |
- * |----------------------------------|----------------------|--------------------|
- * | tag `v<version>`                 | not read             | that version       |
- * | none, no Worker, no tag, bad tag | has rows             | pre-gate (3.0.0)   |
- * | none, no Worker, no tag, bad tag | missing or empty     | fresh install      |
- * | any read fails                   |                      | the preflight fails |
+ * | the deployments one list call returns, newest first | D1 `d1_migrations` | state            |
+ * |------------------------------------------------------|--------------------|------------------|
+ * | one's serving version is tagged `v<version>`         | not read           | that version     |
+ * | none is tagged so, none at all, or no Worker (10007) | has rows           | pre-gate (3.0.0) |
+ * | the same                                             | missing or empty   | fresh install    |
+ * | any read fails                                       |                    | the preflight fails |
+ *
+ * The deployments are walked back because a change in the dashboard (a Secret
+ * added, a variable edited) creates a new Worker Version that may not carry
+ * the tag of the version it was made from.
  *
  * The text is for a fork owner reading a build log, often without the guide:
  * Chinese sentences, names verbatim, what to do first and numbered.
@@ -24,6 +28,8 @@ import {
 } from "../src/lib/version/app-version.ts";
 import {
   entriesBetween,
+  type UnreleasedEntry,
+  type UpgradeEntry,
   type UpgradesFile,
 } from "../src/lib/version/upgrades.ts";
 
@@ -34,6 +40,13 @@ import {
  */
 export const PRE_GATE_VERSION = "3.0.0";
 
+/**
+ * The most deployments walked for a tag. One `cf workers deployments list`
+ * call without paging flags returns the most recent ones (10 when this was
+ * written); a longer list is cut here rather than paged.
+ */
+export const MAX_DEPLOYMENTS_WALKED = 10;
+
 /** The build variable that acknowledges a move to another major. */
 export const ACK_VARIABLE = "UPGRADE_ACK";
 
@@ -42,11 +55,74 @@ export const UPGRADE_GUIDE_URL = `https://github.com/du2333/flare-stack-blog/blo
 
 const BUILD_VARIABLES_PLACE = "Worker 的 Settings → Builds → Build variables";
 const SECRETS_PLACE = "Worker 的 Settings → Runtime variables and secrets";
+const STOPPED = "部署前检查未通过，构建已停止";
+const RETRY = "重试这次构建（Retry build）";
 
 export type LiveState =
-  | { kind: "version"; version: string }
-  | { kind: "pre-gate" }
+  /** `deployment` counts from the newest, 1. */
+  | { kind: "version"; version: string; deployment: number }
+  /** `untagged` deployments were walked; 0 when there is no Worker or no deployment. */
+  | { kind: "pre-gate"; untagged: number }
   | { kind: "fresh" };
+
+/** An environment variable set to an empty value counts as missing. */
+function isSet(value: string | undefined): value is string {
+  return value !== undefined && value.trim() !== "";
+}
+
+// --- Setup ----------------------------------------------------------------
+
+type Env = Readonly<Record<string, string | undefined>>;
+
+export type Setup =
+  | { ok: true; version: string; worker: string; databaseId: string }
+  | { ok: false; text: string };
+
+/**
+ * This build's version, and the names the reads need. The deploy step tags
+ * with the shell's `$npm_package_version`, so it has to be the version
+ * decided on here, or the next preflight reads the wrong one. The Worker name
+ * and database id are used as the migration step uses them, untrimmed.
+ */
+export function checkSetup(packageVersion: unknown, env: Env): Setup {
+  const parsed =
+    typeof packageVersion === "string" ? parseAppVersion(packageVersion) : null;
+  if (!parsed) {
+    return {
+      ok: false,
+      text: `${STOPPED}：package.json 中的 version（${String(packageVersion)}）不是合法的版本号。`,
+    };
+  }
+  const version = formatAppVersion(parsed);
+
+  const tagged = env.npm_package_version;
+  if (tagged !== version) {
+    const state =
+      tagged === undefined
+        ? "没有设置"
+        : tagged.trim() === ""
+          ? "它的值为空"
+          : `它的值是 ${tagged}`;
+    return {
+      ok: false,
+      text: `${STOPPED}：部署标签取自环境变量 npm_package_version，${state}，而 package.json 中的版本是 ${version}。请通过 \`bun run deploy\` 运行部署，不要单独运行这个脚本。`,
+    };
+  }
+
+  const worker = env.WORKER_NAME;
+  const databaseId = env.D1_DATABASE_ID;
+  if (!isSet(worker) || !isSet(databaseId)) {
+    const unset = [
+      ...(isSet(worker) ? [] : ["WORKER_NAME"]),
+      ...(isSet(databaseId) ? [] : ["D1_DATABASE_ID"]),
+    ];
+    return {
+      ok: false,
+      text: `${STOPPED}：缺少构建变量 ${unset.join("、")}。请在 ${BUILD_VARIABLES_PLACE} 中添加后${RETRY}。`,
+    };
+  }
+  return { ok: true, version, worker, databaseId };
+}
 
 // --- Reading what is live -------------------------------------------------
 
@@ -68,14 +144,11 @@ export type ReadFailure = {
 };
 
 export type LiveRead =
-  | {
-      ok: true;
-      state: LiveState;
-      /** How the state was found, for the tests and the log. */
-      via: "tag" | "no-worker" | "no-deployment" | "no-tag" | "tag-not-version";
-      /** The tag that was read, when there was one. */
-      tag?: string;
-    }
+  | { ok: true; state: LiveState }
+  | { ok: false; failure: ReadFailure };
+
+export type SecretsRead =
+  | { ok: true; names: Array<string> }
   | { ok: false; failure: ReadFailure };
 
 export const TABLE_EXISTS_SQL =
@@ -102,42 +175,42 @@ class ReadError extends Error {
   }
 }
 
-/** `cf` exited 1 because the Worker does not exist on the account. */
-function isNoWorker(result: CfResult) {
-  return result.status !== 0 && /\[10007\]/.test(result.stderr);
-}
-
 function lastLines(text: string, count = 20) {
-  const lines = text.trim().split(/\r?\n/);
-  return lines.slice(-count).join("\n");
+  return text.trim().split(/\r?\n/).slice(-count).join("\n");
 }
 
-function failedRun(read: Read, args: Array<string>, result: CfResult) {
-  if (result.error) {
-    return new ReadError(read, args, `无法运行 cf：${result.error}`);
-  }
-  const output = lastLines(result.stderr) || lastLines(result.stdout);
-  return new ReadError(
-    read,
-    args,
-    `退出码 ${result.status}${output ? `，输出：\n${output}` : "，没有输出"}`,
-  );
-}
-
-function run(cf: Cf, read: Read, args: Array<string>): CfResult {
+/**
+ * Runs one read and returns its parsed JSON. A read fails when `cf` cannot
+ * start, exits non-zero or prints something other than JSON; with
+ * `noWorker`, an exit for error 10007 (the Worker does not exist) returns
+ * null instead.
+ */
+function readJson(
+  cf: Cf,
+  read: Read,
+  args: Array<string>,
+  { noWorker = false } = {},
+): unknown {
   const result = cf(args);
-  if (result.error) throw failedRun(read, args, result);
-  return result;
-}
-
-function json(read: Read, args: Array<string>, stdout: string): unknown {
+  if (result.error) {
+    throw new ReadError(read, args, `无法运行 cf：${result.error}`);
+  }
+  if (result.status !== 0) {
+    if (noWorker && /\[10007\]/.test(result.stderr)) return null;
+    const output = lastLines(result.stderr) || lastLines(result.stdout);
+    throw new ReadError(
+      read,
+      args,
+      `退出码 ${result.status}${output ? `，输出：\n${output}` : "，没有输出"}`,
+    );
+  }
   try {
-    return JSON.parse(stdout);
+    return JSON.parse(result.stdout);
   } catch {
     throw new ReadError(
       read,
       args,
-      `输出不是 JSON：\n${lastLines(stdout) || "（空）"}`,
+      `输出不是 JSON：\n${lastLines(result.stdout) || "（空）"}`,
     );
   }
 }
@@ -151,42 +224,54 @@ function unexpected(read: Read, args: Array<string>, what: string): never {
 }
 
 /**
- * The version serving traffic: the first deployment's version with the
- * largest percentage (the first of equals). Null when there is no deployment.
+ * For each listed deployment, newest first and at most
+ * `MAX_DEPLOYMENTS_WALKED`, the version with the largest percentage (the
+ * first of equals). Empty when there is no deployment.
  */
-export function servingVersionId(
+export function servingVersionIds(
   output: unknown,
   args: Array<string> = [],
-): string | null {
+): Array<string> {
   const read = "deployments";
   if (!isRecord(output) || !Array.isArray(output.deployments)) {
     unexpected(read, args, "没有 deployments 列表");
   }
-  const [first] = output.deployments;
-  if (first === undefined) return null;
-  if (!isRecord(first) || !Array.isArray(first.versions)) {
-    unexpected(read, args, "第一条部署没有 versions 列表");
-  }
-  let best: { id: string; percentage: number } | null = null;
-  for (const version of first.versions) {
-    if (
-      !isRecord(version) ||
-      typeof version.version_id !== "string" ||
-      version.version_id === "" ||
-      typeof version.percentage !== "number"
-    ) {
-      unexpected(read, args, "版本缺少 version_id 或 percentage");
-    }
-    if (best === null || version.percentage > best.percentage) {
-      best = { id: version.version_id, percentage: version.percentage };
-    }
-  }
-  if (best === null) unexpected(read, args, "第一条部署没有任何版本");
-  return best.id;
+  return output.deployments
+    .slice(0, MAX_DEPLOYMENTS_WALKED)
+    .map((deployment) => {
+      if (!isRecord(deployment) || !Array.isArray(deployment.versions)) {
+        unexpected(read, args, "部署没有 versions 列表");
+      }
+      let best: { id: string; percentage: number } | null = null;
+      for (const version of deployment.versions) {
+        if (
+          !isRecord(version) ||
+          typeof version.version_id !== "string" ||
+          version.version_id === "" ||
+          typeof version.percentage !== "number"
+        ) {
+          unexpected(read, args, "版本缺少 version_id 或 percentage");
+        }
+        if (best === null || version.percentage > best.percentage) {
+          best = { id: version.version_id, percentage: version.percentage };
+        }
+      }
+      if (best === null) unexpected(read, args, "部署没有任何版本");
+      return best.id;
+    });
 }
 
-/** The Worker Version's `workers/tag`, or null when it has none. */
-export function versionTag(
+/** The version a tag names: exactly `v` followed by a valid version. */
+export function tagVersion(tag: unknown): string | null {
+  if (typeof tag !== "string" || !tag.startsWith("v")) return null;
+  const parsed = parseAppVersion(tag.slice(1));
+  if (!parsed) return null;
+  const version = formatAppVersion(parsed);
+  return version === tag.slice(1) ? version : null;
+}
+
+/** The version a Worker Version's `workers/tag` names, or null for none. */
+export function taggedVersion(
   output: unknown,
   args: Array<string> = [],
 ): string | null {
@@ -196,19 +281,7 @@ export function versionTag(
   if (!isRecord(annotations)) {
     unexpected("version", args, "annotations 不是一个对象");
   }
-  const tag = annotations["workers/tag"];
-  if (tag === undefined || tag === null) return null;
-  // A tag of another type is still a tag that names no version.
-  return typeof tag === "string" ? tag : JSON.stringify(tag);
-}
-
-/** The version a tag names: `v` followed by a valid version, written canonically. */
-export function tagVersion(tag: string): string | null {
-  if (!tag.startsWith("v")) return null;
-  const parsed = parseAppVersion(tag.slice(1));
-  if (!parsed) return null;
-  const version = formatAppVersion(parsed);
-  return version === tag.slice(1) ? version : null;
+  return tagVersion(annotations["workers/tag"]);
 }
 
 /** The rows of a `cf d1 query` with one statement. */
@@ -228,26 +301,26 @@ export function queryRows(
   return result.results;
 }
 
-function migrationCount(output: unknown, args: Array<string>) {
-  const [row] = queryRows("count", output, args);
-  if (!isRecord(row) || typeof row.n !== "number" || !(row.n >= 0)) {
-    unexpected("count", args, "没有数字 n");
-  }
-  return row.n;
-}
-
 /** Whether D1 records migrations: what tells a pre-gate site from a fresh install. */
 function hasMigrations(cf: Cf, databaseId: string) {
   const tableArgs = ["d1", "query", databaseId, "--sql", TABLE_EXISTS_SQL];
-  const table = run(cf, "table", tableArgs);
-  if (table.status !== 0) throw failedRun("table", tableArgs, table);
-  const tables = queryRows("table", json("table", tableArgs, table.stdout));
+  const tables = queryRows(
+    "table",
+    readJson(cf, "table", tableArgs),
+    tableArgs,
+  );
   if (tables.length === 0) return false;
 
   const countArgs = ["d1", "query", databaseId, "--sql", MIGRATION_COUNT_SQL];
-  const count = run(cf, "count", countArgs);
-  if (count.status !== 0) throw failedRun("count", countArgs, count);
-  return migrationCount(json("count", countArgs, count.stdout), countArgs) > 0;
+  const [row] = queryRows("count", readJson(cf, "count", countArgs), countArgs);
+  if (!isRecord(row) || typeof row.n !== "number" || !(row.n >= 0)) {
+    unexpected("count", countArgs, "没有数字 n");
+  }
+  return row.n > 0;
+}
+
+function quote(arg: string) {
+  return /^[\w./:=@-]+$/.test(arg) ? arg : `"${arg.replaceAll('"', '\\"')}"`;
 }
 
 function asFailure(error: unknown): ReadFailure {
@@ -261,11 +334,10 @@ function asFailure(error: unknown): ReadFailure {
   throw error;
 }
 
-function quote(arg: string) {
-  return /^[\w./:=@-]+$/.test(arg) ? arg : `"${arg.replaceAll('"', '\\"')}"`;
-}
-
-/** What is live on `worker`, reading D1 `databaseId` only when no tag names a version. */
+/**
+ * What is live on `worker`: the first deployment, newest first, whose serving
+ * version is tagged with a version. D1 `databaseId` is read only when none is.
+ */
 export function readLiveState(
   cf: Cf,
   worker: string,
@@ -273,63 +345,42 @@ export function readLiveState(
 ): LiveRead {
   try {
     const listArgs = ["workers", "deployments", "list", "--worker", worker];
-    const list = run(cf, "deployments", listArgs);
+    const list = readJson(cf, "deployments", listArgs, { noWorker: true });
+    const ids = list === null ? [] : servingVersionIds(list, listArgs);
 
-    let via: Exclude<Extract<LiveRead, { ok: true }>["via"], "tag">;
-    let tag: string | undefined;
-    if (isNoWorker(list)) {
-      via = "no-worker";
-    } else {
-      if (list.status !== 0) throw failedRun("deployments", listArgs, list);
-      const id = servingVersionId(
-        json("deployments", listArgs, list.stdout),
-        listArgs,
-      );
-      if (id === null) {
-        via = "no-deployment";
-      } else {
+    // A version serving several deployments in a row is read once.
+    const read = new Map<string, string | null>();
+    for (const [index, id] of ids.entries()) {
+      let version = read.get(id);
+      if (version === undefined) {
         const getArgs = ["workers", "versions", "get", id, "--worker", worker];
-        const got = run(cf, "version", getArgs);
-        if (got.status !== 0) throw failedRun("version", getArgs, got);
-        const found = versionTag(json("version", getArgs, got.stdout), getArgs);
-        if (found === null) {
-          via = "no-tag";
-        } else {
-          const version = tagVersion(found);
-          if (version !== null) {
-            return {
-              ok: true,
-              state: { kind: "version", version },
-              via: "tag",
-              tag: found,
-            };
-          }
-          via = "tag-not-version";
-          tag = found;
-        }
+        version = taggedVersion(readJson(cf, "version", getArgs), getArgs);
+        read.set(id, version);
+      }
+      if (version !== null) {
+        return {
+          ok: true,
+          state: { kind: "version", version, deployment: index + 1 },
+        };
       }
     }
 
-    const state: LiveState = hasMigrations(cf, databaseId)
-      ? { kind: "pre-gate" }
-      : { kind: "fresh" };
-    return { ok: true, state, via, ...(tag === undefined ? {} : { tag }) };
+    return {
+      ok: true,
+      state: hasMigrations(cf, databaseId)
+        ? { kind: "pre-gate", untagged: ids.length }
+        : { kind: "fresh" },
+    };
   } catch (error) {
     return { ok: false, failure: asFailure(error) };
   }
 }
 
-/** The Worker's Secret names; none when the Worker does not exist. */
-export function readSecretNames(
-  cf: Cf,
-  worker: string,
-): { ok: true; names: Array<string> } | { ok: false; failure: ReadFailure } {
+/** The Worker's Secret names. */
+export function readSecretNames(cf: Cf, worker: string): SecretsRead {
   const args = ["workers", "secrets", "list", "--worker", worker];
   try {
-    const result = run(cf, "secrets", args);
-    if (isNoWorker(result)) return { ok: true, names: [] };
-    if (result.status !== 0) throw failedRun("secrets", args, result);
-    const output = json("secrets", args, result.stdout);
+    const output = readJson(cf, "secrets", args);
     if (!Array.isArray(output)) unexpected("secrets", args, "不是一个列表");
     const names = output.map((secret) => {
       if (!isRecord(secret) || typeof secret.name !== "string") {
@@ -346,12 +397,12 @@ export function readSecretNames(
 /** The log text for a failed read. */
 export function formatReadFailure(failure: ReadFailure): string {
   return [
-    `部署前检查未通过，构建已停止：无法${failure.read}。线上的博客没有改动，继续运行原来的版本。`,
+    `${STOPPED}：无法${failure.read}。线上的博客没有改动，继续运行原来的版本。`,
     "",
     `命令：${failure.command}`,
     failure.detail,
     "",
-    "接下来的数据库迁移和部署要用同样的权限访问同样的接口，所以这一步不会跳过。请检查构建使用的 Cloudflare API token 是否有权读取这个 Worker 和 D1 数据库，以及 WORKER_NAME、D1_DATABASE_ID 是否填写正确，然后重试这次构建（Retry build）。",
+    `接下来的数据库迁移和部署要用同样的权限访问同样的接口，所以这一步不会跳过。请检查构建使用的 Cloudflare API token 是否有权读取这个 Worker 和 D1 数据库，以及 WORKER_NAME、D1_DATABASE_ID 是否填写正确，然后${RETRY}。`,
   ].join("\n");
 }
 
@@ -363,12 +414,12 @@ export type PreflightInput = {
   version: string;
   /** This build's own upgrades.json, as the reader returns it. */
   file: UpgradesFile;
-  /** Names of the environment variables the deploy command sees. */
-  envNames: ReadonlyArray<string>;
-  /** The Worker's Secret names; "unknown" for a fresh install, which skips them. */
-  secretNames: ReadonlyArray<string> | "unknown";
-  /** The value of UPGRADE_ACK, when set. */
-  ack: string | undefined;
+  /** The file's `unreleased` entry: a prerelease build's own notes. */
+  unreleased: UnreleasedEntry | null;
+  /** The deploy command's environment: Build variables and UPGRADE_ACK. */
+  env: Env;
+  /** Called only when a Secret requirement has to be checked. */
+  readSecrets: () => SecretsRead;
 };
 
 export type Missing = { name: string; version: string };
@@ -383,91 +434,142 @@ export type PreflightDecision = {
   text: string;
 };
 
+type Notes = Pick<UpgradeEntry, "version" | "before" | "requires">;
+
 function majorOf(version: string) {
   const parsed = parseAppVersion(version);
   if (!parsed) throw new Error(`Invalid application version: ${version}`);
   return parsed.major;
 }
 
-function liveDescription(live: Exclude<LiveState, { kind: "fresh" }>) {
-  return live.kind === "version"
-    ? `线上版本 ${live.version}`
-    : `线上没有带版本标签的 Worker 版本，D1 已有迁移记录，按闸门上线前安装的站点处理（视为 ${PRE_GATE_VERSION}）`;
+function isPrerelease(version: string) {
+  return (parseAppVersion(version)?.prerelease.length ?? 0) > 0;
 }
 
+/** How the live version was found, so a fallback shows in the log. */
+export function liveDescription(live: LiveState): string {
+  switch (live.kind) {
+    case "version":
+      return live.deployment === 1
+        ? `线上版本 ${live.version}（取自最近一次部署的版本标签）`
+        : `线上版本 ${live.version}（取自最近第 ${live.deployment} 次部署的版本标签，较新的 ${live.deployment - 1} 次部署没有版本标签）`;
+    case "pre-gate":
+      return `${
+        live.untagged === 0
+          ? "线上没有这个 Worker 的部署"
+          : `最近 ${live.untagged} 次部署都没有版本标签`
+      }，D1 已有迁移记录，按闸门上线前安装的站点处理（视为 ${PRE_GATE_VERSION}）`;
+    case "fresh":
+      return "线上没有带版本标签的部署，D1 也没有迁移记录，按全新安装处理";
+    default:
+      return live satisfies never;
+  }
+}
+
+/**
+ * Within a major everything proceeds. Across a major UPGRADE_ACK must name
+ * this build's major; upwards, the configuration the versions crossed
+ * require must also be present. Required configuration is a breaking change,
+ * so only a major carries it.
+ */
 export function decidePreflight(input: PreflightInput): PreflightDecision {
-  const { live, version, file } = input;
+  const { live, version } = input;
   const thisMajor = majorOf(version);
+  const where = `${liveDescription(live)}；本次版本 ${version}`;
+  const decision = (
+    ok: boolean,
+    ack: PreflightDecision["ack"],
+    text: string,
+    missingBuildVars: Array<Missing> = [],
+    missingSecrets: Array<Missing> = [],
+  ): PreflightDecision => ({
+    ok,
+    ack,
+    missingBuildVars,
+    missingSecrets,
+    text,
+  });
 
   if (live.kind === "fresh") {
-    return {
-      ok: true,
-      ack: "not-needed",
-      missingBuildVars: [],
-      missingSecrets: [],
-      text: `部署前检查：线上没有带版本标签的 Worker 版本，D1 也没有迁移记录，按全新安装处理；本次版本 ${version}，继续部署。`,
-    };
+    return decision(true, "not-needed", `部署前检查：${where}，继续部署。`);
   }
-
   const liveVersion = live.kind === "version" ? live.version : PRE_GATE_VERSION;
   const liveMajor = majorOf(liveVersion);
-  const crossing = liveMajor !== thisMajor;
-  const entries = entriesBetween(file, liveVersion, version);
+  if (liveMajor === thisMajor) {
+    return decision(
+      true,
+      "not-needed",
+      `部署前检查：${where}，同一大版本，继续部署。`,
+    );
+  }
 
-  const ackValue = input.ack?.trim();
-  const ack: PreflightDecision["ack"] = !crossing
-    ? "not-needed"
-    : ackValue === String(thisMajor)
+  const ackValue = input.env[ACK_VARIABLE]?.trim();
+  const ack: PreflightDecision["ack"] =
+    ackValue === String(thisMajor)
       ? "given"
-      : ackValue === undefined || ackValue === ""
-        ? "missing"
-        : "wrong";
+      : isSet(ackValue)
+        ? "wrong"
+        : "missing";
+  const up = thisMajor > liveMajor;
 
-  const env = new Set(input.envNames);
-  const secrets =
-    input.secretNames === "unknown" ? null : new Set(input.secretNames);
+  // Upwards, the notes of every version crossed; a prerelease build's own
+  // notes are the file's `unreleased`. A downgrade crosses none.
+  const crossed: Array<Notes> = up
+    ? [
+        ...entriesBetween(input.file, liveVersion, version),
+        ...(isPrerelease(version) && input.unreleased
+          ? [{ ...input.unreleased, version }]
+          : []),
+      ]
+    : [];
+
   const missingBuildVars: Array<Missing> = [];
-  const missingSecrets: Array<Missing> = [];
-  for (const entry of entries) {
+  for (const entry of crossed) {
     for (const name of entry.requires?.buildVars ?? []) {
-      if (!env.has(name))
+      if (!isSet(input.env[name])) {
         missingBuildVars.push({ name, version: entry.version });
-    }
-    for (const name of entry.requires?.secrets ?? []) {
-      if (secrets && !secrets.has(name)) {
-        missingSecrets.push({ name, version: entry.version });
       }
     }
   }
 
-  const ok =
-    (ack === "not-needed" || ack === "given") &&
-    missingBuildVars.length === 0 &&
-    missingSecrets.length === 0;
-
-  const where = `${liveDescription(live)}，本次版本 ${version}`;
-  if (ok) {
-    return {
-      ok,
-      ack,
-      missingBuildVars,
-      missingSecrets,
-      text: crossing
-        ? `部署前检查：${where}，跨越大版本（${liveMajor} → ${thisMajor}），${ACK_VARIABLE}=${thisMajor} 已确认，继续部署。`
-        : `部署前检查：${where}，同一大版本，继续部署。`,
-    };
+  // Secrets are read only when one is required and the Worker has been
+  // deployed: none can be added before the Worker exists.
+  const noDeployment = live.kind === "pre-gate" && live.untagged === 0;
+  const missingSecrets: Array<Missing> = [];
+  if (
+    !noDeployment &&
+    crossed.some((entry) => (entry.requires?.secrets.length ?? 0) > 0)
+  ) {
+    const secrets = input.readSecrets();
+    if (!secrets.ok) {
+      return decision(false, ack, formatReadFailure(secrets.failure));
+    }
+    const names = new Set(secrets.names);
+    for (const entry of crossed) {
+      for (const name of entry.requires?.secrets ?? []) {
+        if (!names.has(name)) {
+          missingSecrets.push({ name, version: entry.version });
+        }
+      }
+    }
   }
 
-  const lines = [
-    "部署前检查未通过，构建已停止。线上的博客没有改动，继续运行原来的版本。",
-    "",
-  ];
-  const up = thisMajor > liveMajor;
-  if (!crossing) {
-    lines.push(`${where}，同一大版本，但缺少本次版本需要的配置。`);
-  } else if (ack === "given") {
+  if (
+    ack === "given" &&
+    missingBuildVars.length === 0 &&
+    missingSecrets.length === 0
+  ) {
+    return decision(
+      true,
+      ack,
+      `部署前检查：${where}，跨越大版本（${liveMajor} → ${thisMajor}），${ACK_VARIABLE}=${thisMajor} 已确认，继续部署。`,
+    );
+  }
+
+  const lines = [`${STOPPED}。线上的博客没有改动，继续运行原来的版本。`, ""];
+  if (ack === "given") {
     lines.push(
-      `${where}，跨越大版本（${liveMajor} → ${thisMajor}），${ACK_VARIABLE}=${thisMajor} 已确认，但缺少本次版本需要的配置。`,
+      `${where}，跨越大版本（${liveMajor} → ${thisMajor}），${ACK_VARIABLE}=${thisMajor} 已确认，但缺少新版本需要的配置。`,
     );
   } else if (up) {
     lines.push(
@@ -479,22 +581,32 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
       "降级没有可列出的事项，但新版本可能已经改动了数据库，数据不一定还能被旧版本的代码使用。只有在确认数据可用（例如已从备份恢复数据库）时才继续。",
     );
   }
+  if (noDeployment && ack !== "given") {
+    lines.push(
+      "",
+      "没有部署但 D1 已有迁移记录，也可能是第一次部署在数据库迁移之后失败了。如果是这样，不需要先完成任何事项，直接添加下面的变量即可。",
+    );
+  }
 
-  // Numbered across groups: the `before` items of each version crossed, oldest
-  // first, then the missing configuration.
-  // An acknowledged crossing has had its items read; only what is missing remains.
-  const listBefore = crossing && ack !== "given";
+  // Numbered across groups: the `before` items of each version crossed,
+  // oldest first, then the missing configuration. An acknowledged crossing
+  // has had its items read; only what is missing remains.
   const groups: Array<{ heading: string; steps: Array<string> }> = [];
-  if (listBefore) {
-    for (const entry of entries) {
+  if (ack !== "given") {
+    for (const entry of crossed) {
       if (!entry.before?.length) continue;
       groups.push({
         heading: `v${entry.version} 升级前`,
         steps: entry.before.map((item) => item.text),
       });
     }
+    if (up && groups.length === 0) {
+      lines.push(
+        "",
+        "这次跨越的版本在 upgrades.json 中没有记录升级前事项，请先阅读下面的升级说明和对应版本的发布说明。",
+      );
+    }
   }
-  const hasBefore = groups.length > 0;
   const configuration = [
     ...missingBuildVars.map(
       ({ name, version: needs }) =>
@@ -509,13 +621,6 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
     groups.push({ heading: "缺少的配置", steps: configuration });
   }
 
-  if (listBefore && up && !hasBefore) {
-    lines.push(
-      "",
-      "这次跨越的版本在 upgrades.json 中没有记录升级前事项，请先阅读下面的升级说明和对应版本的发布说明。",
-    );
-  }
-
   if (groups.length > 0) {
     lines.push("", "请先完成以下事项：");
     let number = 0;
@@ -527,10 +632,10 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
       }
     }
   }
-  const hasSteps = groups.length > 0;
 
-  if (ack === "missing" || ack === "wrong") {
-    const confirm = hasSteps ? "确认以上事项都已完成后" : "确认要继续后";
+  if (ack !== "given") {
+    const confirm =
+      groups.length > 0 ? "确认以上事项都已完成后" : "确认要继续后";
     lines.push(
       "",
       ack === "missing"
@@ -538,14 +643,21 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
         : `${confirm}，在 ${BUILD_VARIABLES_PLACE} 中把 ${ACK_VARIABLE} 的值从 ${ackValue} 改为 ${thisMajor}（${ackValue} 确认的是另一个大版本）：`,
       "",
       `  ${ACK_VARIABLE}=${thisMajor}`,
+      "",
+      `升级说明：${UPGRADE_GUIDE_URL}`,
     );
-    lines.push("", `升级说明：${UPGRADE_GUIDE_URL}`);
   }
 
   lines.push(
     "",
-    "最后重试这次构建（Retry build）。以上都已完成时，检查会通过并继续迁移数据库和部署。",
+    `最后${RETRY}。以上都已完成时，检查会通过并继续迁移数据库和部署。`,
   );
 
-  return { ok, ack, missingBuildVars, missingSecrets, text: lines.join("\n") };
+  return decision(
+    false,
+    ack,
+    lines.join("\n"),
+    missingBuildVars,
+    missingSecrets,
+  );
 }
