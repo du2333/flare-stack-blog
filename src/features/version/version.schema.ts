@@ -4,9 +4,13 @@ export const ApplicationReleaseVersionSchema = z
   .string()
   .regex(/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
 
+// The running build may be a prerelease (`3.13.0-beta.0`); the latest release
+// read from the release page stays a plain `vX.Y.Z`.
 export const RunningApplicationReleaseVersionSchema = z
   .string()
-  .regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+  .regex(
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/,
+  );
 
 export const ApplicationReleaseSchema = z.object({
   version: ApplicationReleaseVersionSchema,

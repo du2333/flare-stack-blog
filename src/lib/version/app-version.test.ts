@@ -111,7 +111,9 @@ describe("compareAppVersions", () => {
     ["1.0.0", "1.0"],
     ["1.0.0+build", "1.0.0"],
   ])("throws on invalid input (%s, %s)", (a, b) => {
-    expect(() => compareAppVersions(a, b)).toThrow(/Invalid application version/);
+    expect(() => compareAppVersions(a, b)).toThrow(
+      /Invalid application version/,
+    );
   });
 });
 
