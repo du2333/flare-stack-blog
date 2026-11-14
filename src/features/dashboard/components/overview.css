@@ -138,6 +138,9 @@
   line-height: var(--admin-leading-meta);
   color: var(--admin-fg-3);
 }
+.overview-update-status[data-tone="danger"] {
+  color: var(--fuwari-danger-fg);
+}
 .overview-update-body {
   padding: 4px 20px 16px;
 }
