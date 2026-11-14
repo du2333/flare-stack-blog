@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  breakingCommits,
   checkRelease,
   inspectMigration,
   isBreakingCommit,
-  sqlCode,
+  scanSql,
+  type Commit,
   type ReleaseCheckInput,
 } from "./release-check-core.ts";
 
@@ -18,11 +20,21 @@ DROP TABLE posts;
 ALTER TABLE posts_new RENAME TO posts;
 `;
 
+let next = 0;
+/** A commit with a fresh 40-character sha. */
+function commit(message: string, sha?: string): Commit {
+  next += 1;
+  return { sha: sha ?? next.toString(16).padStart(40, "0"), message };
+}
+
 function input(overrides: Partial<ReleaseCheckInput> = {}): ReleaseCheckInput {
   return {
     from: "3.12.1",
     to: "3.13.0",
-    commits: ["feat(posts): add drafts", "fix: typo\n\nbody text"],
+    commits: [
+      commit("feat(posts): add drafts"),
+      commit("fix: typo\n\nbody text"),
+    ],
     file: { unreleased: { summary: "新增草稿功能。" }, versions: released },
     addedMigrations: [],
     ...overrides,
@@ -42,6 +54,7 @@ describe("isBreakingCommit", () => {
     "refactor(db)!: rename columns\n\nbody",
     "fix: tidy\n\nBREAKING CHANGE: the old route is gone",
     "fix: tidy\n\nBREAKING-CHANGE: the old route is gone",
+    "fix: tidy\n\nA body paragraph.\n\nRefs: #12\nBREAKING CHANGE: gone",
   ])("finds %j breaking", (message) => {
     expect(isBreakingCommit(message)).toBe(true);
   });
@@ -49,11 +62,42 @@ describe("isBreakingCommit", () => {
   it.each([
     "feat: add drafts",
     "fix(auth): handle a missing secret!",
+    "fix(a(b))!: nested parentheses are not a scope",
+    "feat(a\nb)!: a scope across lines",
     "merge: feat/x into dev",
+    "fix: tidy\n\nfeat!: a marker in the body",
     "docs: explain what a BREAKING CHANGE: footer means",
     "fix: tidy\n\nNot a BREAKING CHANGE: inline",
+    "fix: tidy\n\nBREAKING CHANGE: in the body, not the footer\n\nRefs: #12",
   ])("finds %j not breaking", (message) => {
     expect(isBreakingCommit(message)).toBe(false);
+  });
+});
+
+describe("breakingCommits", () => {
+  const breaking = commit("feat(api)!: remove v1", "a".repeat(40));
+  const revert = commit(
+    `Revert "feat(api)!: remove v1"\n\nThis reverts commit ${"a".repeat(40)}.`,
+    "b".repeat(40),
+  );
+
+  it("drops a breaking commit that a later commit reverts", () => {
+    expect(breakingCommits([revert, breaking])).toEqual([]);
+  });
+
+  it("keeps it when the revert is reverted, or names another commit", () => {
+    const reapply = commit(
+      `Revert "Revert ..."\n\nThis reverts commit ${"b".repeat(40)}.`,
+    );
+    expect(breakingCommits([reapply, revert, breaking])).toEqual([breaking]);
+    const other = commit(`Revert x\n\nThis reverts commit ${"c".repeat(40)}.`);
+    expect(breakingCommits([other, breaking])).toEqual([breaking]);
+  });
+
+  it("does not count a revert of a commit outside the range as breaking", () => {
+    expect(checkRelease(input({ commits: [revert] }))).toMatchObject({
+      ok: true,
+    });
   });
 });
 
@@ -63,9 +107,9 @@ describe("inspectMigration", () => {
 /* RENAME
    block */
 INSERT INTO notes (body) VALUES ('please DROP by'), ('it''s RENAME');
-CREATE TABLE "drop" (id integer);
+CREATE TABLE "drop" (id integer, \`rename\` text, [drop] text);
 `;
-    expect(sqlCode(sql)).not.toMatch(/DROP|RENAME/i);
+    expect(scanSql(sql).code).not.toMatch(/DROP|RENAME/i);
     expect(inspectMigration(sql)).toEqual({ destructive: false });
   });
 
@@ -80,15 +124,29 @@ CREATE TABLE "drop" (id integer);
     });
   });
 
-  it("reads the rollback-safe line and its reason", () => {
+  it("reads the rollback-safe line comment and its reason", () => {
     expect(
       inspectMigration(
         `-- rollback-safe: same columns after the rebuild\n${rebuild}`,
       ),
     ).toMatchObject({ marker: "reason" });
+    expect(
+      inspectMigration(`${rebuild}DROP INDEX a; --rollback-safe: unused index`),
+    ).toMatchObject({ marker: "reason" });
     expect(inspectMigration(`-- rollback-safe:   \n${rebuild}`)).toMatchObject({
       marker: "empty",
     });
+  });
+
+  it("does not count a marker inside a block comment or a string", () => {
+    expect(
+      inspectMigration(`/*\n-- rollback-safe: hidden\n*/\n${rebuild}`),
+    ).toMatchObject({ marker: "none" });
+    expect(
+      inspectMigration(
+        `INSERT INTO notes VALUES ('\n-- rollback-safe: hidden\n');\n${rebuild}`,
+      ),
+    ).toMatchObject({ marker: "none" });
   });
 });
 
@@ -99,7 +157,7 @@ describe("checkRelease", () => {
       ok: true,
       base: "3.12.1",
       level: "minor",
-      prerelease: false,
+      outcome: "stamp",
       file: {
         versions: [
           { version: "3.13.0", summary: "新增草稿功能。" },
@@ -121,7 +179,7 @@ describe("checkRelease", () => {
     const result = checkRelease(
       input({
         to: "4.0.0",
-        commits: ["feat(auth)!: require a secret"],
+        commits: [commit("feat(auth)!: require a secret")],
         file: { unreleased, versions: released },
       }),
     );
@@ -129,7 +187,7 @@ describe("checkRelease", () => {
     expect(result.level).toBe("major");
     const [entry] = result.file!.versions;
     expect(entry).toEqual({ version: "4.0.0", ...unreleased });
-    expect(Object.keys(entry)[0]).toBe("version");
+    expect(Object.keys(entry).slice(0, 2)).toEqual(["version", "summary"]);
   });
 
   it("passes a patch", () => {
@@ -139,15 +197,39 @@ describe("checkRelease", () => {
     });
   });
 
+  it("passes a rerun once the file is already stamped", () => {
+    const file = {
+      versions: [{ version: "3.13.0", summary: "新增草稿功能。" }, ...released],
+    };
+    expect(checkRelease(input({ file }))).toEqual({
+      ok: true,
+      base: "3.12.1",
+      level: "minor",
+      outcome: "already-stamped",
+      file: null,
+    });
+    // A major stamped without `before` still fails on the rerun.
+    expect(
+      failures({
+        to: "4.0.0",
+        file: {
+          versions: [{ version: "4.0.0", summary: "大。" }, ...released],
+        },
+      }),
+    ).toEqual([expect.stringContaining("has no `before` items")]);
+  });
+
   it("fails a breaking commit in a release that is not a major", () => {
     const [failure] = failures({
       commits: [
-        "feat: add drafts",
-        "feat(api)!: remove v1",
-        "fix: x\n\nBREAKING CHANGE: y",
+        commit("feat: add drafts"),
+        commit("feat(api)!: remove v1"),
+        commit("fix: x\n\nBREAKING CHANGE: y"),
       ],
     });
-    expect(failure).toContain("2 commits since 3.12.1 are marked breaking");
+    expect(failure).toContain(
+      "2 commits since the last tag are marked breaking",
+    );
     expect(failure).toContain("3.12.1 → 3.13.0 is a minor");
     expect(failure).toContain("feat(api)!: remove v1");
     expect(failure).toContain("fix: x");
@@ -159,7 +241,7 @@ describe("checkRelease", () => {
     ]);
   });
 
-  it("fails when unreleased has no summary", () => {
+  it("fails when unreleased has no summary, which the schema allows", () => {
     expect(
       failures({
         file: {
@@ -219,7 +301,7 @@ describe("checkRelease", () => {
 
   it("reports every failure at once", () => {
     const result = failures({
-      commits: ["feat!: break"],
+      commits: [commit("feat!: break")],
       file: { versions: [{ version: "3.12.0", summary: "旧。" }] },
       addedMigrations: [{ name: "0035_rebuild.sql", sql: rebuild }],
     });
@@ -231,14 +313,33 @@ describe("checkRelease", () => {
     ]);
   });
 
-  it("reports schema problems and still checks the commits", () => {
+  it("reports a schema problem with the summary, before and migration failures", () => {
     const result = failures({
-      commits: ["feat!: break"],
-      file: { unreleased: { summary: "x", befor: [] }, versions: released },
+      to: "4.0.0",
+      commits: [commit("feat!: break")],
+      file: {
+        unreleased: { after: [{ id: "a", text: "一" }] },
+        versions: [{ ...released[0], befor: [] }, released[1]],
+      },
     });
+    // The breaking commit is allowed in a major; the rest all show.
     expect(result).toEqual([
-      expect.stringContaining("upgrades.json does not match its schema"),
+      expect.stringMatching(
+        /does not match its schema:\n {2}versions\.0: .*befor/,
+      ),
+      expect.stringContaining("has no `summary`"),
+      expect.stringContaining("has no `before` items"),
+    ]);
+
+    const minor = failures({
+      commits: [commit("feat!: break")],
+      file: { unreleased: { summary: "x", befor: [] }, versions: released },
+      addedMigrations: [{ name: "0035_rebuild.sql", sql: rebuild }],
+    });
+    expect(minor).toEqual([
+      expect.stringContaining("does not match its schema"),
       expect.stringContaining("marked breaking"),
+      expect.stringContaining("Migration 0035_rebuild.sql"),
     ]);
   });
 
@@ -257,7 +358,7 @@ describe("checkRelease", () => {
         ok: true,
         base: "3.12.1",
         level: "minor",
-        prerelease: true,
+        outcome: "prerelease",
         file: null,
       });
       expect(
@@ -278,7 +379,7 @@ describe("checkRelease", () => {
         input({
           from: "4.0.0-beta.1",
           to: "4.0.0",
-          commits: ["feat!: break"],
+          commits: [commit("feat!: break")],
           file: {
             ...file,
             unreleased: {
