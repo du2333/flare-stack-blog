@@ -4,6 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { UpdateCheckResult } from "@/features/version/update-check.schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
+// The warning is the callout's class on the block's own root (see callout.tsx),
+// so the primitive's stylesheet is imported here, as `Callout` itself does.
+import "@/components/ui/callout.css";
 
 /**
  * What the block knows. `pending` is the first check running with nothing
