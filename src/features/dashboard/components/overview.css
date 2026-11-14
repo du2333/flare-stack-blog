@@ -90,23 +90,30 @@
   transform: translateX(2px);
 }
 
-/* ── Update: one line, a card, or a standing warning, by the size of the step ── */
+/*
+ * ── Update: one line, a card, or a standing warning, by the size of the step ──
+ * One tree serves every form (update-block.tsx): the root is the card
+ * (.overview-card) or the warning (.fuwari-callout) when it is one, and
+ * otherwise a line.
+ */
 
 .overview-update {
   margin-bottom: 20px;
 }
-/* The quiet forms sit close under the greeting, not as a card of their own. */
-.overview-update[data-state="pending"],
-.overview-update[data-state="current"],
-.overview-update[data-state="patch"] {
-  margin-top: -8px;
-}
-.overview-update-line {
+/* The line forms. 28px is the height of the xs button they carry, so the
+   line holds its height while the button or the skeleton comes and goes. */
+.overview-update[data-line] {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 4px 12px;
   min-height: 28px;
+  /* The head leaves 22px under itself; the line sits 14px below the greeting. */
+  margin-top: calc(14px - 22px);
+}
+/* The warning stacks its main part over the actions (the callout is a row). */
+.overview-update[data-state="major"] {
+  display: block;
 }
 .overview-update-text {
   display: inline-flex;
@@ -121,17 +128,34 @@
 .overview-update-text[data-quiet] svg {
   color: var(--admin-accent);
 }
+/* The accent dot of the notices in the head (.overview-notice i): 6px. */
 .overview-update-text i {
   width: 6px;
   height: 6px;
   border-radius: 999px;
   background: var(--admin-accent);
 }
-.overview-update-controls {
-  display: inline-flex;
+/* The placeholder of the quiet line: about the length of its sentence, 14px
+   tall like its text, inside the line's 28px. */
+.overview-update-skeleton {
+  display: block;
+  width: 180px;
+  height: 14px;
+}
+/* The link, the two live regions and the control. The regions stay mounted
+   and empty between checks, so the 12px between neighbours is a margin that
+   an empty region does not take. */
+.overview-update-actions {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  row-gap: 4px;
+}
+.overview-update-actions > * + * {
+  margin-left: 12px;
+}
+.overview-update-actions > .overview-update-status:empty {
+  margin-left: 0;
 }
 .overview-update-status {
   font-size: var(--admin-text-meta);
@@ -141,31 +165,57 @@
 .overview-update-status[data-tone="danger"] {
   color: var(--fuwari-danger-fg);
 }
-.overview-update-body {
-  padding: 4px 20px 16px;
+/* The card's body shares the card head's 20px left edge. */
+.overview-update[data-state="minor"] .overview-update-body {
+  padding: 4px 20px 0;
 }
-.overview-update-actions {
+.overview-update[data-state="minor"] .overview-update-actions {
+  /* 12px = 20px edge less the link's own 8px side padding (xs button). */
+  margin: 12px 20px 0 12px;
+  padding-bottom: 16px;
+}
+.overview-update[data-state="major"] .overview-update-actions {
+  /* 20px clears the warning's 18px icon and 10px gap, less the link's 8px. */
+  margin: 12px 0 0 20px;
+}
+/* In the warning every text takes the callout's own colour: the warning
+   background is what they are read on. */
+.overview-update[data-state="major"] .overview-update-status,
+.overview-update[data-state="major"]
+  .overview-update-status[data-tone="danger"],
+.overview-update[data-state="major"] .overview-update-unavailable,
+.overview-update[data-state="major"] .overview-update-list :is(b, span) {
+  color: inherit;
+}
+.overview-update[data-state="major"]
+  .overview-update-status[data-tone="danger"] {
+  font-weight: 600;
+}
+.overview-update-warning {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin-top: 12px;
-  /* The link's padding gives its text back the edge of the list above. */
-  margin-left: -8px;
+  align-items: flex-start;
+  gap: 10px;
 }
+.overview-update-warning > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.overview-update-warning-title {
+  font-weight: 600;
+}
+/* One column of version numbers, as wide as the longest, for all the rows. */
 .overview-update-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 12px;
   list-style: none;
   padding: 0;
   font-size: var(--admin-text-small);
   line-height: var(--admin-leading-small);
 }
 .overview-update-list li {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 12px;
+  display: contents;
 }
 .overview-update-list b {
   font-weight: 600;
@@ -180,26 +230,20 @@
   line-height: var(--admin-leading-small);
   color: var(--admin-fg-3);
 }
-.overview-update-warning .overview-update-list b,
-.overview-update-warning .overview-update-list span {
-  color: inherit;
-}
-.overview-update-warning-title {
-  font-weight: 600;
-}
+/* The warning's parts sit 10px apart; a version's items 4px under its number. */
 .overview-update-section {
   margin-top: 10px;
 }
-.overview-update-section h3 {
+.overview-update-section h2 {
   margin-bottom: 4px;
   font-size: var(--admin-text-meta);
   font-weight: 600;
-  opacity: 0.8;
 }
 .overview-update-version {
   margin-top: 4px;
   font-weight: 600;
 }
+/* A bullet list: 18px clears the markers. */
 .overview-update-todo {
   margin: 2px 0 6px;
   padding-left: 18px;

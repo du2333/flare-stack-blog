@@ -1,39 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useForceVersionCheck } from "@/features/version/hooks/use-force-version-check";
 import { updateCheckQuery } from "@/features/version/queries";
-import { orpcClient } from "@/lib/orpc";
-import { UpdateBlock } from "./update-block";
+import { type UpdateStatus, UpdateBlock } from "./update-block";
 
 /**
  * The update block of 「概览」, fed by the update check's client query. The
  * Admin starts that query when it opens (`useVersionCheck`), so the page
  * only reads it: the dashboard's own response never waits on GitHub, and the
- * block fills in when the answer arrives. 「重新检查」 runs the forced check
- * and writes its answer into the same query, so the sidebar and every other
- * reader see it too; a failed run leaves the last answer where it was.
+ * block fills in when the answer arrives. 「重新检查」 runs the forced check,
+ * which writes its answer into the same query.
  */
 export function OverviewUpdate() {
-  const queryClient = useQueryClient();
   const query = useQuery({
     ...updateCheckQuery,
     enabled: typeof window !== "undefined",
   });
-  const recheck = useMutation({
-    mutationFn: () => orpcClient.version.forceCheck(),
-    onSuccess: (result) => {
-      queryClient.setQueryData(updateCheckQuery.queryKey, result);
-    },
-  });
+  const recheck = useForceVersionCheck();
 
   const result = query.data ?? null;
+  // A check that failed is over once a later one has answered, whichever
+  // way it was run: the forced check's failure only counts if no answer has
+  // arrived since it was sent.
+  const failed =
+    query.isError ||
+    (recheck.isError && recheck.submittedAt >= query.dataUpdatedAt);
   const checking = recheck.isPending || (result === null && query.isFetching);
-  const failed = recheck.isError || query.isError;
 
-  return (
-    <UpdateBlock
-      result={result}
-      checking={checking}
-      failed={failed}
-      onRecheck={() => recheck.mutate()}
-    />
-  );
+  let status: UpdateStatus;
+  if (result === null)
+    status = failed && !checking ? { kind: "failed" } : { kind: "pending" };
+  else
+    status = {
+      kind: "ready",
+      result,
+      activity: checking ? "checking" : failed ? "failed" : "idle",
+    };
+
+  return <UpdateBlock status={status} onRecheck={() => recheck.mutate()} />;
 }
