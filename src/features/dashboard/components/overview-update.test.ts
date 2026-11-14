@@ -19,6 +19,7 @@ import { OverviewUpdate } from "./overview-update";
 const calls = vi.hoisted(() => ({
   check: vi.fn(),
   force: vi.fn(),
+  dismiss: vi.fn(),
 }));
 
 vi.mock("@/features/version/queries", () => ({
@@ -30,7 +31,13 @@ vi.mock("@/features/version/queries", () => ({
   },
 }));
 vi.mock("@/lib/orpc", () => ({
-  orpcClient: { version: { forceCheck: () => calls.force() } },
+  orpcClient: {
+    version: {
+      forceCheck: () => calls.force(),
+      dismissUpdate: (input: { version: string | null }) =>
+        calls.dismiss(input),
+    },
+  },
 }));
 
 function result(change: Partial<UpdateCheckResult>): UpdateCheckResult {
@@ -42,6 +49,7 @@ function result(change: Partial<UpdateCheckResult>): UpdateCheckResult {
     level: null,
     entries: [],
     notesAvailable: true,
+    dismissed: false,
     ...change,
   };
 }
@@ -82,6 +90,7 @@ beforeEach(() => {
   client = new QueryClient();
   calls.check.mockReset();
   calls.force.mockReset();
+  calls.dismiss.mockReset();
 });
 afterEach(() => {
   cleanup();
@@ -235,4 +244,101 @@ it("starts the check once when the Admin opens, shared with the overview's block
   );
   expect(calls.check).toHaveBeenCalledTimes(1);
   unmount();
+});
+
+const dismissButton = () =>
+  screen.getByRole("button", { name: m.admin_overview_update_dismiss() });
+const restoreButton = () =>
+  screen.getByRole("button", { name: m.admin_overview_update_restore() });
+const status = () => screen.getByRole("status").textContent;
+
+it("dismisses the latest version on the server and turns the block into one line", async () => {
+  calls.check.mockResolvedValue(MINOR);
+  render(wrap(createElement(OverviewUpdate)));
+  await screen.findByText("Adds a thing");
+
+  const written = deferred<{ success: boolean }>();
+  calls.dismiss.mockReturnValue(written.promise);
+  const control = dismissButton();
+  control.focus();
+  fireEvent.click(control);
+  await waitFor(() => expect(calls.dismiss).toHaveBeenCalledTimes(1));
+  // A second press while the write is out is ignored.
+  fireEvent.click(control);
+  await act(async () => {});
+  expect(calls.dismiss).toHaveBeenCalledTimes(1);
+  expect(calls.dismiss).toHaveBeenCalledWith({ version: "v3.13.0" });
+  expect(screen.getByText("Adds a thing")).toBeTruthy();
+
+  await act(async () => written.resolve({ success: true }));
+  await screen.findByText(
+    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
+  );
+  expect(screen.queryByText("Adds a thing")).toBeNull();
+  expect(status()).toBe(
+    m.admin_overview_update_dismiss_done({ version: "v3.13.0" }),
+  );
+  // Focus stays on the control, which is now the way back.
+  expect(restoreButton()).toBe(control);
+  expect(document.activeElement).toBe(control);
+  // Nothing else was asked of the server: the answer is marked in place.
+  expect(calls.check).toHaveBeenCalledTimes(1);
+});
+
+it("restores the reminder and brings the full form back", async () => {
+  calls.check.mockResolvedValue({ ...MINOR, dismissed: true });
+  render(wrap(createElement(OverviewUpdate)));
+  await screen.findByText(
+    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
+  );
+
+  calls.dismiss.mockResolvedValue({ success: true });
+  const control = restoreButton();
+  control.focus();
+  fireEvent.click(control);
+  await screen.findByText("Adds a thing");
+  expect(calls.dismiss).toHaveBeenCalledWith({ version: null });
+  expect(status()).toBe(m.admin_overview_update_restore_done());
+  expect(dismissButton()).toBe(control);
+  expect(document.activeElement).toBe(control);
+});
+
+it("keeps the block as it was and says so when the write fails", async () => {
+  calls.check.mockResolvedValue(MINOR);
+  render(wrap(createElement(OverviewUpdate)));
+  await screen.findByText("Adds a thing");
+
+  calls.dismiss.mockRejectedValue(new Error("offline"));
+  fireEvent.click(dismissButton());
+  await waitFor(() =>
+    expect(failure()).toBe(m.admin_overview_update_dismiss_failed()),
+  );
+  expect(screen.getByText("Adds a thing")).toBeTruthy();
+  expect(status()).toBe("");
+});
+
+it("brings the full form back when a check finds a newer version", async () => {
+  calls.check.mockResolvedValue({ ...MINOR, dismissed: true });
+  render(wrap(createElement(OverviewUpdate)));
+  await screen.findByText(
+    m.admin_overview_update_dismissed({ version: "v3.13.0" }),
+  );
+
+  // The server reports the newer latest version as not dismissed.
+  later(1);
+  calls.force.mockResolvedValue(
+    result({
+      latestVersion: "v3.14.0",
+      hasUpdate: true,
+      level: "minor",
+      entries: [{ version: "3.14.0", summary: "Adds another thing" }],
+    }),
+  );
+  fireEvent.click(recheckButton());
+  await screen.findByText("Adds another thing");
+  expect(
+    screen.queryByText(
+      m.admin_overview_update_dismissed({ version: "v3.13.0" }),
+    ),
+  ).toBeNull();
 });
