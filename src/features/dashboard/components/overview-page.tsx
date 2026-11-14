@@ -36,6 +36,7 @@ import { riseOrder } from "@/components/admin/rise";
 import { Count, OverviewCard, TimeIcon } from "./overview-card";
 import { OverviewHero } from "./overview-hero";
 import { OverviewComments, OverviewFriendLinks } from "./overview-inbox";
+import { OverviewUpdate } from "./overview-update";
 import { TrendChart } from "./trend-chart";
 import "./overview.css";
 
@@ -70,6 +71,8 @@ export function OverviewPage() {
           <Notices data={data} />
         </header>
 
+        <OverviewUpdate />
+
         <div className="overview-grid">
           <div className="overview-col">
             <OverviewHero data={data} />
@@ -102,36 +105,18 @@ function Notices({ data }: { data: DashboardOverview }) {
   if (notices.length === 0) return null;
   return (
     <div className="overview-notices">
-      {notices.map((notice) => {
-        const body = (
-          <>
-            <i />
-            {notice.title}
-            <ChevronRight size={14} aria-hidden />
-          </>
-        );
-        return notice.target.kind === "external" ? (
-          <a
-            key={notice.key}
-            className="overview-notice"
-            href={notice.target.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={notice.description}
-          >
-            {body}
-          </a>
-        ) : (
-          <Link
-            key={notice.key}
-            className="overview-notice"
-            to={notice.target.to}
-            title={notice.description}
-          >
-            {body}
-          </Link>
-        );
-      })}
+      {notices.map((notice) => (
+        <Link
+          key={notice.key}
+          className="overview-notice"
+          to={notice.target.to}
+          title={notice.description}
+        >
+          <i />
+          {notice.title}
+          <ChevronRight size={14} aria-hidden />
+        </Link>
+      ))}
     </div>
   );
 }

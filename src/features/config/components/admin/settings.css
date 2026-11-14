@@ -293,14 +293,25 @@
 }
 
 /*
- * 「维护」: the actions as tiles, two to a row: an icon, what the action does
- * and how the last run went, and the button at the foot.
+ * 「维护」: the actions as tiles: an icon, what the action does and how the
+ * last run went, and the button at the foot. Three tiles sit three across
+ * where the frame is wide enough for all of them (900px: three tiles of
+ * about 290px at the form's 960px), and in one column below that, so no row
+ * ever holds one tile beside an empty cell.
  */
+.settings-maintenance-list {
+  container-type: inline-size;
+}
 .settings-maintenance-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   max-width: var(--admin-form-max);
+}
+@container (min-width: 900px) {
+  .settings-maintenance-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .settings-maintenance-item {
   position: relative;
@@ -381,7 +392,6 @@
     margin-left: auto;
   }
   .settings-maintenance-grid {
-    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
   .settings-maintenance-item {

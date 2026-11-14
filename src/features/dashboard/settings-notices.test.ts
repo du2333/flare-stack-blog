@@ -6,7 +6,6 @@ const QUIET = {
   popularityAlert: null,
   adminEmailNeedsSetup: false,
   defaultSiteIdentity: false,
-  update: null,
 } as const;
 
 it("has nothing to say about a site whose settings are in order", () => {
@@ -35,34 +34,17 @@ it("sends each settings notice to where it is fixed", () => {
   ]);
 });
 
-it("explains the new version with the running one", () => {
-  const [notice] = settingsNotices({
-    ...QUIET,
-    update: { latestVersion: "9.9.9", releaseUrl: "https://example.com/r" },
-  });
-  expect(notice?.description).toBe(
-    m.admin_overview_update_available_desc({ current: __APP_VERSION__ }),
-  );
-  expect(notice?.description).toContain(__APP_VERSION__);
-});
-
-it("orders the notices: a new release, the email, the popularity, the site identity", () => {
+it("orders the notices: the email, the popularity, the site identity", () => {
   const notices = settingsNotices({
     popularityAlert: "failed",
     adminEmailNeedsSetup: true,
     defaultSiteIdentity: true,
-    update: { latestVersion: "9.9.9", releaseUrl: "https://example.com/r" },
   });
   expect(notices.map((notice) => notice.key)).toEqual([
-    "update",
     "email",
     "popularity-failed",
     "identity",
   ]);
-  expect(notices[0]?.target).toEqual({
-    kind: "external",
-    href: "https://example.com/r",
-  });
 });
 
 it("sends an expired snapshot to the maintenance page, where it is synced", () => {

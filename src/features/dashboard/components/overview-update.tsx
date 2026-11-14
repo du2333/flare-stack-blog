@@ -1,0 +1,40 @@
+import { useQuery } from "@tanstack/react-query";
+import { useForceVersionCheck } from "@/features/version/hooks/use-force-version-check";
+import { updateCheckQuery } from "@/features/version/queries";
+import { type UpdateStatus, UpdateBlock } from "./update-block";
+
+/**
+ * The update block of 「概览」, fed by the update check's client query. The
+ * Admin starts that query when it opens (`useVersionCheck`), so the page
+ * only reads it: the dashboard's own response never waits on GitHub, and the
+ * block fills in when the answer arrives. 「重新检查」 runs the forced check,
+ * which writes its answer into the same query.
+ */
+export function OverviewUpdate() {
+  const query = useQuery({
+    ...updateCheckQuery,
+    enabled: typeof window !== "undefined",
+  });
+  const recheck = useForceVersionCheck();
+
+  const result = query.data ?? null;
+  // A check that failed is over once a later one has answered, whichever
+  // way it was run: the forced check's failure only counts if no answer has
+  // arrived since it was sent.
+  const failed =
+    query.isError ||
+    (recheck.isError && recheck.submittedAt >= query.dataUpdatedAt);
+  const checking = recheck.isPending || (result === null && query.isFetching);
+
+  let status: UpdateStatus;
+  if (result === null)
+    status = failed && !checking ? { kind: "failed" } : { kind: "pending" };
+  else
+    status = {
+      kind: "ready",
+      result,
+      activity: checking ? "checking" : failed ? "failed" : "idle",
+    };
+
+  return <UpdateBlock status={status} onRecheck={() => recheck.mutate()} />;
+}
