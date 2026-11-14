@@ -42,3 +42,22 @@ export function accessSectionFromPath(pathname: string): AccessPageId | null {
   if (path.endsWith("/access/agent-skill")) return "agent-skill";
   return null;
 }
+
+/**
+ * 「设置」 and 「接入」 have no page at their own address: each leads to its
+ * first tab. The Admin layout asks this before anything renders, on the server
+ * too. The tab routes render in the browser only, so a redirect of their own
+ * runs after the server has drawn the sidebar for the address without a page,
+ * and the browser then hydrates it at another one.
+ */
+export function sectionFirstPageFromPath(
+  pathname: string,
+):
+  | (typeof SETTINGS_PAGE_TO)["site"]
+  | (typeof ACCESS_PAGE_TO)["api-keys"]
+  | null {
+  const path = pathname.replace(/\/+$/, "");
+  if (path === "/admin/settings") return SETTINGS_PAGE_TO.site;
+  if (path === "/admin/access") return ACCESS_PAGE_TO["api-keys"];
+  return null;
+}
