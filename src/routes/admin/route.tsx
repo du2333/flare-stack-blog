@@ -21,6 +21,7 @@ import { Toaster } from "@/components/layout/toaster";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { readSession } from "@/features/auth/queries";
+import { sectionFirstPageFromPath } from "@/features/config/components/admin/settings-pages";
 import {
   accessSectionFromPath,
   settingsSectionFromPath,
@@ -31,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     const session = await readSession(context.queryClient);
 
     if (!session) {
@@ -39,6 +40,11 @@ export const Route = createFileRoute("/admin")({
     }
     if (session.user.role !== "admin") {
       throw redirect({ to: "/" });
+    }
+
+    const firstPage = sectionFirstPageFromPath(location.pathname);
+    if (firstPage) {
+      throw redirect({ to: firstPage, replace: true });
     }
 
     return { session };

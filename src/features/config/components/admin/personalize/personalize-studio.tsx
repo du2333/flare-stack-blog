@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/focal-point";
 import { FocalPointPicker } from "@/components/ui/focal-point-picker";
 import { IconButton } from "@/components/ui/icon-button";
-import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Sheet } from "@/components/ui/sheet";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
@@ -24,7 +23,6 @@ import {
   BRAND_MARKS,
   PRIMARY_HUE_MAX,
   PRIMARY_HUE_MIN,
-  TAGLINE_MAX,
   type BrandMark,
 } from "@/features/config/site-config.schema";
 import { resolveBrandMarkImage } from "@/features/config/utils/brand-mark";
@@ -33,6 +31,7 @@ import { useMediaQuery } from "@/hooks/use-motion";
 import { m } from "@/paraglide/messages";
 import type { PreviewValues } from "./preview-address";
 import { PreviewPanel } from "./preview-panel";
+import { SiteIconRow, useSiteIconPreview } from "./site-icon-row";
 import { useAsideRoom } from "./use-aside-room";
 
 const IMAGE_ACCEPT = ".png,.webp,.jpg,.jpeg";
@@ -111,7 +110,7 @@ export function PersonalizeStudio() {
         <AvatarRow />
         <HueRow />
         <BrandMarkRow />
-        <TaglineRow />
+        <SiteIconRow />
       </div>
       {wide ? <PreviewAside values={values} /> : null}
     </div>
@@ -323,14 +322,11 @@ function BrandMarkRow() {
   const avatarSrc = previewSrc(useWatch({ control, name: "site.avatar" }));
   const brandMark =
     useWatch({ control, name: "site.brandMark" }) ?? blogConfig.brandMark;
-  const faviconSvg = useWatch({ control, name: "site.icons.faviconSvg" });
-  const favicon96 = useWatch({ control, name: "site.icons.favicon96" });
+  // The icons the public pages show, the defaults included, as the icon row beside it.
+  const icons = useSiteIconPreview();
   const image = resolveBrandMarkImage(brandMark, {
     avatar: avatarSrc ?? "",
-    icons: {
-      faviconSvg: previewSrc(faviconSvg) ?? "",
-      favicon96: previewSrc(favicon96) ?? "",
-    },
+    icons: { faviconSvg: icons.svg ?? "", favicon96: icons.raster },
   });
 
   return (
@@ -362,29 +358,6 @@ function BrandMarkRow() {
           )}
           <span>{title}</span>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function TaglineRow() {
-  const { register, formState } = useFormContext<SystemConfig>();
-  const error = formState.errors.site?.tagline?.message;
-  return (
-    <section className="site-theme-row">
-      <div className="site-section-copy">
-        <label htmlFor="site-tagline">{m.settings_tagline()}</label>
-        <p>{m.settings_tagline_hint()}</p>
-      </div>
-      <div className="site-tagline-control">
-        <Input
-          id="site-tagline"
-          {...register("site.tagline")}
-          maxLength={TAGLINE_MAX}
-          placeholder={m.settings_tagline_ph()}
-          aria-invalid={error ? true : undefined}
-        />
-        {error ? <p className="fuwari-form-field-error">{error}</p> : null}
       </div>
     </section>
   );

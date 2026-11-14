@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useRef } from "react";
+import { type ReactNode, useRef } from "react";
 import { type FieldPath, useFormContext } from "react-hook-form";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,15 @@ import type { SystemConfig } from "@/features/config/config.schema";
 import { orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 
+type UploadVariant = "overlay" | "regular" | "outline";
+
 export function OverlayUpload({
   name,
   assetPath,
   accept,
   className,
   label,
+  describedBy,
   variant = "overlay",
 }: {
   name: FieldPath<SystemConfig>;
@@ -24,11 +27,12 @@ export function OverlayUpload({
   accept: string;
   className?: string;
   label?: string;
+  /** The id of what names the asset, where the button's text alone is ambiguous. */
+  describedBy?: string;
   /** `regular` or `outline` where the button does not sit on an image. */
-  variant?: "overlay" | "regular" | "outline";
+  variant?: UploadVariant;
 }) {
   const { setValue, watch } = useFormContext<SystemConfig>();
-  const inputRef = useRef<HTMLInputElement>(null);
   const currentValue = watch(name);
   const upload = useMutation({
     mutationFn: (file: File) =>
@@ -44,14 +48,43 @@ export function OverlayUpload({
     },
   });
 
-  const buttonText = upload.isPending
-    ? m.settings_asset_uploading()
-    : label
-      ? label
-      : currentValue
-        ? m.settings_replace()
-        : m.settings_asset_upload_btn();
+  return (
+    <AssetFileButton
+      accept={accept}
+      variant={variant}
+      className={className}
+      describedBy={describedBy}
+      pending={upload.isPending}
+      onFile={(file) => upload.mutate(file)}
+    >
+      {label ? label : currentValue ? m.settings_replace() : undefined}
+    </AssetFileButton>
+  );
+}
 
+/**
+ * A button that opens the file picker and hands over the chosen file, once it
+ * is within the site asset size limit. It reads 上传中 while `pending`, else its
+ * children, else 上传.
+ */
+export function AssetFileButton({
+  accept,
+  variant = "outline",
+  className,
+  describedBy,
+  pending,
+  onFile,
+  children,
+}: {
+  accept: string;
+  variant?: UploadVariant;
+  className?: string;
+  describedBy?: string;
+  pending: boolean;
+  onFile: (file: File) => void;
+  children?: ReactNode;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <>
       <input
@@ -71,17 +104,20 @@ export function OverlayUpload({
             });
             return;
           }
-          upload.mutate(file);
+          onFile(file);
         }}
       />
       <Button
         variant={variant}
         size="sm"
         onClick={() => inputRef.current?.click()}
-        loading={upload.isPending}
+        loading={pending}
         className={className}
+        aria-describedby={describedBy}
       >
-        {buttonText}
+        {pending
+          ? m.settings_asset_uploading()
+          : (children ?? m.settings_asset_upload_btn())}
       </Button>
     </>
   );

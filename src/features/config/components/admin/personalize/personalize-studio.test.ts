@@ -23,6 +23,13 @@ import { PREVIEW_LOAD_TIMEOUT_MS } from "./preview-stage";
 
 vi.mock("@/lib/orpc", () => ({
   orpcClient: { config: { admin: { uploadAsset: vi.fn() } } },
+  orpc: {
+    config: {
+      admin: {
+        uploadIcon: { mutationOptions: (options: object) => options },
+      },
+    },
+  },
 }));
 let wide = true;
 let queued: Array<() => void> = [];
@@ -203,13 +210,16 @@ describe("on a wide screen", () => {
     expect(screen.queryByText(m.personalize_preview_loading())).toBeNull();
   });
 
-  it("reloads for a Theme option and for the tagline too", async () => {
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  it("has no tagline input; the site page edits it", () => {
     renderStudio();
+    expect(screen.queryByLabelText(m.settings_tagline())).toBeNull();
+  });
+
+  it("reloads for a Theme option and for the tagline, which the site page edits", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const form = renderStudio();
     loaded(frames()[0]);
-    fireEvent.change(screen.getByLabelText(m.settings_tagline()), {
-      target: { value: "Hello" },
-    });
+    act(() => form().setValue("site.tagline", "Hello", { shouldDirty: true }));
     await wait(PREVIEW_DEBOUNCE_MS);
     expect(frames()).toHaveLength(2);
     expect(draftOf(frames()[1]).tagline).toBe("Hello");
@@ -247,10 +257,10 @@ describe("on a wide screen", () => {
 
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toContain(m.personalize_preview_failed());
-    fireEvent.change(screen.getByLabelText(m.settings_tagline()), {
-      target: { value: "Still editable" },
+    fireEvent.change(document.getElementById("theme-hue-slider")!, {
+      target: { value: "120" },
     });
-    expect(form().getValues("site.tagline")).toBe("Still editable");
+    expect(form().getValues("site.primaryHue")).toBe(120);
 
     const before = frames();
     fireEvent.click(

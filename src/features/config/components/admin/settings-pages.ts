@@ -1,5 +1,3 @@
-import type { LEGACY_SETTINGS_TABS } from "@/features/config/legacy-settings-search";
-
 /** The tabs of 「设置」: what the site is, how it notifies, its upkeep. */
 export const SETTINGS_PAGE_TO = {
   site: "/admin/settings/site",
@@ -28,21 +26,6 @@ export const ACCESS_PAGE_IDS = [
   "agent-skill",
 ] as const satisfies ReadonlyArray<AccessPageId>;
 
-/** Where the pages that left 「设置」 live now; the old addresses redirect. */
-export const MOVED_SETTINGS_PAGE_TO = {
-  "api-keys": ACCESS_PAGE_TO["api-keys"],
-  "agent-skill": ACCESS_PAGE_TO["agent-skill"],
-  "muted-users": "/admin/muted-users",
-} as const;
-
-export const LEGACY_SETTINGS_TAB_TO = {
-  site: SETTINGS_PAGE_TO.site,
-  email: SETTINGS_PAGE_TO.notify,
-  webhook: SETTINGS_PAGE_TO.notify,
-  "api-keys": ACCESS_PAGE_TO["api-keys"],
-  maintenance: SETTINGS_PAGE_TO.maintenance,
-} as const satisfies Record<(typeof LEGACY_SETTINGS_TABS)[number], string>;
-
 export function settingsSectionFromPath(
   pathname: string,
 ): SettingsPageId | null {
@@ -57,5 +40,24 @@ export function accessSectionFromPath(pathname: string): AccessPageId | null {
   const path = pathname.replace(/\/+$/, "");
   if (path.endsWith("/access/api-keys")) return "api-keys";
   if (path.endsWith("/access/agent-skill")) return "agent-skill";
+  return null;
+}
+
+/**
+ * 「设置」 and 「接入」 have no page at their own address: each leads to its
+ * first tab. The Admin layout asks this before anything renders, on the server
+ * too. The tab routes render in the browser only, so a redirect of their own
+ * runs after the server has drawn the sidebar for the address without a page,
+ * and the browser then hydrates it at another one.
+ */
+export function sectionFirstPageFromPath(
+  pathname: string,
+):
+  | (typeof SETTINGS_PAGE_TO)["site"]
+  | (typeof ACCESS_PAGE_TO)["api-keys"]
+  | null {
+  const path = pathname.replace(/\/+$/, "");
+  if (path === "/admin/settings") return SETTINGS_PAGE_TO.site;
+  if (path === "/admin/access") return ACCESS_PAGE_TO["api-keys"];
   return null;
 }

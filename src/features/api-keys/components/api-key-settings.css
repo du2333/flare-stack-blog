@@ -1,20 +1,19 @@
 /*
- * 「接入」 · API Key and the list of connected agents: a list body. A row is
- * the frame's .admin-list-row on a grid of name, details and the overflow
- * menu; a phone keeps the name and the menu and puts the dates under the name.
+ * 「接入」 · the API Key card and the rows of 「已接入的 agent」. The key card
+ * is the frame's form-body card (.admin-form-section, in the markup), so it
+ * takes its width, padding, radius and shadow from there, and is as tall as its
+ * rows. A key row is the frame's .admin-list-row; the rows of one card share
+ * their columns through a subgrid, so the action column is as wide as the
+ * widest action in it (the menu, or the link of a paired agent). When the card
+ * is too narrow for the four detail columns the row keeps its name and its
+ * action, with the dates under the name; the card is the container, since its
+ * width follows the sidebar and not only the window.
  */
 .settings-keys {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
-.key-list {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  container-type: inline-size;
 }
 .key-note {
+  /* The rows pad their own text by --admin-row-x; the note lines up with them. */
   margin-bottom: 8px;
   padding: 6px var(--admin-row-x) 0;
   color: var(--admin-fg-3);
@@ -27,9 +26,22 @@
 .key-grid,
 .admin-list-row.key-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 96px 148px 148px 36px;
   align-items: center;
+  /* Between the columns; the paired-agent list sets its own columns. */
   gap: 16px;
+}
+/* Name, prefix, created, last used (the prefix and the two dates as wide as
+   they read on one line), then the action as wide as its content. */
+.key-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 148px 148px auto;
+  column-gap: 16px;
+}
+.key-table > .key-grid {
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  /* A subgrid with `normal` gaps uses the table's. */
+  column-gap: normal;
 }
 .key-head {
   min-height: 36px;
@@ -79,22 +91,40 @@
   display: flex;
   justify-content: flex-end;
 }
+/* A paired agent's row links to where it is revoked, in place of the menu. The
+   frame underlines it (.text-link). */
+.key-manage {
+  color: var(--fuwari-fg-50);
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  white-space: nowrap;
+}
+.key-manage:hover {
+  color: var(--fuwari-fg);
+}
 .key-count {
+  /* Air above the last row; the card's own padding is under it. */
   padding: 12px var(--admin-row-x) 4px;
   color: var(--fuwari-fg-50);
   font-size: var(--admin-text-meta);
   line-height: var(--admin-leading-meta);
 }
-@media (max-width: 760px) {
-  .key-grid,
-  .admin-list-row.key-grid {
-    grid-template-columns: minmax(0, 1fr) 36px;
-    gap: 8px;
+/*
+ * The card's content box, below 864px: the four detail columns (96 + 148 + 148
+ * + the action, about 135 in English, + four 16px gaps = about 590) leave the
+ * name under 250px, the room "Claude Code · 2026-11-13" and its badge need,
+ * with the row's 24px of padding. Not a window width: the sidebar takes 248px
+ * of it from 1024px up.
+ */
+@container (max-width: 864px) {
+  .key-table {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
   }
   .key-head {
     display: none;
   }
-  .key-grid > .key-cell {
+  .key-table .key-grid > .key-cell {
     display: none;
   }
   .key-summary {
@@ -105,5 +135,23 @@
     line-height: var(--admin-leading-meta);
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+/*
+ * The card's content box, below 416px (a window of about 500px): the name with
+ * its badge (250px), the link (about 135px), the 8px gap and the row's 24px of
+ * padding no longer fit on a line, so the link takes a third line. The
+ * frame's 58px cap on a row cannot hold three lines, hence the padding of 10px
+ * and the 4px between lines, which keep the row as compact as three lines allow.
+ */
+@container (max-width: 416px) {
+  .key-table > .admin-list-row.key-grid:has(> .key-actions > .key-manage) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    max-height: none;
+    padding-block: 10px;
+  }
+  .key-actions:has(> .key-manage) {
+    justify-content: flex-start;
   }
 }

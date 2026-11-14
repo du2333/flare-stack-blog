@@ -59,10 +59,7 @@ import { Route as AdminFriendLinksIndexRouteImport } from './routes/admin/friend
 import { Route as AdminMediaIndexRouteImport } from './routes/admin/media/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
-import { Route as AdminSettingsAgentSkillRouteImport } from './routes/admin/settings/agent-skill'
-import { Route as AdminSettingsApiKeysRouteImport } from './routes/admin/settings/api-keys'
 import { Route as AdminSettingsMaintenanceRouteImport } from './routes/admin/settings/maintenance'
-import { Route as AdminSettingsMutedUsersRouteImport } from './routes/admin/settings/muted-users'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
 import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/site'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
@@ -320,27 +317,12 @@ const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminSettingsRouteRoute,
 } as any)
-const AdminSettingsAgentSkillRoute = AdminSettingsAgentSkillRouteImport.update({
-  id: '/agent-skill',
-  path: '/agent-skill',
-  getParentRoute: () => AdminSettingsRouteRoute,
-} as any)
-const AdminSettingsApiKeysRoute = AdminSettingsApiKeysRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
-  getParentRoute: () => AdminSettingsRouteRoute,
-} as any)
 const AdminSettingsMaintenanceRoute =
   AdminSettingsMaintenanceRouteImport.update({
     id: '/maintenance',
     path: '/maintenance',
     getParentRoute: () => AdminSettingsRouteRoute,
   } as any)
-const AdminSettingsMutedUsersRoute = AdminSettingsMutedUsersRouteImport.update({
-  id: '/muted-users',
-  path: '/muted-users',
-  getParentRoute: () => AdminSettingsRouteRoute,
-} as any)
 const AdminSettingsNotificationsRoute =
   AdminSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -421,10 +403,7 @@ export interface FileRoutesByFullPath {
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/access/agent-skill': typeof AdminAccessAgentSkillRoute
   '/admin/access/api-keys': typeof AdminAccessApiKeysRoute
-  '/admin/settings/agent-skill': typeof AdminSettingsAgentSkillRoute
-  '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
-  '/admin/settings/muted-users': typeof AdminSettingsMutedUsersRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -477,10 +456,7 @@ export interface FileRoutesByTo {
   '/post/$slug': typeof PublicPostSlugRoute
   '/admin/access/agent-skill': typeof AdminAccessAgentSkillRoute
   '/admin/access/api-keys': typeof AdminAccessApiKeysRoute
-  '/admin/settings/agent-skill': typeof AdminSettingsAgentSkillRoute
-  '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
-  '/admin/settings/muted-users': typeof AdminSettingsMutedUsersRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -540,10 +516,7 @@ export interface FileRoutesById {
   '/_public/post/$slug': typeof PublicPostSlugRoute
   '/admin/access/agent-skill': typeof AdminAccessAgentSkillRoute
   '/admin/access/api-keys': typeof AdminAccessApiKeysRoute
-  '/admin/settings/agent-skill': typeof AdminSettingsAgentSkillRoute
-  '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
-  '/admin/settings/muted-users': typeof AdminSettingsMutedUsersRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -602,10 +575,7 @@ export interface FileRouteTypes {
     | '/post/$slug'
     | '/admin/access/agent-skill'
     | '/admin/access/api-keys'
-    | '/admin/settings/agent-skill'
-    | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
-    | '/admin/settings/muted-users'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
     | '/api/auth/$'
@@ -658,10 +628,7 @@ export interface FileRouteTypes {
     | '/post/$slug'
     | '/admin/access/agent-skill'
     | '/admin/access/api-keys'
-    | '/admin/settings/agent-skill'
-    | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
-    | '/admin/settings/muted-users'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
     | '/api/auth/$'
@@ -720,10 +687,7 @@ export interface FileRouteTypes {
     | '/_public/post/$slug'
     | '/admin/access/agent-skill'
     | '/admin/access/api-keys'
-    | '/admin/settings/agent-skill'
-    | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
-    | '/admin/settings/muted-users'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
     | '/api/auth/$'
@@ -1110,32 +1074,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsIndexRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/admin/settings/agent-skill': {
-      id: '/admin/settings/agent-skill'
-      path: '/agent-skill'
-      fullPath: '/admin/settings/agent-skill'
-      preLoaderRoute: typeof AdminSettingsAgentSkillRouteImport
-      parentRoute: typeof AdminSettingsRouteRoute
-    }
-    '/admin/settings/api-keys': {
-      id: '/admin/settings/api-keys'
-      path: '/api-keys'
-      fullPath: '/admin/settings/api-keys'
-      preLoaderRoute: typeof AdminSettingsApiKeysRouteImport
-      parentRoute: typeof AdminSettingsRouteRoute
-    }
     '/admin/settings/maintenance': {
       id: '/admin/settings/maintenance'
       path: '/maintenance'
       fullPath: '/admin/settings/maintenance'
       preLoaderRoute: typeof AdminSettingsMaintenanceRouteImport
-      parentRoute: typeof AdminSettingsRouteRoute
-    }
-    '/admin/settings/muted-users': {
-      id: '/admin/settings/muted-users'
-      path: '/muted-users'
-      fullPath: '/admin/settings/muted-users'
-      preLoaderRoute: typeof AdminSettingsMutedUsersRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
     '/admin/settings/notifications': {
@@ -1304,20 +1247,14 @@ const AdminPostsRouteRouteWithChildren = AdminPostsRouteRoute._addFileChildren(
 )
 
 interface AdminSettingsRouteRouteChildren {
-  AdminSettingsAgentSkillRoute: typeof AdminSettingsAgentSkillRoute
-  AdminSettingsApiKeysRoute: typeof AdminSettingsApiKeysRoute
   AdminSettingsMaintenanceRoute: typeof AdminSettingsMaintenanceRoute
-  AdminSettingsMutedUsersRoute: typeof AdminSettingsMutedUsersRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   AdminSettingsSiteRoute: typeof AdminSettingsSiteRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
 }
 
 const AdminSettingsRouteRouteChildren: AdminSettingsRouteRouteChildren = {
-  AdminSettingsAgentSkillRoute: AdminSettingsAgentSkillRoute,
-  AdminSettingsApiKeysRoute: AdminSettingsApiKeysRoute,
   AdminSettingsMaintenanceRoute: AdminSettingsMaintenanceRoute,
-  AdminSettingsMutedUsersRoute: AdminSettingsMutedUsersRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   AdminSettingsSiteRoute: AdminSettingsSiteRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,

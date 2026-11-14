@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { ArrowRight, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
+import { ArrowRight, ExternalLink, Link2, Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { AdminFormRow, AdminFormSection } from "@/components/admin/admin-page";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { Select } from "@/components/ui/select";
 import { OverlayUpload } from "@/features/config/components/admin/overlay-upload";
 import { previewSrc } from "@/features/config/components/admin/preview-src";
 import type { SystemConfig } from "@/features/config/config.schema";
-import { SITE_DESCRIPTION_MAX } from "@/features/config/site-config.schema";
+import {
+  SITE_DESCRIPTION_MAX,
+  TAGLINE_MAX,
+} from "@/features/config/site-config.schema";
 import {
   canonicalizeNavHref,
   isExternalNavHref,
@@ -28,47 +31,6 @@ import { SettingRow } from "./setting-row";
 import { useNavSort } from "./use-nav-sort";
 import "./site-studio.css";
 
-const ICON_ACCEPT = ".svg,.ico,.png,.webp";
-
-const ICON_FIELDS = [
-  {
-    name: "site.icons.faviconSvg" as const,
-    path: "favicon/favicon.svg",
-    accept: ".svg",
-    label: () => m.settings_site_field_favicon_svg(),
-  },
-  {
-    name: "site.icons.faviconIco" as const,
-    path: "favicon/favicon.ico",
-    accept: ".ico",
-    label: () => m.settings_site_field_favicon_ico(),
-  },
-  {
-    name: "site.icons.favicon96" as const,
-    path: "favicon/favicon-96x96.png",
-    accept: ".png",
-    label: () => m.settings_site_field_favicon_96(),
-  },
-  {
-    name: "site.icons.appleTouchIcon" as const,
-    path: "favicon/apple-touch-icon.png",
-    accept: ".png",
-    label: () => m.settings_site_field_apple_touch_icon(),
-  },
-  {
-    name: "site.icons.webApp192" as const,
-    path: "favicon/web-app-manifest-192x192.png",
-    accept: ".png,.webp",
-    label: () => m.settings_site_field_web_app_192(),
-  },
-  {
-    name: "site.icons.webApp512" as const,
-    path: "favicon/web-app-manifest-512x512.png",
-    accept: ".png,.webp",
-    label: () => m.settings_site_field_web_app_512(),
-  },
-];
-
 export function SiteStudio() {
   return (
     <div className="site-studio">
@@ -78,16 +40,6 @@ export function SiteStudio() {
       <AdminFormSection title={m.settings_group_site_links()}>
         <SocialLinksEditor />
         <NavLinksEditor />
-      </AdminFormSection>
-      <AdminFormSection
-        title={m.settings_icons()}
-        description={m.settings_icons_hint()}
-      >
-        <div className="site-icon-grid">
-          {ICON_FIELDS.map((item) => (
-            <IconTile key={item.name} {...item} />
-          ))}
-        </div>
       </AdminFormSection>
       <p className="site-moved-hint">
         {m.settings_site_moved_to_personalize()}
@@ -103,7 +55,7 @@ export function SiteStudio() {
   );
 }
 
-/** The title, the author and the description: a row each, with where it shows. */
+/** The title, the author, the description and the tagline: a row each, with where it shows. */
 function TextFields() {
   const { register, control, formState } = useFormContext<SystemConfig>();
   const errors = formState.errors.site;
@@ -156,6 +108,20 @@ function TextFields() {
               })}
             </p>
           </>
+        )}
+      </SettingRow>
+      <SettingRow
+        label={m.settings_tagline()}
+        description={m.settings_site_tagline_hint()}
+        error={errors?.tagline?.message}
+      >
+        {(field) => (
+          <Input
+            {...register("site.tagline")}
+            {...field}
+            maxLength={TAGLINE_MAX}
+            placeholder={m.settings_tagline_ph()}
+          />
         )}
       </SettingRow>
       <SearchPreview />
@@ -288,10 +254,10 @@ function NavLinksEditor() {
 
       {fields.length < NAV_LINKS_MAX ? (
         <Button
-          variant="text"
+          variant="outline"
           size="sm"
           onClick={() => append({ label: "", href: "" })}
-          icon={<Plus size={14} />}
+          icon={<Plus size={15} />}
           className="site-add-link"
         >
           {m.settings_site_nav_add()}
@@ -410,11 +376,11 @@ function NavLinkRow({
         <div className="site-nav-add-child">
           <Button
             ref={addChild}
-            variant="quiet"
-            size="xs"
+            variant="outline"
+            size="sm"
             disabled={full}
             aria-describedby={full ? `${id}-child-limit` : undefined}
-            icon={<Plus size={14} />}
+            icon={<Plus size={15} />}
             onClick={() => {
               if (!isGroup) {
                 // A group leads nowhere: its address goes when it becomes one.
@@ -617,7 +583,7 @@ function SocialLinksEditor() {
                   onClick={() => remove(index)}
                   label={m.settings_social_remove()}
                 >
-                  <X size={16} />
+                  <Trash2 size={16} />
                 </IconButton>
               </div>
               {platform === "custom" ? (
@@ -649,53 +615,18 @@ function SocialLinksEditor() {
       </div>
       {unused.length > 0 ? (
         <Button
-          variant="text"
+          variant="outline"
           size="sm"
           onClick={() => {
             const next = unused[0];
             if (next) append({ platform: next, url: "" });
           }}
-          icon={<Plus size={14} />}
+          icon={<Plus size={15} />}
           className="site-add-link"
         >
           {m.settings_social_add()}
         </Button>
       ) : null}
     </AdminFormRow>
-  );
-}
-
-function IconTile({
-  name,
-  path,
-  accept,
-  label,
-}: {
-  name:
-    | "site.icons.faviconSvg"
-    | "site.icons.faviconIco"
-    | "site.icons.favicon96"
-    | "site.icons.appleTouchIcon"
-    | "site.icons.webApp192"
-    | "site.icons.webApp512";
-  path: string;
-  accept: string;
-  label: () => string;
-}) {
-  const { watch } = useFormContext<SystemConfig>();
-  const src = previewSrc(watch(name));
-  return (
-    <div className="site-icon">
-      <span className="site-icon-preview">
-        {src ? <img src={src} alt="" /> : null}
-      </span>
-      <p className="site-icon-name">{label()}</p>
-      <OverlayUpload
-        name={name}
-        assetPath={path}
-        accept={accept || ICON_ACCEPT}
-        variant="outline"
-      />
-    </div>
   );
 }

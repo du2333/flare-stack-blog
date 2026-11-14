@@ -354,8 +354,9 @@ export const FullSiteConfigSchema = z.object({
   social: z.array(SocialLinkSchema),
   navLinks: z.array(NavLinkSchema).max(NAV_LINKS_MAX),
   icons: z.object({
-    faviconSvg: createAssetPathSchema(),
-    faviconIco: createAssetPathSchema(),
+    // Empty when an uploaded raster icon has no SVG beside it, so the tab
+    // shows the uploaded icon rather than the default vector one.
+    faviconSvg: createOptionalAssetPathSchema(),
     favicon96: createAssetPathSchema(),
     appleTouchIcon: createAssetPathSchema(),
     webApp192: createAssetPathSchema(),
@@ -384,7 +385,6 @@ export function createSiteConfigInputFormSchema() {
     icons: z
       .object({
         faviconSvg: createOptionalAssetPathFormSchema().optional(),
-        faviconIco: createOptionalAssetPathFormSchema().optional(),
         favicon96: createOptionalAssetPathFormSchema().optional(),
         appleTouchIcon: createOptionalAssetPathFormSchema().optional(),
         webApp192: createOptionalAssetPathFormSchema().optional(),
@@ -422,7 +422,6 @@ export const SiteConfigInputSchema = z.object({
   icons: z
     .object({
       faviconSvg: createOptionalAssetPathSchema().optional(),
-      faviconIco: createOptionalAssetPathSchema().optional(),
       favicon96: createOptionalAssetPathSchema().optional(),
       appleTouchIcon: createOptionalAssetPathSchema().optional(),
       webApp192: createOptionalAssetPathSchema().optional(),
