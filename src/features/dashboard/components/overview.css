@@ -147,6 +147,8 @@
   flex-wrap: wrap;
   gap: 6px 12px;
   margin-top: 12px;
+  /* The link's padding gives its text back the edge of the list above. */
+  margin-left: -8px;
 }
 .overview-update-list {
   display: flex;
