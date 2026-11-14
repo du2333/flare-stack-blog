@@ -15,6 +15,7 @@ import {
   useState,
 } from "react";
 import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
+import { UpgradeNotice } from "@/features/version/components/upgrade-notice";
 import { settingsNotices } from "@/features/dashboard/settings-notices";
 import { dashboardOverviewQuery } from "@/features/dashboard/queries";
 import { buildWritingCalendar } from "@/features/dashboard/writing-calendar";
@@ -72,6 +73,7 @@ export function OverviewPage() {
         </header>
 
         <OverviewUpdate />
+        <UpgradeNotice />
 
         <div className="overview-grid">
           <div className="overview-col">

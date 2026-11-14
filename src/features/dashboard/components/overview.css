@@ -250,6 +250,87 @@
   list-style: disc;
 }
 
+/*
+ * ── Upgrade notice: below the update block, in its forms ──
+ * (upgrade-notice.tsx) One line when no version has an item, a card when any
+ * has. It reuses the update block's line text, status and item list.
+ */
+
+.overview-upgrade {
+  margin-bottom: 20px;
+}
+/* The line. 28px is the height of the xs button it carries. After the update
+   block's 20px bottom margin the two lines sit 14px apart, the distance the
+   update line keeps from the greeting. */
+.overview-upgrade[data-line] {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-height: 28px;
+  margin-top: calc(14px - 20px);
+}
+.overview-upgrade-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.overview-upgrade-actions > * + * {
+  margin-left: 12px;
+}
+.overview-upgrade-actions > .overview-update-status:empty {
+  margin-left: 0;
+}
+/* The card's body shares the card head's 20px left edge, as the update card. */
+.overview-upgrade[data-state="card"] .overview-upgrade-body {
+  padding: 4px 20px 0;
+}
+/* 12px under the list, 16px under the control, as the update card. */
+.overview-upgrade[data-state="card"] .overview-upgrade-actions {
+  margin: 12px 20px 0;
+  padding-bottom: 16px;
+}
+/* The title stays on one line and the sentence beside it drops under it when
+   the card is narrow. */
+.overview-upgrade .overview-card-head {
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 0;
+}
+.overview-upgrade .overview-card-title {
+  white-space: nowrap;
+}
+/* The update list's two columns, with the items under a version's summary. */
+.overview-upgrade-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 12px;
+  list-style: none;
+  padding: 0;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+}
+.overview-upgrade-list > li {
+  display: contents;
+}
+.overview-upgrade-list b {
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+.overview-upgrade-list > li > div {
+  min-width: 0;
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.overview-upgrade-list .overview-update-todo {
+  margin: 2px 0 0;
+  color: var(--admin-fg);
+}
+.overview-upgrade-list .overview-update-todo li + li {
+  margin-top: 2px;
+}
+
 /* ── Layout ── */
 
 .overview-grid {
