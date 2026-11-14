@@ -13,6 +13,11 @@ const SKILL_DIR = path.join(".agents/skills", AGENT_SKILL_NAME);
 // getters, so a Date built from local fields keeps the same bytes in any zone.
 const FIXED_TIME = new Date(2000, 0, 1, 12, 0, 0);
 
+// Unix modes in the high half of the external attributes (os 3 = Unix), so an
+// unzip gives readable files and an enterable folder, as the old attachment did.
+const UNIX_FILE = { os: 3, attrs: (0o100644 << 16) >>> 0 };
+const UNIX_DIR = { os: 3, attrs: ((0o040755 << 16) | 0x10) >>> 0 };
+
 /** Every file under `dir` as slash-separated relative paths, in byte order. */
 function listFiles(dir: string, prefix = ""): string[] {
   const found: string[] = [];
@@ -44,13 +49,13 @@ export function packAgentSkill(root: string): Uint8Array {
   const entries: Array<[string, Zippable[string]]> = [
     ...[...folders].map((folder): [string, Zippable[string]] => [
       `${folder}/`,
-      [new Uint8Array(0), { level: 0, mtime: FIXED_TIME }],
+      [new Uint8Array(0), { level: 0, mtime: FIXED_TIME, ...UNIX_DIR }],
     ]),
     ...files.map((file): [string, Zippable[string]] => [
       `${AGENT_SKILL_NAME}/${file}`,
       [
         new Uint8Array(readFileSync(path.join(dir, file))),
-        { level: 9, mtime: FIXED_TIME },
+        { level: 9, mtime: FIXED_TIME, ...UNIX_FILE },
       ],
     ]),
   ];
