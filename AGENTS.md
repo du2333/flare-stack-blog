@@ -26,4 +26,4 @@ A diff is reviewed against `CODING_STANDARDS.md`; `bun run check` is what CI run
 
 ## Cloudflare
 
-Cloudflare operations go through the `cf` CLI (`bunx cf`), a 2026 beta that replaced Wrangler here. Find commands with `bunx cf cli search "<task>"`.
+Cloudflare operations go through the `cf` CLI (`bunx cf`), a 2026 beta that replaced Wrangler here. Find commands with `bunx cf cli search "<task>"`. Deploying a branch to the rehearsal Worker, and pointing its update check at a branch's `upgrades.json`: `docs/agents/rehearsal.md`.
