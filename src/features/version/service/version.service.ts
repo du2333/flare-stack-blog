@@ -10,11 +10,9 @@ import {
 import type { ApplicationRelease } from "@/features/version/version.schema";
 import {
   ApplicationReleaseSchema,
-  ApplicationReleaseVersionSchema,
   RunningApplicationReleaseVersionSchema,
   VERSION_CACHE_KEYS,
 } from "@/features/version/version.schema";
-import { z } from "zod";
 import { ms } from "@/lib/duration";
 import { serverEnv } from "@/lib/env/server.env";
 import type { Result } from "@/lib/errors";
@@ -329,30 +327,6 @@ async function readTextUpTo(response: Response, limit: number) {
   return new TextDecoder().decode(bytes);
 }
 
-/**
- * Reads the latest release through the API when a token is set, since the
- * unauthenticated API quota is shared by every Worker on the same egress IP.
- * Otherwise, or when the API fails, reads the tag that the release page
- * redirects to, which does not count against the API quota.
- */
-export async function fetchLatestReleaseFromGitHub(
-  githubToken: string | undefined,
-): Promise<ApplicationRelease> {
-  if (githubToken) {
-    try {
-      return await fetchLatestReleaseFromApi(githubToken);
-    } catch (error) {
-      console.warn(
-        JSON.stringify({
-          message: "github api release lookup failed, using release page",
-          error: error instanceof Error ? error.message : String(error),
-        }),
-      );
-    }
-  }
-  return await fetchLatestReleaseFromReleasePage();
-}
-
 /** The latest release as the tag the release page redirects to. */
 export async function fetchLatestReleaseFromReleasePage(): Promise<ApplicationRelease> {
   const response = await fetch(
@@ -382,49 +356,11 @@ export async function fetchLatestReleaseFromReleasePage(): Promise<ApplicationRe
   };
 }
 
-const GitHubReleaseSchema = z.object({
-  tag_name: ApplicationReleaseVersionSchema,
-  html_url: z.url(),
-});
-
-async function fetchLatestReleaseFromApi(
-  githubToken: string,
-): Promise<ApplicationRelease> {
-  const headers: Record<string, string> = {
-    "User-Agent": "flare-stack-blog",
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    Authorization: `Bearer ${githubToken}`,
-  };
-
-  const response = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
-    {
-      headers,
-      signal: AbortSignal.timeout(GITHUB_REQUEST_TIMEOUT),
-    },
-  );
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(
-      `GitHub API error: ${response.status} ${response.statusText}${body ? ` - ${body.slice(0, 500)}` : ""}`,
-    );
-  }
-
-  const data = GitHubReleaseSchema.parse(await response.json());
-  return {
-    version: data.tag_name,
-    releaseUrl: data.html_url,
-  };
-}
-
 export const versionChecker = createVersionChecker({
   getCurrentVersion: () => __APP_VERSION__,
   readUpgradesFile: (context) =>
     readUpgradesFileFromUrl(
       upgradesFileUrl(serverEnv(context.env).UPDATE_SOURCE_URL),
     ),
-  readLatestRelease: (context) =>
-    fetchLatestReleaseFromGitHub(serverEnv(context.env).GITHUB_TOKEN),
+  readLatestRelease: fetchLatestReleaseFromReleasePage,
 });

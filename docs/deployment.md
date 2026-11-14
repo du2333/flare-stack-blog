@@ -242,7 +242,7 @@ Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) =>
 | Turnstile 人机验证 | `VITE_TURNSTILE_SITE_KEY` | `TURNSTILE_SECRET_KEY`（Secret） | 在 Cloudflare 创建站点并添加博客域名；Site Key 与 Secret Key 成对使用 |
 | Umami 访问统计 | `VITE_UMAMI_WEBSITE_ID` | `UMAMI_WEBSITE_ID`、`UMAMI_SRC` | 两边 Website ID 填同一个，`UMAMI_SRC` 填服务地址，例如 `https://cloud.umami.is` |
 | Umami 文章热度同步 | 同上 | Cloud 使用 `UMAMI_API_KEY`；自托管使用 `UMAMI_USERNAME`、`UMAMI_PASSWORD` | API Key 和密码设为 Secret；两种认证方式二选一。API 地址可按模板配置 `UMAMI_API_URL` |
-| 后台更新检查改走 GitHub API | 无 | `GITHUB_TOKEN`（Secret） | 不配也能检查更新：默认读取 GitHub 发布页的跳转。配了 token 会优先走 API，更稳定；API 失败时仍会退回发布页。按模板链接创建 Fine-grained token，权限保留默认的公共仓库只读访问 |
+| 后台更新检查 | 无 | 无 | 无需配置：后台读取上游仓库的 `upgrades.json` 检查更新，取不到时读取 GitHub 发布页的跳转。旧版本使用的 `GITHUB_TOKEN` 已不再读取，留着没有影响，也可以从 Worker 的变量中删除 |
 
 图片优化无需额外配置：Worker 通过 Images 绑定对 R2 中的公开图片按需缩放和压缩，部署后自动生效，不需要在 Cloudflare 控制台开启。Cloudflare Images 免费计划每个自然月包含 5,000 次唯一转换，同一张图片的同一组尺寸参数每月只计一次，格式和质量不产生新的组合。额度及价格见 [Cloudflare Images 定价](https://developers.cloudflare.com/images/pricing/)。
 
