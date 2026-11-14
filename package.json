@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "bun run orpc:contract && cf build && bun scripts/ssr-chunk-graph.ts .cloudflare/output/v0/workers/default/bundle",
-    "deploy": "cf d1 migrations apply \"$D1_DATABASE_ID\" && cf deploy --prebuilt --force",
+    "deploy": "bun scripts/deploy-preflight.ts && cf d1 migrations apply \"$D1_DATABASE_ID\" && cf deploy --prebuilt --force --tag \"v$npm_package_version\"",
     "test": "vitest run",
     "test:node": "vitest run --config vitest.node.config.ts",
     "lint": "oxlint",

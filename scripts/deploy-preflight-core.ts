@@ -465,6 +465,10 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
   const up = thisMajor > liveMajor;
   if (!crossing) {
     lines.push(`${where}，同一大版本，但缺少本次版本需要的配置。`);
+  } else if (ack === "given") {
+    lines.push(
+      `${where}，跨越大版本（${liveMajor} → ${thisMajor}），${ACK_VARIABLE}=${thisMajor} 已确认，但缺少本次版本需要的配置。`,
+    );
   } else if (up) {
     lines.push(
       `${where}，跨越大版本（${liveMajor} → ${thisMajor}）。大版本升级前必须先手动完成一些事项，否则升级后博客可能无法正常运行。`,
@@ -526,20 +530,15 @@ export function decidePreflight(input: PreflightInput): PreflightDecision {
   const hasSteps = groups.length > 0;
 
   if (ack === "missing" || ack === "wrong") {
+    const confirm = hasSteps ? "确认以上事项都已完成后" : "确认要继续后";
     lines.push(
       "",
-      hasSteps
-        ? `确认以上事项都已完成后，在 ${BUILD_VARIABLES_PLACE} 中添加变量：`
-        : `确认要继续后，在 ${BUILD_VARIABLES_PLACE} 中添加变量：`,
+      ack === "missing"
+        ? `${confirm}，在 ${BUILD_VARIABLES_PLACE} 中添加变量：`
+        : `${confirm}，在 ${BUILD_VARIABLES_PLACE} 中把 ${ACK_VARIABLE} 的值从 ${ackValue} 改为 ${thisMajor}（${ackValue} 确认的是另一个大版本）：`,
       "",
       `  ${ACK_VARIABLE}=${thisMajor}`,
     );
-    if (ack === "wrong") {
-      lines.push(
-        "",
-        `现在的 ${ACK_VARIABLE} 是 ${ackValue}，它确认的不是大版本 ${thisMajor}，请把它改为 ${thisMajor}。`,
-      );
-    }
     lines.push("", `升级说明：${UPGRADE_GUIDE_URL}`);
   }
 

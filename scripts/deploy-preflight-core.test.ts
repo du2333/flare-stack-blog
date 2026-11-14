@@ -134,7 +134,7 @@ describe("decidePreflight", () => {
     expect(decision.ok).toBe(false);
     expect(decision.ack).toBe("wrong");
     expect(decision.text).toContain(
-      "现在的 UPGRADE_ACK 是 3，它确认的不是大版本 4，请把它改为 4。",
+      "确认以上事项都已完成后，在 Worker 的 Settings → Builds → Build variables 中把 UPGRADE_ACK 的值从 3 改为 4（3 确认的是另一个大版本）：",
     );
     expect(decision.text).toContain("  UPGRADE_ACK=4");
   });
@@ -203,6 +203,9 @@ describe("decidePreflight", () => {
     ]);
     expect(decision.text).not.toContain("UPGRADE_ACK=4\n");
     expect(decision.text).not.toContain("备份 D1 数据库");
+    expect(decision.text).toContain(
+      "跨越大版本（3 → 4），UPGRADE_ACK=4 已确认，但缺少本次版本需要的配置。",
+    );
     expect(decision.text).toContain(
       "  1. 在 Worker 的 Settings → Runtime variables and secrets 中以 Secret 类型添加 BETTER_AUTH_URL（4.0.0 需要）。",
     );
