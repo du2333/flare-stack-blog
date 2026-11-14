@@ -90,6 +90,117 @@
   transform: translateX(2px);
 }
 
+/* ── Update: one line, a card, or a standing warning, by the size of the step ── */
+
+.overview-update {
+  margin-bottom: 20px;
+}
+/* The quiet forms sit close under the greeting, not as a card of their own. */
+.overview-update[data-state="pending"],
+.overview-update[data-state="current"],
+.overview-update[data-state="patch"] {
+  margin-top: -8px;
+}
+.overview-update-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-height: 28px;
+}
+.overview-update-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--admin-text-small);
+  color: var(--admin-fg-2);
+}
+.overview-update-text[data-quiet] {
+  color: var(--admin-fg-3);
+}
+.overview-update-text[data-quiet] svg {
+  color: var(--admin-accent);
+}
+.overview-update-text i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--admin-accent);
+}
+.overview-update-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.overview-update-status {
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+  color: var(--admin-fg-3);
+}
+.overview-update-body {
+  padding: 4px 20px 16px;
+}
+.overview-update-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 12px;
+}
+.overview-update-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+}
+.overview-update-list li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+}
+.overview-update-list b {
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+.overview-update-list span {
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.overview-update-unavailable {
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-3);
+}
+.overview-update-warning .overview-update-list b,
+.overview-update-warning .overview-update-list span {
+  color: inherit;
+}
+.overview-update-warning-title {
+  font-weight: 600;
+}
+.overview-update-section {
+  margin-top: 10px;
+}
+.overview-update-section h3 {
+  margin-bottom: 4px;
+  font-size: var(--admin-text-meta);
+  font-weight: 600;
+  opacity: 0.8;
+}
+.overview-update-version {
+  margin-top: 4px;
+  font-weight: 600;
+}
+.overview-update-todo {
+  margin: 2px 0 6px;
+  padding-left: 18px;
+  list-style: disc;
+}
+
 /* ── Layout ── */
 
 .overview-grid {

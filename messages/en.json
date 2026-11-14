@@ -1577,6 +1577,17 @@
   "admin_overview_popularity_sync_failed_desc": "Umami returned no data or the snapshot could not be saved. Try again later; the maintenance page has the details",
   "admin_overview_update_available": "Version {version} is available",
   "admin_overview_update_available_desc": "You're on v{current}. See what's new",
+  "admin_overview_update_notes_link": "View release notes",
+  "admin_overview_update_current": "Running v{current}",
+  "admin_overview_update_notes_unavailable": "The upgrade notes are not available right now.",
+  "admin_overview_update_up_to_date": "Up to date on v{current}",
+  "admin_overview_update_checking": "Checking for updates...",
+  "admin_overview_update_recheck": "Check again",
+  "admin_overview_update_failed": "The update check failed",
+  "admin_overview_update_failed_kept": "The update check failed; the last result is still shown",
+  "admin_overview_update_major_title": "{version} is a major update; finish what the upgrade notes ask before syncing",
+  "admin_overview_update_before": "Before syncing",
+  "admin_overview_update_summaries": "What each version changes",
   "dashboard_stat_posts": "Posts",
   "dashboard_stat_drafts": [
     {
