@@ -35,6 +35,15 @@
    - 在 PR 描述中清晰说明本次修改的背景、改动内容及自测结果。
    - 若关联了现有 Issue，请在描述中附上 Issue 编号（例如 `Closes #12`）。
 
+## 升级说明（`upgrades.json`）
+
+仓库根目录的 `upgrades.json` 记录每个已发布版本的升级说明，后台的更新提示与部署前的检查都读取它。`unreleased` 条目收集下一次发版的说明，发版时由 `scripts/release-check.ts` 盖上版本号并移入 `versions`，因此 `main` 上不会出现 `unreleased`。
+
+- 引入破坏性改动或新增必填配置的 PR，要在同一个 PR 里往 `unreleased` 中加入对应事项：同步前必须完成的写在 `before`，部署后要做的写在 `after`，新增的必填配置写在 `requires.buildVars` 与 `requires.secrets`。破坏性改动只能随 major 发布，major 的 `unreleased` 必须有 `before` 事项。
+- 新增必填配置属于破坏性改动：非 major 版本的 `unreleased` 不能在 `requires` 中列出任何 Build variable 或 Secret，新配置要么做成可选，要么随 major 发布。
+- 每次发版都需要 `unreleased.summary`，用一句话概括本次版本，普通的 minor 和 patch 可以在发版前补上。
+- 非 major 版本新增的迁移若出现 `DROP` 或 `RENAME`（例如 SQLite 重建表），文件中须有一行 `-- rollback-safe: <理由>`，说明上一版的代码为什么仍能在迁移后的数据库上运行。写不出理由的迁移只能放进 major。
+
 ## 社区与交流
 
 如果你有新的构想或遇到疑问，欢迎通过以下渠道交流：

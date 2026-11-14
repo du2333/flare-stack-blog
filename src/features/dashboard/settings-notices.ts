@@ -1,24 +1,17 @@
 import type { DashboardOverview } from "@/features/dashboard/dashboard.schema";
 import { m } from "@/paraglide/messages";
 
-/** Where a settings notice is fixed: an Admin page, or the release notes. */
-export type NoticeTarget =
-  | {
-      kind: "settings";
-      to:
-        | "/admin/settings/maintenance"
-        | "/admin/settings/notifications"
-        | "/admin/settings/site";
-    }
-  | { kind: "external"; href: string };
+/** Where a settings notice is fixed: an Admin settings page. */
+export type NoticeTarget = {
+  kind: "settings";
+  to:
+    | "/admin/settings/maintenance"
+    | "/admin/settings/notifications"
+    | "/admin/settings/site";
+};
 
 export type SettingsNotice = {
-  key:
-    | "popularity-failed"
-    | "popularity-expired"
-    | "email"
-    | "identity"
-    | "update";
+  key: "popularity-failed" | "popularity-expired" | "email" | "identity";
   title: string;
   /** One line on what the notice means. */
   description: string;
@@ -26,32 +19,19 @@ export type SettingsNotice = {
 };
 
 /**
- * The notices that point at somewhere to fix or read, in the order the
- * overview's head shows them: a newer release, no notification email, a
- * failed popularity sync or else an expired snapshot (both synced again from
- * the maintenance page), the default site identity.
+ * The notices that point at somewhere to fix, in the order the overview's
+ * head shows them: no notification email, a failed popularity sync or else
+ * an expired snapshot (both synced again from the maintenance page), the
+ * default site identity. A newer release is not here: the overview's update
+ * block carries it.
  */
 export function settingsNotices(
   data: Pick<
     DashboardOverview,
-    | "popularityAlert"
-    | "adminEmailNeedsSetup"
-    | "defaultSiteIdentity"
-    | "update"
+    "popularityAlert" | "adminEmailNeedsSetup" | "defaultSiteIdentity"
   >,
 ): Array<SettingsNotice> {
   const notices: Array<SettingsNotice> = [];
-  if (data.update)
-    notices.push({
-      key: "update",
-      title: m.admin_overview_update_available({
-        version: data.update.latestVersion,
-      }),
-      description: m.admin_overview_update_available_desc({
-        current: __APP_VERSION__,
-      }),
-      target: { kind: "external", href: data.update.releaseUrl },
-    });
   if (data.adminEmailNeedsSetup)
     notices.push({
       key: "email",

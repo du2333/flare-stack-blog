@@ -21,7 +21,8 @@ const serverEnvSchema = z.object({
   UMAMI_USERNAME: z.string().optional(),
   UMAMI_PASSWORD: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
-  GITHUB_TOKEN: z.string().optional(),
+  // Checked where it is used: a value that is not https is ignored there.
+  UPDATE_SOURCE_URL: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

@@ -90,6 +90,217 @@
   transform: translateX(2px);
 }
 
+/*
+ * ── Notices: the update line and the upgrade line, one line each ──
+ * (update-block.tsx, upgrade-notice.tsx) A line is the text on the left and
+ * the controls at the end of its first line; the details open in a sheet.
+ * A major is the same row on the warning's surface (.fuwari-callout).
+ */
+
+.overview-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  /* 28px is the height of the xs controls the line carries, so it holds its
+     height while the controls or the skeleton come and go. */
+  min-height: 28px;
+}
+/* The head leaves 22px under itself; the update line sits 14px below the
+   greeting. */
+.overview-update {
+  margin-top: calc(14px - 22px);
+  margin-bottom: 20px;
+}
+/* After the update line's 20px bottom margin the two lines sit 14px apart. */
+.overview-upgrade {
+  margin-top: calc(14px - 20px);
+  margin-bottom: 20px;
+}
+.overview-line-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+/* The mark is as tall as the line, so its icon sits on the first line's
+   centre however many lines the words take. */
+.overview-line-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: 28px;
+  color: var(--admin-fg-3);
+}
+.overview-line-mark .is-accent {
+  color: var(--admin-accent);
+}
+/* The accent dot of the notices in the head (.overview-notice i): 6px. */
+.overview-line-mark i {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  border-radius: 999px;
+  background: var(--admin-accent);
+}
+/* 4px above and below a 20px line make the 28px of the controls; a second
+   line only adds 20px. */
+.overview-line-words {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.overview-line-failure,
+.overview-sheet-failure {
+  color: var(--fuwari-danger-fg);
+}
+/* The region stays mounted and empty between failures; it takes its gap
+   only with text in it. */
+.overview-line-failure:not(:empty) {
+  margin-left: 10px;
+}
+/* The placeholder of the line: about the length of its sentence, 14px tall
+   like its text, inside the line's 28px. */
+.overview-update-skeleton {
+  display: block;
+  width: 180px;
+  height: 14px;
+  margin-top: 3px;
+}
+.overview-line-actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 2px;
+  white-space: nowrap;
+}
+.overview-line [aria-disabled="true"] {
+  cursor: default;
+}
+
+/* The major is a row, not a block: 4px above and below the 28px controls. */
+.overview-update[data-state="major"] {
+  padding: 4px 6px 4px 12px;
+  gap: 8px;
+}
+.overview-update[data-state="major"] .overview-line-mark {
+  color: inherit;
+}
+.overview-update[data-state="major"] .overview-line-words {
+  color: inherit;
+  font-weight: 600;
+}
+/* In the warning every text takes the callout's own colour: the warning
+   background is what they are read on. */
+.overview-update[data-state="major"] .overview-line-failure {
+  color: inherit;
+}
+
+/* ── The sheet of the notices ── */
+
+.overview-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* 20px sides, as the overview's cards. */
+  padding: 16px 16px 12px 20px;
+}
+.overview-sheet-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.overview-sheet-title h2 {
+  font-size: var(--admin-text-section);
+  font-weight: 600;
+  color: var(--admin-fg);
+  overflow-wrap: anywhere;
+}
+.overview-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 20px 16px;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
+}
+.overview-sheet-foot {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--admin-hairline);
+}
+.overview-sheet-failure {
+  font-size: var(--admin-text-meta);
+  line-height: var(--admin-leading-meta);
+}
+.overview-sheet-failure:not(:empty) {
+  margin-bottom: 8px;
+}
+.overview-sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.overview-sheet-section + .overview-sheet-section {
+  margin-top: 16px;
+}
+.overview-sheet-section h3 {
+  margin-bottom: 6px;
+  font-size: var(--admin-text-meta);
+  font-weight: 600;
+  color: var(--admin-fg-3);
+}
+.overview-sheet-version {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+/* A bullet list: 18px clears the markers. */
+.overview-sheet-todo {
+  margin: 2px 0 8px;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--admin-fg);
+  overflow-wrap: anywhere;
+}
+.overview-sheet-todo li + li {
+  margin-top: 2px;
+}
+/* One column of version numbers, as wide as the longest, for all the rows. */
+.overview-sheet-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 12px;
+  list-style: none;
+  padding: 0;
+}
+.overview-sheet-list li {
+  display: contents;
+}
+.overview-sheet-list b {
+  font-weight: 600;
+  color: var(--admin-fg);
+}
+.overview-sheet-list span,
+.overview-sheet-list > li > div {
+  min-width: 0;
+  color: var(--admin-fg-2);
+  overflow-wrap: anywhere;
+}
+.overview-sheet-list .overview-sheet-todo {
+  margin: 2px 0 0;
+}
+.overview-sheet-note {
+  color: var(--admin-fg-3);
+}
+
 /* ── Layout ── */
 
 .overview-grid {
