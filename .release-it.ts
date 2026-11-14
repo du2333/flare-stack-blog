@@ -20,6 +20,8 @@ export default {
       "bun run i18n:verify",
       "bun run i18n:prune-unused --check",
     ],
+    // The version is chosen, package.json not yet written; stamps upgrades.json.
+    "before:bump": "bun scripts/release-check.ts ${latestVersion} ${version}",
     "after:release":
       "echo Successfully released ${name} v${version} to ${repo.repository}.",
   },
