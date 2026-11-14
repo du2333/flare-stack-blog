@@ -230,6 +230,15 @@ function nonEmptyList(value: unknown) {
   return Array.isArray(value) && value.length > 0;
 }
 
+/** The build variables and Secrets `requires` names, read leniently. */
+function requiredNames(requires: unknown): Array<string> {
+  const lists = record(requires);
+  return (["buildVars", "secrets"] as const).flatMap((key) => {
+    const names = lists?.[key];
+    return Array.isArray(names) ? names.map(String) : [];
+  });
+}
+
 export function checkRelease(input: ReleaseCheckInput): ReleaseCheckResult {
   const { from, to, addedMigrations } = input;
   const failures: Array<string> = [];
@@ -305,6 +314,14 @@ export function checkRelease(input: ReleaseCheckInput): ReleaseCheckResult {
     if (level === "major" && !nonEmptyList(notes?.before)) {
       failures.push(
         `This release is a major (${base} → ${to}), and \`unreleased\` in upgrades.json has no \`before\` items: list what a site owner must do before syncing.`,
+      );
+    }
+    // A minor or patch syncs with nothing done first, and the deploy preflight
+    // checks `requires` only across a major, so required configuration is breaking.
+    const required = requiredNames(notes?.requires);
+    if (level !== "major" && required.length > 0) {
+      failures.push(
+        `\`unreleased\` in upgrades.json requires ${required.join(", ")}, but ${step}. Required configuration belongs in a major: make it optional, or release a major.`,
       );
     }
   }
