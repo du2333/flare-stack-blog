@@ -91,20 +91,65 @@ describe("version checker", () => {
     },
   );
 
-  it("rejects a non-stable running release", async () => {
-    const { context } = createVersionContext();
+  it.each([
+    ["3.13.0-beta.0", "v3.12.1", false],
+    ["3.13.0-beta.0", "v3.13.0", true],
+    ["3.13.0-beta.0", "v3.13.1", true],
+    ["3.13.0-rc.1", "v3.12.9", false],
+    ["3.12.1-beta.2", "v3.12.1", true],
+  ])(
+    "answers normally for running prerelease %s against %s",
+    async (currentVersion, latestVersion, hasUpdate) => {
+      const { context } = createVersionContext();
+      const checker = createVersionChecker({
+        getCurrentVersion: () => currentVersion,
+        fetchLatestRelease: vi.fn(async () => release(latestVersion)),
+      });
+
+      const result = await checker.refresh(context);
+
+      expect(result.error).toBeNull();
+      expect(result.data).toMatchObject({
+        currentVersion,
+        latestVersion,
+        hasUpdate,
+      });
+    },
+  );
+
+  it("answers from the cache for a running prerelease", async () => {
+    const { context, flushBackgroundTasks } = createVersionContext();
     const checker = createVersionChecker({
-      getCurrentVersion: () => "1.5.2-beta.1",
-      fetchLatestRelease: vi.fn(async () => release("v1.5.3")),
+      getCurrentVersion: () => "3.13.0-beta.0",
+      fetchLatestRelease: vi.fn(async () => release("v3.13.0")),
     });
 
-    const result = await checker.refresh(context);
+    await checker.check(context);
+    await flushBackgroundTasks();
 
-    expect(result).toEqual({
-      data: null,
-      error: { reason: "FETCH_FAILED" },
+    await expect(checker.cached(context)).resolves.toMatchObject({
+      currentVersion: "3.13.0-beta.0",
+      hasUpdate: true,
     });
   });
+
+  it.each(["v1.5.2", "1.5", "1.5.2+build.1", "1.5.2-", "01.5.2"])(
+    "rejects malformed running version %s",
+    async (currentVersion) => {
+      const { context } = createVersionContext();
+      const checker = createVersionChecker({
+        getCurrentVersion: () => currentVersion,
+        fetchLatestRelease: vi.fn(async () => release("v1.5.3")),
+      });
+
+      const result = await checker.refresh(context);
+
+      expect(result).toEqual({
+        data: null,
+        error: { reason: "FETCH_FAILED" },
+      });
+    },
+  );
 
   it("caches only the application release and recomputes status after deployment", async () => {
     const { context, values, flushBackgroundTasks } = createVersionContext();

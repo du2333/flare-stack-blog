@@ -14,6 +14,7 @@ import { ms } from "@/lib/duration";
 import { serverEnv } from "@/lib/env/server.env";
 import type { Result } from "@/lib/errors";
 import { err, ok } from "@/lib/errors";
+import { compareAppVersions } from "@/lib/version/app-version";
 
 const GITHUB_REPO = "du2333/flare-stack-blog";
 const RELEASE_CACHE_TTL = "6h";
@@ -99,7 +100,8 @@ export function createVersionChecker({
         UpdateCheckResultSchema.parse({
           latestVersion: latestRelease.version,
           currentVersion: runningVersion,
-          hasUpdate: isNewer(latestRelease.version, runningVersion),
+          hasUpdate:
+            compareAppVersions(latestRelease.version, runningVersion) > 0,
           releaseUrl: latestRelease.releaseUrl,
         }),
       );
@@ -126,7 +128,8 @@ export function createVersionChecker({
       return UpdateCheckResultSchema.parse({
         latestVersion: latestRelease.version,
         currentVersion: runningVersion,
-        hasUpdate: isNewer(latestRelease.version, runningVersion),
+        hasUpdate:
+          compareAppVersions(latestRelease.version, runningVersion) > 0,
         releaseUrl: latestRelease.releaseUrl,
       });
     } catch {
@@ -223,19 +226,6 @@ async function fetchLatestReleaseFromApi(
     version: data.tag_name,
     releaseUrl: data.html_url,
   };
-}
-
-function isNewer(latest: string, current: string) {
-  const latestParts = latest.slice(1).split(".").map(Number);
-  const currentParts = current.split(".").map(Number);
-
-  for (let i = 0; i < 3; i++) {
-    const lPart = latestParts[i] ?? 0;
-    const cPart = currentParts[i] ?? 0;
-    if (lPart > cPart) return true;
-    if (lPart < cPart) return false;
-  }
-  return false;
 }
 
 export const versionChecker = createVersionChecker({
