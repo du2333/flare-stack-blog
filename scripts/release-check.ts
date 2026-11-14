@@ -1,24 +1,32 @@
 /**
- * The release check, run by release-it at `after:bump` (the version is chosen,
- * nothing is committed or tagged yet):
+ * The release check, run by release-it at `before:bump` (the version is
+ * chosen; package.json is not written yet and nothing is committed or tagged):
  *
  *   bun scripts/release-check.ts <last version> <new version> [--dry-run]
  *
- * Reads the commits and the migrations added since the tag of the last
- * version, and upgrades.json, then either stops the release with every reason
- * at once or stamps `unreleased` with the new version and moves it to the front
- * of `versions`. release-it's `git add --update` carries the file into the
- * release commit. A prerelease is checked the same way and leaves the file as
- * it is: the file lists releases only. The rules live in release-check-core.ts.
+ * Reads the commits and the migrations added in `v<last>..HEAD`, and
+ * upgrades.json, then either stops the release with every reason at once or
+ * stamps `unreleased` with the new version and moves it to the front of
+ * `versions`. release-it's `git add --update` carries the file into the
+ * release commit. A rerun after the stamp was written passes as "already
+ * stamped". A prerelease is checked the same way and leaves the file as it is:
+ * the file lists releases only. The rules live in release-check-core.ts.
  */
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseArgs } from "node:util";
-import { checkRelease, type AddedMigration } from "./release-check-core.ts";
+import { isDeepStrictEqual, parseArgs } from "node:util";
+import {
+  checkRelease,
+  type AddedMigration,
+  type Commit,
+} from "./release-check-core.ts";
 
-const HELP = `usage: bun scripts/release-check.ts <last version> <new version> [--dry-run]
+const USAGE =
+  "usage: bun scripts/release-check.ts <last version> <new version> [--dry-run]";
+
+const HELP = `${USAGE}
 
 Stops the release when a commit since the last tag is breaking and the release
 is not a major, when upgrades.json has no \`unreleased\` summary, when a major has
@@ -44,7 +52,9 @@ function run(command: string, args: Array<string>, stdin?: string) {
     input: stdin,
     maxBuffer: 64 * 1024 * 1024,
   });
-  if (result.error) throw result.error;
+  if (result.error) {
+    fail(`could not run ${command}: ${result.error.message}`);
+  }
   return result;
 }
 
@@ -58,19 +68,39 @@ function git(args: Array<string>) {
   return result.stdout;
 }
 
-/** The tag of the last version; release-it tags `v<version>`. */
+/** The tag of the last version (release-it tags `v<version>`), checked to bound a real range. */
 function lastTag(from: string) {
   const tag = `v${from}`;
+  if (git(["rev-parse", "--is-shallow-repository"]).trim() === "true") {
+    fail(
+      "this clone is shallow, so the commits since the last tag are incomplete. Run `git fetch --unshallow --tags` and try again.",
+    );
+  }
   const found = run("git", ["rev-parse", "-q", "--verify", `refs/tags/${tag}`]);
-  if (found.status !== 0) fail(`there is no tag ${tag} to compare against.`);
+  if (found.status !== 0) {
+    fail(`there is no tag ${tag}. Run \`git fetch --tags\` and try again.`);
+  }
+  const ancestor = run("git", ["merge-base", "--is-ancestor", tag, "HEAD"]);
+  if (ancestor.status !== 0) {
+    fail(
+      `${tag} is not an ancestor of HEAD, so \`${tag}..HEAD\` is not this release. Release from a branch that contains ${tag} (merge it in first).`,
+    );
+  }
   return tag;
 }
 
-function commitsSince(tag: string) {
-  return git(["log", "--format=%B%x00", `${tag}..HEAD`])
-    .split("\0")
-    .map((message) => message.trim())
-    .filter(Boolean);
+function commitsSince(tag: string): Array<Commit> {
+  return git(["log", "--format=%H%x00%B%x1e", `${tag}..HEAD`])
+    .split("\x1e")
+    .map((record) => record.trim())
+    .filter(Boolean)
+    .map((record) => {
+      const split = record.indexOf("\0");
+      return {
+        sha: record.slice(0, split),
+        message: record.slice(split + 1).trim(),
+      };
+    });
 }
 
 function migrationsAddedSince(tag: string): Array<AddedMigration> {
@@ -78,7 +108,7 @@ function migrationsAddedSince(tag: string): Array<AddedMigration> {
     "diff",
     "--name-only",
     "--diff-filter=A",
-    tag,
+    `${tag}..HEAD`,
     "--",
     "migrations",
   ])
@@ -86,7 +116,7 @@ function migrationsAddedSince(tag: string): Array<AddedMigration> {
     .filter((name) => name.endsWith(".sql"))
     .map((name) => ({
       name: path.basename(name),
-      sql: readFileSync(path.join(ROOT, name), "utf8"),
+      sql: git(["show", `HEAD:${name}`]),
     }));
 }
 
@@ -109,24 +139,62 @@ function formatJson(value: unknown) {
     `${JSON.stringify(value, null, 2)}\n`,
   );
   if (result.status !== 0) {
-    fail(`oxfmt could not format upgrades.json: ${result.stderr.trim()}`);
+    fail(
+      `oxfmt could not format upgrades.json (exit ${result.status}): ${result.stderr.trim()}. upgrades.json is unchanged.`,
+    );
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(result.stdout);
+  } catch {
+    parsed = undefined;
+  }
+  if (!isDeepStrictEqual(parsed, value)) {
+    fail(
+      "oxfmt returned something other than the stamped upgrades.json. upgrades.json is unchanged.",
+    );
   }
   return result.stdout;
 }
 
+/** Through a temporary file and a rename, so the file is never half written. */
+function writeAtomically(content: string) {
+  const temporary = `${FILE}.${process.pid}.tmp`;
+  try {
+    writeFileSync(temporary, content);
+    renameSync(temporary, FILE);
+  } catch (error) {
+    rmSync(temporary, { force: true });
+    fail(
+      `could not write upgrades.json: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+function options() {
+  try {
+    return parseArgs({
+      allowPositionals: true,
+      options: {
+        "dry-run": { type: "boolean", default: false },
+        help: { type: "boolean", default: false },
+      },
+    });
+  } catch (error) {
+    return fail(
+      `${error instanceof Error ? error.message : String(error)}\n${USAGE}`,
+      2,
+    );
+  }
+}
+
 function main() {
-  const { values, positionals } = parseArgs({
-    allowPositionals: true,
-    options: {
-      "dry-run": { type: "boolean", default: false },
-      help: { type: "boolean", default: false },
-    },
-  });
+  const { values, positionals } = options();
   if (values.help) {
     console.log(HELP);
     return;
   }
-  if (positionals.length !== 2) fail(`expected two versions.\n\n${HELP}`, 2);
+  if (positionals.length !== 2) fail(`expected two versions.\n${USAGE}`, 2);
   const [from, to] = positionals as [string, string];
   const dryRun = values["dry-run"];
 
@@ -149,23 +217,34 @@ function main() {
   }
 
   const passed = `release-check: ${result.base} → ${to} is a ${result.level}; every check passed.`;
-  if (!result.file) {
-    console.log(
-      `${passed}\nrelease-check: ${to} is a prerelease. upgrades.json lists releases only, so \`unreleased\` stays as it is for the release.`,
-    );
-    return;
+  switch (result.outcome) {
+    case "prerelease":
+      console.log(
+        `${passed}\nrelease-check: ${to} is a prerelease. upgrades.json lists releases only, so \`unreleased\` stays as it is for the release.`,
+      );
+      return;
+    case "already-stamped":
+      console.log(
+        `${passed}\nrelease-check: upgrades.json already lists ${to} first; already stamped, nothing to write.`,
+      );
+      return;
+    case "stamp": {
+      const formatted = formatJson(result.file);
+      if (dryRun) {
+        console.log(
+          `${passed}\nrelease-check: dry run, nothing written. upgrades.json would start with:\n${JSON.stringify(result.file!.versions[0], null, 2)}`,
+        );
+        return;
+      }
+      writeAtomically(formatted);
+      console.log(
+        `${passed}\nrelease-check: stamped \`unreleased\` as ${to} at the top of upgrades.json.`,
+      );
+      return;
+    }
+    default:
+      result.outcome satisfies never;
   }
-  const formatted = formatJson(result.file);
-  if (dryRun) {
-    console.log(
-      `${passed}\nrelease-check: dry run, nothing written. upgrades.json would start with:\n${JSON.stringify(result.file.versions[0], null, 2)}`,
-    );
-    return;
-  }
-  writeFileSync(FILE, formatted);
-  console.log(
-    `${passed}\nrelease-check: stamped \`unreleased\` as ${to} at the top of upgrades.json.`,
-  );
 }
 
 main();

@@ -21,8 +21,8 @@ export default {
       "bun run i18n:verify",
       "bun run i18n:prune-unused --check",
     ],
-    // The version is chosen and nothing is committed yet; stamps upgrades.json.
-    "after:bump": "bun scripts/release-check.ts ${latestVersion} ${version}",
+    // The version is chosen, package.json not yet written; stamps upgrades.json.
+    "before:bump": "bun scripts/release-check.ts ${latestVersion} ${version}",
     "before:github:release":
       "mkdir -p tmp && git archive --format=zip -o tmp/flare-stack-blog-skills-v${version}.zip HEAD:.agents/skills flare-stack-blog",
     "after:release":
