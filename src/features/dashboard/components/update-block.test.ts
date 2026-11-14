@@ -4,7 +4,11 @@ import { createElement } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import type { UpdateCheckResult } from "@/features/version/update-check.schema";
 import { m } from "@/paraglide/messages";
-import { UpdateBlock, type UpdateStatus } from "./update-block";
+import {
+  type DismissalChange,
+  UpdateBlock,
+  type UpdateStatus,
+} from "./update-block";
 
 afterEach(cleanup);
 
@@ -19,6 +23,7 @@ function result(change: Partial<UpdateCheckResult>): UpdateCheckResult {
     level: null,
     entries: [],
     notesAvailable: true,
+    dismissed: false,
     ...change,
   };
 }
@@ -65,13 +70,33 @@ const ready = (
   activity: "idle" | "checking" | "failed" = "idle",
 ): UpdateStatus => ({ kind: "ready", result: r, activity });
 
-function show(status: UpdateStatus) {
+const IDLE: DismissalChange = { kind: "idle" };
+
+function show(status: UpdateStatus, change: DismissalChange = IDLE) {
   const onRecheck = vi.fn();
-  const view = render(createElement(UpdateBlock, { status, onRecheck }));
-  const again = (next: UpdateStatus) =>
-    view.rerender(createElement(UpdateBlock, { status: next, onRecheck }));
-  return { onRecheck, again };
+  const onDismiss = vi.fn();
+  const onRestore = vi.fn();
+  const props = { onRecheck, onDismiss, onRestore };
+  const view = render(createElement(UpdateBlock, { status, change, ...props }));
+  const again = (next: UpdateStatus, nextChange: DismissalChange = IDLE) =>
+    view.rerender(
+      createElement(UpdateBlock, {
+        status: next,
+        change: nextChange,
+        ...props,
+      }),
+    );
+  return { onRecheck, onDismiss, onRestore, again };
 }
+
+const dismissButton = () =>
+  screen.getByRole("button", { name: m.admin_overview_update_dismiss() });
+const restoreButton = () =>
+  screen.getByRole("button", { name: m.admin_overview_update_restore() });
+/** The text of the failure region, apart from a major's title (also an alert). */
+const writeFailure = () =>
+  document.querySelector("[role=alert][data-tone=danger]")?.textContent;
+const dismissedOf = (r: UpdateCheckResult) => ({ ...r, dismissed: true });
 
 const recheckButton = () =>
   screen.getByRole("button", { name: m.admin_overview_update_recheck() });
@@ -152,15 +177,133 @@ it("does not say there is anything to do when no crossed version lists anything"
   expect(screen.getByText("Removes the old API")).toBeTruthy();
 });
 
-it("gives a major no way to dismiss, ignore or fold it away", () => {
+it("offers one quiet control to stop the reminder in each form of an update", () => {
+  const unavailable = (r: UpdateCheckResult) => ({
+    ...r,
+    notesAvailable: false,
+    entries: [],
+  });
+  for (const r of [
+    PATCH,
+    MINOR,
+    MAJOR,
+    unavailable(MINOR),
+    unavailable(MAJOR),
+  ]) {
+    const { onDismiss } = show(ready(r));
+    fireEvent.click(dismissButton());
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
+});
+
+it("has no such control without an update, before the first answer or after a failure", () => {
+  for (const status of [
+    ready(result({})),
+    { kind: "pending" } as const,
+    { kind: "failed" } as const,
+  ]) {
+    show(status);
+    expect(
+      screen.queryByRole("button", { name: m.admin_overview_update_dismiss() }),
+    ).toBeNull();
+    cleanup();
+  }
+});
+
+it("gives a major no other way to hide it than stopping the reminder", () => {
   show(ready(MAJOR));
-  // The only control is the check; the rest is the link to the release notes.
+  // The controls are the dismissal and the check, nothing folds or closes.
   expect(screen.getAllByRole("button").map((b) => b.textContent)).toEqual([
+    m.admin_overview_update_dismiss(),
     m.admin_overview_update_recheck(),
   ]);
   expect(document.querySelector("[aria-expanded]")).toBeNull();
   expect(document.querySelector("details")).toBeNull();
   expect(document.querySelector("[inert]")).toBeNull();
+});
+
+it("turns a dismissed minor or patch into one quiet line that can be restored", () => {
+  for (const r of [MINOR, PATCH]) {
+    const { onRestore } = show(ready(dismissedOf(r)));
+    expect(
+      screen.getByText(
+        m.admin_overview_update_dismissed({ version: r.latestVersion }),
+      ),
+    ).toBeTruthy();
+    // No list, no card, no warning surface, no link.
+    expect(document.querySelector(".overview-update-list")).toBeNull();
+    expect(document.querySelector(".overview-card")).toBeNull();
+    expect(document.querySelector(".fuwari-callout")).toBeNull();
+    expect(screen.queryByRole("link")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: m.admin_overview_update_dismiss() }),
+    ).toBeNull();
+    expect(recheckButton()).toBeTruthy();
+    fireEvent.click(restoreButton());
+    expect(onRestore).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
+});
+
+it("still says a dismissed major is a major, without its warning", () => {
+  show(ready(dismissedOf(MAJOR)));
+  expect(
+    screen.getByText(
+      m.admin_overview_update_dismissed_major({ version: "v5.0.0" }),
+    ),
+  ).toBeTruthy();
+  expect(document.querySelector(".fuwari-callout")).toBeNull();
+  expect(document.querySelector("[role=alert]:not(:empty)")).toBeNull();
+  expect(screen.queryByText("Drops the old thing")).toBeNull();
+});
+
+it("keeps the form and says so when the write fails", () => {
+  const { again } = show(ready(MAJOR), { kind: "failed", of: "dismiss" });
+  expect(writeFailure()).toBe(m.admin_overview_update_dismiss_failed());
+  // The warning is as it was.
+  expect(document.querySelector(".fuwari-callout")).not.toBeNull();
+  expect(dismissButton()).toBeTruthy();
+
+  again(ready(dismissedOf(MAJOR)), { kind: "failed", of: "restore" });
+  expect(writeFailure()).toBe(m.admin_overview_update_restore_failed());
+  expect(restoreButton()).toBeTruthy();
+});
+
+it("announces a dismissal and a restore from the status region, not in the line", () => {
+  const { again } = show(ready(MINOR));
+
+  again(ready(dismissedOf(MINOR)), { kind: "done", of: "dismiss" });
+  const status = screen.getByRole("status");
+  expect(status.textContent).toBe(
+    m.admin_overview_update_dismiss_done({ version: "v3.14.0" }),
+  );
+  expect(status.classList.contains("sr-only")).toBe(true);
+
+  again(ready(MINOR), { kind: "done", of: "restore" });
+  expect(screen.getByRole("status")).toBe(status);
+  expect(status.textContent).toBe(m.admin_overview_update_restore_done());
+
+  // A later answer that moves the block on does not announce the old outcome.
+  again(ready(result({})), { kind: "done", of: "restore" });
+  expect(status.textContent).toBe("");
+});
+
+it("keeps focus on the same control through a dismissal and a restore", () => {
+  const { again } = show(ready(MAJOR));
+  const control = dismissButton();
+  control.focus();
+  expect(document.activeElement).toBe(control);
+
+  // Dismissed: the control is now 「恢复提醒」, the inverse action, still there.
+  again(ready(dismissedOf(MAJOR)), { kind: "done", of: "dismiss" });
+  expect(restoreButton()).toBe(control);
+  expect(document.activeElement).toBe(control);
+
+  // Restored: it is 「不再提醒此版本」 again.
+  again(ready(MAJOR), { kind: "done", of: "restore" });
+  expect(dismissButton()).toBe(control);
+  expect(document.activeElement).toBe(control);
 });
 
 it("keeps the level's form without notes, with one sentence and the link", () => {

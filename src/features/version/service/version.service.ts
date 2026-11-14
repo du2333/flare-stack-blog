@@ -1,4 +1,5 @@
 import * as kvStore from "@/features/cache/kv-store";
+import { withDismissal } from "@/features/version/service/dismissed-update.service";
 import type {
   CachedUpdateCheck,
   UpdateCheckResult,
@@ -192,12 +193,17 @@ export function createVersionChecker({
         RunningApplicationReleaseVersionSchema.parse(getCurrentVersion());
       if (!refresh) {
         const fromCache = await readCache(context, runningVersion);
-        if (fromCache) return ok(fromCache);
+        if (fromCache) return ok(await withDismissal(context, fromCache));
         if (await kvStore.get(context, VERSION_CACHE_KEYS.recentFailure)) {
           throw new Error("version check failed recently; refresh to retry");
         }
       }
-      return ok(await fetchAndStore(context, runningVersion));
+      return ok(
+        await withDismissal(
+          context,
+          await fetchAndStore(context, runningVersion),
+        ),
+      );
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -261,6 +267,8 @@ function toResult(answer: Answer, runningVersion: string): UpdateCheckResult {
       answer.latestVersion,
     ),
     notesAvailable: answer.notesAvailable,
+    // Not part of the release data: `check` and `refresh` read it from KV.
+    dismissed: false,
   });
 }
 

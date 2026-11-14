@@ -129,6 +129,7 @@ describe("version checker: sources", () => {
         { version: "3.12.0", summary: "Notes for 3.12.0." },
       ],
       notesAvailable: true,
+      dismissed: false,
     });
     expect(readLatestRelease).not.toHaveBeenCalled();
     expect(loggedLines(log)).toEqual([
@@ -151,6 +152,7 @@ describe("version checker: sources", () => {
       level: "major",
       entries: [],
       notesAvailable: false,
+      dismissed: false,
     });
     expect(loggedLines(log)).toEqual([
       {
@@ -850,6 +852,7 @@ describe("the result's entry schema", () => {
       level: "major",
       entries: file?.versions,
       notesAvailable: true,
+      dismissed: false,
     });
     expect(result.entries).toEqual(file?.versions);
   });

@@ -1,4 +1,4 @@
-import { Check, ChevronRight, TriangleAlert } from "lucide-react";
+import { BellOff, Check, ChevronRight, TriangleAlert } from "lucide-react";
 import { Button, buttonClass } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { UpdateCheckResult } from "@/features/version/update-check.schema";
@@ -23,6 +23,15 @@ export type UpdateStatus =
       activity: "idle" | "checking" | "failed";
     };
 
+/**
+ * The last change to the dismissal: failed (the block is as it was) or done.
+ * Both outcomes are announced from the block's live regions.
+ */
+export type DismissalChange =
+  | { kind: "idle" }
+  | { kind: "failed"; of: "dismiss" | "restore" }
+  | { kind: "done"; of: "dismiss" | "restore" };
+
 type Entry = UpdateCheckResult["entries"][number];
 
 /**
@@ -30,7 +39,10 @@ type Entry = UpdateCheckResult["entries"][number];
  * latest release (the result's `level`): a patch is one line with a link, a
  * minor is a card with each version's summary, a major is a standing warning
  * with what to do before syncing, and none of them can be dismissed. With
- * no update there is one quiet line. Every state keeps 「重新检查」.
+ * no update there is one quiet line. Every state keeps 「重新检查」. An update
+ * can be dismissed for its version (the result's `dismissed`); the block is
+ * then one quiet line that still says whether it is a major, and 「恢复提醒」
+ * brings the full form back.
  *
  * One tree serves every state: the root, its two children, the control and
  * the two live regions keep their place, so keyboard focus stays on the
@@ -41,10 +53,16 @@ type Entry = UpdateCheckResult["entries"][number];
  */
 export function UpdateBlock({
   status,
+  change,
   onRecheck,
+  onDismiss,
+  onRestore,
 }: {
   status: UpdateStatus;
+  change: DismissalChange;
   onRecheck: () => void;
+  onDismiss: () => void;
+  onRestore: () => void;
 }) {
   const result = status.kind === "ready" ? status.result : null;
   const checking =
@@ -54,6 +72,28 @@ export function UpdateBlock({
     status.kind === "failed" ||
     (status.kind === "ready" && status.activity === "failed");
   const form = formOf(status);
+  // One control for both directions, in one place of the tree: pressing it
+  // swaps its label, so keyboard focus stays on it (the inverse action) and
+  // never falls to the page.
+  const dismissed = form === "dismissed";
+  // An outcome is announced while the form agrees with it: a later answer
+  // that moves the block on (a newer version) does not announce it again.
+  const announced =
+    change.kind === "done" && result?.hasUpdate
+      ? change.of === "dismiss" && dismissed
+        ? m.admin_overview_update_dismiss_done({
+            version: result.latestVersion,
+          })
+        : change.of === "restore" && !dismissed
+          ? m.admin_overview_update_restore_done()
+          : ""
+      : "";
+  const changeFailure =
+    change.kind === "failed"
+      ? change.of === "dismiss"
+        ? m.admin_overview_update_dismiss_failed()
+        : m.admin_overview_update_restore_failed()
+      : "";
 
   return (
     <div
@@ -68,7 +108,7 @@ export function UpdateBlock({
     >
       <div className="overview-update-main">{main(form, result)}</div>
       <div className="overview-update-actions">
-        {result?.hasUpdate ? (
+        {result?.hasUpdate && !result.dismissed ? (
           <a
             href={result.releaseUrl}
             target="_blank"
@@ -79,6 +119,17 @@ export function UpdateBlock({
             <ChevronRight size={14} aria-hidden />
           </a>
         ) : null}
+        {result?.hasUpdate ? (
+          <Button
+            variant="quiet"
+            size="xs"
+            onClick={dismissed ? onRestore : onDismiss}
+          >
+            {dismissed
+              ? m.admin_overview_update_restore()
+              : m.admin_overview_update_dismiss()}
+          </Button>
+        ) : null}
         {/* The live regions stay mounted and only their text changes. */}
         {/* Before the first answer the skeleton says it; the text is for
             assistive tech only, so the line keeps its one-line height. */}
@@ -86,21 +137,23 @@ export function UpdateBlock({
           role="status"
           className={cn(
             "overview-update-status",
-            form === "pending" && "sr-only",
+            // The line itself says a dismissal; the text is for assistive tech.
+            (form === "pending" || (!checking && announced)) && "sr-only",
           )}
         >
-          {checking ? m.admin_overview_update_checking() : ""}
+          {checking ? m.admin_overview_update_checking() : announced}
         </span>
         <span
           role="alert"
           className="overview-update-status"
           data-tone="danger"
         >
-          {failed && !checking
-            ? result
-              ? m.admin_overview_update_failed_kept()
-              : m.admin_overview_update_failed()
-            : ""}
+          {changeFailure ||
+            (failed && !checking
+              ? result
+                ? m.admin_overview_update_failed_kept()
+                : m.admin_overview_update_failed()
+              : "")}
         </span>
         <Button
           variant="outline"
@@ -115,12 +168,20 @@ export function UpdateBlock({
   );
 }
 
-type Form = "pending" | "failed" | "current" | "patch" | "minor" | "major";
+type Form =
+  | "pending"
+  | "failed"
+  | "current"
+  | "dismissed"
+  | "patch"
+  | "minor"
+  | "major";
 
 function formOf(status: UpdateStatus): Form {
   if (status.kind !== "ready") return status.kind;
   const { result } = status;
   if (!result.hasUpdate) return "current";
+  if (result.dismissed) return "dismissed";
   return result.level === "major" || result.level === "minor"
     ? result.level
     : "patch";
@@ -136,6 +197,17 @@ function main(form: Form, result: UpdateCheckResult | null) {
         <Check size={14} aria-hidden />
         {m.admin_overview_update_up_to_date({
           current: result.currentVersion,
+        })}
+      </p>
+    );
+  if (form === "dismissed")
+    return (
+      <p className="overview-update-text" data-quiet="">
+        <BellOff size={14} aria-hidden />
+        {(result.level === "major"
+          ? m.admin_overview_update_dismissed_major
+          : m.admin_overview_update_dismissed)({
+          version: result.latestVersion,
         })}
       </p>
     );
