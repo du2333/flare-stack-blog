@@ -55,7 +55,7 @@ const UpgradeEntryListSchema = z
 export const DISMISSED_UPDATE_KEY = ["version", "dismissed-update"] as const;
 
 /** A version to stop being reminded of, or null to restore the reminder. */
-export const DismissUpdateInputSchema = z.object({
+export const DismissUpdateInputSchema = z.strictObject({
   version: ApplicationReleaseVersionSchema.nullable(),
 });
 
