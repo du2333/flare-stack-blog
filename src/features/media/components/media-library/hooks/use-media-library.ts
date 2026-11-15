@@ -87,9 +87,12 @@ export function useMediaLibrary() {
       keys: Array<string>;
       withRevisions?: boolean;
     }) => {
+      // What the server deleted, which the confirmation's count may predate.
+      let deletedRevisionCount = 0;
       for (const key of keys) {
         try {
-          await orpcClient.media.remove({ key, withRevisions });
+          const result = await orpcClient.media.remove({ key, withRevisions });
+          deletedRevisionCount += result.deletedRevisionCount ?? 0;
         } catch (error) {
           if (error instanceof ORPCError && error.code === "MEDIA_IN_USE") {
             // The list was stale: show what uses the image now.
@@ -99,8 +102,9 @@ export function useMediaLibrary() {
           throw error;
         }
       }
+      return { deletedRevisionCount };
     },
-    onSuccess: async (_, { withRevisions }) => {
+    onSuccess: async ({ deletedRevisionCount }, { withRevisions }) => {
       await Promise.all([
         invalidate(),
         withRevisions
@@ -109,7 +113,11 @@ export function useMediaLibrary() {
             })
           : null,
       ]);
-      toast.success(m.media_deleted());
+      toast.success(
+        withRevisions
+          ? m.media_deleted_with_revisions({ count: deletedRevisionCount })
+          : m.media_deleted(),
+      );
     },
     onError: (error) => {
       toast.error(

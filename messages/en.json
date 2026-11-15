@@ -966,8 +966,32 @@
   "media_delete": "Delete",
   "media_delete_title": "Delete image",
   "media_delete_one": "Delete \"{name}\"?",
-  "media_delete_with_revisions": "This permanently deletes \"{name}\" and the {revisions} earlier versions of {posts} posts that use it. The current drafts and published pages of those posts are not affected. This cannot be undone.",
+  "media_delete_with_revisions": [
+    {
+      "declarations": [
+        "input name",
+        "input posts",
+        "input revisions",
+        "local formattedPostsEn = posts: number",
+        "local formattedRevisionsEn = revisions: number"
+      ],
+      "match": {
+        "posts=1, revisions=1": "This permanently deletes \"{name}\" and the earlier version of 1 post that uses it. The post's current draft and published page are not affected. This cannot be undone.",
+        "posts=1, revisions=*": "This permanently deletes \"{name}\" and the {formattedRevisionsEn} earlier versions of 1 post that use it. The post's current draft and published page are not affected. This cannot be undone.",
+        "posts=*, revisions=*": "This permanently deletes \"{name}\" and the {formattedRevisionsEn} earlier versions of {formattedPostsEn} posts that use it. The current drafts and published pages of those posts are not affected. This cannot be undone."
+      }
+    }
+  ],
   "media_deleted": "Deleted",
+  "media_deleted_with_revisions": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "Deleted the image and {formattedCountEn} earlier version",
+        "count=*": "Deleted the image and {formattedCountEn} earlier versions"
+      }
+    }
+  ],
   "media_copied": "Link copied",
   "media_copy_failed": "Couldn't copy",
   "media_replace_success": "Replaced",

@@ -12,6 +12,7 @@ import { purgeWorkersCache } from "@/features/cache/workers-cache";
 import { mediaPurgeTarget } from "@/features/cache/workers-cache-policy";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
+import * as MomentService from "@/features/moments/services/moments.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import { unwrap } from "@/lib/errors";
 import * as Storage from "./data/media.storage";
@@ -666,11 +667,13 @@ describe("MediaService", () => {
       expect(await revisionIds(first)).toEqual(before.first);
       expect(await revisionIds(second)).toEqual(before.second);
 
-      unwrap(
-        await MediaService.deleteImage(adminContext, media.key, {
-          withRevisions: true,
-        }),
-      );
+      expect(
+        unwrap(
+          await MediaService.deleteImage(adminContext, media.key, {
+            withRevisions: true,
+          }),
+        ),
+      ).toEqual({ success: true, deletedRevisionCount: 2 });
       await waitForBackgroundTasks(adminContext.executionCtx);
 
       expect(await MediaService.mediaExists(adminContext, media.key)).toBe(
@@ -735,6 +738,99 @@ describe("MediaService", () => {
           expect.objectContaining({ id: postId, revisionsOnly: false }),
         ]);
       }
+    });
+
+    /** A post whose first publish showed `key` and whose second did not. */
+    async function usedOnlyByRevisions(key: string) {
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(postId, imageDoc(key));
+      await publishPost(postId);
+      await setPostContent(postId, { type: "doc", content: [] });
+      await publishPost(postId);
+      return postId;
+    }
+
+    /** withRevisions refuses `key`, and it and the post's revisions stay. */
+    async function expectRefusedWithRevisions(key: string, postId: number) {
+      const before = await revisionIds(postId);
+      expect(before.length).toBeGreaterThan(0);
+      expect(
+        (
+          await MediaService.deleteImage(adminContext, key, {
+            withRevisions: true,
+          })
+        ).error?.reason,
+      ).toBe("MEDIA_IN_USE");
+      expect(await MediaService.mediaExists(adminContext, key)).toBe(true);
+      expect(await revisionIds(postId)).toEqual(before);
+    }
+
+    it("deletes nothing when the image is a draft's Post Cover", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("draft-cover.png", "cover"),
+        }),
+      );
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: postId,
+          data: { coverMediaId: media.id },
+        }),
+      );
+      await publishPost(postId);
+      unwrap(await PostService.unpublishPost(adminContext, { id: postId }));
+
+      await expectRefusedWithRevisions(media.key, postId);
+    });
+
+    it("deletes nothing when a Moment shows the image", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("in-moment.png", "moment"),
+        }),
+      );
+      const postId = await usedOnlyByRevisions(media.key);
+      unwrap(
+        await MomentService.createMoment(adminContext, {
+          images: [`/images/${media.key}`],
+        }),
+      );
+
+      await expectRefusedWithRevisions(media.key, postId);
+    });
+
+    it("deletes nothing when an Admin has the image as their avatar", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("avatar-too.png", "avatar"),
+        }),
+      );
+      const postId = await usedOnlyByRevisions(media.key);
+      await adminContext.db
+        .update(user)
+        .set({ image: `https://blog.example${media.url}` })
+        .where(eq(user.id, adminContext.session.user.id));
+
+      await expectRefusedWithRevisions(media.key, postId);
+    });
+
+    it("deletes an image nothing uses with withRevisions too", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("idle-with-flag.png", "idle"),
+        }),
+      );
+      expect(
+        unwrap(
+          await MediaService.deleteImage(adminContext, media.key, {
+            withRevisions: true,
+          }),
+        ),
+      ).toEqual({ success: true, deletedRevisionCount: 0 });
+      expect(await MediaService.mediaExists(adminContext, media.key)).toBe(
+        false,
+      );
     });
 
     it("answers MEDIA_NOT_FOUND for a missing key with withRevisions", async () => {

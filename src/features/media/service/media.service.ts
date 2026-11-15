@@ -101,8 +101,11 @@ export async function deleteImage(
 ) {
   // The in-use check is part of the delete, so a Post saved meanwhile with
   // the image either makes it refuse or is refused itself.
-  const deleted = options.withRevisions
+  const withRevisions = options.withRevisions
     ? await MediaRepo.deleteMediaWithRevisions(context.db, key)
+    : undefined;
+  const deleted = options.withRevisions
+    ? withRevisions !== null
     : await MediaRepo.deleteMediaIfUnused(context.db, key);
   if (!deleted) {
     return (await MediaRepo.findMediaByKey(context.db, key))
@@ -124,7 +127,11 @@ export async function deleteImage(
     ),
   );
 
-  return ok({ success: true });
+  return ok(
+    withRevisions
+      ? { success: true, deletedRevisionCount: withRevisions.revisionCount }
+      : { success: true },
+  );
 }
 
 export async function getMediaList(

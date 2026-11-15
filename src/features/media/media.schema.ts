@@ -126,7 +126,16 @@ export const LinkedMomentSchema = z.object({
   postedAt: coercedDate.describe("When the Moment was first posted."),
 });
 
-export const DeleteMediaResultSchema = z.object({ success: z.boolean() });
+export const DeleteMediaResultSchema = z.object({
+  success: z.boolean(),
+  deletedRevisionCount: z
+    .number()
+    .int()
+    .optional()
+    .describe(
+      "How many Post Revisions the delete took with the image. Present only when the request set withRevisions; 0 when no Post Revision used the image.",
+    ),
+});
 
 export const DeleteUnusedMediaResultSchema = z.object({
   data: z.object({

@@ -97,12 +97,12 @@ export async function deleteMediaIfUnused(db: DB, key: string) {
  * cover), a Moment or an Admin's avatar. A Post's other revisions stay; the
  * deleted revisions' image records go with them through the foreign key.
  * Every statement of the batch carries the check, so a draft that starts
- * using the image meanwhile makes it delete nothing at all. Returns whether
- * it deleted.
+ * using the image meanwhile makes it delete nothing at all. Returns null
+ * when it deleted nothing, else how many revisions it deleted.
  */
 export async function deleteMediaWithRevisions(db: DB, key: string) {
   const stillUnusedNow = sql`exists (select 1 from ${MediaTable} where ${MediaTable.key} = ${key} and ${unusedNow})`;
-  const [, deleted] = await db.batch([
+  const [revisions, deleted] = await db.batch([
     db
       .delete(PostRevisionsTable)
       .where(
@@ -120,14 +120,15 @@ export async function deleteMediaWithRevisions(db: DB, key: string) {
           ),
           stillUnusedNow,
         ),
-      ),
+      )
+      .returning({ id: PostRevisionsTable.id }),
     // Once the revisions are gone, only a current use could stop this.
     db
       .delete(MediaTable)
       .where(and(eq(MediaTable.key, key), unreferenced))
       .returning({ id: MediaTable.id }),
   ]);
-  return deleted.length > 0;
+  return deleted.length > 0 ? { revisionCount: revisions.length } : null;
 }
 
 /** Returns false when no Media has `key`. */
@@ -292,18 +293,21 @@ const snapshotCoverMediaId = sql<
   number | null
 >`json_extract(${PostsTable.publicSnapshotJson}, '$.cover.mediaId')`;
 
+// D1 binds at most 100 parameters a query, and the cover read binds each id
+// twice, so the usage reads take a page's ids this many at a time.
+const USAGE_ID_CHUNK = 50;
+
 async function withUsage(
   db: DB,
   items: Array<Media>,
 ): Promise<Array<MediaListItem>> {
   if (items.length === 0) return [];
 
-  // D1 binds at most 100 parameters a query, and the cover read binds each
-  // id twice, so every read takes the page's ids 50 at a time. Each row is
-  // about one Media, so the chunks' rows never overlap.
+  // Each row is about one Media, so the chunks' rows never overlap.
   const allIds = items.map((item) => item.id);
-  const chunks = Array.from({ length: Math.ceil(allIds.length / 50) }, (_, i) =>
-    allIds.slice(i * 50, i * 50 + 50),
+  const chunks = Array.from(
+    { length: Math.ceil(allIds.length / USAGE_ID_CHUNK) },
+    (_, i) => allIds.slice(i * USAGE_ID_CHUNK, (i + 1) * USAGE_ID_CHUNK),
   );
   const perChunk = async <T>(
     read: (ids: Array<number>) => PromiseLike<Array<T>>,
