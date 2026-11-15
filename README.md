@@ -20,7 +20,7 @@
 
 ---
 
-Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系统。前端基于 React 19 和 TanStack 现代全栈框架构建，界面承袭清新简约的 [Fuwari](https://github.com/saicaca/fuwari) 视觉风格；后端完全运行于 Cloudflare Workers 边缘网络，搭配 D1、R2、KV 与异步队列，无需传统服务器即可享受极速的全球访问体验与近乎零成本的运维。
+Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系统。前端基于 React 19 和 TanStack 现代全栈框架构建，内置经典、名片、沉浸、侧栏四套主题，其中经典主题承袭清新简约的 [Fuwari](https://github.com/saicaca/fuwari) 视觉风格；后端完全运行于 Cloudflare Workers 边缘网络，搭配 D1、R2、KV 与异步队列，无需传统服务器即可享受极速的全球访问体验与近乎零成本的运维。
 
 > [!NOTE]
 > 本项目专为 Cloudflare Workers 边缘运行时设计。
@@ -28,20 +28,45 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
 ## 界面预览
 
 <div align="center">
-  <img src="docs/assets/home.png" alt="首页预览" width="49%">
-  <img src="docs/assets/admin.png" alt="管理后台预览" width="49%">
+  <img src="docs/assets/preview-home.jpg" alt="首页（沉浸主题）" width="49%">
+  <img src="docs/assets/preview-admin.jpg" alt="后台概览" width="49%">
+</div>
+
+<div align="center">
+  <img src="docs/assets/preview-theme-classic.jpg" alt="经典主题" width="32%">
+  <img src="docs/assets/preview-theme-namecard.jpg" alt="名片主题" width="32%">
+  <img src="docs/assets/preview-theme-sidebar.jpg" alt="侧栏主题" width="32%">
+</div>
+
+<div align="center">
+  <img src="docs/assets/preview-moments.jpg" alt="动态" width="32%">
+  <img src="docs/assets/preview-editor.jpg" alt="文章编辑器" width="32%">
+  <img src="docs/assets/preview-personalize.jpg" alt="个性化设置与实时预览" width="32%">
+</div>
+
+<div align="center">
+  <sub>第一行：首页（沉浸主题）、后台概览；第二行：经典、名片、侧栏主题；第三行：动态、文章编辑器、个性化设置。<br>
+  截图取自<a href="https://demo.dukda.com">在线演示</a>，其中的照片来自维基共享资源，作者与许可见演示站的<a href="https://demo.dukda.com/post/image-credits">图片来源</a>。</sub>
 </div>
 
 ## 功能特性
 
+- 🎨 **主题与个性化**
+  - **四套内置主题**：经典、名片、沉浸、侧栏，各有自己的页面骨架、导航与卡片样式；在后台切换后，所有公开页面立即换用，内容不受影响。
+  - **个性化设置与实时预览**：主题、主色、封面图及其焦点位置、头像、品牌标识与标语集中在一页设置，保存前即可在预览中查看效果。
+  - **导航分组**：一个导航链接下可挂一组子链接，各主题以菜单形式展开。
+
 - 📝 **创作与内容管理**
-  - **现代化富文本编辑器**：基于 TipTap 与 Shiki，原生支持代码语法高亮、数学公式排版、多尺寸媒体插入与文章封面。
-  - **版本快照与历史回滚**：发布文章时自动归档快照，可随时按发布时间比对差异并一键恢复至任意历史版本。
+  - **现代化富文本编辑器**：基于 TipTap 与 Shiki，原生支持代码语法高亮、数学公式、Mermaid 图表、多尺寸媒体插入与文章封面，并可嵌入 Bilibili、YouTube 与直链视频。
+  - **动态**：无标题的短内容，可带最多 50 张图片或一段视频，发布后立即公开，支持评论与分享。
+  - **版本快照与历史回滚**：发布文章时自动归档快照，可随时查看任意历史版本并一键恢复。
   - **分类与标签体系**：支持文章单分类与多标签灵活组合筛选。
+  - **媒体库**：以照片墙浏览，支持按文件名搜索、按上传时间或文件大小排序，并可查看图片被哪些文章与动态引用。
   - **站内实时全文检索**：用 Cloudflare D1 FTS 索引已发布文章的标题、摘要、分类、标签与正文。
 
 - 💬 **互动与读者体验**
-  - **评论与社区互动**：支持嵌套层级回复、访客防刷保护、评论软删除与违规用户禁言管理。
+  - **评论与社区互动**：文章与动态均可评论，支持嵌套层级回复、访客防刷保护、评论软删除与违规用户禁言管理；后台以收件箱形式集中处理待回复的评论。
+  - **阅读体验**：文章图片可放大浏览，标题带锚点链接，目录显示阅读进度，长期未更新的文章会提示读者，文章与动态可调用系统分享面板分享。
   - **友情链接流转**：前台提供规范的申请表单，后台支持一键审核通过、驳回反馈与邮件即时联动。
   - **国际化多语言**：公开阅读界面与管理后台均完整支持中英文无缝切换。
 
@@ -53,7 +78,8 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
 - 🛠️ **系统与扩展能力**
   - **安全身份认证**：集成 Better Auth，支持 GitHub OAuth 快捷登录，以及发送到邮箱的 6 位登录码（无密码；需在后台配置邮件发送后启用）。
   - **通知推送**：新评论、回复和友链申请可推送到 Telegram、Discord、飞书、钉钉、企业微信、Bark、ntfy，或带签名的通用 JSON 与自定义模板，详见 [Webhook 推送](docs/webhook.md)。
-  - **开放 API 接口**：支持在后台签发 API Key，通过规范化 OpenAPI / oRPC 接口无缝对接第三方自动化工具或发布脚本。
+  - **开放 API 接口与 Agent Skill**：支持在后台签发 API Key，通过规范化 OpenAPI / oRPC 接口对接第三方自动化工具或发布脚本；博客自带 Agent Skill，AI agent 凭配对码接入后可撰写、上传图片并发布文章。
+  - **版本更新提示**：后台概览按补丁、小版本、大版本提示可用更新，并附各版本的一句话摘要；跨大版本升级时，部署会在迁移数据库之前停下，列出需要先完成的事项。
   - **访问分析与 SEO**：内建 Umami 统计与文章热度自动同步，开箱支持 Canonical、Schema.org、RSS / Atom / JSON Feed、Sitemap 与 Robots 标准。
 
 ## 技术栈
@@ -124,7 +150,7 @@ bun dev
 
 ## 致谢
 
-- **[Fuwari](https://github.com/saicaca/fuwari)**：本项目优雅清新的界面与动效设计灵感源自 [@saicaca](https://github.com/saicaca) 优秀的开源博客主题。
+- **[Fuwari](https://github.com/saicaca/fuwari)**：经典主题优雅清新的界面与动效设计灵感源自 [@saicaca](https://github.com/saicaca) 优秀的开源博客主题。
 
 ## 开源协议
 
