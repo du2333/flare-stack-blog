@@ -115,6 +115,16 @@
   flex-shrink: 0;
   color: var(--admin-fg-3);
 }
+/* Narrow: the two values stack, the arrow pointing down between them. */
+@media (max-width: 599px) {
+  .post-diff-fields dd {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .post-diff-arrow {
+    transform: rotate(90deg);
+  }
+}
 .post-diff-chips {
   display: inline-flex;
   flex-wrap: wrap;

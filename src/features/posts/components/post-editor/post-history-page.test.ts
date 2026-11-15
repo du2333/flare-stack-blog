@@ -32,7 +32,10 @@ vi.mock("@/lib/orpc", async () => {
   const { createTanstackQueryUtils } = await import("@orpc/tanstack-query");
   // Only the paths a restore invalidates need to exist, for their keys.
   const orpcClient = {
-    tags: { admin: { list: vi.fn() } },
+    tags: {
+      list: vi.fn(),
+      admin: { list: vi.fn(), byPostId: vi.fn().mockResolvedValue([]) },
+    },
     categories: { list: vi.fn() },
     media: { linkedKeys: vi.fn() },
     posts: {
@@ -59,6 +62,9 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
+vi.mock("@/features/posts/components/post-diff/post-diff", () => ({
+  PostDiff: () => null,
+}));
 vi.mock("./post-editor-history-document", () => ({
   PostEditorHistoryDocument: () => null,
 }));
@@ -226,4 +232,41 @@ it("closes the delete confirmation when deleting fails, so the toast is readable
     ),
   );
   await expectNoDialog();
+});
+
+async function openChanges() {
+  fireEvent.click(
+    await screen.findByRole("radio", { name: m.editor_history_view_diff() }),
+  );
+  return {
+    draft: await screen.findByRole("radio", {
+      name: m.editor_history_compare_draft(),
+    }),
+    previous: await screen.findByRole("radio", {
+      name: m.editor_history_compare_previous(),
+    }),
+  };
+}
+
+it("compares with the draft by default and disables the previous version on the oldest one", async () => {
+  api.revisionList.mockResolvedValue([{ id: 8 }, { id: 7 }]);
+  renderPage();
+
+  const { draft, previous } = await openChanges();
+  expect(draft.getAttribute("aria-checked")).toBe("true");
+  await waitFor(() =>
+    expect((previous as HTMLButtonElement).disabled).toBe(true),
+  );
+});
+
+it("offers the previous version on a version that has an older one", async () => {
+  api.revisionList.mockResolvedValue([{ id: 7 }, { id: 6 }]);
+  renderPage();
+
+  const { previous } = await openChanges();
+  await waitFor(() =>
+    expect((previous as HTMLButtonElement).disabled).toBe(false),
+  );
+  fireEvent.click(previous);
+  expect(previous.getAttribute("aria-checked")).toBe("true");
 });

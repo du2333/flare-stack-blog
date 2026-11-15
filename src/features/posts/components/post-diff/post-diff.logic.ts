@@ -350,7 +350,8 @@ export function fieldChanges(
         ? null
         : {
             id,
-            name: lookups.categories.find((item) => item.id === id)?.name ?? null,
+            name:
+              lookups.categories.find((item) => item.id === id)?.name ?? null,
           };
     changes.push({
       field: "category",

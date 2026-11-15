@@ -209,10 +209,7 @@ describe("collapseRows", () => {
   });
 
   it("shows the lines of an expanded fold", () => {
-    const rows = [
-      ...Array.from({ length: 10 }, (_, i) => same(i)),
-      changed,
-    ];
+    const rows = [...Array.from({ length: 10 }, (_, i) => same(i)), changed];
     const folded = collapseRows(rows);
     expect(folded[0]).toEqual({ type: "fold", start: 0, count: 7 });
     const expanded = collapseRows(rows, { expanded: new Set([0]) });
@@ -221,10 +218,7 @@ describe("collapseRows", () => {
   });
 
   it("takes the context from the caller", () => {
-    const rows = [
-      ...Array.from({ length: 10 }, (_, i) => same(i)),
-      changed,
-    ];
+    const rows = [...Array.from({ length: 10 }, (_, i) => same(i)), changed];
     expect(collapseRows(rows, { context: 1 })[0]).toEqual({
       type: "fold",
       start: 0,
@@ -348,8 +342,8 @@ describe("fieldChanges", () => {
   });
 
   it("does not list the body", () => {
-    expect(fieldChanges(side, { ...side, markdown: "另一段" }, lookups)).toEqual(
-      [],
-    );
+    expect(
+      fieldChanges(side, { ...side, markdown: "另一段" }, lookups),
+    ).toEqual([]);
   });
 });

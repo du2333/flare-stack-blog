@@ -84,7 +84,8 @@ function FieldValueView({
       if (field === "title") {
         return <span>{value.text || m.common_untitled()}</span>;
       }
-      if (value.text === "") return <Muted>{m.editor_diff_value_empty()}</Muted>;
+      if (value.text === "")
+        return <Muted>{m.editor_diff_value_empty()}</Muted>;
       return (
         <span className={field === "slug" ? "post-diff-mono" : undefined}>
           {value.text}
@@ -124,7 +125,8 @@ function FieldValueView({
         </span>
       );
     case "cover":
-      if (value.id === null) return <Muted>{m.editor_meta_cover_empty()}</Muted>;
+      if (value.id === null)
+        return <Muted>{m.editor_meta_cover_empty()}</Muted>;
       return value.url ? (
         <img src={value.url} alt="" className="post-diff-cover" />
       ) : (
@@ -233,7 +235,9 @@ function BodyDiff({ rows }: { rows: ReadonlyArray<DiffRow> }) {
               </span>
               <span className="post-diff-text">
                 {item.row.kind === "removed" ? (
-                  <span className="sr-only">{m.editor_diff_row_removed()} </span>
+                  <span className="sr-only">
+                    {m.editor_diff_row_removed()}{" "}
+                  </span>
                 ) : item.row.kind === "added" ? (
                   <span className="sr-only">{m.editor_diff_row_added()} </span>
                 ) : null}
@@ -322,7 +326,10 @@ export function PostDiff({
 
   return (
     <div className={cn("post-diff", className)}>
-      <ul className="post-diff-legend" aria-label={m.editor_diff_legend_label()}>
+      <ul
+        className="post-diff-legend"
+        aria-label={m.editor_diff_legend_label()}
+      >
         <li data-kind="removed">
           <span className="post-diff-swatch" aria-hidden="true" />
           {m.editor_diff_legend_removed({ side: beforeName })}
