@@ -7,7 +7,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { JSONContent } from "@tiptap/react";
 import { eq } from "drizzle-orm";
-import { user } from "@/lib/db/schema";
+import { MediaTable, user } from "@/lib/db/schema";
 import { purgeWorkersCache } from "@/features/cache/workers-cache";
 import { mediaPurgeTarget } from "@/features/cache/workers-cache-policy";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
@@ -320,6 +320,28 @@ describe("MediaService", () => {
     );
     unwrap(await PostService.publishPost(adminContext, { id: postId }));
   }
+
+  it("lists a full page of the largest limit, within D1's 100 bound parameters", async () => {
+    // The largest limit GetMediaListInputSchema takes.
+    const GET_MEDIA_LIST_MAX_LIMIT = 100;
+    const { db } = adminContext;
+    const rows = Array.from({ length: GET_MEDIA_LIST_MAX_LIMIT }, (_, i) =>
+      db.insert(MediaTable).values({
+        key: `page-${i}.png`,
+        url: `/images/page-${i}.png`,
+        fileName: `page-${i}.png`,
+        mimeType: "image/png",
+        sizeInBytes: 1,
+      }),
+    );
+    await db.batch([rows[0], ...rows.slice(1)]);
+
+    const page = await MediaService.getMediaList(adminContext, {
+      limit: GET_MEDIA_LIST_MAX_LIMIT,
+    });
+    expect(page.items).toHaveLength(GET_MEDIA_LIST_MAX_LIMIT);
+    expect(page.items.every((item) => item.postCount === 0)).toBe(true);
+  });
 
   describe("Media sort", () => {
     // Uploaded in this order; c and d are the same size.

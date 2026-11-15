@@ -298,48 +298,65 @@ async function withUsage(
 ): Promise<Array<MediaListItem>> {
   if (items.length === 0) return [];
 
-  const ids = items.map((item) => item.id);
+  // D1 binds at most 100 parameters a query, and the cover read binds each
+  // id twice, so every read takes the page's ids 50 at a time. Each row is
+  // about one Media, so the chunks' rows never overlap.
+  const allIds = items.map((item) => item.id);
+  const chunks = Array.from({ length: Math.ceil(allIds.length / 50) }, (_, i) =>
+    allIds.slice(i * 50, i * 50 + 50),
+  );
+  const perChunk = async <T>(
+    read: (ids: Array<number>) => PromiseLike<Array<T>>,
+  ) => (await Promise.all(chunks.map(read))).flat();
   const [postRows, revisionRows, coverRows, momentRows] = await Promise.all([
-    db
-      .select({
-        mediaId: PostMediaTable.mediaId,
-        postId: PostMediaTable.postId,
-      })
-      .from(PostMediaTable)
-      .where(inArray(PostMediaTable.mediaId, ids)),
-    db
-      .select({
-        mediaId: PostRevisionMediaTable.mediaId,
-        postId: PostRevisionsTable.postId,
-        revisionCount: sql<number>`count(distinct ${PostRevisionsTable.id})`,
-      })
-      .from(PostRevisionMediaTable)
-      .innerJoin(
-        PostRevisionsTable,
-        eq(PostRevisionsTable.id, PostRevisionMediaTable.revisionId),
-      )
-      .where(inArray(PostRevisionMediaTable.mediaId, ids))
-      .groupBy(PostRevisionMediaTable.mediaId, PostRevisionsTable.postId),
-    db
-      .select({
-        coverMediaId: PostsTable.coverMediaId,
-        snapshotCoverMediaId,
-      })
-      .from(PostsTable)
-      .where(
-        or(
-          inArray(PostsTable.coverMediaId, ids),
-          inArray(snapshotCoverMediaId, ids),
+    perChunk((ids) =>
+      db
+        .select({
+          mediaId: PostMediaTable.mediaId,
+          postId: PostMediaTable.postId,
+        })
+        .from(PostMediaTable)
+        .where(inArray(PostMediaTable.mediaId, ids)),
+    ),
+    perChunk((ids) =>
+      db
+        .select({
+          mediaId: PostRevisionMediaTable.mediaId,
+          postId: PostRevisionsTable.postId,
+          revisionCount: sql<number>`count(distinct ${PostRevisionsTable.id})`,
+        })
+        .from(PostRevisionMediaTable)
+        .innerJoin(
+          PostRevisionsTable,
+          eq(PostRevisionsTable.id, PostRevisionMediaTable.revisionId),
+        )
+        .where(inArray(PostRevisionMediaTable.mediaId, ids))
+        .groupBy(PostRevisionMediaTable.mediaId, PostRevisionsTable.postId),
+    ),
+    perChunk((ids) =>
+      db
+        .select({
+          coverMediaId: PostsTable.coverMediaId,
+          snapshotCoverMediaId,
+        })
+        .from(PostsTable)
+        .where(
+          or(
+            inArray(PostsTable.coverMediaId, ids),
+            inArray(snapshotCoverMediaId, ids),
+          ),
         ),
-      ),
-    db
-      .select({
-        mediaId: MomentImagesTable.mediaId,
-        momentCount: sql<number>`count(distinct ${MomentImagesTable.momentId})`,
-      })
-      .from(MomentImagesTable)
-      .where(inArray(MomentImagesTable.mediaId, ids))
-      .groupBy(MomentImagesTable.mediaId),
+    ),
+    perChunk((ids) =>
+      db
+        .select({
+          mediaId: MomentImagesTable.mediaId,
+          momentCount: sql<number>`count(distinct ${MomentImagesTable.momentId})`,
+        })
+        .from(MomentImagesTable)
+        .where(inArray(MomentImagesTable.mediaId, ids))
+        .groupBy(MomentImagesTable.mediaId),
+    ),
   ]);
   const momentCounts = new Map(
     momentRows.map((row) => [row.mediaId, Number(row.momentCount)]),
