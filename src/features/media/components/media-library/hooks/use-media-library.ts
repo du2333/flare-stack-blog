@@ -76,10 +76,20 @@ export function useMediaLibrary() {
     queryClient.invalidateQueries({ queryKey: orpc.media.key() });
 
   const deleteMutation = useMutation({
-    mutationFn: async (keys: Array<string>) => {
+    /**
+     * `withRevisions` also deletes the Post Revisions that alone use an
+     * image; only the detail of such an image asks for it.
+     */
+    mutationFn: async ({
+      keys,
+      withRevisions,
+    }: {
+      keys: Array<string>;
+      withRevisions?: boolean;
+    }) => {
       for (const key of keys) {
         try {
-          await orpcClient.media.remove({ key });
+          await orpcClient.media.remove({ key, withRevisions });
         } catch (error) {
           if (error instanceof ORPCError && error.code === "MEDIA_IN_USE") {
             // The list was stale: show what uses the image now.
@@ -90,8 +100,15 @@ export function useMediaLibrary() {
         }
       }
     },
-    onSuccess: async () => {
-      await invalidate();
+    onSuccess: async (_, { withRevisions }) => {
+      await Promise.all([
+        invalidate(),
+        withRevisions
+          ? queryClient.invalidateQueries({
+              queryKey: orpc.posts.admin.revisions.key(),
+            })
+          : null,
+      ]);
       toast.success(m.media_deleted());
     },
     onError: (error) => {
