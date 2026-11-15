@@ -3,9 +3,13 @@ import { useCallback, useState } from "react";
 import { toast } from "@/lib/toast";
 import {
   postByIdQuery,
+  postMarkdownByIdQuery,
   postRevisionDetailQuery,
   postRevisionListQuery,
+  postRevisionMarkdownQuery,
 } from "@/features/posts/queries";
+import type { PostDiffSide } from "@/features/posts/components/post-diff/post-diff.types";
+import { tagsByPostIdQueryOptions } from "@/features/tags/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import {
@@ -180,5 +184,104 @@ export function usePostHistory({
     cancelConfirm,
     confirmRestore: restoreMutation.mutate,
     confirmDelete: deleteMutation.mutate,
+  };
+}
+
+/** What a version is compared with on the history page. */
+export type HistoryCompare = "draft" | "previous";
+
+function revisionSide(revision: RevisionDetail): PostDiffSide {
+  const snapshot = revision.snapshotJson;
+  return {
+    title: snapshot.title,
+    summary: snapshot.summary,
+    slug: snapshot.slug,
+    publishedAt: snapshot.publishedAt,
+    categoryId: snapshot.categoryId,
+    tagIds: snapshot.tagIds,
+    coverMediaId: snapshot.coverMediaId,
+    markdown: snapshot.contentMarkdown ?? null,
+  };
+}
+
+/**
+ * The two sides of a diff for the version being viewed: against the saved
+ * draft (this version first), or against the adjacent older version (that one
+ * first). Nothing is read until `enabled`, so the content view makes no
+ * Markdown read.
+ */
+export function usePostHistoryDiff({
+  postId,
+  selectedRevisionId,
+  revisions,
+  compare,
+  enabled,
+}: {
+  postId: number;
+  selectedRevisionId: number | null;
+  /** Newest first, as the list returns them. */
+  revisions: ReadonlyArray<RevisionListItem>;
+  compare: HistoryCompare;
+  enabled: boolean;
+}) {
+  const index = revisions.findIndex(
+    (revision) => revision.id === selectedRevisionId,
+  );
+  const previousId = index >= 0 ? revisions[index + 1]?.id : undefined;
+  const againstDraft = compare === "draft";
+  const againstPrevious = !againstDraft && previousId != null;
+
+  const selectedQuery = useQuery({
+    ...postRevisionMarkdownQuery(postId, selectedRevisionId ?? 0),
+    enabled: enabled && selectedRevisionId != null,
+  });
+  const draftQuery = useQuery({
+    ...postMarkdownByIdQuery(postId),
+    enabled: enabled && againstDraft,
+    refetchOnMount: "always",
+  });
+  const draftTagsQuery = useQuery({
+    ...tagsByPostIdQueryOptions(postId),
+    enabled: enabled && againstDraft,
+    refetchOnMount: "always",
+  });
+  const previousQuery = useQuery({
+    ...postRevisionMarkdownQuery(postId, previousId ?? 0),
+    enabled: enabled && againstPrevious,
+  });
+
+  const selected = selectedQuery.data ? revisionSide(selectedQuery.data) : null;
+  let other: PostDiffSide | null = null;
+  if (againstDraft) {
+    const post = draftQuery.data;
+    if (post && draftTagsQuery.data) {
+      other = {
+        title: post.title,
+        summary: post.summary,
+        slug: post.slug,
+        publishedAt: post.publishedAt,
+        categoryId: post.categoryId,
+        tagIds: draftTagsQuery.data.map((tag) => tag.id),
+        coverMediaId: post.coverMediaId,
+        coverUrl: post.cover?.url ?? null,
+        markdown: post.contentMarkdown ?? null,
+      };
+    }
+  } else if (previousQuery.data) {
+    other = revisionSide(previousQuery.data);
+  }
+
+  const queries = againstDraft
+    ? [selectedQuery, draftQuery, draftTagsQuery]
+    : againstPrevious
+      ? [selectedQuery, previousQuery]
+      : [selectedQuery];
+  const ready = selected !== null && other !== null;
+  const failed = queries.some((query) => query.isError);
+  return {
+    before: againstDraft ? selected : other,
+    after: againstDraft ? other : selected,
+    isLoading: enabled && !ready && !failed,
+    isError: enabled && !ready && failed,
   };
 }

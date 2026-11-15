@@ -6,18 +6,32 @@ import {
   LockKeyhole,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-heading";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Spinner } from "@/components/ui/spinner";
 import { formatMonthDayTime } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-import { usePostHistory } from "./hooks";
+import {
+  type HistoryCompare,
+  usePostHistory,
+  usePostHistoryDiff,
+} from "./hooks";
 import { PostEditorHistoryDocument } from "./post-editor-history-document";
 import { PostEditorHistoryList } from "./post-editor-history-list";
+
+// The diff and the library it uses load when the Changes view is first opened.
+const PostDiff = lazy(() =>
+  import("@/features/posts/components/post-diff/post-diff").then((module) => ({
+    default: module.PostDiff,
+  })),
+);
+
+type HistoryView = "content" | "diff";
 
 export function PostHistoryPage({
   postId,
@@ -29,6 +43,10 @@ export function PostHistoryPage({
   const navigate = useNavigate();
   // Below 1024px one of the two panes shows at a time.
   const [pane, setPane] = useState<"content" | "list">("content");
+  // Both choices stay while the Admin moves between versions: the route keeps
+  // this page mounted when `revisionId` changes.
+  const [view, setView] = useState<HistoryView>("content");
+  const [compareChoice, setCompareChoice] = useState<HistoryCompare>("draft");
 
   const goEditor = () => {
     void navigate({
@@ -56,6 +74,22 @@ export function PostHistoryPage({
     selectedRevisionId: revisionId,
     onRestored: goEditor,
     onDeleted: goRevision,
+  });
+
+  // The oldest version has no older one to compare with, and then compares
+  // with the draft whatever was chosen for the newer ones.
+  const selectedIndex = history.revisions.findIndex(
+    (revision) => revision.id === revisionId,
+  );
+  const hasPrevious =
+    selectedIndex >= 0 && selectedIndex + 1 < history.revisions.length;
+  const compare: HistoryCompare = hasPrevious ? compareChoice : "draft";
+  const diff = usePostHistoryDiff({
+    postId,
+    selectedRevisionId: revisionId,
+    revisions: history.revisions,
+    compare,
+    enabled: view === "diff",
   });
 
   const viewingTime = history.selectedRevision
@@ -168,12 +202,78 @@ export function PostHistoryPage({
               <p>{history.restoreFailure.message}</p>
             </Callout>
           )}
-          <PostEditorHistoryDocument
-            snapshot={history.selectedRevision?.snapshotJson ?? null}
-            isLoading={history.isRevisionLoading}
-            editorKey={`history:${postId}:${revisionId}`}
-            viewingTime={viewingTime}
-          />
+          <div className="mx-auto flex w-[min(100%-2rem,var(--post-editor-column))] shrink-0 flex-wrap items-center gap-x-3 gap-y-2 pt-3 pb-1">
+            <SegmentedControl
+              aria-label={m.editor_history_view_label()}
+              size="sm"
+              value={view}
+              onValueChange={setView}
+              items={[
+                { value: "content", label: m.editor_history_view_content() },
+                { value: "diff", label: m.editor_history_view_diff() },
+              ]}
+            />
+            {view === "diff" && (
+              <SegmentedControl
+                aria-label={m.editor_history_compare_label()}
+                size="sm"
+                value={compare}
+                onValueChange={setCompareChoice}
+                items={[
+                  {
+                    value: "draft",
+                    label: m.editor_history_compare_draft(),
+                  },
+                  {
+                    value: "previous",
+                    label: m.editor_history_compare_previous(),
+                    disabled: !hasPrevious,
+                  },
+                ]}
+              />
+            )}
+          </div>
+          {view === "content" ? (
+            <PostEditorHistoryDocument
+              snapshot={history.selectedRevision?.snapshotJson ?? null}
+              isLoading={history.isRevisionLoading}
+              editorKey={`history:${postId}:${revisionId}`}
+              viewingTime={viewingTime}
+            />
+          ) : (
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-16">
+              {diff.isError ? (
+                <p className="py-12 text-center text-sm fuwari-text-50">
+                  {m.editor_history_diff_failed()}
+                </p>
+              ) : diff.before && diff.after ? (
+                <Suspense fallback={<DiffLoading />}>
+                  <PostDiff
+                    key={`${revisionId}:${compare}`}
+                    before={diff.before}
+                    after={diff.after}
+                    beforeName={
+                      compare === "draft"
+                        ? m.editor_history_side_this()
+                        : m.editor_history_side_previous()
+                    }
+                    afterName={
+                      compare === "draft"
+                        ? m.editor_history_side_draft()
+                        : m.editor_history_side_this()
+                    }
+                    emptyText={
+                      compare === "draft"
+                        ? m.editor_history_diff_same_draft()
+                        : m.editor_history_diff_same_previous()
+                    }
+                  />
+                </Suspense>
+              ) : (
+                <DiffLoading />
+              )}
+            </div>
+          )}
         </section>
         <aside
           className="post-history-sidebar"
@@ -195,6 +295,18 @@ export function PostHistoryPage({
         </aside>
       </div>
       {pane === "content" && <div className="lg:hidden">{deleteAction}</div>}
+    </div>
+  );
+}
+
+function DiffLoading() {
+  return (
+    <div
+      role="status"
+      className="flex items-center justify-center gap-2 py-16 text-sm fuwari-text-50"
+    >
+      <Spinner size={16} />
+      {m.editor_diff_loading()}
     </div>
   );
 }
