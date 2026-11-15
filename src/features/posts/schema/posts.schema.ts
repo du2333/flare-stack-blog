@@ -367,6 +367,25 @@ export const PostWithTocSchema = PostSelectSchema.omit({
   })
   .nullable();
 
+const AdminPublishedVersionSchema = z.object({
+  title: z.string(),
+  summary: z.string().nullable(),
+  slug: z.string(),
+  publishedAt: coercedDate.describe("The publication date of the live page."),
+  cover: AdminPostCoverSchema.nullable().describe(
+    "The live page's cover, in the shape of the post's cover. Null when it has none, or when its media no longer exists.",
+  ),
+  categoryId: z
+    .int()
+    .nullable()
+    .describe(
+      "The category the live page shows, not the draft's. Null when it has none.",
+    ),
+  tagIds: z
+    .array(z.int())
+    .describe("The tags the live page shows, not the draft's."),
+});
+
 export const AdminPostSchema = PostSelectSchema.extend({
   contentJson: NullableJsonContentSchema.optional().describe(
     "The editable body as TipTap JSON. Not returned when the request asks for contentFormat=markdown.",
@@ -386,6 +405,9 @@ export const AdminPostSchema = PostSelectSchema.extend({
     .describe(
       "The published body as Markdown, returned in place of publicSnapshotContentJson when the request asks for contentFormat=markdown, written by the same rules as contentMarkdown so the two compare line by line. Null while the post is not published, or when the published body is empty. It is read from the Public Content Snapshot, so it is there whatever Post Revisions were deleted.",
     ),
+  published: AdminPublishedVersionSchema.nullable().describe(
+    "The published version's fields other than the body, which is publicSnapshotContentJson or publicSnapshotContentMarkdown. Null while the post is not published. Read-only: it is what discarding Unpublished Changes would write into the draft, so with hasUnpublishedChanges it tells what publishing would change. Saving the post never changes it; publishing does.",
+  ),
   serverToday: z.string(),
   cover: AdminPostCoverSchema.nullable(),
 });

@@ -8,13 +8,20 @@ import { m } from "@/paraglide/messages";
  * one of them failed or found nothing. The diff and its page share it, so it
  * stays free of the diff library and the page can load it at once.
  */
-export function PostDiffStatus({ kind }: { kind: "loading" | "failed" }) {
+export function PostDiffStatus({
+  kind,
+  failedText,
+}: {
+  kind: "loading" | "failed";
+  /** What a failure says when it is not the general "could not be loaded". */
+  failedText?: string;
+}) {
   if (kind === "failed") {
     return (
       <EmptyState
         role="alert"
         icon={CircleAlert}
-        title={m.editor_diff_failed()}
+        title={failedText ?? m.editor_diff_failed()}
       />
     );
   }

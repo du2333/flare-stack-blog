@@ -335,7 +335,7 @@ const adminGet = adminProcedure
   .input(AdminFindPostByIdInputSchema)
   .output(AdminPostSchema)
   .handler(async ({ context, input, errors }) => {
-    const post = await PostService.findPostById(context, input);
+    const post = await PostService.findAdminPostById(context, input);
     if (!post) throw errors.POST_NOT_FOUND();
     return PostMarkdownService.adminPostInContentFormat(
       post,

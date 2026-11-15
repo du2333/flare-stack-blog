@@ -4,6 +4,7 @@ import {
   Check,
   ExternalLink,
   EyeOff,
+  GitCompareArrows,
   History,
   PanelRight,
   Pause,
@@ -39,6 +40,8 @@ interface PostEditorHeaderProps {
   onPublish: () => void;
   onUnpublish: () => void;
   onDiscard: () => void;
+  /** Shows the Unpublished Changes; `trigger` is where focus returns to. */
+  onViewChanges: (trigger: HTMLElement) => void;
   onDelete: () => void;
   isDeleting: boolean;
   onOpenInfo: () => void;
@@ -91,6 +94,7 @@ export function PostEditorHeader({
   onPublish,
   onUnpublish,
   onDiscard,
+  onViewChanges,
   onDelete,
   isDeleting,
   onOpenInfo,
@@ -111,15 +115,23 @@ export function PostEditorHeader({
       onSelect: () => openPublicPost(publicSlug),
     });
   if (hasPublicSnapshot && hasUnpublishedChanges)
-    actions.push({
-      label: m.editor_header_discard(),
-      icon: Undo2,
-      disabled: busy || conflicted,
-      onSelect: (trigger) => {
-        menuTriggerRef.current = trigger;
-        setConfirmingDiscard(true);
+    actions.push(
+      {
+        // Looking is harmless, so an Edit Conflict does not disable it.
+        label: m.editor_header_view_changes(),
+        icon: GitCompareArrows,
+        onSelect: onViewChanges,
       },
-    });
+      {
+        label: m.editor_header_discard(),
+        icon: Undo2,
+        disabled: busy || conflicted,
+        onSelect: (trigger) => {
+          menuTriggerRef.current = trigger;
+          setConfirmingDiscard(true);
+        },
+      },
+    );
   if (hasPublicSnapshot)
     actions.push({
       label: m.editor_header_unpublish(),

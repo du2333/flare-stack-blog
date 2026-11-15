@@ -8,6 +8,7 @@ import {
   postRevisionListQuery,
   postRevisionMarkdownQuery,
 } from "@/features/posts/queries";
+import { draftSide } from "@/features/posts/components/post-diff/post-diff.sides";
 import type { PostDiffSide } from "@/features/posts/components/post-diff/post-diff.types";
 import { tagsByPostIdQueryOptions } from "@/features/tags/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
@@ -190,10 +191,6 @@ export function usePostHistory({
 /** What a version is compared with on the history page. */
 export type HistoryCompare = "draft" | "previous";
 
-type DraftRead = NonNullable<
-  Awaited<ReturnType<typeof orpcClient.posts.admin.get>>
->;
-
 function revisionSide(revision: RevisionDetail): PostDiffSide {
   const { snapshotJson: snapshot, cover } = revision;
   return {
@@ -206,23 +203,6 @@ function revisionSide(revision: RevisionDetail): PostDiffSide {
     coverMediaId: snapshot.coverMediaId,
     coverUrl: cover?.url ?? null,
     markdown: snapshot.contentMarkdown ?? null,
-  };
-}
-
-function draftSide(
-  post: DraftRead,
-  tags: ReadonlyArray<{ id: number }>,
-): PostDiffSide {
-  return {
-    title: post.title,
-    summary: post.summary,
-    slug: post.slug,
-    publishedAt: post.publishedAt,
-    categoryId: post.categoryId,
-    tagIds: tags.map((tag) => tag.id),
-    coverMediaId: post.coverMediaId,
-    coverUrl: post.cover?.url ?? null,
-    markdown: post.contentMarkdown ?? null,
   };
 }
 
