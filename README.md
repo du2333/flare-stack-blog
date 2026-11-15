@@ -14,7 +14,7 @@
 [![TanStack Start](https://img.shields.io/badge/TanStack%20Start-black?logo=tanstack&style=flat-square)](https://tanstack.com/start)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&style=flat-square)](https://tailwindcss.com)
 
-[在线演示](https://blog.dukda.com) · [部署指南](./docs/deployment.md) · [视频教程](https://www.bilibili.com/video/BV1iQHr6NEcC/) · [本地开发](#本地开发) · [贡献指南](./CONTRIBUTING.md) · [交流群组](https://t.me/+vWuQYybv1kgxMDkx)
+[在线演示](https://demo.dukda.com) · [部署指南](./docs/deployment.md) · [视频教程](https://www.bilibili.com/video/BV1iQHr6NEcC/) · [本地开发](#本地开发) · [贡献指南](./CONTRIBUTING.md) · [交流群组](https://t.me/+vWuQYybv1kgxMDkx)
 
 </div>
 
