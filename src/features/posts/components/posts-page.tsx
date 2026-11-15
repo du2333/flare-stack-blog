@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { PostItem } from "@/features/posts/schema/posts.schema";
 import type { TagWithCount } from "@/features/tags/tags.schema";
@@ -24,25 +24,6 @@ export function PostsPage({
   isFetchingNextPage,
   fetchNextPage,
 }: PostsPageProps) {
-  const observerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px" },
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   return (
     <div
       className="fuwari-onload-animation flex flex-col gap-4"
@@ -50,20 +31,23 @@ export function PostsPage({
     >
       {posts.length > 0 && <ArchivePanel posts={posts} />}
 
-      {/* Infinite Scroll trigger and loading indicator */}
-      <div
-        ref={observerRef}
-        className="flex flex-col items-center justify-center pt-2 pb-8"
-      >
+      {/* The next posts load on request, so the footer stays in reach. */}
+      <div className="flex flex-col items-center justify-center gap-4 pt-2 pb-8">
         {isFetchingNextPage ? (
           <div className="fuwari-card-base fuwari-card-panel w-full px-[var(--theme-panel-pad-x,2rem)] py-6 opacity-70">
-            {/* Inline Mini Skeleton for appending items */}
             {Array.from({ length: 3 }).map((_, i) => (
               <ArchivePostSkeleton key={i} />
             ))}
           </div>
-        ) : hasNextPage ? (
-          <div className="h-px w-24 bg-(--theme-rule,var(--fuwari-input-border))"></div>
+        ) : null}
+        {hasNextPage ? (
+          <Button
+            size="lg"
+            onClick={() => fetchNextPage()}
+            loading={isFetchingNextPage}
+          >
+            {m.posts_load_more()}
+          </Button>
         ) : posts.length > 0 ? (
           <div className="flex items-center gap-4 text-(--theme-rule,var(--fuwari-meta-divider)) mt-4">
             <span className="h-px w-12 bg-current" />
