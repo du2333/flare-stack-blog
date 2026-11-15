@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { user } from "@/lib/db/schema";
 import { purgeWorkersCache } from "@/features/cache/workers-cache";
 import { mediaPurgeTarget } from "@/features/cache/workers-cache-policy";
+import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import { unwrap } from "@/lib/errors";
@@ -587,6 +588,57 @@ describe("MediaService", () => {
       ]);
 
       await deleteAllRevisions(postId);
+      expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
+        false,
+      );
+      unwrap(await MediaService.deleteImage(adminContext, media.key));
+    });
+
+    it("releases an image only a revision trimmed past the newest 20 used", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("trimmed.png", "trimmed"),
+        }),
+      );
+      const { id: postId } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(postId, imageDoc(media.key));
+      await publishPost(postId);
+      await setPostContent(postId, { type: "doc", content: [] });
+      await publishPost(postId);
+      // 20 revisions, the oldest the only one with the image.
+      for (let i = 0; i < 18; i++) {
+        await PostRevisionRepo.insertPostRevision(adminContext.db, {
+          postId,
+          reason: "publish",
+          snapshotHash: `filler-${i}`,
+          snapshotJson: {
+            title: `filler ${i}`,
+            summary: null,
+            slug: `filler-${i}`,
+            status: "published",
+            publishedAt: null,
+            contentJson: { type: "doc", content: [] },
+            tagIds: [],
+            categoryId: null,
+            coverMediaId: null,
+          },
+        });
+      }
+      expect(
+        (await MediaService.deleteImage(adminContext, media.key)).error?.reason,
+      ).toBe("MEDIA_IN_USE");
+
+      unwrap(
+        await PostService.updatePost(adminContext, {
+          id: postId,
+          data: { summary: "one more version" },
+        }),
+      );
+      unwrap(await PostService.publishPost(adminContext, { id: postId }));
+
+      expect(
+        await PostRevisionService.listPostRevisions(adminContext, { postId }),
+      ).toHaveLength(20);
       expect(await MediaService.isMediaInUse(adminContext, media.key)).toBe(
         false,
       );

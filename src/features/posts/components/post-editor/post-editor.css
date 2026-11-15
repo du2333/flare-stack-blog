@@ -553,7 +553,7 @@ button.post-editor-summary:focus-visible .post-editor-summary-edit {
   width: 1px;
   background: var(--post-editor-rule);
 }
-.post-history-version:last-child::before {
+.post-history-version:last-of-type::before {
   bottom: calc(100% - 2rem);
 }
 .post-history-version::after {
@@ -568,6 +568,11 @@ button.post-editor-summary:focus-visible .post-editor-summary-edit {
 }
 .post-history-version.is-selected::after {
   background: var(--fuwari-primary);
+}
+/* Under the last version, in line with the versions' text. */
+.post-history-retention {
+  padding: 0.25rem 1.125rem 0;
+  line-height: 1.6;
 }
 .post-history-delete {
   justify-content: flex-start;

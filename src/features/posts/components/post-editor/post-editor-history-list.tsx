@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Spinner } from "@/components/ui/spinner";
+import { POST_REVISIONS_KEPT } from "@/features/posts/posts.constants";
 import { cn, formatMonthDayTime } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -96,6 +97,9 @@ export function PostEditorHistoryList({
           );
         },
       )}
+      <p className="post-history-retention text-xs fuwari-text-50">
+        {m.editor_history_retention({ count: POST_REVISIONS_KEPT })}
+      </p>
     </div>
   );
 }

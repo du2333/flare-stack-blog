@@ -14,3 +14,9 @@ export const POST_SORT_KEYS = [
   "commentCount",
   "viewCount",
 ] as const;
+
+/**
+ * Post Revisions a Post keeps: taking one more deletes the oldest in the same
+ * write (ADR 0039).
+ */
+export const POST_REVISIONS_KEPT = 20;

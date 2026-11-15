@@ -662,6 +662,7 @@
   "editor_history_list_title": "Versions",
   "editor_history_loading": "Loading history...",
   "editor_history_empty": "No versions yet.",
+  "editor_history_retention": "Each post keeps its {count} most recent versions. Older ones are deleted when a new one is taken.",
   "editor_history_empty_title": "No versions yet",
   "editor_history_empty_desc": "A version is kept when the post is published or another version is restored.",
   "editor_history_pane_content": "Content",
