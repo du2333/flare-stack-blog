@@ -2,7 +2,6 @@ import * as MediaRepo from "@/features/media/data/media.data";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
-import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import type { DiscardPostChangesInput } from "@/features/posts/schema/posts.schema";
 import { toAdminCover } from "@/features/posts/services/posts.service";
 import * as UnpublishedChangesService from "@/features/posts/services/unpublished-changes.service";
@@ -264,28 +263,26 @@ export async function discardUnpublishedChanges(
     return err({ reason: "NO_UNPUBLISHED_CHANGES" });
   }
 
-  // Category and Tags are the public ones: the snapshot's ids are not read
-  // (ADR 0033), and a Category or Tag deleted since is already gone from them.
-  const publicIds = UnpublishedChangesService.publicIdsOf(
-    (
-      await PublicAssignmentRepo.findPublicAssignments(context.db, [post.id])
-    ).get(post.id),
+  // Category and Tags are the public ones (ADR 0033): see findPublishedVersion.
+  const published = await UnpublishedChangesService.findPublishedVersion(
+    context.db,
+    post.id,
+    snapshot,
   );
-  const coverMediaId = snapshot.cover?.mediaId ?? null;
+  const publicIds = {
+    categoryId: published.categoryId,
+    tagIds: published.tagIds,
+  };
   const targetSnapshot: PostRevisionSnapshot = {
-    title: snapshot.title,
-    summary: snapshot.summary,
-    slug: snapshot.slug,
+    title: published.title,
+    summary: published.summary,
+    slug: published.slug,
     status: "published",
-    publishedAt: snapshot.publishedAt,
+    publishedAt: published.publishedAt,
     contentJson: removeCodeBlockHighlighting(snapshot.contentJson),
-    categoryId: publicIds.categoryId,
-    tagIds: publicIds.tagIds,
-    coverMediaId:
-      coverMediaId != null &&
-      (await MediaRepo.findMediaById(context.db, coverMediaId))
-        ? coverMediaId
-        : null,
+    categoryId: published.categoryId,
+    tagIds: published.tagIds,
+    coverMediaId: published.coverMedia?.id ?? null,
   };
 
   if (await slugTakenByAnotherPost(context.db, post, targetSnapshot.slug)) {

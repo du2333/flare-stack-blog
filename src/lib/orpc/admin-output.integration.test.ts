@@ -134,11 +134,32 @@ describe("Post operations", () => {
     expect(updated.json).not.toHaveProperty("draftFingerprint");
     expect(updated.json).not.toHaveProperty("publicSlug");
 
+    // The read of one post: no published version before publishing.
+    const unpublishedRead = await call<Record<string, unknown>>(
+      apiKey,
+      `/admin/posts/${id}`,
+    );
+    expect(unpublishedRead.status).toBe(200);
+    expect(unpublishedRead.json.published).toBeNull();
+
     const publishedPublish = await call(apiKey, `/admin/posts/${id}/publish`, {
       method: "POST",
       body: {},
     });
     expect(publishedPublish.status).toBe(200);
+    const publishedRead = await call<Record<string, unknown>>(
+      apiKey,
+      `/admin/posts/${id}`,
+    );
+    expect(publishedRead.json.published).toEqual({
+      title: "Typed again",
+      summary: null,
+      slug: "typed",
+      publishedAt: expect.any(String),
+      cover: null,
+      categoryId: category.json.id,
+      tagIds: [tag.json.id],
+    });
     const edited = await call<{ hasUnpublishedChanges: boolean }>(
       apiKey,
       `/admin/posts/${id}`,

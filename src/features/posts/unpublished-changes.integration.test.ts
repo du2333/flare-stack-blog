@@ -7,9 +7,11 @@ import {
 } from "tests/test-utils";
 import { describe, expect, it } from "vitest";
 import * as CategoryService from "@/features/categories/categories.service";
+import * as MediaRepo from "@/features/media/data/media.data";
 import * as TagService from "@/features/tags/tags.service";
 import {
   CategoriesTable,
+  MediaTable,
   PostPublicTagsTable,
   PostRevisionsTable,
   PostsTable,
@@ -297,6 +299,150 @@ describe("hasUnpublishedChanges", () => {
 
     await patchPost(apiKey, id, { title: "uc-delete edited" });
     expect((await readPost(apiKey, id)).hasUnpublishedChanges).toBe(true);
+  });
+});
+
+type PublishedVersion = {
+  title: string;
+  summary: string | null;
+  slug: string;
+  publishedAt: string;
+  cover: { id: number; url: string; fileName: string } | null;
+  categoryId: number | null;
+  tagIds: Array<number>;
+};
+
+async function readPublished(apiKey: string, id: number) {
+  return ((await readPost(apiKey, id)) as { published: PublishedVersion | null })
+    .published;
+}
+
+describe("the published version a post read carries", () => {
+  it("is null until the post is published and again after it is unpublished", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "uc-pv-draft");
+    expect(await readPublished(apiKey, id)).toBeNull();
+
+    await publish(apiKey, id);
+    expect(await readPublished(apiKey, id)).not.toBeNull();
+
+    const response = await callAdminApi(apiKey, `/admin/posts/${id}/unpublish`, {
+      method: "POST",
+      body: {},
+    });
+    expect(response.status).toBe(200);
+    expect(await readPublished(apiKey, id)).toBeNull();
+  });
+
+  it("holds the draft's fields when nothing changed since publishing", async () => {
+    const apiKey = await seedAdminApiKey();
+    const { category, tag } = await seedTaxonomy("uc-pv-clean");
+    const id = await createPost(apiKey, "uc-pv-clean");
+    await patchPost(apiKey, id, { categoryId: category.id, summary: "sum" });
+    await setTags(apiKey, id, [tag.id]);
+    await publish(apiKey, id);
+
+    const read = await readPost(apiKey, id);
+    expect(read.hasUnpublishedChanges).toBe(false);
+    expect((read as { published: PublishedVersion }).published).toEqual({
+      title: "uc-pv-clean",
+      summary: "sum",
+      slug: read.slug,
+      publishedAt: expect.any(String),
+      cover: null,
+      categoryId: category.id,
+      tagIds: [tag.id],
+    });
+  });
+
+  it("stays the published fields, with the public Category and Tags, while the draft changes", async () => {
+    const apiKey = await seedAdminApiKey();
+    const { db, category, otherCategory, tag, otherTag } =
+      await seedTaxonomy("uc-pv-edit");
+    const media = await MediaRepo.insertMedia(db, {
+      key: "uc-pv-cover.png",
+      url: "/images/uc-pv-cover.png",
+      fileName: "uc-pv-cover.png",
+      mimeType: "image/png",
+      sizeInBytes: 10,
+    });
+    const otherMedia = await MediaRepo.insertMedia(db, {
+      key: "uc-pv-other.png",
+      url: "/images/uc-pv-other.png",
+      fileName: "uc-pv-other.png",
+      mimeType: "image/png",
+      sizeInBytes: 10,
+    });
+    const id = await createPost(apiKey, "uc-pv-edit");
+    await patchPost(apiKey, id, {
+      categoryId: category.id,
+      summary: "first",
+      coverMediaId: media.id,
+    });
+    await setTags(apiKey, id, [tag.id]);
+    await publish(apiKey, id);
+    const published = await readPublished(apiKey, id);
+    expect(published).toMatchObject({
+      cover: { id: media.id, url: "/images/uc-pv-cover.png" },
+    });
+
+    await patchPost(apiKey, id, {
+      title: "uc-pv-edit edited",
+      summary: "second",
+      categoryId: otherCategory.id,
+      coverMediaId: otherMedia.id,
+      contentJson: paragraph("edited body"),
+    });
+    await setTags(apiKey, id, [otherTag.id]);
+
+    const read = await readPost(apiKey, id);
+    expect(read.hasUnpublishedChanges).toBe(true);
+    expect(read.title).toBe("uc-pv-edit edited");
+    expect(read.categoryId).toBe(otherCategory.id);
+    expect((read as { published: PublishedVersion }).published).toEqual(
+      published,
+    );
+
+    // It is what discarding would write into the draft.
+    await discard(apiKey, id);
+    const discarded = (await readPost(apiKey, id)) as AdminPost & {
+      published: PublishedVersion;
+      cover: { id: number } | null;
+    };
+    expect(discarded.title).toBe(published!.title);
+    expect(discarded.summary).toBe(published!.summary);
+    expect(discarded.slug).toBe(published!.slug);
+    expect(discarded.categoryId).toBe(published!.categoryId);
+    expect(discarded.tags.map((t) => t.id)).toEqual(published!.tagIds);
+    expect(discarded.cover?.id).toBe(published!.cover?.id);
+  });
+
+  it("follows a publish, and has no cover once its Media is gone", async () => {
+    const apiKey = await seedAdminApiKey();
+    const { db, tag } = await seedTaxonomy("uc-pv-live");
+    const media = await MediaRepo.insertMedia(db, {
+      key: "uc-pv-gone.png",
+      url: "/images/uc-pv-gone.png",
+      fileName: "uc-pv-gone.png",
+      mimeType: "image/png",
+      sizeInBytes: 10,
+    });
+    const id = await createPost(apiKey, "uc-pv-live");
+    await patchPost(apiKey, id, { coverMediaId: media.id });
+    await publish(apiKey, id);
+    await patchPost(apiKey, id, { title: "uc-pv-live edited" });
+    await setTags(apiKey, id, [tag.id]);
+    expect((await readPublished(apiKey, id))?.title).toBe("uc-pv-live");
+    expect((await readPublished(apiKey, id))?.tagIds).toEqual([]);
+
+    await publish(apiKey, id);
+    const republished = await readPublished(apiKey, id);
+    expect(republished?.title).toBe("uc-pv-live edited");
+    expect(republished?.tagIds).toEqual([tag.id]);
+    expect(republished?.cover?.id).toBe(media.id);
+
+    await db.delete(MediaTable).where(eq(MediaTable.id, media.id));
+    expect((await readPublished(apiKey, id))?.cover).toBeNull();
   });
 });
 

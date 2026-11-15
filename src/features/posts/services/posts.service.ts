@@ -659,11 +659,30 @@ export async function findPostById(
       ? null
       : await MediaRepo.findMediaById(context.db, post.coverMediaId);
 
+  const publishedVersion = post.publicSnapshotJson
+    ? await UnpublishedChangesService.findPublishedVersion(
+        context.db,
+        post.id,
+        post.publicSnapshotJson,
+      )
+    : null;
+
   return {
     ...stripPublicSnapshot(post),
     publicSlug: post.publicSlug,
     coverMediaId: coverMedia ? post.coverMediaId : null,
     cover: coverMedia ? toAdminCover(coverMedia) : null,
+    published: publishedVersion && {
+      title: publishedVersion.title,
+      summary: publishedVersion.summary,
+      slug: publishedVersion.slug,
+      publishedAt: new Date(publishedVersion.publishedAt),
+      cover: publishedVersion.coverMedia
+        ? toAdminCover(publishedVersion.coverMedia)
+        : null,
+      categoryId: publishedVersion.categoryId,
+      tagIds: publishedVersion.tagIds,
+    },
     hasPublicSnapshot: post.publicSnapshotJson != null,
     hasUnpublishedChanges: hasUnpublishedChanges(post),
     publicSnapshotContentJson: post.publicSnapshotJson?.contentJson ?? null,
