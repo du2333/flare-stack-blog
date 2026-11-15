@@ -350,18 +350,16 @@ export function FriendLinkReview({
               </section>
             </div>
             <footer className="friend-actions">
-              {selected.status !== "pending" ? (
-                <IconButton
-                  variant="quiet"
-                  size="md"
-                  tone="danger"
-                  label={m.friend_links_action_delete()}
-                  disabled={busy}
-                  onClick={() => onDelete(selected)}
-                >
-                  <Trash2 size={16} />
-                </IconButton>
-              ) : null}
+              <IconButton
+                variant="quiet"
+                size="md"
+                tone="danger"
+                label={m.friend_links_action_delete()}
+                disabled={busy}
+                onClick={() => onDelete(selected)}
+              >
+                <Trash2 size={16} />
+              </IconButton>
               <div className="friend-decisions">
                 {selected.status !== "rejected" ? (
                   <Button
