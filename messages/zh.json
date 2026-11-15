@@ -653,6 +653,7 @@
   "editor_history_list_title": "历史版本",
   "editor_history_loading": "正在加载历史记录...",
   "editor_history_empty": "还没有历史版本。",
+  "editor_history_retention": "每篇文章保留最近 {count} 个历史版本，更早的会在产生新版本时自动删除。",
   "editor_history_empty_title": "还没有历史版本",
   "editor_history_empty_desc": "发布文章或恢复历史版本时，会留下一个历史版本。",
   "editor_history_pane_content": "版本内容",

@@ -7,8 +7,6 @@ import type { DiscardPostChangesInput } from "@/features/posts/schema/posts.sche
 import * as UnpublishedChangesService from "@/features/posts/services/unpublished-changes.service";
 import { hasUnpublishedChanges } from "@/features/posts/utils/unpublished-changes";
 import type {
-  CreatePostRevisionInput,
-  CreatePostRevisionResult,
   DeletePostRevisionsInput,
   FindPostRevisionByIdInput,
   ListPostRevisionsInput,
@@ -21,11 +19,7 @@ import { withEditorAttributes } from "@/features/posts/utils/post-content-rules"
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { isUniqueViolation, POST_SLUG } from "@/lib/db/unique-keys";
-import { ms } from "@/lib/duration";
 import { err, ok } from "@/lib/errors";
-
-const AUTO_SNAPSHOT_MIN_INTERVAL = "2m";
-const MAX_AUTO_REVISIONS_PER_POST = 30;
 
 function toRevisionSnapshot(
   post: Awaited<ReturnType<typeof PostRepo.findPostById>>,
@@ -121,68 +115,6 @@ export async function findPostRevisionById(
     data.postId,
     data.revisionId,
   );
-}
-
-export async function createPostRevision(
-  context: DbContext,
-  data: CreatePostRevisionInput,
-) {
-  const reason = data.reason ?? "auto";
-
-  const post = await PostRepo.findPostById(context.db, data.postId);
-  if (!post) {
-    return err({ reason: "POST_NOT_FOUND" });
-  }
-
-  const snapshot = toRevisionSnapshot(post);
-  const snapshotHash = await hashSnapshot(snapshot);
-
-  if (reason === "auto") {
-    const [latestRevision, latestAutoRevision] = await Promise.all([
-      PostRevisionRepo.findLatestPostRevision(context.db, data.postId),
-      PostRevisionRepo.findLatestPostRevision(context.db, data.postId, {
-        reason: "auto",
-      }),
-    ]);
-
-    if (latestRevision?.snapshotHash === snapshotHash) {
-      return ok<CreatePostRevisionResult>({
-        created: false,
-        revision: latestRevision,
-        skipReason: "UNCHANGED",
-      });
-    }
-
-    if (
-      latestAutoRevision &&
-      Date.now() - latestAutoRevision.createdAt.getTime() <
-        ms(AUTO_SNAPSHOT_MIN_INTERVAL)
-    ) {
-      return ok<CreatePostRevisionResult>({
-        created: false,
-        revision: latestAutoRevision,
-        skipReason: "RATE_LIMITED",
-      });
-    }
-  }
-
-  const revision = await PostRevisionRepo.insertPostRevision(context.db, {
-    postId: data.postId,
-    reason,
-    snapshotJson: snapshot,
-    snapshotHash,
-  });
-
-  if (reason === "auto") {
-    await PostRevisionRepo.trimAutoRevisions(context.db, data.postId, {
-      keep: MAX_AUTO_REVISIONS_PER_POST,
-    });
-  }
-
-  return ok<CreatePostRevisionResult>({
-    created: true,
-    revision,
-  });
 }
 
 export async function restorePostRevision(
