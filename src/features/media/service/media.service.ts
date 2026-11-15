@@ -89,13 +89,25 @@ export async function upload(
   }
 }
 
+/**
+ * Deletes one image. With `withRevisions`, an image only Post Revisions use is
+ * deleted together with those revisions; anything current that uses it still
+ * refuses the delete, and then no revision is deleted either.
+ */
 export async function deleteImage(
   context: DbContext & { executionCtx: ExecutionContext },
   key: string,
+  options: { withRevisions?: boolean } = {},
 ) {
   // The in-use check is part of the delete, so a Post saved meanwhile with
   // the image either makes it refuse or is refused itself.
-  if (!(await MediaRepo.deleteMediaIfUnused(context.db, key))) {
+  const withRevisions = options.withRevisions
+    ? await MediaRepo.deleteMediaWithRevisions(context.db, key)
+    : undefined;
+  const deleted = options.withRevisions
+    ? withRevisions !== null
+    : await MediaRepo.deleteMediaIfUnused(context.db, key);
+  if (!deleted) {
     return (await MediaRepo.findMediaByKey(context.db, key))
       ? err({ reason: "MEDIA_IN_USE" })
       : err({ reason: "MEDIA_NOT_FOUND" });
@@ -115,7 +127,11 @@ export async function deleteImage(
     ),
   );
 
-  return ok({ success: true });
+  return ok(
+    withRevisions
+      ? { success: true, deletedRevisionCount: withRevisions.revisionCount }
+      : { success: true },
+  );
 }
 
 export async function getMediaList(

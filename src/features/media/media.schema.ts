@@ -67,7 +67,12 @@ export const MediaListItemSchema = MediaSelectSchema.extend({
   revisionOnlyPostCount: z
     .number()
     .describe(
-      "How many posts use the image only in a Post Revision, not in the draft or the published version. Restoring such a revision brings the image back, so an image with postCount, revisionOnlyPostCount or momentCount above 0 cannot be deleted.",
+      "How many posts use the image only in a Post Revision, not in the draft or the published version. Restoring such a revision brings the image back, so an image with postCount, revisionOnlyPostCount or momentCount above 0 is in use: DELETE /admin/media/{key} refuses it, unless only Post Revisions use it and the request sets withRevisions, which deletes those revisions with it.",
+    ),
+  revisionCount: z
+    .number()
+    .describe(
+      "How many Post Revisions use the image, across all posts. For an image only Post Revisions use, these are the revisions DELETE /admin/media/{key} with withRevisions deletes with it.",
     ),
   momentCount: z
     .number()
@@ -107,7 +112,7 @@ export const LinkedPostSchema = z.object({
   revisionsOnly: z
     .boolean()
     .describe(
-      "True when only Post Revisions of the post use the image, not its draft or published version. Restoring such a revision brings the image back, so it still counts as in use.",
+      "True when only Post Revisions of the post use the image, not its draft or published version. Restoring such a revision brings the image back, so it still counts as in use; DELETE /admin/media/{key} with withRevisions deletes those revisions with the image when nothing else uses it.",
     ),
 });
 
@@ -121,7 +126,16 @@ export const LinkedMomentSchema = z.object({
   postedAt: coercedDate.describe("When the Moment was first posted."),
 });
 
-export const DeleteMediaResultSchema = z.object({ success: z.boolean() });
+export const DeleteMediaResultSchema = z.object({
+  success: z.boolean(),
+  deletedRevisionCount: z
+    .number()
+    .int()
+    .optional()
+    .describe(
+      "How many Post Revisions the delete took with the image. Present only when the request set withRevisions; 0 when no Post Revision used the image.",
+    ),
+});
 
 export const DeleteUnusedMediaResultSchema = z.object({
   data: z.object({
@@ -132,6 +146,15 @@ export const DeleteUnusedMediaResultSchema = z.object({
 
 export const MediaKeyInputSchema = z.strictObject({
   key: z.string(),
+});
+
+export const DeleteMediaInputSchema = MediaKeyInputSchema.extend({
+  withRevisions: z
+    .boolean()
+    .optional()
+    .describe(
+      "Also delete the Post Revisions that use the image, when only Post Revisions use it. A post's other revisions, its draft and its published version stay. Without it such an image answers 409 MEDIA_IN_USE.",
+    ),
 });
 
 /** A Media's file name, held to the rules of a Tag or Category name. */
