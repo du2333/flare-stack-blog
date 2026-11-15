@@ -47,11 +47,13 @@ export async function findPostRevisionById(
 
 /**
  * Deletes the revisions of `postId` past the newest POST_REVISIONS_KEPT, all
- * of them at once, when `when` holds. Meant to run in the batch that took a
- * new one, after it; the Media only those revisions used goes with them
- * through `post_revision_media`.
+ * of them at once. It runs in the batch that takes a new revision, after the
+ * insert. With `onlyIf`, it deletes nothing unless that condition holds:
+ * restore and discard pass the guard of their conditional update. The Media
+ * only the deleted revisions used goes with them through
+ * `post_revision_media`.
  */
-function trimPostRevisions(db: DB, postId: number, when?: SQL) {
+function trimPostRevisions(db: DB, postId: number, onlyIf?: SQL) {
   return db
     .delete(PostRevisionsTable)
     .where(
@@ -69,7 +71,7 @@ function trimPostRevisions(db: DB, postId: number, when?: SQL) {
             )
             .limit(POST_REVISIONS_KEPT),
         ),
-        when,
+        onlyIf,
       ),
     );
 }
@@ -148,10 +150,11 @@ export async function findLatestPublishRevisions(
 
 /**
  * Writes `snapshot` into the draft after saving `backupRevision`, in one
- * batch that also trims the Post to its newest revisions. With `saveToken`, nothing is written unless the Post still carries
- * it: the update is conditional, and the other statements apply only once it
- * has replaced the token. A Tag or Category deleted since the snapshot was
- * taken is left out. Returns null when no Post was written.
+ * batch that also trims the Post to its newest revisions. With `saveToken`,
+ * nothing is written unless the Post still carries it: the update is
+ * conditional, and the other statements apply only once it has replaced the
+ * token. A Tag or Category deleted since the snapshot was taken is left out.
+ * Returns null when no Post was written.
  */
 export async function restorePostSnapshot(
   db: DB,

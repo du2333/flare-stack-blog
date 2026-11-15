@@ -683,6 +683,63 @@ describe("keeping the newest Post Revisions", () => {
       "EDIT_CONFLICT",
     );
 
-    expect(await listRevisions(apiKey, id)).toEqual(revisionsBefore);
+    const revisionsAfter = await listRevisions(apiKey, id);
+    expect(revisionsAfter).toEqual(revisionsBefore);
+    expect(
+      revisionsAfter.some((revision) => revision.reason === "restore_backup"),
+    ).toBe(false);
+  });
+
+  it("deletes no revision and writes no backup when a discard is refused with EDIT_CONFLICT", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-discard-refused");
+    await publish(apiKey, id);
+    await seedRevisions(id, 25);
+    await patchPost(apiKey, id, { summary: "changed summary" });
+    const revisionsBefore = await listRevisions(apiKey, id);
+    beforeRestoreWrite.run = async () => {
+      await patchPost(apiKey, id, { summary: "landed mid-discard" });
+    };
+
+    const response = await callAdminApi(
+      apiKey,
+      `/admin/posts/${id}/discard-changes`,
+      { method: "POST", body: {} },
+    );
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { code: string }).code).toBe(
+      "EDIT_CONFLICT",
+    );
+
+    const revisionsAfter = await listRevisions(apiKey, id);
+    expect(revisionsAfter).toHaveLength(26);
+    expect(revisionsAfter).toEqual(revisionsBefore);
+    expect(
+      revisionsAfter.some((revision) => revision.reason === "restore_backup"),
+    ).toBe(false);
+  });
+
+  it("keeps the higher id of two revisions taken in the same second", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-tie");
+    const seeded = await seedRevisions(id, 20);
+    // The two oldest now share a createdAt; only their ids tell them apart.
+    const [oldest] = await createAdminTestContext()
+      .db.select({ createdAt: PostRevisionsTable.createdAt })
+      .from(PostRevisionsTable)
+      .where(eq(PostRevisionsTable.id, seeded[0]));
+    await createAdminTestContext()
+      .db.update(PostRevisionsTable)
+      .set({ createdAt: oldest.createdAt })
+      .where(eq(PostRevisionsTable.id, seeded[1]));
+
+    await publish(apiKey, id);
+
+    const ids = (await listRevisions(apiKey, id)).map(
+      (revision) => revision.id,
+    );
+    expect(ids).toHaveLength(20);
+    expect(ids).toContain(seeded[1]);
+    expect(ids).not.toContain(seeded[0]);
   });
 });
