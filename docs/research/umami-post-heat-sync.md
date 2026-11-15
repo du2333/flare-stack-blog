@@ -84,6 +84,8 @@ Cloud 免费账户还有一个影响“全历史热度”的限制。当前服�
 
 ### Self-hosted Umami
 
+> 2026-11-14 补充：Umami v3.4.0（2026-09-17）起，自托管实例也支持账号 API Key（**Settings → API keys**，默认启用），发送方式与 Cloud 相同（`Authorization: Bearer umami_…`），不能访问改密码、用户管理和登录接口。博客对两种部署都使用 `UMAMI_API_KEY`；下面的账号密码登录只用于 3.4.0 之前的实例。来源：[v3.4.0 发布说明](https://github.com/umami-software/umami/releases/tag/v3.4.0)、[`src/lib/api-key.ts`](https://github.com/umami-software/umami/blob/v3.5.0/src/lib/api-key.ts)。在本机的 Umami 3.5.0 上实测过。
+
 - API base URL 是自托管实例的 `/api`。
 - 先向 `POST /api/auth/login` 提交用户名和密码，取得 token，再用 `Authorization: Bearer <token>` 调统计 API。[Authentication](https://docs.umami.is/docs/api/authentication)
 - 官方文档没有为 self-hosted 统计 API 声明统一调用额度。实际容量取决于部署和数据库，不能把“未声明”解释为无限。

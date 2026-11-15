@@ -44,15 +44,21 @@ const DailyBucketsSchema = z.object({
   pageviews: z.array(z.object({ x: z.string(), y: PageviewsSchema })),
 });
 
+/**
+ * Where the API is and how a request proves itself. Umami Cloud and, since
+ * v3.4.0, a self-hosted instance take an account API key; a self-hosted
+ * instance also takes the token of a login with user name and password, the
+ * only way before v3.4.0.
+ */
 export type UmamiApiConfig =
   | {
-      type: "cloud";
+      auth: "api-key";
       apiUrl: string;
       websiteId: string;
       apiKey: string;
     }
   | {
-      type: "self-hosted";
+      auth: "password";
       apiUrl: string;
       websiteId: string;
       username: string;
@@ -82,38 +88,59 @@ function normalizeApiUrl(value: string): string {
   return url.toString().replace(/\/$/, "");
 }
 
+/** The API a self-hosted instance serves under its own address. */
+function instanceApiUrl(serviceUrl: string): string {
+  return normalizeApiUrl(new URL("/api", serviceUrl).toString());
+}
+
+/**
+ * Whether `UMAMI_SRC` names an instance of the site's own. Umami Cloud serves
+ * its tracker from `cloud.umami.is` and its regional hosts, and its API from
+ * another host, so those, no address and one that does not parse are Cloud.
+ */
+function isOwnInstance(serviceUrl: string | undefined): serviceUrl is string {
+  if (!serviceUrl || !URL.canParse(serviceUrl)) return false;
+  const host = new URL(serviceUrl).hostname;
+  return host !== "umami.is" && !host.endsWith(".umami.is");
+}
+
 export function resolveUmamiApiConfig(env: UmamiEnv): UmamiApiConfig {
   const websiteId = required(env.UMAMI_WEBSITE_ID, "UMAMI_WEBSITE_ID");
   const apiKey = env.UMAMI_API_KEY?.trim();
   const username = env.UMAMI_USERNAME?.trim();
   const password = env.UMAMI_PASSWORD?.trim();
-  const hasCloudAuth = !!apiKey;
-  const hasSelfHostedAuth = !!username || !!password;
+  const serviceUrl = env.UMAMI_SRC?.trim();
+  const configuredApiUrl = env.UMAMI_API_URL?.trim();
+  const hasPassword = !!username || !!password;
 
-  if (hasCloudAuth && hasSelfHostedAuth) {
-    throw new Error("Umami Cloud and self-hosted credentials are both set");
+  if (apiKey && hasPassword) {
+    throw new Error(
+      "UMAMI_API_KEY and UMAMI_USERNAME / UMAMI_PASSWORD are both set: keep one of the two",
+    );
   }
 
-  if (hasCloudAuth) {
+  if (apiKey) {
     return {
-      type: "cloud",
-      apiUrl: normalizeApiUrl(env.UMAMI_API_URL?.trim() || CLOUD_API_URL),
+      auth: "api-key",
+      // Without this a self-hosted instance's key would go to Umami Cloud.
+      apiUrl: configuredApiUrl
+        ? normalizeApiUrl(configuredApiUrl)
+        : isOwnInstance(serviceUrl)
+          ? instanceApiUrl(serviceUrl)
+          : CLOUD_API_URL,
       websiteId,
       apiKey,
     };
   }
 
-  if (hasSelfHostedAuth) {
+  if (hasPassword) {
     const resolvedUsername = required(username, "UMAMI_USERNAME");
     const resolvedPassword = required(password, "UMAMI_PASSWORD");
-    const apiUrl = env.UMAMI_API_URL?.trim()
-      ? normalizeApiUrl(env.UMAMI_API_URL)
-      : normalizeApiUrl(
-          new URL("/api", required(env.UMAMI_SRC, "UMAMI_SRC")).toString(),
-        );
     return {
-      type: "self-hosted",
-      apiUrl,
+      auth: "password",
+      apiUrl: configuredApiUrl
+        ? normalizeApiUrl(configuredApiUrl)
+        : instanceApiUrl(required(serviceUrl, "UMAMI_SRC")),
       websiteId,
       username: resolvedUsername,
       password: resolvedPassword,
@@ -177,7 +204,7 @@ export function createUmamiClient({
   pageSize?: number;
 } = {}) {
   async function getAuthorization(config: UmamiApiConfig): Promise<string> {
-    if (config.type === "cloud") return `Bearer ${config.apiKey}`;
+    if (config.auth === "api-key") return `Bearer ${config.apiKey}`;
 
     const response = await fetcher(`${config.apiUrl}/auth/login`, {
       method: "POST",

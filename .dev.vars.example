@@ -17,11 +17,15 @@ ENVIRONMENT=dev
 # 客户端埋点还需要构建时变量 VITE_UMAMI_WEBSITE_ID，website id 两边填同一个。
 # UMAMI_WEBSITE_ID=your-umami-website-id
 # UMAMI_SRC=https://cloud.umami.is
-# UMAMI_API_URL=https://api.umami.is/v1
-# Cloud 用 API Key；自托管用用户名密码，不要和 API Key 同时配。
-# UMAMI_API_KEY=your-umami-cloud-api-key
+# 文章热度同步：Umami Cloud 和 3.4.0 及以上的自托管 Umami 都用 API Key
+# （自托管的在 Umami 的 Settings → API keys 中创建）。
+# UMAMI_API_KEY=your-umami-api-key
+# 3.4.0 之前的自托管 Umami 用账号密码，不要和 API Key 同时配。
 # UMAMI_USERNAME=your-umami-username
 # UMAMI_PASSWORD=your-umami-password
+# API 地址默认按 UMAMI_SRC 判断：Umami Cloud 用 https://api.umami.is/v1，
+# 其他地址用它下面的 /api。需要别的地址时再配。
+# UMAMI_API_URL=https://stats.example.com/api
 
 # --- 可选：Turnstile ---
 # 还需要构建时变量 VITE_TURNSTILE_SITE_KEY。
