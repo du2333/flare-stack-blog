@@ -49,6 +49,7 @@
         "@tiptap/suggestion": "^3.31.4",
         "better-auth": "1.7.6",
         "clsx": "^2.1.1",
+        "diff": "^9.0.0",
         "drizzle-orm": "^0.45.3",
         "feed": "^5.2.1",
         "katex": "^0.16.47",

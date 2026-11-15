@@ -4,6 +4,7 @@ import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import type { DiscardPostChangesInput } from "@/features/posts/schema/posts.schema";
+import { toAdminCover } from "@/features/posts/services/posts.service";
 import * as UnpublishedChangesService from "@/features/posts/services/unpublished-changes.service";
 import { hasUnpublishedChanges } from "@/features/posts/utils/unpublished-changes";
 import type {
@@ -115,6 +116,20 @@ export async function findPostRevisionById(
     data.postId,
     data.revisionId,
   );
+}
+
+/**
+ * The cover a revision names, as the post read gives the draft's; null when it
+ * has none or its Media is gone.
+ */
+export async function findPostRevisionCover(
+  context: DbContext,
+  revision: NonNullable<Awaited<ReturnType<typeof findPostRevisionById>>>,
+) {
+  const mediaId = revision.snapshotJson.coverMediaId ?? null;
+  if (mediaId === null) return null;
+  const media = await MediaRepo.findMediaById(context.db, mediaId);
+  return media ? toAdminCover(media) : null;
 }
 
 export async function restorePostRevision(

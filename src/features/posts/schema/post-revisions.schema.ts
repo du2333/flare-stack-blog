@@ -4,6 +4,7 @@ import { POST_REVISION_REASONS, POST_STATUSES } from "@/lib/enum-values";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
 import { NullableJsonContentSchema } from "./json-content.schema";
 import {
+  AdminPostCoverSchema,
   ContentMarkdownOutputSchema,
   PostContentFormatSchema,
   StatedSaveTokenSchema,
@@ -57,6 +58,9 @@ export const PostRevisionSchema = PostRevisionSelectSchema.extend({
     ),
     contentMarkdown: ContentMarkdownOutputSchema,
   }),
+  cover: AdminPostCoverSchema.nullable().describe(
+    "The revision's cover, as the post read returns it for the draft: the Media named by snapshotJson.coverMediaId with its address. Null when the revision has no cover or that Media no longer exists.",
+  ),
 });
 
 export const ListPostRevisionsInputSchema = z.strictObject({

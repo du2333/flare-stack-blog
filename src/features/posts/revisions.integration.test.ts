@@ -8,7 +8,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as MediaRepo from "@/features/media/data/media.data";
 import { fetchVideoMeta } from "@/features/posts/services/video-meta.service";
-import { PostRevisionsTable, PostsTable } from "@/lib/db/schema";
+import { MediaTable, PostRevisionsTable, PostsTable } from "@/lib/db/schema";
 import { createApiContext } from "@/lib/orpc/create-context";
 import { openAPIHandler } from "@/lib/orpc/openapi-handler";
 
@@ -97,6 +97,7 @@ type AdminPost = {
   saveToken: string;
   contentJson: unknown;
   hasUnpublishedChanges: boolean;
+  cover: unknown;
 };
 
 type Revision = { id: number; reason: string; title: string };
@@ -538,6 +539,51 @@ describe("reading a Post Revision", () => {
       expect(revision.snapshotJson).not.toHaveProperty("contentMarkdown");
       expect(revision.snapshotJson.contentJson).toEqual(post.contentJson);
     }
+  });
+
+  it("answers the cover with its address, and null for no cover or a Media that is gone", async () => {
+    const apiKey = await seedAdminApiKey();
+    const db = createAdminTestContext().db;
+    const media = await MediaRepo.insertMedia(db, {
+      key: "rv-cover.png",
+      url: "/images/rv-cover.png",
+      fileName: "rv-cover.png",
+      mimeType: "image/png",
+      sizeInBytes: 10,
+    });
+    const id = await createPost(apiKey, "rv-cover");
+    const coverOf = async (revisionId: number) =>
+      (
+        (await (
+          await callAdminApi(
+            apiKey,
+            `/admin/posts/${id}/revisions/${revisionId}`,
+          )
+        ).json()) as { cover: unknown }
+      ).cover;
+
+    // No cover.
+    await publish(apiKey, id);
+    const [withoutCover] = await listRevisions(apiKey, id);
+    expect(await coverOf(withoutCover.id)).toBeNull();
+
+    // A cover, as the post read gives it for the draft.
+    await patchPost(apiKey, id, { coverMediaId: media.id });
+    const draft = await readPost(apiKey, id);
+    await publish(apiKey, id);
+    const [withCover] = await listRevisions(apiKey, id);
+    expect(await coverOf(withCover.id)).toEqual(draft.cover);
+    expect(draft.cover).toMatchObject({
+      id: media.id,
+      key: "rv-cover.png",
+      url: "/images/rv-cover.png",
+      fileName: "rv-cover.png",
+    });
+
+    // The Media is gone: the revision still names it, but there is no cover.
+    await patchPost(apiKey, id, { coverMediaId: null });
+    await db.delete(MediaTable).where(eq(MediaTable.id, media.id));
+    expect(await coverOf(withCover.id)).toBeNull();
   });
 
   it("answers 404 POST_REVISION_NOT_FOUND for a missing revision", async () => {
