@@ -1,7 +1,7 @@
-import { X } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { lazy, Suspense } from "react";
+import { Callout } from "@/components/ui/callout";
 import { FuwariModal } from "@/components/ui/fuwari-modal";
-import { IconButton } from "@/components/ui/icon-button";
 import { PostDiffStatus } from "@/features/posts/components/post-diff/post-diff-status";
 import { m } from "@/paraglide/messages";
 import type { PostChanges } from "./hooks/use-post-changes";
@@ -21,11 +21,14 @@ const PostDiff = lazy(() =>
 export function PostEditorChangesDialog({
   open,
   changes,
+  slugWithheld,
   onClose,
   returnFocus,
 }: {
   open: boolean;
   changes: PostChanges;
+  /** Autosave leaves the link out, so the diff has the saved one. */
+  slugWithheld: boolean;
   onClose: () => void;
   returnFocus: () => HTMLElement | null;
 }) {
@@ -33,47 +36,44 @@ export function PostEditorChangesDialog({
     <FuwariModal
       open={open}
       onClose={onClose}
-      labelledBy="post-editor-changes-title"
+      title={m.editor_changes_title()}
       returnFocus={returnFocus}
       className="fuwari-modal-wide"
     >
-      <div className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden">
-        <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3">
-          <h2
-            id="post-editor-changes-title"
-            className="text-lg font-medium fuwari-text-90"
-          >
-            {m.editor_changes_title()}
-          </h2>
-          <IconButton label={m.common_close()} size="md" onClick={onClose}>
-            <X size={16} />
-          </IconButton>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-          {changes.status === "ready" ? (
-            <Suspense fallback={<PostDiffStatus kind="loading" />}>
-              <PostDiff
-                before={changes.before}
-                after={changes.after}
-                beforeName={m.editor_changes_side_published()}
-                afterName={m.editor_changes_side_draft()}
-                emptyText={m.editor_changes_same()}
-              />
-            </Suspense>
-          ) : changes.status === "loading" ? (
-            <PostDiffStatus kind="loading" />
-          ) : (
-            <PostDiffStatus
-              kind="failed"
-              failedText={
-                changes.status === "save-failed"
-                  ? m.editor_changes_save_failed()
-                  : undefined
-              }
+      {changes.status === "ready" ? (
+        <>
+          {slugWithheld ? (
+            <Callout
+              tone="warning"
+              icon={CircleAlert}
+              className="mb-4"
+              role="status"
+            >
+              {m.editor_changes_slug_withheld()}
+            </Callout>
+          ) : null}
+          <Suspense fallback={<PostDiffStatus kind="loading" />}>
+            <PostDiff
+              before={changes.before}
+              after={changes.after}
+              beforeName={m.editor_changes_side_published()}
+              afterName={m.editor_changes_side_draft()}
+              emptyText={m.editor_changes_same()}
             />
-          )}
-        </div>
-      </div>
+          </Suspense>
+        </>
+      ) : changes.status === "loading" ? (
+        <PostDiffStatus kind="loading" />
+      ) : (
+        <PostDiffStatus
+          kind="failed"
+          failedText={
+            changes.status === "save-failed"
+              ? m.editor_changes_save_failed()
+              : undefined
+          }
+        />
+      )}
     </FuwariModal>
   );
 }

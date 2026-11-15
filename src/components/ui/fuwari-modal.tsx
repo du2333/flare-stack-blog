@@ -1,7 +1,10 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { X } from "lucide-react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { MOTION, useReducedMotion } from "@/hooks/use-motion";
+import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 import "./fuwari-modal.css";
 
 export interface FuwariModalProps {
@@ -9,6 +12,11 @@ export interface FuwariModalProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  /**
+   * A heading with a close button. The dialog is then a column: the header
+   * stays, and the children scroll in the height the modal is bounded to.
+   */
+  title?: string;
   label?: string;
   labelledBy?: string;
   describedBy?: string;
@@ -24,6 +32,7 @@ export function FuwariModal({
   onClose,
   children,
   className,
+  title,
   label,
   labelledBy,
   describedBy,
@@ -34,6 +43,7 @@ export function FuwariModal({
 }: FuwariModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const reduced = useReducedMotion();
+  const titleId = useId();
   const previous = useRef<HTMLElement | null>(null);
   const focus = useRef({ initialFocus, returnFocus, fallbackFocus });
   focus.current = { initialFocus, returnFocus, fallbackFocus };
@@ -73,10 +83,10 @@ export function FuwariModal({
   return createPortal(
     <dialog
       ref={ref}
-      className={cn("fuwari-modal", className)}
+      className={cn("fuwari-modal", title && "fuwari-modal-titled", className)}
       data-state={open ? "open" : "closing"}
       aria-label={label}
-      aria-labelledby={labelledBy}
+      aria-labelledby={title ? titleId : labelledBy}
       aria-describedby={describedBy}
       onKeyDown={(event) => {
         if (event.key === "Escape") event.stopPropagation();
@@ -98,7 +108,30 @@ export function FuwariModal({
       }}
     >
       <div className="fuwari-modal-content" inert={!open}>
-        {open ? children : retained.current}
+        {title ? (
+          <>
+            <div className="fuwari-modal-header">
+              <h2 id={titleId} className="fuwari-modal-title fuwari-text-90">
+                {title}
+              </h2>
+              <IconButton
+                label={m.common_close()}
+                size="md"
+                disabled={busy}
+                onClick={onClose}
+              >
+                <X size={16} />
+              </IconButton>
+            </div>
+            <div className="fuwari-modal-body">
+              {open ? children : retained.current}
+            </div>
+          </>
+        ) : open ? (
+          children
+        ) : (
+          retained.current
+        )}
       </div>
     </dialog>,
     document.body,

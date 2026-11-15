@@ -417,6 +417,33 @@ describe("the published version a post read carries", () => {
     expect(discarded.cover?.id).toBe(published!.cover?.id);
   });
 
+  it("drops a public Category and Tag that were deleted, as discarding would", async () => {
+    const apiKey = await seedAdminApiKey();
+    const context = createAdminTestContext();
+    const { category, tag, otherTag } = await seedTaxonomy("uc-pv-deleted");
+    const id = await createPost(apiKey, "uc-pv-deleted");
+    await patchPost(apiKey, id, { categoryId: category.id });
+    await setTags(apiKey, id, [tag.id, otherTag.id]);
+    await publish(apiKey, id);
+    expect(await readPublished(apiKey, id)).toMatchObject({
+      categoryId: category.id,
+      tagIds: [tag.id, otherTag.id].sort((a, b) => a - b),
+    });
+
+    await CategoryService.deleteCategory(context, { id: category.id });
+    await TagService.deleteTag(context, { id: tag.id });
+    await patchPost(apiKey, id, { title: "uc-pv-deleted edited" });
+
+    const published = await readPublished(apiKey, id);
+    expect(published?.categoryId).toBeNull();
+    expect(published?.tagIds).toEqual([otherTag.id]);
+
+    await discard(apiKey, id);
+    const discarded = await readPost(apiKey, id);
+    expect(discarded.categoryId).toBe(published?.categoryId);
+    expect(discarded.tags.map((t) => t.id)).toEqual(published?.tagIds);
+  });
+
   it("follows a publish, and has no cover once its Media is gone", async () => {
     const apiKey = await seedAdminApiKey();
     const { db, tag } = await seedTaxonomy("uc-pv-live");

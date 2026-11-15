@@ -57,14 +57,16 @@ export function usePostChanges({
         staleTime: 0,
       });
       const before = post ? publishedSide(post) : null;
-      if (!post || !before) {
+      // The schema leaves `tags` optional; a read without it would show every
+      // tag as removed, so it counts as a failed read.
+      if (!post || !before || !post.tags) {
         settle({ status: "failed" });
         return;
       }
       settle({
         status: "ready",
         before,
-        after: draftSide(post, post.tags ?? []),
+        after: draftSide(post, post.tags),
       });
     } catch {
       settle({ status: "failed" });

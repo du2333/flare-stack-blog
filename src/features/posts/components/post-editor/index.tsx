@@ -180,6 +180,8 @@ export function PostEditor({
     close: closeChanges,
   } = usePostChanges({ postId: initialData.id, flush });
   const changesTriggerRef = useRef<HTMLElement | null>(null);
+  const slugWithheld =
+    !isValidPostSlug(post.slug) || saveError === SLUG_TAKEN_ERROR;
 
   const handleEditorCreated = useCallback((editor: TiptapEditor | null) => {
     editorRef.current = editor;
@@ -258,9 +260,7 @@ export function PostEditor({
           processState={processState}
           canPublish={canPublish}
           conflicted={conflict !== null}
-          slugWithheld={
-            !isValidPostSlug(post.slug) || saveError === SLUG_TAKEN_ERROR
-          }
+          slugWithheld={slugWithheld}
           hasPublicSnapshot={post.hasPublicSnapshot}
           hasUnpublishedChanges={state === "published-changed"}
           publicSlug={post.hasPublicSnapshot ? publicSlug : null}
@@ -281,6 +281,7 @@ export function PostEditor({
         <PostEditorChangesDialog
           open={changesOpen}
           changes={changes}
+          slugWithheld={slugWithheld}
           onClose={closeChanges}
           returnFocus={() => changesTriggerRef.current}
         />

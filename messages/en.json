@@ -733,6 +733,7 @@
   "editor_changes_side_draft": "Current draft",
   "editor_changes_same": "The published version is the same as the current draft",
   "editor_changes_save_failed": "The current draft could not be saved, so the changes cannot be shown.",
+  "editor_changes_slug_withheld": "The link being typed is not saved. The changes below show the saved link.",
   "editor_leave_title": "Leave Page?",
   "editor_leave_message": "You have unsaved changes. Leaving may cause data loss.",
   "editor_leave_confirm": "Confirm Leave",

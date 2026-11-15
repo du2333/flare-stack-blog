@@ -724,6 +724,7 @@
   "editor_changes_side_draft": "当前草稿",
   "editor_changes_same": "已发布的版本与当前草稿一致",
   "editor_changes_save_failed": "当前草稿未能保存，无法显示差异。",
+  "editor_changes_slug_withheld": "正在输入的链接未能保存，下方差异显示的是已保存的链接。",
   "editor_leave_title": "离开页面？",
   "editor_leave_message": "您有正在保存的更改。离开可能会导致部分数据丢失。",
   "editor_leave_confirm": "确认离开",

@@ -646,11 +646,8 @@ export async function findPostBySlugAdmin(
   };
 }
 
-export async function findPostById(
-  context: DbContext,
-  data: FindPostByIdInput,
-) {
-  const found = await PostRepo.findPostById(context.db, data.id);
+async function readPost(context: DbContext, id: number) {
+  const found = await PostRepo.findPostById(context.db, id);
   if (!found) return null;
   const post = await withSettledFingerprints(context.db, found);
 
@@ -659,19 +656,48 @@ export async function findPostById(
       ? null
       : await MediaRepo.findMediaById(context.db, post.coverMediaId);
 
-  const publishedVersion = post.publicSnapshotJson
+  return {
+    publicSnapshotJson: post.publicSnapshotJson,
+    read: {
+      ...stripPublicSnapshot(post),
+      publicSlug: post.publicSlug,
+      coverMediaId: coverMedia ? post.coverMediaId : null,
+      cover: coverMedia ? toAdminCover(coverMedia) : null,
+      hasPublicSnapshot: post.publicSnapshotJson != null,
+      hasUnpublishedChanges: hasUnpublishedChanges(post),
+      publicSnapshotContentJson: post.publicSnapshotJson?.contentJson ?? null,
+      serverToday: serverUtcDateString(),
+    },
+  };
+}
+
+export async function findPostById(
+  context: DbContext,
+  data: FindPostByIdInput,
+) {
+  return (await readPost(context, data.id))?.read ?? null;
+}
+
+/**
+ * The Admin's read of one post: `findPostById` and the published version's
+ * other fields (`published`), which cost two more queries and only this read
+ * answers.
+ */
+export async function findAdminPostById(
+  context: DbContext,
+  data: FindPostByIdInput,
+) {
+  const found = await readPost(context, data.id);
+  if (!found) return null;
+  const publishedVersion = found.publicSnapshotJson
     ? await UnpublishedChangesService.findPublishedVersion(
         context.db,
-        post.id,
-        post.publicSnapshotJson,
+        data.id,
+        found.publicSnapshotJson,
       )
     : null;
-
   return {
-    ...stripPublicSnapshot(post),
-    publicSlug: post.publicSlug,
-    coverMediaId: coverMedia ? post.coverMediaId : null,
-    cover: coverMedia ? toAdminCover(coverMedia) : null,
+    ...found.read,
     published: publishedVersion && {
       title: publishedVersion.title,
       summary: publishedVersion.summary,
@@ -683,10 +709,6 @@ export async function findPostById(
       categoryId: publishedVersion.categoryId,
       tagIds: publishedVersion.tagIds,
     },
-    hasPublicSnapshot: post.publicSnapshotJson != null,
-    hasUnpublishedChanges: hasUnpublishedChanges(post),
-    publicSnapshotContentJson: post.publicSnapshotJson?.contentJson ?? null,
-    serverToday: serverUtcDateString(),
   };
 }
 
