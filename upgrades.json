@@ -1,8 +1,9 @@
 {
-  "unreleased": {
-    "summary": "修复自托管 Umami 使用 API Key 同步文章热度时请求被发往 Umami Cloud 的问题：API 地址现在按 UMAMI_SRC 判断，3.4.0 及以上的自托管 Umami 只需配置 UMAMI_API_KEY。"
-  },
   "versions": [
+    {
+      "version": "3.13.1",
+      "summary": "修复自托管 Umami 使用 API Key 同步文章热度时请求被发往 Umami Cloud 的问题：API 地址现在按 UMAMI_SRC 判断，3.4.0 及以上的自托管 Umami 只需配置 UMAMI_API_KEY。"
+    },
     {
       "version": "3.13.0",
       "summary": "新增主题系统，内置经典、名片、沉浸、侧栏四套主题；后台界面重新设计；公开页面首屏加载更快；图片优化不再需要在 Cloudflare 控制台开启。"
