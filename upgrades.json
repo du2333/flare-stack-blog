@@ -1,8 +1,9 @@
 {
-  "unreleased": {
-    "summary": "友链管理中，待审核的申请现在可以直接删除，申请人不会收到通知；此前只能先拒绝再删除。"
-  },
   "versions": [
+    {
+      "version": "3.13.2",
+      "summary": "友链管理中，待审核的申请现在可以直接删除，申请人不会收到通知；此前只能先拒绝再删除。"
+    },
     {
       "version": "3.13.1",
       "summary": "修复自托管 Umami 使用 API Key 同步文章热度时请求被发往 Umami Cloud 的问题：API 地址现在按 UMAMI_SRC 判断，3.4.0 及以上的自托管 Umami 只需配置 UMAMI_API_KEY。"
