@@ -12,11 +12,10 @@ export interface PostDiffSide {
   tagIds: ReadonlyArray<number>;
   coverMediaId: number | null;
   /**
-   * The cover's address when the caller has it, as the draft read does. When
-   * it is missing the diff looks the image up in the media library by
-   * `coverMediaId`.
+   * The cover's address, for the thumbnail; null for no cover or one whose
+   * Media is gone. Covers are compared by `coverMediaId`.
    */
-  coverUrl?: string | null;
+  coverUrl: string | null;
   /** The body as Markdown (`contentFormat=markdown`); null for an empty body. */
   markdown: string | null;
 }

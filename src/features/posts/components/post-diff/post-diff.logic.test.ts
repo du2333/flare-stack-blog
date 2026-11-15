@@ -21,14 +21,17 @@ function changedRows(rows: ReadonlyArray<DiffRow>) {
 }
 
 describe("markdownLines", () => {
-  it("unifies line endings and drops trailing blank lines", () => {
-    expect(markdownLines("a\r\nb\r\n\r\n")).toEqual(["a", "b"]);
+  it("unifies line endings and drops only the newline that ends the last line", () => {
+    expect(markdownLines("a\r\nb\r\n")).toEqual(["a", "b"]);
+    expect(markdownLines("a\nb")).toEqual(["a", "b"]);
+    // A blank line the body really has stays.
+    expect(markdownLines("a\n\n")).toEqual(["a", ""]);
   });
 
   it("reads an empty or missing body as no lines", () => {
     expect(markdownLines(null)).toEqual([]);
     expect(markdownLines("")).toEqual([]);
-    expect(markdownLines("\n\n")).toEqual([]);
+    expect(markdownLines("\n")).toEqual([]);
   });
 });
 
@@ -134,6 +137,25 @@ describe("diffMarkdown", () => {
     expect(changed[1]!.segments).toBeNull();
   });
 
+  it("marks inside a line only when it is like the line it stands against", () => {
+    // Two lines changed, nothing alike.
+    const plain = changedRows(diffMarkdown("苹果\n香蕉", "qwerty\nasdfgh"));
+    expect(plain.map((row) => row.segments)).toEqual([null, null, null, null]);
+
+    // A hunk too large to compare each line with each: by position, and only
+    // the alike pair is marked.
+    const removed = Array.from({ length: 21 }, (_, i) => `原文第${i}行：苹果`);
+    const added = Array.from({ length: 21 }, (_, i) => `qwerty ${i}`);
+    removed[5] = "今天天气很好适合出门散步";
+    added[5] = "今天天气很好适合出门跑步";
+    const rows = changedRows(
+      diffMarkdown(removed.join("\n"), added.join("\n")),
+    );
+    const withMarks = rows.filter((row) => row.segments !== null);
+    expect(withMarks).toHaveLength(2);
+    expect(withMarks.map((row) => row.text)).toEqual([removed[5], added[5]]);
+  });
+
   it("pairs lines of a larger hunk by similarity, in order", () => {
     const rows = diffMarkdown(
       "第一段话需要改动\n完全无关的旧内容\n第三段话也要改",
@@ -236,6 +258,7 @@ describe("fieldChanges", () => {
     categoryId: 1,
     tagIds: [1, 2],
     coverMediaId: 5,
+    coverUrl: null,
     markdown: "正文",
   };
   const lookups = {
@@ -329,7 +352,7 @@ describe("fieldChanges", () => {
   it("carries the cover addresses the caller knows", () => {
     const changes = fieldChanges(
       { ...side, coverUrl: "/images/a.png" },
-      { ...side, coverMediaId: null },
+      { ...side, coverMediaId: null, coverUrl: null },
       lookups,
     );
     expect(changes).toEqual([
@@ -339,6 +362,38 @@ describe("fieldChanges", () => {
         after: { kind: "cover", id: null, url: null },
       },
     ]);
+  });
+
+  it("compares the title and the summary exactly, spaces included", () => {
+    const changes = fieldChanges(
+      side,
+      { ...side, title: "标题 ", summary: " 摘要" },
+      lookups,
+    );
+    expect(changes.map((change) => change.field)).toEqual(["title", "summary"]);
+    // No summary is the same as an empty one.
+    expect(
+      fieldChanges(
+        { ...side, summary: null },
+        { ...side, summary: "" },
+        lookups,
+      ),
+    ).toEqual([]);
+  });
+
+  it("lists the publish date only when the calendar day differs", () => {
+    const sameDay = new Date(side.publishedAt as string);
+    sameDay.setHours(sameDay.getHours() === 0 ? 1 : 0, 30);
+    const nextDay = new Date(side.publishedAt as string);
+    nextDay.setDate(nextDay.getDate() + 1);
+    expect(
+      fieldChanges(side, { ...side, publishedAt: sameDay }, lookups),
+    ).toEqual([]);
+    expect(
+      fieldChanges(side, { ...side, publishedAt: nextDay }, lookups).map(
+        (change) => change.field,
+      ),
+    ).toEqual(["publishedAt"]);
   });
 
   it("does not list the body", () => {

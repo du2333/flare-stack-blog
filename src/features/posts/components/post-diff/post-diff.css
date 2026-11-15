@@ -2,30 +2,27 @@
  * A Post diff: the fields that differ, then the Markdown body line by line.
  * Removed text is danger-hued, added text success-hued (the base layer's
  * fixed hues, light and dark), and the - and + in the gutter say the same
- * without colour. Sizes are rem and px, none follows the window.
+ * without colour. Type sizes and radii come from the Admin's variables
+ * (admin-variables.css); the remaining literals are rem and px spacing, and
+ * none follows the window.
  */
 .post-diff {
   --post-diff-removed: var(--fuwari-danger-fg);
   --post-diff-added: var(--fuwari-success-fg);
+  /* Half a box's radius, for what sits inside one: a value, a cover. */
+  --post-diff-inner-radius: calc(var(--admin-radius-row) / 2);
   width: 100%;
   max-width: var(--post-editor-column, 46rem);
   margin-inline: auto;
   color: var(--admin-fg);
-}
-.post-diff-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 3rem 0;
-  font-size: 0.875rem;
-  color: var(--admin-fg-3);
 }
 .post-diff-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem 1.25rem;
   margin-bottom: 1.25rem;
-  font-size: 0.8125rem;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   color: var(--admin-fg-2);
 }
 .post-diff-legend li {
@@ -36,6 +33,7 @@
 .post-diff-swatch {
   width: 0.875rem;
   height: 0.875rem;
+  /* Smaller than any control radius: a 14px chip of colour. */
   border-radius: 4px;
   background: color-mix(in srgb, var(--post-diff-color) 16%, transparent);
   box-shadow: inset 0 0 0 1px
@@ -55,7 +53,8 @@
 }
 .post-diff-heading {
   margin-bottom: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
   font-weight: 600;
   color: var(--admin-fg-2);
 }
@@ -63,11 +62,12 @@
   color: var(--admin-fg-3);
 }
 .post-diff-note {
-  font-size: 0.8125rem;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
 }
 .post-diff-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.8125rem;
+  font-size: var(--admin-text-small);
 }
 
 /* The fields: a name, then before -> after. */
@@ -75,10 +75,10 @@
   display: grid;
   grid-template-columns: 5rem minmax(0, 1fr);
   border: 1px solid var(--admin-line);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   overflow: hidden;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: var(--admin-text-body);
+  line-height: var(--admin-leading-body);
 }
 .post-diff-fields dt,
 .post-diff-fields dd {
@@ -104,7 +104,9 @@
   min-width: 0;
   max-width: 100%;
   padding: 0.0625rem 0.375rem;
-  border-radius: 6px;
+  border-radius: var(--post-diff-inner-radius);
+  /* A title or summary differing only in spaces still shows them. */
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
   background: color-mix(in srgb, var(--post-diff-removed) 11%, transparent);
 }
@@ -134,7 +136,7 @@
   display: block;
   width: 7.5rem;
   aspect-ratio: 16 / 9;
-  border-radius: 6px;
+  border-radius: var(--post-diff-inner-radius);
   object-fit: cover;
   background: var(--admin-sunken);
 }
@@ -144,20 +146,20 @@
   align-items: center;
   justify-content: center;
   gap: 0.125rem;
-  font-size: 0.75rem;
+  font-size: var(--admin-text-meta);
   color: var(--admin-fg-3);
 }
 
 /* The body, one line per row. */
 .post-diff-body {
   border: 1px solid var(--admin-line);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-row);
   overflow: hidden;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Consolas, "PingFang SC",
     "Microsoft YaHei", monospace;
-  font-size: 0.8125rem;
-  line-height: 1.65;
+  font-size: var(--admin-text-small);
+  line-height: var(--admin-leading-small);
 }
 .post-diff-row {
   display: grid;
@@ -174,12 +176,14 @@
 }
 .post-diff-text {
   min-width: 0;
-  min-height: 1.65em;
+  /* An empty line keeps the height of a line of text. */
+  min-height: var(--admin-leading-small);
   padding-right: 0.75rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .post-diff-mark {
+  /* An inline highlight inside a line, smaller than any control radius. */
   border-radius: 3px;
   background: color-mix(in srgb, var(--post-diff-color) 30%, transparent);
   color: inherit;

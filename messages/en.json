@@ -706,7 +706,7 @@
   "editor_history_side_previous": "Previous version",
   "editor_history_diff_same_draft": "This version is the same as the current draft",
   "editor_history_diff_same_previous": "This version is the same as the previous version",
-  "editor_history_diff_failed": "The changes could not be loaded.",
+  "editor_diff_failed": "The changes could not be loaded.",
   "editor_diff_legend_label": "Legend",
   "editor_diff_legend_removed": "Only in “{side}”",
   "editor_diff_legend_added": "Only in “{side}”",

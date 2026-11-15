@@ -40,9 +40,14 @@ export type DiffItem =
       count: number;
     };
 
-/** The lines of a Markdown body: line endings unified, no trailing blank lines. */
+/**
+ * The lines of a Markdown body: line endings unified, and the one newline that
+ * ends the last line dropped (the server's serializer ends every body with
+ * exactly one, so it is not a blank line). Any other blank line stays.
+ */
 export function markdownLines(markdown: string | null | undefined) {
-  const text = (markdown ?? "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
+  let text = (markdown ?? "").replace(/\r\n?/g, "\n");
+  if (text.endsWith("\n")) text = text.slice(0, -1);
   return text === "" ? [] : text.split("\n");
 }
 
@@ -118,13 +123,14 @@ function pairLines(
   if (removed.length === 0 || added.length === 0) return [];
   const pairs: Array<{ removed: number; added: number; diff: InlineDiff }> = [];
   if (removed.length * added.length > MAX_PAIRING_WORK) {
+    // Too many to compare each with each: line n stands against line n, and
+    // only when the two hunks are the same size and the lines are alike.
     if (removed.length !== added.length) return pairs;
     removed.forEach((line, index) => {
-      pairs.push({
-        removed: index,
-        added: index,
-        diff: inlineDiff(line, added[index]!, segmenter),
-      });
+      const diff = inlineDiff(line, added[index]!, segmenter);
+      if (diff.similarity >= MIN_LINE_SIMILARITY) {
+        pairs.push({ removed: index, added: index, diff });
+      }
     });
     return pairs;
   }
@@ -304,6 +310,13 @@ function timeOf(value: string | Date | null | undefined) {
   return Number.isNaN(time) ? null : time;
 }
 
+/** The calendar day a time falls on, where the row shows it. */
+function dayOf(time: number | null) {
+  if (time === null) return null;
+  const date = new Date(time);
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
 function sameIds(a: ReadonlyArray<number>, b: ReadonlyArray<number>) {
   if (a.length !== b.length) return false;
   const sortedB = [...b].sort((x, y) => x - y);
@@ -330,13 +343,15 @@ export function fieldChanges(
       });
     }
   };
-  text("title", before.title.trim(), after.title.trim());
-  text("summary", (before.summary ?? "").trim(), (after.summary ?? "").trim());
+  // Exactly as saved: a restore would change a stray space, so the diff shows it.
+  text("title", before.title, after.title);
+  text("summary", before.summary ?? "", after.summary ?? "");
   text("slug", before.slug, after.slug);
 
   const beforeTime = timeOf(before.publishedAt);
   const afterTime = timeOf(after.publishedAt);
-  if (beforeTime !== afterTime) {
+  // The row shows a calendar day, so two times of one day are not a change.
+  if (dayOf(beforeTime) !== dayOf(afterTime)) {
     changes.push({
       field: "publishedAt",
       before: { kind: "date", time: beforeTime },
@@ -379,12 +394,12 @@ export function fieldChanges(
       before: {
         kind: "cover",
         id: before.coverMediaId,
-        url: before.coverUrl ?? null,
+        url: before.coverUrl,
       },
       after: {
         kind: "cover",
         id: after.coverMediaId,
-        url: after.coverUrl ?? null,
+        url: after.coverUrl,
       },
     });
   }

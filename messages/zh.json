@@ -697,7 +697,7 @@
   "editor_history_side_previous": "上一个版本",
   "editor_history_diff_same_draft": "此版本与当前草稿一致",
   "editor_history_diff_same_previous": "此版本与上一个版本一致",
-  "editor_history_diff_failed": "无法加载差异。",
+  "editor_diff_failed": "无法加载差异。",
   "editor_diff_legend_label": "图例",
   "editor_diff_legend_removed": "仅「{side}」有",
   "editor_diff_legend_added": "仅「{side}」有",

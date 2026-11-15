@@ -4,10 +4,9 @@ import { Fragment, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Spinner } from "@/components/ui/spinner";
 import { categoryOptionsQuery } from "@/features/categories/queries";
 import { tagsAdminQueryOptions } from "@/features/tags/queries";
-import { cn, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
   collapseRows,
@@ -20,7 +19,7 @@ import {
   hasBodyChange,
 } from "./post-diff.logic";
 import type { PostDiffSide } from "./post-diff.types";
-import { useCoverUrls } from "./use-cover-urls";
+import { PostDiffStatus } from "./post-diff-status";
 import "./post-diff.css";
 
 export type { PostDiffSide } from "./post-diff.types";
@@ -35,7 +34,6 @@ export interface PostDiffProps {
   afterName: string;
   /** Shown when the two sides are equal in every field and the body. */
   emptyText: string;
-  className?: string;
 }
 
 function fieldLabel(field: FieldKey) {
@@ -254,9 +252,8 @@ function BodyDiff({ rows }: { rows: ReadonlyArray<DiffRow> }) {
 /**
  * Two states of a Post, compared: the fields that differ, then the Markdown
  * body line by line, the changed words marked inside a changed line. Sides
- * are always given oldest first. It reads the Admin's category and tag lists
- * (and, for a cover given only by its Media id, the media library), so it
- * needs the query client; the diff library comes in with this module, so
+ * are always given oldest first. It reads the Admin's category and tag lists,
+ * so it needs the query client; the diff library comes in with this module, so
  * load it with `lazy(() => import(…))`, never statically.
  */
 export function PostDiff({
@@ -265,52 +262,36 @@ export function PostDiff({
   beforeName,
   afterName,
   emptyText,
-  className,
 }: PostDiffProps) {
   const categories = useQuery(categoryOptionsQuery);
   const tags = useQuery(tagsAdminQueryOptions());
-
-  // Only a cover that differs is shown, so only that one needs an address.
-  const coverChanged = before.coverMediaId !== after.coverMediaId;
-  const missingCovers = coverChanged
-    ? [before, after].flatMap((side) =>
-        side.coverMediaId !== null && !side.coverUrl ? [side.coverMediaId] : [],
-      )
-    : [];
-  const covers = useCoverUrls(missingCovers);
 
   const rows = useMemo(
     () => diffMarkdown(before.markdown, after.markdown),
     [before.markdown, after.markdown],
   );
+  const changes = useMemo(
+    () =>
+      categories.data && tags.data
+        ? fieldChanges(before, after, {
+            categories: categories.data,
+            tags: tags.data,
+          })
+        : [],
+    [before, after, categories.data, tags.data],
+  );
 
-  const ready =
-    categories.data !== undefined &&
-    tags.data !== undefined &&
-    (missingCovers.length === 0 || !covers.isPending);
-  const changes = useMemo(() => {
-    if (!categories.data || !tags.data) return [];
-    const withUrl = (side: PostDiffSide): PostDiffSide => ({
-      ...side,
-      coverUrl:
-        side.coverUrl ??
-        (side.coverMediaId === null
-          ? null
-          : (covers.data?.[side.coverMediaId] ?? null)),
-    });
-    return fieldChanges(withUrl(before), withUrl(after), {
-      categories: categories.data,
-      tags: tags.data,
-    });
-  }, [before, after, categories.data, tags.data, covers.data]);
-
-  if (!ready) {
+  if (categories.isError || tags.isError) {
     return (
-      <div className={cn("post-diff", className)}>
-        <p className="post-diff-status" role="status">
-          <Spinner size={16} />
-          {m.editor_diff_loading()}
-        </p>
+      <div className="post-diff">
+        <PostDiffStatus kind="failed" />
+      </div>
+    );
+  }
+  if (!categories.data || !tags.data) {
+    return (
+      <div className="post-diff">
+        <PostDiffStatus kind="loading" />
       </div>
     );
   }
@@ -318,14 +299,14 @@ export function PostDiff({
   const bodyChanged = hasBodyChange(rows);
   if (changes.length === 0 && !bodyChanged) {
     return (
-      <div className={cn("post-diff", className)}>
+      <div className="post-diff">
         <EmptyState icon={GitCompareArrows} title={emptyText} />
       </div>
     );
   }
 
   return (
-    <div className={cn("post-diff", className)}>
+    <div className="post-diff">
       <ul
         className="post-diff-legend"
         aria-label={m.editor_diff_legend_label()}

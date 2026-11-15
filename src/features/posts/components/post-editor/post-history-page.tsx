@@ -13,7 +13,7 @@ import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-heading";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Spinner } from "@/components/ui/spinner";
+import { PostDiffStatus } from "@/features/posts/components/post-diff/post-diff-status";
 import { formatMonthDayTime } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -76,19 +76,11 @@ export function PostHistoryPage({
     onDeleted: goRevision,
   });
 
-  // The oldest version has no older one to compare with, and then compares
-  // with the draft whatever was chosen for the newer ones.
-  const selectedIndex = history.revisions.findIndex(
-    (revision) => revision.id === revisionId,
-  );
-  const hasPrevious =
-    selectedIndex >= 0 && selectedIndex + 1 < history.revisions.length;
-  const compare: HistoryCompare = hasPrevious ? compareChoice : "draft";
-  const diff = usePostHistoryDiff({
+  const changes = usePostHistoryDiff({
     postId,
     selectedRevisionId: revisionId,
     revisions: history.revisions,
-    compare,
+    compare: compareChoice,
     enabled: view === "diff",
   });
 
@@ -217,7 +209,7 @@ export function PostHistoryPage({
               <SegmentedControl
                 aria-label={m.editor_history_compare_label()}
                 size="sm"
-                value={compare}
+                value={changes.compare}
                 onValueChange={setCompareChoice}
                 items={[
                   {
@@ -227,7 +219,7 @@ export function PostHistoryPage({
                   {
                     value: "previous",
                     label: m.editor_history_compare_previous(),
-                    disabled: !hasPrevious,
+                    disabled: !changes.hasPrevious,
                   },
                 ]}
               />
@@ -242,35 +234,15 @@ export function PostHistoryPage({
             />
           ) : (
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-16">
-              {diff.isError ? (
-                <p className="py-12 text-center text-sm fuwari-text-50">
-                  {m.editor_history_diff_failed()}
-                </p>
-              ) : diff.before && diff.after ? (
-                <Suspense fallback={<DiffLoading />}>
+              {changes.diff ? (
+                <Suspense fallback={<PostDiffStatus kind="loading" />}>
                   <PostDiff
-                    key={`${revisionId}:${compare}`}
-                    before={diff.before}
-                    after={diff.after}
-                    beforeName={
-                      compare === "draft"
-                        ? m.editor_history_side_this()
-                        : m.editor_history_side_previous()
-                    }
-                    afterName={
-                      compare === "draft"
-                        ? m.editor_history_side_draft()
-                        : m.editor_history_side_this()
-                    }
-                    emptyText={
-                      compare === "draft"
-                        ? m.editor_history_diff_same_draft()
-                        : m.editor_history_diff_same_previous()
-                    }
+                    key={`${revisionId}:${changes.compare}`}
+                    {...changes.diff}
                   />
                 </Suspense>
               ) : (
-                <DiffLoading />
+                <PostDiffStatus kind={changes.isError ? "failed" : "loading"} />
               )}
             </div>
           )}
@@ -295,18 +267,6 @@ export function PostHistoryPage({
         </aside>
       </div>
       {pane === "content" && <div className="lg:hidden">{deleteAction}</div>}
-    </div>
-  );
-}
-
-function DiffLoading() {
-  return (
-    <div
-      role="status"
-      className="flex items-center justify-center gap-2 py-16 text-sm fuwari-text-50"
-    >
-      <Spinner size={16} />
-      {m.editor_diff_loading()}
     </div>
   );
 }

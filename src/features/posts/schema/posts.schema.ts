@@ -54,7 +54,7 @@ const PublicPostCoverSchema = z.object({
   height: z.number().int().nullable(),
 });
 
-const AdminPostCoverSchema = PublicPostCoverSchema.extend({
+export const AdminPostCoverSchema = PublicPostCoverSchema.extend({
   id: z.number().int(),
   fileName: z.string(),
 });

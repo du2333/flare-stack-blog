@@ -104,22 +104,23 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function renderPage() {
-  render(
+function renderPage(revisionId = 7) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const page = (id: number) =>
     createElement(
       QueryClientProvider,
-      {
-        client: new QueryClient({
-          defaultOptions: { queries: { retry: false } },
-        }),
-      },
+      { client },
       createElement(
         AdminChromeProvider,
         null,
-        createElement(PostHistoryPage, { postId: 1, revisionId: 7 }),
+        createElement(PostHistoryPage, { postId: 1, revisionId: id }),
       ),
-    ),
-  );
+    );
+  const { rerender } = render(page(revisionId));
+  // The route keeps the page mounted when another version is selected.
+  return { selectVersion: (id: number) => rerender(page(id)) };
 }
 
 function editConflict(saveToken: string) {
@@ -234,39 +235,83 @@ it("closes the delete confirmation when deleting fails, so the toast is readable
   await expectNoDialog();
 });
 
+function radio(name: string) {
+  return screen.getByRole("radio", { name }) as HTMLButtonElement;
+}
+
 async function openChanges() {
   fireEvent.click(
     await screen.findByRole("radio", { name: m.editor_history_view_diff() }),
   );
-  return {
-    draft: await screen.findByRole("radio", {
-      name: m.editor_history_compare_draft(),
-    }),
-    previous: await screen.findByRole("radio", {
-      name: m.editor_history_compare_previous(),
-    }),
-  };
+  await screen.findByRole("radio", { name: m.editor_history_compare_draft() });
 }
+
+const isMarkdownRead = (call: Array<unknown>) =>
+  (call[0] as { contentFormat?: string } | undefined)?.contentFormat ===
+  "markdown";
 
 it("compares with the draft by default and disables the previous version on the oldest one", async () => {
   api.revisionList.mockResolvedValue([{ id: 8 }, { id: 7 }]);
   renderPage();
 
-  const { draft, previous } = await openChanges();
-  expect(draft.getAttribute("aria-checked")).toBe("true");
+  await openChanges();
+  expect(radio(m.editor_history_compare_draft()).ariaChecked).toBe("true");
   await waitFor(() =>
-    expect((previous as HTMLButtonElement).disabled).toBe(true),
+    expect(radio(m.editor_history_compare_previous()).disabled).toBe(true),
   );
 });
 
-it("offers the previous version on a version that has an older one", async () => {
+it("keeps the Changes view and the compare base when another version is selected", async () => {
+  api.revisionList.mockResolvedValue([{ id: 8 }, { id: 7 }, { id: 6 }]);
+  const { selectVersion } = renderPage(8);
+
+  await openChanges();
+  await waitFor(() =>
+    expect(radio(m.editor_history_compare_previous()).disabled).toBe(false),
+  );
+  fireEvent.click(radio(m.editor_history_compare_previous()));
+
+  selectVersion(7);
+  expect(radio(m.editor_history_view_diff()).ariaChecked).toBe("true");
+  expect(radio(m.editor_history_compare_previous()).ariaChecked).toBe("true");
+
+  // The oldest has no older version and compares with the draft; the choice
+  // comes back on the next version that has one.
+  selectVersion(6);
+  expect(radio(m.editor_history_view_diff()).ariaChecked).toBe("true");
+  expect(radio(m.editor_history_compare_previous()).disabled).toBe(true);
+  expect(radio(m.editor_history_compare_draft()).ariaChecked).toBe("true");
+  selectVersion(7);
+  expect(radio(m.editor_history_compare_previous()).ariaChecked).toBe("true");
+});
+
+it("makes no Markdown read until Changes is opened", async () => {
   api.revisionList.mockResolvedValue([{ id: 7 }, { id: 6 }]);
   renderPage();
 
-  const { previous } = await openChanges();
+  await waitFor(() => expect(api.revisionGet).toHaveBeenCalled());
+  await screen.findByRole("radio", { name: m.editor_history_view_diff() });
+  expect(api.revisionGet.mock.calls.some(isMarkdownRead)).toBe(false);
+  expect(api.getPost.mock.calls.some(isMarkdownRead)).toBe(false);
+
+  await openChanges();
   await waitFor(() =>
-    expect((previous as HTMLButtonElement).disabled).toBe(false),
+    expect(api.revisionGet.mock.calls.some(isMarkdownRead)).toBe(true),
   );
-  fireEvent.click(previous);
-  expect(previous.getAttribute("aria-checked")).toBe("true");
+  expect(api.getPost.mock.calls.some(isMarkdownRead)).toBe(true);
+});
+
+it("ends in a failed state, not a spinner, when the draft is gone", async () => {
+  api.revisionList.mockResolvedValue([{ id: 7 }, { id: 6 }]);
+  api.getPost.mockImplementation(async (input: { contentFormat?: string }) => {
+    if (input.contentFormat === "markdown") {
+      throw new ORPCError("POST_NOT_FOUND", { status: 404, defined: true });
+    }
+    return { saveToken: "token-1" };
+  });
+  renderPage();
+
+  await openChanges();
+  const alert = await screen.findByRole("alert");
+  expect(alert.textContent).toContain(m.editor_diff_failed());
 });

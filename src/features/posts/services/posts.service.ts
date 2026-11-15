@@ -135,7 +135,7 @@ async function resolveSnapshotCover(
   };
 }
 
-function toAdminCover(
+export function toAdminCover(
   media: NonNullable<Awaited<ReturnType<typeof MediaRepo.findMediaById>>>,
 ) {
   return {
