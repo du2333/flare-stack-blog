@@ -238,7 +238,8 @@ export function MediaDetail({
           >
             {isReplacing ? m.common_processing() : m.media_replace()}
           </Button>
-          {usage === "none" ? (
+          {/* An image only Post Revisions use goes with them, once confirmed. */}
+          {usage !== "current" ? (
             <IconButton
               className="media-inspector-delete"
               variant="quiet"
