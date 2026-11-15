@@ -1,4 +1,13 @@
-import { and, desc, eq, inArray, max, sql } from "drizzle-orm";
+import {
+  type SQL,
+  and,
+  desc,
+  eq,
+  inArray,
+  max,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import {
   type PostRevisionReason,
@@ -8,6 +17,7 @@ import {
   PostsTable,
   PostTagsTable,
 } from "@/lib/db/schema";
+import { POST_REVISIONS_KEPT } from "@/features/posts/posts.constants";
 import { keyForWrite } from "@/lib/db/unique-keys";
 import { findPostById } from "./posts.data";
 
@@ -35,6 +45,36 @@ export async function findPostRevisionById(
   });
 }
 
+/**
+ * Deletes the revisions of `postId` past the newest POST_REVISIONS_KEPT, all
+ * of them at once, when `when` holds. Meant to run in the batch that took a
+ * new one, after it; the Media only those revisions used goes with them
+ * through `post_revision_media`.
+ */
+function trimPostRevisions(db: DB, postId: number, when?: SQL) {
+  return db
+    .delete(PostRevisionsTable)
+    .where(
+      and(
+        eq(PostRevisionsTable.postId, postId),
+        notInArray(
+          PostRevisionsTable.id,
+          db
+            .select({ id: PostRevisionsTable.id })
+            .from(PostRevisionsTable)
+            .where(eq(PostRevisionsTable.postId, postId))
+            .orderBy(
+              desc(PostRevisionsTable.createdAt),
+              desc(PostRevisionsTable.id),
+            )
+            .limit(POST_REVISIONS_KEPT),
+        ),
+        when,
+      ),
+    );
+}
+
+/** Takes a revision and trims the Post to its newest ones, in one batch. */
 export async function insertPostRevision(
   db: DB,
   data: {
@@ -45,16 +85,19 @@ export async function insertPostRevision(
     restoredFromRevisionId?: number | null;
   },
 ) {
-  const [revision] = await db
-    .insert(PostRevisionsTable)
-    .values({
-      postId: data.postId,
-      reason: data.reason,
-      snapshotJson: data.snapshotJson,
-      snapshotHash: data.snapshotHash,
-      restoredFromRevisionId: data.restoredFromRevisionId ?? null,
-    })
-    .returning();
+  const [[revision]] = await db.batch([
+    db
+      .insert(PostRevisionsTable)
+      .values({
+        postId: data.postId,
+        reason: data.reason,
+        snapshotJson: data.snapshotJson,
+        snapshotHash: data.snapshotHash,
+        restoredFromRevisionId: data.restoredFromRevisionId ?? null,
+      })
+      .returning(),
+    trimPostRevisions(db, data.postId),
+  ]);
 
   return revision;
 }
@@ -103,39 +146,9 @@ export async function findLatestPublishRevisions(
   });
 }
 
-export async function trimAutoRevisions(
-  db: DB,
-  postId: number,
-  options: {
-    keep: number;
-  },
-) {
-  const revisions = await db.query.PostRevisionsTable.findMany({
-    where: and(
-      eq(PostRevisionsTable.postId, postId),
-      eq(PostRevisionsTable.reason, "auto"),
-    ),
-    columns: {
-      id: true,
-    },
-    orderBy: [desc(PostRevisionsTable.createdAt), desc(PostRevisionsTable.id)],
-  });
-
-  const staleRevisionIds = revisions
-    .slice(options.keep)
-    .map((revision) => revision.id);
-  if (staleRevisionIds.length === 0) {
-    return;
-  }
-
-  await db
-    .delete(PostRevisionsTable)
-    .where(inArray(PostRevisionsTable.id, staleRevisionIds));
-}
-
 /**
  * Writes `snapshot` into the draft after saving `backupRevision`, in one
- * batch. With `saveToken`, nothing is written unless the Post still carries
+ * batch that also trims the Post to its newest revisions. With `saveToken`, nothing is written unless the Post still carries
  * it: the update is conditional, and the other statements apply only once it
  * has replaced the token. A Tag or Category deleted since the snapshot was
  * taken is left out. Returns null when no Post was written.
@@ -205,6 +218,7 @@ export async function restorePostSnapshot(
       .select(
         sql`SELECT NULL, ${data.postId}, ${data.backupRevision.reason}, ${JSON.stringify(data.backupRevision.snapshotJson)}, ${data.backupRevision.snapshotHash}, ${data.backupRevision.restoredFromRevisionId ?? null}, unixepoch() WHERE ${restored}`,
       ),
+    trimPostRevisions(db, data.postId, restored),
     db
       .delete(PostTagsTable)
       .where(and(eq(PostTagsTable.postId, data.postId), restored)),

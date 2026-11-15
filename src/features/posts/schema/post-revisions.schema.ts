@@ -73,11 +73,6 @@ export const GetPostRevisionInputSchema =
     contentFormat: PostContentFormatSchema,
   });
 
-const CreatePostRevisionInputSchema = z.object({
-  postId: z.number(),
-  reason: PostRevisionReasonSchema.optional(),
-});
-
 export const RestorePostRevisionInputSchema = z.strictObject({
   postId: PathIdSchema,
   revisionId: PathIdSchema,
@@ -135,17 +130,9 @@ export type ListPostRevisionsInput = z.infer<
 export type FindPostRevisionByIdInput = z.infer<
   typeof FindPostRevisionByIdInputSchema
 >;
-export type CreatePostRevisionInput = z.infer<
-  typeof CreatePostRevisionInputSchema
->;
 export type RestorePostRevisionInput = z.infer<
   typeof RestorePostRevisionInputSchema
 >;
 export type DeletePostRevisionsInput = z.infer<
   typeof DeletePostRevisionsInputSchema
 >;
-export type CreatePostRevisionResult = {
-  created: boolean;
-  revision: z.infer<typeof PostRevisionSelectSchema> | null;
-  skipReason?: "UNCHANGED" | "RATE_LIMITED";
-};

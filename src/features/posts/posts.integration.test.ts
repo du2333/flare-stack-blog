@@ -10,11 +10,17 @@ import {
 } from "tests/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invalidate } from "@/features/cache/public-cache";
+import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
+import * as PostRepo from "@/features/posts/data/posts.data";
 import { GetPostsCursorInputSchema } from "@/features/posts/schema/posts.schema";
 import * as PostRevisionService from "@/features/posts/services/post-revisions.service";
 import * as PostService from "@/features/posts/services/posts.service";
 import * as TagService from "@/features/tags/tags.service";
-import { PostRevisionsTable, PostsTable } from "@/lib/db/schema";
+import {
+  type PostRevisionReason,
+  PostRevisionsTable,
+  PostsTable,
+} from "@/lib/db/schema";
 import { getPostPublisher } from "@/lib/do/post-publisher-binding";
 
 import { unwrap } from "@/lib/errors";
@@ -1062,62 +1068,30 @@ describe("Posts Integration", () => {
   });
 
   describe("PostRevisionService", () => {
-    it("creates an auto revision from the current post snapshot", async () => {
-      const tag = unwrap(
-        await TagService.createTag(adminContext, { name: "revision-tag" }),
-      );
-      const { id } = await PostService.createEmptyPost(adminContext);
-
-      await updatePost({
-        id,
-        data: {
-          title: "Versioned Post",
-          summary: "Snapshot summary",
-          slug: "versioned-post",
-          contentJson: {
-            type: "doc",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Hello revision history" }],
-              },
-            ],
-          },
+    /** Takes a revision of the draft as it is now, as publishing would. */
+    const takeRevision = async (
+      postId: number,
+      reason: PostRevisionReason = "publish",
+    ) => {
+      const post = await PostRepo.findPostById(adminContext.db, postId);
+      if (!post) throw new Error(`Post ${postId} not found`);
+      return await PostRevisionRepo.insertPostRevision(adminContext.db, {
+        postId,
+        reason,
+        snapshotHash: `test-${postId}-${Date.now()}`,
+        snapshotJson: {
+          title: post.title,
+          summary: post.summary,
+          slug: post.slug,
+          status: post.status,
+          publishedAt: post.publishedAt?.toISOString() ?? null,
+          contentJson: post.contentJson,
+          tagIds: post.tags.map((tag) => tag.id).sort((x, y) => x - y),
+          categoryId: post.categoryId ?? null,
+          coverMediaId: post.coverMediaId ?? null,
         },
       });
-      await TagService.setPostTags(adminContext, {
-        postId: id,
-        tagIds: [tag.id],
-      });
-
-      const revision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-        }),
-      );
-
-      expect(revision.created).toBe(true);
-      expect(revision.revision?.reason).toBe("auto");
-      expect(revision.revision?.snapshotJson).toEqual({
-        title: "Versioned Post",
-        summary: "Snapshot summary",
-        slug: "versioned-post",
-        status: "draft",
-        publishedAt: null,
-        contentJson: {
-          type: "doc",
-          content: [
-            {
-              type: "paragraph",
-              content: [{ type: "text", text: "Hello revision history" }],
-            },
-          ],
-        },
-        tagIds: [tag.id],
-        categoryId: null,
-        coverMediaId: null,
-      });
-    });
+    };
 
     it("lists revisions in reverse chronological order", async () => {
       const { id } = await PostService.createEmptyPost(adminContext);
@@ -1129,12 +1103,7 @@ describe("Posts Integration", () => {
           slug: "first-version",
         },
       });
-      const firstRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-          reason: "publish",
-        }),
-      );
+      const firstRevision = await takeRevision(id);
 
       await updatePost({
         id,
@@ -1143,12 +1112,7 @@ describe("Posts Integration", () => {
           slug: "second-version",
         },
       });
-      const secondRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-          reason: "publish",
-        }),
-      );
+      const secondRevision = await takeRevision(id);
 
       const revisions = await PostRevisionService.listPostRevisions(
         adminContext,
@@ -1158,9 +1122,9 @@ describe("Posts Integration", () => {
       );
 
       expect(revisions).toHaveLength(2);
-      expect(revisions[0]?.id).toBe(secondRevision.revision?.id);
+      expect(revisions[0]?.id).toBe(secondRevision.id);
       expect(revisions[0]?.title).toBe("Second Version");
-      expect(revisions[1]?.id).toBe(firstRevision.revision?.id);
+      expect(revisions[1]?.id).toBe(firstRevision.id);
       expect(revisions[1]?.title).toBe("First Version");
     });
 
@@ -1180,12 +1144,7 @@ describe("Posts Integration", () => {
           },
         },
       });
-      unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-          reason: "publish",
-        }),
-      );
+      await takeRevision(id);
 
       const [revision] = await PostRevisionService.listPostRevisions(
         adminContext,
@@ -1226,11 +1185,7 @@ describe("Posts Integration", () => {
         tagIds: [originalTag.id],
       });
 
-      const originalRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-        }),
-      );
+      const originalRevision = await takeRevision(id, "auto");
 
       await updatePost({
         id,
@@ -1257,7 +1212,7 @@ describe("Posts Integration", () => {
       const restoreResult = unwrap(
         await PostRevisionService.restorePostRevision(adminContext, {
           postId: id,
-          revisionId: originalRevision.revision!.id,
+          revisionId: originalRevision.id,
         }),
       );
       await waitForBackgroundTasks(adminContext.executionCtx);
@@ -1287,11 +1242,9 @@ describe("Posts Integration", () => {
       );
       expect(revisions).toHaveLength(2);
       expect(revisions[0]?.reason).toBe("restore_backup");
-      expect(revisions[0]?.restoredFromRevisionId).toBe(
-        originalRevision.revision!.id,
-      );
+      expect(revisions[0]?.restoredFromRevisionId).toBe(originalRevision.id);
       expect(revisions[0]?.title).toBe("Updated Title");
-      expect(revisions[1]?.id).toBe(originalRevision.revision!.id);
+      expect(revisions[1]?.id).toBe(originalRevision.id);
     });
 
     it("does not create a restore backup when the target revision matches the current post", async () => {
@@ -1305,16 +1258,12 @@ describe("Posts Integration", () => {
         },
       });
 
-      const revision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: id,
-        }),
-      );
+      const revision = await takeRevision(id, "auto");
 
       const restoreResult = unwrap(
         await PostRevisionService.restorePostRevision(adminContext, {
           postId: id,
-          revisionId: revision.revision!.id,
+          revisionId: revision.id,
         }),
       );
 
@@ -1327,7 +1276,7 @@ describe("Posts Integration", () => {
         },
       );
       expect(revisions).toHaveLength(1);
-      expect(revisions[0]?.id).toBe(revision.revision?.id);
+      expect(revisions[0]?.id).toBe(revision.id);
     });
 
     it("deletes multiple revisions for the current post only", async () => {
@@ -1342,12 +1291,7 @@ describe("Posts Integration", () => {
       });
       const { id: secondPostId } =
         await PostService.createEmptyPost(adminContext);
-      const firstRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: firstPostId,
-          reason: "publish",
-        }),
-      );
+      const firstRevision = await takeRevision(firstPostId);
 
       await updatePost({
         id: firstPostId,
@@ -1356,12 +1300,7 @@ describe("Posts Integration", () => {
           slug: "first-post-v2",
         },
       });
-      const secondRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: firstPostId,
-          reason: "publish",
-        }),
-      );
+      const secondRevision = await takeRevision(firstPostId);
 
       await updatePost({
         id: secondPostId,
@@ -1370,29 +1309,22 @@ describe("Posts Integration", () => {
           slug: "second-post-v1",
         },
       });
-      const untouchedRevision = unwrap(
-        await PostRevisionService.createPostRevision(adminContext, {
-          postId: secondPostId,
-          reason: "publish",
-        }),
-      );
+      const untouchedRevision = await takeRevision(secondPostId);
 
       const result = unwrap(
         await PostRevisionService.deletePostRevisions(adminContext, {
           postId: firstPostId,
           revisionIds: [
-            firstRevision.revision!.id,
-            secondRevision.revision!.id,
-            untouchedRevision.revision!.id,
+            firstRevision.id,
+            secondRevision.id,
+            untouchedRevision.id,
           ],
         }),
       );
 
       expect(result.deletedCount).toBe(2);
       expect(result.deletedIds.sort((a, b) => a - b)).toEqual(
-        [firstRevision.revision!.id, secondRevision.revision!.id].sort(
-          (a, b) => a - b,
-        ),
+        [firstRevision.id, secondRevision.id].sort((a, b) => a - b),
       );
 
       const firstPostRevisions = await PostRevisionService.listPostRevisions(
@@ -1410,7 +1342,7 @@ describe("Posts Integration", () => {
 
       expect(firstPostRevisions).toHaveLength(0);
       expect(secondPostRevisions).toHaveLength(1);
-      expect(secondPostRevisions[0]?.id).toBe(untouchedRevision.revision!.id);
+      expect(secondPostRevisions[0]?.id).toBe(untouchedRevision.id);
     });
 
     it("creates a publish revision when starting the publish workflow", async () => {
