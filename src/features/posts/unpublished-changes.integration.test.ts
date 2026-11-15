@@ -41,7 +41,19 @@ type AdminPost = {
   contentJson: unknown;
   categoryId: number | null;
   tags: Array<{ id: number }>;
+  cover: { id: number } | null;
+  published: PublishedVersion | null;
   hasUnpublishedChanges: boolean;
+};
+
+type PublishedVersion = {
+  title: string;
+  summary: string | null;
+  slug: string;
+  publishedAt: string;
+  cover: { id: number; url: string; fileName: string } | null;
+  categoryId: number | null;
+  tagIds: Array<number>;
 };
 
 type ListPage = {
@@ -302,19 +314,8 @@ describe("hasUnpublishedChanges", () => {
   });
 });
 
-type PublishedVersion = {
-  title: string;
-  summary: string | null;
-  slug: string;
-  publishedAt: string;
-  cover: { id: number; url: string; fileName: string } | null;
-  categoryId: number | null;
-  tagIds: Array<number>;
-};
-
 async function readPublished(apiKey: string, id: number) {
-  return ((await readPost(apiKey, id)) as { published: PublishedVersion | null })
-    .published;
+  return (await readPost(apiKey, id)).published;
 }
 
 describe("the published version a post read carries", () => {
@@ -326,10 +327,14 @@ describe("the published version a post read carries", () => {
     await publish(apiKey, id);
     expect(await readPublished(apiKey, id)).not.toBeNull();
 
-    const response = await callAdminApi(apiKey, `/admin/posts/${id}/unpublish`, {
-      method: "POST",
-      body: {},
-    });
+    const response = await callAdminApi(
+      apiKey,
+      `/admin/posts/${id}/unpublish`,
+      {
+        method: "POST",
+        body: {},
+      },
+    );
     expect(response.status).toBe(200);
     expect(await readPublished(apiKey, id)).toBeNull();
   });
@@ -344,7 +349,7 @@ describe("the published version a post read carries", () => {
 
     const read = await readPost(apiKey, id);
     expect(read.hasUnpublishedChanges).toBe(false);
-    expect((read as { published: PublishedVersion }).published).toEqual({
+    expect(read.published).toEqual({
       title: "uc-pv-clean",
       summary: "sum",
       slug: read.slug,
@@ -399,16 +404,11 @@ describe("the published version a post read carries", () => {
     expect(read.hasUnpublishedChanges).toBe(true);
     expect(read.title).toBe("uc-pv-edit edited");
     expect(read.categoryId).toBe(otherCategory.id);
-    expect((read as { published: PublishedVersion }).published).toEqual(
-      published,
-    );
+    expect(read.published).toEqual(published);
 
     // It is what discarding would write into the draft.
     await discard(apiKey, id);
-    const discarded = (await readPost(apiKey, id)) as AdminPost & {
-      published: PublishedVersion;
-      cover: { id: number } | null;
-    };
+    const discarded = await readPost(apiKey, id);
     expect(discarded.title).toBe(published!.title);
     expect(discarded.summary).toBe(published!.summary);
     expect(discarded.slug).toBe(published!.slug);

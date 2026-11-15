@@ -22,7 +22,8 @@ import { m } from "@/paraglide/messages";
 import { useDeletePost } from "../post-manager/hooks";
 import { postStateOf } from "../post-state";
 import { readPostListLocation } from "../post-manager/list-position";
-import { useAutoSave, usePostActions } from "./hooks";
+import { useAutoSave, usePostActions, usePostChanges } from "./hooks";
+import { PostEditorChangesDialog } from "./post-editor-changes-dialog";
 import { PostEditorHeader } from "./post-editor-header";
 import { PostEditorMetadata } from "./post-editor-metadata";
 import { PostEditorInfoPanel } from "./post-editor-info-panel";
@@ -172,6 +173,14 @@ export function PostEditor({
     reload: reloadLatest,
   });
 
+  const {
+    open: changesOpen,
+    changes,
+    show: showChanges,
+    close: closeChanges,
+  } = usePostChanges({ postId: initialData.id, flush });
+  const changesTriggerRef = useRef<HTMLElement | null>(null);
+
   const handleEditorCreated = useCallback((editor: TiptapEditor | null) => {
     editorRef.current = editor;
     setLiveEditor(editor);
@@ -259,11 +268,21 @@ export function PostEditor({
           onPublish={handlePublish}
           onUnpublish={() => void handleUnpublish()}
           onDiscard={() => void handleDiscard()}
+          onViewChanges={(trigger) => {
+            changesTriggerRef.current = trigger;
+            void showChanges();
+          }}
           onDelete={() => void handleDelete()}
           isDeleting={settlingSave || deleteMutation.isPending}
           infoOpen={infoOpen}
           onOpenInfo={() => setInfoOpen((value) => !value)}
           onOpenHistory={() => void openHistory()}
+        />
+        <PostEditorChangesDialog
+          open={changesOpen}
+          changes={changes}
+          onClose={closeChanges}
+          returnFocus={() => changesTriggerRef.current}
         />
         {conflict && (
           <Callout
