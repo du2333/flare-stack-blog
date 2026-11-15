@@ -594,6 +594,137 @@ describe("MediaService", () => {
       unwrap(await MediaService.deleteImage(adminContext, media.key));
     });
 
+    async function revisionIds(postId: number) {
+      const revisions = await PostRevisionService.listPostRevisions(
+        adminContext,
+        { postId },
+      );
+      return revisions.map((revision) => revision.id).sort((a, b) => a - b);
+    }
+
+    it("deletes an image only Post Revisions use together with those revisions, when asked to", async () => {
+      const media = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("historic.png", "historic"),
+        }),
+      );
+      const { id: first } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(first, imageDoc(media.key));
+      // An empty draft is reused, so this one is made once `first` has content.
+      const { id: second } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(second, imageDoc(media.key));
+      for (const postId of [first, second]) {
+        await publishPost(postId);
+        await setPostContent(postId, { type: "doc", content: [] });
+        await publishPost(postId);
+      }
+      // Each post: the first publish revision has the image, the second not.
+      const before = {
+        first: await revisionIds(first),
+        second: await revisionIds(second),
+      };
+      expect(before.first).toHaveLength(2);
+      expect(before.second).toHaveLength(2);
+
+      const listed = await MediaService.getMediaList(adminContext, {});
+      expect(listed.items.find((item) => item.key === media.key)).toMatchObject(
+        { postCount: 0, revisionOnlyPostCount: 2, revisionCount: 2 },
+      );
+
+      expect(
+        (await MediaService.deleteImage(adminContext, media.key)).error?.reason,
+      ).toBe("MEDIA_IN_USE");
+      // 「清理未引用图片」 never takes revisions with it.
+      expect(unwrap(await MediaService.deleteUnused(adminContext)).count).toBe(
+        0,
+      );
+      expect(await MediaService.mediaExists(adminContext, media.key)).toBe(
+        true,
+      );
+      expect(await revisionIds(first)).toEqual(before.first);
+      expect(await revisionIds(second)).toEqual(before.second);
+
+      unwrap(
+        await MediaService.deleteImage(adminContext, media.key, {
+          withRevisions: true,
+        }),
+      );
+      await waitForBackgroundTasks(adminContext.executionCtx);
+
+      expect(await MediaService.mediaExists(adminContext, media.key)).toBe(
+        false,
+      );
+      expect(Storage.deleteFromR2).toHaveBeenCalledWith(
+        adminContext.env,
+        media.key,
+      );
+      // Only the revisions with the image went; the newer ones stay.
+      expect(await revisionIds(first)).toEqual([before.first[1]]);
+      expect(await revisionIds(second)).toEqual([before.second[1]]);
+      const [kept] = await PostRevisionService.listPostRevisions(adminContext, {
+        postId: first,
+      });
+      expect(kept.reason).toBe("publish");
+    });
+
+    it("deletes nothing when a draft or a published version still uses the image", async () => {
+      const inDraft = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("in-draft.png", "draft"),
+        }),
+      );
+      const { id: draftPost } = await PostService.createEmptyPost(adminContext);
+      await setPostContent(draftPost, imageDoc(inDraft.key));
+      await publishPost(draftPost);
+      unwrap(await PostService.unpublishPost(adminContext, { id: draftPost }));
+
+      const inPublished = unwrap(
+        await MediaService.upload(adminContext, {
+          file: pngFile("in-published.png", "published"),
+        }),
+      );
+      const { id: publishedPost } =
+        await PostService.createEmptyPost(adminContext);
+      await setPostContent(publishedPost, imageDoc(inPublished.key));
+      await publishPost(publishedPost);
+      // The draft drops it; the published version keeps it.
+      await setPostContent(publishedPost, { type: "doc", content: [] });
+
+      for (const [media, postId] of [
+        [inDraft, draftPost],
+        [inPublished, publishedPost],
+      ] as const) {
+        const before = await revisionIds(postId);
+        expect(before.length).toBeGreaterThan(0);
+        expect(
+          (
+            await MediaService.deleteImage(adminContext, media.key, {
+              withRevisions: true,
+            })
+          ).error?.reason,
+        ).toBe("MEDIA_IN_USE");
+        expect(await MediaService.mediaExists(adminContext, media.key)).toBe(
+          true,
+        );
+        expect(await revisionIds(postId)).toEqual(before);
+        expect(
+          await MediaService.getLinkedPosts(adminContext, media.key),
+        ).toEqual([
+          expect.objectContaining({ id: postId, revisionsOnly: false }),
+        ]);
+      }
+    });
+
+    it("answers MEDIA_NOT_FOUND for a missing key with withRevisions", async () => {
+      expect(
+        (
+          await MediaService.deleteImage(adminContext, "missing.png", {
+            withRevisions: true,
+          })
+        ).error?.reason,
+      ).toBe("MEDIA_NOT_FOUND");
+    });
+
     it("releases an image only a revision trimmed past the newest 20 used", async () => {
       const media = unwrap(
         await MediaService.upload(adminContext, {

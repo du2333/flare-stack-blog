@@ -31,13 +31,18 @@ export type Media = typeof MediaTable.$inferSelect;
 // image. Other users' avatar URLs are not, so they cannot pin media.
 const usedAsAdminAvatar = sql`exists (select 1 from ${user} where ${user.role} = 'admin' and instr(${user.image}, '/images/' || ${MediaTable.key}) > 0)`;
 
+// Nothing current uses the Media: no Post (draft, Public Content Snapshot or
+// cover), no Moment and no Admin's avatar. A Post Revision is not current.
+const unusedNow = sql`not exists (select 1 from ${PostMediaTable} where ${PostMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${MomentImagesTable} where ${MomentImagesTable.mediaId} = ${MediaTable.id}) and not ${usedAsAdminAvatar}`;
+
 // A Post Revision's images count too, so restoring it never brings back a
-// deleted image, and so do a Moment's.
-const unreferenced = sql`not exists (select 1 from ${PostMediaTable} where ${PostMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${PostRevisionMediaTable} where ${PostRevisionMediaTable.mediaId} = ${MediaTable.id}) and not exists (select 1 from ${MomentImagesTable} where ${MomentImagesTable.mediaId} = ${MediaTable.id}) and not ${usedAsAdminAvatar}`;
+// deleted image.
+const unreferenced = sql`${unusedNow} and not exists (select 1 from ${PostRevisionMediaTable} where ${PostRevisionMediaTable.mediaId} = ${MediaTable.id})`;
 
 export type MediaListItem = Media & {
   postCount: number;
   revisionOnlyPostCount: number;
+  revisionCount: number;
   momentCount: number;
   isCover: boolean;
 };
@@ -83,6 +88,45 @@ export async function deleteMediaIfUnused(db: DB, key: string) {
     .delete(MediaTable)
     .where(and(eq(MediaTable.key, key), unreferenced))
     .returning({ id: MediaTable.id });
+  return deleted.length > 0;
+}
+
+/**
+ * Deletes the Media with `key` and the Post Revisions that use it, unless
+ * something current uses it: a Post (draft, Public Content Snapshot or
+ * cover), a Moment or an Admin's avatar. A Post's other revisions stay; the
+ * deleted revisions' image records go with them through the foreign key.
+ * Every statement of the batch carries the check, so a draft that starts
+ * using the image meanwhile makes it delete nothing at all. Returns whether
+ * it deleted.
+ */
+export async function deleteMediaWithRevisions(db: DB, key: string) {
+  const stillUnusedNow = sql`exists (select 1 from ${MediaTable} where ${MediaTable.key} = ${key} and ${unusedNow})`;
+  const [, deleted] = await db.batch([
+    db
+      .delete(PostRevisionsTable)
+      .where(
+        and(
+          inArray(
+            PostRevisionsTable.id,
+            db
+              .select({ id: PostRevisionMediaTable.revisionId })
+              .from(PostRevisionMediaTable)
+              .innerJoin(
+                MediaTable,
+                eq(MediaTable.id, PostRevisionMediaTable.mediaId),
+              )
+              .where(eq(MediaTable.key, key)),
+          ),
+          stillUnusedNow,
+        ),
+      ),
+    // Once the revisions are gone, only a current use could stop this.
+    db
+      .delete(MediaTable)
+      .where(and(eq(MediaTable.key, key), unreferenced))
+      .returning({ id: MediaTable.id }),
+  ]);
   return deleted.length > 0;
 }
 
@@ -264,16 +308,18 @@ async function withUsage(
       .from(PostMediaTable)
       .where(inArray(PostMediaTable.mediaId, ids)),
     db
-      .selectDistinct({
+      .select({
         mediaId: PostRevisionMediaTable.mediaId,
         postId: PostRevisionsTable.postId,
+        revisionCount: sql<number>`count(distinct ${PostRevisionsTable.id})`,
       })
       .from(PostRevisionMediaTable)
       .innerJoin(
         PostRevisionsTable,
         eq(PostRevisionsTable.id, PostRevisionMediaTable.revisionId),
       )
-      .where(inArray(PostRevisionMediaTable.mediaId, ids)),
+      .where(inArray(PostRevisionMediaTable.mediaId, ids))
+      .groupBy(PostRevisionMediaTable.mediaId, PostRevisionsTable.postId),
     db
       .select({
         coverMediaId: PostsTable.coverMediaId,
@@ -310,6 +356,13 @@ async function withUsage(
   };
   const currentPostIds = groupByMedia(postRows);
   const revisionPostIds = groupByMedia(revisionRows);
+  const revisionCounts = new Map<number, number>();
+  for (const row of revisionRows) {
+    revisionCounts.set(
+      row.mediaId,
+      (revisionCounts.get(row.mediaId) ?? 0) + Number(row.revisionCount),
+    );
+  }
   const coverIds = new Set<number>();
   for (const row of coverRows) {
     if (row.coverMediaId != null) coverIds.add(row.coverMediaId);
@@ -326,6 +379,7 @@ async function withUsage(
     revisionOnlyPostCount: [...(revisionPostIds.get(item.id) ?? [])].filter(
       (postId) => !currentPostIds.get(item.id)?.has(postId),
     ).length,
+    revisionCount: revisionCounts.get(item.id) ?? 0,
     momentCount: momentCounts.get(item.id) ?? 0,
     isCover: coverIds.has(item.id),
   }));
