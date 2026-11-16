@@ -18,6 +18,7 @@ import {
   type Tab,
   type Value,
 } from "./context.ts";
+import { readSeededSession } from "../session-file.ts";
 import { FLOWS } from "./list.ts";
 import {
   guardSession,
@@ -26,7 +27,7 @@ import {
   type LocalDb,
 } from "./local-db.ts";
 
-export const FLOWS_USAGE = `  shots.ts flows --base <url> [--session <token> | --api-key-file <toml>]
+export const FLOWS_USAGE = `  shots.ts flows --base <url> [--session <cookie> | --api-key-file <toml>]
                  [--only <names>] [--compare <other-base>] [--tolerance 50] [--deadline 15] [--flow-timeout <s>] [--list]`;
 
 interface Deps {
@@ -94,7 +95,7 @@ function skipReason(
   site: Site,
 ): string | undefined {
   if (needs.includes("session") && !site.session && !site.apiKey) {
-    return "needs --session or --api-key-file";
+    return "needs a session: run `bun scripts/dev-admin-session.ts seed`, or pass --session or --api-key-file";
   }
   return undefined;
 }
@@ -289,7 +290,7 @@ async function preflight(site: Site, deps: Deps) {
   if ((site.session || site.apiKey) && user === undefined) {
     // Every signed-in flow would wait out its timeout: say so at once.
     console.error(
-      `shots flows: ${site.base.origin} does not accept ${site.session ? "the --session cookie" : "the API key"} (get-session answers no user). A cookie is signed with the secret of the site's .dev.vars and names a row of its database: a site with its own database or secret needs its own cookie.`,
+      `shots flows: ${site.base.origin} does not accept ${site.session ? "the session cookie" : "the API key"} (get-session answers no user). A cookie is signed with the secret of the site's .dev.vars and names a row of its database: a site with its own database or secret needs its own cookie.`,
     );
     process.exit(1);
   }
@@ -450,9 +451,14 @@ export async function flows(args: Array<string>, deps: Deps) {
     selected = FLOWS.filter((flow) => wanted.includes(flow.name));
   }
 
-  const site: Site = { base, session: values.session, apiKey: keyed?.key };
+  // A local server is signed in as the seeded throwaway Admin when no cookie
+  // is given; an API key or a remote site never is.
+  const session =
+    values.session ??
+    (!keyed && isLocal(base) ? readSeededSession() : undefined);
+  const site: Site = { base, session, apiKey: keyed?.key };
   const other: Site | undefined = values.compare
-    ? { base: new URL(values.compare), session: values.session }
+    ? { base: new URL(values.compare), session }
     : undefined;
 
   // Both sites are checked before the first flow runs, so a cookie that the
