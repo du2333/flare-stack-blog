@@ -158,16 +158,34 @@ export function scanSql(sql: string): SqlTokens {
 }
 
 const DESTRUCTIVE_KEYWORD = /\b(DROP|RENAME)\b/gi;
+const DELETE_STATEMENT = /\bDELETE\s+FROM\b/i;
 const ROLLBACK_SAFE = /^[ \t]*rollback-safe:(.*)$/;
+const KEEPS_DATA = /^[ \t]*keeps-data:(.*)$/;
+
+/** Whether a migration carries a marker line, and whether it states a reason. */
+type Marker = "reason" | "empty" | "none";
+
+function markerOf(lineComments: Array<string>, pattern: RegExp): Marker {
+  const reasons = lineComments.flatMap((comment) => {
+    const match = pattern.exec(comment);
+    return match ? [match[1].trim()] : [];
+  });
+  return reasons.some((reason) => reason.length > 0)
+    ? "reason"
+    : reasons.length > 0
+      ? "empty"
+      : "none";
+}
 
 type MigrationVerdict =
   | { destructive: false }
   | {
       destructive: true;
       keywords: Array<string>;
-      marker: "reason" | "empty" | "none";
+      marker: Marker;
     };
 
+/** DROP and RENAME: the previous version's code may not run on the result. */
 export function inspectMigration(sql: string): MigrationVerdict {
   const { code, lineComments } = scanSql(sql);
   const keywords = [
@@ -178,16 +196,21 @@ export function inspectMigration(sql: string): MigrationVerdict {
     ),
   ].sort();
   if (keywords.length === 0) return { destructive: false };
-  const reasons = lineComments.flatMap((comment) => {
-    const match = ROLLBACK_SAFE.exec(comment);
-    return match ? [match[1].trim()] : [];
-  });
-  const marker = reasons.some((reason) => reason.length > 0)
-    ? "reason"
-    : reasons.length > 0
-      ? "empty"
-      : "none";
-  return { destructive: true, keywords, marker };
+  return {
+    destructive: true,
+    keywords,
+    marker: markerOf(lineComments, ROLLBACK_SAFE),
+  };
+}
+
+type DeletionVerdict =
+  { deletes: false } | { deletes: true; marker: Marker };
+
+/** `DELETE FROM`: rows of a site's data may be gone for good. */
+export function inspectDeletion(sql: string): DeletionVerdict {
+  const { code, lineComments } = scanSql(sql);
+  if (!DELETE_STATEMENT.test(code)) return { deletes: false };
+  return { deletes: true, marker: markerOf(lineComments, KEEPS_DATA) };
 }
 
 function firstLine(message: string) {
@@ -329,14 +352,25 @@ export function checkRelease(input: ReleaseCheckInput): ReleaseCheckResult {
   if (level !== "major") {
     for (const migration of addedMigrations) {
       const verdict = inspectMigration(migration.sql);
-      if (!verdict.destructive || verdict.marker === "reason") continue;
-      const missing =
-        verdict.marker === "empty"
-          ? "its `-- rollback-safe:` line gives no reason"
-          : "it has no `-- rollback-safe: <reason>` line";
-      failures.push(
-        `Migration ${migration.name} uses ${verdict.keywords.join(" and ")}, ${step}, and ${missing}. Say in that line why ${base}'s code still runs on the migrated database, or release a major.`,
-      );
+      if (verdict.destructive && verdict.marker !== "reason") {
+        const missing =
+          verdict.marker === "empty"
+            ? "its `-- rollback-safe:` line gives no reason"
+            : "it has no `-- rollback-safe: <reason>` line";
+        failures.push(
+          `Migration ${migration.name} uses ${verdict.keywords.join(" and ")}, ${step}, and ${missing}. Say in that line why ${base}'s code still runs on the migrated database, or release a major.`,
+        );
+      }
+      const deletion = inspectDeletion(migration.sql);
+      if (deletion.deletes && deletion.marker !== "reason") {
+        const missing =
+          deletion.marker === "empty"
+            ? "its `-- keeps-data:` line gives no reason"
+            : "it has no `-- keeps-data: <reason>` line";
+        failures.push(
+          `Migration ${migration.name} uses DELETE FROM, ${step}, and ${missing}. Say in that line why no site data is lost for good (for example: the rows are rebuilt by the same migration, or are caches or derived data), or release a major.`,
+        );
+      }
     }
   }
 
