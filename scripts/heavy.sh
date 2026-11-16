@@ -8,6 +8,9 @@
 # HEAVY_TIMEOUT  seconds the command may run (default 1500)
 # Either limit ends the run with exit 1 and one line saying which one.
 # HEAVY_LOCK     lock file, for trying this script without queueing.
+# HEAVY_ENV      a shell file sourced once the lock is held (default
+#                ~/.config/flare-stack-blog/heavy-env.sh), for settings that
+#                belong to one machine. Missing is fine.
 
 LOCK="${HEAVY_LOCK:-/tmp/blog-cms-heavy.lock}"
 HOLDER="$LOCK.holder"
@@ -38,6 +41,14 @@ exec 9>>"$LOCK"
 if ! flock -w "$WAIT" 9; then
   echo "heavy: waited ${WAIT}s (HEAVY_WAIT) for $LOCK, held by: $(holder)" >&2
   exit 1
+fi
+
+# This machine's own settings for heavy work, such as how many test workers
+# it can take (VITEST_MAX_WORKERS). The file is not part of the repository; it
+# is read once the lock is held, so it sees the load the command will meet.
+ENV_FILE="${HEAVY_ENV:-$HOME/.config/flare-stack-blog/heavy-env.sh}"
+if [ -r "$ENV_FILE" ]; then
+  . "$ENV_FILE"
 fi
 
 printf '%s (pid %s, since %s, in %s)\n' "$*" "$$" "$(date +%H:%M:%S)" "$PWD" >"$HOLDER"

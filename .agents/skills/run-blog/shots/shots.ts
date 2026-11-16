@@ -5,7 +5,7 @@
  *   bun .agents/skills/run-blog/shots/shots.ts shoot   --base <url> --out <dir> [...]
  *   bun .agents/skills/run-blog/shots/shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
  *   bun .agents/skills/run-blog/shots/shots.ts sheet   <dir> --out <file.png> [--match s] [--columns 4] [--cell-width 480]
- *   bun .agents/skills/run-blog/shots/shots.ts flows   --base <url> [--session <token>] [--only a,b] [--compare <url>]
+ *   bun .agents/skills/run-blog/shots/shots.ts flows   --base <url> [--session <cookie>] [--only a,b] [--compare <url>]
  *
  * or `bun run shots ...`. The tool's own dependencies install themselves on the
  * first run.
@@ -26,6 +26,7 @@ import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import type { Browser, Page } from "playwright-core";
 import { FLOWS_USAGE, flows } from "./flows/run.ts";
+import { NO_SESSION, isLocalHost, readSeededSession } from "./session-file.ts";
 
 /** Installs the tool's own dependencies once, through the machine lock when the repo has it. */
 function ensureDependencies() {
@@ -51,13 +52,16 @@ type PNG = InstanceType<typeof PNG>;
 const USAGE = `usage:
   shots.ts shoot --base <url> --out <dir> [--pages /,/posts] [--widths 1440,820,390]
                  [--schemes light,dark] [--views full|top|end|<px>,...]
-                 [--theme <id>] [--theme-options <json>] [--session <token>]
+                 [--theme <id>] [--theme-options <json>] [--session <cookie>]
                  [--locale zh|en] [--reduced-motion] [--mask <css>] [--concurrency 2]
                  [--timeout 45] [--scroller <css>]
                  [--click <css>]... [--press <key>]... [--hover <css>] [--name <suffix>]
   shots.ts compare <dirA> <dirB> [--out <dir>] [--threshold 0]
   shots.ts sheet <dir> --out <file.png> [--match <substring>] [--columns 2] [--cell-width 960] [--per-sheet 6]
-${FLOWS_USAGE}`;
+${FLOWS_USAGE}
+  A session is needed for /admin pages, --theme and signed-in flows. Without --session it comes from
+  .wrangler/dev-admin-session.json of the current directory (written by \`bun scripts/dev-admin-session.ts seed\`);
+  --session is for a server of another worktree. Other pages are shot anonymous unless --session is given.`;
 
 function fail(message: string): never {
   console.error(message);
@@ -721,11 +725,6 @@ async function shoot(args: Array<string>) {
   });
   if (!values.base || !values.out)
     fail(`--base and --out are required\n${USAGE}`);
-  if ((values.theme || values["theme-options"]) && !values.session) {
-    fail(
-      "--theme and --theme-options need --session (only an Admin sees a preview)",
-    );
-  }
   if (values["theme-options"] && !values.theme)
     fail("--theme-options needs --theme");
   if (values.locale && !["zh", "en"].includes(values.locale)) {
@@ -745,16 +744,36 @@ async function shoot(args: Array<string>) {
   const timeout = Number(values.timeout);
   if (!(timeout > 0)) fail("--timeout is a number of seconds");
 
+  const base = new URL(values.base);
+  const pagePaths = csv(values.pages!).map((p) =>
+    p.startsWith("/") ? p : `/${p}`,
+  );
+  // Only an Admin sees a theme preview or an /admin page. A page that needs
+  // none stays anonymous unless --session is given: a signed-in public page
+  // renders differently.
+  const needsSession =
+    Boolean(values.theme || values["theme-options"]) ||
+    pagePaths.some((p) => /^\/admin(?:[/?#]|$)/.test(p));
+  let session = values.session;
+  if (!session && needsSession) {
+    session = isLocalHost(base) ? readSeededSession() : undefined;
+    if (!session) {
+      fail(
+        isLocalHost(base) ? NO_SESSION : "needs --session for a remote site",
+      );
+    }
+  }
+
   const options: ShootOptions = {
-    base: new URL(values.base),
+    base,
     out: path.resolve(values.out),
-    pages: csv(values.pages!).map((p) => (p.startsWith("/") ? p : `/${p}`)),
+    pages: pagePaths,
     widths,
     schemes: schemes as Array<Scheme>,
     views,
     theme: values.theme,
     themeOptions: values["theme-options"],
-    session: values.session,
+    session,
     locale: values.locale,
     reducedMotion: values["reduced-motion"] ?? false,
     masks: [...DEFAULT_MASKS, ...(values.mask ? [values.mask] : [])],

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   breakingCommits,
   checkRelease,
+  inspectDeletion,
   inspectMigration,
   isBreakingCommit,
   scanSql,
@@ -146,6 +147,71 @@ CREATE TABLE "drop" (id integer, \`rename\` text, [drop] text);
       inspectMigration(
         `INSERT INTO notes VALUES ('\n-- rollback-safe: hidden\n');\n${rebuild}`,
       ),
+    ).toMatchObject({ marker: "none" });
+  });
+});
+
+describe("inspectDeletion", () => {
+  it("finds DELETE FROM as SQL, whatever the case and spacing", () => {
+    expect(inspectDeletion("DELETE FROM `tags` WHERE 1;")).toEqual({
+      deletes: true,
+      marker: "none",
+    });
+    expect(inspectDeletion("delete\n  from tags;")).toMatchObject({
+      deletes: true,
+    });
+  });
+
+  it("flags a DELETE FROM inside a trigger body, deliberately: the keeps-data reason then says the trigger deletes only derived rows", () => {
+    const trigger = `CREATE TRIGGER posts_ad AFTER DELETE ON posts BEGIN
+  DELETE FROM posts_fts WHERE rowid = old.id;
+END;
+`;
+    expect(inspectDeletion(trigger)).toEqual({
+      deletes: true,
+      marker: "none",
+    });
+    expect(
+      inspectDeletion(
+        `-- keeps-data: the trigger deletes only index rows\n${trigger}`,
+      ),
+    ).toMatchObject({ marker: "reason" });
+  });
+
+  it("flags a DELETE FROM that follows a WITH clause", () => {
+    const sql = `WITH stale AS (SELECT id FROM tags WHERE name = '')
+DELETE FROM tags WHERE id IN (SELECT id FROM stale);
+`;
+    expect(inspectDeletion(sql)).toEqual({ deletes: true, marker: "none" });
+  });
+
+  it("ignores the words in comments, strings, identifiers and cascades", () => {
+    const sql = `-- DELETE FROM tags later
+/* DELETE FROM
+   tags */
+INSERT INTO notes (body) VALUES ('DELETE FROM tags'), ('it''s DELETE FROM');
+CREATE TABLE "delete from" (id integer REFERENCES a(id) ON DELETE CASCADE);
+CREATE TABLE b (id integer REFERENCES a(id) ON DELETE SET NULL);
+`;
+    expect(inspectDeletion(sql)).toEqual({ deletes: false });
+  });
+
+  it("reads the keeps-data line comment and its reason", () => {
+    const purge = "DELETE FROM tags;";
+    expect(
+      inspectDeletion(`-- keeps-data: derived rows\n${purge}`),
+    ).toMatchObject({ marker: "reason" });
+    expect(inspectDeletion(`${purge} --keeps-data: derived`)).toMatchObject({
+      marker: "reason",
+    });
+    expect(inspectDeletion(`-- keeps-data:  \n${purge}`)).toMatchObject({
+      marker: "empty",
+    });
+    expect(
+      inspectDeletion(`/*\n-- keeps-data: hidden\n*/\n${purge}`),
+    ).toMatchObject({ marker: "none" });
+    expect(
+      inspectDeletion(`INSERT INTO n VALUES ('\n-- keeps-data: x\n');${purge}`),
     ).toMatchObject({ marker: "none" });
   });
 });
@@ -297,6 +363,98 @@ describe("checkRelease", () => {
         }),
       ),
     ).toMatchObject({ ok: true, level: "major" });
+  });
+
+  describe("a migration that deletes rows", () => {
+    const purge = "DELETE FROM `verification` WHERE `identifier` LIKE 'x%';\n";
+
+    it("fails without a keeps-data line in a non-major", () => {
+      const result = failures({
+        addedMigrations: [
+          { name: "0040_purge.sql", sql: purge },
+          { name: "0041_empty.sql", sql: `-- keeps-data:\n${purge}` },
+          { name: "0042_add.sql", sql: "ALTER TABLE posts ADD COLUMN x text;" },
+        ],
+      });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toContain("Migration 0040_purge.sql uses DELETE FROM");
+      expect(result[0]).toContain("no `-- keeps-data: <reason>` line");
+      expect(result[1]).toContain("0041_empty.sql");
+      expect(result[1]).toContain("gives no reason");
+    });
+
+    it("passes with a keeps-data line, and a patch is held to it too", () => {
+      const sql = `-- keeps-data: the rows are expired reset tokens\n${purge}`;
+      expect(
+        checkRelease(input({ addedMigrations: [{ name: "0040.sql", sql }] })),
+      ).toMatchObject({ ok: true, level: "minor" });
+      expect(
+        checkRelease(
+          input({ to: "3.12.2", addedMigrations: [{ name: "0040.sql", sql }] }),
+        ),
+      ).toMatchObject({ ok: true, level: "patch" });
+      expect(
+        failures({
+          to: "3.12.2",
+          addedMigrations: [{ name: "0040.sql", sql: purge }],
+        }),
+      ).toHaveLength(1);
+    });
+
+    it("is not checked in a major", () => {
+      expect(
+        checkRelease(
+          input({
+            to: "4.0.0",
+            file: {
+              unreleased: {
+                summary: "大版本。",
+                before: [{ id: "a", text: "一" }],
+              },
+              versions: released,
+            },
+            addedMigrations: [{ name: "0040_purge.sql", sql: purge }],
+          }),
+        ),
+      ).toMatchObject({ ok: true, level: "major" });
+    });
+
+    it("needs each marker for its own statement", () => {
+      const both = `${rebuild}${purge}`;
+      const result = failures({
+        addedMigrations: [{ name: "0040_both.sql", sql: both }],
+      });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toContain("rollback-safe");
+      expect(result[1]).toContain("keeps-data");
+      // One marker does not stand in for the other.
+      expect(
+        failures({
+          addedMigrations: [
+            { name: "0040_both.sql", sql: `-- keeps-data: a\n${both}` },
+          ],
+        }),
+      ).toHaveLength(1);
+      expect(
+        failures({
+          addedMigrations: [
+            { name: "0040_both.sql", sql: `-- rollback-safe: a\n${both}` },
+          ],
+        }),
+      ).toHaveLength(1);
+      expect(
+        checkRelease(
+          input({
+            addedMigrations: [
+              {
+                name: "0040_both.sql",
+                sql: `-- rollback-safe: a\n-- keeps-data: b\n${both}`,
+              },
+            ],
+          }),
+        ),
+      ).toMatchObject({ ok: true });
+    });
   });
 
   describe("required configuration", () => {
