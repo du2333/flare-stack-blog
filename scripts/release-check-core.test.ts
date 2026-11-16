@@ -162,6 +162,29 @@ describe("inspectDeletion", () => {
     });
   });
 
+  it("flags a DELETE FROM inside a trigger body, deliberately: the keeps-data reason then says the trigger deletes only derived rows", () => {
+    const trigger = `CREATE TRIGGER posts_ad AFTER DELETE ON posts BEGIN
+  DELETE FROM posts_fts WHERE rowid = old.id;
+END;
+`;
+    expect(inspectDeletion(trigger)).toEqual({
+      deletes: true,
+      marker: "none",
+    });
+    expect(
+      inspectDeletion(
+        `-- keeps-data: the trigger deletes only index rows\n${trigger}`,
+      ),
+    ).toMatchObject({ marker: "reason" });
+  });
+
+  it("flags a DELETE FROM that follows a WITH clause", () => {
+    const sql = `WITH stale AS (SELECT id FROM tags WHERE name = '')
+DELETE FROM tags WHERE id IN (SELECT id FROM stale);
+`;
+    expect(inspectDeletion(sql)).toEqual({ deletes: true, marker: "none" });
+  });
+
   it("ignores the words in comments, strings, identifiers and cascades", () => {
     const sql = `-- DELETE FROM tags later
 /* DELETE FROM

@@ -3,7 +3,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -72,12 +71,8 @@ describe("the migrations a release looks at", () => {
     commitAll("feat: first release");
     git("tag", "v1.0.0");
 
-    // Edited and renamed migrations are not added; neither are other files.
+    // An edited migration is not added; neither are other files.
     write("migrations/0001_old_purge.sql", `${purge}-- edited\n`);
-    renameSync(
-      path.join(repo, "migrations/0002_old_rebuild.sql"),
-      path.join(repo, "migrations/0002_renamed.sql"),
-    );
     write("migrations/meta/_journal.json", "{}");
     write("migrations/0003_new.sql", "ALTER TABLE posts ADD COLUMN x text;\n");
     commitAll("feat: next");
@@ -85,6 +80,22 @@ describe("the migrations a release looks at", () => {
     expect(
       migrationsAddedSince("v1.0.0", repo).map(({ name }) => name),
     ).toEqual(["0003_new.sql"]);
+  });
+
+  it("include a new file that resembles one deleted in the same range", () => {
+    write("migrations/0001_old_purge.sql", purge);
+    commitAll("feat: first release");
+    git("tag", "v1.0.0");
+
+    // With rename detection git would report this pair as a rename, and the
+    // new migration would escape the check.
+    rmSync(path.join(repo, "migrations/0001_old_purge.sql"));
+    write("migrations/0002_new_purge.sql", `${purge}-- a comment\n`);
+    commitAll("feat: next");
+
+    expect(migrationsAddedSince("v1.0.0", repo)).toEqual([
+      { name: "0002_new_purge.sql", sql: `${purge}-- a comment\n` },
+    ]);
   });
 
   it("do not fail the next release because earlier ones delete rows", () => {

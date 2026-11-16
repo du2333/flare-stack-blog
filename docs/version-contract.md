@@ -22,6 +22,10 @@ The level comes only from the version numbers; nothing stores it a second time. 
 
 A change is breaking, and so a major, when a site owner has to do something before syncing (change a Build command, re-add a variable as a Secret, move a setting), when it needs configuration that did not exist (a new required Build variable or Secret), or when it deletes or irreversibly rewrites data. Required configuration is held to the same line: a minor or patch whose `unreleased` entry has `requires` fails the release check, because the deploy check reads `requires` only across a major. Make the configuration optional, or release a major.
 
+## What reaches other sites
+
+Forks sync from `main`, and sites learn of an update from the version in `upgrades.json` and the GitHub Release. So `main` moves only by a release: even a small fix reaches other sites as a patch release, never as an untagged fast-forward, which no site's update check would ever see. A prerelease (`bun run release:beta`) is cut the same way as a release but does not move `main`, and `upgrades.json` lists no prerelease.
+
 ## Migrations: expand first, contract later
 
 A minor or patch only adds: tables and columns. Dropping a column, changing what a column means, or deleting rows belongs in a major, so the previous version's code keeps running on the migrated database for as long as the major lasts.
@@ -57,7 +61,7 @@ Whoever introduces a breaking change, or required configuration, adds the `befor
 Three things read it:
 
 - The release check (`scripts/release-check.ts`) at the release: it refuses what the contract forbids, stamps `unreleased` with the new version and moves it to the front of `versions`. `main` therefore never has an `unreleased` entry.
-- The deploy preflight (`scripts/deploy-preflight.ts`, the first step of `bun run deploy`), reading the copy built into the deployment: when a build crosses a major it stops unless the Build variable `UPGRADE_ACK` holds the new major, prints the `before` items of the versions crossed, and checks `requires`. A stopped build deploys nothing and the site keeps running.
+- The deploy preflight (`scripts/deploy-preflight.ts`, the first step of `bun run deploy`), reading the copy built into the deployment: when a build crosses a major it stops unless the Build variable `UPGRADE_ACK` holds the new major, prints the `before` items of the versions crossed, and checks `requires`. A stopped build deploys nothing and the site keeps running. A downgrade across majors needs `UPGRADE_ACK` too, and a site installed before the gate existed (no version tag on its Worker) is treated as major 3. The decision table is in `scripts/deploy-preflight-core.ts`, and what a site owner sees is in [docs/deployment.md](./deployment.md).
 - The Admin, reading the upstream `main` copy for its update check (`summary` and the items of every version between the running one and the newest, with the level taken from the version numbers) and the built-in copy for the notice after an upgrade (`after` items).
 
 ## What fails a release

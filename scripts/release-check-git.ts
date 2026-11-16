@@ -3,7 +3,8 @@
  *
  * "Added in this release" means the file is in `HEAD` and not in the tree of
  * the last tag (`git diff --diff-filter=A <tag>..HEAD`): a migration that
- * already shipped, an edited one and a renamed one are not added. The marker
+ * already shipped and an edited one are not added; rename detection is off, so
+ * a new file that resembles one deleted in the range still is. The marker
  * rules of release-check-core.ts therefore never reach the migrations of
  * earlier releases, some of which delete rows.
  */
@@ -43,6 +44,9 @@ export function migrationsAddedSince(
   return git(cwd, [
     "diff",
     "--name-only",
+    // Without rename detection a new migration that resembles one deleted in
+    // the range would show as a rename and escape the check.
+    "--no-renames",
     "--diff-filter=A",
     `${tag}..HEAD`,
     "--",
