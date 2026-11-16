@@ -203,8 +203,7 @@ export function inspectMigration(sql: string): MigrationVerdict {
   };
 }
 
-type DeletionVerdict =
-  { deletes: false } | { deletes: true; marker: Marker };
+type DeletionVerdict = { deletes: false } | { deletes: true; marker: Marker };
 
 /** `DELETE FROM`: rows of a site's data may be gone for good. */
 export function inspectDeletion(sql: string): DeletionVerdict {
