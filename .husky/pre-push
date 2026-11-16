@@ -1,16 +1,17 @@
 # Pushing to dev or main deploys the live blog (Workers Builds), and CI only
 # runs on pull requests, so gate those pushes on a typecheck, a build, the
 # bundle budget and the node tests. scripts/pre-push-gate.ts decides what kind
-# of push this is (see there); it reads the lines git writes to stdin.
+# of push this is (see there); it reads the lines git writes to stdin. Each
+# check is a gate (scripts/gate.ts): skipped when this tree already passed it.
 plan=$(bun scripts/pre-push-gate.ts "$@") || exit 1
 
 case "$plan" in
   foreign) exit 0 ;;
 esac
 
-bun typecheck
+bun run gate typecheck || exit 1
 
 if [ "$plan" = deploy ]; then
   echo "pre-push: pushing to dev/main deploys the blog, running build, bundle budget and node tests first"
-  bun run build && bun scripts/bundle-report.ts --check && bun run test:node || exit 1
+  bun run gate build && bun run gate test:node || exit 1
 fi
