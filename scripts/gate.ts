@@ -8,9 +8,16 @@
  * A gate passed on a clean working tree records the tree's hash
  * (`HEAD^{tree}`) under the git common directory, which every worktree of the
  * repository shares. Run again on a recorded tree, the gate prints one line
- * and exits 0 without taking the heavy lock. A dirty tree (untracked files
- * included) runs the command and records nothing, and so does a tree that
- * changed while the command ran. GATE_FORCE=1 runs a recorded gate anyway.
+ * and exits 0 without taking the heavy lock. A tree that is not clean runs the
+ * command and records nothing: uncommitted changes, untracked files, or files
+ * git is told to look past (assume-unchanged, skip-worktree), whatever the
+ * user's git config. So does a tree that changed while the command ran.
+ * GATE_FORCE=1 runs a recorded gate anyway.
+ *
+ * A run that is going to record first makes node_modules match bun.lock, and
+ * every gate compiles the messages, so a record is about the tree with its own
+ * dependencies and generated files. Ignored files such as `.dev.vars` are not
+ * part of what is recorded.
  *
  * The commands are fixed and take no arguments, so a targeted run can never
  * count as the full one. A gate that runs goes through scripts/heavy.sh (the
@@ -30,7 +37,7 @@ export type GateName =
   | "build"
   | "theme";
 
-type GateSpec = {
+export type GateSpec = {
   command: string;
   /** Other gates whose record also satisfies this one. */
   satisfiedBy?: Array<GateName>;
@@ -38,17 +45,28 @@ type GateSpec = {
   timeout?: number;
 };
 
-export const GATES: Record<GateName, GateSpec> = {
+export type GateTable = Record<GateName, GateSpec>;
+
+// check, typecheck and the builds compile the messages through
+// `orpc:contract`; the test gates do it themselves, so no gate tests a stale
+// src/paraglide.
+export const GATES: GateTable = {
   check: { command: "bun run check" },
   // `bun run check` runs tsc too.
   typecheck: { command: "bun typecheck", satisfiedBy: ["check"] },
-  "test:node": { command: "bun run test:node" },
+  "test:node": { command: "bun run i18n:compile && bun run test:node" },
   // The full workerd suite takes about 900 s at two workers; heavy.sh's
   // default limit (1500 s) leaves too little room on a busy machine.
-  test: { command: "bun run test", timeout: 3000 },
+  test: { command: "bun run i18n:compile && bun run test", timeout: 3000 },
   build: { command: "bun run build && bun scripts/bundle-report.ts --check" },
   theme: { command: "bun scripts/check-theme-styles.ts" },
 };
+
+/**
+ * Run before a run that records. HUSKY=0 because the root `prepare` script
+ * (husky) would rewrite core.hooksPath in the git config all worktrees share.
+ */
+export const PREPARE = "HUSKY=0 bun install --frozen-lockfile";
 
 /** Tree hashes kept per gate, oldest first. */
 export const RECORDS_KEPT = 20;
@@ -76,27 +94,31 @@ export function parseArgs(
 }
 
 /** The gate itself first, then the gates whose record also satisfies it. */
-export function satisfiers(gate: GateName): Array<GateName> {
-  return [gate, ...(GATES[gate].satisfiedBy ?? [])];
+export function satisfiers(
+  gate: GateName,
+  gates: GateTable = GATES,
+): Array<GateName> {
+  return [gate, ...(gates[gate].satisfiedBy ?? [])];
 }
 
 /**
  * What to do for `gate`. `tree` is undefined when there is no commit to name
- * the tree by; `clean` means `git status --porcelain` printed nothing.
+ * the tree by; `clean` as `treeState` reads it.
  */
 export function decide(input: {
   gate: GateName;
+  gates?: GateTable;
   tree: string | undefined;
   clean: boolean;
   records: Records;
   force: boolean;
 }): Decision {
-  const { gate, tree, clean, records, force } = input;
+  const { gate, gates = GATES, tree, clean, records, force } = input;
   if (tree === undefined || !clean) {
     return { kind: "run", record: false, reason: "dirty" };
   }
   if (force) return { kind: "run", record: true, reason: "forced" };
-  const passedAs = satisfiers(gate).find((name) =>
+  const passedAs = satisfiers(gate, gates).find((name) =>
     records[name]?.includes(tree),
   );
   return passedAs
@@ -142,11 +164,21 @@ export function parseRecords(text: string) {
     .filter((line) => /^[0-9a-f]{40,64}$/.test(line));
 }
 
-/** The HEAVY_TIMEOUT a run of `gate` gets: the environment's, else the gate's own. */
-export function heavyTimeout(gate: GateName, envValue: string | undefined) {
+/**
+ * Paths `git ls-files -v` flags as assume-unchanged (a lower-case tag) or
+ * skip-worktree (`S`): changes to them do not show in `git status`.
+ */
+export function hiddenPaths(lsFilesV: string) {
+  return lsFilesV
+    .split("\n")
+    .filter((line) => /^([a-z]|S) /.test(line))
+    .map((line) => line.slice(2));
+}
+
+/** The HEAVY_TIMEOUT a run of a gate gets: the environment's, else the gate's own. */
+export function heavyTimeout(spec: GateSpec, envValue: string | undefined) {
   if (envValue) return envValue;
-  const { timeout } = GATES[gate];
-  return timeout === undefined ? undefined : String(timeout);
+  return spec.timeout === undefined ? undefined : String(spec.timeout);
 }
 
 export function skipMessage(gate: GateName, passedAs: GateName, tree: string) {
@@ -158,22 +190,35 @@ function short(tree: string) {
   return tree.slice(0, 10);
 }
 
-function git(...args: Array<string>) {
-  const result = spawnSync("git", args, { encoding: "utf8" });
+type Context = { cwd: string; env: NodeJS.ProcessEnv };
+
+function git(ctx: Context, ...args: Array<string>) {
+  const result = spawnSync("git", args, {
+    cwd: ctx.cwd,
+    env: ctx.env,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  });
   return result.status === 0 ? result.stdout.trim() : undefined;
 }
 
-function treeState() {
+/** Clean regardless of the user's git config: see the header. */
+function treeState(ctx: Context) {
+  const status = git(ctx, "status", "--porcelain", "--untracked-files=all");
+  const flagged = git(ctx, "ls-files", "-v");
   return {
-    tree: git("rev-parse", "--verify", "--quiet", "HEAD^{tree}"),
-    clean: git("status", "--porcelain") === "",
+    tree: git(ctx, "rev-parse", "--verify", "--quiet", "HEAD^{tree}"),
+    clean:
+      status === "" &&
+      flagged !== undefined &&
+      hiddenPaths(flagged).length === 0,
   };
 }
 
-function recordsDir() {
-  const common = git("rev-parse", "--git-common-dir");
+function recordsDir(ctx: Context) {
+  const common = git(ctx, "rev-parse", "--git-common-dir");
   if (common === undefined) throw new Error("gate: not in a git repository");
-  return path.join(path.resolve(common), "verified");
+  return path.join(path.resolve(ctx.cwd, common), "verified");
 }
 
 function readRecords(dir: string, gate: GateName) {
@@ -195,57 +240,79 @@ function writeRecord(dir: string, gate: GateName, tree: string) {
   renameSync(temp, file);
 }
 
-function hasFlock() {
-  return spawnSync("sh", ["-c", "command -v flock"]).status === 0;
-}
+export type RunOptions = {
+  gate: GateName;
+  gates: GateTable;
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+  /** heavy.sh to run commands under, or undefined to run them directly. */
+  heavy: string | undefined;
+  /** Run before a run that records; undefined runs nothing. */
+  prepare: string | undefined;
+  log: (line: string) => void;
+};
 
-function runCommand(gate: GateName) {
-  const { command } = GATES[gate];
-  const timeout = heavyTimeout(gate, process.env.HEAVY_TIMEOUT);
-  const env = timeout
-    ? { ...process.env, HEAVY_TIMEOUT: timeout }
-    : process.env;
-  const heavy = fileURLToPath(new URL("./heavy.sh", import.meta.url));
-  const [file, args] = hasFlock()
-    ? [heavy, ["sh", "-c", command]]
-    : ["sh", ["-c", command]];
-  const result = spawnSync(file, args, { stdio: "inherit", env });
-  return result.status ?? 1;
-}
-
-function main() {
-  const parsed = parseArgs(process.argv.slice(2));
-  if ("error" in parsed) {
-    console.error(parsed.error);
-    process.exit(2);
-  }
-  const { gate } = parsed;
-  const dir = recordsDir();
-  const before = treeState();
+/** Runs `gate` in `cwd` and returns its exit code. */
+export function runGate(options: RunOptions): number {
+  const { gate, gates, log } = options;
+  const ctx = { cwd: options.cwd, env: options.env };
+  const dir = recordsDir(ctx);
+  const before = treeState(ctx);
   const records: Records = {};
-  for (const name of satisfiers(gate)) records[name] = readRecords(dir, name);
+  for (const name of satisfiers(gate, gates)) {
+    records[name] = readRecords(dir, name);
+  }
 
   const decision = decide({
     gate,
+    gates,
     tree: before.tree,
     clean: before.clean,
     records,
-    force: process.env.GATE_FORCE === "1",
+    force: options.env.GATE_FORCE === "1",
   });
 
   if (decision.kind === "skip") {
-    console.error(skipMessage(gate, decision.passedAs, decision.tree));
-    return;
+    log(skipMessage(gate, decision.passedAs, decision.tree));
+    return 0;
   }
 
-  const { command } = GATES[gate];
-  console.error(
+  const spec = gates[gate];
+  const timeout = heavyTimeout(spec, options.env.HEAVY_TIMEOUT);
+  const env = timeout
+    ? { ...options.env, HEAVY_TIMEOUT: timeout }
+    : options.env;
+  const exec = (command: string) => {
+    const [file, args] = options.heavy
+      ? [options.heavy, ["sh", "-c", command]]
+      : ["sh", ["-c", command]];
+    const result = spawnSync(file, args, {
+      cwd: options.cwd,
+      env,
+      stdio: "inherit",
+    });
+    if (result.error) {
+      log(`gate ${gate}: could not run ${file}: ${result.error.message}`);
+    }
+    return result.status ?? 1;
+  };
+
+  if (decision.record && options.prepare !== undefined) {
+    if (exec(options.prepare) !== 0) {
+      log(
+        `gate ${gate}: \`${options.prepare}\` failed: bun.lock and node_modules disagree, so the gate would not test this tree's dependencies`,
+      );
+      return 1;
+    }
+  }
+
+  log(
     decision.reason === "dirty"
-      ? `gate ${gate}: the working tree has uncommitted changes, running \`${command}\` without recording`
-      : `gate ${gate}: running \`${command}\` on tree ${short(before.tree ?? "")}`,
+      ? `gate ${gate}: the working tree is not clean (changes, untracked files, or files marked assume-unchanged or skip-worktree), running \`${spec.command}\` without recording`
+      : `gate ${gate}: running \`${spec.command}\` on tree ${short(before.tree ?? "")}`,
   );
-  const exitCode = runCommand(gate);
-  const after = treeState();
+  const exitCode = exec(spec.command);
+  const after = treeState(ctx);
   const recorded = treeToRecord({
     decision,
     treeBefore: before.tree,
@@ -255,13 +322,35 @@ function main() {
   });
   if (recorded) {
     writeRecord(dir, gate, recorded);
-    console.error(`gate ${gate}: passed, recorded tree ${short(recorded)}`);
+    log(`gate ${gate}: passed, recorded tree ${short(recorded)}`);
   } else if (exitCode === 0 && decision.record) {
-    console.error(
+    log(
       `gate ${gate}: passed, not recorded: the working tree changed while it ran`,
     );
   }
-  process.exit(exitCode);
+  return exitCode;
+}
+
+function main() {
+  const parsed = parseArgs(process.argv.slice(2));
+  if ("error" in parsed) {
+    console.error(parsed.error);
+    process.exit(2);
+  }
+  const hasFlock = spawnSync("sh", ["-c", "command -v flock"]).status === 0;
+  process.exit(
+    runGate({
+      gate: parsed.gate,
+      gates: GATES,
+      cwd: process.cwd(),
+      env: process.env,
+      heavy: hasFlock
+        ? fileURLToPath(new URL("./heavy.sh", import.meta.url))
+        : undefined,
+      prepare: PREPARE,
+      log: (line) => console.error(line),
+    }),
+  );
 }
 
 if (
