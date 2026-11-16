@@ -11,6 +11,14 @@
  * release commit. A rerun after the stamp was written passes as "already
  * stamped". A prerelease is checked the same way and leaves the file as it is:
  * the file lists releases only. The rules live in release-check-core.ts.
+ *
+ * A migration added in a non-major release must say why it is safe:
+ *   -- rollback-safe: <reason>   when it uses DROP or RENAME (why the last
+ *                                version's code still runs on the new database)
+ *   -- keeps-data: <reason>      when it uses DELETE FROM (why no site data is
+ *                                lost for good)
+ * A migration may need both. Only migrations added since the last tag are
+ * read (release-check-git.ts), so older ones never fail a release.
  */
 import { spawnSync } from "node:child_process";
 import { readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -22,6 +30,7 @@ import {
   type AddedMigration,
   type Commit,
 } from "./release-check-core.ts";
+import { migrationsAddedSince } from "./release-check-git.ts";
 
 const USAGE =
   "usage: bun scripts/release-check.ts <last version> <new version> [--dry-run]";
@@ -30,9 +39,10 @@ const HELP = `${USAGE}
 
 Stops the release when a commit since the last tag is breaking and the release
 is not a major, when upgrades.json has no \`unreleased\` summary, when a major has
-no \`before\` items, or when a migration added in a non-major uses DROP or RENAME
-without a \`-- rollback-safe: <reason>\` line. Otherwise stamps \`unreleased\`
-with the new version (not for a prerelease).
+no \`before\` items, or when a migration added in a non-major since the last tag
+uses DROP or RENAME without a \`-- rollback-safe: <reason>\` line, or DELETE FROM
+without a \`-- keeps-data: <reason>\` line. Otherwise stamps \`unreleased\` with
+the new version (not for a prerelease).
 
   --dry-run   print the verdict and write nothing
   --help`;
@@ -103,21 +113,12 @@ function commitsSince(tag: string): Array<Commit> {
     });
 }
 
-function migrationsAddedSince(tag: string): Array<AddedMigration> {
-  return git([
-    "diff",
-    "--name-only",
-    "--diff-filter=A",
-    `${tag}..HEAD`,
-    "--",
-    "migrations",
-  ])
-    .split("\n")
-    .filter((name) => name.endsWith(".sql"))
-    .map((name) => ({
-      name: path.basename(name),
-      sql: git(["show", `HEAD:${name}`]),
-    }));
+function addedMigrations(tag: string): Array<AddedMigration> {
+  try {
+    return migrationsAddedSince(tag, ROOT);
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : String(error));
+  }
 }
 
 function readUpgradesFile(): unknown {
@@ -204,7 +205,7 @@ function main() {
     to,
     commits: commitsSince(tag),
     file: readUpgradesFile(),
-    addedMigrations: migrationsAddedSince(tag),
+    addedMigrations: addedMigrations(tag),
   });
 
   if (!result.ok) {

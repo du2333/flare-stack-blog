@@ -9,7 +9,7 @@ Read at review, against a diff. `bun run check` already holds what a machine can
 - A request goes data → service → oRPC router. A router holds no query and no business rule; a data function holds no permission check.
 - An Admin-only procedure lives in the feature's admin router, and its integration test shows a signed-out caller and a signed-in non-Admin both rejected.
 - New server behaviour comes with an integration test that would fail without it. A public output schema gains a field only on purpose; what an Admin sees (handled times, drafts) stays out of public outputs.
-- A change to a procedure's shape comes with the regenerated `src/lib/orpc/contract.generated.json`.
+- `src/lib/orpc/contract.generated.json` holds only each procedure's method, path, error map and meta, so a diff regenerates it exactly when one of those changes (a new input or output field does not).
 
 ## Interface
 
