@@ -4,7 +4,8 @@ export default {
   // package.json's release scripts set HUSKY=0, so the release's own commit
   // and push run no git hooks: the gates below have just passed (or were
   // recorded) on the tree before the bump, and the release commit only
-  // changes the version in package.json and upgrades.json.
+  // changes the version in package.json and upgrades.json (`after:bump`
+  // checks that).
   git: {
     commit: true,
     tag: true,
@@ -27,6 +28,9 @@ export default {
     ],
     // The version is chosen, package.json not yet written; stamps upgrades.json.
     "before:bump": "bun scripts/release-check.ts ${latestVersion} ${version}",
+    // package.json is written, nothing staged or committed yet: hold the
+    // release commit to the version bump the comment on `git` promises.
+    "after:bump": "bun scripts/release-changeset.ts",
     "after:release":
       "echo Successfully released ${name} v${version} to ${repo.repository}.",
   },
