@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { AdminPage } from "@/components/admin/admin-page";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
+import { mediaUsageOf } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import {
   MOTION,
@@ -110,11 +111,18 @@ export function MediaLibrary() {
   const handleFiles = (files: FileList | Array<File>) => {
     if (!isUploading) void uploadFiles(Array.from(files));
   };
+  // An image only Post Revisions use goes with those revisions.
+  const withRevisions =
+    deleteTarget?.kind === "one" &&
+    mediaUsageOf(deleteTarget.asset) === "revisions-only";
   const confirmDelete = async () => {
     if (!deleteTarget || isDeleting) return;
     try {
       if (deleteTarget.kind === "one")
-        await deleteKeys([deleteTarget.asset.key]);
+        await deleteKeys({
+          keys: [deleteTarget.asset.key],
+          withRevisions: withRevisions || undefined,
+        });
       else await deleteUnused();
       setDeleteTarget(null);
       closePreview();
@@ -367,7 +375,13 @@ export function MediaLibrary() {
         title={m.media_delete_title()}
         message={
           deleteTarget?.kind === "one"
-            ? m.media_delete_one({ name: deleteTarget.asset.fileName })
+            ? withRevisions
+              ? m.media_delete_with_revisions({
+                  name: deleteTarget.asset.fileName,
+                  revisions: deleteTarget.asset.revisionCount,
+                  posts: deleteTarget.asset.revisionOnlyPostCount,
+                })
+              : m.media_delete_one({ name: deleteTarget.asset.fileName })
             : m.media_unused_confirm({ count: stats?.unusedCount ?? 0 })
         }
         confirmLabel={m.media_delete()}

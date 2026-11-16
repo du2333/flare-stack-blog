@@ -39,6 +39,34 @@
 .fuwari-modal-content {
   min-height: 0;
 }
+/* With a title: the header stays and the body scrolls inside the bound. */
+.fuwari-modal-titled[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.fuwari-modal-titled .fuwari-modal-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.fuwari-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 12px;
+}
+.fuwari-modal-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+.fuwari-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 20px 20px;
+}
 .fuwari-modal-top {
   margin-block: 10dvh auto;
   max-height: calc(90dvh - 16px);

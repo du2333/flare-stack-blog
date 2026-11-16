@@ -335,7 +335,7 @@ const adminGet = adminProcedure
   .input(AdminFindPostByIdInputSchema)
   .output(AdminPostSchema)
   .handler(async ({ context, input, errors }) => {
-    const post = await PostService.findPostById(context, input);
+    const post = await PostService.findAdminPostById(context, input);
     if (!post) throw errors.POST_NOT_FOUND();
     return PostMarkdownService.adminPostInContentFormat(
       post,
@@ -651,7 +651,7 @@ const getRevision = adminProcedure
     path: "/admin/posts/{postId}/revisions/{revisionId}",
     summary: "Get a post revision",
     description:
-      "Answers 404 POST_REVISION_NOT_FOUND when the post has no such revision. The snapshot's body comes back as snapshotJson.contentJson, or as snapshotJson.contentMarkdown instead when contentFormat=markdown.",
+      "Answers 404 POST_REVISION_NOT_FOUND when the post has no such revision. The snapshot's body comes back as snapshotJson.contentJson, or as snapshotJson.contentMarkdown instead when contentFormat=markdown. cover is the revision's cover with its address, as the post read returns it, or null when it has none or its Media no longer exists.",
     tags: ["Admin Posts"],
   })
   .input(GetPostRevisionInputSchema)
@@ -669,6 +669,7 @@ const getRevision = adminProcedure
         revision.snapshotJson,
         contentFormat,
       ),
+      cover: await PostRevisionService.findPostRevisionCover(context, revision),
     };
   });
 

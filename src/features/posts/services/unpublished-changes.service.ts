@@ -1,8 +1,10 @@
+import * as MediaRepo from "@/features/media/data/media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
 import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { parseRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
+import type { PublicPostSnapshot } from "@/lib/db/schema";
 import { calculateDraftFingerprint } from "@/features/posts/utils/sync";
 
 /*
@@ -42,6 +44,38 @@ export function publicIdsOf(
   return {
     categoryId: assignment?.category?.id ?? null,
     tagIds: assignment?.tags.map((tag) => tag.id) ?? [],
+  };
+}
+
+/**
+ * The published version's fields that discarding Unpublished Changes writes
+ * into the draft, besides the body: the snapshot's own title, summary, slug,
+ * publication date and cover (null once its Media is gone), and the Category
+ * and Tags the public site shows. The snapshot's ids are not read (ADR 0033),
+ * and a Category or Tag deleted since is already gone from them.
+ */
+export async function findPublishedVersion(
+  db: DB,
+  postId: number,
+  snapshot: PublicPostSnapshot,
+) {
+  const publicIds = publicIdsOf(
+    (await PublicAssignmentRepo.findPublicAssignments(db, [postId])).get(
+      postId,
+    ),
+  );
+  const coverMediaId = snapshot.cover?.mediaId ?? null;
+  return {
+    title: snapshot.title,
+    summary: snapshot.summary,
+    slug: snapshot.slug,
+    publishedAt: snapshot.publishedAt,
+    categoryId: publicIds.categoryId,
+    tagIds: publicIds.tagIds,
+    coverMedia:
+      coverMediaId == null
+        ? null
+        : ((await MediaRepo.findMediaById(db, coverMediaId)) ?? null),
   };
 }
 

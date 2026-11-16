@@ -3,6 +3,7 @@ import { os } from "@orpc/server";
 import { z } from "zod";
 import {
   ACCEPTED_IMAGE_TYPES,
+  DeleteMediaInputSchema,
   DeleteMediaResultSchema,
   DeleteUnusedMediaResultSchema,
   GetMediaListInputSchema,
@@ -116,7 +117,7 @@ const list = adminProcedure
     path: "/admin/media",
     summary: "List media",
     description:
-      "Lists the media library, newest first unless sort says otherwise (oldest first, or the largest file first), a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0.",
+      "Lists the media library, newest first unless sort says otherwise (oldest first, or the largest file first), a page at a time (20 by default). search matches file names. unusedOnly keeps the images nothing uses, the ones DELETE /admin/media/unused would delete. postCount counts the posts that use each image in the draft or the published version; revisionOnlyPostCount counts the posts that use it only in a Post Revision; momentCount counts the Moments that show it. An image is unreferenced when all three are 0. revisionCount counts the Post Revisions that use it, across all posts.",
     tags: ["Admin Media"],
   })
   .input(GetMediaListInputSchema)
@@ -217,7 +218,7 @@ const linkedKeys = adminProcedure
     path: "/admin/media/linked-keys",
     summary: "Resolve which media keys are linked",
     description:
-      "Returns the given keys that a post uses, in its draft, its published version or a Post Revision, or that a Moment shows. Media with such a key cannot be deleted.",
+      "Returns the given keys that a post uses, in its draft, its published version or a Post Revision, or that a Moment shows. Media with such a key cannot be deleted, except an image only Post Revisions use, which DELETE /admin/media/{key} with withRevisions deletes together with those revisions.",
     tags: ["Admin Media"],
   })
   .input(z.strictObject({ keys: z.array(z.string()) }))
@@ -252,20 +253,25 @@ const remove = adminProcedure
     path: "/admin/media/{key}",
     summary: "Delete media",
     description:
-      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts and GET /admin/media/{key}/moments lists the Moments. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
+      "Deletes one image. Answers 404 MEDIA_NOT_FOUND when no Media has the key, and 409 MEDIA_IN_USE while a post uses it (draft, published version or Post Revision), a Moment shows it or an Admin has it as an avatar; GET /admin/media/{key}/posts lists the posts and GET /admin/media/{key}/moments lists the Moments. An image only Post Revisions use (revisionOnlyPostCount above 0, postCount and momentCount 0) is deleted with a JSON body {\"withRevisions\": true}: the Post Revisions that use it are deleted with it (revisionCount of them, across revisionOnlyPostCount posts), and those posts' other revisions, drafts and published versions stay; deletedRevisionCount in the response says how many revisions went. withRevisions never deletes an image a draft, a published version, a cover, a Moment or an Admin's avatar uses: that answers 409 MEDIA_IN_USE and deletes no revision. The check and the delete are one step: a post or Moment saved with the image at the same moment either makes the delete answer 409 MEDIA_IN_USE or is itself refused, so none is left showing a deleted image. Cannot be undone.",
     tags: ["Admin Media"],
   })
-  .input(MediaKeyInputSchema)
+  .input(DeleteMediaInputSchema)
   .output(DeleteMediaResultSchema)
   .handler(({ context, input, errors }) =>
-    unwrapResult(MediaService.deleteImage(context, input.key.trim()), {
-      MEDIA_IN_USE: () => {
-        throw errors.MEDIA_IN_USE();
+    unwrapResult(
+      MediaService.deleteImage(context, input.key.trim(), {
+        withRevisions: input.withRevisions,
+      }),
+      {
+        MEDIA_IN_USE: () => {
+          throw errors.MEDIA_IN_USE();
+        },
+        MEDIA_NOT_FOUND: () => {
+          throw errors.MEDIA_NOT_FOUND();
+        },
       },
-      MEDIA_NOT_FOUND: () => {
-        throw errors.MEDIA_NOT_FOUND();
-      },
-    }),
+    ),
   );
 
 const linkedPosts = adminProcedure

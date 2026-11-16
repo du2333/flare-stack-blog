@@ -33,6 +33,7 @@
   "footer_nav_label": "Footer navigation",
   "posts_title": "All Posts",
   "posts_no_posts": "No posts found",
+  "posts_load_more": "Load more posts",
   "posts_end": "You've reached the end",
   "posts_count": [
     {
@@ -608,6 +609,7 @@
   "editor_header_publish_changes": "Publish changes",
   "editor_header_republish": "Republish",
   "editor_header_discard": "Discard changes",
+  "editor_header_view_changes": "View changes",
   "editor_toast_published": "Post published",
   "editor_toast_published_changes": "Changes published",
   "editor_toast_unpublished": "Post unpublished",
@@ -662,6 +664,7 @@
   "editor_history_list_title": "Versions",
   "editor_history_loading": "Loading history...",
   "editor_history_empty": "No versions yet.",
+  "editor_history_retention": "Each post keeps its {count} most recent versions. Older ones are deleted when a new one is taken.",
   "editor_history_empty_title": "No versions yet",
   "editor_history_empty_desc": "A version is kept when the post is published or another version is restored.",
   "editor_history_pane_content": "Content",
@@ -694,6 +697,44 @@
   "editor_history_error_invalid_snapshot": "This version cannot be restored.",
   "editor_history_error_slug_taken": "Another post now uses this version's link, so it cannot be restored. Change that post's link first.",
   "editor_history_error_edit_conflict": "The post was saved again after this version was opened, so nothing was restored. Restoring anyway replaces that save; the current draft is kept as a new version first.",
+  "editor_history_view_label": "View",
+  "editor_history_view_content": "Content",
+  "editor_history_view_diff": "Changes",
+  "editor_history_compare_label": "Compare with",
+  "editor_history_compare_draft": "Current draft",
+  "editor_history_compare_previous": "Previous version",
+  "editor_history_side_this": "This version",
+  "editor_history_side_draft": "Current draft",
+  "editor_history_side_previous": "Previous version",
+  "editor_history_diff_same_draft": "This version is the same as the current draft",
+  "editor_history_diff_same_previous": "This version is the same as the previous version",
+  "editor_diff_failed": "The changes could not be loaded.",
+  "editor_diff_legend_label": "Legend",
+  "editor_diff_legend_removed": "Only in “{side}”",
+  "editor_diff_legend_added": "Only in “{side}”",
+  "editor_diff_fields_title": "Field changes",
+  "editor_diff_body_title": "Body changes",
+  "editor_diff_body_unchanged": "The body has not changed.",
+  "editor_diff_field_title": "Title",
+  "editor_diff_field_summary": "Summary",
+  "editor_diff_field_slug": "Link",
+  "editor_diff_field_published_at": "Publish date",
+  "editor_diff_field_category": "Category",
+  "editor_diff_field_tags": "Tags",
+  "editor_diff_field_cover": "Cover",
+  "editor_diff_value_empty": "None",
+  "editor_diff_value_deleted": "Deleted",
+  "editor_diff_cover_unavailable": "Unavailable",
+  "editor_diff_row_removed": "Removed",
+  "editor_diff_row_added": "Added",
+  "editor_diff_fold_expand": "Show {count} unchanged lines",
+  "editor_diff_loading": "Loading changes...",
+  "editor_changes_title": "Unpublished changes",
+  "editor_changes_side_published": "Published version",
+  "editor_changes_side_draft": "Current draft",
+  "editor_changes_same": "The published version is the same as the current draft",
+  "editor_changes_save_failed": "The current draft could not be saved, so the changes cannot be shown.",
+  "editor_changes_slug_withheld": "The link being typed is not saved. The changes below show the saved link.",
   "editor_leave_title": "Leave Page?",
   "editor_leave_message": "You have unsaved changes. Leaving may cause data loss.",
   "editor_leave_confirm": "Confirm Leave",
@@ -965,7 +1006,32 @@
   "media_delete": "Delete",
   "media_delete_title": "Delete image",
   "media_delete_one": "Delete \"{name}\"?",
+  "media_delete_with_revisions": [
+    {
+      "declarations": [
+        "input name",
+        "input posts",
+        "input revisions",
+        "local formattedPostsEn = posts: number",
+        "local formattedRevisionsEn = revisions: number"
+      ],
+      "match": {
+        "posts=1, revisions=1": "This permanently deletes \"{name}\" and the earlier version of 1 post that uses it. The post's current draft and published page are not affected. This cannot be undone.",
+        "posts=1, revisions=*": "This permanently deletes \"{name}\" and the {formattedRevisionsEn} earlier versions of 1 post that use it. The post's current draft and published page are not affected. This cannot be undone.",
+        "posts=*, revisions=*": "This permanently deletes \"{name}\" and the {formattedRevisionsEn} earlier versions of {formattedPostsEn} posts that use it. The current drafts and published pages of those posts are not affected. This cannot be undone."
+      }
+    }
+  ],
   "media_deleted": "Deleted",
+  "media_deleted_with_revisions": [
+    {
+      "declarations": ["input count", "local formattedCountEn = count: number"],
+      "match": {
+        "count=1": "Deleted the image and {formattedCountEn} earlier version",
+        "count=*": "Deleted the image and {formattedCountEn} earlier versions"
+      }
+    }
+  ],
   "media_copied": "Link copied",
   "media_copy_failed": "Couldn't copy",
   "media_replace_success": "Replaced",

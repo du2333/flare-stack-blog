@@ -21,7 +21,7 @@ The published state of a **Post** that the public site reads for listing, detail
 _Avoid_: publicContentJson, rendered content, cached content, live version, working copy
 
 **Post Revision**:
-A snapshot of the **Post** the **Admin** is editing, taken when publishing or immediately before restoring another **Post Revision**. Inspecting one shows that snapshot in the editor without changing the **Post** until restore. Autosave does not create one.
+A snapshot of the **Post** the **Admin** is editing, taken when publishing or immediately before restoring another **Post Revision**. Inspecting one shows that snapshot in the editor without changing the **Post** until restore. Autosave does not create one. A **Post** keeps its 20 newest.
 _Avoid_: Version, history item, backup, auto snapshot
 
 **Tag**:
@@ -180,7 +180,7 @@ _Avoid_: New commit, fork update
 - Deleting a **Category** is allowed. **Posts** that had it become uncategorized. Deleting a **Tag** removes its Post associations.
 - A **Category** is identified by a unique name. **Category** names, **Tag** names and **Post** slugs are unique ignoring case (ß, ẞ and ss are one) and Unicode compatibility forms (fullwidth letters, no-break spaces), and ignoring characters that show nothing, such as a variation selector after an emoji; they are stored as written. Names, slugs and titles hold no control or format characters; summaries hold none besides tab and line breaks. A **Post** slug is never `pinned` or `popular` (the public API's list paths), in any case, and never holds `^`, which the public page cannot open.
 - The public site can list **Published Posts** by **Category**, and can apply a **Category** filter and a **Tag** filter together.
-- A **Post** can have zero or more **Post Revisions**.
+- A **Post** has at most 20 **Post Revisions**. Taking one more, on publishing, restoring or discarding, drops the oldest.
 - A **Post** or a **Moment** can have zero or more **Comment Threads**.
 - A **Post** can reference zero or more **Media** items.
 - A **Post** has zero or one **Post Cover**.
@@ -214,7 +214,7 @@ _Avoid_: New commit, fork update
 - A **Reply** notifies the author of the targeted **Comment**, not the rest of the **Comment Thread**. A new root **Comment** by a non-**Admin** notifies the **Admin**.
 - A **Reply** belongs to exactly one **Comment Thread**.
 - A **Post** body can show **Media** by its path, alone or on the blog's own address, only while that **Media** exists; an image a draft already showed by that path before its **Media** was gone may stay. The same path on another address is an external image.
-- A **Media** item cannot be deleted from the media library while it appears in the editable **Post**, in a **Public Content Snapshot**, in a **Post Revision** or in a **Moment**, so restoring a **Post Revision** never brings back a deleted image. Deleting the **Post Revision** releases it.
+- A **Media** item cannot be deleted from the media library while it appears in the editable **Post**, in a **Public Content Snapshot**, in a **Post Revision** or in a **Moment**, so restoring a **Post Revision** never brings back a deleted image. Deleting the **Post Revision** releases it. A **Media** item that only **Post Revisions** use can be deleted together with those **Post Revisions**, once the **Admin** has been told how many; deleting every unused **Media** item at once leaves it alone.
 - A **Post** body can contain zero or more **Video Embeds**.
 - A Bilibili or YouTube **Video Embed** can only name a video on that site. A **Direct Video** can be at any HTTPS address.
 - A **Direct Video** whose file is no longer served stays in the **Post** and fails to play; the CMS neither prevents nor reports it.

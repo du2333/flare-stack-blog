@@ -2,13 +2,11 @@ import * as MediaRepo from "@/features/media/data/media.data";
 import { syncPostMedia } from "@/features/posts/data/post-media.data";
 import * as PostRevisionRepo from "@/features/posts/data/post-revisions.data";
 import * as PostRepo from "@/features/posts/data/posts.data";
-import * as PublicAssignmentRepo from "@/features/posts/data/public-assignments.data";
 import type { DiscardPostChangesInput } from "@/features/posts/schema/posts.schema";
+import { toAdminCover } from "@/features/posts/services/posts.service";
 import * as UnpublishedChangesService from "@/features/posts/services/unpublished-changes.service";
 import { hasUnpublishedChanges } from "@/features/posts/utils/unpublished-changes";
 import type {
-  CreatePostRevisionInput,
-  CreatePostRevisionResult,
   DeletePostRevisionsInput,
   FindPostRevisionByIdInput,
   ListPostRevisionsInput,
@@ -21,11 +19,7 @@ import { withEditorAttributes } from "@/features/posts/utils/post-content-rules"
 import { convertToPlainText } from "@/features/posts/utils/content";
 import { calculatePostHash } from "@/features/posts/utils/sync";
 import { isUniqueViolation, POST_SLUG } from "@/lib/db/unique-keys";
-import { ms } from "@/lib/duration";
 import { err, ok } from "@/lib/errors";
-
-const AUTO_SNAPSHOT_MIN_INTERVAL = "2m";
-const MAX_AUTO_REVISIONS_PER_POST = 30;
 
 function toRevisionSnapshot(
   post: Awaited<ReturnType<typeof PostRepo.findPostById>>,
@@ -123,66 +117,18 @@ export async function findPostRevisionById(
   );
 }
 
-export async function createPostRevision(
+/**
+ * The cover a revision names, as the post read gives the draft's; null when it
+ * has none or its Media is gone.
+ */
+export async function findPostRevisionCover(
   context: DbContext,
-  data: CreatePostRevisionInput,
+  revision: NonNullable<Awaited<ReturnType<typeof findPostRevisionById>>>,
 ) {
-  const reason = data.reason ?? "auto";
-
-  const post = await PostRepo.findPostById(context.db, data.postId);
-  if (!post) {
-    return err({ reason: "POST_NOT_FOUND" });
-  }
-
-  const snapshot = toRevisionSnapshot(post);
-  const snapshotHash = await hashSnapshot(snapshot);
-
-  if (reason === "auto") {
-    const [latestRevision, latestAutoRevision] = await Promise.all([
-      PostRevisionRepo.findLatestPostRevision(context.db, data.postId),
-      PostRevisionRepo.findLatestPostRevision(context.db, data.postId, {
-        reason: "auto",
-      }),
-    ]);
-
-    if (latestRevision?.snapshotHash === snapshotHash) {
-      return ok<CreatePostRevisionResult>({
-        created: false,
-        revision: latestRevision,
-        skipReason: "UNCHANGED",
-      });
-    }
-
-    if (
-      latestAutoRevision &&
-      Date.now() - latestAutoRevision.createdAt.getTime() <
-        ms(AUTO_SNAPSHOT_MIN_INTERVAL)
-    ) {
-      return ok<CreatePostRevisionResult>({
-        created: false,
-        revision: latestAutoRevision,
-        skipReason: "RATE_LIMITED",
-      });
-    }
-  }
-
-  const revision = await PostRevisionRepo.insertPostRevision(context.db, {
-    postId: data.postId,
-    reason,
-    snapshotJson: snapshot,
-    snapshotHash,
-  });
-
-  if (reason === "auto") {
-    await PostRevisionRepo.trimAutoRevisions(context.db, data.postId, {
-      keep: MAX_AUTO_REVISIONS_PER_POST,
-    });
-  }
-
-  return ok<CreatePostRevisionResult>({
-    created: true,
-    revision,
-  });
+  const mediaId = revision.snapshotJson.coverMediaId ?? null;
+  if (mediaId === null) return null;
+  const media = await MediaRepo.findMediaById(context.db, mediaId);
+  return media ? toAdminCover(media) : null;
 }
 
 export async function restorePostRevision(
@@ -317,28 +263,26 @@ export async function discardUnpublishedChanges(
     return err({ reason: "NO_UNPUBLISHED_CHANGES" });
   }
 
-  // Category and Tags are the public ones: the snapshot's ids are not read
-  // (ADR 0033), and a Category or Tag deleted since is already gone from them.
-  const publicIds = UnpublishedChangesService.publicIdsOf(
-    (
-      await PublicAssignmentRepo.findPublicAssignments(context.db, [post.id])
-    ).get(post.id),
+  // Category and Tags are the public ones (ADR 0033): see findPublishedVersion.
+  const published = await UnpublishedChangesService.findPublishedVersion(
+    context.db,
+    post.id,
+    snapshot,
   );
-  const coverMediaId = snapshot.cover?.mediaId ?? null;
+  const publicIds = {
+    categoryId: published.categoryId,
+    tagIds: published.tagIds,
+  };
   const targetSnapshot: PostRevisionSnapshot = {
-    title: snapshot.title,
-    summary: snapshot.summary,
-    slug: snapshot.slug,
+    title: published.title,
+    summary: published.summary,
+    slug: published.slug,
     status: "published",
-    publishedAt: snapshot.publishedAt,
+    publishedAt: published.publishedAt,
     contentJson: removeCodeBlockHighlighting(snapshot.contentJson),
-    categoryId: publicIds.categoryId,
-    tagIds: publicIds.tagIds,
-    coverMediaId:
-      coverMediaId != null &&
-      (await MediaRepo.findMediaById(context.db, coverMediaId))
-        ? coverMediaId
-        : null,
+    categoryId: published.categoryId,
+    tagIds: published.tagIds,
+    coverMediaId: published.coverMedia?.id ?? null,
   };
 
   if (await slugTakenByAnotherPost(context.db, post, targetSnapshot.slug)) {

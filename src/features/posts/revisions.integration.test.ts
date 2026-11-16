@@ -8,7 +8,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as MediaRepo from "@/features/media/data/media.data";
 import { fetchVideoMeta } from "@/features/posts/services/video-meta.service";
-import { PostsTable } from "@/lib/db/schema";
+import { MediaTable, PostRevisionsTable, PostsTable } from "@/lib/db/schema";
 import { createApiContext } from "@/lib/orpc/create-context";
 import { openAPIHandler } from "@/lib/orpc/openapi-handler";
 
@@ -97,6 +97,7 @@ type AdminPost = {
   saveToken: string;
   contentJson: unknown;
   hasUnpublishedChanges: boolean;
+  cover: unknown;
 };
 
 type Revision = { id: number; reason: string; title: string };
@@ -540,6 +541,51 @@ describe("reading a Post Revision", () => {
     }
   });
 
+  it("answers the cover with its address, and null for no cover or a Media that is gone", async () => {
+    const apiKey = await seedAdminApiKey();
+    const db = createAdminTestContext().db;
+    const media = await MediaRepo.insertMedia(db, {
+      key: "rv-cover.png",
+      url: "/images/rv-cover.png",
+      fileName: "rv-cover.png",
+      mimeType: "image/png",
+      sizeInBytes: 10,
+    });
+    const id = await createPost(apiKey, "rv-cover");
+    const coverOf = async (revisionId: number) =>
+      (
+        (await (
+          await callAdminApi(
+            apiKey,
+            `/admin/posts/${id}/revisions/${revisionId}`,
+          )
+        ).json()) as { cover: unknown }
+      ).cover;
+
+    // No cover.
+    await publish(apiKey, id);
+    const [withoutCover] = await listRevisions(apiKey, id);
+    expect(await coverOf(withoutCover.id)).toBeNull();
+
+    // A cover, as the post read gives it for the draft.
+    await patchPost(apiKey, id, { coverMediaId: media.id });
+    const draft = await readPost(apiKey, id);
+    await publish(apiKey, id);
+    const [withCover] = await listRevisions(apiKey, id);
+    expect(await coverOf(withCover.id)).toEqual(draft.cover);
+    expect(draft.cover).toMatchObject({
+      id: media.id,
+      key: "rv-cover.png",
+      url: "/images/rv-cover.png",
+      fileName: "rv-cover.png",
+    });
+
+    // The Media is gone: the revision still names it, but there is no cover.
+    await patchPost(apiKey, id, { coverMediaId: null });
+    await db.delete(MediaTable).where(eq(MediaTable.id, media.id));
+    expect(await coverOf(withCover.id)).toBeNull();
+  });
+
   it("answers 404 POST_REVISION_NOT_FOUND for a missing revision", async () => {
     const apiKey = await seedAdminApiKey();
     const { id } = await publishRevisionOf(apiKey, "json");
@@ -551,5 +597,195 @@ describe("reading a Post Revision", () => {
     expect(((await response.json()) as { code: string }).code).toBe(
       "POST_REVISION_NOT_FOUND",
     );
+  });
+});
+
+describe("keeping the newest Post Revisions", () => {
+  /**
+   * `count` legacy autosave revisions of Post `id`, a minute apart and ending
+   * an hour ago, written straight to the table so that none is trimmed.
+   * Their ids, oldest first.
+   */
+  async function seedRevisions(id: number, count: number) {
+    const db = createAdminTestContext().db;
+    const start = Date.now() - 3_600_000 - count * 60_000;
+    const ids: Array<number> = [];
+    for (let i = 0; i < count; i++) {
+      const [row] = await db
+        .insert(PostRevisionsTable)
+        .values({
+          postId: id,
+          reason: "auto",
+          snapshotHash: `seed-${i}`,
+          snapshotJson: {
+            title: `seed ${i}`,
+            summary: null,
+            slug: `rv-seed-${id}-${i}`,
+            status: "draft",
+            publishedAt: null,
+            contentJson: null,
+            tagIds: [],
+            categoryId: null,
+            coverMediaId: null,
+          },
+          createdAt: new Date(start + i * 60_000),
+        })
+        .returning({ id: PostRevisionsTable.id });
+      ids.push(row.id);
+    }
+    return ids;
+  }
+
+  const newestFirst = (ids: Array<number>) => [...ids].reverse();
+
+  it("drops the oldest when publishing takes the 21st", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-publish");
+    const seeded = await seedRevisions(id, 20);
+
+    await publish(apiKey, id);
+
+    const revisions = await listRevisions(apiKey, id);
+    expect(revisions).toHaveLength(20);
+    expect(revisions[0].reason).toBe("publish");
+    expect(revisions.slice(1).map((revision) => revision.id)).toEqual(
+      newestFirst(seeded.slice(1)),
+    );
+  });
+
+  it("drops the oldest when a restore takes the 21st, even the one restored", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-restore");
+    const seeded = await seedRevisions(id, 20);
+
+    const response = await restore(apiKey, id, seeded[0]);
+    expect(response.status).toBe(200);
+
+    expect((await readPost(apiKey, id)).title).toBe("seed 0");
+    const revisions = await listRevisions(apiKey, id);
+    expect(revisions).toHaveLength(20);
+    expect(revisions[0]).toMatchObject({
+      reason: "restore_backup",
+      title: "rv-cap-restore",
+    });
+    expect(revisions.slice(1).map((revision) => revision.id)).toEqual(
+      newestFirst(seeded.slice(1)),
+    );
+  });
+
+  it("drops the oldest when discarding Unpublished Changes takes the 21st", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-discard");
+    await publish(apiKey, id);
+    const seeded = await seedRevisions(id, 19);
+    await patchPost(apiKey, id, { summary: "changed summary" });
+
+    const response = await callAdminApi(
+      apiKey,
+      `/admin/posts/${id}/discard-changes`,
+      { method: "POST", body: {} },
+    );
+    expect(response.status).toBe(200);
+
+    const revisions = await listRevisions(apiKey, id);
+    expect(revisions).toHaveLength(20);
+    expect(revisions.map((revision) => revision.reason).slice(0, 2)).toEqual([
+      "restore_backup",
+      "publish",
+    ]);
+    expect(revisions.slice(2).map((revision) => revision.id)).toEqual(
+      newestFirst(seeded.slice(1)),
+    );
+  });
+
+  it("brings a Post with 25 down to its newest 20 at its next publish", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-over");
+    const seeded = await seedRevisions(id, 25);
+    expect(await listRevisions(apiKey, id)).toHaveLength(25);
+
+    await publish(apiKey, id);
+
+    const revisions = await listRevisions(apiKey, id);
+    expect(revisions).toHaveLength(20);
+    expect(revisions[0].reason).toBe("publish");
+    expect(revisions.slice(1).map((revision) => revision.id)).toEqual(
+      newestFirst(seeded.slice(6)),
+    );
+  });
+
+  it("deletes no revision when a restore is refused with EDIT_CONFLICT", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-refused");
+    const seeded = await seedRevisions(id, 25);
+    const revisionsBefore = await listRevisions(apiKey, id);
+    beforeRestoreWrite.run = async () => {
+      await patchPost(apiKey, id, { summary: "landed mid-restore" });
+    };
+
+    const response = await restore(apiKey, id, seeded[24]);
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { code: string }).code).toBe(
+      "EDIT_CONFLICT",
+    );
+
+    const revisionsAfter = await listRevisions(apiKey, id);
+    expect(revisionsAfter).toEqual(revisionsBefore);
+    expect(
+      revisionsAfter.some((revision) => revision.reason === "restore_backup"),
+    ).toBe(false);
+  });
+
+  it("deletes no revision and writes no backup when a discard is refused with EDIT_CONFLICT", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-discard-refused");
+    await publish(apiKey, id);
+    await seedRevisions(id, 25);
+    await patchPost(apiKey, id, { summary: "changed summary" });
+    const revisionsBefore = await listRevisions(apiKey, id);
+    beforeRestoreWrite.run = async () => {
+      await patchPost(apiKey, id, { summary: "landed mid-discard" });
+    };
+
+    const response = await callAdminApi(
+      apiKey,
+      `/admin/posts/${id}/discard-changes`,
+      { method: "POST", body: {} },
+    );
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { code: string }).code).toBe(
+      "EDIT_CONFLICT",
+    );
+
+    const revisionsAfter = await listRevisions(apiKey, id);
+    expect(revisionsAfter).toHaveLength(26);
+    expect(revisionsAfter).toEqual(revisionsBefore);
+    expect(
+      revisionsAfter.some((revision) => revision.reason === "restore_backup"),
+    ).toBe(false);
+  });
+
+  it("keeps the higher id of two revisions taken in the same second", async () => {
+    const apiKey = await seedAdminApiKey();
+    const id = await createPost(apiKey, "rv-cap-tie");
+    const seeded = await seedRevisions(id, 20);
+    // The two oldest now share a createdAt; only their ids tell them apart.
+    const [oldest] = await createAdminTestContext()
+      .db.select({ createdAt: PostRevisionsTable.createdAt })
+      .from(PostRevisionsTable)
+      .where(eq(PostRevisionsTable.id, seeded[0]));
+    await createAdminTestContext()
+      .db.update(PostRevisionsTable)
+      .set({ createdAt: oldest.createdAt })
+      .where(eq(PostRevisionsTable.id, seeded[1]));
+
+    await publish(apiKey, id);
+
+    const ids = (await listRevisions(apiKey, id)).map(
+      (revision) => revision.id,
+    );
+    expect(ids).toHaveLength(20);
+    expect(ids).toContain(seeded[1]);
+    expect(ids).not.toContain(seeded[0]);
   });
 });

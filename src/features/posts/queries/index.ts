@@ -82,6 +82,30 @@ export function postRevisionDetailQuery(postId: number, revisionId: number) {
   );
 }
 
+/**
+ * The post with its body as Markdown, for a diff: the draft's body in
+ * `contentMarkdown`. Resolves to null for a post that does not exist (the
+ * server answers 404).
+ */
+export function postMarkdownByIdQuery(id: number) {
+  return nullOnNotFound(
+    orpc.posts.admin.get.queryOptions({
+      input: { id, contentFormat: "markdown" },
+    }),
+    "POST_NOT_FOUND",
+  );
+}
+
+/** A revision's snapshot with its body as Markdown, for a diff. */
+export function postRevisionMarkdownQuery(postId: number, revisionId: number) {
+  return nullOnNotFound(
+    orpc.posts.admin.revisions.get.queryOptions({
+      input: { postId, revisionId, contentFormat: "markdown" },
+    }),
+    "POST_REVISION_NOT_FOUND",
+  );
+}
+
 export function popularPostsQuery(limit?: number) {
   return orpc.posts.popular.queryOptions({ input: { limit } });
 }

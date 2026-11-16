@@ -4,6 +4,7 @@ import { POST_REVISION_REASONS, POST_STATUSES } from "@/lib/enum-values";
 import { PathIdSchema } from "@/lib/orpc/path-ids";
 import { NullableJsonContentSchema } from "./json-content.schema";
 import {
+  AdminPostCoverSchema,
   ContentMarkdownOutputSchema,
   PostContentFormatSchema,
   StatedSaveTokenSchema,
@@ -57,6 +58,9 @@ export const PostRevisionSchema = PostRevisionSelectSchema.extend({
     ),
     contentMarkdown: ContentMarkdownOutputSchema,
   }),
+  cover: AdminPostCoverSchema.nullable().describe(
+    "The revision's cover, as the post read returns it for the draft: the Media named by snapshotJson.coverMediaId with its address. Null when the revision has no cover or that Media no longer exists.",
+  ),
 });
 
 export const ListPostRevisionsInputSchema = z.strictObject({
@@ -72,11 +76,6 @@ export const GetPostRevisionInputSchema =
   FindPostRevisionByIdInputSchema.extend({
     contentFormat: PostContentFormatSchema,
   });
-
-const CreatePostRevisionInputSchema = z.object({
-  postId: z.number(),
-  reason: PostRevisionReasonSchema.optional(),
-});
 
 export const RestorePostRevisionInputSchema = z.strictObject({
   postId: PathIdSchema,
@@ -135,17 +134,9 @@ export type ListPostRevisionsInput = z.infer<
 export type FindPostRevisionByIdInput = z.infer<
   typeof FindPostRevisionByIdInputSchema
 >;
-export type CreatePostRevisionInput = z.infer<
-  typeof CreatePostRevisionInputSchema
->;
 export type RestorePostRevisionInput = z.infer<
   typeof RestorePostRevisionInputSchema
 >;
 export type DeletePostRevisionsInput = z.infer<
   typeof DeletePostRevisionsInputSchema
 >;
-export type CreatePostRevisionResult = {
-  created: boolean;
-  revision: z.infer<typeof PostRevisionSelectSchema> | null;
-  skipReason?: "UNCHANGED" | "RATE_LIMITED";
-};

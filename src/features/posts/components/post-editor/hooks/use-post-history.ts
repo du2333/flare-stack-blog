@@ -3,9 +3,14 @@ import { useCallback, useState } from "react";
 import { toast } from "@/lib/toast";
 import {
   postByIdQuery,
+  postMarkdownByIdQuery,
   postRevisionDetailQuery,
   postRevisionListQuery,
+  postRevisionMarkdownQuery,
 } from "@/features/posts/queries";
+import { draftSide } from "@/features/posts/components/post-diff/post-diff.sides";
+import type { PostDiffSide } from "@/features/posts/components/post-diff/post-diff.types";
+import { tagsByPostIdQueryOptions } from "@/features/tags/queries";
 import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import {
@@ -180,5 +185,122 @@ export function usePostHistory({
     cancelConfirm,
     confirmRestore: restoreMutation.mutate,
     confirmDelete: deleteMutation.mutate,
+  };
+}
+
+/** What a version is compared with on the history page. */
+export type HistoryCompare = "draft" | "previous";
+
+function revisionSide(revision: RevisionDetail): PostDiffSide {
+  const { snapshotJson: snapshot, cover } = revision;
+  return {
+    title: snapshot.title,
+    summary: snapshot.summary,
+    slug: snapshot.slug,
+    publishedAt: snapshot.publishedAt,
+    categoryId: snapshot.categoryId,
+    tagIds: snapshot.tagIds,
+    coverMediaId: snapshot.coverMediaId,
+    coverUrl: cover?.url ?? null,
+    markdown: snapshot.contentMarkdown ?? null,
+  };
+}
+
+/** A read that failed, or that found the post or version gone meanwhile. */
+function isFailed(query: {
+  isError: boolean;
+  isSuccess: boolean;
+  data: unknown;
+}) {
+  return query.isError || (query.isSuccess && query.data == null);
+}
+
+/**
+ * Everything the Changes view of a version needs: against the saved draft
+ * (this version first), or against the adjacent older version (that one
+ * first), with the sides' names and the text for two equal sides. The oldest
+ * version has no older one, so `compare` is "draft" for it whatever was
+ * chosen. Nothing is read until `enabled`, so the content view makes no
+ * Markdown read.
+ */
+export function usePostHistoryDiff({
+  postId,
+  selectedRevisionId,
+  revisions,
+  compare: chosen,
+  enabled,
+}: {
+  postId: number;
+  selectedRevisionId: number | null;
+  /** Newest first, as the list returns them. */
+  revisions: ReadonlyArray<RevisionListItem>;
+  /** The base the Admin chose. */
+  compare: HistoryCompare;
+  enabled: boolean;
+}) {
+  const index = revisions.findIndex(
+    (revision) => revision.id === selectedRevisionId,
+  );
+  const previousId = index >= 0 ? revisions[index + 1]?.id : undefined;
+  const hasPrevious = previousId != null;
+  const compare: HistoryCompare = hasPrevious ? chosen : "draft";
+  const againstDraft = compare === "draft";
+
+  const selectedQuery = useQuery({
+    ...postRevisionMarkdownQuery(postId, selectedRevisionId ?? 0),
+    enabled: enabled && selectedRevisionId != null,
+  });
+  const draftQuery = useQuery({
+    ...postMarkdownByIdQuery(postId),
+    enabled: enabled && againstDraft,
+    refetchOnMount: "always",
+  });
+  const draftTagsQuery = useQuery({
+    ...tagsByPostIdQueryOptions(postId),
+    enabled: enabled && againstDraft,
+    refetchOnMount: "always",
+  });
+  const previousQuery = useQuery({
+    ...postRevisionMarkdownQuery(postId, previousId ?? 0),
+    enabled: enabled && !againstDraft,
+  });
+
+  const queries = againstDraft
+    ? [selectedQuery, draftQuery, draftTagsQuery]
+    : [selectedQuery, previousQuery];
+  const selected = selectedQuery.data ? revisionSide(selectedQuery.data) : null;
+  const other = againstDraft
+    ? draftQuery.data && draftTagsQuery.data
+      ? draftSide(draftQuery.data, draftTagsQuery.data)
+      : null
+    : previousQuery.data
+      ? revisionSide(previousQuery.data)
+      : null;
+
+  const names = againstDraft
+    ? {
+        beforeName: m.editor_history_side_this(),
+        afterName: m.editor_history_side_draft(),
+        emptyText: m.editor_history_diff_same_draft(),
+      }
+    : {
+        beforeName: m.editor_history_side_previous(),
+        afterName: m.editor_history_side_this(),
+        emptyText: m.editor_history_diff_same_previous(),
+      };
+  const sides =
+    selected && other
+      ? againstDraft
+        ? { before: selected, after: other }
+        : { before: other, after: selected }
+      : null;
+  const failed = enabled && queries.some(isFailed);
+  return {
+    compare,
+    hasPrevious,
+    /** The props of the diff; null while a read is under way or after one failed. */
+    diff: sides && !failed ? { ...sides, ...names } : null,
+    isLoading: enabled && sides === null && !failed,
+    isError: failed,
   };
 }
