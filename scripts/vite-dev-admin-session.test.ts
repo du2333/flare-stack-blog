@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   answerSignIn,
+  isLoopbackAddress,
   isSignInPath,
   landingPath,
   sessionCookieHeader,
@@ -43,7 +44,7 @@ describe("landingPath", () => {
 
 describe("answerSignIn", () => {
   it("sets the better-auth cookie and redirects to the Admin", () => {
-    const answer = answerSignIn("GET", "/__dev/admin-session", state);
+    const answer = answerSignIn("GET", "/__dev/admin-session", true, state);
     expect(answer.status).toBe(302);
     expect(answer.headers["Set-Cookie"]).toBe(
       "better-auth.session_token=abc123.d%2Bef%3D; Path=/; HttpOnly; SameSite=Lax",
@@ -53,17 +54,17 @@ describe("answerSignIn", () => {
 
   it("redirects to a valid `to`, and to the Admin for an invalid one", () => {
     expect(
-      answerSignIn("GET", "/__dev/admin-session?to=/admin/posts", state).headers
-        .Location,
+      answerSignIn("GET", "/__dev/admin-session?to=/admin/posts", true, state)
+        .headers.Location,
     ).toBe("/admin/posts");
     expect(
-      answerSignIn("GET", "/__dev/admin-session?to=//evil.test", state).headers
-        .Location,
+      answerSignIn("GET", "/__dev/admin-session?to=//evil.test", true, state)
+        .headers.Location,
     ).toBe("/admin");
   });
 
   it("answers 404 with one line when there is no state file", () => {
-    const answer = answerSignIn("GET", "/__dev/admin-session", undefined);
+    const answer = answerSignIn("GET", "/__dev/admin-session", true, undefined);
     expect(answer.status).toBe(404);
     expect(answer.body.split("\n")).toHaveLength(1);
     expect(answer.headers["Set-Cookie"]).toBeUndefined();
@@ -76,19 +77,19 @@ describe("answerSignIn", () => {
       JSON.stringify({ cookie: "a; Path=/x" }),
       JSON.stringify({ cookie: 12 }),
     ]) {
-      const answer = answerSignIn("GET", "/__dev/admin-session", bad);
+      const answer = answerSignIn("GET", "/__dev/admin-session", true, bad);
       expect(answer.status).toBe(404);
       expect(answer.headers["Set-Cookie"]).toBeUndefined();
     }
   });
 
   it("answers only GET and HEAD", () => {
-    expect(answerSignIn("POST", "/__dev/admin-session", state).status).toBe(
-      405,
-    );
-    expect(answerSignIn("HEAD", "/__dev/admin-session", state).status).toBe(
-      302,
-    );
+    expect(
+      answerSignIn("POST", "/__dev/admin-session", true, state).status,
+    ).toBe(405);
+    expect(
+      answerSignIn("HEAD", "/__dev/admin-session", true, state).status,
+    ).toBe(302);
   });
 });
 
@@ -111,5 +112,45 @@ describe("signInLink", () => {
   it("is undefined without a usable BETTER_AUTH_URL", () => {
     expect(signInLink("A=1")).toBeUndefined();
     expect(signInLink("BETTER_AUTH_URL=nonsense")).toBeUndefined();
+  });
+});
+
+describe("isLoopbackAddress", () => {
+  it("accepts 127.0.0.0/8, ::1 and the IPv4-mapped loopback", () => {
+    for (const address of [
+      "127.0.0.1",
+      "127.1.2.3",
+      "::1",
+      "::ffff:127.0.0.1",
+      "::FFFF:127.9.9.9",
+    ]) {
+      expect(isLoopbackAddress(address), address).toBe(true);
+    }
+  });
+
+  it("rejects a LAN or public address, lookalikes and no address", () => {
+    for (const address of [
+      "192.168.1.20",
+      "10.0.0.5",
+      "::ffff:192.168.1.20",
+      "fe80::1",
+      "::2",
+      "128.0.0.1",
+      "127.0.0.1.evil.test",
+      "127.0.0",
+      "127.0.0.256",
+      "",
+      undefined,
+    ]) {
+      expect(isLoopbackAddress(address), String(address)).toBe(false);
+    }
+  });
+
+  it("makes the answer a 404 without a cookie when the client is not on this machine", () => {
+    const answer = answerSignIn("GET", "/__dev/admin-session", false, state);
+    expect(answer.status).toBe(404);
+    expect(answer.body.split("\n")).toHaveLength(1);
+    expect(answer.headers["Set-Cookie"]).toBeUndefined();
+    expect(answer.headers.Location).toBeUndefined();
   });
 });

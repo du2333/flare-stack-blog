@@ -25,6 +25,10 @@ const COOKIE_VALUE = /^[A-Za-z0-9%._~+=-]+$/;
  *   database, and only while `.wrangler/dev-admin-session.json` exists (`cleanup`
  *   deletes it). It answers 404 otherwise.
  * - It reads nothing but that state file.
+ * - It answers only a client on this machine: when the connection's remote
+ *   address is not loopback (the dev server may be reachable from the network),
+ *   it answers 404 and sets no cookie. `X-Forwarded-For` and `Host` are not
+ *   consulted.
  */
 export function devAdminSessionPlugin(): Plugin {
   let root = process.cwd();
@@ -43,6 +47,7 @@ export function devAdminSessionPlugin(): Plugin {
         const answer = answerSignIn(
           req.method,
           req.url,
+          isLoopbackAddress(req.socket.remoteAddress),
           existsSync(stateFile) ? readFileSync(stateFile, "utf8") : undefined,
         );
         res.writeHead(answer.status, answer.headers);
@@ -50,6 +55,21 @@ export function devAdminSessionPlugin(): Plugin {
       });
     },
   };
+}
+
+/** `127.0.0.0/8`, `::1` and the IPv4-mapped `::ffff:127.x.x.x`; anything else, or no address, is not loopback. */
+export function isLoopbackAddress(address: string | undefined) {
+  if (address === undefined) return false;
+  if (address === "::1") return true;
+  const v4 = address.toLowerCase().startsWith("::ffff:")
+    ? address.slice("::ffff:".length)
+    : address;
+  const octets = v4.split(".");
+  return (
+    octets.length === 4 &&
+    octets.every((octet) => /^\d{1,3}$/.test(octet) && Number(octet) <= 255) &&
+    octets[0] === "127"
+  );
 }
 
 /** The request's path is the sign-in path, whatever its query. */
@@ -117,12 +137,20 @@ const text = (status: number, body: string): SignInAnswer => ({
   body,
 });
 
-/** Answers a request for the sign-in path from the text of the state file (undefined when there is none). */
+/**
+ * Answers a request for the sign-in path from the text of the state file
+ * (undefined when there is none). `loopback` is whether the connection comes
+ * from this machine; a client elsewhere gets a 404 and no cookie.
+ */
 export function answerSignIn(
   method: string | undefined,
   url: string | undefined,
+  loopback: boolean,
   stateText: string | undefined,
 ): SignInAnswer {
+  if (!loopback) {
+    return text(404, "The sign-in link answers only a client on this machine.");
+  }
   if (method !== "GET" && method !== "HEAD") {
     return text(405, "GET only.");
   }
