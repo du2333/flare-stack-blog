@@ -24,6 +24,10 @@ Skills live in `.agents/skills/<name>`. `flare-stack-blog` is the one published 
 
 A diff is reviewed against `CODING_STANDARDS.md`; `bun run check` is what CI runs short of the build and the tests.
 
+## Versions and releases
+
+Designing a change that deletes or rewrites site data, adds a migration, or needs new configuration: decide its release level first, by `docs/version-contract.md`. Cutting a release, only when the user asks: `docs/agents/release.md`.
+
 ## Cloudflare
 
 Cloudflare operations go through the `cf` CLI (`bunx cf`), a 2026 beta that replaced Wrangler here. Find commands with `bunx cf cli search "<task>"`. Deploying a branch to the rehearsal Worker, and pointing its update check at a branch's `upgrades.json`: `docs/agents/rehearsal.md`.
