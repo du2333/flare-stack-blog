@@ -1,7 +1,7 @@
 /**
  * Signs a throwaway Admin into the local dev server, then removes it again.
  *
- *   bun scripts/dev-admin-session.ts seed           # prints the session cookie value
+ *   bun scripts/dev-admin-session.ts seed           # prints the session cookie value; the sign-in link goes to stderr
  *   bun scripts/dev-admin-session.ts cleanup        # lists what cleanup would delete
  *   bun scripts/dev-admin-session.ts cleanup --yes  # deletes the Admin, its session and those Posts
  *   bun scripts/dev-admin-session.ts cleanup --yes --keep 12,13  # spares Posts 12 and 13
@@ -14,9 +14,14 @@
  * can only offer the Posts created since `seed`, which may include someone
  * else's. It lists them first and deletes only with `--yes`, together with
  * every row whose `post_id` points at them.
+ *
+ * The state file `.wrangler/dev-admin-session.json` (mode 0600, it holds the
+ * signed cookie) is what `scripts/vite-dev-admin-session.ts` serves the
+ * sign-in link from and what `bun run shots` reads the session from.
  */
 import { Database } from "bun:sqlite";
 import {
+  chmodSync,
   existsSync,
   readdirSync,
   readFileSync,
@@ -26,9 +31,13 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { chooseDatabase, configuredD1Id } from "./local-d1-file";
+import {
+  DEV_ADMIN_SESSION_STATE_FILE,
+  signInLink,
+} from "./vite-dev-admin-session";
 
 const D1_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
-const STATE_FILE = ".wrangler/dev-admin-session.json";
+const STATE_FILE = DEV_ADMIN_SESSION_STATE_FILE;
 const USER_ID = "dev-admin-session-user";
 const EMAIL = "dev-admin-session@example.test";
 
@@ -38,6 +47,8 @@ interface SeedState {
   lastPostId: number;
   /** Unix seconds, the unit of `posts.created_at`. */
   seededAt: number;
+  /** The signed cookie value `seed` prints; the dev server's sign-in link and `shots` read it. */
+  cookie: string;
 }
 
 /**
@@ -135,6 +146,8 @@ async function seed() {
   );
   db.close();
 
+  const cookie = await signCookieValue(token, authSecret());
+  // The file now holds a usable session: owner only.
   writeFileSync(
     STATE_FILE,
     JSON.stringify({
@@ -142,9 +155,14 @@ async function seed() {
       sessionId,
       lastPostId,
       seededAt: Math.floor(now / 1000),
+      cookie,
     } satisfies SeedState),
+    { mode: 0o600 },
   );
-  console.log(await signCookieValue(token, authSecret()));
+  chmodSync(STATE_FILE, 0o600);
+  const link = signInLink(readFileSync(".dev.vars", "utf8"));
+  if (link) console.error(`sign-in link (dev server only): ${link}`);
+  console.log(cookie);
 }
 
 function cleanup(confirmed: boolean, keep: ReadonlySet<number>) {

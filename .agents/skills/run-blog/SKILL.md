@@ -30,10 +30,10 @@ If pages answer 500 or the log shows `Cannot read properties of null (reading 'u
 ## 2. Throwaway Admin
 
 ```bash
-bun scripts/dev-admin-session.ts seed   # prints the cookie value
+bun scripts/dev-admin-session.ts seed   # state file .wrangler/dev-admin-session.json; the sign-in link goes to stderr
 ```
 
-Set it as cookie `better-auth.session_token` on domain `localhost`, path `/`; the `--session` flag of `shots` does this. `curl -b "better-auth.session_token=<value>" http://localhost:<port>/api/auth/get-session` confirms it.
+To look yourself, open `http://localhost:<port>/__dev/admin-session` (`?to=/admin/posts` picks the landing page): the dev server sets the session cookie and redirects to `/admin`. It answers 404 until `seed` ran and after `cleanup`, and exists only in `vite dev`, not in a build or preview. A browser script opens the same link first. `shots` reads the session from the state file by itself, so no cookie goes on a command line; `--session <cookie>` (the value `seed` prints on stdout) is for a server whose worktree is not the current directory. The cookie is `better-auth.session_token`; `curl -b "better-auth.session_token=<value>" http://localhost:<port>/api/auth/get-session` confirms it.
 
 Saving Site Config through the Admin API replaces the whole site section, and every field left out returns to its default. Read the current config and send all of it back with your change.
 
@@ -45,7 +45,8 @@ Saving Site Config through the Admin API replaces the whole site section, and ev
 - Every shot has animations and transitions off, fonts and all images loaded, and `time` elements and `.comment-avatar` painted as flat grey boxes (`--mask` adds selectors). A shot scrolls to the end until the height stops changing, so a list that loads as it scrolls is shot whole, and a capture repeats until two in a row match. `/posts` loads its next posts on a button: `--click` it to shoot them. Shooting unchanged pages twice gives identical files.
 - Admin pages scroll inside an element, not the document. `--views full` finds that element and grows the viewport to its content (up to 8000 px); `--scroller <css>` names it when detection picks the wrong one.
 - States without a script: `--click <css>` (repeatable, in order), then `--press <key>`, then `--hover <css>`, then the capture; `--name <suffix>` keeps the file apart from the plain shot. A selector that matches nothing fails that page. Example: an overflow menu in `/admin/comments`, `--click '<row menu button>' --name menu`.
-- `--theme` previews a Theme on the public page as an Admin, so it needs `--session`. Compare it with a shot without `--theme`.
+- A run that needs a session (an `/admin` page, `--theme`, a signed-in flow) takes it from the state file or `--session`, and ends with one line when it has neither. Public pages are shot anonymous unless `--session` is given.
+- `--theme` previews a Theme on the public page as an Admin, so it needs the session (found as above). Compare it with a shot without `--theme`.
 - `sheet` tiles images two to a row at 960 px, six to a sheet (`-1`, `-2`... when more) and prints every file it wrote. Read the sheets, not the single files.
 - Phones (width below 600) use a touch context. Viewport heights: 900 from 1024 wide, 1100 from 600, 844 below.
 
@@ -64,7 +65,7 @@ bun run shots sheet $SCRATCH/diff --out $SCRATCH/diff-sheet.png
 `shoot` answers "does it look the same"; `flows` answers "does it behave the same". Run it after a change to auth, the session, toasts, navigation, loading states or the Admin shell, and before reporting such a change done: a change once left four toasts unshown and blanked the Admin on a slow connection, and every suite and screenshot passed.
 
 ```bash
-bun run heavy -- bun run shots flows --base http://localhost:<port> --session <cookie>
+bun run heavy -- bun run shots flows --base http://localhost:<port>
 ```
 
 It runs five named flows (`--list` names them, `--only a,b` runs some), each in browsers of its own, and prints one line per flow: pass, FAIL or skip, and what the flow observed. Exit 1 when one fails. A flow also fails on a `pageerror`, a console error or a React hydration warning; a failed load from another origin and a third-party iframe's permissions-policy message are ignored (`isIgnoredNoise`).
@@ -72,7 +73,7 @@ It runs five named flows (`--list` names them, `--only a,b` runs some), each in 
 The five are the ones nothing else sees: what an anonymous first load requests, client-side navigation, the first toast (the toast library loads on demand), the signed-in navigation with logout, and navigation on a slow network (a skeleton, never a blank screen). They do not look at styles, so a restyle cannot fail them; a renamed class or a moved control they use can. When a flow breaks because the interface changed, decide whether what it guards is worth the repair, and delete it when not: a flow kept green for its own sake is a cost.
 
 - The only write is the logout, which deletes the session row; on a local dev server the runner puts the row back, so the cookie stays valid, and on any other site that step is skipped.
-- `--compare <other-base>` runs the same flows on a second site and prints only the differences in what they observed; timings (keys ending `Ms`) within `--tolerance` percent (50, and never less than 400 ms) are equal. Serve the baseline branch from its own worktree on its own port (section 1), then `flows --base <new> --compare <baseline> --session <cookie>`, with a cookie that is valid on both; both sites are checked first and the run ends in seconds with one line when one does not answer or refuses the cookie. A full compare has not completed cleanly yet (it hung after the last flow twice): prefer two plain runs and read them side by side until it has. A flow that passes `--flow-timeout` (seconds; default 120, 240 for the slow-network flow) is reported failed and the run goes on; `--deadline` (minutes, 15) ends a site's run.
+- `--compare <other-base>` runs the same flows on a second site and prints only the differences in what they observed; timings (keys ending `Ms`) within `--tolerance` percent (50, and never less than 400 ms) are equal. Serve the baseline branch from its own worktree on its own port (section 1), then `flows --base <new> --compare <baseline>`, with a cookie that is valid on both (the seeded session is sent to both; a baseline worktree with its own secret or database refuses it); both sites are checked first and the run ends in seconds with one line when one does not answer or refuses the cookie. A full compare has not completed cleanly yet (it hung after the last flow twice): prefer two plain runs and read them side by side until it has. A flow that passes `--flow-timeout` (seconds; default 120, 240 for the slow-network flow) is reported failed and the run goes on; `--deadline` (minutes, 15) ends a site's run.
 - A remote site can be driven signed in: `--api-key-file <toml>` takes a file with `url = "…"` and `api_key = "…"` (the format of `~/.config/flare-stack-blog/config.toml`) and sends the key as `x-api-key` to that origin only; `--base` may be left out. The run answers the analytics send (`/api/send`) itself, so it records no page views on the site.
 - A new flow is one file in `.agents/skills/run-blog/shots/flows/` and one line in `list.ts`.
 
@@ -91,7 +92,7 @@ Check the build rather than the dev server after a change to `vite.config.ts`, c
 
 ## 6. Drive the browser by hand
 
-Typing and publishing still need a script: `playwright-core` from a scratch directory (`bun add playwright-core` there), launched with the same headless shell (`~/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell`), `--no-sandbox`, `locale: "zh-CN"`, the session cookie added to the context.
+Typing and publishing still need a script: `playwright-core` from a scratch directory (`bun add playwright-core` there), launched with the same headless shell (`~/.cache/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell`), `--no-sandbox`, `locale: "zh-CN"`, and `page.goto` of the sign-in link first.
 
 - **Editor:** `/admin/posts` → button "新建文章" → wait for `/admin/posts/edit/<id>` → type into `.ProseMirror`. Type through `page.keyboard` so input rules and the slash menu fire.
 - **Publish:** button "发布" on the edit page; the Post's slug is in the `posts` table.
