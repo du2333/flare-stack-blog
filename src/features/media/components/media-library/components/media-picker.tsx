@@ -11,6 +11,7 @@ import { m } from "@/paraglide/messages";
 import { useMediaPicker, useMediaUpload } from "../hooks";
 import type { MediaAsset } from "../types";
 import { MediaPickerGrid } from "./media-picker-grid";
+import { MediaUrlField } from "./media-url-field";
 
 export function MediaPicker({
   open,
@@ -38,8 +39,17 @@ export function MediaPicker({
       className="fuwari-modal-wide"
     >
       <div className="flex flex-col max-h-[80dvh] overflow-hidden">
-        <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-medium fuwari-text-90">{title}</h2>
+        <div className="px-5 pt-5 pb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h2 className="mr-auto text-lg font-medium fuwari-text-90">
+            {title}
+          </h2>
+          {/* An imported image is the one chosen; below the title when the
+              row has no room for it. */}
+          <MediaUrlField
+            known={picker.mediaItems}
+            onImport={onSelect}
+            className="order-last w-full sm:order-none sm:w-72"
+          />
           <div className="flex items-center gap-2">
             <Button
               variant="primary"

@@ -1,15 +1,14 @@
-import { CornerDownLeft, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { Ref } from "react";
 import { useId, useRef, useState } from "react";
-import { IconButton } from "@/components/ui/icon-button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Spinner } from "@/components/ui/spinner";
 import { ACCEPTED_IMAGE_TYPES } from "@/features/media/media.schema";
 import { m } from "@/paraglide/messages";
 import type { useMediaPicker } from "../hooks";
-import { useMediaUrlImport } from "../hooks";
 import type { MediaAsset } from "../types";
 import { MediaPickerGrid } from "./media-picker-grid";
+import { MediaUrlField } from "./media-url-field";
 
 const TABS = [
   { value: "upload", label: m.editor_image_tab_upload },
@@ -76,7 +75,7 @@ export function ImageSourcePicker({
             multiple={multiple}
           />
         ) : tab === "link" ? (
-          <LinkPanel known={library.mediaItems} onImport={onSelect} />
+          <MediaUrlField known={library.mediaItems} onImport={onSelect} />
         ) : (
           <div className="max-h-72 overflow-y-auto p-1 custom-scrollbar">
             <MediaPickerGrid
@@ -125,49 +124,5 @@ function UploadPanel({
         }}
       />
     </>
-  );
-}
-
-function LinkPanel({
-  known,
-  onImport,
-}: {
-  known: ReadonlyArray<MediaAsset>;
-  onImport: (asset: MediaAsset) => void;
-}) {
-  const [url, setUrl] = useState("");
-  const { importUrl, importing } = useMediaUrlImport(known);
-
-  const submit = async () => {
-    if (importing) return;
-    const asset = await importUrl(url);
-    if (asset) onImport(asset);
-  };
-
-  return (
-    <div className="flex items-center gap-1">
-      <input
-        type="text"
-        inputMode="url"
-        value={url}
-        onChange={(event) => setUrl(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
-          event.preventDefault();
-          void submit();
-        }}
-        aria-label={m.editor_image_url()}
-        placeholder="https://"
-        disabled={importing}
-        className="h-8 min-w-0 flex-1 rounded-lg bg-transparent px-2 text-sm fuwari-text-90 outline-none placeholder:fuwari-text-30"
-      />
-      <IconButton
-        label={m.editor_image_import()}
-        onClick={() => void submit()}
-        disabled={importing || !url.trim()}
-      >
-        {importing ? <Spinner size={14} /> : <CornerDownLeft size={14} />}
-      </IconButton>
-    </div>
   );
 }

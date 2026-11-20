@@ -50,7 +50,12 @@ export function MediaLibraryPageSkeleton() {
       className="media-workspace"
       title={m.media_title()}
       count="—"
-      actions={<FrameActionSkeleton />}
+      actions={
+        <>
+          <FrameActionSkeleton />
+          <FrameActionSkeleton />
+        </>
+      }
       tabs={<FrameTabsSkeleton count={2} />}
       body="list"
       scroll={false}

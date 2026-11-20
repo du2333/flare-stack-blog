@@ -1,4 +1,11 @@
-import { CheckCheck, ImageOff, Images, Search, Upload } from "lucide-react";
+import {
+  CheckCheck,
+  ImageOff,
+  Images,
+  Link2,
+  Search,
+  Upload,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { AdminPage } from "@/components/admin/admin-page";
@@ -11,8 +18,9 @@ import {
   useMotionPresence,
 } from "@/hooks/use-motion";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FloatingPopover } from "@/components/ui/floating-popover";
 import { m } from "@/paraglide/messages";
-import { MediaDetail, MediaToolbar } from "./components";
+import { MediaDetail, MediaToolbar, MediaUrlField } from "./components";
 import { MediaCollection } from "./components/media-collection";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -35,6 +43,11 @@ export function MediaLibrary() {
     { kind: "one"; asset: MediaAsset } | { kind: "unused" } | null
   >(null);
   const [dragging, setDragging] = useState(false);
+  const [importAnchor, setImportAnchor] = useState<HTMLButtonElement | null>(
+    null,
+  );
+  const [importOpen, setImportOpen] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
   const {
     mediaItems,
@@ -174,6 +187,40 @@ export function MediaLibrary() {
         disabled: isUploading,
         onClick: () => fileRef.current?.click(),
       }}
+      actions={
+        <>
+          <Button
+            ref={setImportAnchor}
+            variant="outline"
+            icon={<Link2 size={16} />}
+            aria-haspopup="dialog"
+            aria-expanded={importOpen}
+            onClick={() => setImportOpen((open) => !open)}
+          >
+            {m.media_import_link()}
+          </Button>
+          <FloatingPopover
+            open={importOpen}
+            anchor={importAnchor}
+            placement="bottom-end"
+            onDismiss={() => setImportOpen(false)}
+            returnFocusOnEscape
+            initialFocus={() => importInputRef.current}
+            role="dialog"
+            aria-label={m.media_import_link()}
+            className="w-96 max-w-[calc(100vw-1rem)] p-2"
+          >
+            <MediaUrlField
+              inputRef={importInputRef}
+              known={mediaItems}
+              onImport={() => {
+                setImportOpen(false);
+                toast.success(m.media_import_success());
+              }}
+            />
+          </FloatingPopover>
+        </>
+      }
       toolbar={toolbar}
       body="list"
       scroll={false}
