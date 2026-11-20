@@ -3,3 +3,4 @@ export { MediaDetail } from "./media-detail";
 export { MediaPicker } from "./media-picker";
 export { MediaPickerGrid } from "./media-picker-grid";
 export { MediaToolbar } from "./media-toolbar";
+export { MediaUrlField } from "./media-url-field";

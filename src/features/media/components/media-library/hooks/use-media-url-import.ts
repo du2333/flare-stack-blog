@@ -1,16 +1,19 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
 import { extractImageKey } from "@/features/media/utils/media.utils";
-import { orpcClient } from "@/lib/orpc";
+import { orpc, orpcClient } from "@/lib/orpc";
 import { m } from "@/paraglide/messages";
 import type { MediaAsset } from "../types";
 
 /**
  * Imports an image URL into the media library. A URL of a library image
  * already in `known` resolves to it without importing again. Resolves with
- * `null` (after a toast) when the import fails.
+ * `null` (after a toast) when the import fails. Every list of the library
+ * reads again after an import, so the new image is in it.
  */
 export function useMediaUrlImport(known: ReadonlyArray<MediaAsset>) {
+  const queryClient = useQueryClient();
   const [importing, setImporting] = useState(false);
 
   const importUrl = async (url: string): Promise<MediaAsset | null> => {
@@ -24,6 +27,7 @@ export function useMediaUrlImport(known: ReadonlyArray<MediaAsset>) {
     setImporting(true);
     try {
       const media = await orpcClient.media.importFromUrl({ url: trimmed });
+      void queryClient.invalidateQueries({ queryKey: orpc.media.key() });
       return {
         ...media,
         postCount: 0,
