@@ -13,6 +13,7 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 import { FloatingPopover } from "./floating-popover";
+import { nextListIndex } from "./list-keys";
 
 const ITEMS = '[role^="menuitem"]:not(:disabled)';
 
@@ -40,32 +41,6 @@ const SelectContext = createContext<
 
 function menuItems(panel: HTMLElement | null) {
   return Array.from(panel?.querySelectorAll<HTMLElement>(ITEMS) ?? []);
-}
-
-function nextIndex(
-  event: KeyboardEvent<HTMLElement>,
-  items: Array<HTMLElement>,
-  current: number,
-) {
-  switch (event.key) {
-    case "ArrowDown":
-      return (current + 1) % items.length;
-    case "ArrowUp":
-      return (current - 1 + items.length) % items.length;
-    case "Home":
-      return 0;
-    case "End":
-      return items.length - 1;
-  }
-  if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey)
-    return -1;
-  // Typeahead: the next item, after the focused one, starting with the key.
-  const key = event.key.toLowerCase();
-  const order = [...items.slice(current + 1), ...items.slice(0, current + 1)];
-  const match = order.find((item) =>
-    item.textContent?.trim().toLowerCase().startsWith(key),
-  );
-  return match ? items.indexOf(match) : -1;
 }
 
 interface MenuProps {
@@ -223,7 +198,7 @@ export function Menu({
       return;
     }
     const items = menuItems(event.currentTarget);
-    const next = nextIndex(
+    const next = nextListIndex(
       event,
       items,
       items.indexOf(document.activeElement as HTMLElement),
