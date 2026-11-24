@@ -1,10 +1,17 @@
 import { ChevronDown } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
 import { FloatingPopover } from "./floating-popover";
+import { nextListIndex } from "./list-keys";
 import "./field.css";
 
 const MENU_MAX_HEIGHT = 256;
+
+const OPTIONS = '[role="option"]:not(:disabled)';
+
+function enabledOptions(list: HTMLElement | null) {
+  return Array.from(list?.querySelectorAll<HTMLElement>(OPTIONS) ?? []);
+}
 
 export type SelectOption = {
   value: string;
@@ -12,6 +19,13 @@ export type SelectOption = {
   disabled?: boolean;
 };
 
+/**
+ * A field showing the chosen option, opening a list to pick another. A
+ * click, ArrowDown or ArrowUp opens it with focus on the chosen option, else
+ * the first; arrows, Home, End and typeahead move focus between the options
+ * and Enter or Space picks the focused one. Escape closes it back onto the
+ * trigger, and Tab closes it and moves on from the trigger.
+ */
 export function Select({
   value,
   options,
@@ -33,55 +47,62 @@ export function Select({
   placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  if (open && disabled) setOpen(false);
+  const isOpen = open && !disabled;
+  const [triggerEl, setTriggerEl] = useState<HTMLButtonElement | null>(null);
+  const ownId = useId();
+  const triggerId = id ?? ownId;
   const listId = useId();
   const selected = options.find((option) => option.value === value);
-  const selectedIndex = options.findIndex((option) => option.value === value);
-  const [activeIndex, setActiveIndex] = useState(
-    selectedIndex >= 0 ? selectedIndex : 0,
-  );
 
-  useEffect(() => {
-    if (!open) return;
-    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
-  }, [open, selectedIndex]);
+  const close = () => {
+    setOpen(false);
+    triggerEl?.focus({ preventScroll: true });
+  };
 
-  useEffect(() => {
-    if (!open) return;
+  const initialFocus = () => {
+    const items = enabledOptions(document.getElementById(listId));
+    return (
+      items.find((item) => item.getAttribute("aria-selected") === "true") ??
+      items[0] ??
+      null
+    );
+  };
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-        event.preventDefault();
-        const step = event.key === "ArrowDown" ? 1 : -1;
-        setActiveIndex((current) => nextEnabledIndex(options, current, step));
-        return;
-      }
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        const option = options[activeIndex];
-        if (!option || option.disabled) return;
-        onChange(option.value);
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [activeIndex, onChange, open, options]);
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Tab") {
+      // The browser then moves on from the trigger's place in the page.
+      close();
+      return;
+    }
+    const items = enabledOptions(event.currentTarget);
+    const next = nextListIndex(
+      event,
+      items,
+      items.indexOf(document.activeElement as HTMLElement),
+    );
+    if (next < 0) return;
+    event.preventDefault();
+    items[next]?.focus();
+  };
 
   return (
     <div className={cn("relative", className)}>
       <button
-        ref={triggerRef}
-        id={id}
+        ref={setTriggerEl}
+        id={triggerId}
         type="button"
         aria-label={ariaLabel}
         disabled={disabled}
         aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
         onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+          event.preventDefault();
+          setOpen(true);
+        }}
         className="fuwari-input flex items-center justify-between gap-2 text-left"
       >
         <span className={cn("min-w-0 truncate", !selected && "fuwari-text-30")}>
@@ -91,23 +112,32 @@ export function Select({
           size={16}
           className={cn(
             "shrink-0 fuwari-text-50 transition-transform",
-            open && "rotate-180",
+            isOpen && "rotate-180",
           )}
         />
       </button>
       <FloatingPopover
-        open={open}
-        anchor={open ? triggerRef.current : null}
+        open={isOpen}
+        anchor={triggerEl}
         onDismiss={() => setOpen(false)}
         returnFocusOnEscape
+        initialFocus={initialFocus}
         matchTriggerWidth
         maxHeight={MENU_MAX_HEIGHT}
         id={listId}
         role="listbox"
+        // The trigger carries the field's name: its own, or its label's.
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabel ? undefined : triggerId}
         className="overflow-y-auto p-1 custom-scrollbar"
+        onKeyDown={onKeyDown}
+        onBlur={(event) => {
+          const next = event.relatedTarget;
+          if (next && !event.currentTarget.contains(next) && next !== triggerEl)
+            setOpen(false);
+        }}
       >
-        {options.map((option, index) => {
-          const active = index === activeIndex;
+        {options.map((option) => {
           const isSelected = option.value === value;
           return (
             <button
@@ -115,22 +145,19 @@ export function Select({
               type="button"
               role="option"
               aria-selected={isSelected}
+              tabIndex={-1}
               disabled={option.disabled}
-              onMouseEnter={() => setActiveIndex(index)}
               onClick={() => {
-                if (option.disabled) return;
+                // Close first, so a dialog the change opens returns focus
+                // to the trigger.
+                close();
                 onChange(option.value);
-                setOpen(false);
-                triggerRef.current?.focus();
               }}
               className={cn(
-                "flex w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                option.disabled && "cursor-not-allowed opacity-40",
+                "flex w-full rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors disabled:pointer-events-none disabled:opacity-40",
                 isSelected
                   ? "bg-(--theme-tonal-bg) text-(--theme-accent)"
-                  : active
-                    ? "bg-(--theme-tonal-bg)/70 fuwari-text-90"
-                    : "fuwari-text-75",
+                  : "fuwari-text-75 hover:bg-(--theme-tonal-bg)/70 hover:text-(--fuwari-fg) focus-visible:bg-(--theme-tonal-bg)/70 focus-visible:text-(--fuwari-fg)",
               )}
             >
               {option.label}
@@ -140,18 +167,4 @@ export function Select({
       </FloatingPopover>
     </div>
   );
-}
-
-function nextEnabledIndex(
-  options: Array<SelectOption>,
-  current: number,
-  step: number,
-) {
-  if (options.length === 0) return 0;
-  let index = current;
-  for (let i = 0; i < options.length; i += 1) {
-    index = (index + step + options.length) % options.length;
-    if (!options[index]?.disabled) return index;
-  }
-  return current;
 }
