@@ -11,7 +11,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  baseCommit,
   decide,
+  FULL_RUN_PATHS,
+  fullRunPath,
   type GateName,
   GATES,
   type GateTable,
@@ -138,11 +141,14 @@ describe("decide", () => {
 });
 
 describe("satisfiers", () => {
-  it("lists only typecheck as satisfied by another gate", () => {
+  it("counts a gate's record for the narrower gate only, never the other way", () => {
+    const narrower: Partial<Record<GateName, GateName>> = {
+      typecheck: "check",
+      "test:changed": "test",
+    };
     for (const gate of Object.keys(GATES) as Array<keyof typeof GATES>) {
-      expect(satisfiers(gate)).toEqual(
-        gate === "typecheck" ? ["typecheck", "check"] : [gate],
-      );
+      const wider = narrower[gate];
+      expect(satisfiers(gate)).toEqual(wider ? [gate, wider] : [gate]);
     }
   });
 });
@@ -241,6 +247,82 @@ describe("GATES", () => {
   it("compiles the messages before either test suite", () => {
     expect(GATES["test:node"].command).toMatch(/^bun run i18n:compile && /);
     expect(GATES.test.command).toMatch(/^bun run i18n:compile && /);
+    expect(GATES["test:changed"].command).toMatch(/^bun run i18n:compile && /);
+  });
+
+  it("has test:changed run the suite's own command, ending where the commit goes", () => {
+    expect(GATES["test:changed"].narrows).toBe("test");
+    expect(GATES["test:changed"].command).toBe(
+      `${GATES.test.command} --passWithNoTests --changed`,
+    );
+  });
+});
+
+describe("fullRunPath", () => {
+  it("finds a file that is named, or lies under a named directory", () => {
+    expect(fullRunPath(["src/a.ts", "bun.lock"])).toBe("bun.lock");
+    expect(fullRunPath(["migrations/0035_x.sql"])).toBe(
+      "migrations/0035_x.sql",
+    );
+    expect(fullRunPath(["tests/mocks/tanstack-start-mock.ts"])).toBeDefined();
+  });
+
+  it("leaves alone a path that only looks like one", () => {
+    expect(
+      fullRunPath([
+        "src/features/posts/posts.service.ts",
+        "docs/migrations/notes.md",
+        ".agents/skills/run-blog/shots/package.json",
+        "tests-old/setup.ts",
+        "package.json.bak",
+      ]),
+    ).toBeUndefined();
+  });
+
+  // vitest --changed follows imports from each test file. What the
+  // configuration itself loads is in no test file's imports.
+  it("names everything vitest.config.ts loads from this repository", () => {
+    const config = readFileSync(
+      path.join(import.meta.dirname, "..", "vitest.config.ts"),
+      "utf8",
+    );
+    const loaded = [
+      ...config.matchAll(/from "\.\/([^"]+)"/g),
+      ...config.matchAll(/"\.\/(tests\/[^"]+)"/g),
+      ...config.matchAll(/configPath: "\.\/([^"]+)"/g),
+    ].map((match) => match[1]);
+    expect(loaded).toContain("scripts/vite-routed-segments.ts");
+    expect(loaded).toContain("tests/apply-migrations.ts");
+    expect(loaded).toContain("cloudflare.config.ts");
+    for (const file of ["vitest.config.ts", ...loaded]) {
+      expect(
+        fullRunPath([file]),
+        `vitest.config.ts loads ${file}, which no test file imports: add it to FULL_RUN_PATHS in scripts/gate.ts, so a change to it runs the full suite`,
+      ).toBe(file);
+    }
+  });
+
+  it("names only paths that exist, so a renamed one does not stay listed", () => {
+    for (const rule of FULL_RUN_PATHS) {
+      expect(
+        existsSync(path.join(import.meta.dirname, "..", rule)),
+        `${rule} is in FULL_RUN_PATHS in scripts/gate.ts but is not in the repository: list its new name`,
+      ).toBe(true);
+    }
+  });
+});
+
+describe("baseCommit", () => {
+  const log = [`c3 ${"3".repeat(40)}`, `c2 ${TREE}`, `c1 ${OTHER}`].join("\n");
+
+  it("is the newest commit whose tree passed", () => {
+    expect(baseCommit(log, new Set([TREE, OTHER]))).toBe("c2");
+    expect(baseCommit(log, new Set([OTHER]))).toBe("c1");
+  });
+
+  it("is undefined when no listed commit passed", () => {
+    expect(baseCommit(log, new Set(["4".repeat(40)]))).toBeUndefined();
+    expect(baseCommit("", new Set([TREE]))).toBeUndefined();
   });
 });
 
@@ -277,17 +359,27 @@ describe("runGate in a real repository", () => {
     typecheck: { command: 'echo typecheck >> "$MARK"', satisfiedBy: ["check"] },
     "test:node": { command: 'echo test:node >> "$MARK"; false' },
     test: { command: 'echo test >> "$MARK" && false' },
+    // The commit appended to the command lands in $0.
+    "test:changed": {
+      command: `sh -c 'echo "changed since $0" >> "$MARK"'`,
+      satisfiedBy: ["test"],
+      narrows: "test",
+    },
     build: { command: 'echo build >> "$MARK" && echo more >> tracked.txt' },
     theme: { command: 'echo theme >> "$MARK"' },
   };
   const run = (
     gate: GateName,
-    extra: { env?: Record<string, string>; prepare?: string } = {},
+    extra: {
+      env?: Record<string, string>;
+      prepare?: string;
+      gates?: GateTable;
+    } = {},
   ) => {
     const lines: Array<string> = [];
     const code = runGate({
       gate,
-      gates: fakes,
+      gates: extra.gates ?? fakes,
       cwd: repo,
       env: { ...env(), ...extra.env },
       heavy: undefined,
@@ -393,6 +485,79 @@ describe("runGate in a real repository", () => {
   it("skips the install step on a run that will not record", () => {
     writeFileSync(path.join(repo, "new.txt"), "x\n");
     expect(run("check", { prepare: "false" }).code).toBe(0);
+  });
+
+  describe("test:changed", () => {
+    // A full suite that passes, where the shared fake fails.
+    const gates: GateTable = {
+      ...fakes,
+      test: { command: 'echo test >> "$MARK"' },
+    };
+    const change = (file: string, message: string) => {
+      mkdirSync(path.dirname(path.join(repo, file)), { recursive: true });
+      writeFileSync(path.join(repo, file), `${message}\n`);
+      commit(message);
+      return sh("git rev-parse HEAD");
+    };
+
+    it("runs the full suite when no ancestor has passed, and that pass covers it", () => {
+      const first = run("test:changed", { gates });
+      expect(first.code).toBe(0);
+      expect(first.out).toContain("running test");
+      expect(ran()).toEqual(["test"]);
+      expect(recorded("test")).toEqual([sh("git rev-parse HEAD^{tree}")]);
+      expect(run("test:changed", { gates }).out).toContain(
+        "already passed test, skipping",
+      );
+    });
+
+    it("runs only what changed since the nearest ancestor that passed either gate", () => {
+      run("test", { gates });
+      const full = sh("git rev-parse HEAD");
+      const second = change("src/a.ts", "two");
+      expect(run("test:changed", { gates }).code).toBe(0);
+      expect(recorded("test:changed")).toEqual([
+        sh("git rev-parse HEAD^{tree}"),
+      ]);
+      change("src/b.ts", "three");
+      expect(run("test:changed", { gates }).code).toBe(0);
+      expect(ran()).toEqual([
+        "test",
+        `changed since ${full}`,
+        `changed since ${second}`,
+      ]);
+    });
+
+    it("runs the full suite when the change touches a path no test imports", () => {
+      run("test", { gates });
+      change("migrations/0002_more.sql", "migration");
+      const result = run("test:changed", { gates });
+      expect(result.out).toContain("migrations/0002_more.sql changed since");
+      expect(ran()).toEqual(["test", "test"]);
+      expect(recorded("test")).toHaveLength(2);
+      expect(recorded("test:changed")).toEqual([]);
+    });
+
+    it("sees an uncommitted file too, and then records nothing", () => {
+      run("test", { gates });
+      mkdirSync(path.join(repo, "tests"));
+      writeFileSync(path.join(repo, "tests", "setup.ts"), "new\n");
+      const result = run("test:changed", { gates });
+      expect(result.out).toContain("tests/setup.ts changed since");
+      expect(ran()).toEqual(["test", "test"]);
+      expect(recorded("test")).toHaveLength(1);
+    });
+
+    it("fails with the narrowed command and records nothing", () => {
+      run("test", { gates });
+      change("src/a.ts", "two");
+      const failing: GateTable = {
+        ...gates,
+        "test:changed": { ...gates["test:changed"], command: "false" },
+      };
+      expect(run("test:changed", { gates: failing }).code).not.toBe(0);
+      expect(recorded("test:changed")).toEqual([]);
+    });
   });
 
   it("says why when the runner cannot start", () => {

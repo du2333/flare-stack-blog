@@ -3,7 +3,7 @@
  * so the same tree is not verified again by the release hooks or the
  * pre-push hook after acceptance has verified it:
  *
- *   bun run gate <check|typecheck|test:node|test|build|theme>
+ *   bun run gate <check|typecheck|test:node|test|test:changed|build|theme>
  *
  * A gate passed on a clean working tree records the tree's hash
  * (`HEAD^{tree}`) under the git common directory, which every worktree of the
@@ -20,9 +20,10 @@
  * part of what is recorded.
  *
  * The commands are fixed and take no arguments, so a targeted run can never
- * count as the full one. A gate that runs goes through scripts/heavy.sh (the
- * machine-wide lock, which also sets the test worker count), or runs directly
- * on a system without `flock`.
+ * count as the full one. `test:changed` is the one gate that runs part of a
+ * suite, and it chooses the part itself: see `narrows`. A gate that runs goes
+ * through scripts/heavy.sh (the machine-wide lock, which also sets the test
+ * worker count), or runs directly on a system without `flock`.
  */
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -34,6 +35,7 @@ export type GateName =
   | "typecheck"
   | "test:node"
   | "test"
+  | "test:changed"
   | "build"
   | "theme";
 
@@ -43,6 +45,13 @@ export type GateSpec = {
   satisfiedBy?: Array<GateName>;
   /** HEAVY_TIMEOUT in seconds when the environment sets none. */
   timeout?: number;
+  /**
+   * This gate is the named one cut down to what a change can reach. Its
+   * command gets a commit appended: the nearest ancestor either gate passed
+   * on. The named gate runs in its place when there is no such commit, or
+   * when the change since it touches FULL_RUN_PATHS.
+   */
+  narrows?: GateName;
 };
 
 export type GateTable = Record<GateName, GateSpec>;
@@ -58,9 +67,52 @@ export const GATES: GateTable = {
   // The full workerd suite takes about 900 s at two workers; heavy.sh's
   // default limit (1500 s) leaves too little room on a busy machine.
   test: { command: "bun run i18n:compile && bun run test", timeout: 3000 },
+  // The workerd test files that import, directly or not, a file changed
+  // since the commit appended: about a minute for a change no server test
+  // reaches, where the full suite always takes its 900 s. The release still
+  // runs `test`.
+  "test:changed": {
+    command: "bun run i18n:compile && bun run test --passWithNoTests --changed",
+    satisfiedBy: ["test"],
+    narrows: "test",
+    timeout: 3000,
+  },
   build: { command: "bun run build && bun scripts/bundle-report.ts --check" },
   theme: { command: "bun scripts/check-theme-styles.ts" },
 };
+
+/**
+ * A change to one of these runs the full suite. They reach the tests without
+ * being imported by one, and imports from a test file are all that
+ * `vitest --changed` follows. A name ending in `/` is a directory.
+ */
+export const FULL_RUN_PATHS = [
+  // Dependencies: imports are not followed into node_modules.
+  "package.json",
+  "bun.lock",
+  // The test configuration and what it loads (a test holds this list to
+  // the imports of vitest.config.ts).
+  "vitest.config.ts",
+  "vite.config.ts",
+  "cloudflare.config.ts",
+  "tsconfig.json",
+  ".env.test",
+  "scripts/vite-routed-segments.ts",
+  "scripts/vite-theme-fixture.ts",
+  // The setup file, the mocks the config aliases, and the helpers.
+  "tests/",
+  // Read into a binding by the configuration.
+  "migrations/",
+  // Compiled into src/paraglide, which git ignores.
+  "messages/",
+  "project.inlang/",
+  "scripts/compile-messages.ts",
+  // Read as text by virtual:routed-first-segments.
+  "src/routeTree.gen.ts",
+];
+
+/** How many commits back a narrowing gate looks for one that passed. */
+export const HISTORY_SEARCHED = 500;
 
 /**
  * Run before a run that records. HUSKY=0 because the root `prepare` script
@@ -175,6 +227,30 @@ export function hiddenPaths(lsFilesV: string) {
     .map((line) => line.slice(2));
 }
 
+/** The first of `paths` that is one of `rules` or under one, if any. */
+export function fullRunPath(
+  paths: Array<string>,
+  rules: ReadonlyArray<string> = FULL_RUN_PATHS,
+) {
+  return paths.find((file) =>
+    rules.some((rule) =>
+      rule.endsWith("/") ? file.startsWith(rule) : file === rule,
+    ),
+  );
+}
+
+/**
+ * The newest commit whose tree is in `passed`. `log` is
+ * `git log --format='%H %T'`: one commit and its tree per line, newest first.
+ */
+export function baseCommit(log: string, passed: ReadonlySet<string>) {
+  for (const line of log.split("\n")) {
+    const [commit, tree] = line.trim().split(" ");
+    if (commit && tree && passed.has(tree)) return commit;
+  }
+  return undefined;
+}
+
 /** The HEAVY_TIMEOUT a run of a gate gets: the environment's, else the gate's own. */
 export function heavyTimeout(spec: GateSpec, envValue: string | undefined) {
   if (envValue) return envValue;
@@ -240,6 +316,76 @@ function writeRecord(dir: string, gate: GateName, tree: string) {
   renameSync(temp, file);
 }
 
+/** One path per line, with no empty entries. */
+function lines(text: string | undefined) {
+  return text?.split("\n").filter((line) => line !== "");
+}
+
+/**
+ * Every path that differs from `base`: committed since, staged, changed or
+ * untracked, which is what `vitest --changed <base>` looks at. A rename
+ * counts under both names. Undefined when git cannot say.
+ */
+function changedSince(ctx: Context, base: string) {
+  const parts = [
+    lines(git(ctx, "diff", "--name-only", "--no-renames", `${base}...HEAD`)),
+    lines(git(ctx, "diff", "--name-only", "--no-renames", "--cached")),
+    lines(
+      git(
+        ctx,
+        "ls-files",
+        "--full-name",
+        "--others",
+        "--modified",
+        "--exclude-standard",
+      ),
+    ),
+  ];
+  return parts.every((part) => part !== undefined)
+    ? parts.flatMap((part) => part ?? [])
+    : undefined;
+}
+
+/**
+ * For a gate that narrows another: the commit to append to its command, or
+ * why the other gate has to run in its place.
+ */
+function narrowing(
+  ctx: Context,
+  dir: string,
+  gate: GateName,
+  narrows: GateName,
+): { base: string } | { instead: string } {
+  const passed = new Set([
+    ...readRecords(dir, gate),
+    ...readRecords(dir, narrows),
+  ]);
+  const log = git(
+    ctx,
+    "log",
+    "--format=%H %T",
+    "-n",
+    String(HISTORY_SEARCHED),
+    "HEAD",
+  );
+  const base = log === undefined ? undefined : baseCommit(log, passed);
+  if (base === undefined) {
+    return {
+      instead: `none of the last ${HISTORY_SEARCHED} commits has a tree that passed ${narrows} or ${gate}`,
+    };
+  }
+  const changed = changedSince(ctx, base);
+  if (changed === undefined) {
+    return { instead: `git could not list the changes since ${short(base)}` };
+  }
+  const forcing = fullRunPath(changed);
+  return forcing === undefined
+    ? { base }
+    : {
+        instead: `${forcing} changed since ${short(base)} and reaches the tests without being imported`,
+      };
+}
+
 export type RunOptions = {
   gate: GateName;
   gates: GateTable;
@@ -278,14 +424,23 @@ export function runGate(options: RunOptions): number {
   }
 
   const spec = gates[gate];
+  let command = spec.command;
+  if (spec.narrows !== undefined) {
+    const narrowed = narrowing(ctx, dir, gate, spec.narrows);
+    if ("instead" in narrowed) {
+      log(`gate ${gate}: ${narrowed.instead}; running ${spec.narrows}`);
+      return runGate({ ...options, gate: spec.narrows });
+    }
+    command = `${spec.command} ${narrowed.base}`;
+  }
   const timeout = heavyTimeout(spec, options.env.HEAVY_TIMEOUT);
   const env = timeout
     ? { ...options.env, HEAVY_TIMEOUT: timeout }
     : options.env;
-  const exec = (command: string) => {
+  const exec = (line: string) => {
     const [file, args] = options.heavy
-      ? [options.heavy, ["sh", "-c", command]]
-      : ["sh", ["-c", command]];
+      ? [options.heavy, ["sh", "-c", line]]
+      : ["sh", ["-c", line]];
     const result = spawnSync(file, args, {
       cwd: options.cwd,
       env,
@@ -308,10 +463,10 @@ export function runGate(options: RunOptions): number {
 
   log(
     decision.reason === "dirty"
-      ? `gate ${gate}: the working tree is not clean (changes, untracked files, or files marked assume-unchanged or skip-worktree), running \`${spec.command}\` without recording`
-      : `gate ${gate}: running \`${spec.command}\` on tree ${short(before.tree ?? "")}`,
+      ? `gate ${gate}: the working tree is not clean (changes, untracked files, or files marked assume-unchanged or skip-worktree), running \`${command}\` without recording`
+      : `gate ${gate}: running \`${command}\` on tree ${short(before.tree ?? "")}`,
   );
-  const exitCode = exec(spec.command);
+  const exitCode = exec(command);
   const after = treeState(ctx);
   const recorded = treeToRecord({
     decision,
